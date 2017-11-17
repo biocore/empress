@@ -50,8 +50,9 @@ class Model(object):
         """ Calculates the coordinates for the tree.
 
         This calculates the actual coordinates for
-        the tree.  These are not the coordinates that
-        will be rendered.
+        the tree. These are not the coordinates that
+        will be rendered.  The calculated coordinates
+        will be updated as a class property.
 
         The layout will only be utilized during
         initialization.
@@ -60,21 +61,51 @@ class Model(object):
         ----------
         layout_type : str
             This specifies the layout algorithm to be used.
+        Returns
+        -------
+        coords : pd.DataFrame
+            The calculated tree coordinates.
+        """
+        pass
+
+    def translate(self, view_axes):
+        """ Translates the tree coordinates to
+        view coordinates.
+
+        TODO: Does this go into the model, or the
+        viewer.  Maybe the viewer should 'just' do
+        rendering ???
+
+        In the end, this will amount to a single
+        linear transformation (i.e. matrix multiplication).
+        This also updates the viewcoords within the class.
+
+        Parameters
+        ----------
+        view_axes : np.array
+           The coordinate system to convert the tree coordsinates too. TODO: will need to think of a better name.
+
+        Returns
+        -------
+        view_coords : np.array
+           The actual translated tree coordinates.
         """
         pass
 
     def pan(self, dx, dy):
-        """
-        """
-
+        """ Pans (i.e. move) """
         pass
 
     def zoom(self):
-
+        """ Zooms """
         pass
-
-    def selectByCategory(metadata):
-        pass
-
 
     # Metadata manipulation
+
+    def updateByCategory(metadata, attribute, category):
+        """ Updates metadata category values."""
+        pass
+
+    def uniqueCategories(metadata, attribute):
+        """ Returns all unique metadata categories. """
+        pass
