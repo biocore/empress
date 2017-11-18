@@ -75,7 +75,8 @@ class Model(object):
         Parameters
         ----------
         view_axes : np.array
-           The coordinate system to convert the tree coordsinates too. TODO: will need to think of a better name.
+           The coordinate system to convert the tree coordsinates too.
+           TODO: will need to think of a better name.
         Returns
         -------
         view_coords : np.array
@@ -93,10 +94,68 @@ class Model(object):
 
     # Metadata manipulation
 
-    def updateByCategory(metadata, attribute, category):
-        """ Updates metadata category values."""
-        pass
+    def groupByCategory(metadata, attribute, category):
+        """ Get certain rows in the metadata given the categories.
 
+        Parameters
+        ----------
+        metadata : pd.DataFrame
+           Contains all of the species attributes.
+           Every row corresponds to a unique species
+           and every column corresponds to an attribute.
+
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category: str
+            The category of a cerntain attribute.
+
+        Returns
+        -------
+        metadata_sub: pd.DataFrame
+            The selected rows of the metadata
+        """
+        pass
+    def updateByCategory(metadata, attribute, category, new_value):
+        """ Updates metadata category values.
+
+        Parameters
+        ----------
+        metadata : pd.DataFrame
+           Contains all of the species attributes.
+           Every row corresponds to a unique species
+           and every column corresponds to an attribute.
+
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category:
+            The category of a cerntain attribute.
+
+        new_value:
+            The new value to update the category to.
+        """
+        pass
+    def updateViewByCategory(metadata, attribute, category):
+        """ Tell the View what category has been updated and update the View
+
+        Parameters
+        ----------
+        metadata : pd.DataFrame
+            Contains all of the species attributes.
+            Every row corresponds to a unique species
+            and every column corresponds to an attribute.
+
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category:
+            The category of a cerntain attribute.
+
+        """
+
+
+        pass
     def uniqueCategories(metadata, attribute):
         """ Returns all unique metadata categories. """
         pass
