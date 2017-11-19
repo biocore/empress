@@ -93,12 +93,71 @@ class Model(object):
 
     # Metadata manipulation
 
-    def updateByCategory(metadata, attribute, category):
-        """ Updates metadata category values."""
+    def groupByCategory(metadata, attribute, category):
+        """ Get certain rows in the metadata given the categories.
+
+        Parameters
+        ----------
+        metadata : pd.DataFrame
+           Contains all of the species attributes.
+           Every row corresponds to a unique species
+           and every column corresponds to an attribute.
+
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category: str
+            The category of a cerntain attribute.
+
+        Returns
+        -------
+        metadata_sub: pd.DataFrame
+            The selected rows of the metadata
+        """
+        pass
+    def updateByCategory(metadata, attribute, category, new_value):
+        """ Updates metadata category values.
+
+        Parameters
+        ----------
+        metadata : pd.DataFrame
+           Contains all of the species attributes.
+           Every row corresponds to a unique species
+           and every column corresponds to an attribute.
+
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category:
+            The category of a cerntain attribute.
+
+        new_value:
+            The new value to update the category to.
+        """
+        pass
+    def updateViewByCategory(metadata, attribute, category):
+        """ Tell the View what category has been updated and update the View
+
+        Parameters
+        ----------
+        metadata : pd.DataFrame
+            Contains all of the species attributes.
+            Every row corresponds to a unique species
+            and every column corresponds to an attribute.
+
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category:
+            The category of a cerntain attribute.
+
+        """
+
+
         pass
 
     def uniqueCategories(metadata, attribute):
-        """ Returns all unique metadata categories. 
+        """ Returns all unique metadata categories.
         This returns all unique metadata categories that belong to the attribute.
         Parameters
         ----------
@@ -114,6 +173,6 @@ class Model(object):
         -------
         unique_cat : list
             A list that contains all of the unique categories within the given attribue.
-            
+
         """
         pass
