@@ -84,11 +84,39 @@ class Model(object):
         pass
 
     def pan(self, dx, dy):
-        """ Pans (i.e. move) """
+        """ Pans (i.e. move) around the bounding box that is being rendered on screen.
+        TODO: The bounding box is defined as (x1, y1) of upper left corner and
+        (x2,y2) of lower right corner. The bounding box is moved around by 'dx' in the x-axis
+        and 'dy' in the y-axis in the view canvas. Each visible node's viewcoords are then
+        recalculated, and the view is called to update.
+        
+        Parameters
+        ----------
+        dx : how much to pan in the x-axis, (-) being left and (+) being right
+        dy : how much to pan in the y-axis, (-) being up and (+) being down
+        
+        Returns
+        -------
+        view_coords : np.array
+           The translated view coordinates
+        """
         pass
 
-    def zoom(self):
-        """ Zooms """
+    def zoom(self, level):
+        """ Zooms in/out by remapping the (x1,y1) upper left corner and (x2,y2) lower right corner
+        of the bounding box, and changes view coordinates as well as visibility of nodes. 
+        Updates rendering in the View. 
+        
+        Parameters
+        ----------
+        level : amount to zoom, where (-) level represents zooming out and (+) level represents zooming in
+        
+        Returns
+        -------
+        view_coords : np.array
+           Rescaled view coordinates
+        
+        """
         pass
 
     # Metadata manipulation
