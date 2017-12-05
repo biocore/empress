@@ -120,16 +120,40 @@ class Model(object):
 
         pass
 
-    def transform():
-        """ Pipeline function
+    def transform(zoom_level):
+        """ It transforms the coords to _canvascoords
+        Based on the zoom level, coords will be recalculated with resolution
+        resolving.
+        This function should also call mask on _canvascoords to recalculate the
+        coords that get displayed.
+
+        This function will be called by zoom.
+
+        Pipeline function
+
+        Parameters
+        ----------
+        zoom_level : int
+           The current zoom level (absolute not relative)
+           We should probably keep small intervals to make the zoom look smooth.
+
+        Returns
+        -------
+        _canvasoords : np.array
+           The transformed _canvascoords that is at the correct zoom level.
+           This still need to be masked in order to fit on the screen.
+
+
         # TODO:
         # what should this transform function do??
         # 1) Should it update the mask?
+        It needs to call mask by passing in the zoom point
         # 2) Should it only handle handling?
         # 3) Perspective transform (i.e. create fish bowl effect)
         # are we missing anything?
 
-        Do we need to have translate?
+        Do we need to have translate? No, pan should call mask and zoom Should
+        call transform.
         """
         pass
 
