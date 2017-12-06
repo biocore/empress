@@ -1,4 +1,5 @@
 import pandas as pd
+from skbio import read
 from skbio import TreeNode
 import numpy as np
 import networkx as nx
@@ -28,6 +29,17 @@ def read(file_name, file_format='newick'):
     """
 
     if file_format == 'newick':
+        # create tree from newick file
+        tree = read( file_name, file_format, into=TreeNode)
+
+        # create node_metadata data frame
+        for node in tree.preorder():
+	    # add each node as a new row of node_metadata
+	    # where is the rest of the metadata coming from?
+
+        # create edge_meta_data data frame
+        for( node in tree.preorder():
+	    # add edge ( node, parent ) to edge_metadata
         pass
 
     elif file_format == 'phyloxml':
@@ -36,6 +48,7 @@ def read(file_name, file_format='newick'):
         pass
 
     elif file_format == 'cytoscape':
+
         # assuming we're using GML
         G = nx.read_gml(file_name)
 
