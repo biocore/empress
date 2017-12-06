@@ -1,6 +1,7 @@
 import pandas as pd
 from skbio import TreeNode
 import numpy as np
+import networkx as nx
 
 
 def read(file_name, file_format='newick'):
@@ -19,6 +20,34 @@ def read(file_name, file_format='newick'):
 
     TODO: Need to create parsers for each of these.
     """
+    if file_format == 'newick':
+        pass
+    elif file_format == 'phyloxml':
+        pass
+    elif file_format == 'cytoscape':
+        # assuming we're using GML
+        G = nx.read_gml(file_name)
+
+        # convert networkx graph into pandas dataframe
+        df = nx.to_pandas_dataframe(G)
+
+        # get lists of attributes in graph
+        # TODO: attributes object
+
+        # create all attributes as pandas dataframe (self.node_metadata) columns
+        # TODO:
+
+        # iterate through all attributes
+        for a in attributes:
+            cur_attribute = nx.get_node_attributes(G, a);
+            # iterate through networkx graph and create node_metadata
+            for n in G:
+                # TODO: set self.node_metadata's n's attribute to be cur_attribute[n]
+                pass
+    else:
+        # return error message file format cannot be parsed
+        pass
+
     pass
 
 
