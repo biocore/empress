@@ -1,0 +1,4 @@
+matplotlib
+scikit-bio
+numpy
+scipy
