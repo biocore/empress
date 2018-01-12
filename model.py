@@ -43,8 +43,16 @@ def read(file_name, file_format='newick'):
         pass
 
     elif file_format == 'phyloxml':
-        tree = Phylo.read('filename', file_format)
-        for clade in tree.clade:
+        # There is a a package in ete3 for phyloxml as well
+        # This is using biopython
+        # function read if there is one tree in the file
+        # function parse if there are multiple trees in the file
+        # It can also read newick format and also convert bewteen supported
+        # format
+        #trees = Phylo.parse(file_name,file_format)
+        tree = Phylo.read(file_name, file_format)
+        for clade in tree.find_clades():
+            # Get the information about the clade into the dataframe
         pass
 
     elif file_format == 'cytoscape':
@@ -72,7 +80,7 @@ def read(file_name, file_format='newick'):
     else:
         # return error message file format cannot be parsed
         pass
-    
+
     pass
 
 
