@@ -25,6 +25,12 @@ def read(file_name, file_format='newick'):
     traversing?
     - What is the confidence for each clade?
 
+    Parameters
+    ----------
+    file_name : str
+        The name of the file to read that contains the tree
+    file_format : str
+        The format of the file to read that contains the tree
     TODO: Need to create parsers for each of these.
     """
 
