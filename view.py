@@ -25,6 +25,7 @@ def plot(node_metadata, edge_metadata):
     col_node_y = node_metadata['y']
     # TODO: annotation on points
     plt.scatter(x,y)
+
     # Plot edges
     # Get the four columns of coordinates
     col_edge_x = edge_metadata['x']
