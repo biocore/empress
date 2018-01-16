@@ -2,3 +2,5 @@ matplotlib
 scikit-bio
 numpy
 scipy
+pep8
+flake8
