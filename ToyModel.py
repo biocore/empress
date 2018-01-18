@@ -24,9 +24,9 @@ class ToyModel(TreeNode):
     `depth` is the number of nodes found in the longest path.
     """
     
+    #Dont know if python has a built in stack.
+    #I googled python stack and this was the first thing I saw
     class Stack:
-        
-        
         def __init__(self):
             self.items = []
             self.size = 0
@@ -118,32 +118,58 @@ class ToyModel(TreeNode):
             The width of the canvas.
         Returns
         -------
-        pd.DataFrame
+        pd.DataFrame (Node metadata)
             index : str
                 Name of node.
+            Node id: str
+                Name of node
             x : float
                 x-coordinate of node.
             y : float
                 y-coordinate of node.
-            child(i) : str
-                Name of ith child node in that specific node.
-                in the tree.
-            is_tip : str
-                Specifies if the node is a tip in the treee.
+        
+        pd.DataFrame (Edge metadata)
+            index : str
+                Name of node.
+            Node id: str
+                Name of node
+            x : float
+                x-coordinate of node.
+            y : float
+                y-coordinate of node.
+            Parent id:
+                Name of parent
+            px : float
+                x-coorinate of parent
+            py: float 
+                y-coordinate of parent
         """
+        
+        #calculates coordinates of all nodes
         self.rescale(width, height)
-        result = {}
+        
+        #Node metadata
+        nodeData = {}
         for node in self.postorder():
-            children = {'child%d' % i: n.name
-                        for i, n in enumerate(node.children)}
+            nId = {'Node id' : node.name}
             coords = {'x': node.x2, 'y': node.y2}
-            is_tip = {'is_tip': node.is_tip()}
-            result[node.name] = {**coords, **children, **is_tip}
-        result = pd.DataFrame(result).T
+            nodeData[node.name] = {**nId,**coords}
+            
+        #edge metadata
+        edgeData = {}
+        for node in self.postorder():
+            pId = {'Parent id' : node.name}
+            pCoords = {'px': node.x2, 'py': node.y2}
+            for child in node.children:
+                nID = {'Node id' : child.name}
+                coords = {'x': child.x2, 'y': child.y2}
+                edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
 
-        # reorder so that x and y are first
-        cols = ['x', 'y'] + sorted(list(set(result.columns) - set(['x', 'y'])))
-        return result.loc[:, cols]
+        #convert to pd.DataFrame
+        nodeMeta = pd.DataFrame(nodeData).T
+        edgeMeta = pd.DataFrame(edgeData).T
+      
+        return (nodeMeta,edgeMeta)
 
     def rescale(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
@@ -219,24 +245,30 @@ class ToyModel(TreeNode):
         This function has a little bit of recursion.  This will
         need to be refactored to remove the recursion.
         """
-        
+         
+        #pushes nodes in a dfs fashion
         nodeStack = ToyModel.Stack()
-        delAtrStack = ToyModel.Stack()
+        #what I use to determine which child to visit next/calculate 'a'
+        childLeftToExplore = ToyModel.Stack()
+        #stackFrame = [(s,x1,y1,x2,y2,a,da)]
         stackFrame = []
+        
         curNode = self
         nodeStack.push(curNode)
-        delAtrStack.push(curNode)
+        childLeftToExplore.push(curNode)
         
+        #stores (x,y) of all leaf nodes
         points = []
         
-        
-        
+          
         #Dirty attempts to simulate the recurisive method found in Gniess
         #Needs to be cleaned up
-        #stackFrame = [(s,x1,y1,x2,y2,a,da)]
+        #Note: This function assumes a node can have n-children
+        #      I believe we are only going to use bifurcating trees
+        #      which means this code can be cleaned up quite a bit
         while True: 
-           
-           
+            
+            #checks to see if the nodes has been visited
             if not hasattr(curNode,'childRem') or curNode.childRem == -1:
                 # Constant angle algorithm.  Should add maximum daylight step.
                 x2 = x1 + curNode.length * s * np.sin(a)
@@ -244,83 +276,78 @@ class ToyModel(TreeNode):
                 (curNode.x1, curNode.y1, curNode.x2, curNode.y2, curNode.angle) = (x1, y1, x2, y2, a)
                 # TODO: Add functionality that allows for collapsing of nodes
                 a = a - curNode.leafcount * da / 2
-                stackFrame += [(s,x1,y1,x2,y2,a,da)]
-               
+                stackFrame += [(s,x1,y1,x2,y2,a,da)] 
+                
+                #if node is a tip, remove from stack/add cords to points
                 if curNode.is_tip():
                     points += [(x2,y2)]
-                   
                     nodeStack.pop()
                     del stackFrame[-1]
                     if not nodeStack.isEmpty():
                         curNode = nodeStack.peek()
+                #if node is not a leaf, push left child to stack and update (s, x1, y1, a, da)
                 else:
                     curNode.childRem = len(curNode.children)
                     nodeStack.push(curNode.children[-1*curNode.childRem])
-                    delAtrStack.push(curNode.children[-1*curNode.childRem])
+                    childLeftToExplore.push(curNode.children[-1*curNode.childRem])
                     curNode.childRem -= 1
                     ca = curNode.children[0].leafcount* da
                     x1 = x2
                     y1 = y2
                     a = a + ca/2
                     curNode = nodeStack.peek()
-                    #Do the for loop thing 
+        
+            #if node has already been visited and still has children left to explore, push next child to
+            #stack and update (s, x1, y1, a, da)
             elif curNode.childRem != 0:
                 (s,x1,y1,x2,y2,a,da) = (stackFrame[-1])
                 x1 = x2
                 y1 = y2
                 nodeStack.push(curNode.children[-1*curNode.childRem])
-                delAtrStack.push(curNode.children[-1*curNode.childRem])
+                childLeftToExplore.push(curNode.children[-1*curNode.childRem])
                 curNode.childRem -= 1
                 ca = curNode.children[-1*curNode.childRem].leafcount* da
-               
                 for i in range(0,len(curNode.children)-curNode.childRem):
                     ca = curNode.children[i].leafcount* da
                     if i != len(curNode.children)-curNode.childRem -1:
                         a = a + ca
                 a = a + ca/2
-                
-                
+            #if node has already been visited and doesn't have children left to explore, remove it from
+            #stack as well as its ancestors if all of their children have been explored 
+            #update (s, x1, y1, a, da)
             elif curNode.childRem == 0:
-               
                 nodeStack.pop()
                 if len(stackFrame) != 0:
                     del stackFrame[-1]
                 while not nodeStack.isEmpty() and nodeStack.peek().childRem == 0:             
-                  
                     nodeStack.pop()
                     del stackFrame[-1]
-                    
                 if nodeStack.isEmpty():
                     break
                 else:
                     curNode = nodeStack.peek()
-                    
                 nodeStack.push(curNode.children[-1*curNode.childRem])
-                delAtrStack.push(curNode.children[-1*curNode.childRem])
+                childLeftToExplore.push(curNode.children[-1*curNode.childRem])
                 curNode.childRem -= 1
                 (s,x1,y1,x2,y2,a,da) = (stackFrame[-1])
-                
                 for i in range(0,len(curNode.children)-curNode.childRem):
                     ca = curNode.children[i].leafcount* da
                     if i != len(curNode.children)-curNode.childRem -1:
-                       
                         a = a + ca
-               
                 a = a + ca/2
                 x1 = x2
                 y1 = y2
-               
                 
-            
+            #Either set curNode to the top of stack or break the while loop 
             if not nodeStack.isEmpty():
                 curNode = nodeStack.peek()
             else:
                 break
           
-
-        while not delAtrStack.isEmpty():
-            curNode = delAtrStack.peek()
+        #reset nodes 
+        while not childLeftToExplore.isEmpty():
+            curNode = childLeftToExplore.peek()
             curNode.childRem = -1
-            delAtrStack.pop()
+            childLeftToExplore.pop()
         return points
 
