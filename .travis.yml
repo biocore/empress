@@ -21,7 +21,7 @@ install:
   - source activate test_env
   - pip install -e .
 script:
-  - WITH_COVERAGE=TRUE make all
+  - WITH_COVERAGE=FALSE make all
   - if [ ${MAKE_DOC} ]; then make -C doc clean html; fi
 after_success:
   - coveralls
