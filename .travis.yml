@@ -21,8 +21,9 @@ install:
   - source activate test_env
   - pip install -e .
 script:
-  - WITH_COVERAGE=FALSE make all
-  - if [ ${MAKE_DOC} ]; then make -C doc clean html; fi
+  - nosetests .
+  - pycodestyle .
+  - flake8 .
 after_success:
   - coveralls
 notifications:
