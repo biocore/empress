@@ -23,29 +23,7 @@ class ToyModel(TreeNode):
     to the longest path from root to the deepst leaf in that subtree.
     `depth` is the number of nodes found in the longest path.
     """
-    
-    #Dont know if python has a built in stack.
-    #I googled python stack and this was the first thing I saw
-    class Stack:
-        def __init__(self):
-            self.items = []
-            self.size = 0
-
-        def isEmpty(self):
-            return self.items == []
-
-        def push(self, item):
-            self.items.append(item)
-
-        def pop(self):
-            return self.items.pop()
-
-        def peek(self):
-            return self.items[len(self.items)-1]
-
-        def size(self):
-            return len(self.items)
-    
+       
     def __init__(self, use_lengths=True, **kwargs):
         """ Constructs a Dendrogram object for visualization.
         """
