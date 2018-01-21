@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2016--, gneiss development team.
+# Copyright (c) 2018--, phyloviz development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,18 +9,19 @@ import unittest
 import numpy as np
 import pandas as pd
 from skbio import DistanceMatrix, TreeNode
+from phyloviz.ToyModel import ToyModel
 from scipy.cluster.hierarchy import ward
 import pandas.util.testing as pdt
 
 
-class mock(Dendrogram):
+class mock(ToyModel):
     # mock dendrogram class to make sure that inheritance
     # is working as expected.
     def rescale(self, width, height):
         pass
 
 
-class TestUnrootedRadial(unittest.TestCase):
+class TestRootedRadial(unittest.TestCase):
 
     def test_cache_ntips(self):
         dm = DistanceMatrix.from_iterable([0, 1, 2, 3],
@@ -40,6 +41,9 @@ class TestUnrootedRadial(unittest.TestCase):
         self.assertEquals(t.children[1].children[1].leafcount, 1)
 
 
+
+class TestUnrootedRadial(unittest.TestCase):
+
     def setUp(self):
         np.random.seed(0)
         x = np.random.rand(10)
@@ -55,11 +59,11 @@ class TestUnrootedRadial(unittest.TestCase):
                 n.name = "y%d" % i
 
     def test_from_tree(self):
-        t = UnrootedDendrogram.from_tree(self.tree)
-        self.assertEqual(t.__class__, UnrootedDendrogram)
+        t = ToyModel.from_tree(self.tree)
+        self.assertEqual(t.__class__, ToyModel)
 
     def test_coords(self):
-        t = UnrootedDendrogram.from_tree(self.tree)
+        t = ToyModel.from_tree(self.tree)
 
         exp = pd.DataFrame({'0': [404.097, 396.979, np.nan, np.nan, True],
                             '1': [464.724, 174.338, np.nan, np.nan, True],
@@ -91,7 +95,7 @@ class TestUnrootedRadial(unittest.TestCase):
                                places=5)
 
     def test_update_coordinates(self):
-        t = UnrootedDendrogram.from_tree(self.tree)
+        t = ToyModel.from_tree(self.tree)
         exp = pd.DataFrame([(-0.59847214410395644, -1.6334372886412185),
                             (-0.99749498660405445, -0.76155647142658189),
                             (1.0504174348855488, 0.34902579063315775),
