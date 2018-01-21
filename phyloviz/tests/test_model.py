@@ -88,7 +88,7 @@ class TestUnrootedRadial(unittest.TestCase):
         pdt.assert_frame_equal(exp, res)
 
     def test_rescale(self):
-        t = UnrootedDendrogram.from_tree(self.tree)
+        t = ToyModel.from_tree(self.tree)
         self.assertAlmostEqual(t.rescale(500, 500), 91.608680314971238,
                                places=5)
 
