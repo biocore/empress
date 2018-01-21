@@ -99,6 +99,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+<<<<<<< HEAD
 
 # node modules
 node/node_modules/
