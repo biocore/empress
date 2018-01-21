@@ -42,8 +42,6 @@ class TestUnrootedRadial(unittest.TestCase):
         self.assertEquals(t.children[1].children[1].leafcount, 1)
 
 
-class TestUnrootedDendrogram(unittest.TestCase):
-
     def setUp(self):
         np.random.seed(0)
         x = np.random.rand(10)
