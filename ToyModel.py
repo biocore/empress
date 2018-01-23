@@ -197,7 +197,7 @@ class ToyModel(TreeNode):
 
     def update_coordinates(self, s, x1, y1, a, da):
         """ Update x, y coordinates of tree nodes in canvas.
-        `update_coordinates` will recursively updating the
+        `update_coordinates` will updating the
         plotting parameters for all of the nodes within the tree.
         This can be applied when the tree becomes modified (i.e. pruning
         or collapsing) and the resulting coordinates need to be modified
