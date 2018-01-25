@@ -3,6 +3,7 @@ import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def plot(node_metadata, edge_metadata):
     """ Plot the tree with the given dataframe of coordinates of points
 
@@ -24,7 +25,7 @@ def plot(node_metadata, edge_metadata):
     col_node_x = node_metadata['x']
     col_node_y = node_metadata['y']
     # TODO: annotation on points
-    plt.scatter(col_node_x,col_node_y)
+    plt.scatter(col_node_x, col_node_y)
 
     # Plot edges
     # Get the four columns of coordinates
@@ -37,6 +38,20 @@ def plot(node_metadata, edge_metadata):
 
     # Loop through each row and plot the edge
     for index in range(row_count):
-        plot_x=[col_edge_x[index],col_edge_px[index]]
-        plot_y=[col_edge_y[index],col_edge_py[index]]
+        plot_x = [col_edge_x[index], col_edge_px[index]]
+        plot_y = [col_edge_y[index], col_edge_py[index]]
         plt.plot(plot_x, plot_y)
+
+
+def color_nodes(node_metadata, color_column='Disease_Type'):
+    """
+    Parameters
+    ------------
+    node_metadata : pd.DataFrame
+       Contains the metadata + attributes, where the row names are the node ids
+       and the column names are the attributes to be plotted
+    color_column : pd.DataFrame
+       The column that specifies the colors for each node
+    ...
+    """
+    pass
