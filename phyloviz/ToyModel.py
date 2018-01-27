@@ -141,7 +141,7 @@ class ToyModel(TreeNode):
             for child in node.children:
                 nID = {'Node id': child.name}
                 coords = {'x': child.x2, 'y': child.y2}
-                edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
+                edgeData[child.name] = {**nID, **coords, **pId, **pCoords}
 
         # convert to pd.DataFrame
         nodeMeta = pd.DataFrame(nodeData).T
