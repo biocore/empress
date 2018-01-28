@@ -2,6 +2,33 @@ import pandas as pd
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
+from flask import Flask
+from flask import request
+
+# Constants for REST API
+MODEL_PORT = '9001'
+VIEW_PORT = '9002'
+LOCALHOST = '127.0.0.1'
+
+# Set up REST API for view
+app = Flask(__name__)
+
+@app.route('/nodes', methods=['POST'])
+def post_nodes():
+    """ Updates the node metadata of viewer object 
+    by parsing the json object with index orientation.
+    """
+    node_json = request.get_json()
+    self.node_metadata = pd.read_json(node_json, orient='index')
+
+
+@app.route('/edges', methods=['POST'])
+def post_nodes():
+    """ Updates the edge metadata of viewer object
+    by parsing the json object with index orientation
+    """
+    edge_json = request.get_json()
+    self.edge_metadata = pd.read_json(edge_json, orient='index')
 
 
 def plot(node_metadata, edge_metadata):
@@ -55,3 +82,8 @@ def color_nodes(node_metadata, color_column='Disease_Type'):
     ...
     """
     pass
+
+
+# Run Flask app
+if __name__ == '__main__':
+    app.run(host=LOCALHOST, port=VIEW_PORT, debug=True)

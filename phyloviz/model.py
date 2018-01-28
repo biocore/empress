@@ -4,7 +4,33 @@ from skbio import TreeNode
 import numpy as np
 import networkx as nx
 from Bio import Phylo
+from flask import Flask
 
+# Constants for REST API
+MODEL_PORT = '9001'
+VIEW_PORT = '9002'
+LOCALHOST = '127.0.0.1'
+
+# Set up REST API for model
+app = Flask(__name__)
+
+@app.route('/nodes', methods=['GET'])
+def get_nodes():
+    """ Returns node metadata dataframe as a json object
+    with index orientation by default.
+    """
+    return self.node_metadata.to_json(orient='index')
+
+
+@app.route('/edges', methods=['GET'])
+def get_edges():
+    """ Returns edge metadata dataframe as a json object 
+    with index orientation by default.
+    """
+    return self.edge_metadata.to_json(orient='index')
+
+
+# TODO: call POST routes in viewer after every update of model
 
 def read(file_name, file_format='newick'):
     """ Reads in contents from a file.
@@ -42,11 +68,12 @@ def read(file_name, file_format='newick'):
         for node in tree.preorder():
 	    # add each node as a new row of node_metadata
 	    # where is the rest of the metadata coming from?
+            pass
 
         # create edge_meta_data data frame
-        for( node in tree.preorder():
+        for node in tree.preorder():
 	    # add edge ( node, parent ) to edge_metadata
-        pass
+            pass
 
     elif file_format == 'phyloxml':
         # There is a a package in ete3 for phyloxml as well
@@ -59,7 +86,7 @@ def read(file_name, file_format='newick'):
         tree = Phylo.read(file_name, file_format)
         for clade in tree.find_clades():
             # Get the information about the clade into the dataframe
-        pass
+            pass
 
     elif file_format == 'cytoscape':
 
@@ -413,3 +440,9 @@ class Model(object):
 
         """
         pass
+
+
+# Run Flask app
+if __name__ == '__main__':
+    app.run(host=LOCALHOST, port=MODEL_PORT, debug=True)
+
