@@ -20,9 +20,8 @@ import numpy.testing.utils as npt
 import unittest
 
 
-class HeatmapTest(unittest.TestCase):
+class DendrogramViewTest(unittest.TestCase):
     def setUp(self):
-         def setUp(self):
         np.random.seed(0)
         x = np.random.rand(10)
         dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))

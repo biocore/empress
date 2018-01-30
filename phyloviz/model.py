@@ -4,9 +4,9 @@ from skbio import TreeNode
 import pandas as pd
 import numpy as np
 from skbio import read
-import networkx as nx
+#import networkx as nx
 #from Bio import Phylo
-from flask import Flask
+#from flask import Flask
 """
 # Constants for REST API
 MODEL_PORT = '9001'
@@ -255,7 +255,7 @@ class Tree(TreeNode):
                 pId = {'Parent id' : node.name}
                 pCoords = {'px': node.x2, 'py': node.y2}
                 for child in node.children:
-                    nID = {'Node id' : child.name}
+                    nId = {'Node id' : child.name}
                     coords = {'x': child.x2, 'y': child.y2}
                     edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
 

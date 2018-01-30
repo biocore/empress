@@ -30,23 +30,47 @@ def post_nodes():
     edge_json = request.get_json()
     self.edge_metadata = pd.read_json(edge_json, orient='index')
 
-
-def plot(node_metadata, edge_metadata):
-    """ Plot the tree with the given dataframe of coordinates of points
-
-    We are now plotting with matplotlib
+def plot(node_metadata, edge_metadata, 
+              node_color=None, node_size=None, 
+              node_alpha=None, edge_color=None, 
+              edge_width=None, edge_alpha=None):
+    """
     Parameters
-    ----------
+    -----------
     node_metadata : pd.DataFrame
-       Contains all of the species attributes.
-       Every row corresponds to a unique species
-       and every column corresponds to an attribute.
-       Metadata may also contain ancestors.
+        Contains all of the species attributes.
+        Every row corresponds to a unique species
+        and every column corresponds to an attribute.
+        Metadata may also contain ancestors.
     edge_metadata : pd.DataFrame
-       Contains all of the edge attributes.
-       Every row corresponds to a unique edge
-       and every column corresponds to an attribute.
+        Contains all of the edge attributes.
+        Every row corresponds to a unique edge
+        and every column corresponds to an attribute.
+    node_color : str
+        Name of column in `node_metadata` to plot node colors.
+        If None, all nodes will be colored black.
+    node_size : str
+        Name of column in `node_metadata` to resize the nodes.  
+        If None, all nodes will be 10.
+    node_alpha : str
+        Name of column in `node_metadata` to specify transparency of nodes.  
+        If None, the nodes won't be transparent.
+    edge_color : str
+        Name of column in `edge_metadata` to plot edge colors.  
+        If None, all edges will be colored black.
+    edge_size : str
+        Name of column in `edge_metadata` to resize the nodes.  
+        If None, all edge will have a width of 1.
+    edge_alpha : str
+        Name of column in `edge_metadata` to specify transparency of edges.  
+        If None, all edges won't be transparent.
+    ax : matplotlib.axes.Axes
+         optional matplotlib axes object
 
+    Returns
+    --------
+    matplotlib.axes.Axes
+         Axes with fully rendered tree
     """
     # Plot nodes
     col_node_x = node_metadata['x']
