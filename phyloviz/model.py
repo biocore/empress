@@ -422,18 +422,17 @@ MODEL_PORT = 9001
 VIEW_PORT = 9002
 LOCALHOST = '127.0.0.1'
 
+m = Model()
+    
 # Set up REST API for model
 app = Flask(__name__)
-
-# Model object
-model = Model()
-
+    
 @app.route('/nodes', methods=['GET'])
 def get_nodes():
     """ Returns node metadata dataframe as a json object
     with index orientation by default.
     """
-    return model.node_metadata.to_json(orient='index')
+    return m.node_metadata.to_json(orient='index')
 
 
 @app.route('/edges', methods=['GET'])
@@ -441,7 +440,7 @@ def get_edges():
     """ Returns edge metadata dataframe as a json object 
     with index orientation by default.
     """
-    return model.edge_metadata.to_json(orient='index')
+    return m.edge_metadata.to_json(orient='index')
 
 # Run Flask app
 if __name__ == '__main__':
