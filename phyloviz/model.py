@@ -7,7 +7,6 @@ from skbio import read
 #import networkx as nx
 #from Bio import Phylo
 #from flask import Flask
-"""
 # Constants for REST API
 MODEL_PORT = '9001'
 VIEW_PORT = '9002'
@@ -28,9 +27,8 @@ def get_nodes():
 def get_edges():
     " "" Returns edge metadata dataframe as a json object 
     with index orientation by default.
-    " ""
+    """
     return self.edge_metadata.to_json(orient='index
-"""
 
 
 # TODO: call POST routes in viewer after every update of model
@@ -52,7 +50,7 @@ def read(file_name, file_format='newick'):
     - Python has a parser for it, but it parse it into a phylogeny object.
     - We need to parse the phylogeny object into the metadata table by
     traversing?
-    - What is the confidence for each clade?
+    - What is the confidence ifor each clade?
 
     Parameters
     ----------
@@ -700,14 +698,38 @@ class Model(object):
 
         """
         pass
-
+        
+    
     def retrive_view_coords(self):
         return (self.node_metadata,self.edge_metadata)
-"""
+
+# Constants for REST API
+MODEL_PORT = 9001
+VIEW_PORT = 9002
+LOCALHOST = '127.0.0.1'
+
+m = Model()
+    
+# Set up REST API for model
+app = Flask(__name__)
+    
+@app.route('/nodes', methods=['GET'])
+def get_nodes():
+    """ Returns node metadata dataframe as a json object
+    with index orientation by default.
+    """
+    return m.node_metadata.to_json(orient='index')
+
+
+@app.route('/edges', methods=['GET'])
+def get_edges():
+    """ Returns edge metadata dataframe as a json object 
+    with index orientation by default.
+    """
+    return m.edge_metadata.to_json(orient='index')
 
 # Run Flask app
 if __name__ == '__main__':
     app.run(host=LOCALHOST, port=MODEL_PORT, debug=True)
 
 
-"""
