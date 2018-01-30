@@ -6,30 +6,6 @@ import networkx as nx
 from Bio import Phylo
 from flask import Flask
 
-# Constants for REST API
-MODEL_PORT = '9001'
-VIEW_PORT = '9002'
-LOCALHOST = '127.0.0.1'
-
-# Set up REST API for model
-app = Flask(__name__)
-
-@app.route('/nodes', methods=['GET'])
-def get_nodes():
-    """ Returns node metadata dataframe as a json object
-    with index orientation by default.
-    """
-    return self.node_metadata.to_json(orient='index')
-
-
-@app.route('/edges', methods=['GET'])
-def get_edges():
-    """ Returns edge metadata dataframe as a json object 
-    with index orientation by default.
-    """
-    return self.edge_metadata.to_json(orient='index')
-
-
 # TODO: call POST routes in viewer after every update of model
 
 def read(file_name, file_format='newick'):
@@ -441,6 +417,31 @@ class Model(object):
         """
         pass
 
+# Constants for REST API
+MODEL_PORT = 9001
+VIEW_PORT = 9002
+LOCALHOST = '127.0.0.1'
+
+# Set up REST API for model
+app = Flask(__name__)
+
+# Model object
+model = Model()
+
+@app.route('/nodes', methods=['GET'])
+def get_nodes():
+    """ Returns node metadata dataframe as a json object
+    with index orientation by default.
+    """
+    return model.node_metadata.to_json(orient='index')
+
+
+@app.route('/edges', methods=['GET'])
+def get_edges():
+    """ Returns edge metadata dataframe as a json object 
+    with index orientation by default.
+    """
+    return model.edge_metadata.to_json(orient='index')
 
 # Run Flask app
 if __name__ == '__main__':
