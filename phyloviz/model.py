@@ -4,9 +4,32 @@ from skbio import TreeNode
 import pandas as pd
 import numpy as np
 from skbio import read
-import networkx as nx
-from Bio import Phylo
-from flask import Flask
+#import networkx as nx
+#from Bio import Phylo
+#from flask import Flask
+# Constants for REST API
+MODEL_PORT = '9001'
+VIEW_PORT = '9002'
+LOCALHOST = '127.0.0.1'
+
+# Set up REST API for model
+app = Flask(__name__)
+
+@app.route('/nodes', methods=['GET'])
+def get_nodes():
+   " "" Returns node metadata dataframe as a json object
+    with index orientation by default.
+    " ""
+    return self.node_metadata.to_json(orient='index')
+
+
+@app.route('/edges', methods=['GET'])
+def get_edges():
+    " "" Returns edge metadata dataframe as a json object 
+    with index orientation by default.
+    """
+    return self.edge_metadata.to_json(orient='index
+
 
 # TODO: call POST routes in viewer after every update of model
 
@@ -27,7 +50,7 @@ def read(file_name, file_format='newick'):
     - Python has a parser for it, but it parse it into a phylogeny object.
     - We need to parse the phylogeny object into the metadata table by
     traversing?
-    - What is the confidence for each clade?
+    - What is the confidence ifor each clade?
 
     Parameters
     ----------
@@ -230,7 +253,7 @@ class Tree(TreeNode):
                 pId = {'Parent id' : node.name}
                 pCoords = {'px': node.x2, 'py': node.y2}
                 for child in node.children:
-                    nID = {'Node id' : child.name}
+                    nId = {'Node id' : child.name}
                     coords = {'x': child.x2, 'y': child.y2}
                     edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
 
