@@ -4,9 +4,9 @@ from skbio import TreeNode
 import pandas as pd
 import numpy as np
 from skbio import read
-import networkx as nx
-from Bio import Phylo
-from flask import Flask
+#import networkx as nx
+#from Bio import Phylo
+#from flask import Flask
 
 
 # TODO: call POST routes in viewer after every update of model
