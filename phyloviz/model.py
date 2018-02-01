@@ -4,31 +4,9 @@ from skbio import TreeNode
 import pandas as pd
 import numpy as np
 from skbio import read
-#import networkx as nx
-#from Bio import Phylo
-#from flask import Flask
-# Constants for REST API
-MODEL_PORT = '9001'
-VIEW_PORT = '9002'
-LOCALHOST = '127.0.0.1'
-
-# Set up REST API for model
-app = Flask(__name__)
-
-@app.route('/nodes', methods=['GET'])
-def get_nodes():
-    """ Returns node metadata dataframe as a json object
-    with index orientation by default.
-    """
-    return self.node_metadata.to_json(orient='index')
-
-
-@app.route('/edges', methods=['GET'])
-def get_edges():
-    " "" Returns edge metadata dataframe as a json object 
-    with index orientation by default.
-    """
-    return self.edge_metadata.to_json(orient='index
+import networkx as nx
+from Bio import Phylo
+from flask import Flask
 
 
 # TODO: call POST routes in viewer after every update of model
@@ -245,7 +223,7 @@ class Tree(TreeNode):
             for node in self.postorder():
                 nId = {'Node id' : node.name}
                 coords = {'x': node.x2, 'y': node.y2}
-                nodeData[node.name] = {**nId,**coords}
+                nodeData[node.name] = { **nId, **coords}
 
             #edge metadata
             edgeData = {}
@@ -713,6 +691,10 @@ m = Model()
 # Set up REST API for model
 app = Flask(__name__)
     
+@app.route('/', methods=['GET'])
+def hello_world():
+    return "hello world!"
+
 @app.route('/nodes', methods=['GET'])
 def get_nodes():
     """ Returns node metadata dataframe as a json object
@@ -731,5 +713,3 @@ def get_edges():
 # Run Flask app
 if __name__ == '__main__':
     app.run(host=LOCALHOST, port=MODEL_PORT, debug=True)
-
-
