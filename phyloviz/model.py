@@ -17,9 +17,9 @@ app = Flask(__name__)
 
 @app.route('/nodes', methods=['GET'])
 def get_nodes():
-   " "" Returns node metadata dataframe as a json object
+    """ Returns node metadata dataframe as a json object
     with index orientation by default.
-    " ""
+    """
     return self.node_metadata.to_json(orient='index')
 
 
