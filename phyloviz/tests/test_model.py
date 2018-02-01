@@ -9,40 +9,12 @@ import unittest
 import numpy as np
 import pandas as pd
 from skbio import DistanceMatrix, TreeNode
-from phyloviz.ToyModel import ToyModel
+from phyloviz.Model import Tree
 from scipy.cluster.hierarchy import ward,complete
 import pandas.util.testing as pdt
 
 
-class mock(ToyModel):
-    # mock dendrogram class to make sure that inheritance
-    # is working as expected.
-    def rescale(self, width, height):
-        pass
-
-
-class TestRootedRadial(unittest.TestCase):
-
-    def test_cache_ntips(self):
-        dm = DistanceMatrix.from_iterable([0, 1, 2, 3],
-                                          lambda x, y: np.abs(x-y))
-        lm = ward(dm.condensed_form())
-        ids = np.arange(4).astype(np.str)
-        t = mock.from_linkage_matrix(lm, ids)
-
-        t._cache_ntips()
-
-        self.assertEquals(t.leafcount, 4)
-        self.assertEquals(t.children[0].leafcount, 2)
-        self.assertEquals(t.children[1].leafcount, 2)
-        self.assertEquals(t.children[0].children[0].leafcount, 1)
-        self.assertEquals(t.children[0].children[1].leafcount, 1)
-        self.assertEquals(t.children[1].children[0].leafcount, 1)
-        self.assertEquals(t.children[1].children[1].leafcount, 1)
-
-
-
-class TestUnrootedRadial(unittest.TestCase):
+class TestDendrogram(unittest.TestCase):
 
     def setUp(self):
         np.random.seed(0)
@@ -58,12 +30,26 @@ class TestUnrootedRadial(unittest.TestCase):
             if not n.is_tip():
                 n.name = "y%d" % i
 
+    def test_cache_ntips(self):
+
+        t = Tree.from_tree(self.tree)
+        t._cache_ntips()
+
+        self.assertEquals(t.leafcount, 10)
+        self.assertEquals(t.children[0].leafcount, 2)
+        self.assertEquals(t.children[1].leafcount, 8)
+        self.assertEquals(t.children[0].children[0].leafcount, 1)
+        self.assertEquals(t.children[0].children[1].leafcount, 1)
+        self.assertEquals(t.children[1].children[0].leafcount, 3)
+        self.assertEquals(t.children[1].children[1].leafcount, 5)
+
+
     def test_from_tree(self):
-        t = ToyModel.from_tree(self.tree)
-        self.assertEqual(t.__class__, ToyModel)
+        t = Tree.from_tree(self.tree)
+        self.assertEqual(t.__class__, Tree)
 
     def test_coords(self):
-        t = ToyModel.from_tree(self.tree)
+        t = Tree.from_tree(self.tree)
 
         edge_exp = pd.DataFrame({'0': ['0', 'y11', 408.3850804246091, 240.10442497874831, 
                                         474.82749197370902, 283.25263154908782],
@@ -127,12 +113,12 @@ class TestUnrootedRadial(unittest.TestCase):
         pdt.assert_frame_equal(edge_exp, edge_res)
 
     def test_rescale(self):
-        t = ToyModel.from_tree(self.tree)
+        t = Tree.from_tree(self.tree)
         self.assertAlmostEqual(t.rescale(500, 500), 79.223492618646006,
                                places=5)
 
     def test_update_coordinates(self):
-        t = ToyModel.from_tree(self.tree)
+        t = Tree.from_tree(self.tree)
         exp = pd.DataFrame([(-0.59847214410395655, -1.6334372886412185),
                             (-0.99749498660405445, -0.76155647142658189),
                             (1.0504174348855488, 0.34902579063315775),
