@@ -1,12 +1,13 @@
 import abc
 from collections import namedtuple
-from skbio import TreeNode
+from skbio import TreeNode, DistanceMatrix
 import pandas as pd
 import numpy as np
 from skbio import read
 import networkx as nx
 from Bio import Phylo
 from flask import Flask
+from scipy.cluster.hierarchy import complete
 
 
 # TODO: call POST routes in viewer after every update of model
@@ -686,8 +687,15 @@ MODEL_PORT = 9001
 VIEW_PORT = 9002
 LOCALHOST = '127.0.0.1'
 
-m = Model()
-    
+np.random.seed(0)
+x = np.random.rand(10)
+dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))
+lm = complete(dm.condensed_form())
+ids = np.arange(len(x)).astype(np.str)
+tree = TreeNode.from_linkage_matrix(lm, ids)
+m = Model(tree)
+
+
 # Set up REST API for model
 app = Flask(__name__)
     
