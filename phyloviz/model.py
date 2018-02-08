@@ -96,7 +96,7 @@ def read(file_name, file_format='newick'):
     pass
 
 class Tree(TreeNode):
-        """ 
+        """
         Parameters
         ----------
         use_lengths: bool
@@ -211,7 +211,7 @@ class Tree(TreeNode):
                     Name of parent
                 px : float
                     x-coorinate of parent
-                py: float 
+                py: float
                     y-coordinate of parent
             """
 
@@ -676,8 +676,8 @@ class Model(object):
 
         """
         pass
-        
-    
+
+
     def retrive_view_coords(self):
         return (self.node_metadata,self.edge_metadata)
 
@@ -697,7 +697,7 @@ m = Model(tree)
 
 # Set up REST API for model
 app = Flask(__name__)
-    
+
 @app.route('/', methods=['GET'])
 def hello_world():
     return "hello world!"
@@ -707,15 +707,15 @@ def get_nodes():
     """ Returns node metadata dataframe as a json object
     with index orientation by default.
     """
-    return m.node_metadata.to_json(orient='index')
+    return m.node_metadata.to_json(orient='records')
 
 
 @app.route('/edges', methods=['GET'])
 def get_edges():
-    """ Returns edge metadata dataframe as a json object 
+    """ Returns edge metadata dataframe as a json object
     with index orientation by default.
     """
-    return m.edge_metadata.to_json(orient='index')
+    return m.edge_metadata.to_json(orient='records')
 
 # Run Flask app
 if __name__ == '__main__':
