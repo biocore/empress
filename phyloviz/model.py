@@ -9,6 +9,8 @@ from Bio import Phylo
 from flask import Flask
 from scipy.cluster.hierarchy import complete
 
+from tornado.web import RequestHandler
+
 # TODO: call POST routes in viewer after every update of model
 
 def read(file_name, file_format='newick'):
@@ -694,29 +696,40 @@ ids = np.arange(len(x)).astype(np.str)
 tree = TreeNode.from_linkage_matrix(lm, ids)
 m = Model(tree)
 
+class ModelHandler(RequestHandler):
+    def get(self):
+        self.write({'hello':'world'})
+        self.finish()
 
-# Set up REST API for model
-app = Flask(__name__)
+class NodeHandler(RequestHandler):
+    def get(self):
+        nodes = m.node_metadata.to_json(orient='records')
+        edges = m.edge_metadata.to_json(orient='records')
+        self.render('tree.html', node_coords=nodes,
+                     edge_coords=edges)
 
-@app.route('/', methods=['GET'])
-def hello_world():
-    return "hello world!"
+# # Set up REST API for model
+# app = Flask(__name__)
 
-@app.route('/nodes', methods=['GET'])
-def get_nodes():
-    """ Returns node metadata dataframe as a json object
-    with index orientation by default.
-    """
-    return m.node_metadata.to_json(orient='records')
+# @app.route('/', methods=['GET'])
+# def hello_world():
+#     return "hello world!"
+
+# @app.route('/nodes', methods=['GET'])
+# def get_nodes():
+#     """ Returns node metadata dataframe as a json object
+#     with index orientation by default.
+#     """
+#     return m.node_metadata.to_json(orient='records')
 
 
-@app.route('/edges', methods=['GET'])
-def get_edges():
-    """ Returns edge metadata dataframe as a json object
-    with index orientation by default.
-    """
-    return m.edge_metadata.to_json(orient='records')
+# @app.route('/edges', methods=['GET'])
+# def get_edges():
+#     """ Returns edge metadata dataframe as a json object
+#     with index orientation by default.
+#     """
+#     return m.edge_metadata.to_json(orient='records')
 
 # Run Flask app
-if __name__ == '__main__':
-    app.run(host=LOCALHOST, port=MODEL_PORT, debug=True)
+# if __name__ == '__main__':
+#     app.run(host=LOCALHOST, port=MODEL_PORT, debug=True)
