@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Tree Example</title>
+
+    <style>
+	
+	.node {
+	    fill: #ccc;
+	    stroke: #fff;
+	    stroke-width: 2px;
+	}
+
+	.link {
+	  stroke: #777;
+	  stroke-width: 2px;
+	}
+	
+    </style>
+
+  </head>
+
+  <body>
+
+<!-- load the d3.js library -->	
+<script src="https://d3js.org/d3-collection.v1.min.js"></script>
+<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+	
+<script>
+
+   
+    var url = "http://127.0.0.1/nodes"
+    
+    //d3.json(url, function(error, json) {
+     
+    //var treeNodes = JSON.parse(json)
+    //alert(treeNodes)
+    //alert("end")
+    //});
+    //d3.json(url).then(funcion(res){console.log(res);})
+    d3.request(url)
+    .mimeType("application/json")
+    .response(function(xhr) { return JSON.parse(xhr.responseText); })
+    .get(callback);
+        .get(function(err,json){
+            alert(json)
+            alert("inside")
+        })
+   
+
+	var svg = d3.select("body")
+		.append("svg")
+		.attr("width", 500)
+		.attr("height", 500);
+
+	var line = svg.selectAll("line")
+		.data(edges)
+		.enter().append("line")
+		.attr("x1", function(d) {return d.px; })
+		.attr("y1", function(d) {return d.py })
+		.attr("x2", function(d) {return d.x })
+		.attr("y2", function(d) {return d.y })
+		.attr("stroke", "gray")
+		.attr("stroke-width", 5);
+
+
+	var circle = svg.selectAll("circle")
+		.data(treeNodes)
+		.enter().append("circle")
+		.attr("cx", function(d) { return d.x; })
+		.attr("cy", function(d) { return d.y; })
+		.attr("r",function(d) { return 10; });
+
+	</script>
+</body>
+</html>
+
+	
