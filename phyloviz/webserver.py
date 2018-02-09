@@ -1,14 +1,14 @@
 import tornado
-from model import ModelHandler, NodeHandler
+from model import ModelHandler, IndexHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 
 class Application(tornado.web.Application):
     def __init__(self):
         # dirpath = dirname(__file__)
-        handlers = [(r"/", ModelHandler),
-                    (r"/nodes", NodeHandler)
-                    ]
+        handlers = [(r"/", IndexHandler),
+                    (r"/nodes", ModelHandler)
+                   ]
 
 
         settings = {
