@@ -694,17 +694,25 @@ dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))
 lm = complete(dm.condensed_form())
 ids = np.arange(len(x)).astype(np.str)
 tree = TreeNode.from_linkage_matrix(lm, ids)
-m = Model(tree)
 
-class ModelHandler(RequestHandler):
+# initialize tree with branch length and named internal nodes
+for i, n in enumerate(tree.postorder(include_self=True)):
+    n.length = 1
+    if not n.is_tip():
+        n.name = "y%d" % i
+
+m = Tree.from_tree(tree)
+nodeM, edgeM = m.coords(500,500)
+
+class IndexHandler(RequestHandler):
     def get(self):
         self.write({'hello':'world'})
         self.finish()
 
-class NodeHandler(RequestHandler):
+class ModelHandler(RequestHandler):
     def get(self):
-        nodes = m.node_metadata.to_json(orient='records')
-        edges = m.edge_metadata.to_json(orient='records')
+        nodes = nodeM.to_json(orient='records')
+        edges = edgeM.to_json(orient='records')
         self.render('tree.html', node_coords=nodes,
                      edge_coords=edges)
 
