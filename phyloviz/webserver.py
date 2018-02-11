@@ -21,4 +21,5 @@ if __name__ == '__main__':
     http_server = HTTPServer(Application())
     http_server.listen(8080)
     ioloop = IOLoop.instance()
+    print("server started at port 8080")
     ioloop.start()
