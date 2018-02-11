@@ -689,7 +689,7 @@ class Model(object):
 
 
 
-tree = read('/root/Github/phyloviz/phyloviz/TreeOfLife.nwk','newick')
+tree = read('./TreeOfLife.nwk','newick')
 m = Model(tree)
 nodeM, edgeM = m.retrive_view_coords()
 
