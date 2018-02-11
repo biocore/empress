@@ -9,6 +9,8 @@ from Bio import Phylo
 from flask import Flask
 from scipy.cluster.hierarchy import complete
 
+from tornado.web import RequestHandler
+
 # TODO: call POST routes in viewer after every update of model
 
 def read(file_name, file_format='newick'):
@@ -96,7 +98,7 @@ def read(file_name, file_format='newick'):
     pass
 
 class Tree(TreeNode):
-        """ 
+        """
         Parameters
         ----------
         use_lengths: bool
@@ -211,7 +213,7 @@ class Tree(TreeNode):
                     Name of parent
                 px : float
                     x-coorinate of parent
-                py: float 
+                py: float
                     y-coordinate of parent
             """
 
@@ -676,8 +678,8 @@ class Model(object):
 
         """
         pass
-        
-    
+
+
     def retrive_view_coords(self):
         return (self.node_metadata,self.edge_metadata)
 
@@ -692,31 +694,50 @@ dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))
 lm = complete(dm.condensed_form())
 ids = np.arange(len(x)).astype(np.str)
 tree = TreeNode.from_linkage_matrix(lm, ids)
-m = Model(tree)
+
+# initialize tree with branch length and named internal nodes
+for i, n in enumerate(tree.postorder(include_self=True)):
+    n.length = 1
+    if not n.is_tip():
+        n.name = "y%d" % i
+
+m = Tree.from_tree(tree)
+nodeM, edgeM = m.coords(500,500)
+
+class IndexHandler(RequestHandler):
+    def get(self):
+        self.write({'hello':'world'})
+        self.finish()
+
+class ModelHandler(RequestHandler):
+    def get(self):
+        nodes = nodeM.to_json(orient='records')
+        edges = edgeM.to_json(orient='records')
+        self.render('tree.html', node_coords=nodes,
+                     edge_coords=edges)
+
+# # Set up REST API for model
+# app = Flask(__name__)
+
+# @app.route('/', methods=['GET'])
+# def hello_world():
+#     return "hello world!"
+
+# @app.route('/nodes', methods=['GET'])
+# def get_nodes():
+#     """ Returns node metadata dataframe as a json object
+#     with index orientation by default.
+#     """
+#     return m.node_metadata.to_json(orient='records')
 
 
-# Set up REST API for model
-app = Flask(__name__)
-    
-@app.route('/', methods=['GET'])
-def hello_world():
-    return "hello world!"
-
-@app.route('/nodes', methods=['GET'])
-def get_nodes():
-    """ Returns node metadata dataframe as a json object
-    with index orientation by default.
-    """
-    return m.node_metadata.to_json(orient='index')
-
-
-@app.route('/edges', methods=['GET'])
-def get_edges():
-    """ Returns edge metadata dataframe as a json object 
-    with index orientation by default.
-    """
-    return m.edge_metadata.to_json(orient='index')
+# @app.route('/edges', methods=['GET'])
+# def get_edges():
+#     """ Returns edge metadata dataframe as a json object
+#     with index orientation by default.
+#     """
+#     return m.edge_metadata.to_json(orient='records')
 
 # Run Flask app
-if __name__ == '__main__':
-    app.run(host=LOCALHOST, port=MODEL_PORT, debug=True)
+# if __name__ == '__main__':
+#     app.run(host=LOCALHOST, port=MODEL_PORT, debug=True)

@@ -24,33 +24,31 @@
 
   <body>
 
-<!-- load the d3.js library -->	
+<!-- load the d3.js library -->
+		
+		
 <script src="https://d3js.org/d3-collection.v1.min.js"></script>
 <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
 <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
-	
+<script src="https://d3js.org/d3-request.v1.min.js"></script>
+
+		
 <script>
 
-   
-    var url = "http://127.0.0.1/nodes"
-    
-    //d3.json(url, function(error, json) {
-     
-    //var treeNodes = JSON.parse(json)
-    //alert(treeNodes)
-    //alert("end")
-    //});
-    //d3.json(url).then(funcion(res){console.log(res);})
-    d3.request(url)
-    .mimeType("application/json")
-    .response(function(xhr) { return JSON.parse(xhr.responseText); })
-    .get(callback);
-        .get(function(err,json){
-            alert(json)
-            alert("inside")
-        })
-   
+   var nodeurl = "http://127.0.0.1:9001/nodes"
+   var edgeurl = "http://127.0.0.1:9001/edges"
+   var treeNodes
+   var edges
+   d3.json(nodeurl,function(err,json){
+     alert(json)
+     treeNodes = json
 
+   })   
+   d3.json(edgeurl,function(err,json){
+     edges = json
+
+   })   
+    
 	var svg = d3.select("body")
 		.append("svg")
 		.attr("width", 500)
