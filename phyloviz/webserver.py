@@ -7,7 +7,7 @@ class Application(tornado.web.Application):
     def __init__(self):
         # dirpath = dirname(__file__)
         handlers = [(r"/", IndexHandler),
-                    (r"/nodes", ModelHandler)
+                    (r"/view", ModelHandler)
                    ]
 
 
