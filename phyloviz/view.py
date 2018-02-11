@@ -5,34 +5,9 @@ import matplotlib.pyplot as plt
 from flask import Flask
 from flask import request
 
-# Constants for REST API
-MODEL_PORT = '9001'
-VIEW_PORT = '9002'
-LOCALHOST = '127.0.0.1'
-
-# Set up REST API for view
-app = Flask(__name__)
-
-@app.route('/nodes', methods=['POST'])
-def post_nodes():
-    """ Updates the node metadata of viewer object 
-    by parsing the json object with index orientation.
-    """
-    node_json = request.get_json()
-    self.node_metadata = pd.read_json(node_json, orient='index')
-
-
-@app.route('/edges', methods=['POST'])
-def post_nodes():
-    """ Updates the edge metadata of viewer object
-    by parsing the json object with index orientation
-    """
-    edge_json = request.get_json()
-    self.edge_metadata = pd.read_json(edge_json, orient='index')
-
-def plot(node_metadata, edge_metadata, 
-              node_color=None, node_size=None, 
-              node_alpha=None, edge_color=None, 
+def plot(node_metadata, edge_metadata,
+              node_color=None, node_size=None,
+              node_alpha=None, edge_color=None,
               edge_width=None, edge_alpha=None):
     """ Plot the tree with the given dataframe of coordinates of points
 
@@ -52,19 +27,19 @@ def plot(node_metadata, edge_metadata,
         Name of column in `node_metadata` to plot node colors.
         If None, all nodes will be colored black.
     node_size : str
-        Name of column in `node_metadata` to resize the nodes.  
+        Name of column in `node_metadata` to resize the nodes.
         If None, all nodes will be 10.
     node_alpha : str
-        Name of column in `node_metadata` to specify transparency of nodes.  
+        Name of column in `node_metadata` to specify transparency of nodes.
         If None, the nodes won't be transparent.
     edge_color : str
-        Name of column in `edge_metadata` to plot edge colors.  
+        Name of column in `edge_metadata` to plot edge colors.
         If None, all edges will be colored black.
     edge_size : str
-        Name of column in `edge_metadata` to resize the nodes.  
+        Name of column in `edge_metadata` to resize the nodes.
         If None, all edge will have a width of 1.
     edge_alpha : str
-        Name of column in `edge_metadata` to specify transparency of edges.  
+        Name of column in `edge_metadata` to specify transparency of edges.
         If None, all edges won't be transparent.
     ax : matplotlib.axes.Axes
          optional matplotlib axes object
@@ -120,7 +95,7 @@ app = Flask(__name__)
 
 @app.route('/nodes', methods=['POST'])
 def post_nodes():
-    """ Updates the node metadata of viewer object 
+    """ Updates the node metadata of viewer object
     by parsing the json object with index orientation.
     """
     node_json = request.get_json()
