@@ -380,7 +380,7 @@ class Model(object):
         """
         self.tree = Tree.from_tree(tree)
         if node_metadata is None and edge_metadata is None:
-            self.node_metadata, self.edge_metadata = self.tree.coords(500,500)
+            self.node_metadata, self.edge_metadata = self.tree.coords(700,1000)
         else:
             self.node_metadata = node_metadata
             self.edge_metadata = edge_metadata
@@ -687,27 +687,12 @@ class Model(object):
     def retrive_view_coords(self):
         return (self.node_metadata,self.edge_metadata)
 
-# Constants for REST API
-MODEL_PORT = 9001
-VIEW_PORT = 9002
-LOCALHOST = '127.0.0.1'
 
-np.random.seed(0)
-x = np.random.rand(10)
-dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))
-lm = complete(dm.condensed_form())
-ids = np.arange(len(x)).astype(np.str)
-tree = TreeNode.from_linkage_matrix(lm, ids)
-
-# initialize tree with branch length and named internal nodes
-for i, n in enumerate(tree.postorder(include_self=True)):
-    n.length = 1
-    if not n.is_tip():
-        n.name = "y%d" % i
 
 tree = read('/root/Github/phyloviz/phyloviz/TreeOfLife.nwk','newick')
-m = Tree.from_tree(tree)
-nodeM, edgeM = m.coords(1080,1920)
+m = Model(tree)
+nodeM, edgeM = m.retrive_view_coords()
+
 class IndexHandler(RequestHandler):
     def get(self):
         self.write({'hello':'world'})
