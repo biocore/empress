@@ -8,8 +8,6 @@ import networkx as nx
 from Bio import Phylo
 from scipy.cluster.hierarchy import complete
 
-from tornado.web import RequestHandler
-
 # TODO: call POST routes in viewer after every update of model
 
 def read(file_name, file_format='newick'):
