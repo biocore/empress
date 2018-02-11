@@ -1,5 +1,6 @@
 import model
 from model import Model
+from tornado.web import RequestHandler
 
 tree = model.read('./TreeOfLife.nwk','newick')
 m = Model(tree)
@@ -16,6 +17,15 @@ class ModelHandler(RequestHandler):
         edges = edgeM.to_json(orient='records')
         self.render('tree.html', node_coords=nodes,
                      edge_coords=edges)
+class NodeHandler(RequestHandler):
+    def get(self):
+        nodes = nodeM.to_json(orient='records')
+        self.write(nodes)
+
+class EdgeHandler(RequestHandler):
+    def get(self):
+        edges = edgeM.to_json(orient='records')
+        self.write(edges)
 
 # # Set up REST API for model
 # app = Flask(__name__)
