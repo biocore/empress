@@ -3,7 +3,7 @@ from collections import namedtuple
 from skbio import TreeNode, DistanceMatrix
 import pandas as pd
 import numpy as np
-from skbio import read
+import skbio
 import networkx as nx
 from Bio import Phylo
 from flask import Flask
@@ -43,20 +43,23 @@ def read(file_name, file_format='newick'):
 
     if file_format == 'newick':
         # create tree from newick file
-        tree = read( file_name, file_format, into=TreeNode)
+        tree = skbio.read( file_name, file_format, into=TreeNode)
 
+        return tree
+    
+    return None
         # create node_metadata data frame
-        for node in tree.preorder():
+        #for node in tree.preorder():
 	    # add each node as a new row of node_metadata
 	    # where is the rest of the metadata coming from?
-            pass
+        #    pass
 
         # create edge_meta_data data frame
-        for node in tree.preorder():
+        #for node in tree.preorder():
 	    # add edge ( node, parent ) to edge_metadata
-            pass
+        #    pass
 
-    elif file_format == 'phyloxml':
+    #elif file_format == 'phyloxml':
         # There is a a package in ete3 for phyloxml as well
         # This is using biopython
         # function read if there is one tree in the file
@@ -64,7 +67,7 @@ def read(file_name, file_format='newick'):
         # It can also read newick format and also convert bewteen supported
         # format
         #trees = Phylo.parse(file_name,file_format)
-        tree = Phylo.read(file_name, file_format)
+    ''' tree = Phylo.read(file_name, file_format)
         for clade in tree.find_clades():
             # Get the information about the clade into the dataframe
             pass
@@ -95,7 +98,8 @@ def read(file_name, file_format='newick'):
         # return error message file format cannot be parsed
         pass
 
-    pass
+    #pass
+    '''
 
 class Tree(TreeNode):
         """
@@ -701,9 +705,9 @@ for i, n in enumerate(tree.postorder(include_self=True)):
     if not n.is_tip():
         n.name = "y%d" % i
 
+tree = read('/root/Github/phyloviz/phyloviz/TreeOfLife.nwk','newick')
 m = Tree.from_tree(tree)
-nodeM, edgeM = m.coords(500,500)
-
+nodeM, edgeM = m.coords(1080,1920)
 class IndexHandler(RequestHandler):
     def get(self):
         self.write({'hello':'world'})
