@@ -1,5 +1,5 @@
 import tornado
-from model import ModelHandler, IndexHandler
+from controller import ModelHandler, IndexHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 
