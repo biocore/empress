@@ -3,6 +3,7 @@ from controller import ModelHandler, IndexHandler, NodeHandler, EdgeHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 
+
 class Application(tornado.web.Application):
     def __init__(self):
         # dirpath = dirname(__file__)
@@ -10,13 +11,13 @@ class Application(tornado.web.Application):
                     (r"/view", ModelHandler),
                     (r"/api/nodes", NodeHandler),
                     (r"/api/edges", EdgeHandler)
-                   ]
-
+                    ]
 
         settings = {
             "debug": True
         }
         tornado.web.Application.__init__(self, handlers, **settings)
+
 
 if __name__ == '__main__':
     # Create the webserver
