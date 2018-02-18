@@ -4,8 +4,7 @@ from skbio import TreeNode, DistanceMatrix
 import pandas as pd
 import numpy as np
 import skbio
-import networkx as nx
-from Bio import Phylo
+#from Bio import Phylo
 from scipy.cluster.hierarchy import complete
 
 # TODO: call POST routes in viewer after every update of model
