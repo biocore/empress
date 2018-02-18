@@ -2,13 +2,12 @@ import pandas as pd
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
-from flask import Flask
-from flask import request
+
 
 def plot(node_metadata, edge_metadata,
-              node_color=None, node_size=None,
-              node_alpha=None, edge_color=None,
-              edge_width=None, edge_alpha=None):
+         node_color=None, node_size=None,
+         node_alpha=None, edge_color=None,
+         edge_width=None, edge_alpha=None):
     """ Plot the tree with the given dataframe of coordinates of points
 
     We are now plotting with matplotlib
@@ -83,34 +82,3 @@ def color_nodes(node_metadata, color_column='Disease_Type'):
     ...
     """
     pass
-
-# Constants for REST API
-MODEL_PORT = 9001
-VIEW_PORT = 9002
-LOCALHOST = '127.0.0.1'
-
-# Set up REST API for view
-app = Flask(__name__)
-
-
-@app.route('/nodes', methods=['POST'])
-def post_nodes():
-    """ Updates the node metadata of viewer object
-    by parsing the json object with index orientation.
-    """
-    node_json = request.get_json()
-    node_metadata = pd.read_json(node_json, orient='index')
-
-
-@app.route('/edges', methods=['POST'])
-def post_edges():
-    """ Updates the edge metadata of viewer object
-    by parsing the json object with index orientation
-    """
-    edge_json = request.get_json()
-    edge_metadata = pd.read_json(edge_json, orient='index')
-
-
-# Run Flask app
-if __name__ == '__main__':
-    app.run(host=LOCALHOST, port=VIEW_PORT, debug=True)
