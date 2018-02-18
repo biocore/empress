@@ -18,7 +18,8 @@ import pandas.util.testing as pdt
 
 class TestDendrogram(unittest.TestCase):
 
-    def setUp(self):
+    def mock_random_tree(self):
+
         np.random.seed(0)
         x = np.random.rand(10)
         dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))
@@ -31,6 +32,10 @@ class TestDendrogram(unittest.TestCase):
             n.length = 1
             if not n.is_tip():
                 n.name = "y%d" % i
+    
+    def mock_tree_from_nwk(self):
+        
+    def setUp(self):
 
     def test_cache_ntips(self):
 

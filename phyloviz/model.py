@@ -119,7 +119,7 @@ class Tree(TreeNode):
         `depth` is the number of nodes found in the longest path.
         """
 
-        def __init__(self, use_lengths=True, **kwargs):
+        def __init__(self, use_lengths=False, **kwargs):
             """ Constructs a Dendrogram object for visualization.
             """
             super().__init__(**kwargs)
