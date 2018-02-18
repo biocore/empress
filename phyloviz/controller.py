@@ -2,7 +2,34 @@ import model
 from model import Model
 from tornado.web import RequestHandler
 
-tree = model.read('./TreeOfLife.nwk','newick')
+import sys
+sys.path.append("../..")
+import numpy as np
+import pandas as pd
+from skbio import DistanceMatrix, TreeNode
+from scipy.cluster.hierarchy import ward,complete
+
+
+# tree = TreeNode.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
+
+# tree = model.read('./TreeOfLife.nwk','newick')
+
+tree = model.read('./astral.MR.rooted.nid.nosup.nwk','newick')
+
+
+# np.random.seed(0)
+# x = np.random.rand(10)
+# dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))
+# lm = complete(dm.condensed_form())
+# ids = np.arange(len(x)).astype(np.str)
+# tree = TreeNode.from_linkage_matrix(lm, ids)
+
+# # initialize tree with branch length and named internal nodes
+# for i, n in enumerate(tree.postorder(include_self=True)):
+#     n.length = 1
+#     if not n.is_tip():
+#         n.name = "y%d" % i
+
 m = Model(tree)
 nodeM, edgeM = m.retrive_view_coords()
 
