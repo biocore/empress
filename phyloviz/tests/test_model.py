@@ -25,19 +25,21 @@ class TestDendrogram(unittest.TestCase):
         dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x - y))
         lm = complete(dm.condensed_form())
         ids = np.arange(len(x)).astype(np.str)
-        self.tree = TreeNode.from_linkage_matrix(lm, ids)
+        tree = TreeNode.from_linkage_matrix(lm, ids)
 
         # initialize tree with branch length and named internal nodes
-        for i, n in enumerate(self.tree.postorder(include_self=True)):
+        for i, n in enumerate(tree.postorder(include_self=True)):
             n.length = 1
             if not n.is_tip():
                 n.name = "y%d" % i
     
+        return tree
     def mock_tree_from_nwk(self):
-        self.tree2 = TreeNode.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
+        return TreeNode.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
+    
     def setUp(self):
-        mock_tree_from_nwk()
-        mock_random_tree()
+        self.tree2 = self.mock_tree_from_nwk()
+        self.tree1 = self.mock_random_tree()
     def test_cache_ntips_random_tree(self):
 
         t = Tree.from_tree(self.tree1)
