@@ -10,10 +10,7 @@
 
 from setuptools import find_packages, setup
 
-
-extensions = [
-]
-
+extensions = []
 
 classes = """
     Development Status :: 4 - Beta
@@ -34,33 +31,32 @@ description = ('Phylogenetic visualizations')
 with open('README.md') as f:
     long_description = f.read()
 
-
 # version parsing from __init__ pulled from Flask's setup.py
 # https://github.com/mitsuhiko/flask/blob/master/setup.py
 version = "0.0.1"
 
-setup(name='phyloviz',
-      version=version,
-      license='BSD',
-      description=description,
-      long_description=long_description,
-      author="phyloviz development team",
-      author_email="jamietmorton@gmail.com",
-      maintainer="phyloviz development team",
-      maintainer_email="jamietmorton@gmail.com",
-      packages=find_packages(),
-      setup_requires=['numpy >= 1.9.2'],
-      ext_modules=extensions,
-      install_requires=[
-          'IPython >= 3.2.0',
-          'matplotlib >= 1.4.3',
-          'numpy >= 1.9.2',
-          'pandas >= 0.18.0',
-          'scipy >= 0.15.1',
-          'nose >= 1.3.7',
-          'scikit-bio==0.5.1',
-      ],
-      classifiers=classifiers,
-      package_data={
-          },
-      )
+setup(
+    name='phyloviz',
+    version=version,
+    license='BSD',
+    description=description,
+    long_description=long_description,
+    author="phyloviz development team",
+    author_email="jamietmorton@gmail.com",
+    maintainer="phyloviz development team",
+    maintainer_email="jamietmorton@gmail.com",
+    packages=find_packages(),
+    setup_requires=['numpy >= 1.9.2'],
+    ext_modules=extensions,
+    install_requires=[
+        'IPython >= 3.2.0',
+        'matplotlib >= 1.4.3',
+        'numpy >= 1.9.2',
+        'pandas >= 0.18.0',
+        'scipy >= 0.15.1',
+        'nose >= 1.3.7',
+        'scikit-bio==0.5.1',
+    ],
+    classifiers=classifiers,
+    package_data={},
+)

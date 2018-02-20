@@ -2,20 +2,18 @@ import model
 from model import Model
 from tornado.web import RequestHandler
 
-import sys
-sys.path.append("../..")
-import numpy as np
-import pandas as pd
-from skbio import DistanceMatrix, TreeNode
-from scipy.cluster.hierarchy import ward,complete
-
+# import sys
+# sys.path.append("../..")
+# import numpy as np
+# import pandas as pd
+# from skbio import DistanceMatrix, TreeNode
+# from scipy.cluster.hierarchy import ward,complete
 
 # tree = TreeNode.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
 
 # tree = model.read('./TreeOfLife.nwk','newick')
 
-tree = model.read('./astral.MR.rooted.nid.nosup.nwk','newick')
-
+tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
 
 # np.random.seed(0)
 # x = np.random.rand(10)
@@ -33,26 +31,31 @@ tree = model.read('./astral.MR.rooted.nid.nosup.nwk','newick')
 m = Model(tree)
 nodeM, edgeM = m.retrive_view_coords()
 
+
 class IndexHandler(RequestHandler):
     def get(self):
-        self.write({'hello':'world'})
+        self.write({'hello': 'world'})
         self.finish()
+
 
 class ModelHandler(RequestHandler):
     def get(self):
         nodes = nodeM.to_json(orient='records')
         edges = edgeM.to_json(orient='records')
-        self.render('tree.html', node_coords=nodes,
-                     edge_coords=edges)
+        self.render('tree.html', node_coords=nodes, edge_coords=edges)
+
+
 class NodeHandler(RequestHandler):
     def get(self):
         nodes = nodeM.to_json(orient='records')
         self.write(nodes)
 
+
 class EdgeHandler(RequestHandler):
     def get(self):
         edges = edgeM.to_json(orient='records')
         self.write(edges)
+
 
 # # Set up REST API for model
 # app = Flask(__name__)
@@ -67,7 +70,6 @@ class EdgeHandler(RequestHandler):
 #     with index orientation by default.
 #     """
 #     return m.node_metadata.to_json(orient='records')
-
 
 # @app.route('/edges', methods=['GET'])
 # def get_edges():
