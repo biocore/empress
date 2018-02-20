@@ -7,7 +7,6 @@ import skbio
 #from Bio import Phylo
 from scipy.cluster.hierarchy import complete
 
-# TODO: call POST routes in viewer after every update of model
 
 def read(file_name, file_format='newick'):
     """ Reads in contents from a file.
@@ -39,30 +38,29 @@ def read(file_name, file_format='newick'):
 
     if file_format == 'newick':
         # create tree from newick file
-        tree = skbio.read( file_name, file_format, into=TreeNode)
+        tree = skbio.read(file_name, file_format, into=TreeNode)
 
         return tree
 
-    return None
         # create node_metadata data frame
-        #for node in tree.preorder():
-	    # add each node as a new row of node_metadata
-	    # where is the rest of the metadata coming from?
+        # for node in tree.preorder():
+        # add each node as a new row of node_metadata
+        # where is the rest of the metadata coming from?
         #    pass
 
         # create edge_meta_data data frame
-        #for node in tree.preorder():
-	    # add edge ( node, parent ) to edge_metadata
+        # for node in tree.preorder():
+        # add edge ( node, parent ) to edge_metadata
         #    pass
 
-    #elif file_format == 'phyloxml':
+    # elif file_format == 'phyloxml':
         # There is a a package in ete3 for phyloxml as well
         # This is using biopython
         # function read if there is one tree in the file
         # function parse if there are multiple trees in the file
         # It can also read newick format and also convert bewteen supported
         # format
-        #trees = Phylo.parse(file_name,file_format)
+        # trees = Phylo.parse(file_name,file_format)
     ''' tree = Phylo.read(file_name, file_format)
         for clade in tree.find_clades():
             # Get the information about the clade into the dataframe
@@ -79,7 +77,7 @@ def read(file_name, file_format='newick'):
         # get lists of attributes in graph
         # TODO: attributes object
 
-        # create all attributes as pandas dataframe (self.node_metadata) columns
+        # create all attributes as pd dataframe (self.node_metadata) columns
         # TODO:
 
         # iterate through all attributes
@@ -87,7 +85,8 @@ def read(file_name, file_format='newick'):
             cur_attribute = nx.get_node_attributes(G, a);
             # iterate through networkx graph and create node_metadata
             for n in G:
-                # TODO: set self.node_metadata's n's attribute to be cur_attribute[n]
+                # TODO: set self.node_metadata's n's attribute to be
+                #       cur_attribute[n]
                 pass
 
     else:
@@ -96,6 +95,8 @@ def read(file_name, file_format='newick'):
 
     #pass
     '''
+    return None
+
 
 class Tree(TreeNode):
         """
@@ -179,7 +180,6 @@ class Tree(TreeNode):
                 self.height = self.length
                 self.leafcount = self.edgecount = 1
 
-
         def coords(self, height, width):
             """ Returns coordinates of nodes to be rendered in plot.
             Parameters
@@ -217,36 +217,36 @@ class Tree(TreeNode):
                     y-coordinate of parent
             """
 
-            #calculates coordinates of all nodes
+            # calculates coordinates of all nodes
             self.rescale(width, height)
 
-            #Node metadata
+            # Node metadata
             nodeData = {}
             for node in self.postorder():
-                nId = {'Node id' : node.name}
+                nId = {'Node id': node.name}
                 coords = {'x': node.x2, 'y': node.y2}
-                nodeData[node.name] = { **nId, **coords}
+                nodeData[node.name] = {**nId, **coords}
 
-            #edge metadata
+            # edge metadata
             edgeData = {}
             for node in self.postorder():
-                pId = {'Parent id' : node.name}
+                pId = {'Parent id': node.name}
                 pCoords = {'px': node.x2, 'py': node.y2}
                 for child in node.children:
-                    nId = {'Node id' : child.name}
+                    nId = {'Node id': child.name}
                     coords = {'x': child.x2, 'y': child.y2}
                     edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
 
-            #convert to pd.DataFrame
+            # convert to pd.DataFrame
             nodeMeta = pd.DataFrame(nodeData).T
             edgeMeta = pd.DataFrame(edgeData).T
 
-            return (nodeMeta,edgeMeta)
+            return (nodeMeta, edgeMeta)
 
         def rescale(self, width, height):
             """ Find best scaling factor for fitting the tree in the figure.
-            This method will find the best orientation and scaling possible
-            to fit the tree within the dimensions specified by width and height.
+            This method will find the best orientation and scaling possible to
+            fit the tree within the dimensions specified by width and height.
             Parameters
             ----------
             width : float
@@ -318,11 +318,12 @@ class Tree(TreeNode):
 
             points = []
 
-            #calculates self coords/angle
+            # calculates self coords/angle
             # Constant angle algorithm.  Should add maximum daylight step.
             x2 = x1 + self.length * s * np.sin(a)
             y2 = y1 + self.length * s * np.cos(a)
-            (self.x1, self.y1, self.x2, self.y2, self.angle) = (x1,y1, x2,y2,a)
+            (self.x1, self.y1, self.x2, self.y2, self.angle) = (x1, y1, x2, y2,
+                                                                a)
             # TODO: Add functionality that allows for collapsing of nodes
 
             for node in self.preorder(include_self=False):
@@ -330,8 +331,8 @@ class Tree(TreeNode):
                 y1 = node.parent.y2
                 a = node.parent.angle
 
-                #calculates 'a'
-                a = a - node.parent.leafcount*da /2
+                # calculates 'a'
+                a = a - node.parent.leafcount*da / 2
                 for sib in node.parent.children:
                     if sib != node:
                         a = a + sib.leafcount*da
@@ -341,16 +342,17 @@ class Tree(TreeNode):
                 # Constant angle algorithm.  Should add maximum daylight step.
                 x2 = x1 + node.length * s * np.sin(a)
                 y2 = y1 + node.length * s * np.cos(a)
-                (node.x1, node.y1, node.x2, node.y2, node.angle) = (x1,y1, x2,y2,a)
+                (node.x1, node.y1, node.x2, node.y2, node.angle) = (x1, y1, x2,
+                                                                    y2, a)
 
                 # TODO: Add functionality that allows for collapsing of nodes
                 if node.is_tip():
-                    points += [(x2,y2)]
+                    points += [(x2, y2)]
 
             return points
 
-class Model(object):
 
+class Model(object):
 
     def __init__(self, tree,
                  node_metadata=None,
@@ -376,40 +378,41 @@ class Model(object):
         """
         self.tree = Tree.from_tree(tree)
         if node_metadata is None and edge_metadata is None:
-            self.node_metadata, self.edge_metadata = self.tree.coords(700,1000)
+            self.node_metadata, self.edge_metadata = self.tree.coords(700,
+                                                                      1000)
         else:
             self.node_metadata = node_metadata
             self.edge_metadata = edge_metadata
-            #Todo: append coords to node/edge
+            # Todo: append coords to node/edge
 
         # Pipeline
         #   tree -> (layout) -> coords
         #   coords -> (transform?) -> _canvascoords
         #  _canvascoords -> (mask) -> viewcoords
 
-        #Todo: Should we store cords like this?
+        # Todo: Should we store cords like this?
         # This stores information about the coordinates
         # of the nodes.
-        #self.coords = pd.DataFrame()
+        # self.coords = pd.DataFrame()
 
         # viewer coordinates
         # TODO: Will need to think about how to directly
         # translate from coords to viewcoords.
         # maybe represent as a linear transformation
         # with a corresponding mask
-        #self.viewcoords = np.array()
+        # self.viewcoords = np.array()
 
         # These are coordinates scaled to the canvas
-        #self._canvascoords = np.array()
+        # self._canvascoords = np.array()
 
         # Panning. This will subtract from the
         # viewcoords.
-        #self.pan = np.array()
+        # self.pan = np.array()
 
         # Mask specific coordinates not to display.
         # TODO: should this involve the resolution
         # handling?
-        #self.mask = np.array()
+        # self.mask = np.array()
 
     # Coordinate manipulation
     def layout(self, layout_type):
@@ -447,8 +450,6 @@ class Model(object):
         # These are coordinates scaled for viewing
         self.viewcoords = np.array()
 
-
-
         # TODO: These will need to be recomputed.
 
         pass
@@ -468,7 +469,7 @@ class Model(object):
         ----------
         zoom_level : int
            The current zoom level (absolute not relative)
-           We should probably keep small intervals to make the zoom look smooth.
+           We should probably keep small intervals to make the zooming smooth.
 
         Returns
         -------
@@ -572,15 +573,18 @@ class Model(object):
         pass
 
     def zoom(self, level):
-        """ Zooms in/out by remapping the (x1,y1) upper left corner and (x2,y2) lower right corner
-        of the bounding box, and changes view coordinates as well as visibility of nodes.
+        """ Zooms in/out by remapping the (x1,y1) upper left corner and (x2,y2)
+        lower right corner
+        of the bounding box, and changes view coordinates as well as visibility
+        of nodes.
         Updates rendering in the View.
 
         User facing function - may even want to push this to controller
 
         Parameters
         ----------
-        level : amount to zoom, where (-) level represents zooming out and (+) level
+        level : amount to zoom, where (-) level represents zooming out and
+                (+) level
         represents zooming in
 
         Returns
@@ -590,7 +594,6 @@ class Model(object):
 
         """
         pass
-
 
     # Metadata manipulation
     def groupByCategory(metadata, attribute, category):
@@ -655,12 +658,10 @@ class Model(object):
 
         """
 
-
         pass
 
     def uniqueCategories(metadata, attribute):
-        """ Returns all unique metadata categories.
-        This returns all unique metadata categories that belong to the attribute.
+        """ Returns all unique metadata categories that belong to the attribute.
         Parameters
         ----------
         metadata : pd.DataFrame
@@ -674,11 +675,11 @@ class Model(object):
         Returns
         -------
         unique_cat : list
-            A list that contains all of the unique categories within the given attribue.
+            A list that contains all of the unique categories within the given
+            attribute.
 
         """
         pass
-
 
     def retrive_view_coords(self):
         return (self.node_metadata,self.edge_metadata)
