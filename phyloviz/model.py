@@ -1,11 +1,7 @@
-import abc
-from collections import namedtuple
-from skbio import TreeNode, DistanceMatrix
+from skbio import TreeNode
 import pandas as pd
 import numpy as np
 import skbio
-#from Bio import Phylo
-from scipy.cluster.hierarchy import complete
 
 
 def read(file_name, file_format='newick'):
