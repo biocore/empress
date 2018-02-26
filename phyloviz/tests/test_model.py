@@ -225,6 +225,7 @@ class TestDendrogram(unittest.TestCase):
                 'h': ['h', 'i', 278.43341317062595, 302.73109682556259,
                       403.57843531045097, 221.46096919708964]},
                 index=['Node id', 'Parent id', 'px', 'py', 'x', 'y']).T
+
         node_exp = pd.DataFrame(
             {
                 'a': ['a', 83.371774496551481, 292.50834951934343],
@@ -236,7 +237,7 @@ class TestDendrogram(unittest.TestCase):
                 'g': ['g', 215.86090210071345, 343.36616063979909],
                 'h': ['h', 403.57843531045097, 221.46096919708964],
                 'i': ['i', 278.43341317062595, 302.73109682556259]},
-                index=['Node id', 'x', 'y']).T
+            index=['Node id', 'x', 'y']).T
         node_res, edge_res = t.coords(500, 500)
         pdt.assert_frame_equal(node_exp, node_res)
         pdt.assert_frame_equal(edge_exp, edge_res)
