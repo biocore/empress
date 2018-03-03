@@ -54,11 +54,6 @@
 			edges = JSON.parse(JSON.stringify(data));
 		}).then(plot);
 
-		// var nodeJson = "{{node_coords}}";
-		// var edgeJson = "{{edge_coords}}";
-		// var nodes = JSON.parse(nodeJson.replace(/(&quot\;)/g, '"'));
-		// var edges = JSON.parse(edgeJson.replace(/(&quot\;)/g, '"'));
-
 		function plot() {
 			var svg = d3.select("body")
 			.append("svg")
@@ -94,14 +89,11 @@
 		}
 
 		function zoomed() {
+			$.post('http://localhost:8080/zoom', {level : Math.round(d3.event.transform.k)});
+
 			console.log("k " + d3.event.transform.k);
 			console.log("x " + d3.event.transform.x);
 			console.log("y " + d3.event.transform.y);
-		//     context.save();
-		//     context.clearRect(0, 0, width, height);
-		//     context.translate(d3.event.transform.x, d3.event.transform.y);
-		//     context.scale(d3.event.transform.k, d3.event.transform.k);
-		// 	context.restore();
 		}
 
 		</script>

@@ -42,7 +42,7 @@ class ModelHandler(RequestHandler):
     def get(self):
         nodes = nodeM.to_json(orient='records')
         edges = edgeM.to_json(orient='records')
-        self.render('tree.html', node_coords=nodes, edge_coords=edges)
+        self.render('tree.html')
 
 
 class NodeHandler(RequestHandler):
@@ -56,6 +56,12 @@ class EdgeHandler(RequestHandler):
     def get(self):
         edges = edgeM.to_json(orient='records')
         self.write(edges)
+        self.finish()
+
+class ZoomHandler(RequestHandler):
+    def post(self):
+        level = self.get_argument('level')
+        m.zoom(level)
         self.finish()
 
 
