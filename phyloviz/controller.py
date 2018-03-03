@@ -49,12 +49,14 @@ class NodeHandler(RequestHandler):
     def get(self):
         nodes = nodeM.to_json(orient='records')
         self.write(nodes)
+        self.finish()
 
 
 class EdgeHandler(RequestHandler):
     def get(self):
         edges = edgeM.to_json(orient='records')
         self.write(edges)
+        self.finish()
 
 
 # # Set up REST API for model
