@@ -568,7 +568,7 @@ class Model(object):
         """
         pass
 
-    def zoom(self, level):
+    def zoom(self, level, tx, ty):
         """ Zooms in/out by remapping the (x1,y1) upper left corner and (x2,y2)
         lower right corner
         of the bounding box, and changes view coordinates as well as visibility
@@ -589,7 +589,19 @@ class Model(object):
            Rescaled view coordinates
 
         """
-        pass
+        # multiply all coordinates by level/scale
+        self.edge_metadata.x = self.edge_metadata.x * np.float64(level)
+        self.edge_metadata.y = self.edge_metadata.y * np.float64(level)
+        self.edge_metadata.px = self.edge_metadata.px * np.float64(level)
+        self.edge_metadata.py = self.edge_metadata.py *np.float64(level)
+
+        # add all x coordinates by tx
+        self.edge_metadata.x = self.edge_metadata.x + np.float64(tx)
+        self.edge_metadata.px = self.edge_metadata.px + np.float64(tx)
+
+        # add all y coordinates by ty
+        self.edge_metadata.y = self.edge_metadata.y + np.float64(ty)
+        self.edge_metadata.py = self.edge_metadata.py + np.float64(ty)
 
     # Metadata manipulation
     def groupByCategory(metadata, attribute, category):

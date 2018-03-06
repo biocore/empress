@@ -61,7 +61,11 @@ class EdgeHandler(RequestHandler):
 class ZoomHandler(RequestHandler):
     def post(self):
         level = self.get_argument('level')
-        m.zoom(level)
+        tx = self.get_argument('tx')
+        ty = self.get_argument('ty')
+        m.zoom(level, tx, ty)
+        edges = edgeM.to_json(orient='records')
+        self.write(edges)
         self.finish()
 
 
