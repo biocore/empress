@@ -62,8 +62,8 @@ class ZoomHandler(RequestHandler):
         level = self.get_argument('level')
         tx = self.get_argument('tx')
         ty = self.get_argument('ty')
-        m.zoom(level, tx, ty)
-        edges = edgeM.to_json(orient='records')
+        zoomedM = m.zoom(level, tx, ty)
+        edges = zoomedM.to_json(orient='records')
         self.write(edges)
         self.finish()
 
