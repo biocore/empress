@@ -589,25 +589,24 @@ class Model(object):
            Rescaled view coordinates
 
         """
-        # print("level")
-        # print(np.float64(level))
-        # print("tx")
-        # print(np.float64(tx))
-        # print("ty")
-        # print(np.float64(ty))
+        # copy edge_metadata dataframe
+        zoomed_edges = self.edge_metadata.copy(deep=True)
+
         # multiply all coordinates by level/scale
-        self.edge_metadata.x = self.edge_metadata.x * np.float64(level)
-        self.edge_metadata.y = self.edge_metadata.y * np.float64(level)
-        self.edge_metadata.px = self.edge_metadata.px * np.float64(level)
-        self.edge_metadata.py = self.edge_metadata.py * np.float64(level)
+        zoomed_edges.x = zoomed_edges.x * np.float64(level)
+        zoomed_edges.y = zoomed_edges.y * np.float64(level)
+        zoomed_edges.px = zoomed_edges.px * np.float64(level)
+        zoomed_edges.py = zoomed_edges.py * np.float64(level)
 
         # add all x coordinates by tx
-        self.edge_metadata.x = self.edge_metadata.x + np.float64(tx)
-        self.edge_metadata.px = self.edge_metadata.px + np.float64(tx)
+        zoomed_edges.x = zoomed_edges.x + np.float64(tx)
+        zoomed_edges.px = zoomed_edges.px + np.float64(tx)
 
         # add all y coordinates by ty
-        self.edge_metadata.y = self.edge_metadata.y + np.float64(ty)
-        self.edge_metadata.py = self.edge_metadata.py + np.float64(ty)
+        zoomed_edges.y = zoomed_edges.y + np.float64(ty)
+        zoomed_edges.py = zoomed_edges.py + np.float64(ty)
+
+        return zoomed_edges
 
     # Metadata manipulation
     def groupByCategory(metadata, attribute, category):
