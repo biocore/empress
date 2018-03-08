@@ -589,11 +589,17 @@ class Model(object):
            Rescaled view coordinates
 
         """
+        # print("level")
+        # print(np.float64(level))
+        # print("tx")
+        # print(np.float64(tx))
+        # print("ty")
+        # print(np.float64(ty))
         # multiply all coordinates by level/scale
         self.edge_metadata.x = self.edge_metadata.x * np.float64(level)
         self.edge_metadata.y = self.edge_metadata.y * np.float64(level)
         self.edge_metadata.px = self.edge_metadata.px * np.float64(level)
-        self.edge_metadata.py = self.edge_metadata.py *np.float64(level)
+        self.edge_metadata.py = self.edge_metadata.py * np.float64(level)
 
         # add all x coordinates by tx
         self.edge_metadata.x = self.edge_metadata.x + np.float64(tx)
