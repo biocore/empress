@@ -98,21 +98,9 @@
 		function zoomed() {
 			svg.attr("transform", "translate(" + d3.event.transform.x + "," + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");
 
-			$.post('http://localhost:8080/zoom', {level : d3.event.transform.k, tx : d3.event.transform.x, ty : d3.event.transform.y}, function(data) {
-				edges = JSON.parse(JSON.stringify(data));
-			}).then(function() {
-				//svg.selectAll("line").remove();
-				console.log("re");
-				// line = svg.selectAll("line")
-				// .data(edges)
-				// .enter().append("line")
-				// .attr("x1", function(d) {return d.px; })
-				// .attr("y1", function(d) {return d.py })
-				// .attr("x2", function(d) {return d.x })
-				// .attr("y2", function(d) {return d.y })
-				// .attr("stroke", "gray")
-				// .attr("stroke-width", 0.5);
-			});
+			// $.post('http://localhost:8080/zoom', {level : d3.event.transform.k, tx : d3.event.transform.x, ty : d3.event.transform.y}, function(data) {
+			// 	edges = JSON.parse(JSON.stringify(data));
+			// });
 		}
 
 		</script>

@@ -9,7 +9,7 @@ from tornado.web import RequestHandler
 # from skbio import DistanceMatrix, TreeNode
 # from scipy.cluster.hierarchy import ward,complete
 
-# tree = TreeNode.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
+# tree = model.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
 
 # tree = model.read('./TreeOfLife.nwk','newick')
 
