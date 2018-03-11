@@ -1,5 +1,5 @@
 import tornado
-from controller import ModelHandler, IndexHandler, NodeHandler, EdgeHandler
+from controller import ModelHandler, IndexHandler, NodeHandler, EdgeHandler, ZoomHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 
@@ -10,7 +10,8 @@ class Application(tornado.web.Application):
         handlers = [(r"/", IndexHandler),
                     (r"/view", ModelHandler),
                     (r"/api/nodes", NodeHandler),
-                    (r"/api/edges", EdgeHandler)
+                    (r"/api/edges", EdgeHandler),
+                    (r"/zoom", ZoomHandler)
                     ]
 
         settings = {
