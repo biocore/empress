@@ -4,10 +4,22 @@
 	<meta charset="utf-8">
 	<title>Tree Example</title>
 
-	<!--
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script> -->
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
 		<!-- load the d3.js library -->
 		<script src="http://d3js.org/d3.v3.min.js"></script>
+
+		<script src="https://d3js.org/d3-color.v1.min.js"></script>
+		<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+		<script src="https://d3js.org/d3-ease.v1.min.js"></script>
+		<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+		<script src="https://d3js.org/d3-selection.v1.min.js"></script>
+		<script src="https://d3js.org/d3-timer.v1.min.js"></script>
+		<script src="https://d3js.org/d3-transition.v1.min.js"></script>
+		<script src="https://d3js.org/d3-drag.v1.min.js"></script>
+		<script src="https://d3js.org/d3-zoom.v1.min.js"></script>
+
+		<script src="https://d3js.org/d3-fetch.v1.min.js"></script>
 
 		<style>
 		.node {
@@ -24,17 +36,44 @@
 
 <body>
 	<script>
-		var nodeJson = "{{node_coords}}";
-		var edgeJson = "{{edge_coords}}";
-		var nodes = JSON.parse(nodeJson.replace(/(&quot\;)/g, '"'));
-		var edges = JSON.parse(edgeJson.replace(/(&quot\;)/g, '"'));
-			//var nodes = JSON.parse('[{"Node" : "0",   "id" : "0",   "x" : 404.097,  "y" :  396.979}, {"Node" : "1",   "id" : "1",   "x" : 464.724,  "y" :  174.338},	{"Node" : "2",   "id" : "2",   "x" :   487.5,  "y" :  43.2804}, {"Node" : "3",   "id" : "3",   "x" : 446.172,  "y" :  359.095}, {"Node" : "4",   "id" : "4",   "x" : 32.4704,  "y" :  456.72}, {"Node" : "5",   "id" : "5",   "x" : 438.468,  "y" : 14.9717}, {"Node" : "6",   "id" : "6",   "x" : 81.5024,  "y" :  485.028},{"Node" : "7",   "id" : "7",   "x" : 54.5748,  "y" :  34.9421},{"Node" : "8",   "id" : "8",   "x" :    12.5,  "y" : 72.8265},{"Node" : "9",   "id" : "9",   "x" : 55.2464,  "y" : 325.662},{"Node" : "y10", "id" : "y10", "x" : 366.837,  "y" : 313.291},{"Node" : "y14", "id" : "y14", "x" : 419.421,  "y" : 104.579},{"Node" : "y15", "id" : "y15", "x" : 373.617, "y" : 183.914}, {"Node" : "y16", "id" : "y16", "x" :  305.539, "y" : 245.212},{"Node" : "y17", "id" : "y17", "x" :  214.432, "y" : 254.788},{"Node" : "y18", "id" : "y18", "x" :  153.134, "y" : 186.709},{"Node" : "y2",  "id" : "y2",  "x" :  91.8354, "y" : 118.631},{"Node" : "y6",  "id" : "y6",  "x" :  100.549, "y" : 395.421},{"Node" : "y7",  "id" : "y7",  "x" :  146.353, "y" : 316.086}]');
-			//var edges = JSON.parse('[{"Node" :"0", "id" : "y18", "Parent" : "y10",  "px" : 366.837, "py" :  313.291, "x" :  404.097, "y" : 396.979},{"Node" :"1", "id" : "y18", "Parent" : "y15", "px" :  373.617,"py" :  183.914, "x" :  464.724, "y" :  174.338},{"Node" :"2", "id" : "y18", "Parent" : "y14",  "px" : 419.421, "py" : 104.579, "x" :    487.5, "y" :  43.2804},{"Node" :"3", "id" : "y18", "Parent" : "y10", "px" :  366.837, "py" : 313.291, "x" :  446.172, "y" :  359.095},{"Node" :"4", "id" : "y18", "Parent" : "y6", "px" :  100.549, "py" : 395.421, "x" :  32.4704, "y" :  456.72},{"Node" :"5", "id" : "y18", "Parent" : "y14","px" :  419.421, "py" : 104.579, "x" :  438.468, "y" :  14.9717},{"Node" :"6", "id" : "y18", "Parent" : "y6", "px" : 100.549, "py" : 395.421, "x" :  81.5024, "y" :  485.028},{"Node" :"7", "id" : "y18", "Parent" : "y2", "px" : 91.8354, "py" : 118.631, "x" :  54.5748, "y" :  34.9421},{"Node" :"8", "id" : "y18", "Parent" : "y2", "px" : 91.8354, "py" : 118.631, "x" :    12.5, "y" :  72.8265},{"Node" :"9", "id" : "y18", "Parent" : "y7", "px" : 146.353, "py" : 316.086, "x" :  55.2464, "y" :  325.662},{"Node" :"y10", "id" : "y18", "Parent" : "y16", "px" : 305.539, "py" : 245.212,  "x" : 366.837, "y" :  313.291},{"Node" :"y14", "id" : "y18", "Parent" : "y15", "px" : 373.617, "py" : 183.914, "x" :  419.421, "y" :  104.579},{"Node" :"y15", "id" : "y18", "Parent" : "y16", "px" : 305.539,"py" :  245.212, "x" :  373.617, "y" :  183.914},{"Node" :"y16", "id" : "y18", "Parent" : "y17", "px" : 214.432, "py" : 254.788, "x" :  305.539, "y" :  245.212},{"Node" :"y17", "id" : "y18", "Parent" : "y18", "px" : 153.134, "py" : 186.709, "x" :  214.432, "y" :  254.788},{"Node" :"y2",  "id" : "y18", "Parent" : "y18", "px" : 153.134, "py" : 186.709, "x" :  91.8354, "y" :  118.631},{"Node" :"y6", "id" :  "y18", "Parent" : "y7", "px" : 146.353,"py" :  316.086, "x" :  100.549, "y" :  395.421},{"Node" :"y7", "id" :  "y18", "Parent" : "y17", "px" : 214.432, "py" : 254.788, "x" :  146.353, "y" :  316.086}]');
-			var svg = d3.select("body")
+		var width = window.innerWidth || document.body.clientWidth,
+			height = window.innerHeight || document.body.clientHeight;
+
+		// TODO: post request to send w and h back to model
+
+		// var nodes;
+		// $.getJSON('http://localhost:8080/api/nodes', function(json) {
+		// 	nodes = json;
+		// }).then(function() {
+		// 	console.log("nodes");
+		// 	console.log(nodes);
+		// });
+
+		var edges;
+		var svg;
+		var line;
+
+		$.getJSON('http://localhost:8080/api/edges', function(data) {
+			edges = JSON.parse(JSON.stringify(data));
+		}).then(plot);
+
+		function plot() {
+			svg = d3.select("body")
 			.append("svg")
-			.attr("width", 1920)
-			.attr("height", 1080);
-			var line = svg.selectAll("line")
+			.attr("width", width)
+			.attr("height", height)
+			.on('click', clickTest);
+
+			// var level = 1;
+			// var tx = 0;
+			// var ty = 0;
+
+			svg.call(d3.zoom()
+				.scaleExtent([1, 4])
+				// .translateExtent([[0,0],[width, height]])
+				.on("zoom", zoomed));
+
+			line = svg.selectAll("line")
 			.data(edges)
 			.enter().append("line")
 			.attr("x1", function(d) {return d.px; })
@@ -43,12 +82,27 @@
 			.attr("y2", function(d) {return d.y })
 			.attr("stroke", "gray")
 			.attr("stroke-width", 0.5);
+
 			// var circle = svg.selectAll("circle")
 			// .data(nodes)
 			// .enter().append("circle")
 			// .attr("cx", function(d) { return d.x; })
 			// .attr("cy", function(d) { return d.y; })
 			// .attr("r",function(d) { return 10; });
+		}
+
+		function clickTest() {
+			console.log("click received at (" + d3.event.x + "," + d3.event.y + ")");
+		}
+
+		function zoomed() {
+			svg.attr("transform", "translate(" + d3.event.transform.x + "," + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");
+
+			// $.post('http://localhost:8080/zoom', {level : d3.event.transform.k, tx : d3.event.transform.x, ty : d3.event.transform.y}, function(data) {
+			// 	edges = JSON.parse(JSON.stringify(data));
+			// });
+		}
+
 		</script>
 	</body>
-    </html>
+	</html>
