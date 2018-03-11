@@ -3,7 +3,38 @@ import pandas as pd
 import numpy as np
 import skbio
 
+def read_leaf_node_metadata(file_name):
+    """ Reads in metadata for leaf node
 
+    Parameters
+    ----------
+    file_name :  str
+        The name of the file to read the data from
+
+    Returns
+    -------
+       pd.Dataframe
+
+    """
+    metadata = pd.read_table(file_name)
+    metadata.rename(columns={metadata.columns[0]:'Node id'},inplace=True)
+    return metadata
+def read_internal_node_metadata(file_name):
+    """ Reads in metadata for internal node
+
+    Parameters
+    ----------
+    file_name :  str
+        The name of the file to read the data from
+
+    Returns
+    -------
+       pd.Dataframe
+
+    """
+
+    metadata = pd.read_table(file_name,skiprows=3,names = ['Node id', 'label'])
+    return metadata
 def read(file_name, file_format='newick'):
     """ Reads in contents from a file.
 
@@ -226,6 +257,11 @@ class Tree(TreeNode):
         # edge metadata
         edgeData = {}
         for node in self.postorder():
+            if node.is_tip():
+                edgeData["is_tip"] = True
+            else :
+                edgeData["is_tip"] = False
+
             pId = {'Parent id': node.name}
             pCoords = {'px': node.x2, 'py': node.y2}
             for child in node.children:
@@ -351,6 +387,8 @@ class Tree(TreeNode):
 class Model(object):
 
     def __init__(self, tree,
+                 internal_metadata_file,
+                 leaf_metadata_file,
                  node_metadata=None,
                  edge_metadata=None):
         """ Model constructor.
@@ -381,6 +419,12 @@ class Model(object):
             self.edge_metadata = edge_metadata
             # Todo: append coords to node/edge
 
+        # Append metadata to table
+        internal_metadata = read_internal_node_metadata(internal_metadata_file)
+        leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
+
+        self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata, how='outer', on = 'Node id')
+        self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata, how='outer', on = 'Node id')
         # Pipeline
         #   tree -> (layout) -> coords
         #   coords -> (transform?) -> _canvascoords
