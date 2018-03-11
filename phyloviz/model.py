@@ -381,6 +381,7 @@ class Model(object):
             self.edge_metadata = edge_metadata
             # Todo: append coords to node/edge
 
+        self.node_metadata, self.edge_metadata = self.pan(500,500)
         # Pipeline
         #   tree -> (layout) -> coords
         #   coords -> (transform?) -> _canvascoords
@@ -566,7 +567,22 @@ class Model(object):
         view_coords : np.array
            The translated view coordinates
         """
-        pass
+	
+        """
+        Need to change this!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        Todo: make this translate the view coords
+        """
+        """for node in self.tree.postorder():
+            node.x2 = node.x2 + dx
+            node.y2 = node.y2 + dy
+        """
+        #x_col = self.node_metadata.columns.get_loc('x')
+        #y_col = self.node_metadata.columns.get_loc('y')
+        #self.node_metadata.add(dx,axis=x_col) 
+        #self.edge_metadata.add(dy, axis=y_col)
+        self.node_metadata[['x']].apply(lambda l: l + dx) 
+        self.edge_metadata[['y']].apply(lambda l: l + dy)
+        return self.retrive_view_coords()
 
     def zoom(self, level):
         """ Zooms in/out by remapping the (x1,y1) upper left corner and (x2,y2)
@@ -589,7 +605,19 @@ class Model(object):
            Rescaled view coordinates
 
         """
-        pass
+        
+        """
+        Need to change!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        Todo: Make this scale view coords
+        """
+        xr = self.tree.x2
+        yr = self.tree.y2
+        for node in self.tree.postorder():
+            node.x2 = 2*level*node.x2 - xr
+            node.y2 = 2*level*node.y2 - yr
+            print( str(xr))
+        
+        return self.retrive_view_coords()
 
     # Metadata manipulation
     def groupByCategory(metadata, attribute, category):
@@ -678,4 +706,29 @@ class Model(object):
         pass
 
     def retrive_view_coords(self):
+        # return (self.node_metadata, self.edge_metadata)
+        # Node metadata
+        """ nodeData = {}
+        for node in self.tree.postorder():
+            nId = {'Node id': node.name}
+            coords = {'x': node.x2, 'y': node.y2}
+            nodeData[node.name] = {**nId, **coords}
+
+        # edge metadata
+        edgeData = {}
+        for node in self.tree.postorder():
+            pId = {'Parent id': node.name}
+            pCoords = {'px': node.x2, 'py': node.y2}
+            for child in node.children:
+                nId = {'Node id': child.name}
+                coords = {'x': child.x2, 'y': child.y2}
+                edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
+
+        # convert to pd.DataFrame
+        nodeMeta = pd.DataFrame(nodeData).T
+        edgeMeta = pd.DataFrame(edgeData).T
+        
+        return (nodeMeta, edgeMeta)
+        """
         return (self.node_metadata, self.edge_metadata)
+
