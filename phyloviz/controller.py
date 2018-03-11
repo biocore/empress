@@ -29,7 +29,8 @@ tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
 #         n.name = "y%d" % i
 
 m = Model(tree)
-nodeM, edgeM = m.retrive_view_coords()
+#nodeM, edgeM = m.retrive_view_coords()
+nodeM, edgeM = m.pan
 
 
 class IndexHandler(RequestHandler):
