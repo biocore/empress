@@ -34,6 +34,8 @@
 	</style>
 </head>
 
+<svg width="960" height="500"></svg>
+
 <body>
 	<script>
 		var width = window.innerWidth || document.body.clientWidth,
@@ -52,26 +54,23 @@
 		var edges;
 		var svg;
 		var line;
+		var width;
+		var height;
 
 		$.getJSON('http://localhost:8080/api/edges', function(data) {
 			edges = JSON.parse(JSON.stringify(data));
 		}).then(plot);
 
 		function plot() {
-			svg = d3.select("body")
-			.append("svg")
-			.attr("width", width)
-			.attr("height", height)
-			.on('click', clickTest);
+			// svg = d3.select("body")
+			// .append("svg")
+			// .attr("width", width)
+			// .attr("height", height)
+			// .on('click', clickTest);
 
-			// var level = 1;
-			// var tx = 0;
-			// var ty = 0;
-
-			svg.call(d3.zoom()
-				.scaleExtent([1, 4])
-				// .translateExtent([[0,0],[width, height]])
-				.on("zoom", zoomed));
+			svg = d3.select("svg");
+			width = svg.attr("width");
+			height = svg.attr("height");
 
 			line = svg.selectAll("line")
 			.data(edges)
@@ -89,6 +88,20 @@
 			// .attr("cx", function(d) { return d.x; })
 			// .attr("cy", function(d) { return d.y; })
 			// .attr("r",function(d) { return 10; });
+
+			svg.append("rect")
+			.attr("width", width)
+			.attr("height", height)
+			.style("fill", "none")
+			.style("pointer-events", "all")
+			.call(d3.zoom()
+					.scaleExtent([1, 4])
+					.on("zoom", zoomed));
+
+			// svg.call(d3.zoom()
+			// 	.scaleExtent([1, 4])
+			// 	// .translateExtent([[0,0],[width, height]])
+			// 	.on("zoom", zoomed));
 		}
 
 		function clickTest() {

@@ -1,5 +1,5 @@
 import tornado
-from controller import ModelHandler, IndexHandler, NodeHandler, EdgeHandler, ZoomHandler
+from controller import ModelHandler, NodeHandler, EdgeHandler, ZoomHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 
@@ -7,8 +7,7 @@ from tornado.ioloop import IOLoop
 class Application(tornado.web.Application):
     def __init__(self):
         # dirpath = dirname(__file__)
-        handlers = [(r"/", IndexHandler),
-                    (r"/view", ModelHandler),
+        handlers = [(r"/", ModelHandler),
                     (r"/api/nodes", NodeHandler),
                     (r"/api/edges", EdgeHandler),
                     (r"/zoom", ZoomHandler)
