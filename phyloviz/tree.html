@@ -6,8 +6,6 @@
 
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
-		<!-- load the d3.js library -->
-		<script src="http://d3js.org/d3.v3.min.js"></script>
 
 		<script src="https://d3js.org/d3-color.v1.min.js"></script>
 		<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
@@ -18,8 +16,10 @@
 		<script src="https://d3js.org/d3-transition.v1.min.js"></script>
 		<script src="https://d3js.org/d3-drag.v1.min.js"></script>
 		<script src="https://d3js.org/d3-zoom.v1.min.js"></script>
-
 		<script src="https://d3js.org/d3-fetch.v1.min.js"></script>
+
+		<!-- load the d3.js library -->
+		<script src="https://d3js.org/d3.v4.min.js"></script>
 
 		<style>
 		.node {
@@ -34,14 +34,10 @@
 	</style>
 </head>
 
-<svg width="960" height="500"></svg>
+<svg width="1000" height="700"></svg>
 
 <body>
 	<script>
-		var width = window.innerWidth || document.body.clientWidth,
-			height = window.innerHeight || document.body.clientHeight;
-
-		// TODO: post request to send w and h back to model
 
 		// var nodes;
 		// $.getJSON('http://localhost:8080/api/nodes', function(json) {
@@ -68,8 +64,8 @@
 			// .attr("height", height)
 			// .on('click', clickTest);
 
-			svg = d3.select("svg");
-			width = svg.attr("width");
+			svg = d3.select("svg"),
+			width = +svg.attr("width"),
 			height = svg.attr("height");
 
 			line = svg.selectAll("line")
@@ -109,7 +105,8 @@
 		}
 
 		function zoomed() {
-			svg.attr("transform", "translate(" + d3.event.transform.x + "," + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");
+			svg.attr("transform", d3.event.transform);
+			// svg.attr("transform", "translate(" + d3.event.transform.x + "," + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");
 
 			// $.post('http://localhost:8080/zoom', {level : d3.event.transform.k, tx : d3.event.transform.x, ty : d3.event.transform.y}, function(data) {
 			// 	edges = JSON.parse(JSON.stringify(data));
