@@ -419,16 +419,15 @@ class Model(object):
             self.edge_metadata = edge_metadata
             # Todo: append coords to node/edge
 
-<<<<<<< HEAD
-        self.node_metadata, self.edge_metadata = self.pan(500,500)
-=======
         # Append metadata to table
         internal_metadata = read_internal_node_metadata(internal_metadata_file)
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
 
-        self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata, how='outer', on = 'Node id')
-        self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata, how='outer', on = 'Node id')
->>>>>>> 39fc2cd1234a02b0080433bb877bea8a49181c18
+        self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
+                                      how='outer', on='Node id')
+        self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
+                                      how='outer', on='Node id')
+
         # Pipeline
         #   tree -> (layout) -> coords
         #   coords -> (transform?) -> _canvascoords
@@ -614,7 +613,7 @@ class Model(object):
         view_coords : np.array
            The translated view coordinates
         """
-	
+
         """
         Need to change this!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         Todo: make this translate the view coords
@@ -625,9 +624,9 @@ class Model(object):
         """
         #x_col = self.node_metadata.columns.get_loc('x')
         #y_col = self.node_metadata.columns.get_loc('y')
-        #self.node_metadata.add(dx,axis=x_col) 
+        #self.node_metadata.add(dx,axis=x_col)
         #self.edge_metadata.add(dy, axis=y_col)
-        self.node_metadata[['x']].apply(lambda l: l + dx) 
+        self.node_metadata[['x']].apply(lambda l: l + dx)
         self.edge_metadata[['y']].apply(lambda l: l + dy)
         return self.retrive_view_coords()
 
@@ -652,21 +651,19 @@ class Model(object):
            Rescaled view coordinates
 
         """
-<<<<<<< HEAD
-        
         """
         Need to change!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         Todo: Make this scale view coords
-        """
         xr = self.tree.x2
         yr = self.tree.y2
         for node in self.tree.postorder():
             node.x2 = 2*level*node.x2 - xr
             node.y2 = 2*level*node.y2 - yr
-            print( str(xr))
-        
+            print(str(xr))
+
         return self.retrive_view_coords()
-=======
+        """
+
         # copy edge_metadata dataframe
         zoomed_edges = self.edge_metadata.copy(deep=True)
 
@@ -685,7 +682,6 @@ class Model(object):
         zoomed_edges.py = zoomed_edges.py + np.float64(ty)
 
         return zoomed_edges
->>>>>>> 39fc2cd1234a02b0080433bb877bea8a49181c18
 
     # Metadata manipulation
     def groupByCategory(metadata, attribute, category):
@@ -795,7 +791,7 @@ class Model(object):
         # convert to pd.DataFrame
         nodeMeta = pd.DataFrame(nodeData).T
         edgeMeta = pd.DataFrame(edgeData).T
-        
+
         return (nodeMeta, edgeMeta)
         """
         return (self.node_metadata, self.edge_metadata)

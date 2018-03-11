@@ -14,6 +14,8 @@ from tornado.web import RequestHandler
 # tree = model.read('./TreeOfLife.nwk','newick')
 
 tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
+internal_metadata_file = 'ncbi.t2t.txt'
+leaf_metadata_file = 'metadata.txt'
 
 # np.random.seed(0)
 # x = np.random.rand(10)
@@ -28,15 +30,8 @@ tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
 #     if not n.is_tip():
 #         n.name = "y%d" % i
 
-m = Model(tree)
-#nodeM, edgeM = m.retrive_view_coords()
-nodeM, edgeM = m.pan
-
-
-class IndexHandler(RequestHandler):
-    def get(self):
-        self.write({'hello': 'world'})
-        self.finish()
+m = Model(tree, internal_metadata_file, leaf_metadata_file)
+nodeM, edgeM = m.retrive_view_coords()
 
 
 class ModelHandler(RequestHandler):
