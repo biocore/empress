@@ -9,7 +9,7 @@ from tornado.web import RequestHandler
 # from skbio import DistanceMatrix, TreeNode
 # from scipy.cluster.hierarchy import ward,complete
 
-# tree = TreeNode.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
+# tree = model.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
 
 # tree = model.read('./TreeOfLife.nwk','newick')
 
@@ -40,21 +40,32 @@ class IndexHandler(RequestHandler):
 
 class ModelHandler(RequestHandler):
     def get(self):
-        nodes = nodeM.to_json(orient='records')
-        edges = edgeM.to_json(orient='records')
-        self.render('tree.html', node_coords=nodes, edge_coords=edges)
+        self.render('tree.html')
 
 
 class NodeHandler(RequestHandler):
     def get(self):
         nodes = nodeM.to_json(orient='records')
         self.write(nodes)
+        self.finish()
 
 
 class EdgeHandler(RequestHandler):
     def get(self):
         edges = edgeM.to_json(orient='records')
         self.write(edges)
+        self.finish()
+
+
+class ZoomHandler(RequestHandler):
+    def post(self):
+        level = self.get_argument('level')
+        tx = self.get_argument('tx')
+        ty = self.get_argument('ty')
+        zoomedM = m.zoom(level, tx, ty)
+        edges = zoomedM.to_json(orient='records')
+        self.write(edges)
+        self.finish()
 
 
 # # Set up REST API for model
