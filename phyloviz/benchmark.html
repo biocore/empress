@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Tree Example</title>
+
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
+		<!-- load the d3.js library -->
+		<script src="http://d3js.org/d3.v3.min.js"></script>
+
+		<script src="https://d3js.org/d3-color.v1.min.js"></script>
+		<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+		<script src="https://d3js.org/d3-ease.v1.min.js"></script>
+		<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+		<script src="https://d3js.org/d3-selection.v1.min.js"></script>
+		<script src="https://d3js.org/d3-timer.v1.min.js"></script>
+		<script src="https://d3js.org/d3-transition.v1.min.js"></script>
+		<script src="https://d3js.org/d3-drag.v1.min.js"></script>
+		<script src="https://d3js.org/d3-zoom.v1.min.js"></script>
+
+		<script src="https://d3js.org/d3-fetch.v1.min.js"></script>
+
+		<style>
+		.node {
+			fill: #ccc;
+			stroke: #fff;
+			stroke-width: 2px;
+		}
+		.link {
+			stroke: #777;
+			stroke-width: 2px;
+		}
+	</style>
+</head>
+
+<body>
+	<script>
+		var width = window.innerWidth || document.body.clientWidth,
+			height = window.innerHeight || document.body.clientHeight;
+
+		// TODO: post request to send w and h back to model
+
+		// var nodes;
+		// $.getJSON('http://localhost:8080/api/nodes', function(json) {
+		// 	nodes = json;
+		// }).then(function() {
+		// 	console.log("nodes");
+		// 	console.log(nodes);
+		// });
+
+		var edges;
+		var svg;
+		var line;
+        getEdge();
+
+		function plot() {
+            var start = $.now();
+			svg = d3.select("body")
+			.append("svg")
+			.attr("width", width)
+			.attr("height", height)
+			.on('click', clickTest);
+
+			// var level = 1;
+			// var tx = 0;
+			// var ty = 0;
+
+			/*svg.call(d3.zoom()
+				.scaleExtent([1, 4])
+				// .translateExtent([[0,0],[width, height]])
+				.on("zoom", zoomed));
+            */
+			line = svg.selectAll("line")
+			.data(edges)
+			.enter().append("line")
+			.attr("x1", function(d) {return d.px; })
+			.attr("y1", function(d) {return d.py })
+			.attr("x2", function(d) {return d.x })
+			.attr("y2", function(d) {return d.y })
+			.attr("stroke", "gray")
+			.attr("stroke-width", 0.5);
+
+            var size = svg.selectAll("line").size()
+
+			// var circle = svg.selectAll("circle")
+			// .data(nodes)
+			// .enter().append("circle")
+			// .attr("cx", function(d) { return d.x; })
+			// .attr("cy", function(d) { return d.y; })
+			// .attr("r",function(d) { return 10; });
+            var end = $.now()-start;
+            var size = svg.selectAll("line").size();
+            console.log("Plotting " + size + "nodes, used"+end);
+		}
+
+		function getEdge(){
+		var start = $.now();
+        $.getJSON('http://localhost:8080/api/edges', function(data) {
+			edges = JSON.parse(JSON.stringify(data));
+		}).then(plot);
+        var end = $.now()-start;
+        console.log("Parsing and plotting nodes, used"+end);
+        }
+        function clickTest() {
+			console.log("click received at (" + d3.event.x + "," + d3.event.y + ")");
+		}
+
+		function zoomed() {
+			svg.attr("transform", "translate(" + d3.event.transform.x + "," + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");
+
+			// $.post('http://localhost:8080/zoom', {level : d3.event.transform.k, tx : d3.event.transform.x, ty : d3.event.transform.y}, function(data) {
+			// 	edges = JSON.parse(JSON.stringify(data));
+			// });
+		}
+
+		</script>
+	</body>
+	</html>
