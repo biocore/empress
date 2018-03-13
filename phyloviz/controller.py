@@ -28,9 +28,9 @@ tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
 #     if not n.is_tip():
 #         n.name = "y%d" % i
 
-m = Model(tree)
+m = Model(tree,'ncbi.t2t.txt','metadata.txt')
 nodeM, edgeM = m.retrive_view_coords()
-
+#edgeM = edgeM.head(100000)
 
 class IndexHandler(RequestHandler):
     def get(self):
@@ -52,7 +52,9 @@ class NodeHandler(RequestHandler):
 
 class EdgeHandler(RequestHandler):
     def get(self):
+
         edges = edgeM.to_json(orient='records')
+
         self.write(edges)
         self.finish()
 
@@ -68,6 +70,9 @@ class ZoomHandler(RequestHandler):
         self.finish()
 
 
+class BenchmarkHandler(RequestHandler):
+    def get(self):
+        self.render("benchmark.html")
 # # Set up REST API for model
 # app = Flask(__name__)
 
