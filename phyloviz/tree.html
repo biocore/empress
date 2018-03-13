@@ -6,8 +6,6 @@
 
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
-		<!-- load the d3.js library -->
-		<script src="http://d3js.org/d3.v3.min.js"></script>
 
 		<script src="https://d3js.org/d3-color.v1.min.js"></script>
 		<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
@@ -18,8 +16,10 @@
 		<script src="https://d3js.org/d3-transition.v1.min.js"></script>
 		<script src="https://d3js.org/d3-drag.v1.min.js"></script>
 		<script src="https://d3js.org/d3-zoom.v1.min.js"></script>
-
 		<script src="https://d3js.org/d3-fetch.v1.min.js"></script>
+
+		<!-- load the d3.js library -->
+		<script src="https://d3js.org/d3.v4.min.js"></script>
 
 		<style>
 		.node {
@@ -34,13 +34,11 @@
 	</style>
 </head>
 
+<svg width="1000" height="700"></svg> 
+
 <body>
 	<script>
-		var width = window.innerWidth || document.body.clientWidth,
-			height = window.innerHeight || document.body.clientHeight;
-
-		// TODO: post request to send w and h back to model
-
+		//<svg width="1000" height="700"></svg> Was placed above <body>
 		// var nodes;
 		// $.getJSON('http://localhost:8080/api/nodes', function(json) {
 		// 	nodes = json;
@@ -51,37 +49,50 @@
 
 		var edges;
 		var svg;
-		var line;
+		var lines;
+		var width;
+		var height;
+		var d3_level = 1;
+		var trans_x = 0;
+		var trans_y = 0;
+		
+
+		/*document.body.style.width = '700px';
+		document.body.style.height = '1000px';*/
 
 		$.getJSON('http://localhost:8080/api/edges', function(data) {
 			edges = JSON.parse(JSON.stringify(data));
 		}).then(plot);
 
 		function plot() {
-			svg = d3.select("body")
-			.append("svg")
-			.attr("width", width)
-			.attr("height", height)
-			.on('click', clickTest);
+			
+			svg = d3.select("svg")
+				.on('click', clickTest)
+				.style("pointer-events", "all")
+				.style("width", 1000)
+				.style("height",700)
+				.call(d3.zoom()
+				.scaleExtent([1, 10])
+				.on("zoom", zoomed))
+				.attr("id","edges");
 
-			// var level = 1;
-			// var tx = 0;
-			// var ty = 0;
+			/*width = +svg.attr("width"),
+			height = svg.attr("height");*/
 
-			svg.call(d3.zoom()
-				.scaleExtent([1, 4])
-				// .translateExtent([[0,0],[width, height]])
-				.on("zoom", zoomed));
 
-			line = svg.selectAll("line")
-			.data(edges)
-			.enter().append("line")
-			.attr("x1", function(d) {return d.px; })
-			.attr("y1", function(d) {return d.py })
-			.attr("x2", function(d) {return d.x })
-			.attr("y2", function(d) {return d.y })
-			.attr("stroke", "gray")
-			.attr("stroke-width", 0.5);
+			lines = svg.selectAll("line")
+				.data(edges);
+
+			lines.enter().append("line")
+				.style("stroke", "gray")
+				.style("stroke-width", 0.5)
+				.attr("x1", function(d) {return d.px; })
+				.attr("y1", function(d) {return d.py; })
+				.attr("x2", function(d) {return d.x; })
+				.attr("y2", function(d) {return d.y; });
+
+			//lines.exit().remove();
+			
 
 			// var circle = svg.selectAll("circle")
 			// .data(nodes)
@@ -89,18 +100,62 @@
 			// .attr("cx", function(d) { return d.x; })
 			// .attr("cy", function(d) { return d.y; })
 			// .attr("r",function(d) { return 10; });
+
+			/*svg.append("rect")
+			.attr("width", width)
+			.attr("height", height)
+			.style("fill", "none")
+			.style("pointer-events", "all")
+			.call(d3.zoom()
+					.scaleExtent([1, 4])
+					.on("zoom", zoomed));*/
+
+			// svg.call(d3.zoom()
+			// 	.scaleExtent([1, 4])
+			// 	// .translateExtent([[0,0],[width, height]])
+			// 	.on("zoom", zoomed));
+		}
+
+		function redraw(){
+			var update_lines = d3.select("#edges")
+				.selectAll("line")
+				.data(edges)
+				//.enter()
+				//.append("line")
+				.style("stroke", "gray")
+				.style("stroke-width", 0.5)
+				.attr("x1", function(d) {return d.px; })
+				.attr("y1", function(d) {return d.py; })
+				.attr("x2", function(d) {return d.x; })
+				.attr("y2", function(d) {return d.y; });
+			update_lines.exit().remove();
 		}
 
 		function clickTest() {
 			console.log("click received at (" + d3.event.x + "," + d3.event.y + ")");
+			/*trans_x = d3.event.x;
+			trans_y = d3.event.y;*/
+			$.getJSON('http://localhost:8080/zoom', {level : d3_level, tx :trans_x, ty : trans_y}, function(data) {
+			 	edges = JSON.parse(JSON.stringify(data));
+			 }).then(redraw);
+
+
+			//plot();
 		}
 
 		function zoomed() {
-			svg.attr("transform", "translate(" + d3.event.transform.x + "," + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");
+			//svg.attr("transform", d3.event.transform);
+			d3_level = d3.event.transform.k;
+			trans_x = d3.event.transform.x;
+			trans_y = d3.event.transform.y;
 
-			// $.post('http://localhost:8080/zoom', {level : d3.event.transform.k, tx : d3.event.transform.x, ty : d3.event.transform.y}, function(data) {
-			// 	edges = JSON.parse(JSON.stringify(data));
-			// });
+			svg.attr("transform", d3.event.transform);
+
+			/*svg.attr("transform", "translate(" + d3.event.transform.x + "," + d3.event.transform.y + ") scale(" + d3.event.transform.k + ")");*/
+
+			/* $.post('http://localhost:8080/zoom', {level : d3.event.transform.k, tx : d3.event.transform.x, ty : d3.event.transform.y}, function(data) {
+			 	edges = JSON.parse(JSON.stringify(data));
+			 });*/
 		}
 
 		</script>
