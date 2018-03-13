@@ -387,8 +387,8 @@ class Tree(TreeNode):
 class Model(object):
 
     def __init__(self, tree,
-                 internal_metadata_file,
-                 leaf_metadata_file,
+                 internal_metadata_file=None,
+                 leaf_metadata_file=None,
                  node_metadata=None,
                  edge_metadata=None):
         """ Model constructor.
@@ -410,6 +410,7 @@ class Model(object):
            Every row corresponds to a unique edge
            and every column corresponds to an attribute.
         """
+        self.zoom_level = 1
         self.tree = Tree.from_tree(tree)
         if node_metadata is None and edge_metadata is None:
             self.node_metadata, self.edge_metadata = self.tree.coords(700,
@@ -423,8 +424,11 @@ class Model(object):
         internal_metadata = read_internal_node_metadata(internal_metadata_file)
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
 
-        self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata, how='outer', on = 'Node id')
-        self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata, how='outer', on = 'Node id')
+        self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
+                                      how='outer', on='Node id')
+        self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
+                                      how='outer', on='Node id')
+
         # Pipeline
         #   tree -> (layout) -> coords
         #   coords -> (transform?) -> _canvascoords
@@ -610,7 +614,22 @@ class Model(object):
         view_coords : np.array
            The translated view coordinates
         """
-        pass
+
+        """
+        Need to change this!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        Todo: make this translate the view coords
+        """
+        """for node in self.tree.postorder():
+            node.x2 = node.x2 + dx
+            node.y2 = node.y2 + dy
+        """
+        #x_col = self.node_metadata.columns.get_loc('x')
+        #y_col = self.node_metadata.columns.get_loc('y')
+        #self.node_metadata.add(dx,axis=x_col)
+        #self.edge_metadata.add(dy, axis=y_col)
+        self.node_metadata[['x']].apply(lambda l: l + dx)
+        self.edge_metadata[['y']].apply(lambda l: l + dy)
+        return self.retrive_view_coords()
 
     def zoom(self, level, tx, ty):
         """ Zooms in/out by remapping the (x1,y1) upper left corner and (x2,y2)
@@ -633,22 +652,71 @@ class Model(object):
            Rescaled view coordinates
 
         """
-        # copy edge_metadata dataframe
+        """
+        Need to change!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        Todo: Make this scale view coords
+        xr = self.tree.x2
+        yr = self.tree.y2
+        for node in self.tree.postorder():
+            node.x2 = 2*level*node.x2 - xr
+            node.y2 = 2*level*node.y2 - yr
+            print(str(xr))
+
+        return self.retrive_view_coords()
+
+        """
+
+        # # copy edge_metadata dataframe
+        # zoomed_edges = self.edge_metadata.copy(deep=True)
+
+        # # multiply all coordinates by level/scale
+        # zoomed_edges.x = zoomed_edges.x * np.float64(level)
+        # zoomed_edges.y = zoomed_edges.y * np.float64(level)
+        # zoomed_edges.px = zoomed_edges.px * np.float64(level)
+        # zoomed_edges.py = zoomed_edges.py * np.float64(level)
+
+        # # add all x coordinates by tx
+        # zoomed_edges.x = zoomed_edges.x + np.float64(tx)
+        # zoomed_edges.px = zoomed_edges.px + np.float64(tx)
+
+        # # add all y coordinates by ty
+        # zoomed_edges.y = zoomed_edges.y + np.float64(ty)
+        # zoomed_edges.py = zoomed_edges.py + np.float64(ty)
+         # copy edge_metadata dataframe
+        
         zoomed_edges = self.edge_metadata.copy(deep=True)
+        # print("This is tx from inside model:" + tx)
 
-        # multiply all coordinates by level/scale
-        zoomed_edges.x = zoomed_edges.x * np.float64(level)
-        zoomed_edges.y = zoomed_edges.y * np.float64(level)
-        zoomed_edges.px = zoomed_edges.px * np.float64(level)
-        zoomed_edges.py = zoomed_edges.py * np.float64(level)
+        
+        zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l * np.float64(level))
+        zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l * np.float64(level))
+        zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l * np.float64(level))
+        zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l * np.float64(level))
 
-        # add all x coordinates by tx
-        zoomed_edges.x = zoomed_edges.x + np.float64(tx)
-        zoomed_edges.px = zoomed_edges.px + np.float64(tx)
+        zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l + np.float64(tx))
+        zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l + np.float64(ty))
+        zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l + np.float64(tx))
+        zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l + np.float64(ty))
 
-        # add all y coordinates by ty
-        zoomed_edges.y = zoomed_edges.y + np.float64(ty)
-        zoomed_edges.py = zoomed_edges.py + np.float64(ty)
+
+        # edgeData = {}
+        # counter = 0
+        # for node in self.tree.levelorder():
+        #     if counter < 500:
+        #         if node.is_tip():
+        #             edgeData["is_tip"] = True
+        #         else :
+        #             edgeData["is_tip"] = False
+
+        #         pId = {'Parent id': node.name}
+        #         pCoords = {'px': node.x2, 'py': node.y2}
+        #         for child in node.children:
+        #             nId = {'Node id': child.name}
+        #             coords = {'x': child.x2, 'y': child.y2}
+        #             edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
+        #             counter = counter + 1
+
+        # edgeMeta = pd.DataFrame(edgeData).T
 
         return zoomed_edges
 
@@ -739,4 +807,33 @@ class Model(object):
         pass
 
     def retrive_view_coords(self):
+        # return (self.node_metadata, self.edge_metadata)
+        # Node metadata
+        """ nodeData = {}
+        for node in self.tree.postorder():
+            nId = {'Node id': node.name}
+            coords = {'x': node.x2, 'y': node.y2}
+            nodeData[node.name] = {**nId, **coords}
+
+        # edge metadata
+        edgeData = {}
+        for node in self.tree.postorder():
+            pId = {'Parent id': node.name}
+            pCoords = {'px': node.x2, 'py': node.y2}
+            for child in node.children:
+                nId = {'Node id': child.name}
+                coords = {'x': child.x2, 'y': child.y2}
+                edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
+
+        # convert to pd.DataFrame
+        nodeMeta = pd.DataFrame(nodeData).T
+        edgeMeta = pd.DataFrame(edgeData).T
+
+        return (nodeMeta, edgeMeta)
+        """
+        """
+        Selective render currently based on level traversal
+        """
+
         return (self.node_metadata, self.edge_metadata)
+
