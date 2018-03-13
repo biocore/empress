@@ -387,8 +387,8 @@ class Tree(TreeNode):
 class Model(object):
 
     def __init__(self, tree,
-                 internal_metadata_file,
-                 leaf_metadata_file,
+                 internal_metadata_file=None,
+                 leaf_metadata_file=None,
                  node_metadata=None,
                  edge_metadata=None):
         """ Model constructor.
@@ -410,6 +410,7 @@ class Model(object):
            Every row corresponds to a unique edge
            and every column corresponds to an attribute.
         """
+        self.zoom_level = 1
         self.tree = Tree.from_tree(tree)
         if node_metadata is None and edge_metadata is None:
             self.node_metadata, self.edge_metadata = self.tree.coords(700,
@@ -662,24 +663,60 @@ class Model(object):
             print(str(xr))
 
         return self.retrive_view_coords()
+
         """
 
-        # copy edge_metadata dataframe
+        # # copy edge_metadata dataframe
+        # zoomed_edges = self.edge_metadata.copy(deep=True)
+
+        # # multiply all coordinates by level/scale
+        # zoomed_edges.x = zoomed_edges.x * np.float64(level)
+        # zoomed_edges.y = zoomed_edges.y * np.float64(level)
+        # zoomed_edges.px = zoomed_edges.px * np.float64(level)
+        # zoomed_edges.py = zoomed_edges.py * np.float64(level)
+
+        # # add all x coordinates by tx
+        # zoomed_edges.x = zoomed_edges.x + np.float64(tx)
+        # zoomed_edges.px = zoomed_edges.px + np.float64(tx)
+
+        # # add all y coordinates by ty
+        # zoomed_edges.y = zoomed_edges.y + np.float64(ty)
+        # zoomed_edges.py = zoomed_edges.py + np.float64(ty)
+         # copy edge_metadata dataframe
+        
         zoomed_edges = self.edge_metadata.copy(deep=True)
+        # print("This is tx from inside model:" + tx)
 
-        # multiply all coordinates by level/scale
-        zoomed_edges.x = zoomed_edges.x * np.float64(level)
-        zoomed_edges.y = zoomed_edges.y * np.float64(level)
-        zoomed_edges.px = zoomed_edges.px * np.float64(level)
-        zoomed_edges.py = zoomed_edges.py * np.float64(level)
+        
+        zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l * np.float64(level))
+        zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l * np.float64(level))
+        zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l * np.float64(level))
+        zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l * np.float64(level))
 
-        # add all x coordinates by tx
-        zoomed_edges.x = zoomed_edges.x + np.float64(tx)
-        zoomed_edges.px = zoomed_edges.px + np.float64(tx)
+        zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l + np.float64(tx))
+        zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l + np.float64(ty))
+        zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l + np.float64(tx))
+        zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l + np.float64(ty))
 
-        # add all y coordinates by ty
-        zoomed_edges.y = zoomed_edges.y + np.float64(ty)
-        zoomed_edges.py = zoomed_edges.py + np.float64(ty)
+
+        # edgeData = {}
+        # counter = 0
+        # for node in self.tree.levelorder():
+        #     if counter < 500:
+        #         if node.is_tip():
+        #             edgeData["is_tip"] = True
+        #         else :
+        #             edgeData["is_tip"] = False
+
+        #         pId = {'Parent id': node.name}
+        #         pCoords = {'px': node.x2, 'py': node.y2}
+        #         for child in node.children:
+        #             nId = {'Node id': child.name}
+        #             coords = {'x': child.x2, 'y': child.y2}
+        #             edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
+        #             counter = counter + 1
+
+        # edgeMeta = pd.DataFrame(edgeData).T
 
         return zoomed_edges
 
@@ -794,5 +831,9 @@ class Model(object):
 
         return (nodeMeta, edgeMeta)
         """
+        """
+        Selective render currently based on level traversal
+        """
+
         return (self.node_metadata, self.edge_metadata)
 
