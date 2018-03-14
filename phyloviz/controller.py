@@ -7,12 +7,14 @@ import pandas as pd
 from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import ward, complete
 
+# small newick tree
 # tree = model.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
-
-# tree = model.read('./TreeOfLife.nwk','newick')
 
 # Need to keep!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
+# Need to keep!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
+
 internal_metadata_file = 'ncbi.t2t.txt'
 leaf_metadata_file = 'metadata.txt'
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -30,6 +32,9 @@ for i, n in enumerate(tree.postorder(include_self=True)):
     if not n.is_tip():
         n.name = "y%d" % i
 
+m = Model(tree, 'ncbi.t2t.txt', 'metadata.txt')
+nodeM, edgeM = m.retrive_view_coords()
+# edgeM = edgeM.head(100000)
 
 m = Model(tree, internal_metadata_file, leaf_metadata_file)
 nodeM, edgeM = m.retrive_view_coords()
@@ -50,7 +55,6 @@ class NodeHandler(RequestHandler):
 class EdgeHandler(RequestHandler):
     def get(self):
         edges = edgeM.to_json(orient='records')
-        # print(edgeM)
         self.write(edges)
         self.finish()
 
@@ -68,6 +72,9 @@ class ZoomHandler(RequestHandler):
         self.finish()
 
 
+class BenchmarkHandler(RequestHandler):
+    def get(self):
+        self.render("benchmark.html")
 # # Set up REST API for model
 # app = Flask(__name__)
 
