@@ -1,5 +1,5 @@
 import tornado
-from controller import ModelHandler, IndexHandler, NodeHandler, EdgeHandler, ZoomHandler, BenchmarkHandler
+from controller import ModelHandler, NodeHandler, EdgeHandler, ZoomHandler, BenchmarkHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 

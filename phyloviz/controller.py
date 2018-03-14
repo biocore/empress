@@ -15,17 +15,17 @@ from scipy.cluster.hierarchy import ward,complete
 #tree = model.read('./TreeOfLife.nwk','newick')
 
 #Need to keep!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
+tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
 internal_metadata_file = 'ncbi.t2t.txt'
 leaf_metadata_file = 'metadata.txt'
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-np.random.seed(0)
-x = np.random.rand(1000)
-dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))
-lm = complete(dm.condensed_form())
-ids = np.arange(len(x)).astype(np.str)
-tree = TreeNode.from_linkage_matrix(lm, ids)
+#np.random.seed(0)
+#x = np.random.rand(1000)
+#dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))
+#lm = complete(dm.condensed_form())
+#ids = np.arange(len(x)).astype(np.str)
+#tree = TreeNode.from_linkage_matrix(lm, ids)
 
 m = Model(tree,'ncbi.t2t.txt','metadata.txt')
 nodeM, edgeM = m.retrive_view_coords()
