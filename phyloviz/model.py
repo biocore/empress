@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import skbio
 
+
 def read_leaf_node_metadata(file_name):
     """ Reads in metadata for leaf node
 
@@ -17,8 +18,10 @@ def read_leaf_node_metadata(file_name):
 
     """
     metadata = pd.read_table(file_name)
-    metadata.rename(columns={metadata.columns[0]:'Node id'},inplace=True)
+    metadata.rename(columns={metadata.columns[0]: 'Node id'}, inplace=True)
     return metadata
+
+
 def read_internal_node_metadata(file_name):
     """ Reads in metadata for internal node
 
@@ -33,8 +36,10 @@ def read_internal_node_metadata(file_name):
 
     """
 
-    metadata = pd.read_table(file_name,skiprows=3,names = ['Node id', 'label'])
+    metadata = pd.read_table(file_name, skiprows=3, names=['Node id', 'label'])
     return metadata
+
+
 def read(file_name, file_format='newick'):
     """ Reads in contents from a file.
 
@@ -259,7 +264,7 @@ class Tree(TreeNode):
         for node in self.postorder():
             if node.is_tip():
                 edgeData["is_tip"] = True
-            else :
+            else:
                 edgeData["is_tip"] = False
 
             pId = {'Parent id': node.name}
@@ -683,42 +688,40 @@ class Model(object):
         # zoomed_edges.y = zoomed_edges.y + np.float64(ty)
         # zoomed_edges.py = zoomed_edges.py + np.float64(ty)
          # copy edge_metadata dataframe
-        
-        zoomed_edges = self.edge_metadata.copy(deep=True)
-        # print("This is tx from inside model:" + tx)
 
-        
-        zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l * np.float64(level))
-        zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l * np.float64(level))
-        zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l * np.float64(level))
-        zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l * np.float64(level))
+        # zoomed_edges = self.edge_metadata.copy(deep=True)
 
-        zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l + np.float64(tx))
-        zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l + np.float64(ty))
-        zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l + np.float64(tx))
-        zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l + np.float64(ty))
+        # zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l * np.float64(level))
+        # zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l * np.float64(level))
+        # zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l * np.float64(level))
+        # zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l * np.float64(level))
 
+        # zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l + np.float64(tx))
+        # zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l + np.float64(ty))
+        # zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l + np.float64(tx))
+        # zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l + np.float64(ty))
 
-        # edgeData = {}
-        # counter = 0
-        # for node in self.tree.levelorder():
-        #     if counter < 500:
-        #         if node.is_tip():
-        #             edgeData["is_tip"] = True
-        #         else :
-        #             edgeData["is_tip"] = False
+        edgeData = {}
+        counter = 0
+        for node in self.tree.levelorder():
+            if counter < 500:
+                if node.is_tip():
+                    edgeData["is_tip"] = True
+                else:
+                    edgeData["is_tip"] = False
 
-        #         pId = {'Parent id': node.name}
-        #         pCoords = {'px': node.x2, 'py': node.y2}
-        #         for child in node.children:
-        #             nId = {'Node id': child.name}
-        #             coords = {'x': child.x2, 'y': child.y2}
-        #             edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
-        #             counter = counter + 1
+                pId = {'Parent id': node.name}
+                pCoords = {'px': node.x2, 'py': node.y2}
+                for child in node.children:
+                    nId = {'Node id': child.name}
+                    coords = {'x': child.x2, 'y': child.y2}
+                    edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
+                    counter = counter + 1
 
-        # edgeMeta = pd.DataFrame(edgeData).T
+        edgeMeta = pd.DataFrame(edgeData).T
 
-        return zoomed_edges
+        return edgeMeta
+        # return zoomed_edges
 
     # Metadata manipulation
     def groupByCategory(metadata, attribute, category):
