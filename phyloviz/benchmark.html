@@ -133,7 +133,7 @@
 
 
 		function redraw(){
-            var start = $.now();
+            var s = $.now();
 			var update_lines = d3.select("#edges")
 				.selectAll("line")
 				.data(edges)
@@ -146,8 +146,8 @@
 				.attr("x2", function(d) {return d.x; })
 				.attr("y2", function(d) {return d.y; });
 			update_lines.exit().remove();
-            var end = $.now() - start;
-            console.log("redrawing used" + end);
+            var e = $.now() - start;
+            console.log("redrawing used" + e);
 		}
 
 		function clickTest() {
