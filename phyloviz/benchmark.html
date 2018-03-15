@@ -59,13 +59,25 @@
 
 		/*document.body.style.width = '700px';
 		document.body.style.height = '1000px';*/
+        var start = $.now();
+		$.getJSON('http://localhost:8080/api/edges', function(data) {
+			edges = JSON.parse(JSON.stringify(data));
+		}).then(benchmark);
 
+
+
+        function benchmark(){
+          var end = $.now();
+          console.log("debug");
+          console.log("transfer" + (end-start));
+
+        }
 		$.getJSON('http://localhost:8080/api/edges', function(data) {
 			edges = JSON.parse(JSON.stringify(data));
 		}).then(plot);
 
 		function plot() {
-
+            var s = $.now();
 			svg = d3.select("svg")
 				.on('click', clickTest)
 				.style("pointer-events", "all")
@@ -114,7 +126,11 @@
 			// 	.scaleExtent([1, 4])
 			// 	// .translateExtent([[0,0],[width, height]])
 			// 	.on("zoom", zoomed));
+            var e = $.now()-s;
+            console.log("first time" + e);
+
 		}
+
 
 		function redraw(){
             var start = $.now();
