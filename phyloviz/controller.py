@@ -27,13 +27,11 @@ leaf_metadata_file = 'metadata.txt'
 #ids = np.arange(len(x)).astype(np.str)
 #tree = TreeNode.from_linkage_matrix(lm, ids)
 
-m = Model(tree,'ncbi.t2t.txt','metadata.txt')
-nodeM, edgeM = m.retrive_view_coords()
-#edgeM = edgeM.head(100000)
 
 
 m = Model(tree, internal_metadata_file, leaf_metadata_file)
 nodeM, edgeM = m.retrive_view_coords()
+edgeM = edgeM.head(100)
 
 
 class ModelHandler(RequestHandler):
