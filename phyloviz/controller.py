@@ -1,3 +1,4 @@
+import model
 from model import Model
 from tornado.web import RequestHandler
 import sys

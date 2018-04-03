@@ -12,7 +12,7 @@ class Application(tornado.web.Application):
                     (r"/api/nodes", NodeHandler),
                     (r"/api/edges", EdgeHandler),
                     (r"/zoom", ZoomHandler),
-                    (r"/benchmark",BenchmarkHandler)
+                    (r"/benchmark",BenchmarkHandler),
                     (r"/select", SelectHandler)
                     ]
 
