@@ -30,7 +30,7 @@ window.fragmentShaderText =
 '}'
 ].join('\n');
 
-//global variables
+//global variables -- window = global
 window.canvas;
 window.vertexShader; //calculates the cordinates of tree in screen space
 window.fragmentShader; //colors the tree

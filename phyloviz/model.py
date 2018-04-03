@@ -253,7 +253,7 @@ class Tree(TreeNode):
             nId = {"Node_id": node.name}
             coords = {'x': node.x2, 'y': node.y2}
             nodeData[node.name] = {**nId, **coords}
-            node.alpha = 0.3
+            node.alpha = 0.0
 
         # edge metadata
         edgeData = {}
