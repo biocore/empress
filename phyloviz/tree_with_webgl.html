@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>WebGL - Experiment</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
+		<script type="text/javascript" src="{{ static_url('gl-matrix.js') }}"></script>
+		<script type="text/javascript"  src="{{ static_url('init_webgl.js') }}"></script>
+		<script type="text/javascript" src="{{ static_url('callbacks.js') }} "></script>
+		<script type="text/javascript" src="{{ static_url('drawing_loop.js') }} "></script>
+	</head>
+	<body>
+		<fieldset>
+ 	 		<select id = "metadataOptions">
+			</select>
+  			<input type = "button"
+    			value = "select"
+    			onclick = "selectOption()" />
+    		<input type="text" 
+    			id="valueField">
+  		</fieldset>
+		<canvas id="tree-surface" width="1500" height="800"> 
+			Your browser does not support HTML5
+		</canvas>
+		<script>
+			var edgeMetadata;
+			$.getJSON('http://localhost:8080/api/edges', function(data) {
+				edgeMetadata = JSON.parse(JSON.stringify(data));
+			}).done(function() {
+				InitWebGl(edgeMetadata);
+			});
+
+		</script>
+	</body>
+</html>
