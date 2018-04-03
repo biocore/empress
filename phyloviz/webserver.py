@@ -1,7 +1,8 @@
 import tornado
-from controller import ModelHandler, NodeHandler, EdgeHandler, ZoomHandler, BenchmarkHandler
+from controller import ModelHandler, NodeHandler, EdgeHandler, ZoomHandler, BenchmarkHandler, SelectHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+import os.path
 
 
 class Application(tornado.web.Application):
@@ -12,11 +13,13 @@ class Application(tornado.web.Application):
                     (r"/api/edges", EdgeHandler),
                     (r"/zoom", ZoomHandler),
                     (r"/benchmark",BenchmarkHandler)
+                    (r"/select", SelectHandler)
                     ]
 
-        settings = {
-            "debug": True
-        }
+        settings = dict(
+            static_path=os.path.join(os.path.dirname(__file__), "static"),
+            debug=True
+        )
         tornado.web.Application.__init__(self, handlers, **settings)
 
 

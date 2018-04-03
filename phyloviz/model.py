@@ -18,7 +18,7 @@ def read_leaf_node_metadata(file_name):
 
     """
     metadata = pd.read_table(file_name)
-    metadata.rename(columns={metadata.columns[0]: 'Node id'}, inplace=True)
+    metadata.rename(columns={metadata.columns[0]:"Node_id"},inplace=True)
     return metadata
 
 
@@ -35,8 +35,7 @@ def read_internal_node_metadata(file_name):
        pd.Dataframe
 
     """
-
-    metadata = pd.read_table(file_name, skiprows=3, names=['Node id', 'label'])
+    metadata = pd.read_table(file_name,skiprows=3,names = ["Node_id", 'label'])
     return metadata
 
 
@@ -250,14 +249,15 @@ class Tree(TreeNode):
         """
 
         # calculates coordinates of all nodes
-        self.rescale(width, height)
+        scale = self.rescale(width, height)
 
         # Node metadata
         nodeData = {}
         for node in self.postorder():
-            nId = {'Node id': node.name}
+            nId = {"Node_id": node.name}
             coords = {'x': node.x2, 'y': node.y2}
             nodeData[node.name] = {**nId, **coords}
+            node.alpha = 0.0
 
         # edge metadata
         edgeData = {}
@@ -267,18 +267,21 @@ class Tree(TreeNode):
             else:
                 edgeData["is_tip"] = False
 
-            pId = {'Parent id': node.name}
+            pId = {"Parent_id": node.name}
             pCoords = {'px': node.x2, 'py': node.y2}
             for child in node.children:
-                nId = {'Node id': child.name}
+                nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
-                edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
+                alpha = {'alpha' : child.alpha }
+                edgeData[child.name] = {**nId, **coords, **pId, **pCoords, **alpha}
 
         # convert to pd.DataFrame
         nodeMeta = pd.DataFrame(nodeData).T
         edgeMeta = pd.DataFrame(edgeData).T
 
-        return (nodeMeta, edgeMeta)
+        centerX = self.x2
+        centerY = self.y2
+        return (nodeMeta, edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
@@ -416,10 +419,11 @@ class Model(object):
            and every column corresponds to an attribute.
         """
         self.zoom_level = 1
+        self.scale = 1
         self.tree = Tree.from_tree(tree)
         if node_metadata is None and edge_metadata is None:
-            self.node_metadata, self.edge_metadata = self.tree.coords(700,
-                                                                      1000)
+            self.node_metadata, self.edge_metadata, self.centerX, self.centerY, self.scale = self.tree.coords(900,
+                                                                                                    1500)
         else:
             self.node_metadata = node_metadata
             self.edge_metadata = edge_metadata
@@ -430,9 +434,9 @@ class Model(object):
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
 
         self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
-                                      how='outer', on='Node id')
+                                      how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
-                                      how='outer', on='Node id')
+                                      how='outer', on="Node_id")
 
         # Pipeline
         #   tree -> (layout) -> coords
@@ -636,7 +640,7 @@ class Model(object):
         self.edge_metadata[['y']].apply(lambda l: l + dy)
         return self.retrive_view_coords()
 
-    def zoom(self, level, tx, ty):
+    def zoom(self, level):
         """ Zooms in/out by remapping the (x1,y1) upper left corner and (x2,y2)
         lower right corner
         of the bounding box, and changes view coordinates as well as visibility
@@ -657,73 +661,44 @@ class Model(object):
            Rescaled view coordinates
 
         """
-        """
-        Need to change!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        Todo: Make this scale view coords
-        xr = self.tree.x2
-        yr = self.tree.y2
-        for node in self.tree.postorder():
-            node.x2 = 2*level*node.x2 - xr
-            node.y2 = 2*level*node.y2 - yr
-            print(str(xr))
-
-        return self.retrive_view_coords()
-
-        """
-
-        # # copy edge_metadata dataframe
         # zoomed_edges = self.edge_metadata.copy(deep=True)
 
-        # # multiply all coordinates by level/scale
-        # zoomed_edges.x = zoomed_edges.x * np.float64(level)
-        # zoomed_edges.y = zoomed_edges.y * np.float64(level)
-        # zoomed_edges.px = zoomed_edges.px * np.float64(level)
-        # zoomed_edges.py = zoomed_edges.py * np.float64(level)
-
-        # # add all x coordinates by tx
-        # zoomed_edges.x = zoomed_edges.x + np.float64(tx)
-        # zoomed_edges.px = zoomed_edges.px + np.float64(tx)
-
-        # # add all y coordinates by ty
-        # zoomed_edges.y = zoomed_edges.y + np.float64(ty)
-        # zoomed_edges.py = zoomed_edges.py + np.float64(ty)
-         # copy edge_metadata dataframe
-
-        # zoomed_edges = self.edge_metadata.copy(deep=True)
-
+        # multiply by level/scale
         # zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l * np.float64(level))
         # zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l * np.float64(level))
         # zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l * np.float64(level))
         # zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l * np.float64(level))
 
+        # add by transform x/y
         # zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l + np.float64(tx))
         # zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l + np.float64(ty))
         # zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l + np.float64(tx))
         # zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l + np.float64(ty))
 
-        edgeData = {}
-        counter = 0
-        for node in self.tree.levelorder():
-            if counter < 500:
-                if node.is_tip():
-                    edgeData["is_tip"] = True
-                else:
-                    edgeData["is_tip"] = False
-
-                pId = {'Parent id': node.name}
-                pCoords = {'px': node.x2, 'py': node.y2}
-                for child in node.children:
-                    nId = {'Node id': child.name}
-                    coords = {'x': child.x2, 'y': child.y2}
-                    edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
-                    counter = counter + 1
-
-        edgeMeta = pd.DataFrame(edgeData).T
-
-        return edgeMeta
         # return zoomed_edges
 
-    # Metadata manipulation
+        #  # edge metadata
+        # edgeData = {}
+        # for node in self.tree.postorder():
+        #     pId = {"Parent_id": node.name}
+        #     pCoords = {'px': node.x2, 'py': node.y2}
+        #     for child in node.children:
+        #         nId = {"Node_id": child.name}
+        #         coords = {'x': child.x2, 'y': child.y2}
+        #         alpha = {'alpha' : child.alpha }
+        #         edgeData[child.name] = {**nId, **coords, **pId, **pCoords, **alpha}
+
+        # edgeMeta = pd.DataFrame(edgeData).T
+
+        # centers root node at (0,0) for webGL
+        # # edgeMeta['px'] = edgeMeta[['px']].apply(lambda l: l - self.centerX)
+        # # edgeMeta['py'] = edgeMeta[['py']].apply(lambda l: l - self.centerY)
+        # # edgeMeta['x'] = edgeMeta[['x']].apply(lambda l: l - self.centerX)
+        # # edgeMeta['y'] = edgeMeta[['y']].apply(lambda l: l - self.centerY)
+
+        # return edgeMeta
+        pass
+
     def groupByCategory(metadata, attribute, category):
         """ Get certain rows in the metadata given the categories.
 
@@ -810,33 +785,46 @@ class Model(object):
         pass
 
     def retrive_view_coords(self):
-        # return (self.node_metadata, self.edge_metadata)
-        # Node metadata
-        """ nodeData = {}
-        for node in self.tree.postorder():
-            nId = {'Node id': node.name}
-            coords = {'x': node.x2, 'y': node.y2}
-            nodeData[node.name] = {**nId, **coords}
+        """ Returns edge and node metadata.
 
-        # edge metadata
-        edgeData = {}
-        for node in self.tree.postorder():
-            pId = {'Parent id': node.name}
-            pCoords = {'px': node.x2, 'py': node.y2}
-            for child in node.children:
-                nId = {'Node id': child.name}
-                coords = {'x': child.x2, 'y': child.y2}
-                edgeData[child.name] = {**nId, **coords, **pId, **pCoords}
-
-        # convert to pd.DataFrame
-        nodeMeta = pd.DataFrame(nodeData).T
-        edgeMeta = pd.DataFrame(edgeData).T
-
-        return (nodeMeta, edgeMeta)
+        Parameters
+        ----------
+        Returns
+        -------
+        node_metadata
+        edge_metadata : pd.DataFrame
         """
-        """
-        Selective render currently based on level traversal
-        """
+        self.edge_metadata['px'] = self.edge_metadata[['px']].apply(lambda l: l - self.centerX)
+        self.edge_metadata['py'] = self.edge_metadata[['py']].apply(lambda l: l - self.centerY)
+        self.edge_metadata['x'] = self.edge_metadata[['x']].apply(lambda l: l - self.centerX)
+        self.edge_metadata['y'] = self.edge_metadata[['y']].apply(lambda l: l - self.centerY)
 
         return (self.node_metadata, self.edge_metadata)
+
+    def selectCategory(self, attribute, category):
+        """ Returns edge_metadata with updated alpha value which tells View what to hightlight
+
+        Parameters
+        ----------
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category:
+            The category of a certain attribute.
+
+        """
+        edgeData = self.edge_metadata.copy(deep=True)
+        # edgeData.set_index("Node_id", inplace=True)
+        # #print(edgeData)
+        # for tip in self.tree.tips():
+        #     # if edgeData.loc[[tip.name], [attribute]] == category:
+        #     #     edgeData['alpha'] = 1
+        #     # else:
+        #     #     edgeData['alpha'] = 0.3
+        #     print(edgeData.loc[[tip.name], [attribute]])
+
+        edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] > float(category), 1)
+
+        return edgeData
+
 

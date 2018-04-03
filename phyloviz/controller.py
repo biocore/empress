@@ -10,21 +10,20 @@ from scipy.cluster.hierarchy import ward, complete
 # small newick tree
 # tree = model.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
 
-# Need to keep!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
-# Need to keep!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
+#Need to keep!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
+# tree = model.read('./0B5tlRtQ-tBfkZSuneOKbg.nwk', 'newick')
 
 internal_metadata_file = 'ncbi.t2t.txt'
 leaf_metadata_file = 'metadata.txt'
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-np.random.seed(0)
-x = np.random.rand(1000)
-dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))
-lm = complete(dm.condensed_form())
-ids = np.arange(len(x)).astype(np.str)
-tree = TreeNode.from_linkage_matrix(lm, ids)
+# np.random.seed(0)
+# x = np.random.rand(1000)
+# dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x-y))
+# lm = complete(dm.condensed_form())
+# ids = np.arange(len(x)).astype(np.str)
+# tree = TreeNode.from_linkage_matrix(lm, ids)
 
 # initialize tree with branch length and named internal nodes
 for i, n in enumerate(tree.postorder(include_self=True)):
@@ -42,7 +41,8 @@ nodeM, edgeM = m.retrive_view_coords()
 
 class ModelHandler(RequestHandler):
     def get(self):
-        self.render('tree.html')
+        #self.render('tree_with_webgl.html')
+        self.render('tree_with_webgl.html')
 
 
 class NodeHandler(RequestHandler):
@@ -62,12 +62,21 @@ class EdgeHandler(RequestHandler):
 class ZoomHandler(RequestHandler):
     def get(self):
         level = self.get_argument('level')
-        tx = self.get_argument('tx')
-        ty = self.get_argument('ty')
-        zoomedM = m.zoom(level, tx, ty)
-        print(zoomedM)
+        # tx = self.get_argument('tx')
+        # ty = self.get_argument('ty')
+        zoomedM = m.zoom(level)
+        # print(zoomedM)
         edges = zoomedM.to_json(orient='records')
         # print(edges)
+        self.write(edges)
+        self.finish()
+
+class SelectHandler(RequestHandler):
+    def get(self):
+        attribute = self.get_argument('attribute')
+        category = self.get_argument('category')
+        selected = m.selectCategory(attribute, category)
+        edges = selected.to_json(orient='records')
         self.write(edges)
         self.finish()
 
