@@ -75,8 +75,10 @@ class ZoomHandler(RequestHandler):
 class SelectHandler(RequestHandler):
     def get(self):
         attribute = self.get_argument('attribute')
-        category = self.get_argument('category')
-        selected = m.selectCategory(attribute, category)
+        lower = self.get_argument('lower')
+        equal = self.get_argument('equal')
+        upper = self.get_argument('upper')
+        selected = m.selectCategory(attribute, lower, equal, upper)
         edges = selected.to_json(orient='records')
         self.write(edges)
         self.finish()

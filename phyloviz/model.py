@@ -801,7 +801,7 @@ class Model(object):
 
         return (self.node_metadata, self.edge_metadata)
 
-    def selectCategory(self, attribute, category):
+    def selectCategory(self, attribute, lower=None, equal=None, upper=None):
         """ Returns edge_metadata with updated alpha value which tells View what to hightlight
 
         Parameters
@@ -823,7 +823,19 @@ class Model(object):
         #     #     edgeData['alpha'] = 0.3
         #     print(edgeData.loc[[tip.name], [attribute]])
 
-        edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] > float(category), 1)
+        if lower is not "":
+            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] > float(lower), 1)
+
+        if equal is not "":
+            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] == equal, 1)
+
+
+        if upper is not "":
+            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] < float(upper), 1)
+
+
+        
+        
 
         return edgeData
 

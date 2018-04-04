@@ -103,8 +103,10 @@ function selectOption() {
 	console.log('option selected');
 	var edges;
 	var attr = document.getElementById("metadataOptions").value;
-	var value = document.getElementById("valueField").value
-	$.getJSON('http://localhost:8080/select', {attribute : attr, category : value}, function(data) {
+	var l = document.getElementById("lowerBound").value;
+	var u = document.getElementById("upperBound").value;
+	var e = document.getElementById("category").value;
+	$.getJSON('http://localhost:8080/select', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
 		edges = JSON.parse(JSON.stringify(data));		 
 	}).done(function() {
 		extractEdges(edges);
