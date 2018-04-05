@@ -1,7 +1,6 @@
-from model import Model
-import model
 import tornado
-from controller import ModelHandler, NodeHandler, EdgeHandler, ZoomHandler, BenchmarkHandler, SelectHandler
+from controller import ModelHandler, NodeHandler, EdgeHandler, ZoomHandler
+from controller import BenchmarkHandler, SelectHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 import os.path
@@ -14,7 +13,7 @@ class Application(tornado.web.Application):
                     (r"/api/nodes", NodeHandler),
                     (r"/api/edges", EdgeHandler),
                     (r"/zoom", ZoomHandler),
-                    (r"/benchmark",BenchmarkHandler),
+                    (r"/benchmark", BenchmarkHandler),
                     (r"/select", SelectHandler)
                     ]
 

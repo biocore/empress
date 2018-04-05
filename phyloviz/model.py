@@ -18,7 +18,7 @@ def read_leaf_node_metadata(file_name):
 
     """
     metadata = pd.read_table(file_name)
-    metadata.rename(columns={metadata.columns[0]:"Node_id"},inplace=True)
+    metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
     return metadata
 
 
@@ -35,7 +35,7 @@ def read_internal_node_metadata(file_name):
        pd.Dataframe
 
     """
-    metadata = pd.read_table(file_name,skiprows=3,names = ["Node_id", 'label'])
+    metadata = pd.read_table(file_name, skiprows=3, names=["Node_id", 'label'])
     return metadata
 
 
@@ -272,8 +272,9 @@ class Tree(TreeNode):
             for child in node.children:
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
-                alpha = {'alpha' : child.alpha }
-                edgeData[child.name] = {**nId, **coords, **pId, **pCoords, **alpha}
+                alpha = {'alpha': child.alpha}
+                edgeData[child.name] = {**nId, **coords, **pId,
+                                        **pCoords, **alpha}
 
         # convert to pd.DataFrame
         nodeMeta = pd.DataFrame(nodeData).T
@@ -422,8 +423,8 @@ class Model(object):
         self.scale = 1
         self.tree = Tree.from_tree(tree)
         if node_metadata is None and edge_metadata is None:
-            self.node_metadata, self.edge_metadata, self.centerX, self.centerY, self.scale = self.tree.coords(900,
-                                                                                                    1500)
+            self.node_metadata, self.edge_metadata, self.centerX, self.centerY,
+            self.scale = self.tree.coords(900, 1500)
         else:
             self.node_metadata = node_metadata
             self.edge_metadata = edge_metadata
@@ -632,10 +633,10 @@ class Model(object):
             node.x2 = node.x2 + dx
             node.y2 = node.y2 + dy
         """
-        #x_col = self.node_metadata.columns.get_loc('x')
-        #y_col = self.node_metadata.columns.get_loc('y')
-        #self.node_metadata.add(dx,axis=x_col)
-        #self.edge_metadata.add(dy, axis=y_col)
+        # x_col = self.node_metadata.columns.get_loc('x')
+        # y_col = self.node_metadata.columns.get_loc('y')
+        # self.node_metadata.add(dx,axis=x_col)
+        # self.edge_metadata.add(dy, axis=y_col)
         self.node_metadata[['x']].apply(lambda l: l + dx)
         self.edge_metadata[['y']].apply(lambda l: l + dy)
         return self.retrive_view_coords()
@@ -664,20 +665,28 @@ class Model(object):
         # zoomed_edges = self.edge_metadata.copy(deep=True)
 
         # multiply by level/scale
-        # zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l * np.float64(level))
-        # zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l * np.float64(level))
-        # zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l * np.float64(level))
-        # zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l * np.float64(level))
+        zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l *
+                                                      np.float64(level))
+        zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l *
+                                                      np.float64(level))
+        zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l *
+                                                        np.float64(level))
+        zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l *
+                                                        np.float64(level))
 
         # add by transform x/y
-        # zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l + np.float64(tx))
-        # zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l + np.float64(ty))
-        # zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l + np.float64(tx))
-        # zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l + np.float64(ty))
+        # zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l +
+        #                                               np.float64(tx))
+        # zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l +
+        #                                               np.float64(ty))
+        # zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l +
+        #                                                 np.float64(tx))
+        # zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l +
+        #                                                 np.float64(ty))
 
         # return zoomed_edges
 
-        #  # edge metadata
+        # edge metadata
         # edgeData = {}
         # for node in self.tree.postorder():
         #     pId = {"Parent_id": node.name}
@@ -685,16 +694,17 @@ class Model(object):
         #     for child in node.children:
         #         nId = {"Node_id": child.name}
         #         coords = {'x': child.x2, 'y': child.y2}
-        #         alpha = {'alpha' : child.alpha }
-        #         edgeData[child.name] = {**nId, **coords, **pId, **pCoords, **alpha}
+        #         alpha = {'alpha': child.alpha}
+        #         edgeData[child.name] = {**nId, **coords, **pId, **pCoords,
+        #                                 **alpha}
 
         # edgeMeta = pd.DataFrame(edgeData).T
 
         # centers root node at (0,0) for webGL
-        # # edgeMeta['px'] = edgeMeta[['px']].apply(lambda l: l - self.centerX)
-        # # edgeMeta['py'] = edgeMeta[['py']].apply(lambda l: l - self.centerY)
-        # # edgeMeta['x'] = edgeMeta[['x']].apply(lambda l: l - self.centerX)
-        # # edgeMeta['y'] = edgeMeta[['y']].apply(lambda l: l - self.centerY)
+        # edgeMeta['px'] = edgeMeta[['px']].apply(lambda l: l - self.centerX)
+        # edgeMeta['py'] = edgeMeta[['py']].apply(lambda l: l - self.centerY)
+        # edgeMeta['x'] = edgeMeta[['x']].apply(lambda l: l - self.centerX)
+        # edgeMeta['y'] = edgeMeta[['y']].apply(lambda l: l - self.centerY)
 
         # return edgeMeta
         pass
@@ -802,7 +812,8 @@ class Model(object):
         return (self.node_metadata, self.edge_metadata)
 
     def selectCategory(self, attribute, lower=None, equal=None, upper=None):
-        """ Returns edge_metadata with updated alpha value which tells View what to hightlight
+        """ Returns edge_metadata with updated alpha value which tells View
+        what to hightlight
 
         Parameters
         ----------
@@ -824,19 +835,15 @@ class Model(object):
         #     print(edgeData.loc[[tip.name], [attribute]])
 
         if lower is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] > float(lower), 1)
+            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] >
+                                                       float(lower), 1)
 
         if equal is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] == equal, 1)
-
+            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] ==
+                                                       equal, 1)
 
         if upper is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] < float(upper), 1)
-
-
-        
-        
+            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] <
+                                                       float(upper), 1)
 
         return edgeData
-
-
