@@ -13,6 +13,9 @@ from scipy.cluster.hierarchy import ward, complete
 
 #Need to keep!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
+
+# tree = model.read('./gg_13_5_otus_99_annotated.tree', 'newick')
+
 # tree = model.read('./0B5tlRtQ-tBfkZSuneOKbg.nwk', 'newick')
 
 internal_metadata_file = 'ncbi.t2t.txt'
@@ -32,8 +35,8 @@ for i, n in enumerate(tree.postorder(include_self=True)):
     if not n.is_tip():
         n.name = "y%d" % i
 
-m = Model(tree, 'ncbi.t2t.txt', 'metadata.txt')
-nodeM, edgeM = m.retrive_view_coords()
+# m = Model(tree, 'ncbi.t2t.txt', 'metadata.txt')
+# nodeM, edgeM = m.retrive_view_coords()
 # edgeM = edgeM.head(100000)
 
 m = Model(tree, internal_metadata_file, leaf_metadata_file)

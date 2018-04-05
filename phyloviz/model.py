@@ -249,6 +249,7 @@ class Tree(TreeNode):
         """
 
         # calculates coordinates of all nodes
+        print('start')
         scale = self.rescale(width, height)
 
         # Node metadata
@@ -281,6 +282,7 @@ class Tree(TreeNode):
 
         centerX = self.x2
         centerY = self.y2
+        print('done')
         return (nodeMeta, edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
