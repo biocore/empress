@@ -249,7 +249,6 @@ class Tree(TreeNode):
         """
 
         # calculates coordinates of all nodes
-        print('start')
         scale = self.rescale(width, height)
 
         # Node metadata
@@ -283,7 +282,6 @@ class Tree(TreeNode):
 
         centerX = self.x2
         centerY = self.y2
-        print('done')
         return (nodeMeta, edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
@@ -374,9 +372,11 @@ class Tree(TreeNode):
             y1 = node.parent.y2
             a = node.parent.angle
 
-            # calculates 'a'
+            # calculates 'a' - 2 = parent.leafcount
             a = a - node.parent.leafcount * da / 2
             for sib in node.parent.children:
+                if len(node.parent.children) < 2:
+                    print(len(node.parent.children))
                 if sib != node:
                     a = a + sib.leafcount * da
                 else:
@@ -425,8 +425,8 @@ class Model(object):
         self.scale = 1
         self.tree = Tree.from_tree(tree)
         if node_metadata is None and edge_metadata is None:
-            self.node_metadata, self.edge_metadata, self.centerX, self.centerY,
-            self.scale = self.tree.coords(900, 1500)
+            (self.node_metadata, self.edge_metadata, self.centerX, self.centerY,
+            self.scale) = self.tree.coords(900, 1500)
         else:
             self.node_metadata = node_metadata
             self.edge_metadata = edge_metadata
