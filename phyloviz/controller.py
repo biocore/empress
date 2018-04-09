@@ -29,22 +29,19 @@ leaf_metadata_file = 'metadata.txt'
 # ids = np.arange(len(x)).astype(np.str)
 # tree = TreeNode.from_linkage_matrix(lm, ids)
 
-tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
-# tree = model.read('./0B5tlRtQ-tBfkZSuneOKbg.nwk', 'newick')
+# tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
+# # tree = model.read('./0B5tlRtQ-tBfkZSuneOKbg.nwk', 'newick')
 
 # metadata files
 internal_metadata_file = 'ncbi.t2t.txt'
 leaf_metadata_file = 'metadata.txt'
 
-# initialize tree with branch length and named internal nodes
+# initialize tree with branch length Todo: need to incorperate this into model
 for i, n in enumerate(tree.postorder(include_self=True)):
     n.length = 1
-    if not n.is_tip():
-        n.name = "y%d" % i
+     # if not n.is_tip():
+     #     n.name = "y%d" % i
 
-# m = Model(tree, 'ncbi.t2t.txt', 'metadata.txt')
-# nodeM, edgeM = m.retrive_view_coords()
-# edgeM = edgeM.head(100000)
 m = Model(tree, internal_metadata_file, leaf_metadata_file)
 nodeM, edgeM = m.retrive_view_coords()
 

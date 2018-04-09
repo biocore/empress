@@ -425,8 +425,8 @@ class Model(object):
         self.scale = 1
         self.tree = Tree.from_tree(tree)
         if node_metadata is None and edge_metadata is None:
-            self.node_metadata, self.edge_metadata, self.centerX, self.centerY,
-            self.scale = self.tree.coords(900, 1500)
+            (self.node_metadata, self.edge_metadata, self.centerX, self.centerY,
+            self.scale) = self.tree.coords(900, 1500)
         else:
             self.node_metadata = node_metadata
             self.edge_metadata = edge_metadata
@@ -797,13 +797,13 @@ class Model(object):
         pass
 
     def retrive_view_coords(self):
-        """ Returns edge and node metadata.
+        """ Translate the tree coords in order to makes root (0,0) and Returns edge metadata.
 
         Parameters
         ----------
         Returns
         -------
-        node_metadata
+        node_metadat : node_metadata
         edge_metadata : pd.DataFrame
         """
         self.edge_metadata['px'] = self.edge_metadata[['px']].apply(lambda l: l - self.centerX)
@@ -835,6 +835,7 @@ class Model(object):
         #     # else:
         #     #     edgeData['alpha'] = 0.3
         #     print(edgeData.loc[[tip.name], [attribute]])
+
 
         if lower is not "":
             edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] >

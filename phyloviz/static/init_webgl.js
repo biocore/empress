@@ -65,7 +65,7 @@ function InitWebGl() {
 		return;
 	}
 
-	var edgeMetadata = arguments[0];
+	window.edgeMetadata = arguments[0];
 	if(edgeMetadata === undefined) {
 		console.log('edgeMetadata not empty')
 		return;
@@ -159,32 +159,33 @@ function InitWebGl() {
 /*
  * Extracts the coordinates of the tree from edge_metadata
  */
-function extractEdges(edgeMetadata) {
+function extractEdges(edgeMeta) {
 	var minX = Infinity;
 	var maxX = -Infinity;
 	var minY = Infinity;
 	var maxY = -Infinity;
 	window.result = [];
-	for(i = 0; i < edgeMetadata.length; i++){
+	window.edgeMetadata = edgeMeta;
+	for(i = 0; i < window.edgeMetadata.length; i++){
 		//console.log(edgeMetadata[i].px);
-		if(edgeMetadata[i].x > maxX){
-			maxX =  edgeMetadata[i].x;
+		if(window.edgeMetadata[i].x > maxX){
+			maxX =  window.edgeMetadata[i].x;
 		}
-		if(edgeMetadata[i].y > maxY){
-			maxY =  edgeMetadata[i].y;
+		if(window.edgeMetadata[i].y > maxY){
+			maxY =  window.edgeMetadata[i].y;
 		}
-		if(edgeMetadata[i].x < minX){
-			minX =  edgeMetadata[i].x;
+		if(window.edgeMetadata[i].x < minX){
+			minX =  window.edgeMetadata[i].x;
 		}
-		if(edgeMetadata[i].y < minY){
-			minY =  edgeMetadata[i].y;
+		if(window.edgeMetadata[i].y < minY){
+			minY =  window.edgeMetadata[i].y;
 		}
-		window.result.push(edgeMetadata[i].px);
-		window.result.push(edgeMetadata[i].py);
-		window.result.push(edgeMetadata[i].alpha);
-		window.result.push(edgeMetadata[i].x);
-		window.result.push(edgeMetadata[i].y);
-		window.result.push(edgeMetadata[i].alpha);
+		window.result.push(window.edgeMetadata[i].px);
+		window.result.push(window.edgeMetadata[i].py);
+		window.result.push(window.edgeMetadata[i].alpha);
+		window.result.push(window.edgeMetadata[i].x);
+		window.result.push(window.edgeMetadata[i].y);
+		window.result.push(window.edgeMetadata[i].alpha);
 	}
 
 	var xDim = Math.abs(maxX - minX);
