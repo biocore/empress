@@ -2,7 +2,7 @@ from skbio import TreeNode
 import pandas as pd
 import numpy as np
 import skbio
-
+import time
 
 def read_leaf_node_metadata(file_name):
     """ Reads in metadata for leaf node
@@ -249,9 +249,11 @@ class Tree(TreeNode):
         """
 
         # calculates coordinates of all nodes
-        print('start')
+        print("start")
+        start = time.time()
         scale = self.rescale(width, height)
-
+        print(time.time() - start)
+        print("done")
         # Node metadata
         nodeData = {}
         for node in self.postorder():
@@ -283,7 +285,6 @@ class Tree(TreeNode):
 
         centerX = self.x2
         centerY = self.y2
-        print('done')
         return (nodeMeta, edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
@@ -310,23 +311,22 @@ class Tree(TreeNode):
         best_scale = 0
         for i in range(60):
             direction = i / 60.0 * np.pi
-            # TODO:
-            # This function has a little bit of recursion.  This will
-            # need to be refactored to remove the recursion.
 
-            points = self.update_coordinates(1.0, 0, 0, direction, angle)
-
-            xs, ys = zip(*points)
+            # points = self.update_coordinates(1.0, 0, 0, direction, angle)
+            (max_x, min_x, max_y, min_y) = self.update_coordinates(1.0, 0, 0, direction, angle)
+            # xs, ys = zip(*points)
             # double check that the tree fits within the margins
-            scale = min(float(width) / (max(xs) - min(xs)),
-                        float(height) / (max(ys) - min(ys)))
+            # scale = min(float(width) / (max(xs) - min(xs)),
+            #             float(height) / (max(ys) - min(ys)))
+            scale = min(float(width) / (max_x - min_x),
+                        float(height) / (max_y - min_y))
             # TODO: This margin seems a bit arbituary.
             # will need to investigate.
             scale *= 0.95  # extra margin for labels
             if scale > best_scale:
                 best_scale = scale
-                mid_x = width / 2 - ((max(xs) + min(xs)) / 2) * scale
-                mid_y = height / 2 - ((max(ys) + min(ys)) / 2) * scale
+                mid_x = width / 2 - ((max_x + min_x) / 2) * scale
+                mid_y = height / 2 - ((max_y + min_y) / 2) * scale
                 best_args = (scale, mid_x, mid_y, direction, angle)
 
         self.update_coordinates(*best_args)
@@ -359,7 +359,10 @@ class Tree(TreeNode):
         -----
         """
 
-        points = []
+        max_x = float('-inf')
+        min_x = float('inf')
+        max_y = float('-inf')
+        min_y = float('inf')
 
         # calculates self coords/angle
         # Constant angle algorithm.  Should add maximum daylight step.
@@ -374,9 +377,11 @@ class Tree(TreeNode):
             y1 = node.parent.y2
             a = node.parent.angle
 
-            # calculates 'a'
+            
             a = a - node.parent.leafcount * da / 2
             for sib in node.parent.children:
+                if len(node.parent.children) < 2:
+                    print(len(node.parent.children))
                 if sib != node:
                     a = a + sib.leafcount * da
                 else:
@@ -387,12 +392,18 @@ class Tree(TreeNode):
             y2 = y1 + node.length * s * np.cos(a)
             (node.x1, node.y1, node.x2, node.y2, node.angle) = (x1, y1, x2,
                                                                 y2, a)
+                                                                    
+            if x2 > max_x:
+                max_x = x2
+            if x2 < min_x:
+                min_x = x2
 
-            # TODO: Add functionality that allows for collapsing of nodes
-            if node.is_tip():
-                points += [(x2, y2)]
+            if y2 > max_y:
+                max_y = y2
+            if y2 < min_y:
+                min_y = y2
 
-        return points
+        return (max_x, min_x, max_y, min_y)
 
 
 class Model(object):

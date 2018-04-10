@@ -13,13 +13,8 @@ from scipy.cluster.hierarchy import ward, complete
 
 #Need to keep!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
-
 # tree = model.read('./gg_13_5_otus_99_annotated.tree', 'newick')
-
 # tree = model.read('./0B5tlRtQ-tBfkZSuneOKbg.nwk', 'newick')
-
-internal_metadata_file = 'ncbi.t2t.txt'
-leaf_metadata_file = 'metadata.txt'
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # np.random.seed(0)
@@ -39,8 +34,8 @@ leaf_metadata_file = 'metadata.txt'
 # initialize tree with branch length Todo: need to incorperate this into model
 for i, n in enumerate(tree.postorder(include_self=True)):
     n.length = 1
-     # if not n.is_tip():
-     #     n.name = "y%d" % i
+    if not n.is_tip() and n.name is None:
+        n.name = "y%d" % i
 
 m = Model(tree, internal_metadata_file, leaf_metadata_file)
 nodeM, edgeM = m.retrive_view_coords()
