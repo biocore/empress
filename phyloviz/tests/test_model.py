@@ -5,35 +5,44 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 # ----------------------------------------------------------------------------
-import sys
-sys.path.append("../..")
 import unittest
 import numpy as np
 import pandas as pd
 from skbio import DistanceMatrix, TreeNode
 from phyloviz.model import Tree
-from scipy.cluster.hierarchy import ward, complete
+from scipy.cluster.hierarchy import complete
 import pandas.util.testing as pdt
 
 
 class TestDendrogram(unittest.TestCase):
-    def setUp(self):
+
+    def mock_random_tree(self):
+
         np.random.seed(0)
         x = np.random.rand(10)
         dm = DistanceMatrix.from_iterable(x, lambda x, y: np.abs(x - y))
         lm = complete(dm.condensed_form())
         ids = np.arange(len(x)).astype(np.str)
-        self.tree = TreeNode.from_linkage_matrix(lm, ids)
+        tree = TreeNode.from_linkage_matrix(lm, ids)
 
         # initialize tree with branch length and named internal nodes
-        for i, n in enumerate(self.tree.postorder(include_self=True)):
+        for i, n in enumerate(tree.postorder(include_self=True)):
             n.length = 1
             if not n.is_tip():
                 n.name = "y%d" % i
 
-    def test_cache_ntips(self):
+        return tree
 
-        t = Tree.from_tree(self.tree)
+    def mock_tree_from_nwk(self):
+        return TreeNode.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
+
+    def setUp(self):
+        self.tree2 = self.mock_tree_from_nwk()
+        self.tree1 = self.mock_random_tree()
+
+    def test_cache_ntips_random_tree(self):
+
+        t = Tree.from_tree(self.tree1)
         t._cache_ntips()
 
         self.assertEqual(t.leafcount, 10)
@@ -44,12 +53,12 @@ class TestDendrogram(unittest.TestCase):
         self.assertEqual(t.children[1].children[0].leafcount, 3)
         self.assertEqual(t.children[1].children[1].leafcount, 5)
 
-    def test_from_tree(self):
-        t = Tree.from_tree(self.tree)
+    def test_from_tree_random_tree(self):
+        t = Tree.from_tree(self.tree1)
         self.assertEqual(t.__class__, Tree)
 
-    def test_coords(self):
-        t = Tree.from_tree(self.tree)
+    def test_coords_random_tree(self):
+        t = Tree.from_tree(self.tree1)
 
         edge_exp = pd.DataFrame(
             {
@@ -154,13 +163,13 @@ class TestDendrogram(unittest.TestCase):
         pdt.assert_frame_equal(node_exp, node_res)
         pdt.assert_frame_equal(edge_exp, edge_res)
 
-    def test_rescale(self):
-        t = Tree.from_tree(self.tree)
+    def test_rescale_random_tree(self):
+        t = Tree.from_tree(self.tree1)
         self.assertAlmostEqual(
             t.rescale(500, 500), 79.223492618646006, places=5)
 
-    def test_update_coordinates(self):
-        t = Tree.from_tree(self.tree)
+    def test_update_coordinates_random_tree(self):
+        t = Tree.from_tree(self.tree1)
         exp = pd.DataFrame(
             [(-0.59847214410395655,
               -1.6334372886412185), (-0.99749498660405445,
@@ -174,6 +183,78 @@ class TestDendrogram(unittest.TestCase):
              (-1.8709927812120046,
               0.33556711382648474), (-0.95033246755379708,
                                      0.60348496526324824)])
+        res = pd.DataFrame(t.update_coordinates(1, 0, 0, 2, 1))
+        pdt.assert_frame_equal(res, exp, check_less_precise=True)
+
+    def test_cache_ntips_nwk_tree(self):
+
+        t = Tree.from_tree(self.tree2)
+        t._cache_ntips()
+
+        self.assertEqual(t.leafcount, 5)
+        self.assertEqual(t.children[0].leafcount, 3)
+        self.assertEqual(t.children[1].leafcount, 2)
+        self.assertEqual(t.children[0].children[0].leafcount, 2)
+        self.assertEqual(t.children[0].children[1].leafcount, 1)
+        self.assertEqual(t.children[1].children[0].leafcount, 1)
+        self.assertEqual(t.children[1].children[1].leafcount, 1)
+
+    def test_from_tree(self):
+        t = Tree.from_tree(self.tree2)
+        self.assertEqual(t.__class__, Tree)
+
+    def test_coords(self):
+        t = Tree.from_tree(self.tree2)
+
+        edge_exp = pd.DataFrame(
+            {
+                'a': ['a', 'f', 141.35398602846797, 339.46141862722482,
+                      83.371774496551481, 292.50834951934343],
+                'b': ['b', 'g', 215.86090210071345, 343.36616063979909,
+                      254.48144795927647, 487.5],
+                'c': ['c', 'h', 403.57843531045097, 221.46096919708964,
+                      478.08535138269644, 225.36571120966394],
+                'd': ['d', 'h', 403.57843531045097, 221.46096919708964,
+                      483.79103611135702, 12.500000000000028],
+                'e': ['e', 'f', 141.35398602846797, 339.46141862722482,
+                      16.20896388864297, 420.73154625569776],
+                'f': ['f', 'g', 215.86090210071345, 343.36616063979909,
+                      141.35398602846797, 339.46141862722482],
+                'g': ['g', 'i', 278.43341317062595, 302.73109682556259,
+                      215.86090210071345, 343.36616063979909],
+                'h': ['h', 'i', 278.43341317062595, 302.73109682556259,
+                      403.57843531045097, 221.46096919708964]},
+                index=['Node id', 'Parent id', 'px', 'py', 'x', 'y']).T
+
+        node_exp = pd.DataFrame(
+            {
+                'a': ['a', 83.371774496551481, 292.50834951934343],
+                'b': ['b', 254.48144795927647, 487.5],
+                'c': ['c', 478.08535138269644, 225.36571120966394],
+                'd': ['d', 483.79103611135702, 12.500000000000028],
+                'e': ['e', 16.20896388864297, 420.73154625569776],
+                'f': ['f', 141.35398602846797, 339.46141862722482],
+                'g': ['g', 215.86090210071345, 343.36616063979909],
+                'h': ['h', 403.57843531045097, 221.46096919708964],
+                'i': ['i', 278.43341317062595, 302.73109682556259]},
+            index=['Node id', 'x', 'y']).T
+        node_res, edge_res = t.coords(500, 500)
+        pdt.assert_frame_equal(node_exp, node_res)
+        pdt.assert_frame_equal(edge_exp, edge_res)
+
+    def test_rescale(self):
+        t = Tree.from_tree(self.tree2)
+        self.assertAlmostEqual(
+            t.rescale(500, 500), 74.609165340334656, places=5)
+
+    def test_update_coordinates(self):
+        t = Tree.from_tree(self.tree2)
+        exp = pd.DataFrame(
+            [(2.2301939502377812, 2.00173803121137),
+             (3.9131359198535742, 2.0823426429476495),
+                (3.5693632652849416, -0.70813820377328751),
+                (0.34885097950630928, -3.2790527077291802),
+                (-2.0626765144773422, -4.2499910737195705)])
         res = pd.DataFrame(t.update_coordinates(1, 0, 0, 2, 1))
         pdt.assert_frame_equal(res, exp, check_less_precise=True)
 

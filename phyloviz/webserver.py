@@ -1,22 +1,28 @@
 import tornado
-from controller import ModelHandler, IndexHandler, NodeHandler, EdgeHandler
+from controller import ModelHandler, NodeHandler, EdgeHandler, ZoomHandler
+from controller import BenchmarkHandler, SelectHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+import os.path
+
 
 class Application(tornado.web.Application):
     def __init__(self):
         # dirpath = dirname(__file__)
-        handlers = [(r"/", IndexHandler),
-                    (r"/view", ModelHandler),
+        handlers = [(r"/", ModelHandler),
                     (r"/api/nodes", NodeHandler),
-                    (r"/api/edges", EdgeHandler)
-                   ]
+                    (r"/api/edges", EdgeHandler),
+                    (r"/zoom", ZoomHandler),
+                    (r"/benchmark", BenchmarkHandler),
+                    (r"/select", SelectHandler)
+                    ]
 
-
-        settings = {
-            "debug": True
-        }
+        settings = dict(
+            static_path=os.path.join(os.path.dirname(__file__), "static"),
+            debug=True
+        )
         tornado.web.Application.__init__(self, handlers, **settings)
+
 
 if __name__ == '__main__':
     # Create the webserver
