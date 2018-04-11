@@ -4,8 +4,9 @@ import numpy as np
 import skbio
 import time
 
+
 def read_leaf_node_metadata(file_name):
-    """ Reads in metadata for leaf node
+    """ Reads in metadata for leaf nodes
 
     Parameters
     ----------
@@ -23,7 +24,7 @@ def read_leaf_node_metadata(file_name):
 
 
 def read_internal_node_metadata(file_name):
-    """ Reads in metadata for internal node
+    """ Reads in metadata for internal nodes
 
     Parameters
     ----------
@@ -42,14 +43,13 @@ def read_internal_node_metadata(file_name):
 def read(file_name, file_format='newick'):
     """ Reads in contents from a file.
 
-    This will create a model object with
-    tree, node metadata and edge metadata.
+    This will create a skbio.TreeNode object
 
-    Supported formats, newick, phyloxml,
+    Current Support formats: newick
+
+    Future Suppoert formats: phyloxml,
     cytoscape network.
 
-    newick format
-    - already implemented in scikit-bio
     cytoscape layout
     - networkx
     phyloxml
@@ -65,67 +65,18 @@ def read(file_name, file_format='newick'):
     file_format : str
         The format of the file to read that contains the tree
     TODO: Need to create parsers for each of these.
+
+    Returns
+    -------
+    tree - skbio.TreeNode
+        A TreeNode object of the newick file
+    None - null
+        If a non-newick file_format was passed in
     """
 
     if file_format == 'newick':
-        # create tree from newick file
         tree = skbio.read(file_name, file_format, into=TreeNode)
-
         return tree
-
-        # create node_metadata data frame
-        # for node in tree.preorder():
-        # add each node as a new row of node_metadata
-        # where is the rest of the metadata coming from?
-        #    pass
-
-        # create edge_meta_data data frame
-        # for node in tree.preorder():
-        # add edge ( node, parent ) to edge_metadata
-        #    pass
-
-    # elif file_format == 'phyloxml':
-        # There is a a package in ete3 for phyloxml as well
-        # This is using biopython
-        # function read if there is one tree in the file
-        # function parse if there are multiple trees in the file
-        # It can also read newick format and also convert bewteen supported
-        # format
-        # trees = Phylo.parse(file_name,file_format)
-    ''' tree = Phylo.read(file_name, file_format)
-        for clade in tree.find_clades():
-            # Get the information about the clade into the dataframe
-            pass
-
-    elif file_format == 'cytoscape':
-
-        # assuming we're using GML
-        G = nx.read_gml(file_name)
-
-        # convert networkx graph into pandas dataframe
-        df = nx.to_pandas_dataframe(G)
-
-        # get lists of attributes in graph
-        # TODO: attributes object
-
-        # create all attributes as pd dataframe (self.node_metadata) columns
-        # TODO:
-
-        # iterate through all attributes
-        for a in attributes:
-            cur_attribute = nx.get_node_attributes(G, a);
-            # iterate through networkx graph and create node_metadata
-            for n in G:
-                # TODO: set self.node_metadata's n's attribute to be
-                #       cur_attribute[n]
-                pass
-
-    else:
-        # return error message file format cannot be parsed
-        pass
-
-    #pass
-    '''
     return None
 
 
@@ -254,13 +205,6 @@ class Tree(TreeNode):
         scale = self.rescale(width, height)
         print(time.time() - start)
         print("done")
-        # Node metadata
-        nodeData = {}
-        for node in self.postorder():
-            nId = {"Node_id": node.name}
-            coords = {'x': node.x2, 'y': node.y2}
-            nodeData[node.name] = {**nId, **coords}
-            node.alpha = 0.0
 
         # edge metadata
         edgeData = {}
@@ -269,7 +213,7 @@ class Tree(TreeNode):
                 edgeData["is_tip"] = True
             else:
                 edgeData["is_tip"] = False
-
+            node.alpha = 0.0
             pId = {"Parent_id": node.name}
             pCoords = {'px': node.x2, 'py': node.y2}
             for child in node.children:
@@ -280,12 +224,11 @@ class Tree(TreeNode):
                                         **pCoords, **alpha}
 
         # convert to pd.DataFrame
-        nodeMeta = pd.DataFrame(nodeData).T
         edgeMeta = pd.DataFrame(edgeData).T
 
         centerX = self.x2
         centerY = self.y2
-        return (nodeMeta, edgeMeta, centerX, centerY, scale)
+        return (edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
@@ -312,12 +255,9 @@ class Tree(TreeNode):
         for i in range(60):
             direction = i / 60.0 * np.pi
 
-            # points = self.update_coordinates(1.0, 0, 0, direction, angle)
-            (max_x, min_x, max_y, min_y) = self.update_coordinates(1.0, 0, 0, direction, angle)
-            # xs, ys = zip(*points)
-            # double check that the tree fits within the margins
-            # scale = min(float(width) / (max(xs) - min(xs)),
-            #             float(height) / (max(ys) - min(ys)))
+            (max_x, min_x, max_y, min_y) = self.update_coordinates(
+                1.0, 0, 0, direction, angle)
+
             scale = min(float(width) / (max_x - min_x),
                         float(height) / (max_y - min_y))
             # TODO: This margin seems a bit arbituary.
@@ -377,7 +317,6 @@ class Tree(TreeNode):
             y1 = node.parent.y2
             a = node.parent.angle
 
-            
             a = a - node.parent.leafcount * da / 2
             for sib in node.parent.children:
                 if len(node.parent.children) < 2:
@@ -392,7 +331,7 @@ class Tree(TreeNode):
             y2 = y1 + node.length * s * np.cos(a)
             (node.x1, node.y1, node.x2, node.y2, node.angle) = (x1, y1, x2,
                                                                 y2, a)
-                                                                    
+
             if x2 > max_x:
                 max_x = x2
             if x2 < min_x:
@@ -435,11 +374,10 @@ class Model(object):
         self.zoom_level = 1
         self.scale = 1
         self.tree = Tree.from_tree(tree)
-        if node_metadata is None and edge_metadata is None:
-            (self.node_metadata, self.edge_metadata, self.centerX, self.centerY,
-            self.scale) = self.tree.coords(900, 1500)
+        if edge_metadata is None:
+            (self.edge_metadata, self.centerX, self.centerY,
+             self.scale) = self.tree.coords(900, 1500)
         else:
-            self.node_metadata = node_metadata
             self.edge_metadata = edge_metadata
             # Todo: append coords to node/edge
 
@@ -452,36 +390,6 @@ class Model(object):
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
                                       how='outer', on="Node_id")
 
-        # Pipeline
-        #   tree -> (layout) -> coords
-        #   coords -> (transform?) -> _canvascoords
-        #  _canvascoords -> (mask) -> viewcoords
-
-        # Todo: Should we store cords like this?
-        # This stores information about the coordinates
-        # of the nodes.
-        # self.coords = pd.DataFrame()
-
-        # viewer coordinates
-        # TODO: Will need to think about how to directly
-        # translate from coords to viewcoords.
-        # maybe represent as a linear transformation
-        # with a corresponding mask
-        # self.viewcoords = np.array()
-
-        # These are coordinates scaled to the canvas
-        # self._canvascoords = np.array()
-
-        # Panning. This will subtract from the
-        # viewcoords.
-        # self.pan = np.array()
-
-        # Mask specific coordinates not to display.
-        # TODO: should this involve the resolution
-        # handling?
-        # self.mask = np.array()
-
-    # Coordinate manipulation
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
 
@@ -521,271 +429,6 @@ class Model(object):
 
         pass
 
-    def transform(zoom_level):
-        """ It transforms the coords to _canvascoords
-        Based on the zoom level, coords will be recalculated with resolution
-        resolving.
-        This function should also call mask on _canvascoords to recalculate the
-        coords that get displayed.
-
-        This function will be called by zoom.
-
-        Pipeline function
-
-        Parameters
-        ----------
-        zoom_level : int
-           The current zoom level (absolute not relative)
-           We should probably keep small intervals to make the zooming smooth.
-
-        Returns
-        -------
-        _canvasoords : np.array
-           The transformed _canvascoords that is at the correct zoom level.
-           This still need to be masked in order to fit on the screen.
-
-
-        # TODO:
-        # what should this transform function do??
-        # 1) Should it update the mask?
-        It needs to call mask by passing in the zoom point
-        # 2) Should it only handle handling?
-        # 3) Perspective transform (i.e. create fish bowl effect)
-        # are we missing anything?
-
-        Do we need to have translate? No, pan should call mask and zoom Should
-        call transform.
-        """
-        pass
-
-    def mask(height, width, x, y):
-        """ Pipeline function
-
-        Uses the canvascoords generated by the transform function,
-        and applies a bounding box that represents viewcoords,coordinates
-        of the visible tree nodes being displayed.
-
-
-        Parameters
-        ----------
-        height : int
-            Height dimension of the View, to determine the height of
-            the mask
-
-        width : int
-            Width dimension of the View, to determmine the width of
-            the mask
-
-        x : x-coordinate of the point zooming will occur relative to
-
-        y : y-coordinate of the point zooming will occur relative to
-
-        Returns
-        -------
-        viewcoords : np.array
-            Dictates how each visible tree node should be laid
-            out in the view
-        """
-        pass
-
-    def recompute(self, view_axes):
-        """ It recompute the coordinates.
-
-        In the end, this will amount to a single
-        linear transformation (i.e. matrix multiplication).
-        This also updates the viewcoords within the class.
-
-        Parameters
-        ----------
-        view_axes : np.array
-           The coordinate system to convert the tree coordsinates too.
-           TODO: will need to think of a better name.
-
-        Returns
-        -------
-        view_coords : np.array
-           The actual translated tree coordinates.
-
-        Note
-        ----
-        Caching could be convenient (will need to think about this).
-        """
-        pass
-
-    def pan(self, dx, dy):
-        """ Pans (i.e. move) around the bounding box that is being
-            rendered on screen.
-
-        User facing function - may even want to push this to controller
-
-        TODO: The bounding box is defined as (x1, y1) of upper left corner
-        and (x2,y2) of lower right corner. The bounding box is moved around
-        by 'dx' in the x-axis and 'dy' in the y-axis in the view canvas.
-        Each visible node's viewcoords are then
-        recalculated, and the view is called to update.
-
-        Parameters
-        ----------
-        dx : change in x
-            How much to pan in the x-axis, (-) being left and (+) being right
-
-        dy : change in y
-            How much to pan in the y-axis, (-) being up and (+) being down
-
-        Returns
-        -------
-        view_coords : np.array
-           The translated view coordinates
-        """
-
-        """
-        Need to change this!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        Todo: make this translate the view coords
-        """
-        """for node in self.tree.postorder():
-            node.x2 = node.x2 + dx
-            node.y2 = node.y2 + dy
-        """
-        # x_col = self.node_metadata.columns.get_loc('x')
-        # y_col = self.node_metadata.columns.get_loc('y')
-        # self.node_metadata.add(dx,axis=x_col)
-        # self.edge_metadata.add(dy, axis=y_col)
-        self.node_metadata[['x']].apply(lambda l: l + dx)
-        self.edge_metadata[['y']].apply(lambda l: l + dy)
-        return self.retrive_view_coords()
-
-    def zoom(self, level):
-        """ Zooms in/out by remapping the (x1,y1) upper left corner and (x2,y2)
-        lower right corner
-        of the bounding box, and changes view coordinates as well as visibility
-        of nodes.
-        Updates rendering in the View.
-
-        User facing function - may even want to push this to controller
-
-        Parameters
-        ----------
-        level : amount to zoom, where (-) level represents zooming out and
-                (+) level
-        represents zooming in
-
-        Returns
-        -------
-        view_coords : np.array
-           Rescaled view coordinates
-
-        """
-        # zoomed_edges = self.edge_metadata.copy(deep=True)
-
-        # multiply by level/scale
-        zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l *
-                                                      np.float64(level))
-        zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l *
-                                                      np.float64(level))
-        zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l *
-                                                        np.float64(level))
-        zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l *
-                                                        np.float64(level))
-
-        # add by transform x/y
-        # zoomed_edges['x'] = zoomed_edges[['x']].apply(lambda l: l +
-        #                                               np.float64(tx))
-        # zoomed_edges['y'] = zoomed_edges[['y']].apply(lambda l: l +
-        #                                               np.float64(ty))
-        # zoomed_edges['px'] = zoomed_edges[['px']].apply(lambda l: l +
-        #                                                 np.float64(tx))
-        # zoomed_edges['py'] = zoomed_edges[['py']].apply(lambda l: l +
-        #                                                 np.float64(ty))
-
-        # return zoomed_edges
-
-        # edge metadata
-        # edgeData = {}
-        # for node in self.tree.postorder():
-        #     pId = {"Parent_id": node.name}
-        #     pCoords = {'px': node.x2, 'py': node.y2}
-        #     for child in node.children:
-        #         nId = {"Node_id": child.name}
-        #         coords = {'x': child.x2, 'y': child.y2}
-        #         alpha = {'alpha': child.alpha}
-        #         edgeData[child.name] = {**nId, **coords, **pId, **pCoords,
-        #                                 **alpha}
-
-        # edgeMeta = pd.DataFrame(edgeData).T
-
-        # centers root node at (0,0) for webGL
-        # edgeMeta['px'] = edgeMeta[['px']].apply(lambda l: l - self.centerX)
-        # edgeMeta['py'] = edgeMeta[['py']].apply(lambda l: l - self.centerY)
-        # edgeMeta['x'] = edgeMeta[['x']].apply(lambda l: l - self.centerX)
-        # edgeMeta['y'] = edgeMeta[['y']].apply(lambda l: l - self.centerY)
-
-        # return edgeMeta
-        pass
-
-    def groupByCategory(metadata, attribute, category):
-        """ Get certain rows in the metadata given the categories.
-
-        Parameters
-        ----------
-        metadata : pd.DataFrame
-           Contains all of the species attributes.
-           Every row corresponds to a unique species
-           and every column corresponds to an attribute.
-
-        attribute : str
-            The name of the attribute(column of the table).
-
-        category: str
-            The category of a cerntain attribute.
-
-        Returns
-        -------
-        metadata_sub: pd.DataFrame
-            The selected rows of the metadata
-        """
-        pass
-
-    def updateByCategory(metadata, attribute, category, new_value):
-        """ Updates metadata category values.
-
-        Parameters
-        ----------
-        metadata : pd.DataFrame
-           Contains all of the species attributes.
-           Every row corresponds to a unique species
-           and every column corresponds to an attribute.
-
-        attribute : str
-            The name of the attribute(column of the table).
-
-        category:
-            The category of a cerntain attribute.
-
-        new_value:
-            The new value to update the category to.
-        """
-        pass
-
-    def updateViewByCategory(metadata, attribute, category):
-        """ Tell the View what category has been updated and update the View
-
-        Parameters
-        ----------
-        metadata : pd.DataFrame
-            Contains all of the species attributes.
-            Every row corresponds to a unique species
-            and every column corresponds to an attribute.
-
-        attribute : str
-            The name of the attribute(column of the table).
-
-        category:
-            The category of a cerntain attribute.
-
-        """
-
-        pass
-
     def uniqueCategories(metadata, attribute):
         """ Returns all unique metadata categories that belong to the attribute.
         Parameters
@@ -814,15 +457,23 @@ class Model(object):
         ----------
         Returns
         -------
-        node_metadat : node_metadata
         edge_metadata : pd.DataFrame
-        """
-        self.edge_metadata['px'] = self.edge_metadata[['px']].apply(lambda l: l - self.centerX)
-        self.edge_metadata['py'] = self.edge_metadata[['py']].apply(lambda l: l - self.centerY)
-        self.edge_metadata['x'] = self.edge_metadata[['x']].apply(lambda l: l - self.centerX)
-        self.edge_metadata['y'] = self.edge_metadata[['y']].apply(lambda l: l - self.centerY)
+           Contains all of the species attributes.
+           Every row corresponds to a unique species
+           and every column corresponds to an attribute.
+           TODO: metadata will also want to contain
 
-        return (self.node_metadata, self.edge_metadata)
+        """
+        self.edge_metadata['px'] = self.edge_metadata[
+            ['px']].apply(lambda l: l - self.centerX)
+        self.edge_metadata['py'] = self.edge_metadata[
+            ['py']].apply(lambda l: l - self.centerY)
+        self.edge_metadata['x'] = self.edge_metadata[
+            ['x']].apply(lambda l: l - self.centerX)
+        self.edge_metadata['y'] = self.edge_metadata[
+            ['y']].apply(lambda l: l - self.centerY)
+
+        return self.edge_metadata
 
     def selectCategory(self, attribute, lower=None, equal=None, upper=None):
         """ Returns edge_metadata with updated alpha value which tells View
@@ -838,15 +489,6 @@ class Model(object):
 
         """
         edgeData = self.edge_metadata.copy(deep=True)
-        # edgeData.set_index("Node_id", inplace=True)
-        # #print(edgeData)
-        # for tip in self.tree.tips():
-        #     # if edgeData.loc[[tip.name], [attribute]] == category:
-        #     #     edgeData['alpha'] = 1
-        #     # else:
-        #     #     edgeData['alpha'] = 0.3
-        #     print(edgeData.loc[[tip.name], [attribute]])
-
 
         if lower is not "":
             edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] >
