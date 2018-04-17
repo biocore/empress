@@ -30,7 +30,7 @@
 		<script>
 			var edgeMetadata;
 			$.getJSON('http://localhost:8080/api/edges', function(data) {
-				edgeMetadata = JSON.parse(JSON.stringify(data));
+				edgeMetadata = data; // JSON.parse(JSON.stringify(data));
 			}).done(function() {
 				InitWebGl(edgeMetadata);
 			});
