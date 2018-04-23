@@ -50,6 +50,18 @@ window.scaleFactor = 5.0 / 4.0; //how much the tree grows/shrinks during zoom
  */
 function InitWebGl() {
 	
+
+	document.getElementById("showHighlightMenu").style.display = "block";
+
+	window.topBorder = document.getElementsByTagName("fieldset")[0];
+	var canvas = document.getElementById("tree-surface");
+ 
+/* Rresize the canvas to occupy the full page, 
+   by getting the widow width and height and setting it to canvas*/
+ 
+	canvas.width  = document.getElementById('drawingSurface').offsetWidth;
+	canvas.height = document.getElementById('drawingSurface').offsetHeight;
+
 	console.log('init webgl');
 	window.canvas = document.getElementById('tree-surface');
 	window.gl = window.canvas.getContext('webgl');

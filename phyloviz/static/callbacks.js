@@ -95,21 +95,57 @@ function mousewheel(event) {
 	}
 }
 
+/*
+TODO: need to change edge metadata to hold color as "#RRGGBB" hex string and the enable webgl to parse it
+*/
 
 /*
  * Highlights the user selected metadata 
  */
-function selectOption() {
-	console.log('option selected');
+function selectHighlight() {
+	console.log('Highlight option selected');
 	var edges;
 	var attr = document.getElementById("metadataOptions").value;
 	var l = document.getElementById("lowerBound").value;
 	var u = document.getElementById("upperBound").value;
 	var e = document.getElementById("category").value;
-	$.getJSON('http://localhost:8080/select', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
+	$.getJSON('http://localhost:8080/highlight', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
 		edges = JSON.parse(JSON.stringify(data));		 
 	}).done(function() {
 		extractEdges(edges);
 		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
 	});
+}
+
+function selectColor() {
+	console.log('Color option selected');
+	var edges;
+	var attr = document.getElementById("metadataOptions").value;
+	var l = document.getElementById("lowerBound").value;
+	var u = document.getElementById("upperBound").value;
+	var e = document.getElementById("category").value;
+	$.getJSON('http://localhost:8080/color', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
+		edges = JSON.parse(JSON.stringify(data));		 
+	}).done(function() {
+		extractEdges(edges);
+		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
+	});
+}
+
+function showMenu(evt, menuName) {
+	var i, menus, tabs;
+	menus = document.getElementsByClassName("menu");
+
+	for(i = 0; i < menus.length; i++) {
+		menus[i].style.display = "none";
+	}
+
+	tabs = document.getElementsByClassName("tabs");
+	for(i = 0; i < tabs.length; i++) {
+		tabs[i].className = tabs[i].className.replace("active","");
+	}
+
+	document.getElementById(menuName).style.display = "block";
+	evt.currentTarget.className += "active"
+
 }

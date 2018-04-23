@@ -47,7 +47,7 @@ class ZoomHandler(RequestHandler):
         self.finish()
 
 
-class SelectHandler(RequestHandler):
+class HighlightHandler(RequestHandler):
     def get(self):
         attribute = self.get_argument('attribute')
         lower = self.get_argument('lower')
