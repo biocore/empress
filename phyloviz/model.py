@@ -206,6 +206,14 @@ class Tree(TreeNode):
         print(time.time() - start)
         print("done")
 
+        # Node metadata
+        nodeData = {}
+        for node in self.postorder():
+            nId = {'Node_id': node.name}
+            coords = {'x': node.x2, 'y': node.y2}
+            attr = {'color': '#FFFFFF','is_visible':True,'size':1}
+            nodeData[node.name] = {**nId, **coords, **attr}
+
         # edge metadata
         edgeData = {}
         for node in self.postorder():
@@ -220,15 +228,17 @@ class Tree(TreeNode):
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
                 alpha = {'alpha': child.alpha}
+                attr = {'color': '#FFFFFF','is_visible':True,'width':1}
                 edgeData[child.name] = {**nId, **coords, **pId,
-                                        **pCoords, **alpha}
+                                        **pCoords, **alpha, **attr}
 
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
-
+        nodeMeta = pd.DataFrame(nodeData).T
+        print(nodeMeta)
         centerX = self.x2
         centerY = self.y2
-        return (edgeMeta, centerX, centerY, scale)
+        return (edgeMeta, nodeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
@@ -375,10 +385,11 @@ class Model(object):
         self.scale = 1
         self.tree = Tree.from_tree(tree)
         if edge_metadata is None:
-            (self.edge_metadata, self.centerX, self.centerY,
+            (self.edge_metadata, self.node_metadata, self.centerX, self.centerY,
              self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
+            self.node_metadata = node_metadata
             # Todo: append coords to node/edge
 
         # Append metadata to table
@@ -505,6 +516,33 @@ class Model(object):
 
         return edgeData
 
+    def updateWidth(self, attribute, width, lower=None, equal=None, upper=None):
+        """ Returns edge_metadata with updated alpha value which tells View
+        what to hightlight
+
+        Parameters
+        ----------
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category:
+            The category of a certain attribute.
+
+        """
+
+        if lower is not "":
+            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] >
+                                                       float(lower), width)
+
+        if equal is not "":
+            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] ==
+                                                       equal, width)
+
+        if upper is not "":
+            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] <
+                                                       float(upper), width)
+
+        return edgeData
     def collapseClades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
         sliderScale of 1 (min) means no clades are hidden, and sliderScale
