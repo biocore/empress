@@ -54,7 +54,7 @@ function mousemove(event) {
 }
 
 /*
- * zooms tree and this is where selective rendering will take place 
+ * zooms tree and this is where selective rendering will take place
  */
 function mousewheel(event) {
 	if(event.deltaY > 0){
@@ -100,7 +100,7 @@ TODO: need to change edge metadata to hold color as "#RRGGBB" hex string and the
 */
 
 /*
- * Highlights the user selected metadata 
+ * Highlights the user selected metadata
  */
 function selectHighlight() {
 	console.log('Highlight option selected');
@@ -110,12 +110,27 @@ function selectHighlight() {
 	var u = document.getElementById("upperBound").value;
 	var e = document.getElementById("category").value;
 	$.getJSON('http://localhost:8080/highlight', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
-		edges = JSON.parse(JSON.stringify(data));		 
+		edges = JSON.parse(JSON.stringify(data));
 	}).done(function() {
 		extractEdges(edges);
 		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
 	});
 }
+
+/*
+ * Collapses clades based on the slider scale
+ */
+function collapseClades() {
+	var ss = document.getElementById("collapseRange").value;
+	console.log('collapse clade', ss);
+
+	$.getJSON('http://localhost:8080/collapse', {sliderScale : ss}, function(data) {
+		edges = data;
+	}).done(function() {
+		// get triangles table
+		extractEdges(edges);
+		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
+	});
 
 function selectColor() {
 	console.log('Color option selected');
@@ -125,7 +140,7 @@ function selectColor() {
 	var u = document.getElementById("upperBound").value;
 	var e = document.getElementById("category").value;
 	$.getJSON('http://localhost:8080/color', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
-		edges = JSON.parse(JSON.stringify(data));		 
+		edges = JSON.parse(JSON.stringify(data));
 	}).done(function() {
 		extractEdges(edges);
 		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
@@ -147,5 +162,4 @@ function showMenu(evt, menuName) {
 
 	document.getElementById(menuName).style.display = "block";
 	evt.currentTarget.className += "active"
-
 }

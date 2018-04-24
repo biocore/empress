@@ -542,6 +542,21 @@ class Model(object):
                                                        float(upper), width)
 
         return edgeData
+    def collapseClades(self, sliderScale):
+        """ Collapses clades in tree by doing a level order of the tree.
+        sliderScale of 1 (min) means no clades are hidden, and sliderScale
+        of 2 (max) means the whole tree is one large triangle.
+
+        Parameters
+        ----------
+        sliderScale : int
+            The scale of the slider of how much to collapse
+
+        Returns
+        -------
+        edge_metadata : pd.DataFrame
+        """
+        pass
 
     # def colorCategory(self, attribute, color,lower=None, equal=None, upper=None):
 
@@ -572,6 +587,3 @@ class Model(object):
     #                                                    float(upper), color)
 
     #     return edgeData
-
-
-

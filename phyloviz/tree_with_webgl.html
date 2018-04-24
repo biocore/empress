@@ -52,7 +52,7 @@
 			grid-auto-rows: auto;
 			height: unset;
 			background: grey;
-		}	
+		}
 
 		.textField {
 			display: grid;
@@ -67,13 +67,13 @@
 		    border-top: none;
 		}
 
-		
+
 	</style>
 </head>
 	<body>
 		<div class="grid">
 			<div id="drawingSurface">
-				<canvas id="tree-surface" > 
+				<canvas id="tree-surface" >
 					Your browser does not support HTML5
 				</canvas>
 			</div>
@@ -91,29 +91,29 @@
 				  			<button class="tabs" onclick="showMenu(event, 'showCollapseMenu')">Collapse Edges</button>
 				  		</div>
 					</div>
-					
+
 					<!-- show highlight menu and hide others-->
 					<div class="menu" id="showHighlightMenu">
 						<div>
 				 	 		<select id = "metadataOptions"></select>
 						</div>
-					
+
 						<div>
 				  			<input type = "button"
 				    			value = "select"
 				    			onclick = "selectHighlight()" />
 				    	</div>
-			 			
+
 			 			<div class="textField">
 				    		<label for="lowerBound">Lower Bound</label>
 				    		<input type="text" id="lowerBound">
 			    		</div>
-			    
+
 			    		<div class="textField">
-				    		<label for="upperBound">Upper Bound</label>		    
+				    		<label for="upperBound">Upper Bound</label>
 				    		<input type="text" id="upperBound">
 			    		</div>
-			    
+
 			    		<div class="textField">
 				    		<label for="category">Category Name</label>
 				    		<input type="text" id="category">
@@ -125,24 +125,24 @@
 						<div>
 				 	 		<select id = "metadataOptions"></select>
 						</div>
-					
+
 						<div>
 							<input type = "button"
 				    			value = "select"
 				    			onclick = "selectColor()" />
 				  			<input type = "color"/>
 				    	</div>
-			 			
+
 			 			<div class="textField">
 				    		<label for="lowerBound">Lower Bound</label>
 				    		<input type="text" id="lowerBound">
 			    		</div>
-			    
+
 			    		<div class="textField">
-				    		<label for="upperBound">Upper Bound</label>		    
+				    		<label for="upperBound">Upper Bound</label>
 				    		<input type="text" id="upperBound">
 			    		</div>
-			    
+
 			    		<div class="textField">
 				    		<label for="category">Category Name</label>
 				    		<input type="text" id="category">
@@ -153,6 +153,8 @@
 		    		<div class="menu" id="showCollapseMenu">
 						<div>
 				 	 		<select class = "metadataOptions"></select>
+				 	 		<label for="range">Clade Collapsing</label>
+            				<input type="range" min="1" max="10" value="1" class="slider" id="collapseRange"> <span id="num">
 						</div>
 		    		</div>
 			</div>
@@ -161,11 +163,19 @@
 		<script>
 			var edgeMetadata;
 			$.getJSON('http://localhost:8080/api/edges', function(data) {
-				edgeMetadata = JSON.parse(JSON.stringify(data));
+				edgeMetadata = data; // JSON.parse(JSON.stringify(data));
 			}).done(function() {
 				InitWebGl(edgeMetadata);
 			});
 
+            var slider = document.getElementById("collapseRange");
+            var output = document.getElementById("num");
+            output.innerHTML = slider.value;
+
+            slider.oninput = function() {
+                output.innerHTML = this.value;
+                collapseClades();
+            }
 		</script>
 	</body>
 </html>

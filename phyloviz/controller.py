@@ -8,7 +8,7 @@ import pandas as pd
 from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import ward, complete
 
-#trees
+# trees
 tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
 # tree = model.read('./gg_13_5_otus_99_annotated.tree', 'newick')
 # tree = model.read('./0B5tlRtQ-tBfkZSuneOKbg.nwk', 'newick')
@@ -30,6 +30,7 @@ edgeM = m.retrive_view_coords()
 class ModelHandler(RequestHandler):
     def get(self):
         self.render('tree_with_webgl.html')
+
 
 class EdgeHandler(RequestHandler):
     def get(self):
@@ -62,3 +63,20 @@ class HighlightHandler(RequestHandler):
 class BenchmarkHandler(RequestHandler):
     def get(self):
         self.render("benchmark.html")
+
+
+class CollapseHandler(RequestHandler):
+    def get(self):
+        sliderScale = self.get_argument('sliderScale')
+        selected = m.collapseClades(sliderScale)
+        edges = selected.to_json(orient='records')
+        self.write(edges)
+        self.finish()
+
+
+class TriangleHandler(RequestHandler):
+    def get(self):
+        # tCoords = m.retrieve_triangle_coords()
+        # triangles = tCoords.to_json(orient='records')
+        # self.write(triangles)
+        self.finish()
