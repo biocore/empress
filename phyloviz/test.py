@@ -5,8 +5,10 @@ import pandas as pd
 
 tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
 m = Model(tree,'ncbi.t2t.txt','metadata.txt')
-nodeM, edgeM = m.retrive_view_coords()
+edgeM = m.retrive_view_coords()
 print(edgeM)
+edge = m.updateWidth('marker_count',lower=300,upper=500)
+print(edge)
 
 '''
 meta_internal = model.read_internal_node_metadata("./ncbi.t2t.txt")

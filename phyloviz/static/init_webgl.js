@@ -5,6 +5,7 @@ window.vertexShaderText =
 '',
 'attribute vec2 vertPosition;',
 'attribute float alpha;',
+'attribute float pSize;',
 'uniform mat4 mWorld;',
 'uniform mat4 mView;',
 'uniform mat4 mProj;',,
@@ -14,7 +15,7 @@ window.vertexShaderText =
 '{',
 '  alphaInt = alpha;',
 '  gl_Position = mProj * mView * mWorld * vec4(vertPosition, 0.0, 1.0);',
-'  gl_PointSize = 1.0;',
+'  gl_PointSize = pSize;',
 '}'
 ].join('\n');
 

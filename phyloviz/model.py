@@ -211,10 +211,8 @@ class Tree(TreeNode):
         for node in self.postorder():
             nId = {'Node_id': node.name}
             coords = {'x': node.x2, 'y': node.y2}
-            nodeData[node.name] = {**nId, **coords}
-            nodeData['color'] = 1
-            nodeData['is_visible'] = True
-            nodeData['size'] = 1
+            attr = {'color': '#FFFFFF','is_visible':True,'size':1}
+            nodeData[node.name] = {**nId, **coords, **attr}
 
         # edge metadata
         edgeData = {}
@@ -230,11 +228,9 @@ class Tree(TreeNode):
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
                 alpha = {'alpha': child.alpha}
+                attr = {'color': '#FFFFFF','is_visible':True,'width':1}
                 edgeData[child.name] = {**nId, **coords, **pId,
-                                        **pCoords, **alpha}
-                edgeData['color'] = 1
-                edgeData['is_visible'] = True
-                edgeData['width'] = 1
+                                        **pCoords, **alpha, **attr}
 
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
