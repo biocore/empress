@@ -1,5 +1,5 @@
 //webgl vertex shader program - calculates tree coordinates in screen space
-window.vertexShaderText = 
+window.vertexShaderText =
 [
 'precision mediump float;',
 '',
@@ -38,7 +38,7 @@ window.program; //loads the vertex/fragment shader into webgl
 window.gl; //webgl context - used to call webgl functions
 window.largeDim; //used to normalize the tree to fit into a 1x1 square
 window.result = []; //edgeMetadata extracted from dataframe
-window.worldMat = mat4.create(); 
+window.worldMat = mat4.create();
 window.viewMat  = mat4.create();
 window.projMat = mat4.create();
 window.treeNormVec = vec3.create();
@@ -49,16 +49,16 @@ window.scaleFactor = 5.0 / 4.0; //how much the tree grows/shrinks during zoom
  * compliles shader programs and initializes webgl
  */
 function InitWebGl() {
-	
+
 
 	document.getElementById("showHighlightMenu").style.display = "block";
 
 	window.topBorder = document.getElementsByTagName("fieldset")[0];
 	var canvas = document.getElementById("tree-surface");
- 
-/* Rresize the canvas to occupy the full page, 
+
+/* Rresize the canvas to occupy the full page,
    by getting the widow width and height and setting it to canvas*/
- 
+
 	canvas.width  = document.getElementById('drawingSurface').offsetWidth;
 	canvas.height = document.getElementById('drawingSurface').offsetHeight;
 
@@ -92,7 +92,7 @@ function InitWebGl() {
 			if (!($.inArray(property, ['px', 'py', 'x', 'y', 'alpha']) >= 0)) {
 		        var option = document.createElement("option");
 				option.text = property;
-				option.label = 'something'; //TODO: check to see if property is numeric or categorical
+				option.label = property; //TODO: check to see if property is numeric or categorical
 				x.add(option);
 			}
 	    }
@@ -102,7 +102,7 @@ function InitWebGl() {
 
 	//
 	// Create shaders
-	// 
+	//
 	window.vertexShader = window.gl.createShader(window.gl.VERTEX_SHADER);
 	window.fragmentShader = window.gl.createShader(window.gl.FRAGMENT_SHADER);
 
@@ -165,7 +165,7 @@ function InitWebGl() {
 	gl.enableVertexAttribArray(alphaAttribLocation);
 	console.log('finish init webgl');
 	initCallbacks();
-	draw();	
+	draw();
 };
 
 /*
