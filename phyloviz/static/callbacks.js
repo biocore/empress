@@ -54,7 +54,7 @@ function mousemove(event) {
 }
 
 /*
- * zooms tree and this is where selective rendering will take place 
+ * zooms tree and this is where selective rendering will take place
  */
 function mousewheel(event) {
 	if(event.deltaY > 0){
@@ -97,7 +97,7 @@ function mousewheel(event) {
 
 
 /*
- * Highlights the user selected metadata 
+ * Highlights the user selected metadata
  */
 function selectOption() {
 	console.log('option selected');
@@ -107,8 +107,24 @@ function selectOption() {
 	var u = document.getElementById("upperBound").value;
 	var e = document.getElementById("category").value;
 	$.getJSON('http://localhost:8080/select', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
-		edges = JSON.parse(JSON.stringify(data));		 
+		edges = data;
 	}).done(function() {
+		extractEdges(edges);
+		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
+	});
+}
+
+/*
+ * Collapses clades based on the slider scale
+ */
+function collapseClades() {
+	var ss = document.getElementById("collapseRange").value;
+	console.log('collapse clade', ss);
+
+	$.getJSON('http://localhost:8080/collapse', {sliderScale : ss}, function(data) {
+		edges = data;
+	}).done(function() {
+		// get triangles table
 		extractEdges(edges);
 		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
 	});

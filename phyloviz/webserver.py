@@ -1,6 +1,6 @@
 import tornado
-from controller import ModelHandler, EdgeHandler, ZoomHandler
-from controller import BenchmarkHandler, SelectHandler
+from controller import ModelHandler, EdgeHandler, ZoomHandler, TriangleHandler
+from controller import BenchmarkHandler, SelectHandler, CollapseHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 import os.path
@@ -13,7 +13,9 @@ class Application(tornado.web.Application):
                     (r"/api/edges", EdgeHandler),
                     (r"/zoom", ZoomHandler),
                     (r"/benchmark", BenchmarkHandler),
-                    (r"/select", SelectHandler)
+                    (r"/select", SelectHandler),
+                    (r"/collapse", CollapseHandler),
+                    (r"/api/triangles", TriangleHandler)
                     ]
 
         settings = dict(

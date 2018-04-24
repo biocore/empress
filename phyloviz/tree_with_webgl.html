@@ -23,7 +23,10 @@
     		<input type="text" id="upperBound">
     		<label for="category">Category Name</label>
     		<input type="text" id="category">
+            <label for="range">Clade Collapsing</label>
+            <input type="range" min="1" max="10" value="1" class="slider" id="collapseRange"> <span id="num">
   		</fieldset>
+
 		<canvas id="tree-surface" width="1500" height="800">
 			Your browser does not support HTML5
 		</canvas>
@@ -35,6 +38,14 @@
 				InitWebGl(edgeMetadata);
 			});
 
+            var slider = document.getElementById("collapseRange");
+            var output = document.getElementById("num");
+            output.innerHTML = slider.value;
+
+            slider.oninput = function() {
+                output.innerHTML = this.value;
+                collapseClades();
+            }
 		</script>
 	</body>
 </html>

@@ -63,3 +63,20 @@ class SelectHandler(RequestHandler):
 class BenchmarkHandler(RequestHandler):
     def get(self):
         self.render("benchmark.html")
+
+
+class CollapseHandler(RequestHandler):
+    def get(self):
+        sliderScale = self.get_argument('sliderScale')
+        selected = m.collapseClades(sliderScale)
+        edges = selected.to_json(orient='records')
+        self.write(edges)
+        self.finish()
+
+
+class TriangleHandler(RequestHandler):
+    def get(self):
+        # tCoords = m.retrieve_triangle_coords()
+        # triangles = tCoords.to_json(orient='records')
+        # self.write(triangles)
+        self.finish()
