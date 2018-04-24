@@ -519,3 +519,33 @@ class Model(object):
         edge_metadata : pd.DataFrame
         """
         pass
+
+    # def colorCategory(self, attribute, color,lower=None, equal=None, upper=None):
+
+    #     """ Returns edge_metadata with updated color value which tells View
+    #     what to color
+
+    #     Parameters
+    #     ----------
+    #     attribute : str
+    #         The name of the attribute(column of the table).
+
+    #     category:
+    #         The category of a certain attribute.
+
+    #     """
+    #     edgeData = self.edge_metadata.copy(deep=True)
+
+    #     if lower is not "":
+    #         edgeData['color'] = edgeData['color'].mask(edgeData[attribute] >
+    #                                                    float(lower), color)
+
+    #     if equal is not "":
+    #         edgeData['color'] = edgeData['alpha'].mask(edgeData[attribute] ==
+    #                                                    equal, color)
+
+    #     if upper is not "":
+    #         edgeData['color'] = edgeData['alpha'].mask(edgeData[attribute] <
+    #                                                    float(upper), color)
+
+    #     return edgeData
