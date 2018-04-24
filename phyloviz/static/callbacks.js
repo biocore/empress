@@ -124,12 +124,17 @@ function collapseClades() {
 	var ss = document.getElementById("collapseRange").value;
 	console.log('collapse clade', ss);
 
-	$.getJSON('http://localhost:8080/collapse', {sliderScale : ss}, function(data) {
-		edges = data;
+	var triangles;
+	var edges;
+	$.getJSON('http://localhost:8080/collapse', {sliderScale: ss}, function(data) {
+		triangles = data;
 	}).done(function() {
-		// get triangles table
-		extractEdges(edges);
-		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
+		$.getJSON('http://localhost:8080/api/edges', function(data2) {
+			edges = data2;
+		}).done(function() {
+			extractEdges(edges);
+			window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
+		});
 	});
 
 function selectColor() {

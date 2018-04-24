@@ -451,7 +451,8 @@ class Model(object):
         pass
 
     def retrive_view_coords(self):
-        """ Translate the tree coords in order to makes root (0,0) and Returns edge metadata.
+        """ Translate the tree coords in order to makes root (0,0) and
+        Returns edge metadata.
 
         Parameters
         ----------
@@ -508,6 +509,7 @@ class Model(object):
         """ Collapses clades in tree by doing a level order of the tree.
         sliderScale of 1 (min) means no clades are hidden, and sliderScale
         of 2 (max) means the whole tree is one large triangle.
+        Changes the visibility of hidden nodes to be false.
 
         Parameters
         ----------
@@ -516,8 +518,20 @@ class Model(object):
 
         Returns
         -------
-        edge_metadata : pd.DataFrame
+        triangles : pd.DataFrame
+        rx | ry | fx | fy | cx | cy | #RGB (color string)
         """
+        count = 0
+        total_nodes = self.tree.count()
+        nodes_limit = sliderScale * total_nodes  # think of way to adjust slider
+        for node in self.tree.levelorder():
+            if (count >= nodes_limit) {
+                # done selecting nodes to render
+                # set visibility of the rest to false
+            }
+            else {
+                # do stuff
+            }
         pass
 
     # def colorCategory(self, attribute, color,lower=None, equal=None, upper=None):
