@@ -211,7 +211,7 @@ class Tree(TreeNode):
         for node in self.postorder():
             nId = {'Node_id': node.name}
             coords = {'x': node.x2, 'y': node.y2}
-            attr = {'color': '#FFFFFF', 'is_visible': True, 'size': 1}
+            attr = {'color_R': 255.0 , 'color_G': 255.0, 'color_B': 255.0, 'is_visible': True, 'size': 1}
             nodeData[node.name] = {**nId, **coords, **attr}
 
         # edge metadata
@@ -228,7 +228,7 @@ class Tree(TreeNode):
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
                 alpha = {'alpha': child.alpha}
-                attr = {'color': '#FFFFFF', 'is_visible': True, 'width': 1}
+                attr = {'color_R': 255.0 , 'color_G': 255.0, 'color_B': 255.0, 'is_visible': True, 'width': 1}
                 edgeData[child.name] = {**nId, **coords, **pId,
                                         **pCoords, **alpha, **attr}
 
@@ -516,8 +516,36 @@ class Model(object):
 
         return edgeData
 
-    def updateWidth(self, attribute, width, lower=None, equal=None, upper=None):
-        """ Returns edge_metadata with updated alpha value which tells View
+    def updateEdgeCategory(self, attribute, category, new_value, lower=None, equal=None, upper=None):
+        """ Returns edge_metadata with updated width value which tells View
+        what to hightlight
+
+        Parameters
+        ----------
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category:
+            The category of a certain attribute.
+
+        """
+
+        edgeData = self.edge_metadata
+        if lower is not "":
+            edgeData[category] = edgeData[category].mask(edgeData[attribute] >
+                                                       float(lower), new_value)
+
+        if equal is not "":
+            edgeData[category] = edgeData[category].mask(edgeData[attribute] ==
+                                                       equal, new_value)
+
+        if upper is not "":
+            edgeData[category] = edgeData[category].mask(edgeData[attribute] <
+                                                       float(upper), new_value)
+
+        return edgeData
+    def updateNodeCategory(self, attribute, category, lower=None, equal=None, upper=None):
+        """ Returns edge_metadata with updated width value which tells View
         what to hightlight
 
         Parameters
@@ -543,6 +571,7 @@ class Model(object):
                                                        float(upper), width)
 
         return edgeData
+    '''
     def collapseClades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
         sliderScale of 1 (min) means no clades are hidden, and sliderScale
@@ -571,7 +600,7 @@ class Model(object):
                 # do stuff
                 pass
         pass
-
+'''
     # def colorCategory(self, attribute, color,lower=None, equal=None, upper=None):
 
     #     """ Returns edge_metadata with updated color value which tells View
