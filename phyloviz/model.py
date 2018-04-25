@@ -211,7 +211,7 @@ class Tree(TreeNode):
         for node in self.postorder():
             nId = {'Node_id': node.name}
             coords = {'x': node.x2, 'y': node.y2}
-            attr = {'color': '#FFFFFF','is_visible':True,'size':1}
+            attr = {'color': '#FFFFFF', 'is_visible': True, 'size': 1}
             nodeData[node.name] = {**nId, **coords, **attr}
 
         # edge metadata
@@ -228,7 +228,7 @@ class Tree(TreeNode):
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
                 alpha = {'alpha': child.alpha}
-                attr = {'color': '#FFFFFF','is_visible':True,'width':1}
+                attr = {'color': '#FFFFFF', 'is_visible': True, 'width': 1}
                 edgeData[child.name] = {**nId, **coords, **pId,
                                         **pCoords, **alpha, **attr}
 
@@ -563,13 +563,13 @@ class Model(object):
         total_nodes = self.tree.count()
         nodes_limit = sliderScale * total_nodes  # think of way to adjust slider
         for node in self.tree.levelorder():
-            if (count >= nodes_limit) {
+            if count >= nodes_limit:
                 # done selecting nodes to render
                 # set visibility of the rest to false
-            }
-            else {
+                pass
+            else:
                 # do stuff
-            }
+                pass
         pass
 
     # def colorCategory(self, attribute, color,lower=None, equal=None, upper=None):

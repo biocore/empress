@@ -165,6 +165,7 @@
 			$.getJSON('http://localhost:8080/api/edges', function(data) {
 				edgeMetadata = data; // JSON.parse(JSON.stringify(data));
 			}).done(function() {
+				console.log(edgeMetadata);
 				InitWebGl(edgeMetadata);
 			});
 

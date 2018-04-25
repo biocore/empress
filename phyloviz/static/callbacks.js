@@ -136,6 +136,7 @@ function collapseClades() {
 			window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
 		});
 	});
+}
 
 function selectColor() {
 	console.log('Color option selected');
