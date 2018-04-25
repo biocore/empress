@@ -516,7 +516,7 @@ class Model(object):
 
         return edgeData
 
-    def updateEdgeCategory(self, attribute, category, lower=None, equal=None, upper=None):
+    def updateEdgeCategory(self, attribute, category, new_value, lower=None, equal=None, upper=None):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
 
@@ -530,17 +530,18 @@ class Model(object):
 
         """
 
+        edgeData = self.edge_metadata
         if lower is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] >
-                                                       float(lower), width)
+            edgeData[category] = edgeData[category].mask(edgeData[attribute] >
+                                                       float(lower), new_value)
 
         if equal is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] ==
-                                                       equal, width)
+            edgeData[category] = edgeData[category].mask(edgeData[attribute] ==
+                                                       equal, new_value)
 
         if upper is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] <
-                                                       float(upper), width)
+            edgeData[category] = edgeData[category].mask(edgeData[attribute] <
+                                                       float(upper), new_value)
 
         return edgeData
     def updateNodeCategory(self, attribute, category, lower=None, equal=None, upper=None):
@@ -570,6 +571,7 @@ class Model(object):
                                                        float(upper), width)
 
         return edgeData
+    '''
     def collapseClades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
         sliderScale of 1 (min) means no clades are hidden, and sliderScale
@@ -598,7 +600,7 @@ class Model(object):
                 # do stuff
             }
         pass
-
+'''
     # def colorCategory(self, attribute, color,lower=None, equal=None, upper=None):
 
     #     """ Returns edge_metadata with updated color value which tells View
