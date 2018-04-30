@@ -4,7 +4,10 @@ window.lastMouseX = null;
 window.lastMouseY = null;
 window.zoomAmount = 1; //used to make pan look uniformed when zooming
 window.zoomLevel = 0; //current zoom level - used for selective rendering
-
+window.highlightURL = 'http://localhost:8080/highlight';
+window.collapseURL = 'http://localhost:8080/collapse';
+window.edgeURL = 'http://localhost:8080/api/edges';
+window.colorURL = 'http://localhost:8080/color';
 /*
  * tells javasript what function to call for mouse/keyboard events
  */
@@ -95,9 +98,6 @@ function mousewheel(event) {
 	}
 }
 
-/*
-TODO: need to change edge metadata to hold color as "#RRGGBB" hex string and the enable webgl to parse it
-*/
 
 /*
  * Highlights the user selected metadata
@@ -109,7 +109,7 @@ function selectHighlight() {
 	var l = document.getElementById("lowerBound").value;
 	var u = document.getElementById("upperBound").value;
 	var e = document.getElementById("category").value;
-	$.getJSON('http://localhost:8080/highlight', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
+	$.getJSON(window.highlightURL, {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
 		edges = JSON.parse(JSON.stringify(data));
 	}).done(function() {
 		extractEdges(edges);
@@ -126,10 +126,10 @@ function collapseClades() {
 
 	var triangles;
 	var edges;
-	$.getJSON('http://localhost:8080/collapse', {sliderScale: ss}, function(data) {
+	$.getJSON(window.collapseURL, {sliderScale: ss}, function(data) {
 		triangles = data;
 	}).done(function() {
-		$.getJSON('http://localhost:8080/api/edges', function(data2) {
+		$.getJSON(window.edgeURL, function(data2) {
 			edges = data2;
 		}).done(function() {
 			extractEdges(edges);
@@ -145,7 +145,7 @@ function selectColor() {
 	var l = document.getElementById("lowerBound").value;
 	var u = document.getElementById("upperBound").value;
 	var e = document.getElementById("category").value;
-	$.getJSON('http://localhost:8080/color', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
+	$.getJSON(window.colorURL, {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
 		edges = JSON.parse(JSON.stringify(data));
 	}).done(function() {
 		extractEdges(edges);

@@ -4,6 +4,21 @@ import numpy as np
 import skbio
 import time
 
+def name_internal_nodes(tree):
+    """ Name internal nodes that does not have name
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+    # initialize tree with branch length
+    for i, n in enumerate(tree.postorder(include_self=True)):
+        n.length = 1
+        if not n.is_tip() and n.name is None:
+            n.name = "y%d" % i
+
 
 def read_leaf_node_metadata(file_name):
     """ Reads in metadata for leaf nodes
@@ -360,7 +375,8 @@ class Tree(TreeNode):
 
 class Model(object):
 
-    def __init__(self, tree,
+    def __init__(self, tree_file=None,
+                 tree_format='newick',
                  internal_metadata_file=None,
                  leaf_metadata_file=None,
                  node_metadata=None,
@@ -386,7 +402,10 @@ class Model(object):
         """
         self.zoom_level = 1
         self.scale = 1
+        tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
+        name_internal_nodes(self.tree)
+
         if edge_metadata is None:
             (self.edge_metadata, self.node_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
