@@ -39,6 +39,20 @@ class EdgeHandler(RequestHandler):
         self.finish()
 
 
+class NodeHandler(RequestHandler):
+    def get(self):
+        nodes = m.node_metadata.to_json(orient='records')
+        self.write(nodes)
+        self.finish()
+
+
+class TriangleHandler(RequestHandler):
+    def get(self):
+        triangles = m.triangles.to_json(orient='records')
+        self.write(triangles)
+        self.finish()
+
+
 class ZoomHandler(RequestHandler):
     def get(self):
         level = self.get_argument('level')
