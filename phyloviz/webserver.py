@@ -1,6 +1,6 @@
 import tornado
-from controller import ModelHandler, EdgeHandler, ZoomHandler
-from controller import BenchmarkHandler, HighlightHandler
+from controller import ModelHandler, EdgeHandler, NodeHandler, ZoomHandler
+from controller import BenchmarkHandler, HighlightHandler, TriangleHandler
 from controller import CollapseHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -12,6 +12,8 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [(r"/", ModelHandler),
                     (r"/api/edges", EdgeHandler),
+                    (r"/api/nodes", NodeHandler),
+                    (r"/api/triangles", TriangleHandler),
                     (r"/zoom", ZoomHandler),
                     (r"/benchmark", BenchmarkHandler),
                     (r"/collapse", CollapseHandler),

@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import skbio
 import time
+from operator import attrgetter
 
 def name_internal_nodes(tree):
     """ Name internal nodes that does not have name
@@ -214,10 +215,11 @@ class Tree(TreeNode):
                 y-coordinate of parent
         """
 
-        # calculates coordinates of all nodes
+        # calculates coordinates of all nodes and the shortest/longest branches
         print("start")
         start = time.time()
         scale = self.rescale(width, height)
+        self.find_shortest_longest_branches()
         print(time.time() - start)
         print("done")
 
@@ -237,7 +239,8 @@ class Tree(TreeNode):
                 alpha = {'alpha': child.alpha}
                 attr = {'node_color_R': 255.0, 'node_color_G': 255.0, 'node_color_B': 255.0,
                         'branch_color_R': 255.0, 'branch_color_G': 255.0, 'branch_color_B': 255.0,
-                        'node_is_visible': True, 'branch_is_visible': True, 'width': 1, 'size': 1}
+                        'node_is_visible': True, 'branch_is_visible': True, 'width': 1, 'size': 1,
+                         'shortest': node.shortest.depth, 'longest': node.longest.depth}
                 edgeData[child.name] = {**nId, **coords, **pId,
                                         **pCoords, **alpha, **attr}
 
@@ -362,6 +365,44 @@ class Tree(TreeNode):
 
         return (max_x, min_x, max_y, min_y)
 
+    def find_shortest_longest_branches(self):
+        """ Finds the shortest and longest branches in each node's subtree.
+        Parameters
+        ----------
+        None
+        Returns
+        -------
+        None
+        Notes
+        -----
+        """
+        for node in self.postorder():
+            if node.is_tip():
+                node.shortest = node
+                node.longest = node
+            else:
+                # calculate shortest branch node
+                node.shortest = min([child.shortest for child in node.children],
+                                    key=attrgetter('depth'))
+
+                # calculate longest branch node
+                node.longest = max([child.longest for child in node.children],
+                                   key=attrgetter('depth'))
+
+    # def distance(n1, n2):
+    #     """ Finds the cartesian distance between two nodes
+    #     Parameters
+    #     ----------
+    #     n1 : TreeNode
+    #         First node
+    #     n2 : TreeNode
+    #         Second node
+    #     Returns
+    #     -------
+    #     distance : distance between n1 and n2
+    #     """
+    #     return math.sqrt((n1.x2 - n2.x2)**2 + (n1.y2 - n2.y2)**2)
+
 
 class Model(object):
 
@@ -412,6 +453,7 @@ class Model(object):
                                       how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
                                       how='outer', on="Node_id")
+        self.triangles = pd.DataFrame()
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -605,20 +647,50 @@ class Model(object):
         triangles : pd.DataFrame
         rx | ry | fx | fy | cx | cy | #RGB (color string)
         """
+        triData = {}
+
+        print("start collapse")
+        start = time.time()
         count = 0
         total_nodes = self.tree.count()
-        nodes_limit = total_nodes - sliderScale * total_nodes
+        nodes_limit = total_nodes - int(sliderScale) * total_nodes
+
         for node in self.tree.levelorder():
             if count >= nodes_limit:
                 # done selecting nodes to render
                 # set visibility of the rest to false
                 self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
                                        node.name, 'visibility'] = False
+                self.node_metadata.loc[self.node_metadata['Node_id'] ==
+                                       node.name, 'is_visible'] = False
 
+                # if parent was visible
+                # add triangle coordinates to dataframe
+                if self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
+                   node.parent.name, 'visibility'] is True:
+                    nId = {"Node_id": node.parent.name}
+                    root = {'rx': node.parent.x2, 'ry': node.parent.y2}
+                    shortest = {'sx': node.parent.shortest.x2,
+                                'sy': node.parent.shortest.y2}
+                    longest = {'lx': node.parent.longest.x2,
+                               'ly': node.parent.longest.y2}
+                    triData[node.parent.name] = {**nId, **root, **shortest,
+                                                 **longest}
+
+            else:
+                # reset visibility of higher level nodes
+                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
+                                       node.name, 'visibility'] = True
+                self.node_metadata.loc[self.node_metadata['Node_id'] ==
+                                       node.name, 'is_visible'] = True
             # increment node count
             count = count + 1
-        pass
-        print(self.edge_metadata)
+
+        print(time.time() - start)
+        print("end collapse")
+
+        self.triangles = pd.DataFrame(triData).T
+        return self.triangles
 
     # def colorCategory(self, attribute, color,lower=None, equal=None, upper=None):
 
