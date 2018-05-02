@@ -221,15 +221,6 @@ class Tree(TreeNode):
         print(time.time() - start)
         print("done")
 
-        # Node metadata
-        nodeData = {}
-        for node in self.postorder():
-            nId = {'Node_id': node.name}
-            coords = {'x': node.x2, 'y': node.y2}
-            attr = {'color_R': 255.0, 'color_G': 255.0, 'color_B': 255.0,
-                    'is_visible': True, 'size': 1}
-            nodeData[node.name] = {**nId, **coords, **attr}
-
         # edge metadata
         edgeData = {}
         for node in self.postorder():
@@ -244,19 +235,18 @@ class Tree(TreeNode):
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
                 alpha = {'alpha': child.alpha}
-                attr = {'color_R': 255.0, 'color_G': 255.0, 'color_B': 255.0,
-                        'is_visible': True, 'width': 1}
+                attr = {'node_color_R': 255.0, 'node_color_G': 255.0, 'node_color_B': 255.0,
+                        'branch_color_R': 255.0, 'branch_color_G': 255.0, 'branch_color_B': 255.0,
+                        'node_is_visible': True, 'branch_is_visible': True, 'width': 1, 'size': 1}
                 edgeData[child.name] = {**nId, **coords, **pId,
                                         **pCoords, **alpha, **attr}
 
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
-        nodeMeta = pd.DataFrame(nodeData).T
-        print(nodeMeta)
         centerX = self.x2
         centerY = self.y2
 
-        return (edgeMeta, nodeMeta, centerX, centerY, scale)
+        return (edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
@@ -407,7 +397,7 @@ class Model(object):
         name_internal_nodes(self.tree)
 
         if edge_metadata is None:
-            (self.edge_metadata, self.node_metadata, self.centerX,
+            (self.edge_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
