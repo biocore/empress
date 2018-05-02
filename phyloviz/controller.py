@@ -14,8 +14,8 @@ internal_metadata_file = 'ncbi.t2t.txt'
 leaf_metadata_file = 'metadata.txt'
 #tree files
 tree_format = 'newick'
-tree_file = './astral.MR.rooted.nid.nosup.nwk'
-#tree_file = './gg_13_5_otus_99_annotated.tree'
+#tree_file = './astral.MR.rooted.nid.nosup.nwk'
+tree_file = './gg_13_5_otus_99_annotated.tree'
 #tree_file = './0B5tlRtQ-tBfkZSuneOKbg.nwk'
 
 

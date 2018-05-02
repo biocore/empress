@@ -541,34 +541,19 @@ class Model(object):
 
         return self.edge_metadata
 
-    def selectCategory(self, attribute, lower=None, equal=None, upper=None):
+    def selectCategory(self, attributes):
         """ Returns edge_metadata with updated alpha value which tells View
         what to hightlight
 
         Parameters
         ----------
-        attribute : str
-            The name of the attribute(column of the table).
-
-        category:
-            The category of a certain attribute.
+        attributes : list
+            List of columns names to select
 
         """
         edgeData = self.edge_metadata.copy(deep=True)
 
-        if lower is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] >
-                                                       float(lower), 1)
-
-        if equal is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] ==
-                                                       equal, 1)
-
-        if upper is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] <
-                                                       float(upper), 1)
-
-        return edgeData
+        return edgeData[attributes]
 
     def updateEdgeCategory(self, attribute, category, new_value, lower=None,
                            equal=None, upper=None):
@@ -582,6 +567,10 @@ class Model(object):
 
         category:
             The category of a certain attribute.
+        Returns
+        -------
+        edgeData : pd.Dataframe
+        updated version of edge metadata
 
         """
 
@@ -599,35 +588,6 @@ class Model(object):
             edgeData[category] = edgeData[category].mask(edgeData[attribute] <
                                                          float(upper),
                                                          new_value)
-
-        return edgeData
-
-    def updateNodeCategory(self, attribute, category, lower=None, equal=None,
-                           upper=None):
-        """ Returns edge_metadata with updated width value which tells View
-        what to hightlight
-
-        Parameters
-        ----------
-        attribute : str
-            The name of the attribute(column of the table).
-
-        category:
-            The category of a certain attribute.
-
-        """
-
-        if lower is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] >
-                                                       float(lower), width)
-
-        if equal is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] ==
-                                                       equal, width)
-
-        if upper is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] <
-                                                       float(upper), width)
 
         return edgeData
 
