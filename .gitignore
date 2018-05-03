@@ -102,3 +102,6 @@ ENV/
 
 # node modules
 node/node_modules/
+
+# newick
+*.nwk
