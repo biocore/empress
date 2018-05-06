@@ -92,7 +92,7 @@ function InitWebGl() {
 		    if (!($.inArray(property, ['px', 'py', 'x', 'y', 'alpha']) >= 0)) {
 		        var option = document.createElement("option");
 				option.text = property;
-				option.label = property; //TODO: check to see if property is numeric or categorical
+				option.label = property;
 				x.add(option);
 			}
 	    }

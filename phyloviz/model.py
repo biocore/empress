@@ -6,6 +6,22 @@ import time
 from operator import attrgetter
 
 
+def name_internal_nodes(tree):
+    """ Name internal nodes that does not have name
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+    # initialize tree with branch length
+    for i, n in enumerate(tree.postorder(include_self=True)):
+        n.length = 1    # TODO: discuss!!!!
+        if not n.is_tip() and n.name is None:
+            n.name = "y%d" % i
+
+
 def read_leaf_node_metadata(file_name):
     """ Reads in metadata for leaf nodes
 
@@ -208,17 +224,6 @@ class Tree(TreeNode):
         print(time.time() - start)
         print("done")
 
-        # Node metadata
-        nodeData = {}
-        for node in self.postorder():
-            nId = {'Node_id': node.name}
-            coords = {'x': node.x2, 'y': node.y2}
-            attr = {'color_R': 255.0, 'color_G': 255.0, 'color_B': 255.0,
-                    'is_visible': True, 'size': 1,
-                    'shortest': node.shortest.depth,
-                    'longest': node.longest.depth}
-            nodeData[node.name] = {**nId, **coords, **attr}
-
         # edge metadata
         edgeData = {}
         for node in self.postorder():
@@ -233,18 +238,21 @@ class Tree(TreeNode):
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
                 alpha = {'alpha': child.alpha}
-                attr = {'color_R': 255.0, 'color_G': 255.0, 'color_B': 255.0,
-                        'is_visible': True, 'width': 1}
+                attr = {'node_color_R': 255.0, 'node_color_G': 255.0,
+                        'node_color_B': 255.0, 'branch_color_R': 255.0,
+                        'branch_color_G': 255.0, 'branch_color_B': 255.0,
+                        'node_is_visible': True, 'branch_is_visible': True,
+                        'width': 1, 'size': 1, 'shortest': node.shortest.depth,
+                        'longest': node.longest.depth}
                 edgeData[child.name] = {**nId, **coords, **pId,
                                         **pCoords, **alpha, **attr}
 
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
-        nodeMeta = pd.DataFrame(nodeData).T
         centerX = self.x2
         centerY = self.y2
 
-        return (edgeMeta, nodeMeta, centerX, centerY, scale)
+        return (edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
@@ -402,10 +410,10 @@ class Tree(TreeNode):
 
 class Model(object):
 
-    def __init__(self, tree,
+    def __init__(self, tree_file=None,
+                 tree_format='newick',
                  internal_metadata_file=None,
                  leaf_metadata_file=None,
-                 node_metadata=None,
                  edge_metadata=None):
         """ Model constructor.
 
@@ -416,11 +424,6 @@ class Model(object):
         ----------
         tree : skbio.TreeNode
            The tree to be rendered.
-        node_metadata : pd.DataFrame
-           Contains all of the species attributes.
-           Every row corresponds to a unique species
-           and every column corresponds to an attribute.
-           Metadata may also contain ancestors.
         edge_metadata : pd.DataFrame
            Contains all of the edge attributes.
            Every row corresponds to a unique edge
@@ -428,13 +431,15 @@ class Model(object):
         """
         self.zoom_level = 1
         self.scale = 1
+        tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
+        name_internal_nodes(self.tree)
+
         if edge_metadata is None:
-            (self.edge_metadata, self.node_metadata, self.centerX,
+            (self.edge_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
-            self.node_metadata = node_metadata
             # Todo: append coords to node/edge
 
         # Append metadata to table
@@ -533,34 +538,21 @@ class Model(object):
 
         return self.edge_metadata
 
-    def selectCategory(self, attribute, lower=None, equal=None, upper=None):
+    def selectCategory(self, attributes):
         """ Returns edge_metadata with updated alpha value which tells View
         what to hightlight
 
         Parameters
         ----------
-        attribute : str
-            The name of the attribute(column of the table).
-
-        category:
-            The category of a certain attribute.
+        attributes : list
+            List of columns names to select
 
         """
         edgeData = self.edge_metadata.copy(deep=True)
+        attributes.insert(0,'Parent_id')
+        attributes.insert(0,'Node_id')
 
-        if lower is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] >
-                                                       float(lower), 1)
-
-        if equal is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] ==
-                                                       equal, 1)
-
-        if upper is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] <
-                                                       float(upper), 1)
-
-        return edgeData
+        return edgeData[attributes]
 
     def updateEdgeCategory(self, attribute, category, new_value, lower=None,
                            equal=None, upper=None):
@@ -574,6 +566,10 @@ class Model(object):
 
         category:
             The category of a certain attribute.
+        Returns
+        -------
+        edgeData : pd.Dataframe
+        updated version of edge metadata
 
         """
 
@@ -591,35 +587,6 @@ class Model(object):
             edgeData[category] = edgeData[category].mask(edgeData[attribute] <
                                                          float(upper),
                                                          new_value)
-
-        return edgeData
-
-    def updateNodeCategory(self, attribute, category, lower=None, equal=None,
-                           upper=None):
-        """ Returns edge_metadata with updated width value which tells View
-        what to hightlight
-
-        Parameters
-        ----------
-        attribute : str
-            The name of the attribute(column of the table).
-
-        category:
-            The category of a certain attribute.
-
-        """
-
-        if lower is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] >
-                                                       float(lower), width)
-
-        if equal is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] ==
-                                                       equal, width)
-
-        if upper is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] <
-                                                       float(upper), width)
 
         return edgeData
 
@@ -652,15 +619,15 @@ class Model(object):
                 # done selecting nodes to render
                 # set visibility of the rest to false
                 self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = False
-                self.node_metadata.loc[self.node_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = False
+                                       node.name, 'node_is_visible'] = False
+                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
+                                       node.name, 'branch_is_visible'] = False
 
                 # if parent was visible
                 # add triangle coordinates to dataframe
                 if node.parent is not None:
                     if self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                       node.parent.name, 'is_visible'] is True:
+                       node.parent.name, 'node_is_visible'] is True:
                         nId = {"Node_id": node.parent.name}
                         root = {'rx': node.parent.x2, 'ry': node.parent.y2}
                         shortest = {'sx': node.parent.shortest.x2,
@@ -673,9 +640,9 @@ class Model(object):
             else:
                 # reset visibility of higher level nodes
                 self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = True
-                self.node_metadata.loc[self.node_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = True
+                                       node.name, 'node_is_visible'] = True
+                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
+                                       node.name, 'branch_is_visible'] = True
             # increment node count
             count = count + 1
 

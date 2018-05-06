@@ -103,5 +103,10 @@ ENV/
 # node modules
 node/node_modules/
 
+<<<<<<< HEAD
 #newick trees
 *.nwk
+=======
+#tree
+/phyloviz/*.nwk
+>>>>>>> e59dd51af57a7852c7b16ecf8d4d617b40e7474d

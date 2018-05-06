@@ -8,19 +8,23 @@ import pandas as pd
 from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import ward, complete
 
-# trees
-
-# tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
-# tree = model.read('./gg_13_5_otus_99_annotated.tree', 'newick')
-# tree = model.read('./0B5tlRtQ-tBfkZSuneOKbg.nwk', 'newick')
-tree = TreeNode.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
-
 # metadata files
 internal_metadata_file = 'ncbi.t2t.txt'
 leaf_metadata_file = 'metadata.txt'
 
-m = Model(tree, internal_metadata_file, leaf_metadata_file)
+# tree files
+tree_format = 'newick'
+tree_file = './collapse_test.nwk'
+# tree_file = './astral.MR.rooted.nid.nosup.nwk'
+# tree_file = './gg_13_5_otus_99_annotated.tree'
+# tree_file = './0B5tlRtQ-tBfkZSuneOKbg.nwk'
+attr = ['width', 'branch_color_R']
+
+m = Model(tree_file, tree_format, internal_metadata_file, leaf_metadata_file)
 edgeM = m.retrive_view_coords()
+edge_part = m.selectCategory(attr)
+print(edgeM)
+print(edge_part)
 
 
 class ModelHandler(RequestHandler):
@@ -32,13 +36,6 @@ class EdgeHandler(RequestHandler):
     def get(self):
         edges = edgeM.to_json(orient='records')
         self.write(edges)
-        self.finish()
-
-
-class NodeHandler(RequestHandler):
-    def get(self):
-        nodes = m.node_metadata.to_json(orient='records')
-        self.write(nodes)
         self.finish()
 
 
