@@ -552,6 +552,8 @@ class Model(object):
 
         """
         edgeData = self.edge_metadata.copy(deep=True)
+        attributes.insert(0,'Parent_id')
+        attributes.insert(0,'Node_id')
 
         return edgeData[attributes]
 
