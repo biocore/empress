@@ -410,7 +410,6 @@ class Model(object):
                  tree_format='newick',
                  internal_metadata_file=None,
                  leaf_metadata_file=None,
-                 node_metadata=None,
                  edge_metadata=None):
         """ Model constructor.
 
@@ -442,7 +441,6 @@ class Model(object):
              self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
-            self.node_metadata = node_metadata
             # Todo: append coords to node/edge
 
         # Append metadata to table
@@ -541,7 +539,33 @@ class Model(object):
 
         return self.edge_metadata
 
-    def selectCategory(self, attributes):
+    def selectEdgeCategory(self):
+        """
+        Select categories required by webgl to plot edges
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        attributes = ['x','y','px','py','branch_color_R','branch_color_G','branch_color_B','width']
+        return selectCategory(attributes,'edge_is_visible')
+
+    def selectNodeCategory(self):
+        """
+        Select categories required by webgl to plot nodes
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        attributes = ['x','y','node_color_R','node_color_G','node_color_B','size']
+        return selectCategory(attributes,'node_is_visible')
+
+    def selectCategory(self, attributes, is_visible_col):
         """ Returns edge_metadata with updated alpha value which tells View
         what to hightlight
 
@@ -551,9 +575,10 @@ class Model(object):
             List of columns names to select
 
         """
+
         edgeData = self.edge_metadata.copy(deep=True)
-        attributes.insert(0,'Parent_id')
-        attributes.insert(0,'Node_id')
+        is_visible = edgeData[is_visible_col] == True
+        edgeData = edgeData[is_visible]
 
         return edgeData[attributes]
 
@@ -591,7 +616,8 @@ class Model(object):
                                                          float(upper),
                                                          new_value)
 
-        return edgeData
+        return selectEdgeCategory()
+
 
     def collapseClades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
@@ -623,8 +649,6 @@ class Model(object):
                 # set visibility of the rest to false
                 self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
                                        node.name, 'visibility'] = False
-                self.node_metadata.loc[self.node_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = False
 
                 # if parent was visible
                 # add triangle coordinates to dataframe
@@ -643,8 +667,6 @@ class Model(object):
                 # reset visibility of higher level nodes
                 self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
                                        node.name, 'visibility'] = True
-                self.node_metadata.loc[self.node_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = True
             # increment node count
             count = count + 1
 
