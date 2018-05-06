@@ -385,11 +385,6 @@ class Tree(TreeNode):
                 node.longest = max([child.longest for child in node.children],
                                    key=attrgetter('depth'))
 
-        for node in self.postorder():
-            print(node.name)
-            print(node.shortest.depth)
-            print(node.longest.depth)
-
     # def distance(n1, n2):
     #     """ Finds the cartesian distance between two nodes
     #     Parameters
@@ -652,13 +647,12 @@ class Model(object):
         total_nodes = self.tree.count()
         nodes_limit = total_nodes - float(sliderScale)/10 * total_nodes
 
-
         for node in self.tree.levelorder():
             if count >= nodes_limit:
                 # done selecting nodes to render
                 # set visibility of the rest to false
                 self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'visibility'] = False
+                                       node.name, 'is_visible'] = False
                 self.node_metadata.loc[self.node_metadata['Node_id'] ==
                                        node.name, 'is_visible'] = False
 
@@ -666,7 +660,7 @@ class Model(object):
                 # add triangle coordinates to dataframe
                 if node.parent is not None:
                     if self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                       node.parent.name, 'visibility'] is True:
+                       node.parent.name, 'is_visible'] is True:
                         nId = {"Node_id": node.parent.name}
                         root = {'rx': node.parent.x2, 'ry': node.parent.y2}
                         shortest = {'sx': node.parent.shortest.x2,
@@ -679,7 +673,7 @@ class Model(object):
             else:
                 # reset visibility of higher level nodes
                 self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'visibility'] = True
+                                       node.name, 'is_visible'] = True
                 self.node_metadata.loc[self.node_metadata['Node_id'] ==
                                        node.name, 'is_visible'] = True
             # increment node count

@@ -19,12 +19,6 @@ tree = TreeNode.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
 internal_metadata_file = 'ncbi.t2t.txt'
 leaf_metadata_file = 'metadata.txt'
 
-# initialize tree with branch length Todo: need to incorperate this into model
-for i, n in enumerate(tree.postorder(include_self=True)):
-    n.length = 1
-    if not n.is_tip() and n.name is None:
-        n.name = "y%d" % i
-
 m = Model(tree, internal_metadata_file, leaf_metadata_file)
 edgeM = m.retrive_view_coords()
 

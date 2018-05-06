@@ -269,7 +269,7 @@ class TestDendrogram(unittest.TestCase):
 
     def test_shortest_longest_branches(self):
         t = Tree.from_tree(self.tree2)
-        t.find_shortest_longest_branches()
+        t.coords(900, 1500)
         print(t.ascii_art())
 
         for node in t.postorder():
