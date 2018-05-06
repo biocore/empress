@@ -59,6 +59,7 @@ class TestDendrogram(unittest.TestCase):
         t = Tree.from_tree(self.tree1)
         self.assertEqual(t.__class__, Tree)
 
+
     # def test_coords_random_tree(self):
     #     t = Tree.from_tree(self.tree1)
 

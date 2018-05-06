@@ -384,6 +384,7 @@ class Tree(TreeNode):
                 # calculate longest branch node
                 node.longest = max([child.longest for child in node.children],
                                    key=attrgetter('depth'))
+
         for node in self.postorder():
             print(node.name)
             print(node.shortest.depth)
@@ -651,6 +652,7 @@ class Model(object):
         total_nodes = self.tree.count()
         nodes_limit = total_nodes - float(sliderScale)/10 * total_nodes
 
+
         for node in self.tree.levelorder():
             if count >= nodes_limit:
                 # done selecting nodes to render
@@ -686,6 +688,7 @@ class Model(object):
         print(time.time() - start)
         print("end collapse")
         print(triData)
+
         self.triangles = pd.DataFrame(triData).T
         print(self.triangles)
         return self.triangles
