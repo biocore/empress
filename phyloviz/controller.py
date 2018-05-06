@@ -9,9 +9,10 @@ from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import ward, complete
 
 # trees
-tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
+# tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
 # tree = model.read('./gg_13_5_otus_99_annotated.tree', 'newick')
 # tree = model.read('./0B5tlRtQ-tBfkZSuneOKbg.nwk', 'newick')
+tree = TreeNode.read(['(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;'])
 
 # metadata files
 internal_metadata_file = 'ncbi.t2t.txt'
