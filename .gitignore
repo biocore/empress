@@ -105,3 +105,6 @@ node/node_modules/
 
 #tree
 *.nwk
+*.tree
+metadata.txt
+ncbi.t2t.txt
