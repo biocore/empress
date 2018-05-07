@@ -105,3 +105,6 @@ node/node_modules/
 
 #newick trees
 *.nwk
+*.tree
+ncbi.t2t.txt
+metadata.txt
