@@ -9,13 +9,16 @@ from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import ward, complete
 
 # trees
-tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
+# tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
 # tree = model.read('./gg_13_5_otus_99_annotated.tree', 'newick')
 # tree = model.read('./0B5tlRtQ-tBfkZSuneOKbg.nwk', 'newick')
+tree = model.read('./test.tree.nwk', 'newick')
 
 # metadata files
 internal_metadata_file = 'ncbi.t2t.txt'
 leaf_metadata_file = 'metadata.txt'
+
+
 
 # initialize tree with branch length Todo: need to incorperate this into model
 for i, n in enumerate(tree.postorder(include_self=True)):

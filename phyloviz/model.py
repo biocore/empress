@@ -4,6 +4,7 @@ import numpy as np
 import skbio
 import time
 from operator import attrgetter
+import collections
 
 
 def read_leaf_node_metadata(file_name):
@@ -203,6 +204,9 @@ class Tree(TreeNode):
         # calculates coordinates of all nodes and the shortest/longest branches
         print("start")
         start = time.time()
+        print("Print self: ", vars(self))
+        test = self.to_array()
+        print("Print to_array(): ", test)
         scale = self.rescale(width, height)
         self.find_shortest_longest_branches()
         print(time.time() - start)
@@ -241,7 +245,7 @@ class Tree(TreeNode):
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
         nodeMeta = pd.DataFrame(nodeData).T
-        print(nodeMeta)
+
         centerX = self.x2
         centerY = self.y2
 
@@ -332,17 +336,21 @@ class Tree(TreeNode):
         for node in self.preorder(include_self=False):
             x1 = node.parent.x2
             y1 = node.parent.y2
+
+            #init a
             a = node.parent.angle
 
+            #same modify across nodes
             a = a - node.parent.leafcount * da / 2
+
+            #check for conditional higher order
             for sib in node.parent.children:
-                if len(node.parent.children) < 2:
-                    print(len(node.parent.children))
                 if sib != node:
                     a = a + sib.leafcount * da
                 else:
                     a = a + (node.leafcount * da) / 2
                     break
+
             # Constant angle algorithm.  Should add maximum daylight step.
             x2 = x1 + node.length * s * np.sin(a)
             y2 = y1 + node.length * s * np.cos(a)
@@ -384,6 +392,23 @@ class Tree(TreeNode):
                 # calculate longest branch node
                 node.longest = max([child.longest for child in node.children],
                                    key=attrgetter('depth'))
+
+    # def extract__fields_for_a_calculation(self):
+    #     """Creates a ndarray of tuples containing the necessary information to
+    #     calculate the angle  of the tree vertices. Fields in each enrty
+    #     are: parent_angle, parent_leafcount,sib1_leafcount, sib2_leafcount,
+    #     node.leafcount
+    #     Parameters
+    #     ----------
+    #     None
+    #     Returns
+    #     -------
+    #     """
+    #     Node = collections.namedtuple('parent_angle','parent_leafcount', \
+    #         'sib2_leafcount', 'node_leafcount')
+    #     for node in self.preorder(include_self=true):
+
+
 
     # def distance(n1, n2):
     #     """ Finds the cartesian distance between two nodes
