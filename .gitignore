@@ -104,4 +104,4 @@ ENV/
 node/node_modules/
 
 #tree
-/phyloviz/*.nwk
+*.nwk
