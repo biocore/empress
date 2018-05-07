@@ -33,17 +33,11 @@ window.fragmentShaderText =
 
 //global variables -- window = global
 window.canvas;
-window.vertexShader; //calculates the cordinates of tree in screen space
-window.fragmentShader; //colors the tree
 window.program; //loads the vertex/fragment shader into webgl
 window.gl; //webgl context - used to call webgl functions
 window.largeDim; //used to normalize the tree to fit into a 1x1 square
 window.result = []; //edgeMetadata extracted from dataframe
 window.worldMat = mat4.create();
-window.viewMat  = mat4.create();
-window.projMat = mat4.create();
-window.treeNormVec = vec3.create();
-window.identityMat = mat4.create();
 window.scaleFactor = 5.0 / 4.0; //how much the tree grows/shrinks during zoom
 
 /*
@@ -51,16 +45,20 @@ window.scaleFactor = 5.0 / 4.0; //how much the tree grows/shrinks during zoom
  */
 function InitWebGl() {
 
-	document.getElementById("showHighlightMenu").style.display = "block";
+	document.getElementById('highlight-menu').style.display = 'block';
 
 	window.topBorder = document.getElementsByTagName("fieldset")[0];
 	var canvas = document.getElementById("tree-surface");
+  // var canvas = $('#tree-surface');
 
 /* Rresize the canvas to occupy the full page,
    by getting the widow width and height and setting it to canvas*/
-
-	canvas.width  = document.getElementById('drawingSurface').offsetWidth;
-	canvas.height = document.getElementById('drawingSurface').offsetHeight;
+	canvas.width  = document.getElementById('drawing-surface').offsetWidth;
+	canvas.height = document.getElementById('drawing-surface').offsetHeight;
+  // canvas.width(document.getElementById('drawing-surface').offsetWidth);
+  // canvas.height(document.getElementById('drawing-surface').offsetHeight);
+  console.log(canvas.width);
+  console.log($('#drawing-surface').width());
 
 	console.log('init webgl');
 	window.canvas = document.getElementById('tree-surface');
@@ -86,16 +84,16 @@ function InitWebGl() {
 	extractEdges(edgeMetadata);
 
 	var templateMetadata = edgeMetadata[0];
-	var x = document.getElementById("metadataOptions");
+	var x = document.getElementById("highlight-options");
 	for (var property in templateMetadata) {
-	    if (templateMetadata.hasOwnProperty(property)) {
-		    if (!($.inArray(property, ['px', 'py', 'x', 'y', 'alpha']) >= 0)) {
-		        var option = document.createElement("option");
-				option.text = property;
-				option.label = property; //TODO: check to see if property is numeric or categorical
-				x.add(option);
-			}
-	    }
+    if (templateMetadata.hasOwnProperty(property)) {
+	    if (!($.inArray(property, ['px', 'py', 'x', 'y', 'alpha']) >= 0)) {
+	      var option = document.createElement("option");
+  			option.text = property;
+  			option.label = property; //TODO: check to see if property is numeric or categorical
+  			x.add(option);
+		  }
+    }
 	}
 	window.gl.clearColor(0.75, 0.85, 0.8, 1.0);
 	window.gl.clear(window.gl.COLOR_BUFFER_BIT | window.gl.DEPTH_BUFFER_BIT);
@@ -103,27 +101,27 @@ function InitWebGl() {
 	//
 	// Create shaders
 	//
-	window.vertexShader = window.gl.createShader(window.gl.VERTEX_SHADER);
-	window.fragmentShader = window.gl.createShader(window.gl.FRAGMENT_SHADER);
+	var vertexShader = window.gl.createShader(window.gl.VERTEX_SHADER);
+	var fragmentShader = window.gl.createShader(window.gl.FRAGMENT_SHADER);
 
-	window.gl.shaderSource(window.vertexShader, window.vertexShaderText);
-	window.gl.shaderSource(window.fragmentShader, window.fragmentShaderText);
+	window.gl.shaderSource(vertexShader, window.vertexShaderText);
+	window.gl.shaderSource(fragmentShader, window.fragmentShaderText);
 
-	window.gl.compileShader(window.vertexShader);
-	if (!window.gl.getShaderParameter(window.vertexShader, window.gl.COMPILE_STATUS)) {
-		console.error('ERROR compiling vertex shader!', window.gl.getShaderInfoLog(window.vertexShader));
+	window.gl.compileShader(vertexShader);
+	if (!window.gl.getShaderParameter(vertexShader, window.gl.COMPILE_STATUS)) {
+		console.error('ERROR compiling vertex shader!', window.gl.getShaderInfoLog(vertexShader));
 		return;
 	}
 
-	window.gl.compileShader(window.fragmentShader);
-	if (!window.gl.getShaderParameter(window.fragmentShader, window.gl.COMPILE_STATUS)) {
+	window.gl.compileShader(fragmentShader);
+	if (!window.gl.getShaderParameter(fragmentShader, window.gl.COMPILE_STATUS)) {
 		console.error('ERROR compiling fragment shader!', window.gl.getShaderInfoLog(fragmentShader));
 		return;
 	}
 
 	window.program = window.gl.createProgram();
-	window.gl.attachShader(window.program, window.vertexShader);
-	window.gl.attachShader(window.program, window.fragmentShader);
+	window.gl.attachShader(window.program, vertexShader);
+	window.gl.attachShader(window.program, fragmentShader);
 	window.gl.linkProgram(window.program);
 	if (!window.gl.getProgramParameter(window.program, window.gl.LINK_STATUS)) {
 		console.error('ERROR linking program!', window.gl.getProgramInfoLog(window.program));

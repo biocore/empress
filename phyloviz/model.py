@@ -204,9 +204,6 @@ class Tree(TreeNode):
         # calculates coordinates of all nodes and the shortest/longest branches
         print("start")
         start = time.time()
-        print("Print self: ", vars(self))
-        test = self.to_array()
-        print("Print to_array(): ", test)
         scale = self.rescale(width, height)
         self.find_shortest_longest_branches()
         print(time.time() - start)

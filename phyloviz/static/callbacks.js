@@ -105,9 +105,9 @@ TODO: need to change edge metadata to hold color as "#RRGGBB" hex string and the
 function selectHighlight() {
 	console.log('Highlight option selected');
 	var edges;
-	var attr = document.getElementById("metadataOptions").value;
-	var l = document.getElementById("lowerBound").value;
-	var u = document.getElementById("upperBound").value;
+	var attr = document.getElementById("metadata-options").value;
+	var l = document.getElementById("lower-bound").value;
+	var u = document.getElementById("upper-bound").value;
 	var e = document.getElementById("category").value;
 	$.getJSON('http://localhost:8080/highlight', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
 		edges = JSON.parse(JSON.stringify(data));
@@ -121,7 +121,7 @@ function selectHighlight() {
  * Collapses clades based on the slider scale
  */
 function collapseClades() {
-	var ss = document.getElementById("collapseRange").value;
+	var ss = document.getElementById("collapse-range").value;
 	console.log('collapse clade', ss);
 
 	var triangles;
@@ -141,9 +141,9 @@ function collapseClades() {
 function selectColor() {
 	console.log('Color option selected');
 	var edges;
-	var attr = document.getElementById("metadataOptions").value;
-	var l = document.getElementById("lowerBound").value;
-	var u = document.getElementById("upperBound").value;
+	var attr = document.getElementById("metadata-options").value;
+	var l = document.getElementById("lower-bound").value;
+	var u = document.getElementById("upper-bound").value;
 	var e = document.getElementById("category").value;
 	$.getJSON('http://localhost:8080/color', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
 		edges = JSON.parse(JSON.stringify(data));
