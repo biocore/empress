@@ -1,70 +1,49 @@
-function initWebPage() {
-  document.getElementById("showHighlightMenu").style.display = "block";
+function initWebPage(edgeMetadata) {
+  $("#highlight-menu").show();
 
-  //This will be the new meta_labels
-  // var templateMetadata = edgeMetadata[0];
-  // window.hlMeta = document.getElementById("highlightOptions");
-  // window.cMeta = document.getElementById("colorOptions");
-  // for (var property in templateMetadata) {
-  //     if (templateMetadata.hasOwnProperty(property)) {
-  //      if (!($.inArray(property, ['px', 'py', 'x', 'y', 'color']) >= 0)) {
-  //          var hlOpt = document.createElement("option");
-  //          var cOpt = document.createElement("option");
-  //          hlOpt.text = property;
-  //          hlOpt.label = property; //TODO: check to see if property is numeric or categorical
-  //          cOpt.text = property;
-  //          cOpt.label = property; //TODO: check to see if property is numeric or categorical
-  //          cMeta.add(hlOpt);
-  //          hlMeta.add(cOpt);
-  //      }
-  //     }
-  // }
+  let templateMetadata = edgeMetadata[0];
+  var x = $("#highlight-options")[0];
+  for (var property in templateMetadata) {
+    if (templateMetadata.hasOwnProperty(property)) {
+      if (!($.inArray(property, ["px", "py", "x", "y", "alpha"]) >= 0)) {
+        var option = document.createElement("option");
+        option.text = property;
+        option.label = property; //TODO: check to see if property is numeric or categorical
+        x.add(option);
+      }
+    }
+  }
 
-  initCallbacks();
+  // initCallbacks();
+}
+
+
+/*
+ * Extracts the coordinates/other info from metadata and formats it for webgl
+ */
+function extractEdgeInfo(edgeMeta) {
+  console.log("Start Extracting");
+  const edgeCoordsMultiDimensional = edgeMeta.map(function(edge) {
+    return [edge.px, edge.py, edge.alpha, edge. x, edge.y, edge.alpha];
+  });
+  const edgeCoordsFlattend = [].concat.apply([], edgeCoordsMultiDimensional)
+  console.log("Finish Extracting");
+  return edgeCoordsFlattend;
 }
 
 /*
- * Extracts the coordinates of the tree from edge_metadata
+ *Find largest dimension of the tree so webgl can fit tree into a 1x1 square
  */
-function extractEdges(viewCoords) {
-  var minX = Infinity;
-  var maxX = -Infinity;
-  var minY = Infinity;
-  var maxY = -Infinity;
-  window.result = [];
-  var i;
-  for(i = 0; i < viewCoords.length; i++){
-    //console.log(edgeMetadata[i].px);
-    if(viewCoords[i].x > maxX){
-      maxX =  viewCoords[i].x;
-    }
-    if(viewCoords[i].y > maxY){
-      maxY =  viewCoords[i].y;
-    }
-    if(viewCoords[i].x < minX){
-      minX =  viewCoords[i].x;
-    }
-    if(viewCoords[i].y < minY){
-      minY =  viewCoords[i].y;
-    }
-    window.result.push(viewCoords[i].px);
-    window.result.push(viewCoords[i].py);
-    window.result.push(viewCoords[i].red);
-    window.result.push(viewCoords[i].green);
-    window.result.push(viewCoords[i].blue);
-    window.result.push(viewCoords[i].x);
-    window.result.push(viewCoords[i].y);
-    window.result.push(viewCoords[i].red);
-    window.result.push(viewCoords[i].green);
-    window.result.push(viewCoords[i].blue);
-  }
+function normalizeTree(edgeMeta) {
+  console.log("Normalizing tree")
+  const xCoords = edgeMeta.map(edge => edge.x);
+  const yCoords = edgeMeta.map(edge => edge.y);
+  const [maxX,minX] = [Math.max(...xCoords), Math.min(...xCoords)];
+  const [maxY,minY] = [Math.max(...yCoords), Math.min(...yCoords)];
+  const [xDim, yDim] = [Math.abs(maxX - minX), Math.abs(maxY - minY)];
+  console.log("Finish Normalizing");
 
-  var xDim = Math.abs(maxX - minX);
-  var yDim = Math.abs(maxY - minY);
-  if(xDim > yDim) {
-    window.largeDim = xDim;
-  }
-  else{
-    window.largeDim = yDim;
-  }
+  return (xDim > yDim) ? xDim : yDim;
 }
+
+

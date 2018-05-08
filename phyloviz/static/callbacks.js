@@ -10,32 +10,33 @@ window.zoomLevel = 0; //current zoom level - used for selective rendering
  */
 function initCallbacks(){
 	console.log('init callbacks');
-	window.canvas.onmousedown = mousedown;
-	document.onmouseup = mouseup;
-	document.onmousemove = mousemove;
-	window.canvas.onwheel = mousewheel;
+	window.canvas[0].onmousedown = mouseDown;
+	document.onmouseup = mouseUp;
+	document.onmousemove = mouseMove;
+  window.canvas[0].onwheel = mouseWheel;
 }
 
 /*
  * stores (x,y) coord of mouse
  */
-function mousedown(event) {
+function mouseDown(event) {
 	window.isMouseDown = true;
 	window.lastMouseX = event.clientX;
-    window.lastMouseY = event.clientY;
+  window.lastMouseY = event.clientY;
 }
 
 /*
  * unsets the mouse down flag
  */
-function mouseup(event) {
+function mouseUp(event) {
+	console.log("test up");
 	window.isMouseDown = false;
 }
 
 /*
  * Pans the tree if mouse down flag is set
  */
-function mousemove(event) {
+function mouseMove(event) {
 	 if (!window.isMouseDown) {
      	return;
     }
@@ -56,7 +57,7 @@ function mousemove(event) {
 /*
  * zooms tree and this is where selective rendering will take place
  */
-function mousewheel(event) {
+function mouseWheel(event) {
 	if(event.deltaY > 0){
 		var scaleByMat = new Float32Array(16);
 		var scaleAmount = window.scaleFactor;
@@ -65,19 +66,6 @@ function mousewheel(event) {
 		mat4.fromScaling(scaleByMat, scaleFactorVec);
 		mat4.mul(window.worldMat, scaleByMat, window.worldMat);
 		window.zoomLevel++;
-
-		//selective render -- when zooming in
-		/*if(window.zoomLevel % 5 === 0 ) {
-			console.log("zoom expand");
-			var edges;
-			$.getJSON('http://localhost:8080/zoom', {level : window.zoomLevel}, function(data) {
-			 	edges = JSON.parse(JSON.stringify(data));
-			 }).done(function() {
-				extractEdges(edges);
-				window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
-			});
-
-		}*/
 	}
 	else if(event.deltaY < 0) {
 		var scaleByMat = new Float32Array(16);
@@ -87,11 +75,6 @@ function mousewheel(event) {
 		mat4.fromScaling(scaleByMat, scaleFactorVec);
 		mat4.mul(window.worldMat, scaleByMat, window.worldMat);
 		window.zoomLevel--;
-
-		//selective render --  when zooming out
-		/*if(window.zoomLevel % 5 === 0) {
-			console.log("zoom collapse");
-		}*/
 	}
 }
 
@@ -104,15 +87,16 @@ TODO: need to change edge metadata to hold color as "#RRGGBB" hex string and the
  */
 function selectHighlight() {
 	console.log('Highlight option selected');
-	var edges;
-	var attr = document.getElementById("metadata-options").value;
-	var l = document.getElementById("lower-bound").value;
-	var u = document.getElementById("upper-bound").value;
-	var e = document.getElementById("category").value;
+	let edges;
+	let attr = $('#highlight-options').val();
+	let l = $('#lower-bound').val();
+	let u = $('#upper-bound').val();
+	let e = $('#category').val();
 	$.getJSON('http://localhost:8080/highlight', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
-		edges = JSON.parse(JSON.stringify(data));
+		edges = data;
 	}).done(function() {
-		extractEdges(edges);
+		window.result = extractEdgeInfo(edges);
+		window.largeDim = normalizeTree(edges);
 		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
 	});
 }
@@ -121,7 +105,7 @@ function selectHighlight() {
  * Collapses clades based on the slider scale
  */
 function collapseClades() {
-	var ss = document.getElementById("collapse-range").value;
+	var ss = $('#collapse-range').val();
 	console.log('collapse clade', ss);
 
 	var triangles;
@@ -132,40 +116,26 @@ function collapseClades() {
 		$.getJSON('http://localhost:8080/api/edges', function(data2) {
 			edges = data2;
 		}).done(function() {
-			extractEdges(edges);
+			window.result = extractEdgeInfo(edges);
+			window.largeDim = normalizeTree(edges);
 			window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
 		});
 	});
 }
 
-function selectColor() {
-	console.log('Color option selected');
-	var edges;
-	var attr = document.getElementById("metadata-options").value;
-	var l = document.getElementById("lower-bound").value;
-	var u = document.getElementById("upper-bound").value;
-	var e = document.getElementById("category").value;
-	$.getJSON('http://localhost:8080/color', {attribute : attr, lower : l, equal : e, upper : u}, function(data) {
-		edges = JSON.parse(JSON.stringify(data));
-	}).done(function() {
-		extractEdges(edges);
-		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
-	});
-}
-
 function showMenu(evt, menuName) {
-	var i, menus, tabs;
-	menus = document.getElementsByClassName("menu");
+	var i;
+	var menus = $('.menu');
 
 	for(i = 0; i < menus.length; i++) {
-		menus[i].style.display = "none";
+		menus.eq(i).hide();
 	}
 
-	tabs = document.getElementsByClassName("tabs");
+	var tabs = document.getElementsByClassName("tabs");
 	for(i = 0; i < tabs.length; i++) {
 		tabs[i].className = tabs[i].className.replace("active","");
 	}
 
-	document.getElementById(menuName).style.display = "block";
+	$('#' + menuName).show()
 	evt.currentTarget.className += "active"
 }

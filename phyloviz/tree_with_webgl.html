@@ -9,7 +9,7 @@
   <script type="text/javascript"  src="{{ static_url('init_webgl.js') }}"></script>
   <script type="text/javascript" src="{{ static_url('callbacks.js') }} "></script>
   <script type="text/javascript" src="{{ static_url('drawing_loop.js') }} "></script>
-  <!-- <script type="text/javascript" src="{{ static_url('init_webpage.js') }} "></script> -->
+  <script type="text/javascript" src="{{ static_url('init_webpage.js') }} "></script>
 </head>
 
 <body>
@@ -75,11 +75,16 @@
       $.getJSON('http://localhost:8080/api/edges', function(data) {
         edgeMetadata = data;
       }).done(function() {
-        InitWebGl(edgeMetadata);
+        initWebPage(edgeMetadata);
+        window.result = extractEdgeInfo(edgeMetadata);
+        window.largeDim = normalizeTree(edgeMetadata);
+        initWebGl();
+        initCallbacks();
+        draw();
       });
 
-      let slider = document.getElementById("collapse-range");
-      let output = document.getElementById("num");
+      let slider = $('#collapse-range')[0];
+      let output = $('#num')[0];
       output.innerHTML = slider.value;
 
       slider.oninput = function() {

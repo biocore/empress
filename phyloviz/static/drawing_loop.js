@@ -14,7 +14,7 @@ function draw() {
   vec3.set(treeNormVec, 1.0 / window.largeDim * 3, 1.0 / window.largeDim * 3, 1.0 / window.largeDim * 3);
   mat4.fromScaling(window.worldMat, treeNormVec);
   mat4.lookAt(viewMat, [0,0,-5], [0,0,0],[0,1,0]);
-  mat4.perspective(projMat, glMatrix.toRadian(45), window.canvas.width / window.canvas.height, 0.1,1000.0);
+  mat4.perspective(projMat, glMatrix.toRadian(45), window.canvas.width() / window.canvas.height(), 0.1,1000.0);
 
   window.gl.uniformMatrix4fv(matWorldUniform, window.gl.FALSE, window.worldMat);
   window.gl.uniformMatrix4fv(matViewUniform, window.gl.FALSE, viewMat);
@@ -26,6 +26,7 @@ function draw() {
   mat4.rotate(rotateMat, identityMat, angle, [0,0,1]);
   mat4.mul(window.worldMat, window.worldMat, rotateMat);
 
+  console.log("Start Draw");
   //
   // Main render loop
   //

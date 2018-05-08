@@ -32,7 +32,6 @@ window.fragmentShaderText =
 ].join('\n');
 
 //global variables -- window = global
-window.canvas;
 window.program; //loads the vertex/fragment shader into webgl
 window.gl; //webgl context - used to call webgl functions
 window.largeDim; //used to normalize the tree to fit into a 1x1 square
@@ -43,30 +42,21 @@ window.scaleFactor = 5.0 / 4.0; //how much the tree grows/shrinks during zoom
 /*
  * compliles shader programs and initializes webgl
  */
-function InitWebGl() {
+function initWebGl() {
+  console.log('init webgl');
 
-	document.getElementById('highlight-menu').style.display = 'block';
 
-	window.topBorder = document.getElementsByTagName("fieldset")[0];
-	var canvas = document.getElementById("tree-surface");
-  // var canvas = $('#tree-surface');
+  //sets the size of the webgl canvas to fill the screen
+  var drawingSurface = $('#drawing-surface');
+  window.canvas = $('#tree-surface');
+  window.canvas[0].width = drawingSurface.width()
+  window.canvas[0].height = drawingSurface.height();
 
-/* Rresize the canvas to occupy the full page,
-   by getting the widow width and height and setting it to canvas*/
-	canvas.width  = document.getElementById('drawing-surface').offsetWidth;
-	canvas.height = document.getElementById('drawing-surface').offsetHeight;
-  // canvas.width(document.getElementById('drawing-surface').offsetWidth);
-  // canvas.height(document.getElementById('drawing-surface').offsetHeight);
-  console.log(canvas.width);
-  console.log($('#drawing-surface').width());
-
-	console.log('init webgl');
-	window.canvas = document.getElementById('tree-surface');
-	window.gl = window.canvas.getContext('webgl');
+	window.gl = window.canvas[0].getContext('webgl');
 
 	if (!window.gl) {
 		console.log('WebGL not supported, falling back on experimental-webgl');
-		window.gl = window.canvas.getContext('experimental-webgl');
+		window.gl = window.canvas[0].getContext('experimental-webgl');
 		return;
 	}
 
@@ -75,26 +65,6 @@ function InitWebGl() {
 		return;
 	}
 
-	window.edgeMetadata = arguments[0];
-	if(edgeMetadata === undefined) {
-		console.log('edgeMetadata not empty')
-		return;
-	}
-
-	extractEdges(edgeMetadata);
-
-	var templateMetadata = edgeMetadata[0];
-	var x = document.getElementById("highlight-options");
-	for (var property in templateMetadata) {
-    if (templateMetadata.hasOwnProperty(property)) {
-	    if (!($.inArray(property, ['px', 'py', 'x', 'y', 'alpha']) >= 0)) {
-	      var option = document.createElement("option");
-  			option.text = property;
-  			option.label = property; //TODO: check to see if property is numeric or categorical
-  			x.add(option);
-		  }
-    }
-	}
 	window.gl.clearColor(0.75, 0.85, 0.8, 1.0);
 	window.gl.clear(window.gl.COLOR_BUFFER_BIT | window.gl.DEPTH_BUFFER_BIT);
 
@@ -137,8 +107,6 @@ function InitWebGl() {
 	var treeVertexBufferObject = window.gl.createBuffer();
 	window.gl.bindBuffer(window.gl.ARRAY_BUFFER, treeVertexBufferObject);
 	window.gl.bufferData(window.gl.ARRAY_BUFFER, new Float32Array(window.result), window.gl.DYNAMIC_DRAW);
-	//window.gl.bufferData(window.gl.ARRAY_BUFFER, null, window.gl.DYNAMIC_DRAW);
-	//window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
 
 	var positionAttribLocation = window.gl.getAttribLocation(window.program, 'vertPosition');
 	var alphaAttribLocation = window.gl.getAttribLocation(window.program, 'alpha');
@@ -162,48 +130,4 @@ function InitWebGl() {
 	window.gl.enableVertexAttribArray(positionAttribLocation);
 	gl.enableVertexAttribArray(alphaAttribLocation);
 	console.log('finish init webgl');
-	initCallbacks();
-	draw();
 };
-
-/*
- * Extracts the coordinates of the tree from edge_metadata
- */
-function extractEdges(edgeMeta) {
-	var minX = Infinity;
-	var maxX = -Infinity;
-	var minY = Infinity;
-	var maxY = -Infinity;
-	window.result = [];
-	window.edgeMetadata = edgeMeta;
-	for(i = 0; i < window.edgeMetadata.length; i++){
-		//console.log(edgeMetadata[i].px);
-		if(window.edgeMetadata[i].x > maxX){
-			maxX =  window.edgeMetadata[i].x;
-		}
-		if(window.edgeMetadata[i].y > maxY){
-			maxY =  window.edgeMetadata[i].y;
-		}
-		if(window.edgeMetadata[i].x < minX){
-			minX =  window.edgeMetadata[i].x;
-		}
-		if(window.edgeMetadata[i].y < minY){
-			minY =  window.edgeMetadata[i].y;
-		}
-		window.result.push(window.edgeMetadata[i].px);
-		window.result.push(window.edgeMetadata[i].py);
-		window.result.push(window.edgeMetadata[i].alpha);
-		window.result.push(window.edgeMetadata[i].x);
-		window.result.push(window.edgeMetadata[i].y);
-		window.result.push(window.edgeMetadata[i].alpha);
-	}
-
-	var xDim = Math.abs(maxX - minX);
-	var yDim = Math.abs(maxY - minY);
-	if(xDim > yDim) {
-		window.largeDim = xDim;
-	}
-	else{
-		window.largeDim = yDim;
-	}
-}
