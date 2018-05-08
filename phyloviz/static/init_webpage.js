@@ -13,10 +13,7 @@ function initWebPage(edgeMetadata) {
       }
     }
   }
-
-  // initCallbacks();
 }
-
 
 /*
  * Extracts the coordinates/other info from metadata and formats it for webgl
@@ -26,7 +23,7 @@ function extractEdgeInfo(edgeMeta) {
   const edgeCoordsMultiDimensional = edgeMeta.map(function(edge) {
     return [edge.px, edge.py, edge.alpha, edge. x, edge.y, edge.alpha];
   });
-  const edgeCoordsFlattend = [].concat.apply([], edgeCoordsMultiDimensional)
+  const edgeCoordsFlattend = [].concat.apply([], edgeCoordsMultiDimensional);
   console.log("Finish Extracting");
   return edgeCoordsFlattend;
 }

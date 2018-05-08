@@ -15,7 +15,7 @@ window.vertexShaderText =
 '{',
 '  alphaInt = alpha;',
 '  gl_Position = mProj * mView * mWorld * vec4(vertPosition, 0.0, 1.0);',
-'  gl_PointSize = pSize;',
+'  gl_PointSize = 10000.0;',
 '}'
 ].join('\n');
 

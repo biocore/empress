@@ -568,6 +568,7 @@ class Model(object):
             The category of a certain attribute.
 
         """
+
         edgeData = self.edge_metadata.copy(deep=True)
 
         if lower is not "":

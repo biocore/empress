@@ -37,45 +37,37 @@ function mouseUp(event) {
  * Pans the tree if mouse down flag is set
  */
 function mouseMove(event) {
-	 if (!window.isMouseDown) {
-     	return;
-    }
-    var newX = event.clientX;
-    var newY = event.clientY;
+  if (!window.isMouseDown) {
+   	return;
+  }
+  const newX = event.clientX;
+  const newY = event.clientY;
 
-    var dx = (newX - window.lastMouseX) * window.zoomAmount;
-    var dy = (newY - window.lastMouseY) * window.zoomAmount;
-   	var transVec = vec3.fromValues(dx,dy,0);
-   	var addTransMat = mat4.create();
-   	mat4.fromTranslation(addTransMat,transVec);
-   	mat4.multiply(window.worldMat, window.worldMat,addTransMat);
+  const dx = (newX - window.lastMouseX) * window.zoomAmount;
+  const dy = (newY - window.lastMouseY) * window.zoomAmount;
+ 	const transVec = vec3.fromValues(dx,dy,0);
+ 	let addTransMat = mat4.create();
+ 	mat4.fromTranslation(addTransMat,transVec);
+ 	mat4.multiply(window.worldMat, window.worldMat,addTransMat);
 
-    window.lastMouseX = newX
-    window.lastMouseY = newY;
+  window.lastMouseX = newX
+  window.lastMouseY = newY;
+  requestAnimationFrame(loop);
 }
 
 /*
  * zooms tree and this is where selective rendering will take place
  */
 function mouseWheel(event) {
-	if(event.deltaY > 0){
-		var scaleByMat = new Float32Array(16);
-		var scaleAmount = window.scaleFactor;
-		window.zoomAmount = window.zoomAmount / scaleAmount;
-		var scaleFactorVec = vec3.fromValues(scaleAmount, scaleAmount, scaleAmount);
-		mat4.fromScaling(scaleByMat, scaleFactorVec);
-		mat4.mul(window.worldMat, scaleByMat, window.worldMat);
-		window.zoomLevel++;
-	}
-	else if(event.deltaY < 0) {
-		var scaleByMat = new Float32Array(16);
-		var scaleAmount = 1 / window.scaleFactor;
-		window.zoomAmount = window.zoomAmount / scaleAmount;
-		var scaleFactorVec = vec3.fromValues(scaleAmount, scaleAmount, scaleAmount);
-		mat4.fromScaling(scaleByMat, scaleFactorVec);
-		mat4.mul(window.worldMat, scaleByMat, window.worldMat);
-		window.zoomLevel--;
-	}
+  let scaleByMat = new Float32Array(16);
+	const scaleAmount = (event.deltaY >= 0) ? window.scaleFactor : 1 / window.scaleFactor;
+	window.zoomAmount = window.zoomAmount / scaleAmount;
+	var scaleFactorVec = vec3.fromValues(scaleAmount, scaleAmount, scaleAmount);
+	mat4.fromScaling(scaleByMat, scaleFactorVec);
+	mat4.mul(window.worldMat, scaleByMat, window.worldMat);
+  window.zoomLevel = (event.deltaY >= 0)  ? window.zoomLevel + 1 : window.zoomLevel - 1;
+
+	requestAnimationFrame(loop);
 }
 
 /*
@@ -98,6 +90,7 @@ function selectHighlight() {
 		window.result = extractEdgeInfo(edges);
 		window.largeDim = normalizeTree(edges);
 		window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
+	  requestAnimationFrame(loop);
 	});
 }
 
@@ -119,6 +112,7 @@ function collapseClades() {
 			window.result = extractEdgeInfo(edges);
 			window.largeDim = normalizeTree(edges);
 			window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
+		  requestAnimationFrame(loop);
 		});
 	});
 }
