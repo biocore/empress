@@ -22,9 +22,9 @@ attr = ['width','branch_color_R']
 
 m = Model(tree_file, tree_format, internal_metadata_file, leaf_metadata_file)
 edgeM = m.retrive_view_coords()
-edge_part = m.selectCategory(attr)
+#edge_part = m.selectCategory(attr)
 print(edgeM)
-print(edge_part)
+#print(edge_part)
 
 class ModelHandler(RequestHandler):
     def get(self):
@@ -67,9 +67,9 @@ class HighlightHandler(RequestHandler):
         lower = self.get_argument('lower')
         equal = self.get_argument('equal')
         upper = self.get_argument('upper')
-        selected = m.selectCategory(attribute, lower, equal, upper)
-        edges = selected.to_json(orient='records')
-        self.write(edges)
+        #selected = m.updateEdgeCategory(attribute, lower, equal, upper)
+        #edges = selected.to_json(orient='records')
+        #self.write(edges)
         self.finish()
 
 

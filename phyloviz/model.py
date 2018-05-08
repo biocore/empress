@@ -237,8 +237,7 @@ class Tree(TreeNode):
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
                 alpha = {'alpha': child.alpha}
-                attr = {'node_color_R': 255.0, 'node_color_G': 255.0, 'node_color_B': 255.0,
-                        'branch_color_R': 255.0, 'branch_color_G': 255.0, 'branch_color_B': 255.0,
+                attr = {'node_color': '#FFFFFF', 'branch_color': '#FFFFFF',
                         'node_is_visible': True, 'branch_is_visible': True, 'width': 1, 'size': 1,
                          'shortest': node.shortest.depth, 'longest': node.longest.depth}
                 edgeData[child.name] = {**nId, **coords, **pId,
@@ -549,7 +548,7 @@ class Model(object):
         Returns
         -------
         """
-        attributes = ['x','y','px','py','branch_color_R','branch_color_G','branch_color_B','width']
+        attributes = ['x','y','px','py','branch_color','width']
         return selectCategory(attributes,'edge_is_visible')
 
     def selectNodeCategory(self):
@@ -562,7 +561,7 @@ class Model(object):
         Returns
         -------
         """
-        attributes = ['x','y','node_color_R','node_color_G','node_color_B','size']
+        attributes = ['x','y','node_color','size']
         return selectCategory(attributes,'node_is_visible')
 
     def selectCategory(self, attributes, is_visible_col):
