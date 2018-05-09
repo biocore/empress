@@ -549,7 +549,7 @@ class Model(object):
         -------
         """
         attributes = ['x','y','px','py','branch_color','width']
-        return selectCategory(attributes,'edge_is_visible')
+        return self.selectCategory(attributes,'branch_is_visible')
 
     def selectNodeCategory(self):
         """
@@ -562,7 +562,7 @@ class Model(object):
         -------
         """
         attributes = ['x','y','node_color','size']
-        return selectCategory(attributes,'node_is_visible')
+        return self.selectCategory(attributes,'node_is_visible')
 
     def selectCategory(self, attributes, is_visible_col):
         """ Returns edge_metadata with updated alpha value which tells View
@@ -581,7 +581,7 @@ class Model(object):
 
         return edgeData[attributes]
 
-    def updateEdgeCategory(self, attribute, category, new_value, lower=None,
+    def updateSingleEdgeCategory(self, attribute, category, new_value, lower=None,
                            equal=None, upper=None):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
@@ -592,7 +592,10 @@ class Model(object):
             The name of the attribute(column of the table).
 
         category:
-            The category of a certain attribute.
+            The category of a certain attribute.(width, color...)
+
+        new_value:
+            new value of the category to update to
         Returns
         -------
         edgeData : pd.Dataframe
@@ -615,7 +618,32 @@ class Model(object):
                                                          float(upper),
                                                          new_value)
 
-        return selectEdgeCategory()
+
+
+    def updateEdgeCategory(self, attribute, category_value_pairs, lower=None,
+                           equal=None, upper=None):
+        """ Returns edge_metadata with updated category values which tells View
+        what to hightlight
+
+        Parameters
+        ----------
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category_value_pairs: dict
+            The dictionary of category and value pairs to update
+        Returns
+        -------
+        edgeData : pd.Dataframe
+        updated version of edge metadata
+
+        """
+
+        for c, v in category_value_pairs.items():
+            self.updateSingleEdgeCategory(attribute, c, v, lower, equal, upper)
+
+        return self.selectEdgeCategory()
+
 
 
     def collapseClades(self, sliderScale):
