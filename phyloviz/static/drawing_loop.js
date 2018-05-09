@@ -1,11 +1,21 @@
+"use strict";
+
+function loop() {
+  window.gl.uniformMatrix4fv(matWorldUniform, window.gl.FALSE, window.worldMat);
+
+  window.gl.clearColor(0.75, 0.85, 0.8, 1.0);
+  window.gl.clear(window.gl.COLOR_BUFFER_BIT | window.gl.DEPTH_BUFFER_BIT);
+  window.gl.drawArrays(window.gl.LINES, 0, window.result.length / 5 );
+}
+
 /*
  * Draws the tree
  */
 function draw() {
   //pointers to uniforms in shader programs defined in init_webgl
-  window.matWorldUniform = window.gl.getUniformLocation(window.program, 'mWorld');
-  let matViewUniform = window.gl.getUniformLocation(window.program,'mView');
-  let matProjUniform = window.gl.getUniformLocation(window.program,'mProj');
+  window.matWorldUniform = window.gl.getUniformLocation(window.program, "mWorld");
+  let matViewUniform = window.gl.getUniformLocation(window.program,"mView");
+  let matProjUniform = window.gl.getUniformLocation(window.program,"mProj");
   let viewMat  = mat4.create();
   let projMat = mat4.create();
   let treeNormVec = vec3.create();
@@ -29,11 +39,3 @@ function draw() {
   console.log("Start Draw");
   requestAnimationFrame(loop);
 }
-
-function loop() {
-  window.gl.uniformMatrix4fv(matWorldUniform, window.gl.FALSE, window.worldMat);
-
-  window.gl.clearColor(0.75, 0.85, 0.8, 1.0);
-  window.gl.clear(window.gl.COLOR_BUFFER_BIT | window.gl.DEPTH_BUFFER_BIT);
-  window.gl.drawArrays(window.gl.LINES, 0, window.result.length / 3 );
-};

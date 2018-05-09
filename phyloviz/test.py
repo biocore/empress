@@ -7,7 +7,7 @@ tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
 m = Model(tree,'ncbi.t2t.txt','metadata.txt')
 edgeM = m.retrive_view_coords()
 #print(edgeM)
-edge = m.updateEdgeCategory('marker_count','width',0.5,lower=300,upper=500)
+edge = m.update_edge_category('marker_count','width',0.5,lower=300,upper=500)
 print(edge)
 
 '''

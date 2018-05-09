@@ -39,7 +39,7 @@
 
         <div>
           <input type = "button" value = "select" onclick = "selectHighlight()" />
-          <input type = "color"/>
+          <input type = "color" id="color-selector"/>
         </div>
 
         <div class="text-field">
@@ -72,7 +72,7 @@
     <script>
     {
       let edgeMetadata;
-      $.getJSON('http://localhost:8080/api/edges', function(data) {
+      $.getJSON(window.edgeURL, function(data) {
         edgeMetadata = data;
       }).done(function() {
         initWebPage(edgeMetadata);
@@ -83,8 +83,8 @@
         draw();
       });
 
-      let slider = $('#collapse-range')[0];
-      let output = $('#num')[0];
+      let slider = $("#collapse-range")[0];
+      let output = $("#num")[0];
       output.innerHTML = slider.value;
 
       slider.oninput = function() {

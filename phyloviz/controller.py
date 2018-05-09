@@ -68,10 +68,12 @@ class ZoomHandler(RequestHandler):
 class HighlightHandler(RequestHandler):
     def get(self):
         attribute = self.get_argument('attribute')
+        category = self.get_argument('category')
+        value = self.get_argument('value')
         lower = self.get_argument('lower')
         equal = self.get_argument('equal')
         upper = self.get_argument('upper')
-        selected = m.selectCategory(attribute, lower, equal, upper)
+        selected = m.update_edge_category(attribute, category, value, lower, equal, upper)
         edges = selected.to_json(orient='records')
         self.write(edges)
         self.finish()
@@ -85,7 +87,7 @@ class BenchmarkHandler(RequestHandler):
 class CollapseHandler(RequestHandler):
     def get(self):
         sliderScale = self.get_argument('sliderScale')
-        triangles = m.collapseClades(sliderScale)
+        triangles = m.collapse_clades(sliderScale)
         tri_json = triangles.to_json(orient='records')
         self.write(tri_json)
         self.finish()

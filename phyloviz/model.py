@@ -227,17 +227,16 @@ class Tree(TreeNode):
                 edgeData["is_tip"] = True
             else:
                 edgeData["is_tip"] = False
-            node.alpha = 0.0
             pId = {"Parent_id": node.name}
             pCoords = {'px': node.x2, 'py': node.y2}
             for child in node.children:
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
-                alpha = {'alpha': child.alpha}
-                attr = {'color_R': 255.0, 'color_G': 255.0, 'color_B': 255.0,
-                        'is_visible': True, 'width': 1}
+                attr = {'node_color': 'FFFFFF', 'branch_color': 'FFFFFF',
+                        'node_is_visible': True, 'branch_is_visible': True, 'width': 1, 'size': 1,
+                        'shortest': node.shortest.depth, 'longest': node.longest.depth}
                 edgeData[child.name] = {**nId, **coords, **pId,
-                                        **pCoords, **alpha, **attr}
+                                        **pCoords, **attr}
 
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
@@ -354,15 +353,17 @@ class Tree(TreeNode):
             (node.x1, node.y1, node.x2, node.y2, node.angle) = (x1, y1, x2,
                                                                 y2, a)
 
-            if x2 > max_x:
-                max_x = x2
-            if x2 < min_x:
-                min_x = x2
+            # if x2 > max_x:
+            #     max_x = x2
+            # if x2 < min_x:
+            #     min_x = x2
 
-            if y2 > max_y:
-                max_y = y2
-            if y2 < min_y:
-                min_y = y2
+            # if y2 > max_y:
+            #     max_y = y2
+            # if y2 < min_y:
+            #     min_y = y2
+            max_x, min_x = max(max_x, x2), min(min_x, x2)
+            max_y, min_y = max(max_y, y2), min(min_y, y2)
 
         return (max_x, min_x, max_y, min_y)
 
@@ -389,38 +390,6 @@ class Tree(TreeNode):
                 # calculate longest branch node
                 node.longest = max([child.longest for child in node.children],
                                    key=attrgetter('depth'))
-
-    # def extract__fields_for_a_calculation(self):
-    #     """Creates a ndarray of tuples containing the necessary information to
-    #     calculate the angle  of the tree vertices. Fields in each enrty
-    #     are: parent_angle, parent_leafcount,sib1_leafcount, sib2_leafcount,
-    #     node.leafcount
-    #     Parameters
-    #     ----------
-    #     None
-    #     Returns
-    #     -------
-    #     """
-    #     Node = collections.namedtuple('parent_angle','parent_leafcount', \
-    #         'sib2_leafcount', 'node_leafcount')
-    #     for node in self.preorder(include_self=true):
-
-
-
-    # def distance(n1, n2):
-    #     """ Finds the cartesian distance between two nodes
-    #     Parameters
-    #     ----------
-    #     n1 : TreeNode
-    #         First node
-    #     n2 : TreeNode
-    #         Second node
-    #     Returns
-    #     -------
-    #     distance : distance between n1 and n2
-    #     """
-    #     return math.sqrt((n1.x2 - n2.x2)**2 + (n1.y2 - n2.y2)**2)
-
 
 class Model(object):
 
@@ -508,7 +477,7 @@ class Model(object):
 
         pass
 
-    def uniqueCategories(metadata, attribute):
+    def unique_categories(metadata, attribute):
         """ Returns all unique metadata categories that belong to the attribute.
         Parameters
         ----------
@@ -555,49 +524,57 @@ class Model(object):
 
         return self.edge_metadata
 
-    def selectCategory(self, attribute, lower=None, equal=None, upper=None):
-        """ Returns edge_metadata with updated alpha value which tells View
-        what to hightlight
-
+    def select_edge_category(self):
+        """
+        Select categories required by webgl to plot edges
         Parameters
         ----------
-        attribute : str
-            The name of the attribute(column of the table).
+        Returns
+        -------
+        """
+        attributes = ['x','y','px','py','branch_color'] #,'width']
+        return self.select_category(attributes,'branch_is_visible')
 
-        category:
-            The category of a certain attribute.
+    def select_node_category(self):
+        """
+        Select categories required by webgl to plot nodes
+        Parameters
+        ----------
+        Returns
+        -------
+        """
+        attributes = ['x','y','node_color','size']
+        return self.select_category(attributes,'node_is_visible')
 
+    def select_category(self, attributes, is_visible_col):
+        """ Returns edge_metadata with updated alpha value which tells View
+        what to hightlight
+        Parameters
+        ----------
+        attributes : list
+            List of columns names to select
         """
 
-        edgeData = self.edge_metadata.copy(deep=True)
+        #edgeData = self.edge_metadata.copy(deep=True)
+        is_visible = self.edge_metadata[is_visible_col] == True
+        edgeData = self.edge_metadata[is_visible]
 
-        if lower is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] >
-                                                       float(lower), 1)
+        return edgeData[attributes]
 
-        if equal is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] ==
-                                                       equal, 1)
-
-        if upper is not "":
-            edgeData['alpha'] = edgeData['alpha'].mask(edgeData[attribute] <
-                                                       float(upper), 1)
-
-        return edgeData
-
-    def updateEdgeCategory(self, attribute, category, new_value, lower=None,
+    def update_edge_category(self, attribute, category, new_value="000000", lower=None,
                            equal=None, upper=None):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
-
         Parameters
         ----------
         attribute : str
             The name of the attribute(column of the table).
-
         category:
             The category of a certain attribute.
-
+        Returns
+        -------
+        edgeData : pd.Dataframe
+        updated version of edge metadata
         """
 
         edgeData = self.edge_metadata
@@ -615,38 +592,10 @@ class Model(object):
                                                          float(upper),
                                                          new_value)
 
-        return edgeData
+        return self.select_edge_category()
 
-    def updateNodeCategory(self, attribute, category, lower=None, equal=None,
-                           upper=None):
-        """ Returns edge_metadata with updated width value which tells View
-        what to hightlight
 
-        Parameters
-        ----------
-        attribute : str
-            The name of the attribute(column of the table).
-
-        category:
-            The category of a certain attribute.
-
-        """
-
-        if lower is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] >
-                                                       float(lower), width)
-
-        if equal is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] ==
-                                                       equal, width)
-
-        if upper is not "":
-            edgeData['width'] = edgeData['width'].mask(edgeData[attribute] <
-                                                       float(upper), width)
-
-        return edgeData
-
-    def collapseClades(self, sliderScale):
+    def collapse_clades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
         sliderScale of 1 (min) means no clades are hidden, and sliderScale
         of 2 (max) means the whole tree is one large triangle.
@@ -706,33 +655,3 @@ class Model(object):
 
         self.triangles = pd.DataFrame(triData).T
         return self.triangles
-
-    # def colorCategory(self, attribute, color,lower=None, equal=None, upper=None):
-
-    #     """ Returns edge_metadata with updated color value which tells View
-    #     what to color
-
-    #     Parameters
-    #     ----------
-    #     attribute : str
-    #         The name of the attribute(column of the table).
-
-    #     category:
-    #         The category of a certain attribute.
-
-    #     """
-    #     edgeData = self.edge_metadata.copy(deep=True)
-
-    #     if lower is not "":
-    #         edgeData['color'] = edgeData['color'].mask(edgeData[attribute] >
-    #                                                    float(lower), color)
-
-    #     if equal is not "":
-    #         edgeData['color'] = edgeData['alpha'].mask(edgeData[attribute] ==
-    #                                                    equal, color)
-
-    #     if upper is not "":
-    #         edgeData['color'] = edgeData['alpha'].mask(edgeData[attribute] <
-    #                                                    float(upper), color)
-
-    #     return edgeData

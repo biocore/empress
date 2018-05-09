@@ -1,12 +1,16 @@
+"use strict";
+
 function initWebPage(edgeMetadata) {
   $("#highlight-menu").show();
 
   let templateMetadata = edgeMetadata[0];
-  var x = $("#highlight-options")[0];
-  for (var property in templateMetadata) {
+  let x = $("#highlight-options")[0];
+  const exclude = ["px", "py", "x", "y", "branch_color","branch_is_visible",
+    "longest","node_color","node_is_visible","shortest","size","width","Node_id","Parent_id"];
+  for (let property in templateMetadata) {
     if (templateMetadata.hasOwnProperty(property)) {
-      if (!($.inArray(property, ["px", "py", "x", "y", "alpha"]) >= 0)) {
-        var option = document.createElement("option");
+      if (!($.inArray(property, exclude) >= 0)) {
+        let option = document.createElement("option");
         option.text = property;
         option.label = property; //TODO: check to see if property is numeric or categorical
         x.add(option);
@@ -20,12 +24,23 @@ function initWebPage(edgeMetadata) {
  */
 function extractEdgeInfo(edgeMeta) {
   console.log("Start Extracting");
-  const edgeCoordsMultiDimensional = edgeMeta.map(function(edge) {
-    return [edge.px, edge.py, edge.alpha, edge. x, edge.y, edge.alpha];
+  const extractedFieldsMultiDimensional = edgeMeta.map(function(edge) {
+    return [edge.px, edge.py, edge.branch_color, edge. x, edge.y,
+            edge.branch_color];
   });
-  const edgeCoordsFlattend = [].concat.apply([], edgeCoordsMultiDimensional);
+  const extractedFieldsFlattend = [].concat.apply([], extractedFieldsMultiDimensional);
+
+  let expandHexString = extractedFieldsFlattend.map(function(element) {
+      return (typeof element === "string" ? element.match(/.{1,2}/g) : element)
+  });
+  expandHexString = [].concat.apply([], expandHexString);
+
+  const edgeCoordsFlattened = expandHexString.map(function(element) {
+    return (typeof element === "string" ? parseInt("0x" + element) / 256 : element)
+  });
+
   console.log("Finish Extracting");
-  return edgeCoordsFlattend;
+  return edgeCoordsFlattened;
 }
 
 /*
@@ -42,5 +57,3 @@ function normalizeTree(edgeMeta) {
 
   return (xDim > yDim) ? xDim : yDim;
 }
-
-
