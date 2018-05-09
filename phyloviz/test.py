@@ -3,11 +3,12 @@ from model import Model
 from phyloviz.model import Tree
 import pandas as pd
 
-tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
-m = Model(tree,'ncbi.t2t.txt','metadata.txt')
-edgeM = m.retrive_view_coords()
+m = Model('./astral.MR.rooted.nid.nosup.nwk', 'newick','ncbi.t2t.txt','metadata.txt')
+#edgeM = m.retrive_view_coords()
 #print(edgeM)
-edge = m.updateEdgeCategory('marker_count','width',0.5,lower=300,upper=500)
+
+cv_pairs = {'branch_color': '444444', 'width': 0.5}
+edge = m.updateEdgeCategory('marker_count',cv_pairs ,lower=300,upper=500)
 print(edge)
 
 '''

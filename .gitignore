@@ -101,10 +101,12 @@ ENV/
 .mypy_cache/
 
 # node modules
+
 node/node_modules/
 
-#newick trees
+=======
+#tree
 *.nwk
 *.tree
-ncbi.t2t.txt
 metadata.txt
+ncbi.t2t.txt
