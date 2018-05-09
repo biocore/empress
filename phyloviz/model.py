@@ -8,16 +8,15 @@ from operator import attrgetter
 
 def name_internal_nodes(tree):
     """ Name internal nodes that does not have name
-
     Parameters
     ----------
-
     Returns
     -------
     """
     # initialize tree with branch length
     for i, n in enumerate(tree.postorder(include_self=True)):
-        n.length = 1    # TODO: discuss!!!!
+        if n.length is None:
+            n.length = 1
         if not n.is_tip() and n.name is None:
             n.name = "y%d" % i
 
@@ -227,15 +226,12 @@ class Tree(TreeNode):
         # edge metadata
         edgeData = {}
         for node in self.postorder():
-            if node.is_tip():
-                edgeData["is_tip"] = True
-            else:
-                edgeData["is_tip"] = False
             node.alpha = 0.0
             pId = {"Parent_id": node.name}
             pCoords = {'px': node.x2, 'py': node.y2}
             for child in node.children:
                 nId = {"Node_id": child.name}
+                isTip = {"is_tip": child.is_tip()}
                 coords = {'x': child.x2, 'y': child.y2}
                 alpha = {'alpha': child.alpha}
                 attr = {'node_color_R': 255.0, 'node_color_G': 255.0,
@@ -244,14 +240,13 @@ class Tree(TreeNode):
                         'node_is_visible': True, 'branch_is_visible': True,
                         'width': 1, 'size': 1, 'shortest': node.shortest.depth,
                         'longest': node.longest.depth}
-                edgeData[child.name] = {**nId, **coords, **pId,
+                edgeData[child.name] = {**nId, **isTip, **coords, **pId,
                                         **pCoords, **alpha, **attr}
 
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
         centerX = self.x2
         centerY = self.y2
-
         return (edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
@@ -446,10 +441,22 @@ class Model(object):
         internal_metadata = read_internal_node_metadata(internal_metadata_file)
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
 
+        # self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
+        #                               how='outer', on="Node_id")
+        # self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
+        #                               how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
-                                      how='outer', on="Node_id")
+                 left_index=True, right_index=True,
+                 how='left')
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
-                                      how='outer', on="Node_id")
+                 left_index=True, right_index=True,
+                 how='left')
+
+
+        # self.edge_metadata = self.edge_metadata.reset_index().merge(internal_metadata,
+        #                      how='outer', on="Node_id").set_index('index')
+        # self.edge_metadata = self.edge_metadata.reset_index().merge(leaf_metadata,
+        #                      how='outer', on="Node_id").set_index('index')
         self.triangles = pd.DataFrame()
 
     def layout(self, layout_type):
@@ -527,16 +534,18 @@ class Model(object):
            TODO: metadata will also want to contain
 
         """
-        self.edge_metadata['px'] = self.edge_metadata[
+        edgeData = self.edge_metadata.copy(deep=True)
+
+        edgeData['px'] = edgeData[
             ['px']].apply(lambda l: l - self.centerX)
-        self.edge_metadata['py'] = self.edge_metadata[
+        edgeData['py'] = edgeData[
             ['py']].apply(lambda l: l - self.centerY)
-        self.edge_metadata['x'] = self.edge_metadata[
+        edgeData['x'] = edgeData[
             ['x']].apply(lambda l: l - self.centerX)
-        self.edge_metadata['y'] = self.edge_metadata[
+        edgeData['y'] = edgeData[
             ['y']].apply(lambda l: l - self.centerY)
 
-        return self.edge_metadata
+        return edgeData
 
     def selectCategory(self, attributes):
         """ Returns edge_metadata with updated alpha value which tells View
@@ -549,8 +558,8 @@ class Model(object):
 
         """
         edgeData = self.edge_metadata.copy(deep=True)
-        attributes.insert(0,'Parent_id')
-        attributes.insert(0,'Node_id')
+        attributes.insert(0, 'Parent_id')
+        attributes.insert(0, 'Node_id')
 
         return edgeData[attributes]
 
@@ -618,31 +627,29 @@ class Model(object):
             if count >= nodes_limit:
                 # done selecting nodes to render
                 # set visibility of the rest to false
-                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'node_is_visible'] = False
-                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'branch_is_visible'] = False
+                self.edge_metadata.at[node.name, 'node_is_visible'] = False
+                self.edge_metadata.at[node.name, 'branch_is_visible'] = False
 
                 # if parent was visible
                 # add triangle coordinates to dataframe
                 if node.parent is not None:
-                    if self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                       node.parent.name, 'node_is_visible'] is True:
+                    if self.edge_metadata.at[node.parent.name,
+                                             'node_is_visible'] is True:
                         nId = {"Node_id": node.parent.name}
-                        root = {'rx': node.parent.x2, 'ry': node.parent.y2}
-                        shortest = {'sx': node.parent.shortest.x2,
-                                    'sy': node.parent.shortest.y2}
-                        longest = {'lx': node.parent.longest.x2,
-                                   'ly': node.parent.longest.y2}
+                        root = {'rx': node.parent.x2 - self.centerX,
+                                'ry': node.parent.y2 - self.centerY}
+                        shortN = {'sx': node.parent.shortest.x2 - self.centerX,
+                                  'sy': node.parent.shortest.y2 - self.centerY}
+                        longN = {'lx': node.parent.longest.x2 - self.centerX,
+                                 'ly': node.parent.longest.y2 - self.centerY}
                         triData[node.parent.name] = {**nId, **root, **shortest,
                                                      **longest}
 
             else:
                 # reset visibility of higher level nodes
-                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'node_is_visible'] = True
-                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'branch_is_visible'] = True
+                self.edge_metadata.at[node.name, 'node_is_visible'] = True
+                self.edge_metadata.at[node.name, 'branch_is_visible'] = True
+
             # increment node count
             count = count + 1
 
