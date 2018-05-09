@@ -6,6 +6,21 @@ import time
 from operator import attrgetter
 import collections
 
+def name_internal_nodes(tree):
+    """ Name internal nodes that does not have name
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+    # initialize tree with branch length
+    for i, n in enumerate(tree.postorder(include_self=True)):
+        n.length = 1
+        if not n.is_tip() and n.name is None:
+            n.name = "y%d" % i
+
 
 def read_leaf_node_metadata(file_name):
     """ Reads in metadata for leaf nodes
@@ -209,17 +224,6 @@ class Tree(TreeNode):
         print(time.time() - start)
         print("done")
 
-        # Node metadata
-        nodeData = {}
-        for node in self.postorder():
-            nId = {'Node_id': node.name}
-            coords = {'x': node.x2, 'y': node.y2}
-            attr = {'color_R': 255.0, 'color_G': 255.0, 'color_B': 255.0,
-                    'is_visible': True, 'size': 1,
-                    'shortest': node.shortest.depth,
-                    'longest': node.longest.depth}
-            nodeData[node.name] = {**nId, **coords, **attr}
-
         # edge metadata
         edgeData = {}
         for node in self.postorder():
@@ -240,12 +244,10 @@ class Tree(TreeNode):
 
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
-        nodeMeta = pd.DataFrame(nodeData).T
-
         centerX = self.x2
         centerY = self.y2
 
-        return (edgeMeta, nodeMeta, centerX, centerY, scale)
+        return (edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
@@ -384,10 +386,10 @@ class Tree(TreeNode):
 
 class Model(object):
 
-    def __init__(self, tree,
+    def __init__(self, tree_file=None,
+                 tree_format='newick',
                  internal_metadata_file=None,
                  leaf_metadata_file=None,
-                 node_metadata=None,
                  edge_metadata=None):
         """ Model constructor.
 
@@ -410,13 +412,15 @@ class Model(object):
         """
         self.zoom_level = 1
         self.scale = 1
+        tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
+        name_internal_nodes(self.tree)
+
         if edge_metadata is None:
-            (self.edge_metadata, self.node_metadata, self.centerX,
+            (self.edge_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
-            self.node_metadata = node_metadata
             # Todo: append coords to node/edge
 
         # Append metadata to table
@@ -515,6 +519,7 @@ class Model(object):
 
         return self.edge_metadata
 
+
     def select_edge_category(self):
         """
         Select categories required by webgl to plot edges
@@ -552,7 +557,9 @@ class Model(object):
 
         return edgeData[attributes]
 
+     #rename to single category
     def update_edge_category(self, attribute, category, new_value="000000", lower=None,
+
                            equal=None, upper=None):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
@@ -560,8 +567,10 @@ class Model(object):
         ----------
         attribute : str
             The name of the attribute(column of the table).
-        category:
-            The category of a certain attribute.
+            The category of a certain attribute.(width, color...)
+
+        new_value:
+            new value of the category to update to
         Returns
         -------
         edgeData : pd.Dataframe
@@ -586,7 +595,33 @@ class Model(object):
         return self.select_edge_category()
 
 
-    def collapse_clades(self, sliderScale):
+    def updateEdgeCategory(self, attribute, category_value_pairs, lower=None,
+                           equal=None, upper=None):
+        """ Returns edge_metadata with updated category values which tells View
+        what to hightlight
+
+        Parameters
+        ----------
+        attribute : str
+            The name of the attribute(column of the table).
+
+        category_value_pairs: dict
+            The dictionary of category and value pairs to update
+        Returns
+        -------
+        edgeData : pd.Dataframe
+        updated version of edge metadata
+
+        """
+
+        for c, v in category_value_pairs.items():
+            self.updateSingleEdgeCategory(attribute, c, v, lower, equal, upper)
+
+        return self.selectEdgeCategory()
+
+
+
+    def collapseClades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
         sliderScale of 1 (min) means no clades are hidden, and sliderScale
         of 2 (max) means the whole tree is one large triangle.
@@ -616,8 +651,6 @@ class Model(object):
                 # set visibility of the rest to false
                 self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
                                        node.name, 'visibility'] = False
-                self.node_metadata.loc[self.node_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = False
 
                 # if parent was visible
                 # add triangle coordinates to dataframe
@@ -636,8 +669,6 @@ class Model(object):
                 # reset visibility of higher level nodes
                 self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
                                        node.name, 'visibility'] = True
-                self.node_metadata.loc[self.node_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = True
             # increment node count
             count = count + 1
 

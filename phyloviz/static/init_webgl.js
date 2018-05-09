@@ -43,6 +43,7 @@ window.scaleFactor = 5.0 / 4.0; //how much the tree grows/shrinks during zoom
 /*
  * compliles shader programs and initializes webgl
  */
+
 function initWebGl() {
   console.log("init webgl");
 

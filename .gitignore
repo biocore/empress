@@ -101,12 +101,12 @@ ENV/
 .mypy_cache/
 
 # node modules
-*.nwk
+
+node/node_modules/
 
 #tree
-.tree
-
-#astral metadata
+*.nwk
+*.tree
 metadata.txt
 ncbi.t2t.txt
 

@@ -120,6 +120,7 @@ function collapseClades() {
       requestAnimationFrame(loop);
     });
   });
+
 }
 
 /*
