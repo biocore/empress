@@ -353,15 +353,6 @@ class Tree(TreeNode):
             (node.x1, node.y1, node.x2, node.y2, node.angle) = (x1, y1, x2,
                                                                 y2, a)
 
-            # if x2 > max_x:
-            #     max_x = x2
-            # if x2 < min_x:
-            #     min_x = x2
-
-            # if y2 > max_y:
-            #     max_y = y2
-            # if y2 < min_y:
-            #     min_y = y2
             max_x, min_x = max(max_x, x2), min(min_x, x2)
             max_y, min_y = max(max_y, y2), min(min_y, y2)
 
