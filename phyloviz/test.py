@@ -6,7 +6,8 @@ import pandas as pd
 m = Model('./astral.MR.rooted.nid.nosup.nwk', 'newick','ncbi.t2t.txt','metadata.txt')
 #edgeM = m.retrive_view_coords()
 #print(edgeM)
-cv_pairs = {'branch_color': '#444444', 'width': 0.5}
+
+cv_pairs = {'branch_color': '444444', 'width': 0.5}
 edge = m.updateEdgeCategory('marker_count',cv_pairs ,lower=300,upper=500)
 print(edge)
 

@@ -101,6 +101,7 @@ ENV/
 .mypy_cache/
 
 # node modules
+
 node/node_modules/
 
 #tree
@@ -108,3 +109,4 @@ node/node_modules/
 *.tree
 metadata.txt
 ncbi.t2t.txt
+

@@ -1,186 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<title>WebGL - Experiment</title>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
-	<script type="text/javascript" src="{{ static_url('gl-matrix.js') }}"></script>
-	<script type="text/javascript"  src="{{ static_url('init_webgl.js') }}"></script>
-	<script type="text/javascript" src="{{ static_url('callbacks.js') }} "></script>
-	<script type="text/javascript" src="{{ static_url('drawing_loop.js') }} "></script>
-
-	<style>
-
-		body {
-			margin:0;
-		}
-
-		.grid {
-			display: grid;
-			grid-template-columns: 3fr 1fr;
-			grid-column-gap: 4px;
-			grid-auto-rows: auto;
-			height: 98vh;
-		}
-
-		.metadataTabs {
-			background: #eee
-		}
-
-		.metadataTabs button {
-		    background-color: #eee;
-		    float: left;
-		    border-style: none solid none solid;
-		    outline: none;
-		    cursor: pointer;
-		    padding: 14px 16px;
-		    transition: 0.3s;
-		    font-size: 17px;
-		}
-
-		.metadataTabs button:hover {
-		    background-color: #ddd;
-		}
-
-		.metadataTabs button.active {
-		    background-color: #000;
-		}
-
-		.tabOptions {
-			display: grid;
-			grid-template-columns: 1fr 1fr 1fr;
-			grid-auto-rows: auto;
-			height: unset;
-			background: grey;
-		}
-
-		.textField {
-			display: grid;
-			grid-template-columns: 1fr 2fr;
-			grid-auto-rows: auto;
-		}
-
-		.menu {
-			display: none;
-			padding: 6px 12px;
-		    border: 1px solid #ccc;
-		    border-top: none;
-		}
-
-
-	</style>
+  <meta charset="UTF-16">
+  <title>WebGL - Experiment</title>
+  <link rel="stylesheet" type="text/css" href="{{ static_url('style.css') }}">
+  <script type="text/javascript" src="{{ static_url('gl-matrix.js') }}"></script>
+  <script type="text/javascript" src="{{ static_url('jquery_min.js') }}"></script>
+  <script type="text/javascript"  src="{{ static_url('init_webgl.js') }}"></script>
+  <script type="text/javascript" src="{{ static_url('callbacks.js') }} "></script>
+  <script type="text/javascript" src="{{ static_url('drawing_loop.js') }} "></script>
+  <script type="text/javascript" src="{{ static_url('init_webpage.js') }} "></script>
 </head>
-	<body>
-		<div class="grid">
-			<div id="drawingSurface">
-				<canvas id="tree-surface" >
-					Your browser does not support HTML5
-				</canvas>
-			</div>
+<body>
+  <div class="grid">
+    <div id="drawing-surface">
+      <canvas id="tree-surface" >
+        Your browser does not support HTML5
+      </canvas>
+    </div>
 
-			<div class="metadataTabs">
-				<!-- <fieldset> -->
-					<div class="tabOptions">
-						<div>
-							<button class="tabs" onclick="showMenu(event,'showHighlightMenu')">Highlight Tips</button>
-						</div>
-						<div>
-				  			<button class="tabs" onclick="showMenu(event, 'showColorMenu')">Color Edges</button>
-				  		</div>
-				  		<div>
-				  			<button class="tabs" onclick="showMenu(event, 'showCollapseMenu')">Collapse Edges</button>
-				  		</div>
-					</div>
+    <div class="metadata-tabs">
 
-					<!-- show highlight menu and hide others-->
-					<div class="menu" id="showHighlightMenu">
-						<div>
-				 	 		<select id = "metadataOptions"></select>
-						</div>
+      <div class="tab-options">
+        <div>
+          <button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
+        </div>
+        <div>
+          <button class="tabs" onclick="showMenu(event, 'collapse-menu')">Collapse Edges</button>
+        </div>
+      </div>
 
-						<div>
-				  			<input type = "button"
-				    			value = "select"
-				    			onclick = "selectHighlight()" />
-				    	</div>
+      <!-- highlight menu, visible by default-->
+      <div class="menu" id="highlight-menu">
+        <div>
+          <select id = "highlight-options"></select>
+        </div>
 
-			 			<div class="textField">
-				    		<label for="lowerBound">Lower Bound</label>
-				    		<input type="text" id="lowerBound">
-			    		</div>
+        <div>
+          <input type = "button" value = "select" onclick = "selectHighlight()" />
+          <input type = "color" id="color-selector"/>
+        </div>
 
-			    		<div class="textField">
-				    		<label for="upperBound">Upper Bound</label>
-				    		<input type="text" id="upperBound">
-			    		</div>
+        <div class="text-field">
+          <label for="lower-bound">Lower Bound</label>
+          <input type="text" id="lower-bound">
+        </div>
 
-			    		<div class="textField">
-				    		<label for="category">Category Name</label>
-				    		<input type="text" id="category">
-			    		</div>
-		    		</div>
+        <div class="text-field">
+          <label for="upper-bound">Upper Bound</label>
+          <input type="text" id="upper-bound">
+        </div>
 
-		    		<!-- show color menu and hide others-->
-		    		<div class="menu" id="showColorMenu">
-						<div>
-				 	 		<select id = "metadataOptions"></select>
-						</div>
+        <div class="text-field">
+          <label for="category">Category Name</label>
+          <input type="text" id="category">
+        </div>
+      </div>
 
-						<div>
-							<input type = "button"
-				    			value = "select"
-				    			onclick = "selectColor()" />
-				  			<input type = "color"/>
-				    	</div>
+      <!-- show collapse menu and hide others-->
+      <div class="menu" id="collapse-menu">
+        <div>
+          <select class = "metadata-options"></select>
+          <label for="range">Clade Collapsing</label>
+          <input type="range" min="0" max="10" value="0" class="slider" id="collapse-range"> <span id="num">
+        </div>
+      </div>
+    </div>
 
-						<div>
-				 	 		<label for="range">edge width</label>
-            				<input type="range" min="0" max="10" value="0" class="slider" id="collapseRange"> <span id="num">
-				    	</div>
-			 			<div class="textField">
-				    		<label for="lowerBound">Lower Bound</label>
-				    		<input type="text" id="lowerBound">
-			    		</div>
 
-			    		<div class="textField">
-				    		<label for="upperBound">Upper Bound</label>
-				    		<input type="text" id="upperBound">
-			    		</div>
+    <script>
+    {
+      let edgeMetadata;
+      $.getJSON(window.edgeURL, function(data) {
+        edgeMetadata = data;
+      }).done(function() {
+        initWebPage(edgeMetadata);
+        window.result = extractEdgeInfo(edgeMetadata);
+        window.largeDim = normalizeTree(edgeMetadata);
+        initWebGl();
+        initCallbacks();
+        draw();
+      });
 
-			    		<div class="textField">
-				    		<label for="category">Category Name</label>
-				    		<input type="text" id="category">
-			    		</div>
-		    		</div>
+      let slider = $("#collapse-range")[0];
+      let output = $("#num")[0];
+      output.innerHTML = slider.value;
 
-		    		<!-- show collapse menu and hide others-->
-		    		<div class="menu" id="showCollapseMenu">
-						<div>
-				 	 		<select class = "metadataOptions"></select>
-				 	 		<label for="range">Clade Collapsing</label>
-            				<input type="range" min="0" max="10" value="0" class="slider" id="collapseRange"> <span id="num">
-						</div>
-		    		</div>
-			</div>
-		</div>
-
-		<script>
-			var edgeMetadata;
-			$.getJSON('http://localhost:8080/api/edges', function(data) {
-				edgeMetadata = data; // JSON.parse(JSON.stringify(data));
-			}).done(function() {
-				console.log(edgeMetadata);
-				InitWebGl(edgeMetadata);
-			});
-
-            var slider = document.getElementById("collapseRange");
-            var output = document.getElementById("num");
-            output.innerHTML = slider.value;
-
-            slider.oninput = function() {
-                output.innerHTML = this.value;
-                collapseClades();
-            }
-		</script>
-	</body>
+      slider.oninput = function() {
+          output.innerHTML = this.value;
+          collapseClades();
+      }
+    }
+    </script>
+    </body>
 </html>

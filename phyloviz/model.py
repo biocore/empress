@@ -4,6 +4,7 @@ import numpy as np
 import skbio
 import time
 from operator import attrgetter
+import collections
 
 def name_internal_nodes(tree):
     """ Name internal nodes that does not have name
@@ -230,18 +231,16 @@ class Tree(TreeNode):
                 edgeData["is_tip"] = True
             else:
                 edgeData["is_tip"] = False
-            node.alpha = 0.0
             pId = {"Parent_id": node.name}
             pCoords = {'px': node.x2, 'py': node.y2}
             for child in node.children:
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
-                alpha = {'alpha': child.alpha}
-                attr = {'node_color': '#FFFFFF', 'branch_color': '#FFFFFF',
+                attr = {'node_color': 'FFFFFF', 'branch_color': 'FFFFFF',
                         'node_is_visible': True, 'branch_is_visible': True, 'width': 1, 'size': 1,
-                         'shortest': node.shortest.depth, 'longest': node.longest.depth}
+                        'shortest': node.shortest.depth, 'longest': node.longest.depth}
                 edgeData[child.name] = {**nId, **coords, **pId,
-                                        **pCoords, **alpha, **attr}
+                                        **pCoords, **attr}
 
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
@@ -335,32 +334,29 @@ class Tree(TreeNode):
         for node in self.preorder(include_self=False):
             x1 = node.parent.x2
             y1 = node.parent.y2
+
+            #init a
             a = node.parent.angle
 
+            #same modify across nodes
             a = a - node.parent.leafcount * da / 2
+
+            #check for conditional higher order
             for sib in node.parent.children:
-                if len(node.parent.children) < 2:
-                    print(len(node.parent.children))
                 if sib != node:
                     a = a + sib.leafcount * da
                 else:
                     a = a + (node.leafcount * da) / 2
                     break
+
             # Constant angle algorithm.  Should add maximum daylight step.
             x2 = x1 + node.length * s * np.sin(a)
             y2 = y1 + node.length * s * np.cos(a)
             (node.x1, node.y1, node.x2, node.y2, node.angle) = (x1, y1, x2,
                                                                 y2, a)
 
-            if x2 > max_x:
-                max_x = x2
-            if x2 < min_x:
-                min_x = x2
-
-            if y2 > max_y:
-                max_y = y2
-            if y2 < min_y:
-                min_y = y2
+            max_x, min_x = max(max_x, x2), min(min_x, x2)
+            max_y, min_y = max(max_y, y2), min(min_y, y2)
 
         return (max_x, min_x, max_y, min_y)
 
@@ -387,21 +383,6 @@ class Tree(TreeNode):
                 # calculate longest branch node
                 node.longest = max([child.longest for child in node.children],
                                    key=attrgetter('depth'))
-
-    # def distance(n1, n2):
-    #     """ Finds the cartesian distance between two nodes
-    #     Parameters
-    #     ----------
-    #     n1 : TreeNode
-    #         First node
-    #     n2 : TreeNode
-    #         Second node
-    #     Returns
-    #     -------
-    #     distance : distance between n1 and n2
-    #     """
-    #     return math.sqrt((n1.x2 - n2.x2)**2 + (n1.y2 - n2.y2)**2)
-
 
 class Model(object):
 
@@ -491,7 +472,7 @@ class Model(object):
 
         pass
 
-    def uniqueCategories(metadata, attribute):
+    def unique_categories(metadata, attribute):
         """ Returns all unique metadata categories that belong to the attribute.
         Parameters
         ----------
@@ -538,60 +519,54 @@ class Model(object):
 
         return self.edge_metadata
 
-    def selectEdgeCategory(self):
+
+    def select_edge_category(self):
         """
         Select categories required by webgl to plot edges
-
         Parameters
         ----------
-
         Returns
         -------
         """
-        attributes = ['x','y','px','py','branch_color','width']
-        return self.selectCategory(attributes,'branch_is_visible')
+        attributes = ['x','y','px','py','branch_color'] #,'width']
+        return self.select_category(attributes,'branch_is_visible')
 
-    def selectNodeCategory(self):
+    def select_node_category(self):
         """
         Select categories required by webgl to plot nodes
-
         Parameters
         ----------
-
         Returns
         -------
         """
         attributes = ['x','y','node_color','size']
-        return self.selectCategory(attributes,'node_is_visible')
+        return self.select_category(attributes,'node_is_visible')
 
-    def selectCategory(self, attributes, is_visible_col):
+    def select_category(self, attributes, is_visible_col):
         """ Returns edge_metadata with updated alpha value which tells View
         what to hightlight
-
         Parameters
         ----------
         attributes : list
             List of columns names to select
-
         """
 
-        edgeData = self.edge_metadata.copy(deep=True)
-        is_visible = edgeData[is_visible_col] == True
-        edgeData = edgeData[is_visible]
+        #edgeData = self.edge_metadata.copy(deep=True)
+        is_visible = self.edge_metadata[is_visible_col] == True
+        edgeData = self.edge_metadata[is_visible]
 
         return edgeData[attributes]
 
-    def updateSingleEdgeCategory(self, attribute, category, new_value, lower=None,
+     #rename to single category
+    def update_edge_category(self, attribute, category, new_value="000000", lower=None,
+
                            equal=None, upper=None):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
-
         Parameters
         ----------
         attribute : str
             The name of the attribute(column of the table).
-
-        category:
             The category of a certain attribute.(width, color...)
 
         new_value:
@@ -600,7 +575,6 @@ class Model(object):
         -------
         edgeData : pd.Dataframe
         updated version of edge metadata
-
         """
 
         edgeData = self.edge_metadata
@@ -618,6 +592,7 @@ class Model(object):
                                                          float(upper),
                                                          new_value)
 
+        return self.select_edge_category()
 
 
     def updateEdgeCategory(self, attribute, category_value_pairs, lower=None,
@@ -702,33 +677,3 @@ class Model(object):
 
         self.triangles = pd.DataFrame(triData).T
         return self.triangles
-
-    # def colorCategory(self, attribute, color,lower=None, equal=None, upper=None):
-
-    #     """ Returns edge_metadata with updated color value which tells View
-    #     what to color
-
-    #     Parameters
-    #     ----------
-    #     attribute : str
-    #         The name of the attribute(column of the table).
-
-    #     category:
-    #         The category of a certain attribute.
-
-    #     """
-    #     edgeData = self.edge_metadata.copy(deep=True)
-
-    #     if lower is not "":
-    #         edgeData['color'] = edgeData['color'].mask(edgeData[attribute] >
-    #                                                    float(lower), color)
-
-    #     if equal is not "":
-    #         edgeData['color'] = edgeData['alpha'].mask(edgeData[attribute] ==
-    #                                                    equal, color)
-
-    #     if upper is not "":
-    #         edgeData['color'] = edgeData['alpha'].mask(edgeData[attribute] <
-    #                                                    float(upper), color)
-
-    #     return edgeData
