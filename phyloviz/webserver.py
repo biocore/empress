@@ -1,7 +1,7 @@
 import tornado
 from controller import ModelHandler, EdgeHandler, ZoomHandler
 from controller import BenchmarkHandler, HighlightHandler, TriangleHandler
-from controller import CollapseHandler
+from controller import CollapseHandler, CollapseEdgeHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 import os.path
@@ -16,6 +16,7 @@ class Application(tornado.web.Application):
                     (r"/zoom", ZoomHandler),
                     (r"/benchmark", BenchmarkHandler),
                     (r"/collapse", CollapseHandler),
+                    (r"/collapseEdge", CollapseEdgeHandler),
                     (r"/highlight", HighlightHandler)
                     ]
 

@@ -21,9 +21,8 @@ tree_file = './astral.MR.rooted.nid.nosup.nwk'
 attr = ['width', 'branch_color_R']
 
 m = Model(tree_file, tree_format, internal_metadata_file, leaf_metadata_file)
-edgeM = m.retrive_view_coords()
+m.retrive_view_coords()  # adjust coordinates to be centered in WebGL
 # edge_part = m.selectCategory(attr)
-print(edgeM)
 # print(edge_part)
 
 
@@ -34,7 +33,7 @@ class ModelHandler(RequestHandler):
 
 class EdgeHandler(RequestHandler):
     def get(self):
-        edgeM = m.retrive_view_coords()
+        edgeM = m.edge_metadata
         edges = edgeM.to_json(orient='records')
         self.write(edges)
         self.finish()
@@ -82,4 +81,12 @@ class CollapseHandler(RequestHandler):
         triangles = m.collapse_clades(sliderScale)
         tri_json = triangles.to_json(orient='records')
         self.write(tri_json)
+        self.finish()
+
+
+class CollapseEdgeHandler(RequestHandler):
+    def get(self):
+        edgeM = m.select_edge_category()
+        edges = edgeM.to_json(orient='records')
+        self.write(edges)
         self.finish()

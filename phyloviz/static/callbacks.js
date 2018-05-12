@@ -8,6 +8,7 @@ window.zoomAmount = 1; //used to make pan look uniformed when zooming
 window.zoomLevel = 0; //current zoom level - used for selective rendering
 window.highlightURL = 'http://localhost:8080/highlight';
 window.collapseURL = 'http://localhost:8080/collapse';
+window.collapseEdgeURL = 'http://localhost:8080/collapseEdge';
 window.edgeURL = 'http://localhost:8080/api/edges';
 window.colorURL = 'http://localhost:8080/color';
 
@@ -111,7 +112,7 @@ function collapseClades() {
   $.getJSON(window.collapseURL, {sliderScale: ss}, function(data) {
     triangles = data;
   }).done(function() {
-    $.getJSON(window.edgeURL, function(data2) {
+    $.getJSON(window.collapseEdgeURL, function(data2) {
       edges = data2;
     }).done(function() {
       window.result = extractEdgeInfo(edges);

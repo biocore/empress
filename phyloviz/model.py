@@ -511,18 +511,16 @@ class Model(object):
            TODO: metadata will also want to contain
 
         """
-        edgeData = self.edge_metadata.copy(deep=True)
-
-        edgeData['px'] = edgeData[
+        self.edge_metadata['px'] = self.edge_metadata[
             ['px']].apply(lambda l: l - self.centerX)
-        edgeData['py'] = edgeData[
+        self.edge_metadata['py'] = self.edge_metadata[
             ['py']].apply(lambda l: l - self.centerY)
-        edgeData['x'] = edgeData[
+        self.edge_metadata['x'] = self.edge_metadata[
             ['x']].apply(lambda l: l - self.centerX)
-        edgeData['y'] = edgeData[
+        self.edge_metadata['y'] = self.edge_metadata[
             ['y']].apply(lambda l: l - self.centerY)
 
-        return edgeData
+        return self.edge_metadata
 
     def select_edge_category(self):
         """
@@ -578,7 +576,6 @@ class Model(object):
         edgeData : pd.Dataframe
         updated version of edge metadata
         """
-
         edgeData = self.edge_metadata
         if lower is not "":
             edgeData[category] = edgeData[category].mask(edgeData[attribute] >
@@ -620,7 +617,7 @@ class Model(object):
 
         return self.selectEdgeCategory()
 
-    def collapseClades(self, sliderScale):
+    def collapse_clades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
         sliderScale of 1 (min) means no clades are hidden, and sliderScale
         of 2 (max) means the whole tree is one large triangle.
@@ -645,7 +642,11 @@ class Model(object):
         nodes_limit = total_nodes - float(sliderScale)/10 * total_nodes
 
         for node in self.tree.levelorder():
-            if count >= nodes_limit:
+            # skip root node
+            if node.name is self.tree.name:
+                continue
+
+            if count > nodes_limit:
                 # done selecting nodes to render
                 # set visibility of the rest to false
                 self.edge_metadata.at[node.name, 'node_is_visible'] = False
@@ -656,15 +657,23 @@ class Model(object):
                 if node.parent is not None:
                     if self.edge_metadata.at[node.parent.name,
                                              'node_is_visible'] is True:
-                        nId = {"Node_id": node.parent.name}
-                        root = {'rx': node.parent.x2 - self.centerX,
-                                'ry': node.parent.y2 - self.centerY}
-                        shortN = {'sx': node.parent.shortest.x2 - self.centerX,
-                                  'sy': node.parent.shortest.y2 - self.centerY}
-                        longN = {'lx': node.parent.longest.x2 - self.centerX,
-                                 'ly': node.parent.longest.y2 - self.centerY}
-                        triData[node.parent.name] = {**nId, **root, **shortest,
-                                                     **longest}
+                        root = {'rx': self.edge_metadata.at[node.parent.name,
+                                                            'x'],
+                                'ry': self.edge_metadata.at[node.parent.name,
+                                                            'y']}
+                        shortN = {'sx': self.edge_metadata.at[node.parent.shortest.name, 'x'],
+                                  'sy': self.edge_metadata.at[node.parent.shortest.name, 'y']}
+                        longN = {'lx': self.edge_metadata.at[node.parent.longest.name, 'x'],
+                                 'ly': self.edge_metadata.at[node.parent.longest.name, 'y']}
+
+                        color = {}
+                        if node.parent.name is self.tree.name:
+                            color = {'color': "0000FF"}
+                        else:
+                            color = {'color': self.edge_metadata.at[node.parent.name, "branch_color"]}
+
+                        triData[node.parent.name] = {**root, **shortN,
+                                                     **longN, **color}
 
             else:
                 # reset visibility of higher level nodes
@@ -675,7 +684,6 @@ class Model(object):
 
         print(time.time() - start)
         print("end collapse")
-        print(triData)
 
         self.triangles = pd.DataFrame(triData).T
         return self.triangles
