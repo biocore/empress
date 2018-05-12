@@ -423,16 +423,11 @@ class Model(object):
         internal_metadata = read_internal_node_metadata(internal_metadata_file)
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
 
-        # self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
-        #                               how='outer', on="Node_id")
-        # self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
-        #                               how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
-                                      left_index=True, right_index=True,
-                                      how='left')
+                                      how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
-                                      left_index=True, right_index=True,
-                                      how='left')
+                                      how='outer', on="Node_id")
+        self.edge_metadata.set_index('Node_id', inplace=True)
 
         self.triangles = pd.DataFrame()
 
