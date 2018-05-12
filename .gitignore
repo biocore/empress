@@ -103,10 +103,9 @@ ENV/
 # node modules
 *.nwk
 
-#tree
-.tree
+# tree
+*.tree
 
-#astral metadata
+# astral metadata
 metadata.txt
 ncbi.t2t.txt
-
