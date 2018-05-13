@@ -21,9 +21,7 @@ tree_file = './astral.MR.rooted.nid.nosup.nwk'
 attr = ['width', 'branch_color_R']
 
 m = Model(tree_file, tree_format, internal_metadata_file, leaf_metadata_file)
-m.retrive_view_coords()  # adjust coordinates to be centered in WebGL
-# edge_part = m.selectCategory(attr)
-# print(edge_part)
+m.center_tree()  # adjust coordinates to be centered in WebGL
 
 
 class ModelHandler(RequestHandler):

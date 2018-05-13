@@ -9,10 +9,13 @@ import collections
 
 def name_internal_nodes(tree):
     """ Name internal nodes that does not have name
+
     Parameters
     ----------
+
     Returns
     -------
+
     """
     # initialize tree with branch length
     for i, n in enumerate(tree.postorder(include_self=True)):
@@ -89,8 +92,8 @@ def read(file_name, file_format='newick'):
         A TreeNode object of the newick file
     None - null
         If a non-newick file_format was passed in
-    """
 
+    """
     if file_format == 'newick':
         tree = skbio.read(file_name, file_format, into=TreeNode)
         return tree
@@ -99,17 +102,13 @@ def read(file_name, file_format='newick'):
 
 class Tree(TreeNode):
     """
-    Parameters
-    ----------
-    use_lengths: bool
-        Specifies if the branch lengths should be included in the
-        resulting visualization (default True).
     Attributes
     ----------
     length
     leafcount
     height
     depth
+
     Notes
     -----
     `length` refers to the branch length of a node to its parent.
@@ -120,12 +119,30 @@ class Tree(TreeNode):
 
     def __init__(self, use_lengths=False, **kwargs):
         """ Constructs a Dendrogram object for visualization.
+
+        Parameters
+        ----------
+        use_lengths: bool
+            Specifies if the branch lengths should be included in the
+            resulting visualization (default True).
+
+        Returns
+        -------
+
         """
         super().__init__(**kwargs)
         self.childRem = -1
 
     def _cache_ntips(self):
-        """ Counts the number of leaves under each subtree."""
+        """ Counts the number of leaves under each subtree.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         for n in self.postorder():
             if n.is_tip():
                 n.leafcount = 1
@@ -135,13 +152,16 @@ class Tree(TreeNode):
     @classmethod
     def from_tree(cls, tree, use_lengths=True):
         """ Creates an UnrootedDendrogram object from a skbio tree.
+
         Parameters
         ----------
         tree : skbio.TreeNode
             Input skbio tree
+
         Returns
         -------
         UnrootedDendrogram
+
         """
         for n in tree.postorder():
             n.__class__ = Tree
@@ -151,6 +171,7 @@ class Tree(TreeNode):
 
     def update_geometry(self, use_lengths, depth=None):
         """Calculate tree node attributes such as height and depth.
+
         Parameters
         ----------
         use_lengths: bool
@@ -159,6 +180,7 @@ class Tree(TreeNode):
         depth: int
            The number of nodes in the longest path from root to leaf.
         This is agnostic to scale and orientation.
+
         """
         if self.length is None or not use_lengths:
             if depth is None:
@@ -181,12 +203,14 @@ class Tree(TreeNode):
 
     def coords(self, height, width):
         """ Returns coordinates of nodes to be rendered in plot.
+
         Parameters
         ----------
         height : int
             The height of the canvas.
         width : int
             The width of the canvas.
+
         Returns
         -------
         pd.DataFrame (Node metadata)
@@ -252,23 +276,25 @@ class Tree(TreeNode):
         """ Find best scaling factor for fitting the tree in the figure.
         This method will find the best orientation and scaling possible to
         fit the tree within the dimensions specified by width and height.
+
         Parameters
         ----------
         width : float
             width of the canvas
         height : float
             height of the canvas
+
         Returns
         -------
         best_scaling : float
             largest scaling factor in which the tree can fit in the canvas.
+
         Notes
         -----
+
         """
         angle = (2 * np.pi) / self.leafcount
-        # this loop is a horrible brute force hack
-        # there are better (but complex) ways to find
-        # the best rotation of the tree to fit the display.
+
         best_scale = 0
         for i in range(60):
             direction = i / 60.0 * np.pi
@@ -278,8 +304,7 @@ class Tree(TreeNode):
 
             scale = min(float(width) / (max_x - min_x),
                         float(height) / (max_y - min_y))
-            # TODO: This margin seems a bit arbituary.
-            # will need to investigate.
+
             scale *= 0.95  # extra margin for labels
             if scale > best_scale:
                 best_scale = scale
@@ -292,11 +317,12 @@ class Tree(TreeNode):
 
     def update_coordinates(self, s, x1, y1, a, da):
         """ Update x, y coordinates of tree nodes in canvas.
-        `update_coordinates` will updating the
-        plotting parameters for all of the nodes within the tree.
+        `update_coordinates` will updating the plotting parameters for
+        all of the nodes within the tree.
         This can be applied when the tree becomes modified (i.e. pruning
         or collapsing) and the resulting coordinates need to be modified
         to reflect the changes to the tree structure.
+
         Parameters
         ----------
         s : float
@@ -309,12 +335,15 @@ class Tree(TreeNode):
             angle (degrees)
         da : float
             angle resolution (degrees)
+
         Returns
         -------
         points : list of tuple
             2D coordinates of all of the nodes.
+
         Notes
         -----
+
         """
 
         max_x = float('-inf')
@@ -328,7 +357,6 @@ class Tree(TreeNode):
         y2 = y1 + self.length * s * np.cos(a)
         (self.x1, self.y1, self.x2, self.y2, self.angle) = (x1, y1, x2, y2,
                                                             a)
-        # TODO: Add functionality that allows for collapsing of nodes
 
         for node in self.preorder(include_self=False):
             x1 = node.parent.x2
@@ -361,14 +389,13 @@ class Tree(TreeNode):
 
     def find_shortest_longest_branches(self):
         """ Finds the shortest and longest branches in each node's subtree.
+
         Parameters
         ----------
-        None
+
         Returns
         -------
-        None
-        Notes
-        -----
+
         """
         for node in self.postorder():
             if node.is_tip():
@@ -405,6 +432,7 @@ class Model(object):
            Contains all of the edge attributes.
            Every row corresponds to a unique edge
            and every column corresponds to an attribute.
+
         """
         self.zoom_level = 1
         self.scale = 1
@@ -417,7 +445,6 @@ class Model(object):
              self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
-            # Todo: append coords to node/edge
 
         # Append metadata to table
         internal_metadata = read_internal_node_metadata(internal_metadata_file)
@@ -431,72 +458,13 @@ class Model(object):
 
         self.triangles = pd.DataFrame()
 
-    def layout(self, layout_type):
-        """ Calculates the coordinates for the tree.
-
-        Pipeline function
-
-        This calculates the actual coordinates for
-        the tree. These are not the coordinates that
-        will be rendered.  The calculated coordinates
-        will be updated as a class property.
-        The layout will only be utilized during
-        initialization.
-
-        Parameters
-        ----------
-        layout_type : str
-            This specifies the layout algorithm to be used.
-
-        Returns
-        -------
-        coords : pd.DataFrame
-            The calculated tree coordinates.
-
-        Note
-        ----
-        This will wipe the coords and viewcoords in order to
-        recalculate the coordinates with the new layout.
-        """
-        self.coords = pd.DataFrame()
-
-        # These are coordinates scaled to the canvas
-        self._canvascoords = np.array()
-
-        # These are coordinates scaled for viewing
-        self.viewcoords = np.array()
-
-        # TODO: These will need to be recomputed.
-
-        pass
-
-    def unique_categories(metadata, attribute):
-        """ Returns all unique metadata categories that belong to the attribute.
-        Parameters
-        ----------
-        metadata : pd.DataFrame
-           Contains all of the species attributes.
-           Every row corresponds to a unique species
-           and every column corresponds to an attribute.
-           TODO: metadata will also want to contain
-           ancestors.
-        attribute : string
-            A string that specifies the metadata attribute header
-        Returns
-        -------
-        unique_cat : list
-            A list that contains all of the unique categories within the given
-            attribute.
-
-        """
-        pass
-
-    def retrive_view_coords(self):
+    def center_tree(self):
         """ Translate the tree coords in order to makes root (0,0) and
         Returns edge metadata.
 
         Parameters
         ----------
+
         Returns
         -------
         edge_metadata : pd.DataFrame
@@ -520,10 +488,13 @@ class Model(object):
     def select_edge_category(self):
         """
         Select categories required by webgl to plot edges
+
         Parameters
         ----------
+
         Returns
         -------
+
         """
         attributes = ['x', 'y', 'px', 'py', 'branch_color']  # ,'width']
         return self.select_category(attributes, 'branch_is_visible')
@@ -531,10 +502,13 @@ class Model(object):
     def select_node_category(self):
         """
         Select categories required by webgl to plot nodes
+
         Parameters
         ----------
+
         Returns
         -------
+
         """
         attributes = ['x', 'y', 'node_color', 'size']
         return self.select_category(attributes, 'node_is_visible')
@@ -542,22 +516,24 @@ class Model(object):
     def select_category(self, attributes, is_visible_col):
         """ Returns edge_metadata with updated alpha value which tells View
         what to hightlight
+
         Parameters
         ----------
         attributes : list
             List of columns names to select
+
         """
-        # edgeData = self.edge_metadata.copy(deep=True)
         is_visible = self.edge_metadata[is_visible_col] == True
         edgeData = self.edge_metadata[is_visible]
 
         return edgeData[attributes]
 
-    # Rename to single category
-    def update_edge_category(self, attribute, category, new_value="000000",
-                             lower=None, equal=None, upper=None):
+    def update_single_edge_category(self, attribute, category,
+                                    new_value='000000', lower=None,
+                                    equal=None, upper=None):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
+
         Parameters
         ----------
         attribute : str
@@ -566,10 +542,12 @@ class Model(object):
 
         new_value:
             new value of the category to update to
+
         Returns
         -------
         edgeData : pd.Dataframe
-        updated version of edge metadata
+            updated version of edge metadata
+
         """
         edgeData = self.edge_metadata
         if lower is not "":
@@ -587,30 +565,6 @@ class Model(object):
                                                          new_value)
 
         return self.select_edge_category()
-
-    def updateEdgeCategory(self, attribute, category_value_pairs, lower=None,
-                           equal=None, upper=None):
-        """ Returns edge_metadata with updated category values which tells View
-        what to hightlight
-
-        Parameters
-        ----------
-        attribute : str
-            The name of the attribute(column of the table).
-
-        category_value_pairs: dict
-            The dictionary of category and value pairs to update
-        Returns
-        -------
-        edgeData : pd.Dataframe
-        updated version of edge metadata
-
-        """
-
-        for c, v in category_value_pairs.items():
-            self.updateSingleEdgeCategory(attribute, c, v, lower, equal, upper)
-
-        return self.selectEdgeCategory()
 
     def collapse_clades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
@@ -656,16 +610,21 @@ class Model(object):
                                                             'x'],
                                 'ry': self.edge_metadata.at[node.parent.name,
                                                             'y']}
-                        shortN = {'sx': self.edge_metadata.at[node.parent.shortest.name, 'x'],
-                                  'sy': self.edge_metadata.at[node.parent.shortest.name, 'y']}
-                        longN = {'lx': self.edge_metadata.at[node.parent.longest.name, 'x'],
-                                 'ly': self.edge_metadata.at[node.parent.longest.name, 'y']}
+                        shortN = {'sx': self.edge_metadata
+                                  .at[node.parent.shortest.name, 'x'],
+                                  'sy': self.edge_metadata
+                                  .at[node.parent.shortest.name, 'y']}
+                        longN = {'lx': self.edge_metadata
+                                 .at[node.parent.longest.name, 'x'],
+                                 'ly': self.edge_metadata
+                                 .at[node.parent.longest.name, 'y']}
 
                         color = {}
                         if node.parent.name is self.tree.name:
                             color = {'color': "0000FF"}
                         else:
-                            color = {'color': self.edge_metadata.at[node.parent.name, "branch_color"]}
+                            color = {'color': self.edge_metadata
+                                     .at[node.parent.name, "branch_color"]}
 
                         triData[node.parent.name] = {**root, **shortN,
                                                      **longN, **color}
@@ -682,33 +641,3 @@ class Model(object):
 
         self.triangles = pd.DataFrame(triData).T
         return self.triangles
-
-    # def colorCategory(self, attribute, color,lower=None, equal=None, upper=None):
-
-    #     """ Returns edge_metadata with updated color value which tells View
-    #     what to color
-
-    #     Parameters
-    #     ----------
-    #     attribute : str
-    #         The name of the attribute(column of the table).
-
-    #     category:
-    #         The category of a certain attribute.
-
-    #     """
-    #     edgeData = self.edge_metadata.copy(deep=True)
-
-    #     if lower is not "":
-    #         edgeData['color'] = edgeData['color'].mask(edgeData[attribute] >
-    #                                                    float(lower), color)
-
-    #     if equal is not "":
-    #         edgeData['color'] = edgeData['alpha'].mask(edgeData[attribute] ==
-    #                                                    equal, color)
-
-    #     if upper is not "":
-    #         edgeData['color'] = edgeData['alpha'].mask(edgeData[attribute] <
-    #                                                    float(upper), color)
-
-    #     return edgeData
