@@ -588,14 +588,14 @@ class Model(object):
         start = time.time()
         count = 0
         total_nodes = self.tree.count()
-        nodes_limit = total_nodes - float(sliderScale)/10 * total_nodes
+        nodes_limit = int(total_nodes - float(sliderScale)/10 * total_nodes)
 
         for node in self.tree.levelorder():
             # skip root node
             if node.name is self.tree.name:
                 continue
 
-            if count > nodes_limit:
+            if count >= nodes_limit:
                 # done selecting nodes to render
                 # set visibility of the rest to false
                 self.edge_metadata.at[node.name, 'node_is_visible'] = False
