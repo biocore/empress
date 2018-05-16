@@ -8,20 +8,11 @@ import pandas as pd
 from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import ward, complete
 
-
-internal_metadata_file = None
-leaf_metadata_file = None
-
-# tree files
-tree_format = None
-tree_file = None
-
 def build_tree(tree_file, tree_format, internal_metadata_file, leaf_metadata_file):
     global m
     print("tree build")
     m = Model(tree_file, tree_format, internal_metadata_file, leaf_metadata_file)
     print(m)
-
 
 class ModelHandler(RequestHandler):
     def get(self):
@@ -60,8 +51,8 @@ class HighlightHandler(RequestHandler):
         lower = self.get_argument('lower')
         equal = self.get_argument('equal')
         upper = self.get_argument('upper')
-        selected = m.update_edge_category(attribute, category, value, lower,
-                                          equal, upper)
+        selected = m.update_single_edge_category(attribute, category, value,
+                                                 lower, equal, upper)
         edges = selected.to_json(orient='records')
         self.write(edges)
         self.finish()
