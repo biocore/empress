@@ -8,22 +8,19 @@ import pandas as pd
 from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import ward, complete
 
-# metadata files
-internal_metadata_file = 'ncbi.t2t.txt'
-leaf_metadata_file = 'metadata.txt'
+
+internal_metadata_file = None
+leaf_metadata_file = None
 
 # tree files
-tree_format = 'newick'
-# tree_file = './collapse_test.nwk'
-tree_file = './astral.MR.rooted.nid.nosup.nwk'
-# tree_file = './gg_13_5_otus_99_annotated.tree'
-# tree_file = './0B5tlRtQ-tBfkZSuneOKbg.nwk'
-attr = ['width', 'branch_color_R']
+tree_format = None
+tree_file = None
 
-m = Model(tree_file, tree_format, internal_metadata_file, leaf_metadata_file)
-m.retrive_view_coords()  # adjust coordinates to be centered in WebGL
-# edge_part = m.selectCategory(attr)
-# print(edge_part)
+def build_tree(tree_file, tree_format, internal_metadata_file, leaf_metadata_file):
+    global m
+    print("tree build")
+    m = Model(tree_file, tree_format, internal_metadata_file, leaf_metadata_file)
+    print(m)
 
 
 class ModelHandler(RequestHandler):
