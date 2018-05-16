@@ -61,7 +61,7 @@ class HighlightHandler(RequestHandler):
         lower = self.get_argument('lower')
         equal = self.get_argument('equal')
         upper = self.get_argument('upper')
-        selected = m.update_edge_category(attribute, category, value, lower,
+        selected = m.update_single_edge_category(attribute, category, value, lower,
                                           equal, upper)
         edges = selected.to_json(orient='records')
         self.write(edges)
