@@ -4,7 +4,7 @@ to run Empress you need to have three files located in the same directory as con
 astral.MR.rooted.nid.nosup.nwk, ncbi.t2t.txt, and metadata.txt. "astral.MR.rooted.nid.nosup.nwk" is any Newick tree file.
 "ncbi.t2t.txt" is the metadata file for the internal nodes of the tree. "metadata.txt" is the metadata file for the leaf nodes of the tree.
 
-#Installation
+# Installation
 Please install the following packages in order to run Empress
 
 ```
@@ -12,7 +12,7 @@ conda install tornado
 conda install -c conda-forge scikit-bio
 ```
 
-#Run
+# Run
 From the root directiory of empress type the following commands in the terminal
 
 ```
