@@ -6,6 +6,22 @@ import time
 from operator import attrgetter
 import collections
 
+def name_internal_nodes(tree):
+    """ Name internal nodes that does not have name
+    Parameters
+    ----------
+    Returns
+    -------
+    """
+    print("start labelling nodes")
+    # initialize tree with branch length
+    for i, n in enumerate(tree.postorder(include_self=True)):
+        if n.length is None:
+            n.length = 1
+        if not n.is_tip() and n.name is not None:
+            new_name = "y%d" % i
+            n.name = new_name
+
 
 def read_leaf_node_metadata(file_name):
     """ Reads in metadata for leaf nodes
@@ -57,7 +73,7 @@ def read(file_name, file_format='newick'):
     phyloxml
     - Python has a parser for it, but it parse it into a phylogeny object.
     - We need to parse the phylogeny object into the metadata table by
-    traversing?
+    traversing?g
     - What is the confidence ifor each clade?
 
     Parameters
@@ -84,7 +100,7 @@ def read(file_name, file_format='newick'):
 
 class Tree(TreeNode):
     """
-    Parameters
+    Parametersg
     ----------
     use_lengths: bool
         Specifies if the branch lengths should be included in the
@@ -202,9 +218,12 @@ class Tree(TreeNode):
         """
 
         # calculates coordinates of all nodes and the shortest/longest branches
-        print("start")
+        print("start calculating coords of all nodes")
         start = time.time()
         scale = self.rescale(width, height)
+        print(time.time() - start)
+        print("start calculating shortest/longest branches")
+        start = time.time()
         self.find_shortest_longest_branches()
         print(time.time() - start)
         print("done")
@@ -384,10 +403,10 @@ class Tree(TreeNode):
 
 class Model(object):
 
-    def __init__(self, tree,
+    def __init__(self, tree_file=None,
+                 tree_format='newick',
                  internal_metadata_file=None,
                  leaf_metadata_file=None,
-                 node_metadata=None,
                  edge_metadata=None):
         """ Model constructor.
 
@@ -410,7 +429,9 @@ class Model(object):
         """
         self.zoom_level = 1
         self.scale = 1
+        tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
+
         if edge_metadata is None:
             (self.edge_metadata, self.node_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
@@ -427,6 +448,7 @@ class Model(object):
                                       how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
                                       how='outer', on="Node_id")
+        name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
 
     def layout(self, layout_type):

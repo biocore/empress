@@ -1,7 +1,6 @@
 import tornado
-from controller import ModelHandler, EdgeHandler, NodeHandler, ZoomHandler
-from controller import BenchmarkHandler, HighlightHandler, TriangleHandler
-from controller import CollapseHandler
+from controller import ( ModelHandler, EdgeHandler, NodeHandler, ZoomHandler,
+    BenchmarkHandler, HighlightHandler, TriangleHandler, CollapseHandler )
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 import os.path

@@ -8,25 +8,17 @@ import pandas as pd
 from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import ward, complete
 
-# trees
-tree = model.read('./astral.MR.rooted.nid.nosup.nwk', 'newick')
-# tree = model.read('./gg_13_5_otus_99_annotated.tree', 'newick')
-# tree = model.read('./0B5tlRtQ-tBfkZSuneOKbg.nwk', 'newick')
-# tree = model.read('./test.tree.nwk', 'newick')
 
 # metadata files
 internal_metadata_file = 'ncbi.t2t.txt'
 leaf_metadata_file = 'metadata.txt'
+#tree_file = './gg_13_5_otus_99_annotated.tree'
+#tree_file = './0B5tlRtQ-tBfkZSuneOKbg.nwk'
+#tree_file = './test.tree.nwk'
+tree_file = 'astral.MR.rooted.nid.nosup.nwk'
+tree_format = 'newick'
 
-
-
-# initialize tree with branch length Todo: need to incorperate this into model
-for i, n in enumerate(tree.postorder(include_self=True)):
-    n.length = 1
-    if not n.is_tip() and n.name is None:
-        n.name = "y%d" % i
-
-m = Model(tree, internal_metadata_file, leaf_metadata_file)
+m = Model(tree_file,tree_format, internal_metadata_file, leaf_metadata_file)
 edgeM = m.retrive_view_coords()
 
 
