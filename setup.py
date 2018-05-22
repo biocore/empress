@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # ----------------------------------------------------------------------------
-# Copyright (c) 2016--, gneiss development team.
+# Copyright (c) 2016--, Empress development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -36,14 +36,14 @@ with open('README.md') as f:
 version = "0.0.1"
 
 setup(
-    name='phyloviz',
+    name='Empress',
     version=version,
     license='BSD',
     description=description,
     long_description=long_description,
-    author="phyloviz development team",
+    author="Empress development team",
     author_email="jamietmorton@gmail.com",
-    maintainer="phyloviz development team",
+    maintainer="Empress development team",
     maintainer_email="jamietmorton@gmail.com",
     packages=find_packages(),
     setup_requires=['numpy >= 1.9.2'],
