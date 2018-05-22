@@ -228,24 +228,10 @@ class Tree(TreeNode):
         print(time.time() - start)
         print("done")
 
-        # Node metadata
-        nodeData = {}
-        for node in self.postorder():
-            nId = {'Node_id': node.name}
-            coords = {'x': node.x2, 'y': node.y2}
-            attr = {'color_R': 255.0, 'color_G': 255.0, 'color_B': 255.0,
-                    'is_visible': True, 'size': 1,
-                    'shortest': node.shortest.depth,
-                    'longest': node.longest.depth}
-            nodeData[node.name] = {**nId, **coords, **attr}
-
         # edge metadata
         edgeData = {}
         for node in self.postorder():
-            if node.is_tip():
-                edgeData["is_tip"] = True
-            else:
-                edgeData["is_tip"] = False
+            edgeData["is_tip"] = node.is_tip()
             pId = {"Parent_id": node.name}
             pCoords = {'px': node.x2, 'py': node.y2}
             for child in node.children:
@@ -259,12 +245,11 @@ class Tree(TreeNode):
 
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
-        nodeMeta = pd.DataFrame(nodeData).T
 
         centerX = self.x2
         centerY = self.y2
 
-        return (edgeMeta, nodeMeta, centerX, centerY, scale)
+        return (edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
@@ -356,14 +341,14 @@ class Tree(TreeNode):
             a = node.parent.angle
 
             #same modify across nodes
-            a = a - node.parent.leafcount * da / 2
+            a -= node.parent.leafcount * da / 2
 
             #check for conditional higher order
             for sib in node.parent.children:
                 if sib != node:
-                    a = a + sib.leafcount * da
+                    a += sib.leafcount * da
                 else:
-                    a = a + (node.leafcount * da) / 2
+                    a += (node.leafcount * da) / 2
                     break
 
             # Constant angle algorithm.  Should add maximum daylight step.
@@ -433,11 +418,10 @@ class Model(object):
         self.tree = Tree.from_tree(tree)
 
         if edge_metadata is None:
-            (self.edge_metadata, self.node_metadata, self.centerX,
+            (self.edge_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
-            self.node_metadata = node_metadata
             # Todo: append coords to node/edge
 
         # Append metadata to table
@@ -504,7 +488,7 @@ class Model(object):
             A string that specifies the metadata attribute header
         Returns
         -------
-        unique_cat : list
+        unique_cat : list of str
             A list that contains all of the unique categories within the given
             attribute.
 
