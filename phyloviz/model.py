@@ -1,10 +1,27 @@
+import skbio
 from skbio import TreeNode
 import pandas as pd
 import numpy as np
-import skbio
 import time
 from operator import attrgetter
-import collections
+
+
+def name_internal_nodes(tree):
+    """ Name internal nodes that does not have name
+
+    Parameters
+    ----------
+    Returns
+    -------
+    """
+    print("start labelling nodes")
+    # initialize tree with branch length
+    for i, n in enumerate(tree.postorder(include_self=True)):
+        if n.length is None:
+            n.length = 1
+        if not n.is_tip() and n.name is not None:
+            new_name = "y%d" % i
+            n.name = new_name
 
 
 def name_internal_nodes(tree):
@@ -75,7 +92,7 @@ def read(file_name, file_format='newick'):
     phyloxml
     - Python has a parser for it, but it parse it into a phylogeny object.
     - We need to parse the phylogeny object into the metadata table by
-    traversing?
+    traversing?g
     - What is the confidence ifor each clade?
 
     Parameters
@@ -241,9 +258,12 @@ class Tree(TreeNode):
         """
 
         # calculates coordinates of all nodes and the shortest/longest branches
-        print("start")
+        print("start calculating coords of all nodes")
         start = time.time()
         scale = self.rescale(width, height)
+        print(time.time() - start)
+        print("start calculating shortest/longest branches")
+        start = time.time()
         self.find_shortest_longest_branches()
         print(time.time() - start)
         print("done")
@@ -371,9 +391,9 @@ class Tree(TreeNode):
             # check for conditional higher order
             for sib in node.parent.children:
                 if sib != node:
-                    a = a + sib.leafcount * da
+                    a += sib.leafcount * da
                 else:
-                    a = a + (node.leafcount * da) / 2
+                    a += (node.leafcount * da) / 2
                     break
 
             # Constant angle algorithm.  Should add maximum daylight step.
@@ -408,8 +428,10 @@ class Tree(TreeNode):
                                     key=attrgetter('depth'))
 
                 # calculate longest branch node
-                node.longest = max([child.longest for child in node.children],
-                                   key=attrgetter('depth'))
+                node.longest = max(
+                    [child.longest for child in node.children],
+                    key=attrgetter('depth'))
+
 
 
 class Model(object):
@@ -439,6 +461,7 @@ class Model(object):
         tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
         name_internal_nodes(self.tree)
+
 
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
@@ -568,6 +591,7 @@ class Model(object):
 
     def collapse_clades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
+
         sliderScale of 1 (min) means no clades are hidden, and sliderScale
         of 2 (max) means the whole tree is one large triangle.
         Changes the visibility of hidden nodes to be false.

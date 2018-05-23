@@ -1,18 +1,13 @@
-import model
+import sys
 from model import Model
 from tornado.web import RequestHandler
-import sys
-sys.path.append("../..")
-import numpy as np
-import pandas as pd
-from skbio import DistanceMatrix, TreeNode
-from scipy.cluster.hierarchy import ward, complete
 
 def build_tree(tree_file, tree_format, internal_metadata_file, leaf_metadata_file):
     global m
     print("tree build")
     m = Model(tree_file, tree_format, internal_metadata_file, leaf_metadata_file)
     print(m)
+
 
 class ModelHandler(RequestHandler):
     def get(self):
