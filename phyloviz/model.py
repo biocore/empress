@@ -1,13 +1,14 @@
+import skbio
 from skbio import TreeNode
 import pandas as pd
 import numpy as np
-import skbio
 import time
 from operator import attrgetter
-import collections
+
 
 def name_internal_nodes(tree):
     """ Name internal nodes that does not have name
+
     Parameters
     ----------
     Returns
@@ -238,8 +239,10 @@ class Tree(TreeNode):
                 nId = {"Node_id": child.name}
                 coords = {'x': child.x2, 'y': child.y2}
                 attr = {'node_color': 'FFFFFF', 'branch_color': 'FFFFFF',
-                        'node_is_visible': True, 'branch_is_visible': True, 'width': 1, 'size': 1,
-                        'shortest': node.shortest.depth, 'longest': node.longest.depth}
+                        'node_is_visible': True, 'branch_is_visible': True,
+                        'width': 1, 'size': 1,
+                        'shortest': node.shortest.depth,
+                        'longest': node.longest.depth}
                 edgeData[child.name] = {**nId, **coords, **pId,
                                         **pCoords, **attr}
 
@@ -337,13 +340,13 @@ class Tree(TreeNode):
             x1 = node.parent.x2
             y1 = node.parent.y2
 
-            #init a
+            # init a
             a = node.parent.angle
 
-            #same modify across nodes
+            # same modify across nodes
             a -= node.parent.leafcount * da / 2
 
-            #check for conditional higher order
+            # check for conditional higher order
             for sib in node.parent.children:
                 if sib != node:
                     a += sib.leafcount * da
@@ -379,12 +382,15 @@ class Tree(TreeNode):
                 node.longest = node
             else:
                 # calculate shortest branch node
-                node.shortest = min([child.shortest for child in node.children],
-                                    key=attrgetter('depth'))
+                node.shortest = min(
+                    [child.shortest for child in node.children],
+                    key=attrgetter('depth'))
 
                 # calculate longest branch node
-                node.longest = max([child.longest for child in node.children],
-                                   key=attrgetter('depth'))
+                node.longest = max(
+                    [child.longest for child in node.children],
+                    key=attrgetter('depth'))
+
 
 class Model(object):
 
@@ -529,8 +535,9 @@ class Model(object):
         Returns
         -------
         """
-        attributes = ['x','y','px','py','branch_color'] #,'width']
-        return self.select_category(attributes,'branch_is_visible')
+        # TODO: may want to add in width in the future
+        attributes = ['x', 'y', 'px', 'py', 'branch_color']
+        return self.select_category(attributes, 'branch_is_visible')
 
     def select_node_category(self):
         """
@@ -540,8 +547,8 @@ class Model(object):
         Returns
         -------
         """
-        attributes = ['x','y','node_color','size']
-        return self.select_category(attributes,'node_is_visible')
+        attributes = ['x', 'y', 'node_color', 'size']
+        return self.select_category(attributes, 'node_is_visible')
 
     def select_category(self, attributes, is_visible_col):
         """ Returns edge_metadata with updated alpha value which tells View
@@ -552,16 +559,17 @@ class Model(object):
             List of columns names to select
         """
 
-        #edgeData = self.edge_metadata.copy(deep=True)
-        is_visible = self.edge_metadata[is_visible_col] == True
+        is_visible = self.edge_metadata[is_visible_col]
         edgeData = self.edge_metadata[is_visible]
 
         return edgeData[attributes]
 
-    def update_edge_category(self, attribute, category, new_value="000000", lower=None,
-                           equal=None, upper=None):
+    def update_edge_category(self, attribute, category,
+                             new_value="000000", lower=None,
+                             equal=None, upper=None):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
+
         Parameters
         ----------
         attribute : str
@@ -591,9 +599,9 @@ class Model(object):
 
         return self.select_edge_category()
 
-
     def collapse_clades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
+
         sliderScale of 1 (min) means no clades are hidden, and sliderScale
         of 2 (max) means the whole tree is one large triangle.
         Changes the visibility of hidden nodes to be false.
