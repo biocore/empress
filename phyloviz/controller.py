@@ -1,24 +1,20 @@
-import model
+import sys
 from model import Model
 from tornado.web import RequestHandler
-import sys
+
+
+# TODO: This needs to be fixed
 sys.path.append("../..")
-import numpy as np
-import pandas as pd
-from skbio import DistanceMatrix, TreeNode
-from scipy.cluster.hierarchy import ward, complete
-
-
 # metadata files
+# TODO: Internal metadata (will need docs in the future)
 internal_metadata_file = 'ncbi.t2t.txt'
-leaf_metadata_file = 'metadata.txt'
-#tree_file = './gg_13_5_otus_99_annotated.tree'
-#tree_file = './0B5tlRtQ-tBfkZSuneOKbg.nwk'
-#tree_file = './test.tree.nwk'
-tree_file = 'astral.MR.rooted.nid.nosup.nwk'
+# TODO: Leaf metadata (will need docs in the future)
+leaf_metadata_file = 'metadata.tsv'
+tree_file = 'astral.cons.nid.e5p50.nwk'
 tree_format = 'newick'
 
-m = Model(tree_file,tree_format, internal_metadata_file, leaf_metadata_file)
+m = Model(tree_file, tree_format,
+          internal_metadata_file, leaf_metadata_file)
 edgeM = m.retrive_view_coords()
 
 
@@ -65,7 +61,8 @@ class HighlightHandler(RequestHandler):
         lower = self.get_argument('lower')
         equal = self.get_argument('equal')
         upper = self.get_argument('upper')
-        selected = m.update_edge_category(attribute, category, value, lower, equal, upper)
+        selected = m.update_edge_category(
+            attribute, category, value, lower, equal, upper)
         edges = selected.to_json(orient='records')
         self.write(edges)
         self.finish()
