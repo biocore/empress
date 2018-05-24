@@ -11,10 +11,12 @@ def name_internal_nodes(tree):
 
     Parameters
     ----------
+
     Returns
     -------
     """
     print("start labelling nodes")
+
     # initialize tree with branch length
     for i, n in enumerate(tree.postorder(include_self=True)):
         if n.length is None:
@@ -22,24 +24,6 @@ def name_internal_nodes(tree):
         if not n.is_tip() and n.name is not None:
             new_name = "y%d" % i
             n.name = new_name
-
-
-def name_internal_nodes(tree):
-    """ Name internal nodes that does not have name
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-
-    """
-    # initialize tree with branch length
-    for i, n in enumerate(tree.postorder(include_self=True)):
-        if n.length is None:
-            n.length = 1
-        if not n.is_tip() and n.name is None:
-            n.name = "y%d" % i
 
 
 def read_leaf_node_metadata(file_name):
@@ -283,7 +267,7 @@ class Tree(TreeNode):
                         'node_is_visible': True, 'branch_is_visible': True,
                         'width': 1, 'size': 1, 'shortest': node.shortest.depth,
                         'longest': node.longest.depth}
-                edgeData[child.name] = {**nId, **coords, **pId,
+                edgeData[child.name] = {**nId, **isTip, **coords, **pId,
                                         **pCoords, **attr}
 
         # convert to pd.DataFrame
@@ -544,8 +528,8 @@ class Model(object):
             List of columns names to select
 
         """
-        is_visible = self.edge_metadata[is_visible_col] == True
-        edgeData = self.edge_metadata[is_visible]
+        edgeData = self.edge_metadata
+        edgeData = edgeData.loc[edgeData[is_visible_col] == 1]
 
         return edgeData[attributes]
 
