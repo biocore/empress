@@ -7,13 +7,11 @@
 # ----------------------------------------------------------------------------
 import unittest
 import numpy as np
-import pandas as pd
-from skbio import DistanceMatrix, TreeNode
-import sys
-sys.path.append("../..")
-from phyloviz.model import Tree
+# import pandas as pd
+# import pandas.util.testing as pdt
 from scipy.cluster.hierarchy import complete
-import pandas.util.testing as pdt
+from skbio import DistanceMatrix, TreeNode
+from phyloviz.model import Tree
 
 
 class TestDendrogram(unittest.TestCase):
@@ -58,7 +56,6 @@ class TestDendrogram(unittest.TestCase):
     def test_from_tree_random_tree(self):
         t = Tree.from_tree(self.tree1)
         self.assertEqual(t.__class__, Tree)
-
 
     # def test_coords_random_tree(self):
     #     t = Tree.from_tree(self.tree1)
@@ -177,15 +174,14 @@ class TestDendrogram(unittest.TestCase):
         #     [(-0.59847214410395655,
         #       -1.6334372886412185), (-0.99749498660405445,
         #                              -0.76155647142658189),
-        #      (1.0504174348855488, 0.34902579063315775), (2.8507394969018511,
-        #                                                  0.88932809650129752),
-        #      (3.3688089449017027, 0.082482736278627664), (0.67135946132440838,
-        #                                                   -2.4180787481253012),
-        #      (-1.9936226804402346, -2.9233732552695497), (-2.6203695704157117,
-        #                                                   -2.1977123674095331),
-        #      (-1.8709927812120046,
-        #       0.33556711382648474), (-0.95033246755379708,
-        #                              0.60348496526324824)])
+        #      (1.0504174348855488, 0.34902579063315775),
+        #      (2.8507394969018511, 0.88932809650129752),
+        #      (3.3688089449017027, 0.082482736278627664),
+        #      (0.67135946132440838, -2.4180787481253012),
+        #      (-1.9936226804402346, -2.9233732552695497),
+        #      (-2.6203695704157117, -2.1977123674095331),
+        #      (-1.8709927812120046, 0.33556711382648474),
+        #      (-0.95033246755379708, 0.60348496526324824)])
         max_x, min_x, max_y, min_y = t.update_coordinates(1, 0, 0, 2, 1)
         self.assertAlmostEqual(max_x, 3.3688089449017027)
         self.assertAlmostEqual(min_x, -2.6203695704157117)

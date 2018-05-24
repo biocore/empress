@@ -1,11 +1,13 @@
-import sys
 from model import Model
 from tornado.web import RequestHandler
 
-def build_tree(tree_file, tree_format, internal_metadata_file, leaf_metadata_file):
+
+def build_tree(tree_file, tree_format, internal_metadata_file,
+               leaf_metadata_file):
     global m
     print("tree build")
-    m = Model(tree_file, tree_format, internal_metadata_file, leaf_metadata_file)
+    m = Model(tree_file, tree_format, internal_metadata_file,
+              leaf_metadata_file)
     print(m)
 
 

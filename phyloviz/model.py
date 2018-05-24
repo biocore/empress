@@ -433,7 +433,6 @@ class Tree(TreeNode):
                     key=attrgetter('depth'))
 
 
-
 class Model(object):
 
     def __init__(self, tree_file=None,
@@ -461,7 +460,6 @@ class Model(object):
         tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
         name_internal_nodes(self.tree)
-
 
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
