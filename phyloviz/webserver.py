@@ -41,6 +41,7 @@ def start(tree_file, tree_format, internal_metadata, leaf_metadata):
 
     # Build the tree
     m = Model(tree_file, tree_format, internal_metadata, leaf_metadata)
+    m.center_tree()
 
     # Create the webserver
     print("build web server")
