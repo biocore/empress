@@ -1,5 +1,6 @@
 import tornado
 import controller
+from model import Model
 from controller import (
     ModelHandler, EdgeHandler, ZoomHandler,
     BenchmarkHandler, HighlightHandler, TriangleHandler,
@@ -12,15 +13,15 @@ import click
 
 class Application(tornado.web.Application):
 
-    def __init__(self):
+    def __init__(self,m):
         handlers = [(r"/", ModelHandler),
-                    (r"/api/edges", EdgeHandler),
-                    (r"/api/triangles", TriangleHandler),
-                    (r"/zoom", ZoomHandler),
+                    (r"/api/edges", EdgeHandler, dict(m=m)),
+                    (r"/api/triangles", TriangleHandler, dict(m=m)),
+                    (r"/zoom", ZoomHandler, dict(m=m)),
                     (r"/benchmark", BenchmarkHandler),
-                    (r"/collapse", CollapseHandler),
-                    (r"/collapseEdge", CollapseEdgeHandler),
-                    (r"/highlight", HighlightHandler)
+                    (r"/collapse", CollapseHandler, dict(m=m)),
+                    (r"/collapseEdge", CollapseEdgeHandler, dict(m=m)),
+                    (r"/highlight", HighlightHandler, dict(m=m))
                     ]
 
         settings = dict(
@@ -37,29 +38,22 @@ class Application(tornado.web.Application):
               help='The file that contains internal node metadata')
 @click.option('--leaf_metadata',
               help='The file that contains tip node metadata')
-def build_tree(tree_file, tree_format, internal_metadata, leaf_metadata):
-    controller.build_tree(tree_file, tree_format, internal_metadata,
-                          leaf_metadata)
-    print("done")
-    return
+def start(tree_file, tree_format, internal_metadata, leaf_metadata):
 
-
-if __name__ == '__main__':
     # Build the tree
-    # internal_metadata_file = 'ncbi.t2t.txt'
-    # leaf_metadata_file = 'metadata.txt'
+    m = Model(tree_file, tree_format, internal_metadata,
+                          leaf_metadata)
 
-    # tree files
-    # tree_format = 'newick'
-    # tree_file = './astral.MR.rooted.nid.nosup.nwk'
-    # print("before building the tree")
-    # controller.build_tree(tree_file, tree_format, internal_metadata_file,
-    # leaf_metadata_file)
-    build_tree()
-    print("build web server")
     # Create the webserver
-    http_server = HTTPServer(Application())
+    print("build web server")
+    http_server = HTTPServer(Application(m))
     http_server.listen(8080)
     ioloop = IOLoop.instance()
     print("server started at port 8080")
     ioloop.start()
+    print("done")
+
+
+if __name__ == '__main__':
+
+    start()
