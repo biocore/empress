@@ -1,5 +1,4 @@
 import tornado
-import controller
 from model import Model
 from controller import (
     ModelHandler, EdgeHandler, ZoomHandler,
@@ -13,7 +12,7 @@ import click
 
 class Application(tornado.web.Application):
 
-    def __init__(self,m):
+    def __init__(self, m):
         handlers = [(r"/", ModelHandler),
                     (r"/api/edges", EdgeHandler, dict(m=m)),
                     (r"/api/triangles", TriangleHandler, dict(m=m)),
@@ -41,8 +40,7 @@ class Application(tornado.web.Application):
 def start(tree_file, tree_format, internal_metadata, leaf_metadata):
 
     # Build the tree
-    m = Model(tree_file, tree_format, internal_metadata,
-                          leaf_metadata)
+    m = Model(tree_file, tree_format, internal_metadata, leaf_metadata)
 
     # Create the webserver
     print("build web server")
