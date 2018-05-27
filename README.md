@@ -39,4 +39,4 @@ python webserver.py --tree_file astral.MR.rooted.nid.nosup.nwk --internal_metada
 
 "astral.MR.rooted.nid.nosup.nwk" is a Newick tree file. \
 "ncbi.t2t.txt" is the metadata file for the internal nodes of the tree. \
-"metadata.txt" is the metadata file for the leaf nodes of the tree. \
+"metadata.txt" is the metadata file for the leaf nodes of the tree.
