@@ -30,12 +30,13 @@ class Application(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
 
 
+
 @click.command()
-@click.option('--tree_file', help='The file that contains the tree')
-@click.option('--tree_format', help='The format of the tree file')
-@click.option('--internal_metadata',
+@click.option('--tree_file', '-f', required=True, help='The file that contains the tree')
+@click.option('--tree_format', '-e', help='The format of the tree file', default='newick')
+@click.option('--internal_metadata', '-i', required=True,
               help='The file that contains internal node metadata')
-@click.option('--leaf_metadata',
+@click.option('--leaf_metadata', '-l', required=True,
               help='The file that contains tip node metadata')
 def start(tree_file, tree_format, internal_metadata, leaf_metadata):
 
