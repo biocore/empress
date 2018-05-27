@@ -1,5 +1,5 @@
 # Empress
-Empress is an interactive tree visualization tool. You need to provide three files in order to run it, the tree file (we only support newick currently), the internal node metadata file and the lead node metadata file.
+Empress is an interactive tree visualization tool. You need to provide three files in order to run it, the tree file (we only support newick currently), the internal node metadata file and the leaf node metadata file.
 
 # Installation
 Please install the following packages in order to run Empress
@@ -37,6 +37,6 @@ into the search bar.
 python webserver.py --tree_file astral.MR.rooted.nid.nosup.nwk --internal_metadata ncbi.t2t.txt --leaf_metadata metadata.txt
 ```
 
-"astral.MR.rooted.nid.nosup.nwk" is a Newick tree file.
-"ncbi.t2t.txt" is the metadata file for the internal nodes of the tree.
-"metadata.txt" is the metadata file for the leaf nodes of the tree.
+"astral.MR.rooted.nid.nosup.nwk" is a Newick tree file. \
+"ncbi.t2t.txt" is the metadata file for the internal nodes of the tree. \
+"metadata.txt" is the metadata file for the leaf nodes of the tree. \
