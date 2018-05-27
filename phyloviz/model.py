@@ -439,7 +439,6 @@ class Model(object):
            and every column corresponds to an attribute.
 
         """
-        start = time.time()
         self.zoom_level = 1
         self.scale = 1
         tree = read(tree_file, tree_format)
@@ -463,7 +462,6 @@ class Model(object):
         self.edge_metadata.set_index('Node_id', inplace=True)
 
         self.triangles = pd.DataFrame()
-        print(time.time()-start)
 
     def center_tree(self):
         """ Translate the tree coords in order to makes root (0,0) and
