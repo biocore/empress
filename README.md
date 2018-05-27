@@ -17,7 +17,14 @@ From the root directiory of empress type the following commands in the terminal
 
 ```
 cd phyloviz
-python webserver.py
+python webserver.py --tree_file filename [--tree_format format] --internal_metadata filename --leaf_metadata filename
+
+```
+
+To see the usage:
+
+```
+python webserver.py --help
 ```
 
 You should then see 'start' in the terminal. Wait until you see 'server started at port 8080' and then open up your web brower. Type
