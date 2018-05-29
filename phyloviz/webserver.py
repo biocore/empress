@@ -39,7 +39,7 @@ class Application(tornado.web.Application):
               help='The file that contains internal node metadata')
 @click.option('--leaf_metadata', '-l', required=True,
               help='The file that contains tip node metadata')
-@click.option('--port', default=8080,
+@click.option('--port', '-p', default=8080,
               help='The port to run the local server on')
 def start(tree_file, tree_format, internal_metadata, leaf_metadata, port):
 
@@ -52,7 +52,7 @@ def start(tree_file, tree_format, internal_metadata, leaf_metadata, port):
     http_server = HTTPServer(Application(m))
     http_server.listen(port)
     ioloop = IOLoop.instance()
-    print("server started at port ", port)
+    print("server started at port", port)
     ioloop.start()
     print("done")
 
