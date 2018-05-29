@@ -37,7 +37,9 @@ class Application(tornado.web.Application):
               help='The file that contains internal node metadata')
 @click.option('--leaf_metadata',
               help='The file that contains tip node metadata')
-def start(tree_file, tree_format, internal_metadata, leaf_metadata):
+@click.option('--port', default=8080,
+              help='The port to run the local server on')
+def start(tree_file, tree_format, internal_metadata, leaf_metadata, port):
 
     # Build the tree
     m = Model(tree_file, tree_format, internal_metadata, leaf_metadata)
@@ -46,9 +48,9 @@ def start(tree_file, tree_format, internal_metadata, leaf_metadata):
     # Create the webserver
     print("build web server")
     http_server = HTTPServer(Application(m))
-    http_server.listen(8080)
+    http_server.listen(port)
     ioloop = IOLoop.instance()
-    print("server started at port 8080")
+    print("server started at port ", port)
     ioloop.start()
     print("done")
 
