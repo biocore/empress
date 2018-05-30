@@ -26,3 +26,17 @@ You should then see 'start' in the terminal. Wait until you see 'server started 
 localhost:8080
 ```
 into the search bar.
+
+# Input Formats
+Empress takes in as input a Newick file for the tree and a tabular mapping file for the feature metadata.
+
+The input feature metadata needs to be a tab delimited file where the row ids correspond to node identifiers in the tree.
+Columns in the file correspond to attributes that the user would like to paint on the tree.  
+
+An example of a feature metadata file would look like something as follows
+```
+#OTU_ID      Genome_size     Phyla
+OTU_1001     100000          Proteobacteria
+OTU_1002     150201          Firmicutes
+OTU_2001     502051          Actinobacteria
+```
