@@ -1,8 +1,8 @@
 # Empress
 Note Empress is still in its early development phase and currently does not support a command line interface.  So, in order
 to run Empress you need to have three files located in the same directory as controller.py.  The three files are
-astral.MR.rooted.nid.nosup.nwk, ncbi.t2t.txt, and metadata.txt. "astral.MR.rooted.nid.nosup.nwk" is any Newick tree file.
-"ncbi.t2t.txt" is the metadata file for the internal nodes of the tree. "metadata.txt" is the metadata file for the leaf nodes of the tree.
+astral.cons.nid.e5p50.nwk, ncbi.t2t.txt, and metadata.tsv. "astral.cons.nid.e5p50.nwk" is any Newick tree file.
+"ncbi.t2t.txt" is the metadata file for the internal nodes of the tree. "metadata.tsv" is the metadata file for the leaf nodes of the tree.
 
 # Installation
 Please install the following packages in order to run Empress
