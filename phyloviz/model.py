@@ -57,7 +57,7 @@ def read_internal_node_metadata(file_name):
        pd.Dataframe
 
     """
-    metadata = pd.read_table(file_name, skiprows=3, names=["Node_id", 'label'])
+    metadata = pd.read_table(file_name, names=["Node_id", 'label'])
     return metadata
 
 
