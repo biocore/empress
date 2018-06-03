@@ -6,11 +6,11 @@ window.lastMouseX = null;
 window.lastMouseY = null;
 window.zoomAmount = 1; //used to make pan look uniformed when zooming
 window.zoomLevel = 0; //current zoom level - used for selective rendering
-window.highlightURL = 'http://localhost:8080/highlight';
-window.collapseURL = 'http://localhost:8080/collapse';
-window.collapseEdgeURL = 'http://localhost:8080/collapseEdge';
-window.edgeURL = 'http://localhost:8080/api/edges';
-window.colorURL = 'http://localhost:8080/color';
+window.highlightURL = 'http://localhost:' + location.port +  '/highlight';
+window.collapseURL = 'http://localhost:' + location.port +  '/collapse';
+window.collapseEdgeURL = 'http://localhost:' + location.port +  '/collapseEdge';
+window.edgeURL = 'http://localhost:' + location.port +  '/api/edges';
+window.colorURL = 'http://localhost:' + location.port +  '/color';
 
 /*
  * tells javasript what function to call for mouse/keyboard events
