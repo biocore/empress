@@ -25,7 +25,7 @@ function initWebPage(edgeMetadata) {
 function extractEdgeInfo(edgeMeta) {
   console.log("Start Extracting");
   const extractedFieldsMultiDimensional = edgeMeta.map(function(edge) {
-    return [edge.px, edge.py, edge.branch_color, edge. x, edge.y,
+    return [edge.px, edge.py, edge.branch_color, edge.x, edge.y,
             edge.branch_color];
   });
   const extractedFieldsFlattend = [].concat.apply([], extractedFieldsMultiDimensional);
@@ -33,6 +33,7 @@ function extractEdgeInfo(edgeMeta) {
   let expandHexString = extractedFieldsFlattend.map(function(element) {
       return (typeof element === "string" ? element.match(/.{1,2}/g) : element)
   });
+  console.log(expandHexString);
   expandHexString = [].concat.apply([], expandHexString);
 
   const edgeCoordsFlattened = expandHexString.map(function(element) {
@@ -43,6 +44,29 @@ function extractEdgeInfo(edgeMeta) {
   return edgeCoordsFlattened;
 }
 
+function extractTriangleInfo(triangleData) {
+  console.log("Start Extracting");
+  const extractedFieldsMultiDimensional = triangleData.map(function(triangle) {
+    return [triangle.lx, triangle.ly, triangle.color, triangle.rx, triangle.ry,
+            triangle.color, triangle.sx, triangle.sy, triangle.color];
+  });
+  const extractedFieldsFlattend = [].concat.apply([], extractedFieldsMultiDimensional);
+
+  let expandHexString = extractedFieldsFlattend.map(function(element) {
+      return (typeof element === "string" ? element.match(/.{1,2}/g) : element)
+  });
+  console.log(expandHexString);
+  expandHexString = [].concat.apply([], expandHexString);
+
+  const edgeCoordsFlattened = expandHexString.map(function(element) {
+    return (typeof element === "string" ? parseInt("0x" + element) / 256 : element)
+  });
+
+  console.log("Finish Extracting");
+  console.log("Triangle");
+  console.log(edgeCoordsFlattened);
+  return edgeCoordsFlattened;
+}
 /*
  *Find largest dimension of the tree so webgl can fit tree into a 1x1 square
  */

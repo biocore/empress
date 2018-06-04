@@ -116,6 +116,7 @@ function collapseClades() {
       edges = data2;
     }).done(function() {
       window.result = extractEdgeInfo(edges);
+      window.triangleData = extractTriangleInfo(triangles);
       window.largeDim = normalizeTree(edges);
       window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
       requestAnimationFrame(loop);
