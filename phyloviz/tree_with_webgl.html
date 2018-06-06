@@ -71,12 +71,16 @@
     <script>
     {
       let edgeMetadata;
+      window.result = [];
+      window.treeData = [];
+      window.triangleData = [];
       $.getJSON(window.edgeURL, function(data) {
         edgeMetadata = data;
       }).done(function() {
         initWebPage(edgeMetadata);
-        window.result = extractEdgeInfo(edgeMetadata);
+        window.treeData = extractEdgeInfo(edgeMetadata);
         window.largeDim = normalizeTree(edgeMetadata);
+        window.result = window.treeData.concat(window.triangleData);
         initWebGl();
         initCallbacks();
         draw();

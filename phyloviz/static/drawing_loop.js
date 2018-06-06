@@ -5,7 +5,9 @@ function loop() {
 
   window.gl.clearColor(0.75, 0.85, 0.8, 1.0);
   window.gl.clear(window.gl.COLOR_BUFFER_BIT | window.gl.DEPTH_BUFFER_BIT);
-  window.gl.drawArrays(window.gl.LINES, 0, window.result.length / 5 );
+
+  window.gl.drawArrays(window.gl.LINES, 0, window.treeData.length / 5 );
+  window.gl.drawArrays(window.gl.TRIANGLES, window.treeData.length / 5, window.triangleData.length / 5 );
 }
 
 /*
@@ -13,6 +15,7 @@ function loop() {
  */
 function draw() {
   //pointers to uniforms in shader programs defined in init_webgl
+  gl.useProgram(window.program);
   window.matWorldUniform = window.gl.getUniformLocation(window.program, "mWorld");
   let matViewUniform = window.gl.getUniformLocation(window.program,"mView");
   let matProjUniform = window.gl.getUniformLocation(window.program,"mProj");

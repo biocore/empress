@@ -93,8 +93,10 @@ function selectHighlight() {
             value : val, lower : l, equal : e, upper : u}, function(data) {
     edges = data;
   }).done(function() {
-    window.result = extractEdgeInfo(edges);
+//    window.result = extractEdgeInfo(edges);
+    window.treeData = extractEdgeInfo(edges);
     window.largeDim = normalizeTree(edges);
+    window.result = window.treeData.concat(window.triangleData);
     window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
     requestAnimationFrame(loop);
   });
@@ -115,9 +117,11 @@ function collapseClades() {
     $.getJSON(window.collapseEdgeURL, function(data2) {
       edges = data2;
     }).done(function() {
-      window.result = extractEdgeInfo(edges);
+//      window.result = extractEdgeInfo(edges);
+      window.treeData = extractEdgeInfo(edges);
       window.triangleData = extractTriangleInfo(triangles);
       window.largeDim = normalizeTree(edges);
+      window.result = window.treeData.concat(window.triangleData);
       window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
       requestAnimationFrame(loop);
     });
