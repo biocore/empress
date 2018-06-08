@@ -24,7 +24,7 @@ To see the usage:
 python webserver.py --help
 ```
 
-You should then see 'start' in the terminal. Wait until you see 'server started at port 8080' and then open up your web brower. Type
+You should then see 'start' in the terminal. Wait until you see 'server started at port 8080' and then open up your web browser. Type
 
 ```
 localhost:8080
