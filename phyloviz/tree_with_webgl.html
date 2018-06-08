@@ -11,7 +11,6 @@
   <script type="text/javascript" src="{{ static_url('drawing_loop.js') }} "></script>
   <script type="text/javascript" src="{{ static_url('init_webpage.js') }} "></script>
 </head>
-
 <body>
   <div class="grid">
     <div id="drawing-surface">
@@ -63,7 +62,7 @@
         <div>
           <select class = "metadata-options"></select>
           <label for="range">Clade Collapsing</label>
-          <input type="range" min="0" max="10" value="0" class="slider" id="collapse-range"> <span id="num">
+          <input type="range" min="0" max="9" value="0" class="slider" id="collapse-range"> <span id="num">
         </div>
       </div>
     </div>
@@ -72,12 +71,16 @@
     <script>
     {
       let edgeMetadata;
+      window.result = [];
+      window.treeData = [];
+      window.triangleData = [];
       $.getJSON(window.edgeURL, function(data) {
         edgeMetadata = data;
       }).done(function() {
         initWebPage(edgeMetadata);
-        window.result = extractEdgeInfo(edgeMetadata);
+        window.treeData = extractEdgeInfo(edgeMetadata);
         window.largeDim = normalizeTree(edgeMetadata);
+        window.result = window.treeData.concat(window.triangleData);
         initWebGl();
         initCallbacks();
         draw();

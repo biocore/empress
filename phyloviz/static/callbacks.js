@@ -6,10 +6,11 @@ window.lastMouseX = null;
 window.lastMouseY = null;
 window.zoomAmount = 1; //used to make pan look uniformed when zooming
 window.zoomLevel = 0; //current zoom level - used for selective rendering
-window.highlightURL = 'http://localhost:8080/highlight';
-window.collapseURL = 'http://localhost:8080/collapse';
-window.edgeURL = 'http://localhost:8080/api/edges';
-window.colorURL = 'http://localhost:8080/color';
+window.highlightURL = 'http://localhost:' + location.port +  '/highlight';
+window.collapseURL = 'http://localhost:' + location.port +  '/collapse';
+window.collapseEdgeURL = 'http://localhost:' + location.port +  '/collapseEdge';
+window.edgeURL = 'http://localhost:' + location.port +  '/api/edges';
+window.colorURL = 'http://localhost:' + location.port +  '/color';
 
 /*
  * tells javasript what function to call for mouse/keyboard events
@@ -92,8 +93,10 @@ function selectHighlight() {
             value : val, lower : l, equal : e, upper : u}, function(data) {
     edges = data;
   }).done(function() {
-    window.result = extractEdgeInfo(edges);
+//    window.result = extractEdgeInfo(edges);
+    window.treeData = extractEdgeInfo(edges);
     window.largeDim = normalizeTree(edges);
+    window.result = window.treeData.concat(window.triangleData);
     window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
     requestAnimationFrame(loop);
   });
@@ -111,15 +114,19 @@ function collapseClades() {
   $.getJSON(window.collapseURL, {sliderScale: ss}, function(data) {
     triangles = data;
   }).done(function() {
-    $.getJSON(window.edgeURL, function(data2) {
+    $.getJSON(window.collapseEdgeURL, function(data2) {
       edges = data2;
     }).done(function() {
-      window.result = extractEdgeInfo(edges);
+//      window.result = extractEdgeInfo(edges);
+      window.treeData = extractEdgeInfo(edges);
+      window.triangleData = extractTriangleInfo(triangles);
       window.largeDim = normalizeTree(edges);
+      window.result = window.treeData.concat(window.triangleData);
       window.gl.bufferSubData(window.gl.ARRAY_BUFFER,0,new Float32Array(window.result));
       requestAnimationFrame(loop);
     });
   });
+
 }
 
 /*

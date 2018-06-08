@@ -36,13 +36,13 @@ window.fragmentShaderText =
 window.program; //loads the vertex/fragment shader into webgl
 window.gl; //webgl context - used to call webgl functions
 window.largeDim; //used to normalize the tree to fit into a 1x1 square
-window.result = []; //edgeMetadata extracted from dataframe
 window.worldMat = mat4.create();
 window.scaleFactor = 5.0 / 4.0; //how much the tree grows/shrinks during zoom
 
 /*
  * compliles shader programs and initializes webgl
  */
+
 function initWebGl() {
   console.log("init webgl");
 
@@ -105,12 +105,12 @@ function initWebGl() {
   }
 
   window.gl.useProgram(window.program);
-  var treeVertexBufferObject = window.gl.createBuffer();
-  window.gl.bindBuffer(window.gl.ARRAY_BUFFER, treeVertexBufferObject);
+  window.treeVertexBufferObject = window.gl.createBuffer();
+  window.gl.bindBuffer(window.gl.ARRAY_BUFFER, window.treeVertexBufferObject);
   window.gl.bufferData(window.gl.ARRAY_BUFFER, new Float32Array(window.result), window.gl.DYNAMIC_DRAW);
 
-  var positionAttribLocation = window.gl.getAttribLocation(window.program, "vertPosition");
-  var colorAttribLocation = window.gl.getAttribLocation(window.program, "color");
+  window.positionAttribLocation = window.gl.getAttribLocation(window.program, "vertPosition");
+  window.colorAttribLocation = window.gl.getAttribLocation(window.program, "color");
 
     //send vertices to webgl
   window.gl.vertexAttribPointer(
@@ -134,5 +134,6 @@ function initWebGl() {
 
   window.gl.enableVertexAttribArray(positionAttribLocation);
   window.gl.enableVertexAttribArray(colorAttribLocation);
+
   console.log("finish init webgl");
 }

@@ -11,10 +11,12 @@ def name_internal_nodes(tree):
 
     Parameters
     ----------
+
     Returns
     -------
     """
     print("start labelling nodes")
+
     # initialize tree with branch length
     for i, n in enumerate(tree.postorder(include_self=True)):
         if n.length is None:
@@ -55,7 +57,7 @@ def read_internal_node_metadata(file_name):
        pd.Dataframe
 
     """
-    metadata = pd.read_table(file_name, skiprows=3, names=["Node_id", 'label'])
+    metadata = pd.read_table(file_name, names=["Node_id", 'label'])
     return metadata
 
 
@@ -91,8 +93,8 @@ def read(file_name, file_format='newick'):
         A TreeNode object of the newick file
     None - null
         If a non-newick file_format was passed in
-    """
 
+    """
     if file_format == 'newick':
         tree = skbio.read(file_name, file_format, into=TreeNode)
         return tree
@@ -101,17 +103,13 @@ def read(file_name, file_format='newick'):
 
 class Tree(TreeNode):
     """
-    Parametersg
-    ----------
-    use_lengths: bool
-        Specifies if the branch lengths should be included in the
-        resulting visualization (default True).
     Attributes
     ----------
     length
     leafcount
     height
     depth
+
     Notes
     -----
     `length` refers to the branch length of a node to its parent.
@@ -122,12 +120,30 @@ class Tree(TreeNode):
 
     def __init__(self, use_lengths=False, **kwargs):
         """ Constructs a Dendrogram object for visualization.
+
+        Parameters
+        ----------
+        use_lengths: bool
+            Specifies if the branch lengths should be included in the
+            resulting visualization (default True).
+
+        Returns
+        -------
+
         """
         super().__init__(**kwargs)
         self.childRem = -1
 
     def _cache_ntips(self):
-        """ Counts the number of leaves under each subtree."""
+        """ Counts the number of leaves under each subtree.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         for n in self.postorder():
             if n.is_tip():
                 n.leafcount = 1
@@ -137,13 +153,16 @@ class Tree(TreeNode):
     @classmethod
     def from_tree(cls, tree, use_lengths=True):
         """ Creates an UnrootedDendrogram object from a skbio tree.
+
         Parameters
         ----------
         tree : skbio.TreeNode
             Input skbio tree
+
         Returns
         -------
         UnrootedDendrogram
+
         """
         for n in tree.postorder():
             n.__class__ = Tree
@@ -153,6 +172,7 @@ class Tree(TreeNode):
 
     def update_geometry(self, use_lengths, depth=None):
         """Calculate tree node attributes such as height and depth.
+
         Parameters
         ----------
         use_lengths: bool
@@ -161,6 +181,7 @@ class Tree(TreeNode):
         depth: int
            The number of nodes in the longest path from root to leaf.
         This is agnostic to scale and orientation.
+
         """
         if self.length is None or not use_lengths:
             if depth is None:
@@ -183,12 +204,14 @@ class Tree(TreeNode):
 
     def coords(self, height, width):
         """ Returns coordinates of nodes to be rendered in plot.
+
         Parameters
         ----------
         height : int
             The height of the canvas.
         width : int
             The width of the canvas.
+
         Returns
         -------
         pd.DataFrame (Node metadata)
@@ -232,49 +255,50 @@ class Tree(TreeNode):
         # edge metadata
         edgeData = {}
         for node in self.postorder():
-            edgeData["is_tip"] = node.is_tip()
+            node.alpha = 0.0
             pId = {"Parent_id": node.name}
             pCoords = {'px': node.x2, 'py': node.y2}
             for child in node.children:
                 nId = {"Node_id": child.name}
+                isTip = {"is_tip": child.is_tip()}
                 coords = {'x': child.x2, 'y': child.y2}
+
                 attr = {'node_color': 'FFFFFF', 'branch_color': 'FFFFFF',
                         'node_is_visible': True, 'branch_is_visible': True,
-                        'width': 1, 'size': 1,
-                        'shortest': node.shortest.depth,
+                        'width': 1, 'size': 1, 'shortest': node.shortest.depth,
                         'longest': node.longest.depth}
-                edgeData[child.name] = {**nId, **coords, **pId,
+                edgeData[child.name] = {**nId, **isTip, **coords, **pId,
                                         **pCoords, **attr}
 
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(edgeData).T
-
         centerX = self.x2
         centerY = self.y2
-
         return (edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
         This method will find the best orientation and scaling possible to
         fit the tree within the dimensions specified by width and height.
+
         Parameters
         ----------
         width : float
             width of the canvas
         height : float
             height of the canvas
+
         Returns
         -------
         best_scaling : float
             largest scaling factor in which the tree can fit in the canvas.
+
         Notes
         -----
+
         """
         angle = (2 * np.pi) / self.leafcount
-        # this loop is a horrible brute force hack
-        # there are better (but complex) ways to find
-        # the best rotation of the tree to fit the display.
+
         best_scale = 0
         for i in range(60):
             direction = i / 60.0 * np.pi
@@ -284,8 +308,7 @@ class Tree(TreeNode):
 
             scale = min(float(width) / (max_x - min_x),
                         float(height) / (max_y - min_y))
-            # TODO: This margin seems a bit arbituary.
-            # will need to investigate.
+
             scale *= 0.95  # extra margin for labels
             if scale > best_scale:
                 best_scale = scale
@@ -298,11 +321,12 @@ class Tree(TreeNode):
 
     def update_coordinates(self, s, x1, y1, a, da):
         """ Update x, y coordinates of tree nodes in canvas.
-        `update_coordinates` will updating the
-        plotting parameters for all of the nodes within the tree.
+        `update_coordinates` will updating the plotting parameters for
+        all of the nodes within the tree.
         This can be applied when the tree becomes modified (i.e. pruning
         or collapsing) and the resulting coordinates need to be modified
         to reflect the changes to the tree structure.
+
         Parameters
         ----------
         s : float
@@ -315,12 +339,15 @@ class Tree(TreeNode):
             angle (degrees)
         da : float
             angle resolution (degrees)
+
         Returns
         -------
         points : list of tuple
             2D coordinates of all of the nodes.
+
         Notes
         -----
+
         """
 
         max_x = float('-inf')
@@ -334,7 +361,6 @@ class Tree(TreeNode):
         y2 = y1 + self.length * s * np.cos(a)
         (self.x1, self.y1, self.x2, self.y2, self.angle) = (x1, y1, x2, y2,
                                                             a)
-        # TODO: Add functionality that allows for collapsing of nodes
 
         for node in self.preorder(include_self=False):
             x1 = node.parent.x2
@@ -344,7 +370,7 @@ class Tree(TreeNode):
             a = node.parent.angle
 
             # same modify across nodes
-            a -= node.parent.leafcount * da / 2
+            a = a - node.parent.leafcount * da / 2
 
             # check for conditional higher order
             for sib in node.parent.children:
@@ -367,14 +393,13 @@ class Tree(TreeNode):
 
     def find_shortest_longest_branches(self):
         """ Finds the shortest and longest branches in each node's subtree.
+
         Parameters
         ----------
-        None
+
         Returns
         -------
-        None
-        Notes
-        -----
+
         """
         for node in self.postorder():
             if node.is_tip():
@@ -382,9 +407,9 @@ class Tree(TreeNode):
                 node.longest = node
             else:
                 # calculate shortest branch node
-                node.shortest = min(
-                    [child.shortest for child in node.children],
-                    key=attrgetter('depth'))
+                node.shortest = min([child.shortest for child in
+                                    node.children],
+                                    key=attrgetter('depth'))
 
                 # calculate longest branch node
                 node.longest = max(
@@ -408,27 +433,23 @@ class Model(object):
         ----------
         tree : skbio.TreeNode
            The tree to be rendered.
-        node_metadata : pd.DataFrame
-           Contains all of the species attributes.
-           Every row corresponds to a unique species
-           and every column corresponds to an attribute.
-           Metadata may also contain ancestors.
         edge_metadata : pd.DataFrame
            Contains all of the edge attributes.
            Every row corresponds to a unique edge
            and every column corresponds to an attribute.
+
         """
         self.zoom_level = 1
         self.scale = 1
         tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
+        name_internal_nodes(self.tree)
 
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
-            # Todo: append coords to node/edge
 
         # Append metadata to table
         internal_metadata = read_internal_node_metadata(internal_metadata_file)
@@ -438,75 +459,17 @@ class Model(object):
                                       how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
                                       how='outer', on="Node_id")
-        name_internal_nodes(self.tree)
+        self.edge_metadata.set_index('Node_id', inplace=True)
+
         self.triangles = pd.DataFrame()
 
-    def layout(self, layout_type):
-        """ Calculates the coordinates for the tree.
-
-        Pipeline function
-
-        This calculates the actual coordinates for
-        the tree. These are not the coordinates that
-        will be rendered.  The calculated coordinates
-        will be updated as a class property.
-        The layout will only be utilized during
-        initialization.
-
-        Parameters
-        ----------
-        layout_type : str
-            This specifies the layout algorithm to be used.
-
-        Returns
-        -------
-        coords : pd.DataFrame
-            The calculated tree coordinates.
-
-        Note
-        ----
-        This will wipe the coords and viewcoords in order to
-        recalculate the coordinates with the new layout.
-        """
-        self.coords = pd.DataFrame()
-
-        # These are coordinates scaled to the canvas
-        self._canvascoords = np.array()
-
-        # These are coordinates scaled for viewing
-        self.viewcoords = np.array()
-
-        # TODO: These will need to be recomputed.
-
-        pass
-
-    def unique_categories(metadata, attribute):
-        """ Returns all unique metadata categories that belong to the attribute.
-        Parameters
-        ----------
-        metadata : pd.DataFrame
-           Contains all of the species attributes.
-           Every row corresponds to a unique species
-           and every column corresponds to an attribute.
-           TODO: metadata will also want to contain
-           ancestors.
-        attribute : string
-            A string that specifies the metadata attribute header
-        Returns
-        -------
-        unique_cat : list of str
-            A list that contains all of the unique categories within the given
-            attribute.
-
-        """
-        pass
-
-    def retrive_view_coords(self):
+    def center_tree(self):
         """ Translate the tree coords in order to makes root (0,0) and
         Returns edge metadata.
 
         Parameters
         ----------
+
         Returns
         -------
         edge_metadata : pd.DataFrame
@@ -530,22 +493,27 @@ class Model(object):
     def select_edge_category(self):
         """
         Select categories required by webgl to plot edges
+
         Parameters
         ----------
+
         Returns
         -------
+
         """
-        # TODO: may want to add in width in the future
-        attributes = ['x', 'y', 'px', 'py', 'branch_color']
+        attributes = ['x', 'y', 'px', 'py', 'branch_color']  # ,'width']
         return self.select_category(attributes, 'branch_is_visible')
 
     def select_node_category(self):
         """
         Select categories required by webgl to plot nodes
+
         Parameters
         ----------
+
         Returns
         -------
+
         """
         attributes = ['x', 'y', 'node_color', 'size']
         return self.select_category(attributes, 'node_is_visible')
@@ -553,20 +521,21 @@ class Model(object):
     def select_category(self, attributes, is_visible_col):
         """ Returns edge_metadata with updated alpha value which tells View
         what to hightlight
+
         Parameters
         ----------
         attributes : list
             List of columns names to select
-        """
 
-        is_visible = self.edge_metadata[is_visible_col]
-        edgeData = self.edge_metadata[is_visible]
+        """
+        edgeData = self.edge_metadata
+        edgeData = edgeData.loc[edgeData[is_visible_col] == 1]
 
         return edgeData[attributes]
 
-    def update_edge_category(self, attribute, category,
-                             new_value="000000", lower=None,
-                             equal=None, upper=None):
+    def update_single_edge_category(self, attribute, category,
+                                    new_value='000000', lower=None,
+                                    equal=None, upper=None):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
 
@@ -574,14 +543,17 @@ class Model(object):
         ----------
         attribute : str
             The name of the attribute(column of the table).
-        category:
-            The category of a certain attribute.
+            The category of a certain attribute.(width, color...)
+
+        new_value:
+            new value of the category to update to
+
         Returns
         -------
         edgeData : pd.Dataframe
-        updated version of edge metadata
-        """
+            updated version of edge metadata
 
+        """
         edgeData = self.edge_metadata
         if lower is not "":
             edgeData[category] = edgeData[category].mask(edgeData[attribute] >
@@ -622,36 +594,51 @@ class Model(object):
         start = time.time()
         count = 0
         total_nodes = self.tree.count()
-        nodes_limit = total_nodes - int(sliderScale) * total_nodes
+        nodes_limit = int(total_nodes - float(sliderScale)/10 * total_nodes)
 
         for node in self.tree.levelorder():
+            # skip root node
+            if node.name is self.tree.name:
+                continue
+
             if count >= nodes_limit:
                 # done selecting nodes to render
                 # set visibility of the rest to false
-                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'visibility'] = False
-                self.node_metadata.loc[self.node_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = False
+                self.edge_metadata.at[node.name, 'node_is_visible'] = False
+                self.edge_metadata.at[node.name, 'branch_is_visible'] = False
 
                 # if parent was visible
                 # add triangle coordinates to dataframe
-                if self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                   node.parent.name, 'visibility'] is True:
-                    nId = {"Node_id": node.parent.name}
-                    root = {'rx': node.parent.x2, 'ry': node.parent.y2}
-                    shortest = {'sx': node.parent.shortest.x2,
-                                'sy': node.parent.shortest.y2}
-                    longest = {'lx': node.parent.longest.x2,
-                               'ly': node.parent.longest.y2}
-                    triData[node.parent.name] = {**nId, **root, **shortest,
-                                                 **longest}
+                if node.parent is not None:
+                    if self.edge_metadata.at[node.parent.name,
+                                             'node_is_visible'] is True:
+                        root = {'rx': self.edge_metadata.at[node.parent.name,
+                                                            'x'],
+                                'ry': self.edge_metadata.at[node.parent.name,
+                                                            'y']}
+                        shortN = {'sx': self.edge_metadata
+                                  .at[node.parent.shortest.name, 'x'],
+                                  'sy': self.edge_metadata
+                                  .at[node.parent.shortest.name, 'y']}
+                        longN = {'lx': self.edge_metadata
+                                 .at[node.parent.longest.name, 'x'],
+                                 'ly': self.edge_metadata
+                                 .at[node.parent.longest.name, 'y']}
+
+                        color = {}
+                        if node.parent.name is self.tree.name:
+                            color = {'color': "0000FF"}
+                        else:
+                            color = {'color': self.edge_metadata
+                                     .at[node.parent.name, "branch_color"]}
+
+                        triData[node.parent.name] = {**root, **shortN,
+                                                     **longN, **color}
 
             else:
                 # reset visibility of higher level nodes
-                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'visibility'] = True
-                self.node_metadata.loc[self.node_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = True
+                self.edge_metadata.at[node.name, 'node_is_visible'] = True
+                self.edge_metadata.at[node.name, 'branch_is_visible'] = True
             # increment node count
             count = count + 1
 
