@@ -1,0 +1,55 @@
+body {
+  margin:0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  grid-column-gap: 4px;
+  grid-auto-rows: auto;
+  height: 98vh;
+}
+
+.metadata-tabs {
+  background: #eee;
+}
+
+.metadata-tabs button {
+    background-color: #eee;
+    float: left;
+    border-style: none solid none solid;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+}
+
+.metadata-tabs button:hover {
+    background-color: #ddd;
+}
+
+.metadata-tabs button.active {
+    background-color: #000;
+}
+
+.tab-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: auto;
+  height: unset;
+  background: grey;
+}
+
+.text-field {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-auto-rows: auto;
+}
+
+.menu {
+  display: none;
+  padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
