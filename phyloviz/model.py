@@ -4,7 +4,9 @@ import pandas as pd
 import numpy as np
 import time
 from operator import attrgetter
-from tree import Tree
+import sys
+sys.path.insert(0, r'../')
+from phyloviz.tree import Tree
 
 
 def name_internal_nodes(tree):
@@ -15,7 +17,6 @@ def name_internal_nodes(tree):
     Returns
     -------
     """
-    print("start labelling nodes")
     # initialize tree with branch length
     for i, n in enumerate(tree.postorder(include_self=True)):
         if n.length is None:
@@ -56,7 +57,9 @@ def read_internal_node_metadata(file_name):
        pd.Dataframe
 
     """
-    metadata = pd.read_table(file_name, skiprows=3, names=["Node_id", 'label'])
+
+    metadata = pd.read_table(file_name)
+    metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
     return metadata
 
 
@@ -136,9 +139,7 @@ class Model(object):
              self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
-            # Todo: append coords to node/edge
 
-        # Append metadata to table
         internal_metadata = read_internal_node_metadata(internal_metadata_file)
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
 
@@ -146,6 +147,7 @@ class Model(object):
                                       how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
                                       how='outer', on="Node_id")
+        # self.center_tree()
         name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
 
@@ -209,7 +211,7 @@ class Model(object):
         """
         pass
 
-    def retrive_view_coords(self):
+    def center_tree(self):
         """ Translate the tree coords in order to makes root (0,0) and
         Returns edge metadata.
 
@@ -232,8 +234,6 @@ class Model(object):
             ['x']].apply(lambda l: l - self.centerX)
         self.edge_metadata['y'] = self.edge_metadata[
             ['y']].apply(lambda l: l - self.centerY)
-
-        return self.edge_metadata
 
     def select_edge_category(self):
         """
@@ -326,7 +326,6 @@ class Model(object):
         """
         triData = {}
 
-        print("start collapse")
         start = time.time()
         count = 0
         total_nodes = self.tree.count()
@@ -362,9 +361,6 @@ class Model(object):
                                        node.name, 'is_visible'] = True
             # increment node count
             count = count + 1
-
-        print(time.time() - start)
-        print("end collapse")
 
         self.triangles = pd.DataFrame(triData).T
         return self.triangles
