@@ -10,8 +10,6 @@ import pandas as pd
 from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import complete
 from pandas.util.testing import assert_frame_equal
-import sys
-sys.path.insert(0, r'../')
 from phyloviz.tree import Tree
 
 

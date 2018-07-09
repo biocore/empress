@@ -56,6 +56,7 @@ setup(
         'scipy >= 0.15.1',
         'nose >= 1.3.7',
         'scikit-bio==0.5.1',
+        'tornado==4.4.2',
     ],
     classifiers=classifiers,
     package_data={},

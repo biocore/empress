@@ -1,5 +1,5 @@
 import sys
-from model import Model
+from phyloviz.model import Model
 from tornado.web import RequestHandler
 
 
