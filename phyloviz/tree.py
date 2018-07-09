@@ -169,7 +169,10 @@ class Tree(TreeNode):
                                         **pCoords, **attr}
 
         # convert to pd.DataFrame
-        edgeMeta = pd.DataFrame(edgeData).T
+        edgeMeta = pd.DataFrame(edgeData,
+            index=['Node_id', 'is_tip', 'x', 'y', 'Parent_id', 'px', 'py', \
+                'node_color', 'branch_color', 'node_is_visible', \
+                'branch_is_visible', 'width', 'size']).T
         centerX = self.x2
         centerY = self.y2
         return (edgeMeta, centerX, centerY, scale)

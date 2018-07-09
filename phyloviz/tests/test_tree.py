@@ -120,6 +120,9 @@ class TestDendrogram(unittest.TestCase):
             },
             index=['Node_id', 'Parent_id', 'branch_color', 'branch_is_visible', 'is_tip', 'node_color', \
                  'node_is_visible', 'px', 'py', 'size', 'width', 'x', 'y']).T
+        edge_exp = edge_exp[['Node_id', 'is_tip', 'x', 'y', 'Parent_id', 'px', 'py', \
+                'node_color', 'branch_color', 'node_is_visible', \
+                'branch_is_visible', 'width', 'size']]
 
         (edge_res, _, _, _) = t.coords(500, 500)
         assert_frame_equal(edge_exp, edge_res)
@@ -169,9 +172,11 @@ class TestDendrogram(unittest.TestCase):
                       1, 1, 403.57843531045097, 221.46096919708964]},
                 index=['Node_id', 'Parent_id', 'branch_color', 'branch_is_visible', 'is_tip', 'node_color', \
                  'node_is_visible', 'px', 'py', 'size', 'width', 'x', 'y']).T
+        edge_exp = edge_exp[['Node_id', 'is_tip', 'x', 'y', 'Parent_id', 'px', 'py', \
+                'node_color', 'branch_color', 'node_is_visible', \
+                'branch_is_visible', 'width', 'size']]
 
         (edge_res, _, _, _) = t.coords(500, 500)
-        print(edge_res)
         assert_frame_equal(edge_exp, edge_res)
 
     def test_rescale(self):
