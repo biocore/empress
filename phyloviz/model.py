@@ -57,7 +57,7 @@ def read_internal_node_metadata(file_name):
 
     """
 
-    metadata = pd.read_table(file_name)
+    metadata = pd.read_table(file_name, skiprows=3)
     metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
     return metadata
 
@@ -323,7 +323,6 @@ class Model(object):
         """
         triData = {}
 
-        start = time.time()
         count = 0
         total_nodes = self.tree.count()
         nodes_limit = total_nodes - int(sliderScale) * total_nodes
