@@ -3,7 +3,7 @@ from tornado.testing import AsyncHTTPTestCase
 from phyloviz.controller import ModelHandler
 from phyloviz.webserver import Application
 from phyloviz.model import Model
-from tests.test_handler import TestHandler
+from phyloviz.tests.test_handler import TestHandler
 from unittest import main
 from urllib.parse import urlencode
 

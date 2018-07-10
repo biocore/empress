@@ -1,5 +1,5 @@
 import tornado
-from controller import (
+from phyloviz.controller import (
     ModelHandler, EdgeHandler, NodeHandler, ZoomHandler,
     BenchmarkHandler, HighlightHandler, TriangleHandler,
     CollapseHandler)

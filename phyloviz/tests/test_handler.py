@@ -10,8 +10,6 @@ class TestHandler(AsyncHTTPTestCase):
         pass
 
     def get_app(self):
-        #BaseHandler.get_current_user = Mock(return_value=User("test@foo.bar"))
-        #self.app.settings['debug'] = False
         return self.app
 
     # helpers from http://www.peterbe.com/plog/tricks-asynchttpclient-tornado

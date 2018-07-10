@@ -147,9 +147,7 @@ class Tree(TreeNode):
         """
 
         # calculates coordinates of all nodes and the shortest/longest branches
-        start = time.time()
         scale = self.rescale(width, height)
-        start = time.time()
         # self.find_shortest_longest_branches() <-- TODO: need to change this
         # function
 
