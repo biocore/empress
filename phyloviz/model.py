@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import time
 from operator import attrgetter
-from tree import Tree
+from phyloviz.tree import Tree
 
 
 def name_internal_nodes(tree):
@@ -15,12 +15,12 @@ def name_internal_nodes(tree):
     Returns
     -------
     """
-    print("start labelling nodes")
     # initialize tree with branch length
     for i, n in enumerate(tree.postorder(include_self=True)):
         if n.length is None:
             n.length = 1
-        if not n.is_tip() and n.name is not None:
+        # if not n.is_tip() and n.name is not None:
+        if not n.is_tip() and n.name is None:
             new_name = "y%d" % i
             n.name = new_name
 
@@ -56,7 +56,9 @@ def read_internal_node_metadata(file_name):
        pd.Dataframe
 
     """
-    metadata = pd.read_table(file_name, skiprows=3, names=["Node_id", 'label'])
+
+    metadata = pd.read_table(file_name)
+    metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
     return metadata
 
 
@@ -131,14 +133,13 @@ class Model(object):
         tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
 
+        #TODO: Should this not call coords if edge_metadata is empty
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
-            # Todo: append coords to node/edge
 
-        # Append metadata to table
         internal_metadata = read_internal_node_metadata(internal_metadata_file)
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
 
@@ -146,6 +147,7 @@ class Model(object):
                                       how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
                                       how='outer', on="Node_id")
+        # self.center_tree()
         name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
 
@@ -209,7 +211,7 @@ class Model(object):
         """
         pass
 
-    def retrive_view_coords(self):
+    def center_tree(self):
         """ Translate the tree coords in order to makes root (0,0) and
         Returns edge metadata.
 
@@ -232,8 +234,6 @@ class Model(object):
             ['x']].apply(lambda l: l - self.centerX)
         self.edge_metadata['y'] = self.edge_metadata[
             ['y']].apply(lambda l: l - self.centerY)
-
-        return self.edge_metadata
 
     def select_edge_category(self):
         """
@@ -259,8 +259,7 @@ class Model(object):
         return self.select_category(attributes, 'node_is_visible')
 
     def select_category(self, attributes, is_visible_col):
-        """ Returns edge_metadata with updated alpha value which tells View
-        what to hightlight
+        """ Returns edge_metadata whose 'is_visible_col is True'
         Parameters
         ----------
         attributes : list
@@ -272,9 +271,10 @@ class Model(object):
 
         return edgeData[attributes]
 
+    #TODO: should we modify edge_metadata?
     def update_edge_category(self, attribute, category,
-                             new_value="000000", lower=None,
-                             equal=None, upper=None):
+                             new_value="000000", lower="",
+                             equal="", upper=""):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
 
@@ -290,20 +290,18 @@ class Model(object):
         updated version of edge metadata
         """
 
-        edgeData = self.edge_metadata
+
         if lower is not "":
-            edgeData[category] = edgeData[category].mask(edgeData[attribute] >
-                                                         float(lower),
-                                                         new_value)
+            self.edge_metadata[category] = self.edge_metadata[category].mask(
+                self.edge_metadata[attribute] > float(lower),new_value)
 
         if equal is not "":
-            edgeData[category] = edgeData[category].mask(edgeData[attribute] ==
-                                                         equal, new_value)
+            self.edge_metadata[category] = self.edge_metadata[category].mask(
+                self.edge_metadata[attribute] == equal, new_value)
 
         if upper is not "":
-            edgeData[category] = edgeData[category].mask(edgeData[attribute] <
-                                                         float(upper),
-                                                         new_value)
+            self.edge_metadata[category] = self.edge_metadata[category].mask(
+                self.edge_metadata[attribute] < float(upper),new_value)
 
         return self.select_edge_category()
 
@@ -326,7 +324,6 @@ class Model(object):
         """
         triData = {}
 
-        print("start collapse")
         start = time.time()
         count = 0
         total_nodes = self.tree.count()
@@ -362,9 +359,6 @@ class Model(object):
                                        node.name, 'is_visible'] = True
             # increment node count
             count = count + 1
-
-        print(time.time() - start)
-        print("end collapse")
 
         self.triangles = pd.DataFrame(triData).T
         return self.triangles

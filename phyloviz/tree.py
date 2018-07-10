@@ -146,15 +146,10 @@ class Tree(TreeNode):
         """
 
         # calculates coordinates of all nodes and the shortest/longest branches
-        print("start calculating coords of all nodes")
         start = time.time()
         scale = self.rescale(width, height)
-        print(time.time() - start)
-        print("start calculating shortest/longest branches")
         start = time.time()
-        self.find_shortest_longest_branches()
-        print(time.time() - start)
-        print("done")
+        # self.find_shortest_longest_branches() <-- TODO: need to change this function
 
         # edge metadata
         edgeData = {}
@@ -169,13 +164,15 @@ class Tree(TreeNode):
 
                 attr = {'node_color': 'FFFFFF', 'branch_color': 'FFFFFF',
                         'node_is_visible': True, 'branch_is_visible': True,
-                        'width': 1, 'size': 1, 'shortest': node.shortest.depth,
-                        'longest': node.longest.depth}
+                        'width': 1, 'size': 1}
                 edgeData[child.name] = {**nId, **isTip, **coords, **pId,
                                         **pCoords, **attr}
 
         # convert to pd.DataFrame
-        edgeMeta = pd.DataFrame(edgeData).T
+        edgeMeta = pd.DataFrame(edgeData,
+            index=['Node_id', 'is_tip', 'x', 'y', 'Parent_id', 'px', 'py', \
+                'node_color', 'branch_color', 'node_is_visible', \
+                'branch_is_visible', 'width', 'size']).T
         centerX = self.x2
         centerY = self.y2
         return (edgeMeta, centerX, centerY, scale)
@@ -210,8 +207,15 @@ class Tree(TreeNode):
             (max_x, min_x, max_y, min_y) = self.update_coordinates(
                 1.0, 0, 0, direction, angle)
 
-            scale = min(float(width) / (max_x - min_x),
-                        float(height) / (max_y - min_y))
+            x_diff = max_x - min_x
+            width_min = 0
+            if x_diff != 0:
+                width_min = float(width) / x_diff
+            y_diff = max_y - min_y
+            height_min = 0
+            if y_diff != 0:
+                height_min = float(height) / y_diff
+            scale = min(width_min, height_min)
 
             scale *= 0.95  # extra margin for labels
             if scale > best_scale:
@@ -296,7 +300,7 @@ class Tree(TreeNode):
         return (max_x, min_x, max_y, min_y)
 
     def find_shortest_longest_branches(self):
-        """ Finds the shortest and longest branches in each node's subtree.
+        """ Finds the shortest and longest branches() in each node's subtree.
 
         Parameters
         ----------
@@ -305,10 +309,11 @@ class Tree(TreeNode):
         -------
 
         """
+        #TODO: make this a different data structure
         for node in self.postorder():
             if node.is_tip():
-                node.shortest = node
-                node.longest = node
+                node.shortest = [node.x2, node.y2]
+                node.longest = [node.x2, node.y2]
             else:
                 # calculate shortest branch node
                 node.shortest = min([child.shortest for child in

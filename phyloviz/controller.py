@@ -1,5 +1,5 @@
 import sys
-from model import Model
+from phyloviz.model import Model
 from tornado.web import RequestHandler
 
 
@@ -15,7 +15,7 @@ tree_format = 'newick'
 
 m = Model(tree_file, tree_format,
           internal_metadata_file, leaf_metadata_file)
-edgeM = m.retrive_view_coords()
+m.center_tree()
 
 
 class ModelHandler(RequestHandler):
@@ -25,8 +25,8 @@ class ModelHandler(RequestHandler):
 
 class EdgeHandler(RequestHandler):
     def get(self):
-        edges = edgeM.to_json(orient='records')
-        self.write(edges)
+        edges = m.edge_metadata
+        self.write(edges.to_json(orient='records'))
         self.finish()
 
 
