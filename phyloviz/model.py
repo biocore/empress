@@ -4,8 +4,6 @@ import pandas as pd
 import numpy as np
 import time
 from operator import attrgetter
-import sys
-sys.path.insert(0, r'../')
 from phyloviz.tree import Tree
 
 
