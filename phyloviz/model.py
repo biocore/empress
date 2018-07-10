@@ -133,7 +133,7 @@ class Model(object):
         tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
 
-        #TODO: Should this not call coords if edge_metadata is empty
+        # TODO: Should this not call coords if edge_metadata is empty
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
@@ -271,7 +271,7 @@ class Model(object):
 
         return edgeData[attributes]
 
-    #TODO: should we modify edge_metadata?
+    # TODO: should we modify edge_metadata?
     def update_edge_category(self, attribute, category,
                              new_value="000000", lower="",
                              equal="", upper=""):
@@ -290,10 +290,9 @@ class Model(object):
         updated version of edge metadata
         """
 
-
         if lower is not "":
             self.edge_metadata[category] = self.edge_metadata[category].mask(
-                self.edge_metadata[attribute] > float(lower),new_value)
+                self.edge_metadata[attribute] > float(lower), new_value)
 
         if equal is not "":
             self.edge_metadata[category] = self.edge_metadata[category].mask(
@@ -301,7 +300,7 @@ class Model(object):
 
         if upper is not "":
             self.edge_metadata[category] = self.edge_metadata[category].mask(
-                self.edge_metadata[attribute] < float(upper),new_value)
+                self.edge_metadata[attribute] < float(upper), new_value)
 
         return self.select_edge_category()
 
@@ -340,8 +339,8 @@ class Model(object):
 
                 # if parent was visible
                 # add triangle coordinates to dataframe
-                if self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                   node.parent.name, 'visibility'] is True:
+                if self.edge_metadata.loc[self.edge_metadata['Node_id']
+                                          == node.parent.name, 'visibility'] is True:
                     nId = {"Node_id": node.parent.name}
                     root = {'rx': node.parent.x2, 'ry': node.parent.y2}
                     shortest = {'sx': node.parent.shortest.x2,

@@ -2,7 +2,6 @@ from phyloviz.webserver import Application
 from tornado.testing import AsyncHTTPTestCase
 
 
-
 class TestHandler(AsyncHTTPTestCase):
     app = Application()
 

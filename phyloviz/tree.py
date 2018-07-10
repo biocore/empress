@@ -5,6 +5,7 @@ import numpy as np
 import time
 from operator import attrgetter
 
+
 class Tree(TreeNode):
     """
     Attributes
@@ -149,7 +150,8 @@ class Tree(TreeNode):
         start = time.time()
         scale = self.rescale(width, height)
         start = time.time()
-        # self.find_shortest_longest_branches() <-- TODO: need to change this function
+        # self.find_shortest_longest_branches() <-- TODO: need to change this
+        # function
 
         # edge metadata
         edgeData = {}
@@ -169,10 +171,22 @@ class Tree(TreeNode):
                                         **pCoords, **attr}
 
         # convert to pd.DataFrame
-        edgeMeta = pd.DataFrame(edgeData,
-            index=['Node_id', 'is_tip', 'x', 'y', 'Parent_id', 'px', 'py', \
-                'node_color', 'branch_color', 'node_is_visible', \
-                'branch_is_visible', 'width', 'size']).T
+        edgeMeta = pd.DataFrame(
+            edgeData,
+            index=[
+                'Node_id',
+                'is_tip',
+                'x',
+                'y',
+                'Parent_id',
+                'px',
+                'py',
+                'node_color',
+                'branch_color',
+                'node_is_visible',
+                'branch_is_visible',
+                'width',
+                'size']).T
         centerX = self.x2
         centerY = self.y2
         return (edgeMeta, centerX, centerY, scale)
@@ -309,7 +323,7 @@ class Tree(TreeNode):
         -------
 
         """
-        #TODO: make this a different data structure
+        # TODO: make this a different data structure
         for node in self.postorder():
             if node.is_tip():
                 node.shortest = [node.x2, node.y2]
@@ -317,7 +331,7 @@ class Tree(TreeNode):
             else:
                 # calculate shortest branch node
                 node.shortest = min([child.shortest for child in
-                                    node.children],
+                                     node.children],
                                     key=attrgetter('depth'))
 
                 # calculate longest branch node
