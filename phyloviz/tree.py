@@ -168,10 +168,7 @@ class Tree(TreeNode):
                 edgeData[child.name] = {**nId, **isTip, **coords, **pId,
                                         **pCoords, **attr}
 
-        # convert to pd.DataFrame
-        edgeMeta = pd.DataFrame(
-            edgeData,
-            index=[
+        index_list = np.array([
                 'Node_id',
                 'is_tip',
                 'x',
@@ -184,7 +181,13 @@ class Tree(TreeNode):
                 'node_is_visible',
                 'branch_is_visible',
                 'width',
-                'size']).T
+                'size'])
+        index_list.astype(str)
+        print(type(index_list))
+        # convert to pd.DataFrame
+        edgeMeta = pd.DataFrame(
+            edgeData,
+            index=index_list).T
         centerX = self.x2
         centerY = self.y2
         return (edgeMeta, centerX, centerY, scale)
