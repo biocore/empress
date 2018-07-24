@@ -10,9 +10,9 @@ from urllib.parse import urlencode
 
 class TestControll(TestHandler):
     def setUp2(self):
-        internal_metadata_file = 'ncbi.t2t.txt'
-        leaf_metadata_file = 'metadata.tsv'
-        tree_file = 'astral.cons.nid.e5p50.nwk'
+        internal_metadata_file = 'internal_md.txt'
+        leaf_metadata_file = 'leaf_md.tsv'
+        tree_file = 'tree_file.txt'
         tree_format = 'newick'
         self.m = Model(tree_file, tree_format,
                        internal_metadata_file, leaf_metadata_file)
