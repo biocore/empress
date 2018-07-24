@@ -57,10 +57,4 @@ def start(tree_file, tree_format, internal_metadata, leaf_metadata, port):
     print("done")
 
 if __name__ == '__main__':
-    # # Create the webserver
-    # http_server = HTTPServer(Application())
-    # http_server.listen(8080)
-    # ioloop = IOLoop.instance()
-    # print("server started at port 8080")
-    # ioloop.start()
     start()

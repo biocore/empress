@@ -1,22 +1,4 @@
-# import sys
-# from phyloviz.model import Model
 from tornado.web import RequestHandler
-
-
-# # TODO: This needs to be fixed
-# sys.path.append("../..")
-# # metadata files
-# # TODO: Internal metadata (will need docs in the future)
-# internal_metadata_file = 'ncbi.t2t.txt'
-# # TODO: Leaf metadata (will need docs in the future)
-# leaf_metadata_file = 'metadata.tsv'
-# tree_file = 'astral.cons.nid.e5p50.nwk'
-# tree_format = 'newick'
-
-# m = Model(tree_file, tree_format,
-#           internal_metadata_file, leaf_metadata_file)
-# m.center_tree()
-
 
 class ModelHandler(RequestHandler):
     def get(self):
