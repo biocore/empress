@@ -26,9 +26,6 @@
         <div>
           <button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
         </div>
-        <div>
-          <button class="tabs" onclick="showMenu(event, 'collapse-menu')">Collapse Edges</button>
-        </div>
       </div>
 
       <!-- highlight menu, visible by default-->
@@ -57,15 +54,6 @@
           <input type="text" id="category">
         </div>
       </div>
-
-      <!-- show collapse menu and hide others-->
-      <div class="menu" id="collapse-menu">
-        <div>
-          <select class = "metadata-options"></select>
-          <label for="range">Clade Collapsing</label>
-          <input type="range" min="0" max="10" value="0" class="slider" id="collapse-range"> <span id="num">
-        </div>
-      </div>
     </div>
 
 
@@ -82,15 +70,6 @@
         initCallbacks();
         draw();
       });
-
-      let slider = $("#collapse-range")[0];
-      let output = $("#num")[0];
-      output.innerHTML = slider.value;
-
-      slider.oninput = function() {
-          output.innerHTML = this.value;
-          collapseClades();
-      }
     }
     </script>
     </body>

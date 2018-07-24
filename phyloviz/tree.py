@@ -168,7 +168,7 @@ class Tree(TreeNode):
                 edgeData[child.name] = {**nId, **isTip, **coords, **pId,
                                         **pCoords, **attr}
 
-        index_list = np.array([
+        index_list = [
                 'Node_id',
                 'is_tip',
                 'x',
@@ -181,9 +181,7 @@ class Tree(TreeNode):
                 'node_is_visible',
                 'branch_is_visible',
                 'width',
-                'size'])
-        index_list.astype(str)
-        print(type(index_list))
+                'size']
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(
             edgeData,
