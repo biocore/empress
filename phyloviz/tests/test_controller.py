@@ -2,24 +2,13 @@ import filecmp
 from tornado.testing import AsyncHTTPTestCase
 from phyloviz.controller import ModelHandler
 from phyloviz.webserver import Application
-from phyloviz.model import Model
 from phyloviz.tests.test_handler import TestHandler
 from unittest import main
 from urllib.parse import urlencode
 
 
 class TestControll(TestHandler):
-    def setUp2(self):
-        internal_metadata_file = 'internal_md.txt'
-        leaf_metadata_file = 'leaf_md.tsv'
-        tree_file = 'tree_file.txt'
-        tree_format = 'newick'
-        self.m = Model(tree_file, tree_format,
-                       internal_metadata_file, leaf_metadata_file)
-        self.m.center_tree()
-
     def test_model_handler(self):
-        self.setUp2()
         response = self.get('/')
         self.assertEqual(response.code, 200)
 

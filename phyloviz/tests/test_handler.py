@@ -1,9 +1,17 @@
 from phyloviz.webserver import Application
 from tornado.testing import AsyncHTTPTestCase
+from phyloviz.model import Model
 
 
 class TestHandler(AsyncHTTPTestCase):
-    app = Application()
+    internal_metadata_file = 'internal_md.txt'
+    leaf_metadata_file = 'leaf_md.tsv'
+    tree_file = 'tree_file.txt'
+    tree_format = 'newick'
+    m = Model(tree_file, tree_format,
+                       internal_metadata_file, leaf_metadata_file)
+    m.center_tree()
+    app = Application(m)
 
     @classmethod
     def tearDownClass(cls):
