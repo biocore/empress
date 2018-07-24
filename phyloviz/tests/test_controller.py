@@ -1,3 +1,4 @@
+import os
 import filecmp
 from tornado.testing import AsyncHTTPTestCase
 from phyloviz.controller import ModelHandler
@@ -17,8 +18,8 @@ class TestControll(TestHandler):
             f.write(response.body.decode('utf-8'))
 
         # taken from https://codereview.stackexchange.com/questions/145126
-            # /open-a-text-file-and-remove-any-blank-lines
-        with open('../tree_with_webgl.html', 'r') as f:
+        # /open-a-text-file-and-remove-any-blank-lines
+        with open(os.path.abspath('../tree_with_webgl.html'), 'r') as f:
             lines = f.readlines()
         with open('model_html_exp.txt', 'w') as f:
             lines = list(map(lambda x: x.lstrip(), lines))
