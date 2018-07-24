@@ -1,12 +1,13 @@
+import os
 from phyloviz.webserver import Application
 from tornado.testing import AsyncHTTPTestCase
 from phyloviz.model import Model
 
 
 class TestHandler(AsyncHTTPTestCase):
-    internal_metadata_file = 'internal_md.txt'
-    leaf_metadata_file = 'leaf_md.tsv'
-    tree_file = 'tree_file.txt'
+    internal_metadata_file = os.path.join(os.path.dirname(__file__),'internal_md.txt')
+    leaf_metadata_file = os.path.join(os.path.dirname(__file__),'leaf_md.tsv')
+    tree_file = os.path.join(os.path.dirname(__file__),'tree_file.txt')
     tree_format = 'newick'
     m = Model(tree_file, tree_format,
                        internal_metadata_file, leaf_metadata_file)
