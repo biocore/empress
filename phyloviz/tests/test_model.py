@@ -30,10 +30,9 @@ class TestModel(unittest.TestCase):
         self.internal_md.to_csv(f_internal, sep='\t')
         f_leaf = io.StringIO()
         self.leaf_md.to_csv(f_leaf, sep='\t')
-        # f_edge = io.StringIO()
-        # self.edge_md.to_csv(f_edge, sep='\t')
 
-        self.f_internal = io.StringIO(f_internal.getvalue())
+        # need to append three blank in order for file to be read
+        self.f_internal = io.StringIO('\n\n\n' + f_internal.getvalue())
         self.f_leaf = io.StringIO(f_leaf.getvalue())
 
         self.tree = Model(
