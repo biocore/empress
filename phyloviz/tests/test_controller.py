@@ -22,8 +22,8 @@ class TestControll(TestHandler):
         # taken from https://codereview.stackexchange.com/questions/145126
         # /open-a-text-file-and-remove-any-blank-lines
         with open(os.path.join(os.path.dirname(__file__),
-                  '../tree_with_webgl.html'),
-                   'r') as f:
+            '../tree_with_webgl.html'),
+            'r') as f:
             lines = f.readlines()
         with open('model_html_exp.txt', 'w') as f:
             lines = list(map(lambda x: x.lstrip(), lines))
