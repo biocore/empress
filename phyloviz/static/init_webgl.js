@@ -44,9 +44,6 @@ window.scaleFactor = 5.0 / 4.0; //how much the tree grows/shrinks during zoom
  * compliles shader programs and initializes webgl
  */
 function initWebGl() {
-  console.log("init webgl");
-
-
   //sets the size of the webgl canvas to fill the screen
   var drawingSurface = $("#drawing-surface");
   window.canvas = $("#tree-surface");
@@ -56,7 +53,6 @@ function initWebGl() {
   window.gl = window.canvas[0].getContext("webgl");
 
   if (!window.gl) {
-    console.log("WebGL not supported, falling back on experimental-webgl");
     window.gl = window.canvas[0].getContext("experimental-webgl");
     return;
   }
@@ -134,5 +130,4 @@ function initWebGl() {
 
   window.gl.enableVertexAttribArray(positionAttribLocation);
   window.gl.enableVertexAttribArray(colorAttribLocation);
-  console.log("finish init webgl");
 }
