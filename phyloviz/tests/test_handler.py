@@ -5,7 +5,6 @@
 #
 # ----------------------------------------------------------------------------
 import os
-import urllib
 from phyloviz.webserver import Application
 from tornado.testing import AsyncHTTPTestCase
 from phyloviz.model import Model
@@ -34,8 +33,6 @@ class TestHandler(AsyncHTTPTestCase):
     # helpers from http://www.peterbe.com/plog/tricks-asynchttpclient-tornado
     def get(self, url, data=None, headers=None, doseq=True):
         if data is not None:
-            if isinstance(data, dict):
-                data = urlencode(data, doseq=doseq)
             if '?' in url:
                 url += '&%s' % data
             else:
