@@ -1,5 +1,6 @@
 from tornado.web import RequestHandler
 
+
 class ModelHandler(RequestHandler):
     def get(self):
         self.render('tree_with_webgl.html')

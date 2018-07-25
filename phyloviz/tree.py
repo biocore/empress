@@ -1,8 +1,6 @@
-import skbio
 from skbio import TreeNode
 import pandas as pd
 import numpy as np
-import time
 from operator import attrgetter
 
 
