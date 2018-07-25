@@ -5,6 +5,7 @@
 #
 # ----------------------------------------------------------------------------
 import os
+import urllib
 from phyloviz.webserver import Application
 from tornado.testing import AsyncHTTPTestCase
 from phyloviz.model import Model

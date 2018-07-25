@@ -134,8 +134,10 @@ class TestDendrogram(unittest.TestCase):
                        1, 1, 117.21642391143635, 301.99423347326797
                        ]
             },
-            index=['Node_id', 'Parent_id', 'branch_color', 'branch_is_visible', 'is_tip', 'node_color',
-                   'node_is_visible', 'px', 'py', 'size', 'width', 'x', 'y']).T
+            index=['Node_id', 'Parent_id', 'branch_color',
+                   'branch_is_visible', 'is_tip', 'node_color',
+                   'node_is_visible', 'px', 'py', 'size', 'width',
+                   'x', 'y']).T
         edge_exp = edge_exp[['Node_id',
                              'is_tip',
                              'x',
