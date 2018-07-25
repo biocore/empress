@@ -15,7 +15,6 @@ window.colorURL = 'http://localhost:8080/color';
  * tells javasript what function to call for mouse/keyboard events
  */
 function initCallbacks(){
-  console.log("init callbacks");
   window.canvas[0].onmousedown = mouseDown;
   document.onmouseup = mouseUp;
   document.onmousemove = mouseMove;
@@ -35,7 +34,6 @@ function mouseDown(event) {
  * unsets the mouse down flag
  */
 function mouseUp(event) {
-  console.log("test up");
   window.isMouseDown = false;
 }
 
@@ -80,7 +78,6 @@ function mouseWheel(event) {
  * Highlights the user selected metadata
  */
 function selectHighlight() {
-  console.log("Highlight option selected");
   let edges;
   const attr = $("#highlight-options").val();
   const cat = "branch_color";
@@ -104,7 +101,6 @@ function selectHighlight() {
  */
 function collapseClades() {
   const ss = $("#collapse-range").val();
-  console.log("collapse clade", ss);
 
   let triangles;
   let edges;

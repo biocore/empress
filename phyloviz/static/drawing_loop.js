@@ -36,6 +36,5 @@ function draw() {
   mat4.rotate(rotateMat, identityMat, angle, [0,0,1]);
   mat4.mul(window.worldMat, window.worldMat, rotateMat);
 
-  console.log("Start Draw");
   requestAnimationFrame(loop);
 }
