@@ -336,9 +336,10 @@ class Model(object):
 
                 # if parent was visible
                 # add triangle coordinates to dataframe
-                if (self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                           node.parent.name, 'visibility']
-                                           is True):
+                if (self.edge_metadata.loc[
+                    self.edge_metadata['Node_id'] == node.parent.name, 'visibility'
+                    ]
+                    is True):
                     nId = {"Node_id": node.parent.name}
                     root = {'rx': node.parent.x2, 'ry': node.parent.y2}
                     shortest = {'sx': node.parent.shortest.x2,
