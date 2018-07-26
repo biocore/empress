@@ -333,3 +333,24 @@ class Tree(TreeNode):
                 node.longest = max(
                     [child.longest for child in node.children],
                     key=attrgetter('depth'))
+
+    def node_coords(self):
+        """ Returns the coordinates of all nodes in the tree
+        """
+
+        node_data = {}
+        for node in self.postorder():
+            coords = {'x': node.x2, 'y': node.y2}
+            attr = {'color': '000000'}
+            node_data[node.name] = {**coords, **attr}
+
+
+        # convert to pd.DataFrame
+        node_data = pd.DataFrame(
+            node_data,
+            index=[
+                'x',
+                'y',
+                'color']).T
+
+        return node_data
