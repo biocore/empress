@@ -19,13 +19,55 @@ function initWebPage(edgeMetadata) {
   }
 }
 
+function fillTable(color) {
+  $("#dataTable tr").remove();
+  let tableValues;
+  $.getJSON(urls.tableURL, {color : color}, function(data) {
+    tableValues = data;
+  }).done(function() {
+    let templateMetadata = tableValues[0];
+    let table = $("#dataTable")[0];
+    let header = table.createTHead();
+    let rowNum = 0;
+    let row = header.insertRow(rowNum++);
+    let cellNum = 0;
+    let cell;
+    row["id"] = "fixedRow";
+
+    // add the header row to the table
+    for (let property in templateMetadata) {
+      cell = row.insertCell(cellNum++);
+      cell["id"] = "fixedCell";
+      cell.innerHTML = "<b>" + property + "</b>";
+    }
+
+    cellNum = 0;
+    row = table.insertRow(rowNum++);
+
+    for(let i = 0; i < tableValues.length; i++) {
+      cellNum = 0;
+      for(let property in tableValues[i]) {
+        cell = row.insertCell(cellNum++);
+        cell.innerHTML = (tableValues[i])[property];
+        if(property == "Node_id") {
+          cell.setAttribute("onclick", "selectLabel(this)");
+        }
+      }
+      row = table.insertRow(rowNum++);
+    }
+  });
+}
+
 /*
  * Extracts the coordinates/color info from metadata and format it for webgl
  */
-function extractEdgeInfo(edgeMeta) {
-  let extractedFields = edgeMeta.map(function(edge) {
-    return [edge.px, edge.py, edge.branch_color, edge.x, edge.y,
-            edge.branch_color];
+function extractInfo(metaData, fields) {
+  let extractedFields = metaData.map(function(edge) {
+    let extracted = [];
+    for (let prop of fields) {
+      extracted.push(edge[prop]);
+  };
+  return extracted;
   });
   extractedFields = [].concat.apply([], extractedFields);
 
@@ -39,6 +81,28 @@ function extractEdgeInfo(edgeMeta) {
   });
 
   return extractedFields;
+}
+
+// TODO: finish this method
+function createCircles(nodes) {
+  const xCenter = 0;
+  const yCenter = 1;
+  const RED = 2;
+  const GREEN = 3;
+  const BLUE = 4;
+  let circles = [];
+  let rad = 0;
+  for (let i = 0; i < nodes.lenth / 5; i = i + 5) {
+    while(rad < Math.PI) {
+      circles.push(Math.cos(rad, 1) + nodes[i + xCenter]);
+      circles.push(Math.sin(rad, 1) + nodes[i + yCenter]);
+      circles.push(nodes[i + RED]);
+      circles.push(nodes[i + GREEN]);
+      circles.push(nodes[i + BLUE]);
+      rad += Math.PI / 10;
+    }
+  }
+  return circles
 }
 
 /*

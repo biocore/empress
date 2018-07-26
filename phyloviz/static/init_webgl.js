@@ -6,16 +6,14 @@ window.vertexShaderText =
 'precision mediump float;',
 '',
 'attribute vec2 vertPosition;',
-'uniform mat4 mWorld;',
-'uniform mat4 mView;',
-'uniform mat4 mProj;',
+'uniform mat4 mvpMat;',
 'attribute vec3 color;',
 'varying vec3 c;',
 '',
 'void main()',
 '{',
 '  c = color;',
-'  gl_Position = mProj * mView * mWorld * vec4(vertPosition, 0.0, 1.0);',
+'  gl_Position = mvpMat * vec4(vertPosition, 0.0, 1.0);',
 '  gl_PointSize = 1.0;',
 '}'
 ].join('\n');
@@ -32,102 +30,103 @@ window.fragmentShaderText =
 '}'
 ].join('\n');
 
-//global variables -- window = global
-window.program; //loads the vertex/fragment shader into webgl
-window.gl; //webgl context - used to call webgl functions
-window.largeDim; //used to normalize the tree to fit into a 1x1 square
-window.result = []; //edgeMetadata extracted from dataframe
-window.worldMat = mat4.create();
-window.scaleFactor = 5.0 / 4.0; //how much the tree grows/shrinks during zoom
 
 /*
  * compliles shader programs and initializes webgl
  */
 function initWebGl() {
-  //sets the size of the webgl canvas to fill the screen
-  var drawingSurface = $("#drawing-surface");
-  window.canvas = $("#tree-surface");
-  window.canvas[0].width = drawingSurface.width();
-  window.canvas[0].height = drawingSurface.height();
+  gl = $(".tree-surface")[0].getContext("webgl");
+  setCanvasSize(gl.canvas);
 
-  window.gl = window.canvas[0].getContext("webgl");
+  var textCanvas = $(".text-surface")[0];
+  window.ctx = textCanvas.getContext("2d");
 
-  if (!window.gl) {
-    window.gl = window.canvas[0].getContext("experimental-webgl");
+  if (!gl) {
+    gl = $("#tree-surface")[0].getContext("experimental-webgl");
     return;
   }
 
-  if (!window.gl) {
+  if (!gl) {
     alert("Your browser does not support WebGL");
     return;
   }
 
-  window.gl.clearColor(0.75, 0.85, 0.8, 1.0);
-  window.gl.clear(window.gl.COLOR_BUFFER_BIT | window.gl.DEPTH_BUFFER_BIT);
+  gl.clearColor(0.75, 0.85, 0.8, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   //
   // Create shaders
   //
-  var vertexShader = window.gl.createShader(window.gl.VERTEX_SHADER);
-  var fragmentShader = window.gl.createShader(window.gl.FRAGMENT_SHADER);
+  var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+  var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
 
-  window.gl.shaderSource(vertexShader, window.vertexShaderText);
-  window.gl.shaderSource(fragmentShader, window.fragmentShaderText);
+  gl.shaderSource(vertexShader, window.vertexShaderText);
+  gl.shaderSource(fragmentShader, window.fragmentShaderText);
 
-  window.gl.compileShader(vertexShader);
-  if (!window.gl.getShaderParameter(vertexShader, window.gl.COMPILE_STATUS)) {
-    console.error("ERROR compiling vertex shader!", window.gl.getShaderInfoLog(vertexShader));
+  gl.compileShader(vertexShader);
+  if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+    console.error("ERROR compiling vertex shader!", gl.getShaderInfoLog(vertexShader));
     return;
   }
 
-  window.gl.compileShader(fragmentShader);
-  if (!window.gl.getShaderParameter(fragmentShader, window.gl.COMPILE_STATUS)) {
-    console.error("ERROR compiling fragment shader!", window.gl.getShaderInfoLog(fragmentShader));
+  gl.compileShader(fragmentShader);
+  if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+    console.error("ERROR compiling fragment shader!", gl.getShaderInfoLog(fragmentShader));
     return;
   }
 
-  window.program = window.gl.createProgram();
-  window.gl.attachShader(window.program, vertexShader);
-  window.gl.attachShader(window.program, fragmentShader);
-  window.gl.linkProgram(window.program);
-  if (!window.gl.getProgramParameter(window.program, window.gl.LINK_STATUS)) {
-    console.error("ERROR linking program!", window.gl.getProgramInfoLog(window.program));
+  shaderProgram = gl.createProgram();
+  gl.attachShader(shaderProgram, vertexShader);
+  gl.attachShader(shaderProgram, fragmentShader);
+  gl.linkProgram(shaderProgram);
+  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+    console.error("ERROR linking program!", gl.getProgramInfoLog(shaderProgram));
     return;
   }
-  window.gl.validateProgram(window.program);
-  if (!window.gl.getProgramParameter(window.program, window.gl.VALIDATE_STATUS)) {
-    console.error("ERROR validating program!", window.gl.getProgramInfoLog(window.program));
+  gl.validateProgram(shaderProgram);
+  if (!gl.getProgramParameter(shaderProgram, gl.VALIDATE_STATUS)) {
+    console.error("ERROR validating program!", gl.getProgramInfoLog(shaderProgram));
     return;
   }
 
-  window.gl.useProgram(window.program);
-  var treeVertexBufferObject = window.gl.createBuffer();
-  window.gl.bindBuffer(window.gl.ARRAY_BUFFER, treeVertexBufferObject);
-  window.gl.bufferData(window.gl.ARRAY_BUFFER, new Float32Array(window.result), window.gl.DYNAMIC_DRAW);
+  gl.useProgram(shaderProgram);
 
-  var positionAttribLocation = window.gl.getAttribLocation(window.program, "vertPosition");
-  var colorAttribLocation = window.gl.getAttribLocation(window.program, "color");
+  shaderProgram.positionAttribLocation = gl.getAttribLocation(shaderProgram, "vertPosition");
+  gl.enableVertexAttribArray(shaderProgram.positionAttribLocation);
+  shaderProgram.colorAttribLocation = gl.getAttribLocation(shaderProgram, "color");
+  gl.enableVertexAttribArray(shaderProgram.colorAttribLocation);
 
-    //send vertices to webgl
-  window.gl.vertexAttribPointer(
-    positionAttribLocation, // Attribute location
-    2, // Number of elements per attribute
-    window.gl.FLOAT, // Type of elements
-    window.gl.FALSE,
-    5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
-    0 // Offset from the beginning of a single vertex to this attribute
-  );
+  // shader matrix uniform
+  shaderProgram.mvpUniform = gl.getUniformLocation(shaderProgram,"mvpMat");
 
-    //send red color to webgl
-  window.gl.vertexAttribPointer(
-    colorAttribLocation, // Attribute location
-    3, // Number of elements per attribute
-    window.gl.FLOAT, // Type of elements
-    window.gl.FALSE,
-    5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
-    2 * Float32Array.BYTES_PER_ELEMENT // Offset from the beginning of a single vertex to this attribute
-  );
+  // buffer object for tree
+  shaderProgram.treeVertBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.treeVertBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.edgeCoords), gl.DYNAMIC_DRAW);
 
-  window.gl.enableVertexAttribArray(positionAttribLocation);
-  window.gl.enableVertexAttribArray(colorAttribLocation);
+  // buffer object for nodes
+  shaderProgram.nodeVertBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.nodeVertBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.nodeCoords), gl.DYNAMIC_DRAW)
+
+  shaderProgram.worldMat = mat4.create();
+}
+
+function setCanvasSize(canvas) {
+    var realToCSSPixels = window.devicePixelRatio;
+
+    // Lookup the size the browser is displaying the canvas in CSS pixels
+    // and compute a size needed to make our drawingbuffer match it in
+    // device pixels.
+    var displayWidth  = Math.floor(gl.canvas.clientWidth * 0.75  * realToCSSPixels);
+    var displayHeight = Math.floor(gl.canvas.clientHeight * 0.75 * realToCSSPixels);
+
+    // Check if the canvas is not the same size.
+    if (canvas.width  !== displayWidth ||
+        canvas.height !== displayHeight) {
+
+      // Make the canvas the same size
+      canvas.width  = displayWidth;
+      canvas.height = displayHeight;
+    }
 }
