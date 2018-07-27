@@ -141,6 +141,14 @@ class Model(object):
 
         internal_metadata = read_internal_node_metadata(internal_metadata_file)
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
+        internal_headers = internal_metadata.columns.values.tolist()
+        leaf_headers = leaf_metadata.columns.values.tolist()
+        # self.metadata_headers = list(set().union(leaf_headers, internal_headers))
+        self.metadata_headers = []
+        for header in internal_headers:
+            if header not in leaf_headers:
+                leaf_headers.append(header)
+        self.metadata_headers = leaf_headers
 
         self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
                                       how='outer', on="Node_id")
@@ -149,6 +157,7 @@ class Model(object):
         # self.center_tree()
         name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
+
         self.model_added_columns = [
             "px", "py", "x", "y", "branch_color",
             "branch_is_visible", "longest","node_color","node_is_visible",
@@ -213,7 +222,7 @@ class Model(object):
             attribute.
 
         """
-        pass
+        return self.metadata_headers
 
     def center_tree(self):
         """ Translate the tree coords in order to makes root (0,0) and
@@ -329,13 +338,8 @@ class Model(object):
         """
 
         columns_to_exclue = self.model_added_columns
-        result = self.edge_metadata.loc[ self.edge_metadata['branch_color'] == color]
-        result = result[result.columns.difference(self.model_added_columns)]
+        result = self.edge_metadata.loc[self.edge_metadata['branch_color'] == color, self.metadata_headers]
 
-        # taken from https://stackoverflow.com/questions/25122099/move-column-by-name-to-front-of-table-in-pandas
-        cols = list(result)
-        cols.insert(0, cols.pop(cols.index('Node_id')))
-        result = result.ix[:, cols]
         return result
 
     def retrive_label_coords(self, label, value):
