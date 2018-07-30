@@ -1,6 +1,0 @@
-
-
-
-    clade   time
-le1 left    11
-ri1 right   12
