@@ -308,13 +308,13 @@ class Model(object):
         """
 
         if lower is not "":
-            self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] =  new_value
+            self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
         if equal is not "":
-            self.edge_metadata.loc[self.edge_metadata[attribute] == equal, category] =  new_value
+            self.edge_metadata.loc[self.edge_metadata[attribute] == equal, category] = new_value
 
         if upper is not "":
-            self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] =  new_value
+            self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
 
         return self.edge_metadata
 
@@ -333,7 +333,6 @@ class Model(object):
             A dataframe containing the rows which contain color
         """
 
-        columns_to_exclue = self.model_added_columns
         result = self.edge_metadata.loc[self.edge_metadata['branch_color'] == color, self.metadata_headers]
 
         return result
