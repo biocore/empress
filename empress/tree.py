@@ -337,13 +337,11 @@ class Tree(TreeNode):
     def node_coords(self):
         """ Returns the coordinates of all nodes in the tree
         """
-
         node_data = {}
         for node in self.postorder():
             coords = {'x': node.x2, 'y': node.y2}
             attr = {'color': '000000'}
             node_data[node.name] = {**coords, **attr}
-
 
         # convert to pd.DataFrame
         index_list = pd.Index([
