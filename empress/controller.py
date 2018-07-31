@@ -82,6 +82,7 @@ class CollapseHandler(RequestHandler):
         self.write(tri_json)
         self.finish()
 
+
 class TableHandler(RequestHandler):
     def initialize(self, m):
         self.m = m
@@ -91,6 +92,7 @@ class TableHandler(RequestHandler):
         table_values = self.m.retrive_hightlighted_values(color)
         self.write(table_values.to_json(orient='records'))
         self.finish()
+
 
 class LabelHandler(RequestHandler):
     def initialize(self, m):

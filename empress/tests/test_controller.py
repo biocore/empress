@@ -19,7 +19,6 @@ class TestControll(TestHandler):
         with open('model_html_res_temp.txt', 'w') as f:
             f.write(response.body.decode('utf-8'))
 
-
         # need to remove every thing before the body tag in order to get rid of the <link> and <source
         # tags since the html response expands them so the files will not be equal with them
         res = []
@@ -37,7 +36,6 @@ class TestControll(TestHandler):
         with open('model_html_res.txt', 'w') as f:
             res = list(map(lambda x: x.lstrip(), res))
             f.writelines(res)
-
 
         # taken from https://codereview.stackexchange.com/questions/145126
         # /open-a-text-file-and-remove-any-blank-lines
