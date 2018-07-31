@@ -6,7 +6,8 @@ function initWebPage(edgeMetadata) {
   let templateMetadata = edgeMetadata[0];
   let x = $("#highlight-options")[0];
   const exclude = ["px", "py", "x", "y", "branch_color","branch_is_visible",
-    "longest","node_color","node_is_visible","shortest","size","width","Node_id","Parent_id"];
+    "longest","node_color","node_is_visible","shortest","size","width","Node_id",
+    "Parent_id", "is_tip"];
 
   //add metadata categories to drop down menu
   for (let property in templateMetadata) {
