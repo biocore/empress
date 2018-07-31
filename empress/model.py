@@ -131,7 +131,6 @@ class Model(object):
         tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
 
-        # TODO: Should this not call coords if edge_metadata is empty
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
@@ -337,8 +336,10 @@ class Model(object):
             A dataframe containing the rows which contain color
         """
 
-        columns_to_exclue = self.model_added_columns
-        result = self.edge_metadata.loc[self.edge_metadata['branch_color'] == color, self.metadata_headers]
+        columns = list(self.metadata_headers)
+        columns.append('x')
+        columns.append('y')
+        result = self.edge_metadata.loc[self.edge_metadata['branch_color'] == color, columns]
 
         return result
 

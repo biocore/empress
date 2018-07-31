@@ -73,6 +73,13 @@ function resizeCanvas(event) {
   requestAnimationFrame(loop);
 }
 
+/*
+ * displays the metadata associated with the label
+ */
+function labelHover(obj) {
+  
+}
+
 function userHighlightSelect() {
   const attr = $("#highlight-options").val();
   const cat = "branch_color";
@@ -152,8 +159,7 @@ function selectHighlight(attr, cat, val, l, u, e) {
     drawingData.largeDim = normalizeTree(edges);
     gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.treeVertBuffer);
     gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(drawingData.edgeCoords));
-    // requestAnimationFrame(loop);
-    selectLabel();
+    requestAnimationFrame(loop);
   });
 }
 
@@ -242,4 +248,17 @@ function selectLabel(obj) {
     }
     requestAnimationFrame(loop);
   });
+}
+
+function extractLabels(labs) {
+  labels = {};
+  for(let l in labs) {
+    let label = {
+      label : labs[l].Node_id,
+      x : labs[l].x,
+      y : labs[l].y
+    };
+    labels[l] = label;
+  }
+  requestAnimationFrame(loop);
 }

@@ -33,7 +33,8 @@ function fillTable(color) {
       let col = {
         id  : property,
         name : property,
-        field : property
+        field : property,
+        sortable: true
       };
       columns.push(col);
     }
@@ -49,9 +50,30 @@ function fillTable(color) {
     var options = {
       enableCellNavigation: true,
       enableColumnReorder: false,
-      topPanelHeight : 0
+      topPanelHeight : 0,
+      multiColumnSort: true
     };
     grid = new Slick.Grid("#scrolltable", datarows, columns, options);
+
+    // taken from https://github.com/mleibman/SlickGrid/blob/gh-pages/examples/example-multi-column-sort.html
+    grid.onSort.subscribe(function (e, args) {
+      var cols = args.sortCols;
+      datarows.sort(function (dataRow1, dataRow2) {
+        for (var i = 0, l = cols.length; i < l; i++) {
+          var field = cols[i].sortCol.field;
+          var sign = cols[i].sortAsc ? 1 : -1;
+          var value1 = dataRow1[field], value2 = dataRow2[field];
+          var result = (value1 == value2 ? 0 : (value1 > value2 ? 1 : -1)) * sign;
+          if (result != 0) {
+            return result;
+          }
+        }
+        return 0;
+      });
+      grid.invalidate();
+      grid.render();
+      extractLabels(grid.getData());
+    });
   });
 }
 
