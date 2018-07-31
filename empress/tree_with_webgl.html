@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-16">
+  <title>WebGL - Experiment</title>
+   <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/slick.grid.css') }}">
+   <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/jquery-ui-1.11.3.custom.css') }}">
+   <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/slick.grid.format.css') }}">
+   <link rel="stylesheet" type="text/css" href="{{ static_url('css/style.css') }}">
+  <script type="text/javascript" src="{{ static_url('vendor/js/gl-matrix.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/jquery-2.2.4.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/jquery.event.drag-2.2.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('js/init_webgl.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('js/callbacks.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('js/drawing_loop.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('js/init_webpage.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/slick.core.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/slick.editors.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/slick.formatters.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/slick.grid.min.js') }}"></script>
+</head>
+
+<body>
+  <div class="container">
+    <canvas class="tree-surface">
+      Your browser does not support HTML5
+    </canvas>
+    <div id="divcontainer"></div>
+  </div>
+
+    <div class="metadata-tabs">
+
+      <div class="tab-options">
+        <div>
+          <button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
+        </div>
+      </div>
+
+      <div class="menu" id="highlight-menu">
+        <div>
+          <select id = "highlight-options"></select>
+        </div>
+
+        <div>
+          <input type = "button" value = "select" onclick = "userHighlightSelect();" />
+          <input type = "color" id="color-selector"/>
+        </div>
+
+        <div class="text-field">
+          <label for="lower-bound">Lower Bound</label>
+          <input type="text" id="lower-bound"/>
+        </div>
+
+        <div class="text-field">
+          <label for="upper-bound">Upper Bound</label>
+          <input type="text" id="upper-bound"/>
+        </div>
+
+        <div class="text-field">
+          <label for="category">Category Name</label>
+          <input type="text" id="category"/>
+        </div>
+
+        <div class="attr-selector">
+        </div>
+      </div>
+    </div>
+
+    <table>
+      <tr>
+        <td valign="top">
+          <div id="scrolltable"></div>
+        </td>
+      </tr>
+      <!-- <table id="dataTable">
+      </table> -->
+    </table>
+
+    <script type="text/javascript">
+      // global variables
+      var urls = { // urls for webserver
+        highlightURL : 'http://localhost:8080/highlight',
+        collapseURL : 'http://localhost:8080/collapse',
+        edgeURL : 'http://localhost:8080/api/edges',
+        colorURL : 'http://localhost:8080/color',
+        nodeURL : 'http://localhost:8080/api/nodes',
+        tableURL : 'http://localhost:8080/table_values',
+        labelURL : 'http://localhost:8080/label'
+      };
+      var field = {
+        edgeFields : ["px", "py", "branch_color", "x", "y",
+            "branch_color"],
+        nodeFields : ["x", "y", "color"]
+      };
+      var shaderProgram = {}; // the complied vertex/fragment shaders
+      var gl = {}; // webgl context - used to call webgl functions
+      var drawingData = { // stores info need to draw such as vertex data
+        isMouseDown : false,
+        lastMouseX : null,
+        lastMouseY : null,
+        zoomAmount : 1,
+        zoomLevel : 0,
+        scaleFactor : 5.0 / 4.0
+      };
+      var numAttr = 0;
+      var attrItem = {};
+
+      var labels = {};
+    </script>
+
+    <script type="text/javascript">
+    {
+      let edgeMetadata;
+      let nodeCoords;
+
+      // this may cause some syncing issues
+      $.getJSON(urls.nodeURL, function(data) {
+        nodeCoords = data;
+      }).done(function() {
+        drawingData.nodeCoords = extractInfo(nodeCoords, field.nodeFields);
+
+        $.getJSON(urls.edgeURL, function(data) {
+          edgeMetadata = data;
+        }).done(function() {
+          initWebPage(edgeMetadata);
+          drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
+          drawingData.largeDim = normalizeTree(edgeMetadata);
+          initWebGl();
+          initCallbacks();
+          setProjMat();
+          draw();
+        });
+      });
+    }
+    </script>
+    </body>
+</html>
