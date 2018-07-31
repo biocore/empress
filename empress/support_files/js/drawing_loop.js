@@ -66,7 +66,8 @@ function loop() {
 
   let pixelX = 0;
   let pixelY = 0;
-  for(let label in labels) {
+  let count = 0;
+  for(var label = Object.keys(labels).length - 1; label >= 0; --label) {
     let objSpace = vec4.fromValues(labels[label].x, labels[label].y, 0, 1);
     let clipSpace = vec4.create();
 
@@ -92,6 +93,11 @@ function loop() {
       div.style.left = Math.floor(pixelX) + "px";
       div.style.top = Math.floor(pixelY) + "px";
       textNode.nodeValue = [labels[label].label];
+      div.id = labels[label].label;
+      count++;
+      if(count >10) {
+        break;
+      }
     }
   }
 }
