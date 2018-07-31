@@ -352,6 +352,6 @@ class Tree(TreeNode):
             'color'])
         node_data = pd.DataFrame(
             node_data,
-            index=[index_list]).T
+            index=index_list).T
 
         return node_data
