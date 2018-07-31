@@ -142,7 +142,7 @@ class Model(object):
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
         internal_headers = internal_metadata.columns.values.tolist()
         leaf_headers = leaf_metadata.columns.values.tolist()
-        # self.metadata_headers = list(set().union(leaf_headers, internal_headers))
+
         self.metadata_headers = []
         for header in internal_headers:
             if header not in leaf_headers:
@@ -153,7 +153,6 @@ class Model(object):
                                       how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
                                       how='outer', on="Node_id")
-        # self.center_tree()
         name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
 
