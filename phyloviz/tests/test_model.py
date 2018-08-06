@@ -15,8 +15,8 @@ from phyloviz.model import Model
 class TestModel(unittest.TestCase):
 
     def setUp(self):
-        self.ROOT_X = 750
-        self.ROOT_Y = 450
+        self.RT_X = 750
+        self.RT_Y = 450
 
         self.tree_file = io.StringIO(r'((a, b)le1, (c,d)ri1)r;')
 
@@ -72,12 +72,12 @@ class TestModel(unittest.TestCase):
 
     def test_center(self):
         center_exp = pd.DataFrame({
-            0: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (154.873 - self.ROOT_Y)],
-            1: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (745.127 - self.ROOT_Y)],
-            2: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1462.5 - self.ROOT_X), (745.127 - self.ROOT_Y)],
-            3: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1462.5 - self.ROOT_X), (154.873 - self.ROOT_Y)],
-            4: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y)],
-            5: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y)]},
+            0: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (154.873 - self.RT_Y)],
+            1: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (745.127 - self.RT_Y)],
+            2: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (745.127 - self.RT_Y)],
+            3: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (154.873 - self.RT_Y)],
+            4: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (332.627 - self.RT_X), (self.RT_Y - self.RT_Y)],
+            5: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (1167.37 - self.RT_X), (self.RT_Y - self.RT_Y)]},
             index=['px', 'py', 'x', 'y']).T
         self.tree.center_tree()
         center_res = self.tree.edge_metadata[['px', 'py', 'x', 'y']].copy()
@@ -94,10 +94,10 @@ class TestModel(unittest.TestCase):
         self.tree.edge_metadata['node_is_visible'] = [
             True, True, False, False, True, True]
         select_exp = pd.DataFrame({
-            0: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (154.873 - self.ROOT_Y)],
-            1: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (745.127 - self.ROOT_Y)],
-            4: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y)],
-            5: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y)]},
+            0: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (154.873 - self.RT_Y)],
+            1: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (745.127 - self.RT_Y)],
+            4: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (332.627 - self.RT_X), (self.RT_Y - self.RT_Y)],
+            5: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (1167.37 - self.RT_X), (self.RT_Y - self.RT_Y)]},
             index=['px', 'py', 'x', 'y']).T
         select_res = self.tree.select_category(
             ['px', 'py', 'x', 'y'], 'node_is_visible')
@@ -109,17 +109,17 @@ class TestModel(unittest.TestCase):
         self.tree.center_tree()
         select_exp = pd.DataFrame(
             {
-                0: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (154.873 - self.ROOT_Y),
+                0: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (154.873 - self.RT_Y),
                     'FFFFFF'],
-                1: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (745.127 - self.ROOT_Y),
+                1: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (745.127 - self.RT_Y),
                     'FFFFFF'],
-                2: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1462.5 - self.ROOT_X), (745.127 - self.ROOT_Y),
+                2: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (745.127 - self.RT_Y),
                     'FFFFFF'],
-                3: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1462.5 - self.ROOT_X), (154.873 - self.ROOT_Y),
+                3: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (154.873 - self.RT_Y),
                     'FFFFFF'],
-                4: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y),
+                4: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (332.627 - self.RT_X), (self.RT_Y - self.RT_Y),
                     'FFFFFF'],
-                5: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y),
+                5: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (1167.37 - self.RT_X), (self.RT_Y - self.RT_Y),
                     'FFFFFF']
             },
             index=['px', 'py', 'x', 'y', 'branch_color']).T
@@ -136,12 +136,12 @@ class TestModel(unittest.TestCase):
         self.tree.center_tree()
         select_exp = pd.DataFrame(
             {
-                0: [(37.5 - self.ROOT_X), (154.873 - self.ROOT_Y), 'FFFFFF', 1],
-                1: [(37.5 - self.ROOT_X), (745.127 - self.ROOT_Y), 'FFFFFF', 1],
-                2: [(1462.5 - self.ROOT_X), (745.127 - self.ROOT_Y), 'FFFFFF', 1],
-                3: [(1462.5 - self.ROOT_X), (154.873 - self.ROOT_Y), 'FFFFFF', 1],
-                4: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), 'FFFFFF', 1],
-                5: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), 'FFFFFF', 1]
+                0: [(37.5 - self.RT_X), (154.873 - self.RT_Y), 'FFFFFF', 1],
+                1: [(37.5 - self.RT_X), (745.127 - self.RT_Y), 'FFFFFF', 1],
+                2: [(1462.5 - self.RT_X), (745.127 - self.RT_Y), 'FFFFFF', 1],
+                3: [(1462.5 - self.RT_X), (154.873 - self.RT_Y), 'FFFFFF', 1],
+                4: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), 'FFFFFF', 1],
+                5: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), 'FFFFFF', 1]
             },
             index=['x', 'y', 'node_color', 'size']).T
         select_res = self.tree.select_node_category()
@@ -157,17 +157,17 @@ class TestModel(unittest.TestCase):
         self.tree.center_tree()
         update_equal_exp = pd.DataFrame(
             {
-                0: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (154.873 - self.ROOT_Y),
+                0: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (154.873 - self.RT_Y),
                     '000000'],
-                1: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (745.127 - self.ROOT_Y),
+                1: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (745.127 - self.RT_Y),
                     'FFFFFF'],
-                2: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1462.5 - self.ROOT_X), (745.127 - self.ROOT_Y),
+                2: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (745.127 - self.RT_Y),
                     'FFFFFF'],
-                3: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1462.5 - self.ROOT_X), (154.873 - self.ROOT_Y),
+                3: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (154.873 - self.RT_Y),
                     'FFFFFF'],
-                4: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y),
+                4: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (332.627 - self.RT_X), (self.RT_Y - self.RT_Y),
                     'FFFFFF'],
-                5: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y),
+                5: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (1167.37 - self.RT_X), (self.RT_Y - self.RT_Y),
                     'FFFFFF']
             },
             index=['px', 'py', 'x', 'y', 'branch_color']).T
@@ -185,17 +185,17 @@ class TestModel(unittest.TestCase):
 
         update_less_exp = pd.DataFrame(
             {
-                0: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (154.873 - self.ROOT_Y),
+                0: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (154.873 - self.RT_Y),
                     '000000'],
-                1: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (745.127 - self.ROOT_Y),
+                1: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (745.127 - self.RT_Y),
                     'FFFFFF'],
-                2: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1462.5 - self.ROOT_X), (745.127 - self.ROOT_Y),
+                2: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (745.127 - self.RT_Y),
                     'FFFFFF'],
-                3: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1462.5 - self.ROOT_X), (154.873 - self.ROOT_Y),
+                3: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (154.873 - self.RT_Y),
                     'FFFFFF'],
-                4: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y),
+                4: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (332.627 - self.RT_X), (self.RT_Y - self.RT_Y),
                     '111111'],
-                5: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y),
+                5: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (1167.37 - self.RT_X), (self.RT_Y - self.RT_Y),
                     '111111']
             },
             index=['px', 'py', 'x', 'y', 'branch_color']).T
@@ -213,17 +213,17 @@ class TestModel(unittest.TestCase):
 
         update_greater_exp = pd.DataFrame(
             {
-                0: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (154.873 - self.ROOT_Y),
+                0: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (154.873 - self.RT_Y),
                     '000000'],
-                1: [(332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (37.5 - self.ROOT_X), (745.127 - self.ROOT_Y),
+                1: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (745.127 - self.RT_Y),
                     'FFFFFF'],
-                2: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1462.5 - self.ROOT_X), (745.127 - self.ROOT_Y),
+                2: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (745.127 - self.RT_Y),
                     'FFFFFF'],
-                3: [(1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1462.5 - self.ROOT_X), (154.873 - self.ROOT_Y),
+                3: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (154.873 - self.RT_Y),
                     'FFFFFF'],
-                4: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (332.627 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y),
+                4: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (332.627 - self.RT_X), (self.RT_Y - self.RT_Y),
                     '121212'],
-                5: [(self.ROOT_X - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y), (1167.37 - self.ROOT_X), (self.ROOT_Y - self.ROOT_Y),
+                5: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (1167.37 - self.RT_X), (self.RT_Y - self.RT_Y),
                     '111111']
             },
             index=['px', 'py', 'x', 'y', 'branch_color']).T
