@@ -1,0 +1,53 @@
+<body>
+<div class="grid">
+<div id="drawing-surface">
+<canvas id="tree-surface" >
+Your browser does not support HTML5
+</canvas>
+</div>
+<div class="metadata-tabs">
+<div class="tab-options">
+<div>
+<button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
+</div>
+</div>
+<!-- highlight menu, visible by default-->
+<div class="menu" id="highlight-menu">
+<div>
+<select id = "highlight-options"></select>
+</div>
+<div>
+<input type = "button" value = "select" onclick = "selectHighlight()" />
+<input type = "color" id="color-selector"/>
+</div>
+<div class="text-field">
+<label for="lower-bound">Lower Bound</label>
+<input type="text" id="lower-bound">
+</div>
+<div class="text-field">
+<label for="upper-bound">Upper Bound</label>
+<input type="text" id="upper-bound">
+</div>
+<div class="text-field">
+<label for="category">Category Name</label>
+<input type="text" id="category">
+</div>
+</div>
+</div>
+<script>
+{
+let edgeMetadata;
+$.getJSON(window.edgeURL, function(data) {
+edgeMetadata = data;
+}).done(function() {
+initWebPage(edgeMetadata);
+window.result = extractEdgeInfo(edgeMetadata);
+window.largeDim = normalizeTree(edgeMetadata);
+initWebGl();
+initCallbacks();
+draw();
+});
+}
+</script>
+</body>
+</html>
