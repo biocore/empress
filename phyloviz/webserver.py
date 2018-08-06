@@ -45,7 +45,6 @@ class Application(tornado.web.Application):
               help='The number of top rows to ignore')
 
 def start(tree_file, tree_format, internal_metadata, leaf_metadata, port, internal_metadat_skiprow):
-    # Build the tree
     m = Model(tree_file, tree_format, internal_metadata, leaf_metadata, skip_row=internal_metadat_skiprow)
     m.center_tree()
 
