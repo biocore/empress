@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-16">
+<title>WebGL - Experiment</title>
+<link rel="stylesheet" type="text/css" href="/static/style.css?v=a8f02de1862809b8f6a88ccc6d8e36af">
+<script type="text/javascript" src="/static/gl-matrix.js?v=7243103a666727ef3836be8b94bfccff"></script>
+<script type="text/javascript" src="/static/jquery_min.js?v=a09e13ee94d51c524b7e2a728c7d4039"></script>
+<script type="text/javascript" src="/static/init_webgl.js?v=5917eb5df7bfcc5699245e4cc7ae118c"></script>
+<script type="text/javascript" src="/static/callbacks.js?v=1cec301b6805f98cf386a1b9e157a22d"></script>
+<script type="text/javascript" src="/static/drawing_loop.js?v=3ecc4d9f3cc14af131a74ef80d5f7400"></script>
+<script type="text/javascript" src="/static/init_webpage.js?v=070ecf488382fd98e05d58b152538bea"></script>
+</head>
+<body>
+<div class="grid">
+<div id="drawing-surface">
+<canvas id="tree-surface" >
+Your browser does not support HTML5
+</canvas>
+</div>
+<div class="metadata-tabs">
+<div class="tab-options">
+<div>
+<button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
+</div>
+</div>
+<!-- highlight menu, visible by default-->
+<div class="menu" id="highlight-menu">
+<div>
+<select id = "highlight-options"></select>
+</div>
+<div>
+<input type = "button" value = "select" onclick = "selectHighlight()" />
+<input type = "color" id="color-selector"/>
+</div>
+<div class="text-field">
+<label for="lower-bound">Lower Bound</label>
+<input type="text" id="lower-bound">
+</div>
+<div class="text-field">
+<label for="upper-bound">Upper Bound</label>
+<input type="text" id="upper-bound">
+</div>
+<div class="text-field">
+<label for="category">Category Name</label>
+<input type="text" id="category">
+</div>
+</div>
+</div>
+<script>
+{
+let edgeMetadata;
+$.getJSON(window.edgeURL, function(data) {
+edgeMetadata = data;
+}).done(function() {
+initWebPage(edgeMetadata);
+window.result = extractEdgeInfo(edgeMetadata);
+window.largeDim = normalizeTree(edgeMetadata);
+initWebGl();
+initCallbacks();
+draw();
+});
+}
+</script>
+</body>
+</html>

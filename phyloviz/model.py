@@ -40,7 +40,7 @@ def read_leaf_node_metadata(file_name):
     return metadata
 
 
-def read_internal_node_metadata(file_name,skip_row):
+def read_internal_node_metadata(file_name, skip_row):
     """ Reads in metadata for internal nodes
 
     Parameters
