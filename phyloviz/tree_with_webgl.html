@@ -4,12 +4,12 @@
   <meta charset="UTF-16">
   <title>WebGL - Experiment</title>
   <link rel="stylesheet" type="text/css" href="{{ static_url('style.css') }}">
-  <script type="text/javascript" src="{{ static_url('gl-matrix.js') }}"></script>
+  <script type="text/javascript" src="/static/gl-matrix.js?v=7243103a666727ef3836be8b94bfccff"></script>
   <script type="text/javascript" src="{{ static_url('jquery_min.js') }}"></script>
-  <script type="text/javascript"  src="{{ static_url('init_webgl.js') }}"></script>
-  <script type="text/javascript" src="{{ static_url('callbacks.js') }} "></script>
-  <script type="text/javascript" src="{{ static_url('drawing_loop.js') }} "></script>
-  <script type="text/javascript" src="{{ static_url('init_webpage.js') }} "></script>
+  <script type="text/javascript" src="{{ static_url('init_webgl.js') }}"></script>
+  <script type="text/javascript" src="{{ static_url('callbacks.js') }}"></script>
+  <script type="text/javascript" src="{{ static_url('drawing_loop.js') }}"></script>
+  <script type="text/javascript" src="{{ static_url('init_webpage.js') }}"></script>
 </head>
 
 <body>
@@ -25,9 +25,6 @@
       <div class="tab-options">
         <div>
           <button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
-        </div>
-        <div>
-          <button class="tabs" onclick="showMenu(event, 'collapse-menu')">Collapse Edges</button>
         </div>
       </div>
 
@@ -57,15 +54,6 @@
           <input type="text" id="category">
         </div>
       </div>
-
-      <!-- show collapse menu and hide others-->
-      <div class="menu" id="collapse-menu">
-        <div>
-          <select class = "metadata-options"></select>
-          <label for="range">Clade Collapsing</label>
-          <input type="range" min="0" max="10" value="0" class="slider" id="collapse-range"> <span id="num">
-        </div>
-      </div>
     </div>
 
 
@@ -82,15 +70,6 @@
         initCallbacks();
         draw();
       });
-
-      let slider = $("#collapse-range")[0];
-      let output = $("#num")[0];
-      output.innerHTML = slider.value;
-
-      slider.oninput = function() {
-          output.innerHTML = this.value;
-          collapseClades();
-      }
     }
     </script>
     </body>
