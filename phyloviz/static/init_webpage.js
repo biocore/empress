@@ -23,6 +23,9 @@ function initWebPage(edgeMetadata) {
  * Extracts the coordinates/color info from metadata and format it for webgl
  */
 function extractEdgeInfo(edgeMeta) {
+  // warning: this method has the potential to cause memory overload if new var
+  // are created.This method use to create new const for each higher order func
+  // step.
   let extractedFields = edgeMeta.map(function(edge) {
     return [edge.px, edge.py, edge.branch_color, edge.x, edge.y,
             edge.branch_color];
