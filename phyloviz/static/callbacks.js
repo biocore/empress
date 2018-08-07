@@ -184,9 +184,9 @@ function clearSelection(obj) {
   let u = '';
   let e = '';
 
-  if(item.operator == " > " ) {
+  if(item.operator === " > " ) {
     l = item.compVal;
-  } else if(item.operator == " < ") {
+  } else if(item.operator === " < ") {
     u = item.compVal;
   } else {
     e = item.compVal;
