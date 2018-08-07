@@ -10,7 +10,7 @@ import pandas as pd
 from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import complete
 from pandas.util.testing import assert_frame_equal
-from empress.tree import Tree
+from phyloviz.tree import Tree
 
 
 class TestDendrogram(unittest.TestCase):
@@ -38,19 +38,6 @@ class TestDendrogram(unittest.TestCase):
     def setUp(self):
         self.tree2 = self.mock_tree_from_nwk()
         self.tree1 = self.mock_random_tree()
-
-    def test_cache_ntips_random_tree(self):
-
-        t = Tree.from_tree(self.tree1)
-        t._cache_ntips()
-
-        self.assertEqual(t.leafcount, 10)
-        self.assertEqual(t.children[0].leafcount, 2)
-        self.assertEqual(t.children[1].leafcount, 8)
-        self.assertEqual(t.children[0].children[0].leafcount, 1)
-        self.assertEqual(t.children[0].children[1].leafcount, 1)
-        self.assertEqual(t.children[1].children[0].leafcount, 3)
-        self.assertEqual(t.children[1].children[1].leafcount, 5)
 
     def test_from_tree_random_tree(self):
         t = Tree.from_tree(self.tree1)
@@ -159,19 +146,6 @@ class TestDendrogram(unittest.TestCase):
         t = Tree.from_tree(self.tree1)
         self.assertAlmostEqual(
             t.rescale(500, 500), 79.223492618646006, places=5)
-
-    def test_cache_ntips_nwk_tree(self):
-
-        t = Tree.from_tree(self.tree2)
-        t._cache_ntips()
-
-        self.assertEqual(t.leafcount, 5)
-        self.assertEqual(t.children[0].leafcount, 3)
-        self.assertEqual(t.children[1].leafcount, 2)
-        self.assertEqual(t.children[0].children[0].leafcount, 2)
-        self.assertEqual(t.children[0].children[1].leafcount, 1)
-        self.assertEqual(t.children[1].children[0].leafcount, 1)
-        self.assertEqual(t.children[1].children[1].leafcount, 1)
 
     def test_from_tree(self):
         t = Tree.from_tree(self.tree2)

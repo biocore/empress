@@ -54,8 +54,8 @@ function initWebGl() {
   //
   // Create shaders
   //
-  var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+  let vertexShader = gl.createShader(gl.VERTEX_SHADER);
+  let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
 
   gl.shaderSource(vertexShader, window.vertexShaderText);
   gl.shaderSource(fragmentShader, window.fragmentShaderText);
@@ -110,13 +110,13 @@ function initWebGl() {
 }
 
 function setCanvasSize(canvas) {
-    var realToCSSPixels = window.devicePixelRatio;
+    let realToCSSPixels = window.devicePixelRatio;
 
     // Lookup the size the browser is displaying the canvas in CSS pixels
     // and compute a size needed to make our drawingbuffer match it in
     // device pixels.
-    var displayWidth  = Math.floor(gl.canvas.clientWidth * 0.75  * realToCSSPixels);
-    var displayHeight = Math.floor(gl.canvas.clientHeight * 0.75 * realToCSSPixels);
+    let displayWidth  = Math.floor(gl.canvas.clientWidth * 0.75  * realToCSSPixels);
+    let displayHeight = Math.floor(gl.canvas.clientHeight * 0.75 * realToCSSPixels);
 
     // Check if the canvas is not the same size.
     if (canvas.width  !== displayWidth ||

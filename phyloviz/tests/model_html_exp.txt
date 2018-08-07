@@ -1,28 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-16">
-<title>WebGL - Experiment</title>
-<link rel="stylesheet" type="text/css" href="/static/style.css?v=a8f02de1862809b8f6a88ccc6d8e36af">
-<script type="text/javascript" src="/static/gl-matrix.js?v=7243103a666727ef3836be8b94bfccff"></script>
-<script type="text/javascript" src="/static/jquery_min.js?v=a09e13ee94d51c524b7e2a728c7d4039"></script>
-<script type="text/javascript" src="/static/init_webgl.js?v=5917eb5df7bfcc5699245e4cc7ae118c"></script>
-<script type="text/javascript" src="/static/callbacks.js?v=1cec301b6805f98cf386a1b9e157a22d "></script>
-<script type="text/javascript" src="/static/drawing_loop.js?v=3ecc4d9f3cc14af131a74ef80d5f7400 "></script>
-<script type="text/javascript" src="/static/init_webpage.js?v=2c60189382fcbcfe9ddae0740746df8a "></script>
-</head>
 <body>
+<div class="container">
 <canvas class="tree-surface">
 Your browser does not support HTML5
 </canvas>
-<canvas class="text-surface"></canvas>
+<div id="divcontainer"></div>
+</div>
 <div class="metadata-tabs">
 <div class="tab-options">
 <div>
 <button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
-</div>
-<div>
-<button class="tabs" onclick="showMenu(event, 'collapse-menu')">Collapse Edges</button>
 </div>
 </div>
 <div class="menu" id="highlight-menu">
@@ -48,21 +34,19 @@ Your browser does not support HTML5
 <div class="attr-selector">
 </div>
 </div>
-<div class="menu" id="collapse-menu">
-<div>
-<select class = "metadata-options"></select>
-<label for="range">Clade Collapsing</label>
-<input type="range" min="0" max="10" value="0" class="slider" id="collapse-range"> <span id="num">
 </div>
-</div>
-</div>
-<div id="scrolltable">
-<table id="dataTable">
+<table>
+<tr>
+<td valign="top">
+<div id="scrolltable"></div>
+</td>
+</tr>
+<!-- <table id="dataTable">
+</table> -->
 </table>
-</div>
-<script  type="text/javascript">
+<script type="text/javascript">
 // global variables
-var urls = { // urls for webserver
+let urls = { // urls for webserver
 highlightURL : 'http://localhost:8080/highlight',
 collapseURL : 'http://localhost:8080/collapse',
 edgeURL : 'http://localhost:8080/api/edges',
@@ -71,24 +55,23 @@ nodeURL : 'http://localhost:8080/api/nodes',
 tableURL : 'http://localhost:8080/table_values',
 labelURL : 'http://localhost:8080/label'
 };
-var field = {
+let field = {
 edgeFields : ["px", "py", "branch_color", "x", "y",
 "branch_color"],
 nodeFields : ["x", "y", "color"]
 };
-var shaderProgram = {}; // the complied vertex/fragment shaders
-var gl = {}; // webgl context - used to call webgl functions
-var drawingData = { // stores info need to draw such as vertex data
+let shaderProgram = {}; // the complied vertex/fragment shaders
+let gl = {}; // webgl context - used to call webgl functions
+let drawingData = { // stores info need to draw such as vertex data
 isMouseDown : false,
 lastMouseX : null,
 lastMouseY : null,
 zoomAmount : 1,
-zoomLevel : 0,
 scaleFactor : 5.0 / 4.0
 };
-var numAttr = 0;
-var attrItem = {};
-var labels = {};
+let numAttr = 0;
+let attrItem = {};
+let labels = {};
 </script>
 <script type="text/javascript">
 {
@@ -111,13 +94,6 @@ setProjMat();
 draw();
 });
 });
-// let slider = $("#collapse-range")[0];
-// let output = $("#num")[0];
-// output.innerHTML = slider.value;
-// slider.oninput = function() {
-//     output.innerHTML = this.value;
-//     collapseClades();
-// }
 }
 </script>
 </body>
