@@ -318,7 +318,7 @@ class Model(object):
 
         return self.edge_metadata
 
-    def retrive_hightlighted_values(self, color, exclude=[]):
+    def retrive_highlighted_values(self, color, exclude=[]):
         """ Returns all row entries with branch_color == to color
 
         Parameters
@@ -338,8 +338,8 @@ class Model(object):
         return result
 
     def retrive_label_coords(self, label, value):
-        """ Retruns the coordinates of the nodes that are the the column 'label'
-        and have 'valule'
+        """ Returns the coordinates of the nodes that are the the column 'label'
+        and have 'value'
 
         Parameters
         ----------

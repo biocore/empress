@@ -46,7 +46,7 @@ function fillTable(color) {
       }
       datarows.push(dr);
     }
-    var options = {
+    let options = {
       enableCellNavigation: true,
       enableColumnReorder: false,
       topPanelHeight : 0
