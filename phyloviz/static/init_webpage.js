@@ -19,16 +19,52 @@ function initWebPage(edgeMetadata) {
   }
 }
 
+function fillTable(color) {
+  let tableValues;
+  $.getJSON(urls.tableURL, {color : color}, function(data) {
+    tableValues = data;
+  }).done(function() {
+    let templateMetadata = tableValues[0];
+    let grid;
+
+    // add the header row to the table
+    let columns = [];
+    for (let property in templateMetadata) {
+      let col = {
+        id  : property,
+        name : property,
+        field : property
+      };
+      columns.push(col);
+    }
+
+    let datarows = [];
+    for(let i = 0; i < tableValues.length; i++) {
+      let dr = {};
+      for(let property in templateMetadata) {
+        dr[property] = (tableValues[i])[property];
+      }
+      datarows.push(dr);
+    }
+    var options = {
+      enableCellNavigation: true,
+      enableColumnReorder: false,
+      topPanelHeight : 0
+    };
+    grid = new Slick.Grid("#scrolltable", datarows, columns, options);
+  });
+}
+
 /*
  * Extracts the coordinates/color info from metadata and format it for webgl
  */
-function extractEdgeInfo(edgeMeta) {
-  // warning: this method has the potential to cause memory overload if new var
-  // are created.This method use to create new const for each higher order func
-  // step.
-  let extractedFields = edgeMeta.map(function(edge) {
-    return [edge.px, edge.py, edge.branch_color, edge.x, edge.y,
-            edge.branch_color];
+function extractInfo(metaData, fields) {
+  let extractedFields = metaData.map(function(edge) {
+    let extracted = [];
+    for (let prop of fields) {
+      extracted.push(edge[prop]);
+  };
+  return extracted;
   });
   extractedFields = [].concat.apply([], extractedFields);
 
@@ -42,6 +78,28 @@ function extractEdgeInfo(edgeMeta) {
   });
 
   return extractedFields;
+}
+
+// TODO: finish this method
+function createCircles(nodes) {
+  const xCenter = 0;
+  const yCenter = 1;
+  const RED = 2;
+  const GREEN = 3;
+  const BLUE = 4;
+  let circles = [];
+  let rad = 0;
+  for (let i = 0; i < nodes.lenth / 5; i = i + 5) {
+    while(rad < Math.PI) {
+      circles.push(Math.cos(rad, 1) + nodes[i + xCenter]);
+      circles.push(Math.sin(rad, 1) + nodes[i + yCenter]);
+      circles.push(nodes[i + RED]);
+      circles.push(nodes[i + GREEN]);
+      circles.push(nodes[i + BLUE]);
+      rad += Math.PI / 10;
+    }
+  }
+  return circles
 }
 
 /*
