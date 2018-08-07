@@ -25,7 +25,7 @@ class Application(tornado.web.Application):
                     ]
 
         settings = dict(
-            static_path=os.path.join(os.path.dirname(__file__), "support_files"),
+            static_path=os.path.join(os.path.dirname(__file__), "static"),
             debug=True
         )
         tornado.web.Application.__init__(self, handlers, **settings)
