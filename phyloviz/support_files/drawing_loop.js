@@ -1,9 +1,6 @@
 "use strict";
 
 function loop() {
-
-  // this code seems to be making the correct calculations but is not displaying the labels at all
-
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
   shaderProgram.mvpMat = mat4.create();
@@ -55,45 +52,6 @@ function loop() {
   );
 
   gl.drawArrays(gl.POINTS, 0, drawingData.nodeCoords.length / 5 );
-
-  // look up the divcontainer
-  var divContainerElement = document.getElementById("divcontainer");
-  while(divContainerElement.firstChild) {
-    divContainerElement.removeChild(divContainerElement.firstChild);
-  }
-
-  var canvas = $(".tree-surface")[0];
-
-  let pixelX = 0;
-  let pixelY = 0;
-  for(let label in labels) {
-    let objSpace = vec4.fromValues(labels[label].x, labels[label].y, 0, 1);
-    let clipSpace = vec4.create();
-
-    vec4.transformMat4(clipSpace, objSpace, shaderProgram.mvpMat);
-    clipSpace[0] /= clipSpace[3];
-    clipSpace[1] /= clipSpace[3];
-    pixelX = (clipSpace[0] * 0.5 + 0.5) * canvas.offsetWidth;
-    pixelY = (clipSpace[1] * -0.5 + 0.5)* canvas.offsetHeight;
-    if(0 <= pixelX &&  pixelX <= canvas.offsetWidth &&
-       0 <= pixelY && pixelY <= canvas.offsetHeight) {
-      // make the div
-      var div = document.createElement("div");
-
-      // assign it a CSS class
-      div.className = "floating-div";
-
-      // make a text node for its content
-      var textNode = document.createTextNode("");
-      div.appendChild(textNode);
-
-      // add it to the divcontainer
-      divContainerElement.appendChild(div);
-      div.style.left = Math.floor(pixelX) + "px";
-      div.style.top = Math.floor(pixelY) + "px";
-      textNode.nodeValue = [labels[label].label];
-    }
-  }
 }
 
 /*

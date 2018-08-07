@@ -2,7 +2,7 @@ import skbio
 from skbio import TreeNode
 import pandas as pd
 import numpy as np
-from empress.tree import Tree
+from phyloviz.tree import Tree
 
 
 def name_internal_nodes(tree):

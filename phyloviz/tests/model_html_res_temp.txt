@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-16">
 <title>WebGL - Experiment</title>
-<link rel="stylesheet" type="text/css" href="/static/vendor/css/slick.grid.css?v=459dd2d912077e3463f80dfcef768141">
-<link rel="stylesheet" type="text/css" href="/static/vendor/css/jquery-ui-1.11.3.custom.css?v=42468acb3ddfa7a28295e35d52f1abb9">
-<link rel="stylesheet" type="text/css" href="/static/vendor/css/slick.grid.format.css?v=e6a868a89793281828f8cbe74125540b">
-<link rel="stylesheet" type="text/css" href="/static/css/style.css?v=52f3085bd2363b0b0071cb705c88473a">
-<script type="text/javascript" src="/static/vendor/js/gl-matrix.min.js?v=2e2806f78ad6a835e53b0aba5ff11ea9"></script>
-<script type="text/javascript" src="/static/vendor/js/jquery-2.2.4.min.js?v=052806eeee49a85fb006eece489a8d1c"></script>
-<script type="text/javascript" src="/static/vendor/js/jquery.event.drag-2.2.min.js?v=761bb3e053ce7bf2c41bdde132325c1f"></script>
-<script type="text/javascript" src="/static/js/init_webgl.js?v=1b446efc39f7de75860f2cae1b9629e3"></script>
-<script type="text/javascript" src="/static/js/callbacks.js?v=593e29c86767aa1425da0393cb5ffb9c"></script>
-<script type="text/javascript" src="/static/js/drawing_loop.js?v=ac82f95317204c43782436cb7013d733"></script>
-<script type="text/javascript" src="/static/js/init_webpage.js?v=49d3e09ea50e29339b125b15bfcfdd79"></script>
-<script type="text/javascript" src="/static/vendor/js/slick.core.min.js?v=bfd44ce7e43f91cc7c7a9f839ea46216"></script>
-<script type="text/javascript" src="/static/vendor/js/slick.editors.min.js?v=b60ab77f525ee4ddd4cf416bc23412e6"></script>
-<script type="text/javascript" src="/static/vendor/js/slick.formatters.min.js?v=733d94f8e307fa2daee8c1374f127116"></script>
-<script type="text/javascript" src="/static/vendor/js/slick.grid.min.js?v=e9389ff282178ac012e0d6ec5eeba5c9"></script>
+<link rel="stylesheet" type="text/css" href="/static/slick.grid.css?v=459dd2d912077e3463f80dfcef768141">
+<link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.11.3.custom.css?v=42468acb3ddfa7a28295e35d52f1abb9">
+<link rel="stylesheet" type="text/css" href="/static/slick.grid.format.css?v=e6a868a89793281828f8cbe74125540b">
+<link rel="stylesheet" type="text/css" href="/static/style.css?v=52f3085bd2363b0b0071cb705c88473a">
+<script type="text/javascript" src="/static/gl-matrix.min.js?v=2e2806f78ad6a835e53b0aba5ff11ea9"></script>
+<script type="text/javascript" src="/static/jquery-2.2.4.min.js?v=052806eeee49a85fb006eece489a8d1c"></script>
+<script type="text/javascript" src="/static/jquery.event.drag-2.2.min.js?v=761bb3e053ce7bf2c41bdde132325c1f"></script>
+<script type="text/javascript" src="/static/init_webgl.js?v=1b446efc39f7de75860f2cae1b9629e3"></script>
+<script type="text/javascript" src="/static/callbacks.js?v=8bc8691da225dfe5137d8fb8480a8b21"></script>
+<script type="text/javascript" src="/static/drawing_loop.js?v=984d3770fdb0f82b7dbc4fc88b1dfa69"></script>
+<script type="text/javascript" src="/static/init_webpage.js?v=49d3e09ea50e29339b125b15bfcfdd79"></script>
+<script type="text/javascript" src="/static/slick.core.min.js?v=bfd44ce7e43f91cc7c7a9f839ea46216"></script>
+<script type="text/javascript" src="/static/slick.editors.min.js?v=b60ab77f525ee4ddd4cf416bc23412e6"></script>
+<script type="text/javascript" src="/static/slick.formatters.min.js?v=733d94f8e307fa2daee8c1374f127116"></script>
+<script type="text/javascript" src="/static/slick.grid.min.js?v=e9389ff282178ac012e0d6ec5eeba5c9"></script>
 </head>
 <body>
 <div class="container">
@@ -62,8 +62,6 @@ Your browser does not support HTML5
 <div id="scrolltable"></div>
 </td>
 </tr>
-<!-- <table id="dataTable">
-</table> -->
 </table>
 <script type="text/javascript">
 // global variables
@@ -73,8 +71,7 @@ collapseURL : 'http://localhost:8080/collapse',
 edgeURL : 'http://localhost:8080/api/edges',
 colorURL : 'http://localhost:8080/color',
 nodeURL : 'http://localhost:8080/api/nodes',
-tableURL : 'http://localhost:8080/table_values',
-labelURL : 'http://localhost:8080/label'
+tableURL : 'http://localhost:8080/table_values'
 };
 var field = {
 edgeFields : ["px", "py", "branch_color", "x", "y",
@@ -93,7 +90,6 @@ scaleFactor : 5.0 / 4.0
 };
 var numAttr = 0;
 var attrItem = {};
-var labels = {};
 </script>
 <script type="text/javascript">
 {

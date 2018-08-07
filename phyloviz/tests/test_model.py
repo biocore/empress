@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import io
 from pandas.util.testing import assert_frame_equal
-from empress.model import Model
+from phyloviz.model import Model
 
 
 class TestModel(unittest.TestCase):
