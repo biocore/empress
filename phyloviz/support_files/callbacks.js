@@ -152,32 +152,9 @@ function selectHighlight(attr, cat, val, l, u, e) {
     drawingData.largeDim = normalizeTree(edges);
     gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.treeVertBuffer);
     gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(drawingData.edgeCoords));
-    // requestAnimationFrame(loop);
-    selectLabel();
+    requestAnimationFrame(loop);
   });
 }
-
-/*
- * Collapses clades based on the slider scale
- */
-// function collapseClades() {
-//   const ss = $("#collapse-range").val();
-
-//   let triangles;
-//   let edges;
-//   $.getJSON(urls.collapseURL, {sliderScale: ss}, function(data) {
-//     triangles = data;
-//   }).done(function() {
-//     $.getJSON(urls.edgeURL, function(data2) {
-//       edges = data2;
-//     }).done(function() {
-//       drawingData.edgeCoords = extractInfo(edges, field.edgeFields);
-//       drawingData.largeDim = normalizeTree(edges);
-//       gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(drawingData.edgeCoords));
-//       requestAnimationFrame(loop);
-//     });
-//   });
-// }
 
 /*
  * Shows the selected menu and hides the other ones
@@ -224,22 +201,4 @@ function selectTable(obj) {
   const item = attrItem[obj.parentElement.id];
   const color = item.color;
   fillTable(color);
-}
-
-function selectLabel(obj) {
-  let label_coords;
-  $.getJSON(urls.labelURL, {label : "Node_id", value : "G000005825" }, function(data) {
-    label_coords = data;
-  }).done(function() {
-    labels = {};
-    for(let l in label_coords) {
-      let label = {
-        label : label_coords[l].Node_id,
-        x : label_coords[l].x,
-        y : label_coords[l].y
-      };
-      labels[l] = label;
-    }
-    requestAnimationFrame(loop);
-  });
 }

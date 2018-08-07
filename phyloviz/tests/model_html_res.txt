@@ -41,8 +41,6 @@ Your browser does not support HTML5
 <div id="scrolltable"></div>
 </td>
 </tr>
-<!-- <table id="dataTable">
-</table> -->
 </table>
 <script type="text/javascript">
 // global variables
@@ -52,8 +50,7 @@ collapseURL : 'http://localhost:8080/collapse',
 edgeURL : 'http://localhost:8080/api/edges',
 colorURL : 'http://localhost:8080/color',
 nodeURL : 'http://localhost:8080/api/nodes',
-tableURL : 'http://localhost:8080/table_values',
-labelURL : 'http://localhost:8080/label'
+tableURL : 'http://localhost:8080/table_values'
 };
 var field = {
 edgeFields : ["px", "py", "branch_color", "x", "y",
@@ -72,7 +69,6 @@ scaleFactor : 5.0 / 4.0
 };
 var numAttr = 0;
 var attrItem = {};
-var labels = {};
 </script>
 <script type="text/javascript">
 {
