@@ -2,7 +2,7 @@ import skbio
 from skbio import TreeNode
 import pandas as pd
 import numpy as np
-from empress.tree import Tree
+from phyloviz.tree import Tree
 
 
 def name_internal_nodes(tree):
@@ -17,7 +17,6 @@ def name_internal_nodes(tree):
     for i, n in enumerate(tree.postorder(include_self=True)):
         if n.length is None:
             n.length = 1
-        # if not n.is_tip() and n.name is not None:
         if not n.is_tip() and n.name is None:
             new_name = "y%d" % i
             n.name = new_name
@@ -41,7 +40,7 @@ def read_leaf_node_metadata(file_name):
     return metadata
 
 
-def read_internal_node_metadata(file_name):
+def read_internal_node_metadata(file_name, skip_row):
     """ Reads in metadata for internal nodes
 
     Parameters
@@ -55,7 +54,7 @@ def read_internal_node_metadata(file_name):
 
     """
 
-    metadata = pd.read_table(file_name, skiprows=3)
+    metadata = pd.read_table(file_name, skiprows=skip_row)
     metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
     return metadata
 
@@ -106,7 +105,8 @@ class Model(object):
                  tree_format='newick',
                  internal_metadata_file=None,
                  leaf_metadata_file=None,
-                 edge_metadata=None):
+                 edge_metadata=None,
+                 skip_row=3):
         """ Model constructor.
 
         This initializes the model, including
@@ -138,7 +138,7 @@ class Model(object):
         else:
             self.edge_metadata = edge_metadata
 
-        internal_metadata = read_internal_node_metadata(internal_metadata_file)
+        internal_metadata = read_internal_node_metadata(internal_metadata_file, skip_row)
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
         internal_headers = internal_metadata.columns.values.tolist()
         leaf_headers = leaf_metadata.columns.values.tolist()
@@ -304,7 +304,6 @@ class Model(object):
         edgeData : pd.Dataframe
         updated version of edge metadata
         """
-
         if lower is not "":
             self.edge_metadata.loc[ self.edge_metadata[attribute] > float(lower),
                  category] =  new_value
@@ -334,7 +333,6 @@ class Model(object):
         result : pd.Dataframe
             A dataframe containing the rows which contain color
         """
-
         columns = list(self.metadata_headers)
         columns.append('x')
         columns.append('y')
@@ -357,7 +355,6 @@ class Model(object):
         result : pd.Dataframe
             A dataframe containing the coordinates of the matched labels
         """
-
         return self.edge_metadata.loc[ self.edge_metadata[label] == value, ['Node_id','x','y']]
 
     def collapse_clades(self, sliderScale):
@@ -394,7 +391,7 @@ class Model(object):
 
                 # if parent was visible
                 # add triangle coordinates to dataframe
-                if (self.edge_metadata.loc[self.edge_metadata['Node_id'] == node.parent.name, 'visibility'] is True):
+                if self.edge_metadata.query('Node_id == "%s"' % node.parent.name)['visibility']:
                     nId = {"Node_id": node.parent.name}
                     root = {'rx': node.parent.x2, 'ry': node.parent.y2}
                     shortest = {'sx': node.parent.shortest.x2,

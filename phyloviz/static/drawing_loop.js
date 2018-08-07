@@ -57,17 +57,17 @@ function loop() {
   gl.drawArrays(gl.POINTS, 0, drawingData.nodeCoords.length / 5 );
 
   // look up the divcontainer
-  var divContainerElement = document.getElementById("divcontainer");
+  let divContainerElement = document.getElementById("divcontainer");
   while(divContainerElement.firstChild) {
     divContainerElement.removeChild(divContainerElement.firstChild);
   }
 
-  var canvas = $(".tree-surface")[0];
+  let canvas = $(".tree-surface")[0];
 
   let pixelX = 0;
   let pixelY = 0;
   let count = 0;
-  for(var label = Object.keys(labels).length - 1; label >= 0; --label) {
+  for(let label = Object.keys(labels).length - 1; label >= 0; --label) {
     let objSpace = vec4.fromValues(labels[label].x, labels[label].y, 0, 1);
     let clipSpace = vec4.create();
 
@@ -79,13 +79,13 @@ function loop() {
     if(0 <= pixelX &&  pixelX <= canvas.offsetWidth &&
        0 <= pixelY && pixelY <= canvas.offsetHeight) {
       // make the div
-      var div = document.createElement("div");
+      let div = document.createElement("div");
 
       // assign it a CSS class
       div.className = "floating-div";
 
       // make a text node for its content
-      var textNode = document.createTextNode("");
+      let textNode = document.createTextNode("");
       div.appendChild(textNode);
 
       // add it to the divcontainer

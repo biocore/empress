@@ -34,17 +34,18 @@ function mouseMove(event) {
   if (!drawingData.isMouseDown) {
     return;
   }
+
   const newX = event.clientX;
   const newY = event.clientY;
-
   const dx = (newX - drawingData.lastMouseX) * drawingData.zoomAmount;
   const dy = (newY - drawingData.lastMouseY) * drawingData.zoomAmount;
   const transVec = vec3.fromValues(dx,dy,0);
   let addTransMat = mat4.create();
+
   mat4.fromTranslation(addTransMat,transVec);
   mat4.multiply(shaderProgram.worldMat, shaderProgram.worldMat,addTransMat);
 
-  drawingData.lastMouseX = newX
+  drawingData.lastMouseX = newX;
   drawingData.lastMouseY = newY;
   requestAnimationFrame(loop);
 }
@@ -56,10 +57,9 @@ function mouseWheel(event) {
   let scaleByMat = new Float32Array(16);
   const scaleAmount = (event.deltaY >= 0) ? drawingData.scaleFactor : 1 / drawingData.scaleFactor;
   drawingData.zoomAmount = drawingData.zoomAmount / scaleAmount;
-  var scaleFactorVec = vec3.fromValues(scaleAmount, scaleAmount, scaleAmount);
+  let scaleFactorVec = vec3.fromValues(scaleAmount, scaleAmount, scaleAmount);
   mat4.fromScaling(scaleByMat, scaleFactorVec);
   mat4.mul(shaderProgram.worldMat, scaleByMat, shaderProgram.worldMat);
-  drawingData.zoomLevel = (event.deltaY >= 0)  ? drawingData.zoomLevel + 1 : drawingData.zoomLevel - 1;
 
   requestAnimationFrame(loop);
 }
@@ -71,13 +71,6 @@ function resizeCanvas(event) {
   setCanvasSize(gl.canvas);
   setProjMat();
   requestAnimationFrame(loop);
-}
-
-/*
- * displays the metadata associated with the label
- */
-function labelHover(obj) {
-  
 }
 
 function userHighlightSelect() {
@@ -138,7 +131,7 @@ function addAttrItem(attr, cat, val, l, u, e) {
     operator : operator,
     compVal : compVal,
     color : val
-  }
+  };
   attrItem[numAttr++] = item;
   attrLabel.innerHTML = attr + operator + compVal;
   newAttrItem.appendChild(attrLabel);
@@ -196,12 +189,12 @@ function showMenu(evt, menuName) {
   }
 
   let tabs = document.getElementsByClassName("tabs");
-  for(let i = 0; i < tabs.length; i++) {
-    tabs[i].className = tabs[i].className.replace("active","");
-  }
+  tabs.forEach(function(tab){
+    tab.className.replace("active");
+  })
 
-  $("#" + menuName).show()
-  evt.currentTarget.className += "active"
+  $("#" + menuName).show();
+  evt.currentTarget.className += "active";
 }
 
 function clearSelection(obj) {
@@ -221,7 +214,7 @@ function clearSelection(obj) {
     e = item.compVal;
   }
   selectHighlight(attr, cat, "FFFFFF", l, u, e);
-  fillTable(val)
+  fillTable(val);
 
   obj.parentNode.remove();
 }
