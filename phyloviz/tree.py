@@ -37,22 +37,6 @@ class Tree(TreeNode):
         super().__init__(**kwargs)
         self.childRem = -1
 
-    def _cache_ntips(self):
-        """ Counts the number of leaves under each subtree.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-
-        """
-        for n in self.postorder():
-            if n.is_tip():
-                n.leafcount = 1
-            else:
-                n.leafcount = sum(c.leafcount for c in n.children)
-
     @classmethod
     def from_tree(cls, tree, use_lengths=True):
         """ Creates an UnrootedDendrogram object from a skbio tree.

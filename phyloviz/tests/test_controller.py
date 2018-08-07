@@ -10,7 +10,7 @@ from phyloviz.tests.test_handler import TestHandler
 from unittest import main
 
 
-class TestControll(TestHandler):
+class TestController(TestHandler):
     def test_model_handler(self):
         response = self.get('/')
         self.assertEqual(response.code, 200)

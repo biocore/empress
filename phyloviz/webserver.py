@@ -42,10 +42,10 @@ class Application(tornado.web.Application):
               help='The file that contains tip node metadata')
 @click.option('--port', '-p', default=8080,
               help='The port to run the local server on')
-def start(tree_file, tree_format, internal_metadata, leaf_metadata, port):
-
-    # Build the tree
-    m = Model(tree_file, tree_format, internal_metadata, leaf_metadata)
+@click.option('--internal_metadat_skiprow', '-isr', default=3,
+              help='The number of top rows to ignore')
+def start(tree_file, tree_format, internal_metadata, leaf_metadata, port, internal_metadat_skiprow):
+    m = Model(tree_file, tree_format, internal_metadata, leaf_metadata, skip_row=internal_metadat_skiprow)
     m.center_tree()
 
     # Create the webserver
