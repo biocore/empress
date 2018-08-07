@@ -328,13 +328,13 @@ class Tree(TreeNode):
             attr = {'color': '000000'}
             node_data[node.name] = {**coords, **attr}
 
-
         # convert to pd.DataFrame
+        index_list = pd.Index([
+            'x',
+            'y',
+            'color'])
         node_data = pd.DataFrame(
             node_data,
-            index=[
-                'x',
-                'y',
-                'color']).T
+        index=index_list).T
 
         return node_data
