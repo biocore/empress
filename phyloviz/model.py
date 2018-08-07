@@ -158,9 +158,8 @@ class Model(object):
 
         self.model_added_columns = [
             "px", "py", "x", "y", "branch_color",
-            "branch_is_visible", "longest","node_color","node_is_visible",
-            "shortest","size","width", "Parent_id"]
-
+            "branch_is_visible", "longest", "node_color", "node_is_visible",
+            "shortest", "size", "width", "Parent_id"]
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -246,9 +245,9 @@ class Model(object):
         self.edge_metadata['y'] = self.edge_metadata[
             ['y']].apply(lambda l: l - self.centerY)
         self.node_coords['x'] = self.node_coords[
-            ['x']].apply(lambda l : l - self.centerX)
+            ['x']].apply(lambda l: l - self.centerX)
         self.node_coords['y'] = self.node_coords[
-            ['y']].apply(lambda l : l - self.centerY)
+            ['y']].apply(lambda l: l - self.centerY)
 
     def select_edge_category(self):
         """
@@ -305,16 +304,13 @@ class Model(object):
         updated version of edge metadata
         """
         if lower is not "":
-            self.edge_metadata.loc[ self.edge_metadata[attribute] > float(lower),
-                 category] =  new_value
+            self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] =  new_value
 
         if equal is not "":
-            self.edge_metadata.loc[ self.edge_metadata[attribute] == equal,
-                 category] =  new_value
+            self.edge_metadata.loc[self.edge_metadata[attribute] == equal, category] =  new_value
 
         if upper is not "":
-            self.edge_metadata.loc[ self.edge_metadata[attribute] < float(upper),
-                 category] =  new_value
+            self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] =  new_value
 
         # return self.select_edge_category()
         return self.edge_metadata
@@ -355,7 +351,7 @@ class Model(object):
         result : pd.Dataframe
             A dataframe containing the coordinates of the matched labels
         """
-        return self.edge_metadata.loc[ self.edge_metadata[label] == value, ['Node_id','x','y']]
+        return self.edge_metadata.loc[self.edge_metadata[label] == value, ['Node_id', 'x', 'y']]
 
     def collapse_clades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.
