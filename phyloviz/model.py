@@ -304,13 +304,13 @@ class Model(object):
         updated version of edge metadata
         """
         if lower is not "":
-            self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] =  new_value
+            self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
         if equal is not "":
-            self.edge_metadata.loc[self.edge_metadata[attribute] == equal, category] =  new_value
+            self.edge_metadata.loc[self.edge_metadata[attribute] == equal, category] = new_value
 
         if upper is not "":
-            self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] =  new_value
+            self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
 
         # return self.select_edge_category()
         return self.edge_metadata
