@@ -25,12 +25,22 @@ class TestController(TestHandler):
         with open(os.path.join(os.path.dirname(__file__), 'model_html_res_temp.txt'), 'r')as f:
             lines = f.readlines()
             start = False
+            urlSection = False
             res = []
 
             for line in lines:
                 if line == '<body>\n':
                     start = True
-                if start:
+
+                # Need to remove the urls from the html file because they contain a variable in the string
+                # similar to why we need to remove everything before the body tag
+                if line == 'var urls = { // urls for webserver\n':
+                    urlSection = True
+                if urlSection:
+                    if line == '};\n':
+                        urlSection = False
+
+                if start and not urlSection:
                     res.append(line)
 
         with open('model_html_res.txt', 'w') as f:
@@ -42,16 +52,24 @@ class TestController(TestHandler):
         expt = []
         with open(os.path.join(os.path.dirname(__file__), '../tree_with_webgl.html'), 'r')as f:
             lines = f.readlines()
+            lines = list(map(lambda x: x.lstrip(), lines))
             start = False
 
             for line in lines:
                 if line == '<body>\n':
                     start = True
-                if start:
+                # Need to remove the urls from the html file because they contain a variable in the string
+                # similar to why we need to remove everything before the body tag
+                if line == 'var urls = { // urls for webserver\n':
+                    urlSection = True
+                if urlSection:
+                    if line == '};\n':
+                        urlSection = False
+
+                if start and not urlSection:
                     expt.append(line)
 
         with open('model_html_exp.txt', 'w') as f:
-            expt = list(map(lambda x: x.lstrip(), expt))
             f.writelines(expt)
 
         self.assertTrue(

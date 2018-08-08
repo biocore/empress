@@ -46,14 +46,6 @@ Your browser does not support HTML5
 </table>
 <script type="text/javascript">
 // global variables
-let urls = { // urls for webserver
-highlightURL : 'http://localhost:8080/highlight',
-collapseURL : 'http://localhost:8080/collapse',
-edgeURL : 'http://localhost:8080/api/edges',
-colorURL : 'http://localhost:8080/color',
-nodeURL : 'http://localhost:8080/api/nodes',
-tableURL : 'http://localhost:8080/table_values',
-labelURL : 'http://localhost:8080/label'
 };
 let field = {
 edgeFields : ["px", "py", "branch_color", "x", "y",
