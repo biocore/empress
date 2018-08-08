@@ -1,0 +1,90 @@
+<body>
+<div class="container">
+<canvas class="tree-surface">
+Your browser does not support HTML5
+</canvas>
+<div id="divcontainer"></div>
+</div>
+<div class="metadata-tabs">
+<div class="tab-options">
+<div>
+<button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
+</div>
+</div>
+<div class="menu" id="highlight-menu">
+<div>
+<select id = "highlight-options"></select>
+</div>
+<div>
+<input type = "button" value = "select" onclick = "userHighlightSelect();" />
+<input type = "color" id="color-selector"/>
+</div>
+<div class="text-field">
+<label for="lower-bound">Lower Bound</label>
+<input type="text" id="lower-bound"/>
+</div>
+<div class="text-field">
+<label for="upper-bound">Upper Bound</label>
+<input type="text" id="upper-bound"/>
+</div>
+<div class="text-field">
+<label for="category">Category Name</label>
+<input type="text" id="category"/>
+</div>
+<div class="attr-selector">
+</div>
+</div>
+</div>
+<table>
+<tr>
+<td valign="top">
+<div id="scrolltable"></div>
+</td>
+</tr>
+</table>
+<script type="text/javascript">
+// global variables
+};
+let field = {
+edgeFields : ["px", "py", "branch_color", "x", "y",
+"branch_color"],
+nodeFields : ["x", "y", "color"]
+};
+let shaderProgram = {}; // the complied vertex/fragment shaders
+let gl = {}; // webgl context - used to call webgl functions
+let drawingData = { // stores info need to draw such as vertex data
+isMouseDown : false,
+lastMouseX : null,
+lastMouseY : null,
+zoomAmount : 1,
+scaleFactor : 5.0 / 4.0
+};
+let numAttr = 0;
+let attrItem = {};
+let labels = {};
+</script>
+<script type="text/javascript">
+{
+let edgeMetadata;
+let nodeCoords;
+// this may cause some syncing issues
+$.getJSON(urls.nodeURL, function(data) {
+nodeCoords = data;
+}).done(function() {
+drawingData.nodeCoords = extractInfo(nodeCoords, field.nodeFields);
+$.getJSON(urls.edgeURL, function(data) {
+edgeMetadata = data;
+}).done(function() {
+initWebPage(edgeMetadata);
+drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
+drawingData.largeDim = normalizeTree(edgeMetadata);
+initWebGl();
+initCallbacks();
+setProjMat();
+draw();
+});
+});
+}
+</script>
+</body>
+</html>
