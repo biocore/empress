@@ -158,8 +158,14 @@ class Model(object):
 
         self.model_added_columns = [
             "px", "py", "x", "y", "branch_color",
+<<<<<<< HEAD:phyloviz/model.py
             "branch_is_visible", "longest", "node_color", "node_is_visible",
             "shortest", "size", "width", "Parent_id"]
+=======
+            "branch_is_visible", "longest", "node_color",
+            "node_is_visible", "shortest", "size", "width",
+            "Parent_id"]
+>>>>>>> 8669e54e8bb50b176c2314685616f30b35de8ec3:phyloviz/model.py
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -303,6 +309,10 @@ class Model(object):
         edgeData : pd.Dataframe
         updated version of edge metadata
         """
+<<<<<<< HEAD:phyloviz/model.py
+=======
+
+>>>>>>> 8669e54e8bb50b176c2314685616f30b35de8ec3:phyloviz/model.py
         if lower is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
@@ -312,10 +322,9 @@ class Model(object):
         if upper is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
 
-        # return self.select_edge_category()
         return self.edge_metadata
 
-    def retrive_hightlighted_values(self, color, exclude=[]):
+    def retrive_highlighted_values(self, color, exclude=[]):
         """ Returns all row entries with branch_color == to color
 
         Parameters
@@ -337,8 +346,8 @@ class Model(object):
         return result
 
     def retrive_label_coords(self, label, value):
-        """ Retruns the coordinates of the nodes that are the the column 'label'
-        and have 'valule'
+        """ Returns the coordinates of the nodes that are the the column 'label'
+        and have 'value'
 
         Parameters
         ----------
