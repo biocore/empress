@@ -1,9 +1,9 @@
 <body>
-<div class="grid">
-<div id="drawing-surface">
-<canvas id="tree-surface" >
+<div class="container">
+<canvas class="tree-surface">
 Your browser does not support HTML5
 </canvas>
+<div id="divcontainer"></div>
 </div>
 <div class="metadata-tabs">
 <div class="tab-options">
@@ -11,41 +11,78 @@ Your browser does not support HTML5
 <button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
 </div>
 </div>
-<!-- highlight menu, visible by default-->
 <div class="menu" id="highlight-menu">
 <div>
 <select id = "highlight-options"></select>
 </div>
 <div>
-<input type = "button" value = "select" onclick = "selectHighlight()" />
+<input type = "button" value = "select" onclick = "userHighlightSelect();" />
 <input type = "color" id="color-selector"/>
 </div>
 <div class="text-field">
 <label for="lower-bound">Lower Bound</label>
-<input type="text" id="lower-bound">
+<input type="text" id="lower-bound"/>
 </div>
 <div class="text-field">
 <label for="upper-bound">Upper Bound</label>
-<input type="text" id="upper-bound">
+<input type="text" id="upper-bound"/>
 </div>
 <div class="text-field">
 <label for="category">Category Name</label>
-<input type="text" id="category">
+<input type="text" id="category"/>
+</div>
+<div class="attr-selector">
 </div>
 </div>
 </div>
-<script>
+<table>
+<tr>
+<td valign="top">
+<div id="scrolltable"></div>
+</td>
+</tr>
+</table>
+<script type="text/javascript">
+// global variables
+};
+var field = {
+edgeFields : ["px", "py", "branch_color", "x", "y",
+"branch_color"],
+nodeFields : ["x", "y", "color"]
+};
+var shaderProgram = {}; // the complied vertex/fragment shaders
+var gl = {}; // webgl context - used to call webgl functions
+var drawingData = { // stores info need to draw such as vertex data
+isMouseDown : false,
+lastMouseX : null,
+lastMouseY : null,
+zoomAmount : 1,
+zoomLevel : 0,
+scaleFactor : 5.0 / 4.0
+};
+var numAttr = 0;
+var attrItem = {};
+</script>
+<script type="text/javascript">
 {
 let edgeMetadata;
-$.getJSON(window.edgeURL, function(data) {
+let nodeCoords;
+// this may cause some syncing issues
+$.getJSON(urls.nodeURL, function(data) {
+nodeCoords = data;
+}).done(function() {
+drawingData.nodeCoords = extractInfo(nodeCoords, field.nodeFields);
+$.getJSON(urls.edgeURL, function(data) {
 edgeMetadata = data;
 }).done(function() {
 initWebPage(edgeMetadata);
-window.result = extractEdgeInfo(edgeMetadata);
-window.largeDim = normalizeTree(edgeMetadata);
+drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
+drawingData.largeDim = normalizeTree(edgeMetadata);
 initWebGl();
 initCallbacks();
+setProjMat();
 draw();
+});
 });
 }
 </script>
