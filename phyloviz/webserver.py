@@ -3,7 +3,7 @@ from phyloviz.model import Model
 from phyloviz.controller import (
     ModelHandler, EdgeHandler, NodeHandler, ZoomHandler,
     BenchmarkHandler, HighlightHandler, TriangleHandler,
-    CollapseHandler, TableHandler, LabelHandler)
+    CollapseHandler, TableHandler)
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 import os.path
@@ -21,8 +21,7 @@ class Application(tornado.web.Application):
                     (r"/benchmark", BenchmarkHandler),
                     (r"/collapse", CollapseHandler, dict(m=m)),
                     (r"/highlight", HighlightHandler, dict(m=m)),
-                    (r"/table_values", TableHandler,  dict(m=m)),
-                    (r"/label", LabelHandler, dict(m=m))
+                    (r"/table_values", TableHandler,  dict(m=m))
                     ]
 
         settings = dict(

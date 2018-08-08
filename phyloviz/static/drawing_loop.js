@@ -1,9 +1,6 @@
 "use strict";
 
 function loop() {
-
-  // this code seems to be making the correct calculations but is not displaying the labels at all
-
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
   shaderProgram.mvpMat = mat4.create();
