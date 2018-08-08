@@ -101,7 +101,6 @@ ENV/
 .mypy_cache/
 
 # node modules
-<<<<<<< HEAD
 node/node_modules/
 
 # newick
@@ -111,7 +110,17 @@ node/node_modules/
 
 # tree
 *.tree
+*.tre
 
 # astral metadata
 metadata.txt
 ncbi.t2t.txt
+metadata.tsv
+
+# primate metadata
+deblurred_sequence_taxonomy.txt
+pvalues.txt
+
+# empress quick run scripts
+primate.sh
+tree_life.sh

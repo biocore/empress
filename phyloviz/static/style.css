@@ -1,17 +1,45 @@
-body {
-  margin:0;
+canvas {
+    width: 66vw;
+    height: 75vh;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: 3fr 1fr;
-  grid-column-gap: 4px;
-  grid-auto-rows: auto;
-  height: 98vh;
+.tree-surface {
+    position: fixed;
+    top: 0vh;
+    left: 0vw;
 }
+
+/* referenced from  https://webglfundamentals.org/webgl/lessons/webgl-text-html.html*/
+.container {
+    position: absolute;
+    top: 0vh;
+    left: 0vw;
+    overflow: none;
+    width: 66vw;
+    height: 75vh;
+}
+
+#dvicontainer {
+    position: fixed;
+    top: 0vh;
+    left: 0vw;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.floating-div {
+    position: absolute;
+}
+/* end of reference */
 
 .metadata-tabs {
-  background: #eee;
+    background: #eee;
+    position: fixed;
+    top: 0vh;
+    left: 66vw;
+    width: 34vw;
 }
 
 .metadata-tabs button {
@@ -29,27 +57,51 @@ body {
     background-color: #ddd;
 }
 
-.metadata-tabs button.active {
+.metadata-tabs button:active {
     background-color: #000;
 }
 
 .tab-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: auto;
-  height: unset;
-  background: grey;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: auto;
+    height: unset;
+    background: grey;
 }
 
-.text-field {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  grid-auto-rows: auto;
+.attr {
+    grid-area: attr;
+}
+.attr-selector {
+    overflow: auto;
+    width: 32vw;
+    height: 50vh;
+}
+
+.attr-item {
+    display: grid;
+    grid-template-areas:
+        '. . .'
+        '. attr attr';
+    border: 3px solid black;
+    padding-top: 4px;
 }
 
 .menu {
-  display: none;
-  padding: 6px 12px;
+    display: none;
+    padding: 6px 12px;
     border: 1px solid #ccc;
     border-top: none;
 }
+
+#scrolltable {
+    top: 74vh;
+    left: -1vw;
+    width: 99vw;
+    height: 23vh;
+    outline: 0;
+    border:1px solid gray;
+    padding: 0;
+}
+
+

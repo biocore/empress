@@ -1,0 +1,113 @@
+<body>
+<div class="container">
+<canvas class="tree-surface">
+Your browser does not support HTML5
+</canvas>
+<div id="divcontainer"></div>
+</div>
+<div class="metadata-tabs">
+<div class="tab-options">
+<div>
+<button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
+</div>
+</div>
+<div class="menu" id="highlight-menu">
+<div>
+<select id = "highlight-options"></select>
+</div>
+<div>
+<input type = "button" value = "select" onclick = "userHighlightSelect();" />
+<input type = "color" id="color-selector"/>
+</div>
+<div class="text-field">
+<label for="lower-bound">Lower Bound</label>
+<input type="text" id="lower-bound"/>
+</div>
+<div class="text-field">
+<label for="upper-bound">Upper Bound</label>
+<input type="text" id="upper-bound"/>
+</div>
+<div class="text-field">
+<label for="category">Category Name</label>
+<input type="text" id="category"/>
+</div>
+<div class="attr-selector">
+</div>
+</div>
+</div>
+<table>
+<tr>
+<td valign="top">
+<div id="scrolltable"></div>
+</td>
+</tr>
+<<<<<<< HEAD
+<!-- <table id="dataTable">
+</table> -->
+=======
+>>>>>>> 8669e54e8bb50b176c2314685616f30b35de8ec3
+</table>
+<script type="text/javascript">
+// global variables
+};
+<<<<<<< HEAD
+let field = {
+=======
+var field = {
+>>>>>>> 8669e54e8bb50b176c2314685616f30b35de8ec3
+edgeFields : ["px", "py", "branch_color", "x", "y",
+"branch_color"],
+nodeFields : ["x", "y", "color"]
+};
+<<<<<<< HEAD
+let shaderProgram = {}; // the complied vertex/fragment shaders
+let gl = {}; // webgl context - used to call webgl functions
+let drawingData = { // stores info need to draw such as vertex data
+=======
+var shaderProgram = {}; // the complied vertex/fragment shaders
+var gl = {}; // webgl context - used to call webgl functions
+var drawingData = { // stores info need to draw such as vertex data
+>>>>>>> 8669e54e8bb50b176c2314685616f30b35de8ec3
+isMouseDown : false,
+lastMouseX : null,
+lastMouseY : null,
+zoomAmount : 1,
+<<<<<<< HEAD
+scaleFactor : 5.0 / 4.0
+};
+let numAttr = 0;
+let attrItem = {};
+let labels = {};
+=======
+zoomLevel : 0,
+scaleFactor : 5.0 / 4.0
+};
+var numAttr = 0;
+var attrItem = {};
+>>>>>>> 8669e54e8bb50b176c2314685616f30b35de8ec3
+</script>
+<script type="text/javascript">
+{
+let edgeMetadata;
+let nodeCoords;
+// this may cause some syncing issues
+$.getJSON(urls.nodeURL, function(data) {
+nodeCoords = data;
+}).done(function() {
+drawingData.nodeCoords = extractInfo(nodeCoords, field.nodeFields);
+$.getJSON(urls.edgeURL, function(data) {
+edgeMetadata = data;
+}).done(function() {
+initWebPage(edgeMetadata);
+drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
+drawingData.largeDim = normalizeTree(edgeMetadata);
+initWebGl();
+initCallbacks();
+setProjMat();
+draw();
+});
+});
+}
+</script>
+</body>
+</html>
