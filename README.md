@@ -16,7 +16,7 @@ conda install -c conda-forge scikit-bio
 From the root directiory of empress type the following commands in the terminal
 
 ```
-cd phyloviz
+cd empress
 python webserver.py
 ```
 

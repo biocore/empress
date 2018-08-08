@@ -135,11 +135,20 @@ class Model(object):
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
+            self.node_coords = self.tree.node_coords()
         else:
             self.edge_metadata = edge_metadata
 
         internal_metadata = read_internal_node_metadata(internal_metadata_file, skip_row)
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
+        internal_headers = internal_metadata.columns.values.tolist()
+        leaf_headers = leaf_metadata.columns.values.tolist()
+        # self.metadata_headers = list(set().union(leaf_headers, internal_headers))
+        self.metadata_headers = []
+        for header in internal_headers:
+            if header not in leaf_headers:
+                leaf_headers.append(header)
+        self.metadata_headers = leaf_headers
 
         self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
                                       how='outer', on="Node_id")
@@ -148,6 +157,12 @@ class Model(object):
         # self.center_tree()
         name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
+
+        self.model_added_columns = [
+            "px", "py", "x", "y", "branch_color",
+            "branch_is_visible", "longest", "node_color",
+            "node_is_visible", "shortest", "size", "width",
+            "Parent_id"]
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -188,7 +203,7 @@ class Model(object):
 
         pass
 
-    def unique_categories(metadata, attribute):
+    def unique_categories(self, metadata, attribute):
         """ Returns all unique metadata categories that belong to the attribute.
         Parameters
         ----------
@@ -207,7 +222,7 @@ class Model(object):
             attribute.
 
         """
-        pass
+        return self.metadata_headers
 
     def center_tree(self):
         """ Translate the tree coords in order to makes root (0,0) and
@@ -231,6 +246,10 @@ class Model(object):
         self.edge_metadata['x'] = self.edge_metadata[
             ['x']].apply(lambda l: l - self.centerX)
         self.edge_metadata['y'] = self.edge_metadata[
+            ['y']].apply(lambda l: l - self.centerY)
+        self.node_coords['x'] = self.node_coords[
+            ['x']].apply(lambda l: l - self.centerX)
+        self.node_coords['y'] = self.node_coords[
             ['y']].apply(lambda l: l - self.centerY)
 
     def select_edge_category(self):
@@ -288,19 +307,53 @@ class Model(object):
         updated version of edge metadata
         """
 
-        if lower != "":
-            self.edge_metadata[category] = self.edge_metadata[category].mask(
-                self.edge_metadata[attribute] > float(lower), new_value)
+        if lower is not "":
+            self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
-        if equal != "":
-            self.edge_metadata[category] = self.edge_metadata[category].mask(
-                self.edge_metadata[attribute] == equal, new_value)
+        if equal is not "":
+            self.edge_metadata.loc[self.edge_metadata[attribute] == equal, category] = new_value
 
-        if upper != "":
-            self.edge_metadata[category] = self.edge_metadata[category].mask(
-                self.edge_metadata[attribute] < float(upper), new_value)
+        if upper is not "":
+            self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
 
-        return self.select_edge_category()
+        return self.edge_metadata
+
+    def retrive_highlighted_values(self, color, exclude=[]):
+        """ Returns all row entries with branch_color == to color
+
+        Parameters
+        ----------
+        color : str
+            The color to match row to
+        exclude : list
+            A list of columns to exlude in the return dataframe
+        Returns
+        -------
+        result : pd.Dataframe
+            A dataframe containing the rows which contain color
+        """
+
+        result = self.edge_metadata.loc[self.edge_metadata['branch_color'] == color, self.metadata_headers]
+
+        return result
+
+    def retrive_label_coords(self, label, value):
+        """ Returns the coordinates of the nodes that are the the column 'label'
+        and have 'value'
+
+        Parameters
+        ----------
+        label : str
+            The column to search in
+        value : str or int
+            The value to match
+        Returns
+        -------
+        result : pd.Dataframe
+            A dataframe containing the coordinates of the matched labels
+        """
+
+        return self.edge_metadata.loc[self.edge_metadata[label] == value, ['Node_id', 'x', 'y']]
 
     def collapse_clades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.

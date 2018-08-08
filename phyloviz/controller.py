@@ -21,7 +21,7 @@ class NodeHandler(RequestHandler):
         self.m = m
 
     def get(self):
-        nodes = self.m.node_metadata.to_json(orient='records')
+        nodes = self.m.node_coords.to_json(orient='records')
         self.write(nodes)
         self.finish()
 
@@ -80,4 +80,15 @@ class CollapseHandler(RequestHandler):
         triangles = self.m.collapse_clades(sliderScale)
         tri_json = triangles.to_json(orient='records')
         self.write(tri_json)
+        self.finish()
+
+
+class TableHandler(RequestHandler):
+    def initialize(self, m):
+        self.m = m
+
+    def get(self):
+        color = self.get_argument('color')
+        table_values = self.m.retrive_highlighted_values(color)
+        self.write(table_values.to_json(orient='records'))
         self.finish()
