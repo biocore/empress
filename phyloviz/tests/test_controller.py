@@ -58,7 +58,7 @@ class TestController(TestHandler):
             for line in lines:
                 if line == '<body>\n':
                     start = True
-                 # Need to remove the urls from the html file because they contain a variable in the string
+                # Need to remove the urls from the html file because they contain a variable in the string
                 # similar to why we need to remove everything before the body tag
                 if line == 'var urls = { // urls for webserver\n':
                     urlSection = True
