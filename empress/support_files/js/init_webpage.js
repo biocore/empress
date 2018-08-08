@@ -1,22 +1,14 @@
 "use strict";
 
-function initWebPage(edgeMetadata) {
-  $("#highlight-menu").show();
+function fillDropDownMenu(headers) {
+  $("#highlight-menu").show(); // dont need?
 
-  let templateMetadata = edgeMetadata[0];
-  let x = $("#highlight-options")[0];
-  const exclude = ["px", "py", "x", "y", "branch_color","branch_is_visible",
-    "longest","node_color","node_is_visible","shortest","size","width","Node_id",
-    "Parent_id", "is_tip"];
-
-  //add metadata categories to drop down menu
-  for (let property in templateMetadata) {
-    if (!($.inArray(property, exclude) >= 0)) {
-      let option = document.createElement("option");
-      option.text = property;
-      option.label = property;
-      x.add(option);
-    }
+  let menu = $("#highlight-options").empty()[0];
+  for (let header of headers) {
+    let option = document.createElement("option");
+      option.text = header;
+      option.label = header;
+      menu.add(option);
   }
 }
 

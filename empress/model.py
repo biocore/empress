@@ -133,7 +133,7 @@ class Model(object):
 
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
-             self.centerY, self.scale) = self.tree.coords(900, 1500)
+             self.centerY, self.scale) = self.tree.coords(1080, 1920)
             self.node_coords = self.tree.node_coords()
         else:
             self.edge_metadata = edge_metadata
@@ -142,6 +142,8 @@ class Model(object):
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
         internal_headers = internal_metadata.columns.values.tolist()
         leaf_headers = leaf_metadata.columns.values.tolist()
+        self.leaf_headers = leaf_headers.copy()
+        self.internal_headers = internal_headers.copy()
 
         self.metadata_headers = []
         for header in internal_headers:
@@ -407,3 +409,29 @@ class Model(object):
 
         self.triangles = pd.DataFrame(triData).T
         return self.triangles
+
+    def retrive_leaf_headers(self):
+        """ Returns a list of the headers for the leaf metadata
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        return : list
+            a list of the leaf metadata headers
+        """
+        return self.leaf_headers
+
+    def retrive_internal_headers(self):
+        """ Returns a list of the headers for the internal metadata
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        return : list
+            a list of the internal metadata headers
+        """
+        return self.internal_headers

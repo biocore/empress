@@ -156,23 +156,31 @@ function selectHighlight(attr, cat, val, l, u, e) {
   });
 }
 
+function userCladeColor() {
+  console.log("test");
+
+  const attr = $("#highlight-options").val();
+  const cat = "branch_color";
+  const val = $("#color-selector").val().toUpperCase().slice(1);
+  const l = $("#lower-bound").val();
+  const u = $("#upper-bound").val();
+  const e = $("#category").val();
+
+  fillTable(val);
+  addAttrItem(attr, cat, val, l, u, e);
+}
 /*
  * Shows the selected menu and hides the other ones
  */
-function showMenu(evt, menuName) {
-  let menus = $(".menu");
-
-  for(let i = 0; i < menus.length; i++) {
-    menus.eq(i).hide();
+function showMenu(menuName) {
+  if(menuName === "leaf") {
+    fillDropDownMenu(field.leaf_headers.headers);
+    $("#select-data").attr("onclick", "userHighlightSelect()");
   }
-
-  let tabs = document.getElementsByClassName("tabs");
-  tabs.forEach(function(tab){
-    tab.className.replace("active");
-  })
-
-  $("#" + menuName).show();
-  evt.currentTarget.className += "active";
+  else {
+    fillDropDownMenu(field.internal_headers.headers);
+    $("#select-data").attr("onclick", "userCladeColor()");
+  }
 }
 
 function clearSelection(obj) {

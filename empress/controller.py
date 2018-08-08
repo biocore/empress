@@ -99,9 +99,28 @@ class LabelHandler(RequestHandler):
         self.m = m
 
     def get(self):
-        print("LabelHandler")
         label = self.get_argument('label')
         value = self.get_argument('value')
         label_coords = self.m.retrive_label_coords(label, value)
         self.write(label_coords.to_json(orient='records'))
+        self.finish()
+
+
+class LeafHeaderHandler(RequestHandler):
+    def initialize(self, m):
+        self.m = m
+
+    def get(self):
+        leaf_headers = self.m.retrive_leaf_headers()
+        self.write({'headers': leaf_headers})
+        self.finish()
+
+
+class InternalHeaderHandler(RequestHandler):
+    def initialize(self, m):
+        self.m = m
+
+    def get(self):
+        internal_headers = self.m.retrive_internal_headers()
+        self.write({'headers': internal_headers})
         self.finish()
