@@ -45,23 +45,23 @@ Your browser does not support HTML5
 <script type="text/javascript">
 // global variables
 };
-var field = {
+let field = {
 edgeFields : ["px", "py", "branch_color", "x", "y",
 "branch_color"],
 nodeFields : ["x", "y", "color"]
 };
-var shaderProgram = {}; // the complied vertex/fragment shaders
-var gl = {}; // webgl context - used to call webgl functions
-var drawingData = { // stores info need to draw such as vertex data
+let shaderProgram = {}; // the complied vertex/fragment shaders
+let gl = {}; // webgl context - used to call webgl functions
+let drawingData = { // stores info need to draw such as vertex data
 isMouseDown : false,
 lastMouseX : null,
 lastMouseY : null,
 zoomAmount : 1,
-zoomLevel : 0,
 scaleFactor : 5.0 / 4.0
 };
-var numAttr = 0;
-var attrItem = {};
+let numAttr = 0;
+let attrItem = {};
+let labels = {};
 </script>
 <script type="text/javascript">
 {

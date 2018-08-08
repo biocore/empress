@@ -328,12 +328,7 @@ class Tree(TreeNode):
             node_data[node.name] = {**coords, **attr}
 
         # convert to pd.DataFrame
-        index_list = pd.Index([
-            'x',
-            'y',
-            'color'])
-        node_data = pd.DataFrame(
-            node_data,
-            index=index_list).T
+        index_list = pd.Index(['x', 'y', 'color'])
+        node_data = pd.DataFrame(node_data, index=index_list).T
 
         return node_data
