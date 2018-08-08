@@ -11,9 +11,9 @@
 <script type="text/javascript" src="/static/jquery-2.2.4.min.js?v=052806eeee49a85fb006eece489a8d1c"></script>
 <script type="text/javascript" src="/static/jquery.event.drag-2.2.min.js?v=761bb3e053ce7bf2c41bdde132325c1f"></script>
 <script type="text/javascript" src="/static/init_webgl.js?v=1b446efc39f7de75860f2cae1b9629e3"></script>
-<script type="text/javascript" src="/static/callbacks.js?v=8bc8691da225dfe5137d8fb8480a8b21"></script>
+<script type="text/javascript" src="/static/callbacks.js?v=512b2bdd54bf1f7860a1ba9b7901c048"></script>
 <script type="text/javascript" src="/static/drawing_loop.js?v=984d3770fdb0f82b7dbc4fc88b1dfa69"></script>
-<script type="text/javascript" src="/static/init_webpage.js?v=49d3e09ea50e29339b125b15bfcfdd79"></script>
+<script type="text/javascript" src="/static/init_webpage.js?v=fa4953dfaa502560c85a74589bf00ddb"></script>
 <script type="text/javascript" src="/static/slick.core.min.js?v=bfd44ce7e43f91cc7c7a9f839ea46216"></script>
 <script type="text/javascript" src="/static/slick.editors.min.js?v=b60ab77f525ee4ddd4cf416bc23412e6"></script>
 <script type="text/javascript" src="/static/slick.formatters.min.js?v=733d94f8e307fa2daee8c1374f127116"></script>
@@ -66,12 +66,12 @@ Your browser does not support HTML5
 <script type="text/javascript">
 // global variables
 var urls = { // urls for webserver
-highlightURL : 'http://localhost:8080/highlight',
-collapseURL : 'http://localhost:8080/collapse',
-edgeURL : 'http://localhost:8080/api/edges',
-colorURL : 'http://localhost:8080/color',
-nodeURL : 'http://localhost:8080/api/nodes',
-tableURL : 'http://localhost:8080/table_values'
+highlightURL : 'http://' + window.location.host + '/highlight',
+collapseURL : 'http://' + window.location.host + '/collapse',
+edgeURL : 'http://' + window.location.host + '/api/edges',
+colorURL : 'http://' + window.location.host + '/color',
+nodeURL : 'http://' + window.location.host + '/api/nodes',
+tableURL : 'http://' + window.location.host + '/table_values'
 };
 var field = {
 edgeFields : ["px", "py", "branch_color", "x", "y",
