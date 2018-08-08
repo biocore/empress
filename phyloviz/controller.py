@@ -89,7 +89,7 @@ class TableHandler(RequestHandler):
 
     def get(self):
         color = self.get_argument('color')
-        table_values = self.m.retrive_hightlighted_values(color)
+        table_values = self.m.retrive_highlighted_values(color)
         self.write(table_values.to_json(orient='records'))
         self.finish()
 

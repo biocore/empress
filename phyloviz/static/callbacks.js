@@ -157,28 +157,6 @@ function selectHighlight(attr, cat, val, l, u, e) {
 }
 
 /*
- * Collapses clades based on the slider scale
- */
-// function collapseClades() {
-//   const ss = $("#collapse-range").val();
-
-//   let triangles;
-//   let edges;
-//   $.getJSON(urls.collapseURL, {sliderScale: ss}, function(data) {
-//     triangles = data;
-//   }).done(function() {
-//     $.getJSON(urls.edgeURL, function(data2) {
-//       edges = data2;
-//     }).done(function() {
-//       drawingData.edgeCoords = extractInfo(edges, field.edgeFields);
-//       drawingData.largeDim = normalizeTree(edges);
-//       gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(drawingData.edgeCoords));
-//       requestAnimationFrame(loop);
-//     });
-//   });
-// }
-
-/*
  * Shows the selected menu and hides the other ones
  */
 function showMenu(evt, menuName) {
@@ -206,9 +184,9 @@ function clearSelection(obj) {
   let u = '';
   let e = '';
 
-  if(item.operator == " > " ) {
+  if(item.operator === " > " ) {
     l = item.compVal;
-  } else if(item.operator == " < ") {
+  } else if(item.operator === " < ") {
     u = item.compVal;
   } else {
     e = item.compVal;
