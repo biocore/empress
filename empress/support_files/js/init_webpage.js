@@ -6,7 +6,8 @@ function initWebPage(edgeMetadata) {
   let templateMetadata = edgeMetadata[0];
   let x = $("#highlight-options")[0];
   const exclude = ["px", "py", "x", "y", "branch_color","branch_is_visible",
-    "longest","node_color","node_is_visible","shortest","size","width","Node_id","Parent_id"];
+    "longest","node_color","node_is_visible","shortest","size","width","Node_id",
+    "Parent_id", "is_tip"];
 
   //add metadata categories to drop down menu
   for (let property in templateMetadata) {
@@ -33,7 +34,8 @@ function fillTable(color) {
       let col = {
         id  : property,
         name : property,
-        field : property
+        field : property,
+        sortable: true
       };
       columns.push(col);
     }
@@ -49,9 +51,36 @@ function fillTable(color) {
     let options = {
       enableCellNavigation: true,
       enableColumnReorder: false,
-      topPanelHeight : 0
+      topPanelHeight : 0,
+      multiColumnSort: true
     };
     grid = new Slick.Grid("#scrolltable", datarows, columns, options);
+
+    // taken from https://github.com/mleibman/SlickGrid/blob/gh-pages/examples/example-multi-column-sort.html
+    grid.onSort.subscribe(function (e, args) {
+      let cols = args.sortCols;
+      datarows.sort(function (dataRow1, dataRow2) {
+        let field = {};
+        let sign = {};
+        let value1 = {};
+        let value2 = {};
+        let result = {};
+        for (let i = 0, l = cols.length; i < l; i++) {
+          field = cols[i].sortCol.field;
+          sign = cols[i].sortAsc ? 1 : -1;
+          value1 = dataRow1[field];
+          value2 = dataRow2[field];
+          result = (value1 == value2 ? 0 : (value1 > value2 ? 1 : -1)) * sign;
+          if (result != 0) {
+            return result;
+          }
+        }
+        return 0;
+      });
+      grid.invalidate();
+      grid.render();
+      extractLabels(grid.getData());
+    });
   });
 }
 
@@ -63,8 +92,8 @@ function extractInfo(metaData, fields) {
     let extracted = [];
     for (let prop of fields) {
       extracted.push(edge[prop]);
-  };
-  return extracted;
+    };
+    return extracted;
   });
   extractedFields = [].concat.apply([], extractedFields);
 
@@ -112,5 +141,5 @@ function normalizeTree(edgeMeta) {
   const [maxY,minY] = [Math.max(...yCoords), Math.min(...yCoords)];
   const [xDim, yDim] = [Math.abs(maxX - minX), Math.abs(maxY - minY)];
 
-  return (xDim > yDim) ? xDim : yDim;
+  return Math.max(xDim, yDim)
 }

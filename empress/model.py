@@ -2,7 +2,7 @@ import skbio
 from skbio import TreeNode
 import pandas as pd
 import numpy as np
-from phyloviz.tree import Tree
+from empress.tree import Tree
 
 
 def name_internal_nodes(tree):
@@ -131,7 +131,6 @@ class Model(object):
         tree = read(tree_file, tree_format)
         self.tree = Tree.from_tree(tree)
 
-        # TODO: Should this not call coords if edge_metadata is empty
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
              self.centerY, self.scale) = self.tree.coords(900, 1500)
@@ -143,7 +142,7 @@ class Model(object):
         leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
         internal_headers = internal_metadata.columns.values.tolist()
         leaf_headers = leaf_metadata.columns.values.tolist()
-        # self.metadata_headers = list(set().union(leaf_headers, internal_headers))
+
         self.metadata_headers = []
         for header in internal_headers:
             if header not in leaf_headers:
@@ -154,15 +153,13 @@ class Model(object):
                                       how='outer', on="Node_id")
         self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
                                       how='outer', on="Node_id")
-        # self.center_tree()
         name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
 
         self.model_added_columns = [
             "px", "py", "x", "y", "branch_color",
-            "branch_is_visible", "longest", "node_color",
-            "node_is_visible", "shortest", "size", "width",
-            "Parent_id"]
+            "branch_is_visible", "longest", "node_color", "node_is_visible",
+            "shortest", "size", "width", "Parent_id"]
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -306,7 +303,6 @@ class Model(object):
         edgeData : pd.Dataframe
         updated version of edge metadata
         """
-
         if lower is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
@@ -332,8 +328,10 @@ class Model(object):
         result : pd.Dataframe
             A dataframe containing the rows which contain color
         """
-
-        result = self.edge_metadata.loc[self.edge_metadata['branch_color'] == color, self.metadata_headers]
+        columns = list(self.metadata_headers)
+        columns.append('x')
+        columns.append('y')
+        result = self.edge_metadata.loc[self.edge_metadata['branch_color'] == color, columns]
 
         return result
 
@@ -352,7 +350,6 @@ class Model(object):
         result : pd.Dataframe
             A dataframe containing the coordinates of the matched labels
         """
-
         return self.edge_metadata.loc[self.edge_metadata[label] == value, ['Node_id', 'x', 'y']]
 
     def collapse_clades(self, sliderScale):

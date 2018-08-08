@@ -92,3 +92,16 @@ class TableHandler(RequestHandler):
         table_values = self.m.retrive_highlighted_values(color)
         self.write(table_values.to_json(orient='records'))
         self.finish()
+
+
+class LabelHandler(RequestHandler):
+    def initialize(self, m):
+        self.m = m
+
+    def get(self):
+        print("LabelHandler")
+        label = self.get_argument('label')
+        value = self.get_argument('value')
+        label_coords = self.m.retrive_label_coords(label, value)
+        self.write(label_coords.to_json(orient='records'))
+        self.finish()
