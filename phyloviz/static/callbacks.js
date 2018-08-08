@@ -116,10 +116,10 @@ function addAttrItem(attr, cat, val, l, u, e) {
   attrLabel.setAttribute("class", "attr");
   let operator;
   let compVal;
-  if(l != "") {
+  if(l !== "") {
     operator = " > ";
     compVal = l;
-  } else if (u != "") {
+  } else if (u !== "") {
     operator = " < ";
     compVal = u;
   } else {
