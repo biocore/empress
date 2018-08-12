@@ -1,6 +1,6 @@
 import tornado
-from phyloviz.model import Model
-from phyloviz.controller import (
+from empress.model import Model
+from empress.controller import (
     ModelHandler, EdgeHandler, NodeHandler, ZoomHandler,
     BenchmarkHandler, HighlightHandler, TriangleHandler,
     CollapseHandler, TableHandler)
@@ -25,7 +25,7 @@ class Application(tornado.web.Application):
                     ]
 
         settings = dict(
-            static_path=os.path.join(os.path.dirname(__file__), "static"),
+            static_path=os.path.join(os.path.dirname(__file__), "support_files"),
             debug=True
         )
         tornado.web.Application.__init__(self, handlers, **settings)

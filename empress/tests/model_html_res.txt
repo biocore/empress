@@ -41,50 +41,27 @@ Your browser does not support HTML5
 <div id="scrolltable"></div>
 </td>
 </tr>
-<<<<<<< HEAD
-<!-- <table id="dataTable">
-</table> -->
-=======
->>>>>>> 8669e54e8bb50b176c2314685616f30b35de8ec3
 </table>
 <script type="text/javascript">
 // global variables
 };
-<<<<<<< HEAD
 let field = {
-=======
-var field = {
->>>>>>> 8669e54e8bb50b176c2314685616f30b35de8ec3
 edgeFields : ["px", "py", "branch_color", "x", "y",
 "branch_color"],
 nodeFields : ["x", "y", "color"]
 };
-<<<<<<< HEAD
 let shaderProgram = {}; // the complied vertex/fragment shaders
 let gl = {}; // webgl context - used to call webgl functions
 let drawingData = { // stores info need to draw such as vertex data
-=======
-var shaderProgram = {}; // the complied vertex/fragment shaders
-var gl = {}; // webgl context - used to call webgl functions
-var drawingData = { // stores info need to draw such as vertex data
->>>>>>> 8669e54e8bb50b176c2314685616f30b35de8ec3
 isMouseDown : false,
 lastMouseX : null,
 lastMouseY : null,
 zoomAmount : 1,
-<<<<<<< HEAD
 scaleFactor : 5.0 / 4.0
 };
 let numAttr = 0;
 let attrItem = {};
 let labels = {};
-=======
-zoomLevel : 0,
-scaleFactor : 5.0 / 4.0
-};
-var numAttr = 0;
-var attrItem = {};
->>>>>>> 8669e54e8bb50b176c2314685616f30b35de8ec3
 </script>
 <script type="text/javascript">
 {
@@ -110,4 +87,4 @@ draw();
 }
 </script>
 </body>
-</html
+</html>

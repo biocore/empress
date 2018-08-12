@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------
 import os
 import filecmp
-from phyloviz.tests.test_handler import TestHandler
+from empress.tests.test_handler import TestHandler
 from unittest import main
 
 
