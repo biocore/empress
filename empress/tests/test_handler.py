@@ -6,8 +6,8 @@
 # ----------------------------------------------------------------------------
 import os
 from tornado.testing import AsyncHTTPTestCase
-from phyloviz.webserver import Application
-from phyloviz.model import Model
+from empress.webserver import Application
+from empress.model import Model
 
 
 class TestHandler(AsyncHTTPTestCase):

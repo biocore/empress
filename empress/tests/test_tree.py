@@ -10,7 +10,7 @@ import pandas as pd
 from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import complete
 from pandas.util.testing import assert_frame_equal
-from phyloviz.tree import Tree
+from empress.tree import Tree
 
 
 class TestDendrogram(unittest.TestCase):
