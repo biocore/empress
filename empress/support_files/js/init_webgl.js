@@ -106,6 +106,11 @@ function initWebGl() {
   gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.nodeVertBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.nodeCoords), gl.DYNAMIC_DRAW)
 
+  // buffer object for colored clades
+  shaderProgram.cladeVertBuffer = gl.createBuffer();
+  // gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.cladeVertBuffer);
+  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.coloredClades), gl.DYNAMIC_DRAW)
+
   shaderProgram.worldMat = mat4.create();
 }
 

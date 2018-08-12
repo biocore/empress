@@ -124,3 +124,16 @@ class InternalHeaderHandler(RequestHandler):
         internal_headers = self.m.retrive_internal_headers()
         self.write({'headers': internal_headers})
         self.finish()
+
+
+class ColorCladeHandler(RequestHandler):
+    def initialize(self, m):
+        self.m = m
+
+    def get(self):
+        clade_cat = self.get_argument('attribute')
+        clade = self.get_argument('clade')
+        color = self.get_argument('color')
+        colored_clades = self.m.color_clade(clade_cat, clade, color)
+        self.write(colored_clades)
+        self.finish()
