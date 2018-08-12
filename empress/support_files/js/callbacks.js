@@ -156,8 +156,6 @@ function selectHighlight(attr, cat, val, l, u, e) {
   });
 }
 
-// TODO: need to implemnent a way to the overlapping sectors to be
-// drawn according to there depth
 function userCladeColor() {
   console.log("test");
 
