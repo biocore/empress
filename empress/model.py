@@ -156,7 +156,6 @@ class Model(object):
                 if header not in leaf_headers:
                     leaf_headers.append(header)
             self.metadata_headers = leaf_headers
-
             self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
                                       how='outer', on="Node_id")
             self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
@@ -250,10 +249,6 @@ class Model(object):
             ['x']].apply(lambda l: l - self.centerX)
         self.edge_metadata['y'] = self.edge_metadata[
             ['y']].apply(lambda l: l - self.centerY)
-        # self.node_coords['x'] = self.node_coords[
-        #     ['x']].apply(lambda l: l - self.centerX)
-        # self.node_coords['y'] = self.node_coords[
-        #     ['y']].apply(lambda l: l - self.centerY)
 
     def select_edge_category(self):
         """
