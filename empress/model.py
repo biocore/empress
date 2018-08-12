@@ -1,7 +1,10 @@
 import skbio
-from skbio import TreeNode
+import math
 import pandas as pd
 import numpy as np
+from skbio import TreeNode
+from scipy.spatial import distance
+from scipy.spatial import ConvexHull
 from empress.tree import Tree
 
 
@@ -133,27 +136,30 @@ class Model(object):
 
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
-             self.centerY, self.scale) = self.tree.coords(1080, 1920)
-            self.node_coords = self.tree.node_coords()
+            self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
 
-        internal_metadata = read_internal_node_metadata(internal_metadata_file, skip_row)
-        leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
-        internal_headers = internal_metadata.columns.values.tolist()
-        leaf_headers = leaf_metadata.columns.values.tolist()
-        self.leaf_headers = leaf_headers.copy()
-        self.internal_headers = internal_headers.copy()
+        if internal_metadata_file is not None:
+            internal_metadata = read_internal_node_metadata(internal_metadata_file, skip_row)
+            internal_headers = internal_metadata.columns.values.tolist()
+            self.internal_headers = internal_headers.copy()
 
-        self.metadata_headers = []
-        for header in internal_headers:
-            if header not in leaf_headers:
-                leaf_headers.append(header)
-        self.metadata_headers = leaf_headers
+        if leaf_metadata_file is not None:
+            leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
+            leaf_headers = leaf_metadata.columns.values.tolist()
+            self.leaf_headers = leaf_headers.copy()
 
-        self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
+        if internal_metadata_file is not None and leaf_metadata_file is not None:
+            self.metadata_headers = []
+            for header in internal_headers:
+                if header not in leaf_headers:
+                    leaf_headers.append(header)
+            self.metadata_headers = leaf_headers
+
+            self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
                                       how='outer', on="Node_id")
-        self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
+            self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
                                       how='outer', on="Node_id")
         name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
@@ -226,7 +232,6 @@ class Model(object):
     def center_tree(self):
         """ Translate the tree coords in order to makes root (0,0) and
         Returns edge metadata.
-
         Parameters
         ----------
         Returns
@@ -236,7 +241,6 @@ class Model(object):
            Every row corresponds to a unique species
            and every column corresponds to an attribute.
            TODO: metadata will also want to contain
-
         """
         self.edge_metadata['px'] = self.edge_metadata[
             ['px']].apply(lambda l: l - self.centerX)
@@ -246,10 +250,10 @@ class Model(object):
             ['x']].apply(lambda l: l - self.centerX)
         self.edge_metadata['y'] = self.edge_metadata[
             ['y']].apply(lambda l: l - self.centerY)
-        self.node_coords['x'] = self.node_coords[
-            ['x']].apply(lambda l: l - self.centerX)
-        self.node_coords['y'] = self.node_coords[
-            ['y']].apply(lambda l: l - self.centerY)
+        # self.node_coords['x'] = self.node_coords[
+        #     ['x']].apply(lambda l: l - self.centerX)
+        # self.node_coords['y'] = self.node_coords[
+        #     ['y']].apply(lambda l: l - self.centerY)
 
     def select_edge_category(self):
         """
@@ -299,7 +303,7 @@ class Model(object):
         attribute : str
             The name of the attribute(column of the table).
         category:
-            The category of a certain attribute.
+            The column of table that will be updated such as branch_color
         Returns
         -------
         edgeData : pd.Dataframe
@@ -435,3 +439,208 @@ class Model(object):
             a list of the internal metadata headers
         """
         return self.internal_headers
+
+
+    def in_quad_1(self, angle):
+        """ Determines if the angle is between 0 and pi / 2 radians
+
+        Returns
+        -------
+        return : bool
+            true is angle is between 0 and pi / 2 radians
+        """
+        return True if angle > 0 and angle < math.pi / 2 else False
+
+    def in_quad_4(self, angle):
+        """ Determines if the angle is between (3 * pi) / 2 radians and 2 * pi
+
+        Returns
+        -------
+        return : bool
+            true is angle is between 0 and pi / 2 radians
+        """
+        return True if angle > 3 * math.pi / 2 and angle < 2 * math.pi else False
+
+    def calculate_angle(self, v):
+        """ Finds the angle of the two 2-d vectors in radians
+
+        Parameters
+        ----------
+        v : tuple
+            vector
+
+        Returns
+        -------
+            angle of vector in radians
+        """
+        if v[0] == 0:
+            return math.pi / 2 if v[1] > 0 else 3 * math.pi / 2
+
+        angle = math.atan(v[1] / v[0])
+
+        if v[0] > 0:
+            return angle if angle >= 0 else 2 * math.pi + angle
+        else:
+            return angle + math.pi if angle >=0 else (2 * math.pi + angle) - math.pi
+
+    def hull_sector_info(self, a_1, a_2):
+        """ determines the starting angle of the sector and total theta of the sector.
+        Note this is only to be used if the sector is less than pi radians
+
+        Parameters
+        ----------
+        a1 : float
+            angle (in radians) of one of the edges of the sector
+        a2 : float
+            angle (in radians of one of the edges of the sector)
+
+        Returns
+        -------
+        starting angle : float
+            the angle at which to start drawing the sector
+        theta : float
+            the angle of the sector
+        """
+        # detemines the angle of the sector as well as the angle to start drawing the sector
+        if (not (self.in_quad_1(a_1) and self.in_quad_4(a_2) or
+                self.in_quad_4(a_1) and self.in_quad_1(a_2))):
+            starting_angle = a_2 if a_1 > a_2 else a_1
+            theta = abs(a_1 - a_2)
+        else:
+            starting_angle = a_1 if a_1 > a_2 else a_2
+            ending_angle = a_1 if starting_angle == a_2 else a_2
+            theta = ending_angle + abs(starting_angle - 2 * math.pi)
+
+        return (starting_angle, theta)
+
+    def color_clade(self, attribute, clade, color):
+        """ Will highlight a certain clade by drawing a sector around the clade.
+        The sector will start at the root of the clade and create an arc from the
+        most to the right most tip. The sector will aslo have a defualt arc length
+        equal to the distance from the root of the clade to the deepest tip..
+
+        Parameters
+        ----------
+        attribute : string
+            The name of the given to the column within the metadata that contains the
+            clades
+        clade : string
+            The clade to highlight
+        color : string (hex string)
+            The color to highlight the clade with
+
+        Returns
+        -------
+        return : list
+            A list of all highlighted clades
+        """
+        # is it be safe to assume clade ids will be unique?
+        clade_root = self.edge_metadata.loc[self.edge_metadata[attribute] ==clade]
+        clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
+
+        if clade_root_id == -1:
+            return {}
+
+        # Note: all calculations are down by making the clade root (0,0)
+
+        # grab all of the tips of the clade
+        clade = self.tree.find(clade_root_id)
+        tips = clade.tips()
+
+        # stores points for the convex hull
+        points = np.array([[0, 0]])
+
+        # origin
+        center = (0, 0)
+
+        # parallel array to points. Used to locate the node for each point
+        nodes = [clade]
+
+        # will store the distance to the farthest tip
+        arc_length = 0
+
+        # Finds the max tip distance, largest and smallest angle
+        for tip in tips:
+            # add tip to set of points
+            tip_coords = (tip.x2 - clade.x2, tip.y2 - clade.y2)
+            point  = np.array([[tip_coords[0], tip_coords[1]]])
+            points = np.concatenate((points, point), axis=0)
+            nodes.append(tip)
+
+            # calculate distance from clade root to tip
+            tip_dist = distance.euclidean(tip_coords, center)
+
+            arc_length = tip_dist if tip_dist > arc_length else arc_length
+
+        # Note: the angle of the sector used to be found by taking the difference between the tips
+        # with the smallest and largest angle. However, that lead to an edge case that became
+        # fairly messy to deal with.
+
+        # find angle of sector by find the two points that are adjacent to (clade.x2, clade.y2)
+        # in the convex hull
+        hull = ConvexHull(points)
+        hull_vertices = hull.vertices
+        clade_index = -1
+
+        for i in range(0, len(hull_vertices)):
+            if hull_vertices[i] == 0:
+                clade_index = i
+                break
+
+        # calculates the bounding angles of the sector based on whether the clade root
+        # is part of the convex hull
+        if clade_index != -1:
+            # the left most and right most branch of the clade
+            e_1 = hull_vertices[i + 1 if i < len(hull_vertices) - 1 else 0]
+            e_2 = hull_vertices[i - 1]
+
+            (edge_1, edge_2) = (points[e_1], points[e_2])
+
+            # calculate the angle of the left and right most branch of the clade
+            (a_1, a_2) = (self.calculate_angle(edge_1), self.calculate_angle(edge_2))
+
+            # the starting/total angle of the sector
+            (starting_angle, theta) = self.hull_sector_info(a_1, a_2)
+
+        else:
+            # find the tips whose edge contains the angle of the ancestor branch
+            tip_angles = [self.calculate_angle(points[x]) for x in range(0, len(points)) if set(points[x]) != set([0, 0]) ]
+            tip_angles = sorted(tip_angles)
+
+            # calculate the angle going from clade root to its direct ancestor
+            clade_ancestor = clade.parent
+            ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
+            ancestor_angle = self.calculate_angle((ancestor_coords))
+
+            # find the two tips that contain the clade ancestor
+            tips_found = False
+            for i in range(0, len(tip_angles)):
+                if tip_angles[i] < ancestor_angle < tip_angles[i + 1]:
+                    (a_1, a_2) = (tip_angles[i], tip_angles[i + 1])
+                    tips_found = True
+                    break
+
+            if not tips_found:
+                (a_1, a_2) = (tip_angles[0], tip_angles[i])
+
+            # detemines the starting angle of the sectorr
+            if ancestor_angle <= math.pi:
+                starting_angle = a_1 if a_1 > a_2 else a_2
+            else:
+                starting_angle = a_2 if a_1 > a_2 else a_1
+
+            # calculate the theta of the sector
+            theta = 2 * math.pi - abs(a_1 - a_2)
+
+        clade_ancestor = clade.parent
+
+        # the sector webgl will draw
+        colored_clades = {
+            'center_x': clade.x2,
+            'center_y': clade.y2,
+            'starting_angle': starting_angle,
+            'theta': theta,
+            'arc_length': arc_length,
+            'color': color}
+
+        return colored_clades

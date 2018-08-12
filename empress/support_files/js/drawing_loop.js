@@ -12,47 +12,52 @@ function loop() {
 
   gl.uniformMatrix4fv(shaderProgram.mvpUniform, false, shaderProgram.mvpMat);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.treeVertBuffer);
-  gl.vertexAttribPointer(
-    shaderProgram.positionAttribLocation, // Attribute location
-    2, // Number of elements per attribute
-    gl.FLOAT, // Type of elements
-    gl.FALSE,
-    5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
-    0 // Offset from the beginning of a single vertex to this attribute
-  );
-  gl.vertexAttribPointer(
-    shaderProgram.colorAttribLocation, // Attribute location
-    3, // Number of elements per attribute
-    gl.FLOAT, // Type of elements
-    gl.FALSE,
-    5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
-    2 * Float32Array.BYTES_PER_ELEMENT // Offset from the beginning of a single vertex to this attribute
-  );
+  // draw any highlighted clades
+  bindBuffer(shaderProgram.cladeVertBuffer);
+  gl.drawArrays(gl.TRIANGLES, 0, drawingData.coloredClades.length / 5);
 
-
+  // draw the tree
+  bindBuffer(shaderProgram.treeVertBuffer);
   gl.drawArrays(gl.LINES, 0, drawingData.edgeCoords.length / 5 );
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.nodeVertBuffer);
-  gl.vertexAttribPointer(
-    shaderProgram.positionAttribLocation, // Attribute location
-    2, // Number of elements per attribute
-    gl.FLOAT, // Type of elements
-    gl.FALSE,
-    5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
-    0 // Offset from the beginning of a single vertex to this attribute
-  );
-  gl.vertexAttribPointer(
-    shaderProgram.colorAttribLocation, // Attribute location
-    3, // Number of elements per attribute
-    gl.FLOAT, // Type of elements
-    gl.FALSE,
-    5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
-    2 * Float32Array.BYTES_PER_ELEMENT // Offset from the beginning of a single vertex to this attribute
-  );
-
+  // draw any nodes
+  bindBuffer(shaderProgram.nodeVertBuffer);
   gl.drawArrays(gl.POINTS, 0, drawingData.nodeCoords.length / 5 );
 
+  drawLabels();
+}
+
+/*
+ * sends a buffer to webgl to draw
+ */
+function bindBuffer(buffer) {
+  // defines constants for a vertex. Vertex are in the for [x, y, r, g, b]
+  const VERTEX_SIZE = 5;
+  const COORD_SIZE = 2;
+  const COORD_OFFSET = 0;
+  const COLOR_SIZE = 3;
+  const COLOR_OFFEST = 2;
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.vertexAttribPointer(
+    shaderProgram.positionAttribLocation,
+    COORD_SIZE,
+    gl.FLOAT,
+    gl.FALSE,
+    VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
+    COORD_OFFSET
+  );
+  gl.vertexAttribPointer(
+    shaderProgram.colorAttribLocation,
+    COLOR_SIZE,
+    gl.FLOAT,
+    gl.FALSE,
+    VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
+    COLOR_OFFEST * Float32Array.BYTES_PER_ELEMENT
+  );
+}
+
+function drawLabels() {
   // look up the divcontainer
   let divContainerElement = document.getElementById("divcontainer");
   while(divContainerElement.firstChild) {
@@ -102,26 +107,28 @@ function loop() {
 /*
  * Draws the tree
  */
-function draw() {
+function setUpCamera() {
   shaderProgram.viewMat  = mat4.create();
   const identityMat = mat4.create();
   let treeNormVec = vec3.create();
 
   vec3.set(treeNormVec, 1.0 / drawingData.largeDim * 3, 1.0 / drawingData.largeDim * 3, 1.0 / drawingData.largeDim * 3);
   mat4.fromScaling(shaderProgram.worldMat, treeNormVec);
-  mat4.lookAt(shaderProgram.viewMat, [0,0,-5], [0,0,0],[0,1,0]);
 
-  let rotateMat = mat4.create();
-  const angle = Math.PI;
-  mat4.rotate(rotateMat, identityMat, angle, [0,0,1]);
-  mat4.mul(shaderProgram.worldMat, shaderProgram.worldMat, rotateMat);
+  // define virtal camera properties
+  const CAM_POS = [0, 0, 5];
+  const CAM_LOOK_DIR = [0, 0, 0];
+  const CAM_UP_DIR = [0, 1, 0];
 
-  requestAnimationFrame(loop);
-}
+  // make the virtual camera sit in from of the tree and look at the center tree
+  mat4.lookAt(shaderProgram.viewMat, CAM_POS, CAM_LOOK_DIR, CAM_UP_DIR);
 
-function setProjMat() {
+  // defines the matrix used to represent what fov of the virtual camera
   shaderProgram.projMat = mat4.create();
   mat4.perspective(shaderProgram.projMat, glMatrix.toRadian(45),
                    gl.canvas.width / gl.canvas.height,
                    0.1,10);
+
+  // draw tree
+  requestAnimationFrame(loop);
 }

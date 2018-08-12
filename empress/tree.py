@@ -130,6 +130,8 @@ class Tree(TreeNode):
 
         # calculates coordinates of all nodes and the shortest/longest branches
         scale = self.rescale(width, height)
+        centerX = self.x2
+        centerY = self.y2
 
         # edge metadata
         edgeData = {}
@@ -147,6 +149,10 @@ class Tree(TreeNode):
                         'width': 1, 'size': 1}
                 edgeData[child.name] = {**nId, **isTip, **coords, **pId,
                                         **pCoords, **attr}
+
+        for node in self.postorder():
+            node.x2 = node.x2 - centerX
+            node.y2 = node.y2 - centerY
 
         index_list = pd.Index([
                 'Node_id',
@@ -166,8 +172,6 @@ class Tree(TreeNode):
         edgeMeta = pd.DataFrame(
             edgeData,
             index=index_list).T
-        centerX = self.x2
-        centerY = self.y2
         return (edgeMeta, centerX, centerY, scale)
 
     def rescale(self, width, height):
