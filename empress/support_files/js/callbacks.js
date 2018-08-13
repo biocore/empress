@@ -39,7 +39,7 @@ function mouseMove(event) {
   const newY = event.clientY;
   const dx = (newX - drawingData.lastMouseX) * drawingData.zoomAmount;
   const dy = (newY - drawingData.lastMouseY) * drawingData.zoomAmount;
-  const transVec = vec3.fromValues(dx,dy,0);
+  const transVec = vec3.fromValues(dx,-dy,0);
   let addTransMat = mat4.create();
 
   mat4.fromTranslation(addTransMat,transVec);
@@ -69,7 +69,7 @@ function mouseWheel(event) {
  */
 function resizeCanvas(event) {
   setCanvasSize(gl.canvas);
-  setProjMat();
+  setUpCamera();
   requestAnimationFrame(loop);
 }
 
@@ -83,10 +83,10 @@ function userHighlightSelect() {
 
   selectHighlight(attr, cat, val, l, u, e);
   fillTable(val);
-  addAttrItem(attr, cat, val, l, u, e);
+  addAttrItem(attr, val, l, u, e);
 }
 
-function addAttrItem(attr, cat, val, l, u, e) {
+function addAttrItem(attr, val, l, u, e) {
   let newAttrItem = document.createElement("div");
   newAttrItem.setAttribute("class", "attr-item");
   newAttrItem.setAttribute("id", numAttr);
@@ -144,8 +144,8 @@ function addAttrItem(attr, cat, val, l, u, e) {
  */
 function selectHighlight(attr, cat, val, l, u, e) {
   let edges;
-  $.getJSON(urls.highlightURL, {attribute : attr, category : cat,
-            value : val, lower : l, equal : e, upper : u}, function(data) {
+  $.getJSON(urls.highlightURL, {attribute: attr, category: cat,
+            value: val, lower: l, equal: e, upper: u}, function(data) {
     edges = data;
   }).done(function() {
     drawingData.edgeCoords = extractInfo(edges, field.edgeFields);
@@ -156,23 +156,44 @@ function selectHighlight(attr, cat, val, l, u, e) {
   });
 }
 
+function userCladeColor() {
+  console.log("test");
+
+  const attr = $("#highlight-options").val();
+  const color = $("#color-selector").val().toUpperCase().slice(1);
+  const clade = $("#category").val();
+  let nodeCoords;
+
+  $.getJSON(urls.cladeColorURL, {attribute: attr, clade: clade,
+            color: color}, function(data) {
+    let center = vec2.create();
+    vec2.set(center, data.center_x, data.center_y);
+    let arcLength = data.arc_length;
+    let startTheta = data.starting_angle;
+    let totalTheta = data.theta;
+    let color = data.color;
+    let sector = createArcSector(center, arcLength, startTheta, totalTheta, color);
+    drawingData.coloredClades = drawingData.coloredClades.concat(sector);
+  }).done(function() {
+    gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.cladeVertBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.coloredClades), gl.DYNAMIC_DRAW);
+    requestAnimationFrame(loop);
+  });
+
+  addAttrItem(attr, color, "", "", clade);
+}
 /*
  * Shows the selected menu and hides the other ones
  */
-function showMenu(evt, menuName) {
-  let menus = $(".menu");
-
-  for(let i = 0; i < menus.length; i++) {
-    menus.eq(i).hide();
+function showMenu(menuName) {
+  if(menuName === "leaf") {
+    fillDropDownMenu(field.leaf_headers.headers);
+    $("#select-data").attr("onclick", "userHighlightSelect()");
   }
-
-  let tabs = document.getElementsByClassName("tabs");
-  tabs.forEach(function(tab){
-    tab.className.replace("active");
-  })
-
-  $("#" + menuName).show();
-  evt.currentTarget.className += "active";
+  else {
+    fillDropDownMenu(field.internal_headers.headers);
+    $("#select-data").attr("onclick", "userCladeColor()");
+  }
 }
 
 function clearSelection(obj) {
