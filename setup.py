@@ -8,7 +8,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 # ----------------------------------------------------------------------------
 from glob import glob
-from setuptools import find_packages, setup
+from setuptools import setup
 
 extensions = []
 
