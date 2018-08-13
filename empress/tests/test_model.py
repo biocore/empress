@@ -312,5 +312,6 @@ class TestModel(unittest.TestCase):
         self.assertEqual(starting_angle, 7 * math.pi / 4)
         self.assertEqual(theta, math.pi / 2)
 
+
 if __name__ == '__main__':
     unittest.main()
