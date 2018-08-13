@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 import tornado
-from empress.model import Model
 from empress.controller import (
     ModelHandler, EdgeHandler, NodeHandler, ZoomHandler,
     BenchmarkHandler, HighlightHandler, TriangleHandler,
     CollapseHandler, TableHandler)
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
 import os.path
-import click
 
 
 class Application(tornado.web.Application):
@@ -30,4 +26,3 @@ class Application(tornado.web.Application):
             debug=True
         )
         tornado.web.Application.__init__(self, handlers, **settings)
-
