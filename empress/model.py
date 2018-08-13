@@ -598,8 +598,8 @@ class Model(object):
 
         else:
             # find the tips whose edge contains the angle of the ancestor branch
-            tip_angles = [self.calculate_angle(points[x]) for x in range(0, len(points)) if set(points[x]) != set([0, 0])]
-            tip_angles = sorted(tip_angles)
+            angles = [self.calculate_angle(points[x]) for x in range(0, len(points)) if set(points[x]) != set([0, 0])]
+            angles = sorted(angles)
 
             # calculate the angle going from clade root to its direct ancestor
             clade_ancestor = clade.parent
@@ -608,14 +608,14 @@ class Model(object):
 
             # find the two tips that contain the clade ancestor
             tips_found = False
-            for i in range(0, len(tip_angles)):
-                if tip_angles[i] < ancestor_angle < tip_angles[i + 1]:
-                    (a_1, a_2) = (tip_angles[i], tip_angles[i + 1])
+            for i in range(0, len(angles)):
+                if angles[i] < ancestor_angle < angles[i + 1]:
+                    (a_1, a_2) = (angles[i], angles[i + 1])
                     tips_found = True
                     break
 
             if not tips_found:
-                (a_1, a_2) = (tip_angles[0], tip_angles[i])
+                (a_1, a_2) = (angles[0], angles[i])
 
             # detemines the starting angle of the sectorr
             if ancestor_angle <= math.pi:
