@@ -136,7 +136,7 @@ class Model(object):
 
         if edge_metadata is None:
             (self.edge_metadata, self.centerX,
-            self.centerY, self.scale) = self.tree.coords(900, 1500)
+             self.centerY, self.scale) = self.tree.coords(900, 1500)
         else:
             self.edge_metadata = edge_metadata
 
@@ -157,9 +157,9 @@ class Model(object):
                     leaf_headers.append(header)
             self.metadata_headers = leaf_headers
             self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
-                                      how='outer', on="Node_id")
+                                          how='outer', on="Node_id")
             self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
-                                      how='outer', on="Node_id")
+                                          how='outer', on="Node_id")
         name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
 
@@ -435,7 +435,6 @@ class Model(object):
         """
         return self.internal_headers
 
-
     def in_quad_1(self, angle):
         """ Determines if the angle is between 0 and pi / 2 radians
 
@@ -476,7 +475,7 @@ class Model(object):
         if v[0] > 0:
             return angle if angle >= 0 else 2 * math.pi + angle
         else:
-            return angle + math.pi if angle >=0 else (2 * math.pi + angle) - math.pi
+            return angle + math.pi if angle >= 0 else (2 * math.pi + angle) - math.pi
 
     def hull_sector_info(self, a_1, a_2):
         """ determines the starting angle of the sector and total theta of the sector.
@@ -498,7 +497,7 @@ class Model(object):
         """
         # detemines the angle of the sector as well as the angle to start drawing the sector
         if (not (self.in_quad_1(a_1) and self.in_quad_4(a_2) or
-                self.in_quad_4(a_1) and self.in_quad_1(a_2))):
+                 self.in_quad_4(a_1) and self.in_quad_1(a_2))):
             starting_angle = a_2 if a_1 > a_2 else a_1
             theta = abs(a_1 - a_2)
         else:
@@ -530,7 +529,7 @@ class Model(object):
             A list of all highlighted clades
         """
         # is it be safe to assume clade ids will be unique?
-        clade_root = self.edge_metadata.loc[self.edge_metadata[attribute] ==clade]
+        clade_root = self.edge_metadata.loc[self.edge_metadata[attribute] == clade]
         clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
 
         if clade_root_id == -1:
@@ -558,7 +557,7 @@ class Model(object):
         for tip in tips:
             # add tip to set of points
             tip_coords = (tip.x2 - clade.x2, tip.y2 - clade.y2)
-            point  = np.array([[tip_coords[0], tip_coords[1]]])
+            point = np.array([[tip_coords[0], tip_coords[1]]])
             points = np.concatenate((points, point), axis=0)
             nodes.append(tip)
 
@@ -599,7 +598,7 @@ class Model(object):
 
         else:
             # find the tips whose edge contains the angle of the ancestor branch
-            tip_angles = [self.calculate_angle(points[x]) for x in range(0, len(points)) if set(points[x]) != set([0, 0]) ]
+            tip_angles = [self.calculate_angle(points[x]) for x in range(0, len(points)) if set(points[x]) != set([0, 0])]
             tip_angles = sorted(tip_angles)
 
             # calculate the angle going from clade root to its direct ancestor

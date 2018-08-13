@@ -8,7 +8,10 @@ Your browser does not support HTML5
 <div class="metadata-tabs">
 <div class="tab-options">
 <div>
-<button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
+<button class="tabs" onclick="showMenu('leaf')">Highlight Tips</button>
+</div>
+<div>
+<button class="tabs" onclick="showMenu('internal')">Color Clade</button>
 </div>
 </div>
 <div class="menu" id="highlight-menu">
@@ -16,7 +19,7 @@ Your browser does not support HTML5
 <select id = "highlight-options"></select>
 </div>
 <div>
-<input type = "button" value = "select" onclick = "userHighlightSelect();" />
+<input id="select-data" type = "button" value = "select"/>
 <input type = "color" id="color-selector"/>
 </div>
 <div class="text-field">
@@ -28,7 +31,7 @@ Your browser does not support HTML5
 <input type="text" id="upper-bound"/>
 </div>
 <div class="text-field">
-<label for="category">Category Name</label>
+<label for="category">Equals to</label>
 <input type="text" id="category"/>
 </div>
 <div class="attr-selector">
@@ -46,18 +49,19 @@ Your browser does not support HTML5
 // global variables
 };
 let field = {
-edgeFields : ["px", "py", "branch_color", "x", "y",
+edgeFields: ["px", "py", "branch_color", "x", "y",
 "branch_color"],
-nodeFields : ["x", "y", "color"]
+nodeFields: ["x", "y", "color"]
 };
 let shaderProgram = {}; // the complied vertex/fragment shaders
 let gl = {}; // webgl context - used to call webgl functions
 let drawingData = { // stores info need to draw such as vertex data
-isMouseDown : false,
-lastMouseX : null,
-lastMouseY : null,
-zoomAmount : 1,
-scaleFactor : 5.0 / 4.0
+isMouseDown: false,
+lastMouseX: null,
+lastMouseY: null,
+zoomAmount: 1,
+scaleFactor: 5.0 / 4.0,
+coloredClades: []
 };
 let numAttr = 0;
 let attrItem = {};
@@ -68,20 +72,24 @@ let labels = {};
 let edgeMetadata;
 let nodeCoords;
 // this may cause some syncing issues
-$.getJSON(urls.nodeURL, function(data) {
-nodeCoords = data;
+$.getJSON(urls.leafHeadersURL, function(data) {
+field.leaf_headers = data;
 }).done(function() {
-drawingData.nodeCoords = extractInfo(nodeCoords, field.nodeFields);
+$.getJSON(urls.internalHeadersURL, function(data) {
+field.internal_headers = data;
+}).done(function() {
+drawingData.nodeCoords = [0, 0, 0, 0, 0];
 $.getJSON(urls.edgeURL, function(data) {
 edgeMetadata = data;
 }).done(function() {
-initWebPage(edgeMetadata);
+showMenu("leaf");
 drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
 drawingData.largeDim = normalizeTree(edgeMetadata);
 initWebGl();
 initCallbacks();
-setProjMat();
-draw();
+setUpCamera();
+requestAnimationFrame(loop);
+});
 });
 });
 }
