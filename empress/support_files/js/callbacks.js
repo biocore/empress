@@ -47,7 +47,9 @@ function mouseMove(event) {
 
   drawingData.lastMouseX = newX;
   drawingData.lastMouseY = newY;
-  deltaX += dx, deltaY += dy;
+
+  // used to determine the viewing window when drawing labels
+  deltaX -= dx, deltaY += dy;
   requestAnimationFrame(loop);
 }
 
