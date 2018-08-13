@@ -47,6 +47,7 @@ function mouseMove(event) {
 
   drawingData.lastMouseX = newX;
   drawingData.lastMouseY = newY;
+  deltaX += dx, deltaY += dy;
   requestAnimationFrame(loop);
 }
 

@@ -40,60 +40,6 @@ function fillTable(color) {
       }
       datarows.push(dr);
     }
-    /********************************************************
-    // taken from https://github.com/mleibman/SlickGrid/blob/gh-pages/examples/example-multi-column-sort.html
-    let cols = args.sortCols;
-    datarows.sort(function (dataRow1, dataRow2) {
-      let field = {};
-      let sign = {};
-      let value1 = {};
-      let value2 = {};
-      let result = {};
-      for (let i = 0, l = cols.length; i < l; i++) {
-        field = cols[i].sortCol.field;
-        sign = cols[i].sortAsc ? 1 : -1;
-        value1 = dataRow1[field];
-        value2 = dataRow2[field];
-        result = (value1 == value2 ? 0 : (value1 <= value2 ? 1 : -1)) * sign;
-        if (result != 0) {
-          return result;
-        }
-      }
-      return 0;
-    });
-    console.log(datarows);
-    grid.invalidate();
-    grid.render();
-    extractLabels(grid.getData());
-    *******************************************************/
-
-    // taken from https://github.com/mleibman/SlickGrid/blob/gh-pages/examples/example-multi-column-sort.html
-    grid.onSort.subscribe(function (e, args) {
-      let cols = args.sortCols;
-      datarows.sort(function (dataRow1, dataRow2) {
-        let field = {};
-        let sign = {};
-        let value1 = {};
-        let value2 = {};
-        let result = {};
-        for (let i = 0, l = cols.length; i < l; i++) {
-          field = cols[i].sortCol.field;
-          sign = cols[i].sortAsc ? 1 : -1;
-          value1 = dataRow1[field];
-          value2 = dataRow2[field];
-          result = (value1 == value2 ? 0 : (value1 <= value2 ? 1 : -1)) * sign;
-          if (result != 0) {
-            return result;
-          }
-        }
-        return 0;
-      });
-      console.log(datarows);
-      grid.invalidate();
-      grid.render();
-      extractLabels(grid.getData());
-    });
-
     let options = {
       enableCellNavigation: true,
       enableColumnReorder: false,
@@ -123,7 +69,6 @@ function fillTable(color) {
         }
         return 0;
       });
-      console.log(datarows);
       grid.invalidate();
       grid.render();
       extractLabels(grid.getData());
