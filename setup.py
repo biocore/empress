@@ -7,7 +7,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 # ----------------------------------------------------------------------------
-
+from glob import glob
 from setuptools import find_packages, setup
 
 extensions = []
@@ -45,7 +45,8 @@ setup(
     author_email="cantrell.kalen@gmail.com",
     maintainer="Empress development team",
     maintainer_email="cantrell.kalen@gmail.com",
-    packages=find_packages(),
+    packages=['empress'],
+    scripts=glob('scripts/empress'),
     setup_requires=['numpy >= 1.9.2'],
     ext_modules=extensions,
     install_requires=[
