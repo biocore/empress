@@ -40,6 +40,7 @@ function fillTable(color) {
       }
       datarows.push(dr);
     }
+
     let options = {
       enableCellNavigation: true,
       enableColumnReorder: false,
@@ -51,12 +52,8 @@ function fillTable(color) {
     // taken from https://github.com/mleibman/SlickGrid/blob/gh-pages/examples/example-multi-column-sort.html
     grid.onSort.subscribe(function (e, args) {
       let cols = args.sortCols;
+      let field, sign, value1, value2, result;
       datarows.sort(function (dataRow1, dataRow2) {
-        let field = {};
-        let sign = {};
-        let value1 = {};
-        let value2 = {};
-        let result = {};
         for (let i = 0, l = cols.length; i < l; i++) {
           field = cols[i].sortCol.field;
           sign = cols[i].sortAsc ? 1 : -1;
@@ -71,7 +68,7 @@ function fillTable(color) {
       });
       grid.invalidate();
       grid.render();
-      extractLabels(grid.getData());
+      extractLabels(grid.getData(), field);
     });
   });
 }
@@ -108,7 +105,7 @@ function extractColor(data) {
       return (typeof element === "string" ? element.match(/.{1,2}/g) : element)
   });
 
-  // flatten the array
+  // convert to array
   data = [].concat.apply([], data);
 
   // convert the 2 digit hex string into a float
@@ -170,9 +167,9 @@ function createArcSector(center, arcLength, startTheta, totalTheta, color) {
 function normalizeTree(edgeMeta) {
   const xCoords = edgeMeta.map(edge => edge.x);
   const yCoords = edgeMeta.map(edge => edge.y);
-  const [maxX,minX] = [Math.max(...xCoords), Math.min(...xCoords)];
-  const [maxY,minY] = [Math.max(...yCoords), Math.min(...yCoords)];
-  const [xDim, yDim] = [Math.abs(maxX - minX), Math.abs(maxY - minY)];
-
-  return Math.max(xDim, yDim)
+  let maxX, maxY, minX, minY;
+  [maxX, minX] = [Math.abs(Math.max(...xCoords)), Math.abs(Math.min(...xCoords))];
+  [maxY, minY] = [Math.abs(Math.max(...yCoords)), Math.abs(Math.min(...yCoords))];
+  const [xDim, yDim] = [Math.max(maxX, minX), Math.max(maxY, minY)];
+  drawingData.initZoom = Math.max(xDim, yDim);
 }

@@ -95,24 +95,28 @@
             "branch_color"],
         nodeFields: ["x", "y", "color"]
       };
-      let shaderProgram = {}; // the complied vertex/fragment shaders
+
+      let shaderProgram = {};
+
+      // the complied vertex/fragment shaders
       let gl = {}; // webgl context - used to call webgl functions
       let drawingData = { // stores info need to draw such as vertex data
         isMouseDown: false,
         lastMouseX: null,
         lastMouseY: null,
-        zoomAmount: 1,
-        scaleFactor: 5.0 / 4.0,
+        zoomAmount: 10,
+        maxZoom: 30,
         coloredClades: []
       };
       let numAttr = 0;
       let attrItem = {};
 
       let labels = {};
-      let deltaX = 0, deltaY = 0;
 
       let numUserSelects = 0;
       const INIT_COLOR = "FFFFFF";
+
+      let camera = {};
     </script>
 
     <script type="text/javascript">
@@ -133,11 +137,11 @@
           }).done(function() {
             showMenu("leaf");
             drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
-            drawingData.largeDim = normalizeTree(edgeMetadata);
             fillTable(INIT_COLOR);
+            normalizeTree(edgeMetadata);
             initWebGl();
             initCallbacks();
-            setUpCamera();
+            setPerspective();
             requestAnimationFrame(loop);
           });
         });
