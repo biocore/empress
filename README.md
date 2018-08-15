@@ -8,17 +8,20 @@ astral.cons.nid.e5p50.nwk, ncbi.t2t.txt, and metadata.tsv. "astral.cons.nid.e5p5
 Please install the following packages in order to run Empress
 
 ```
-conda install tornado
+conda create -n empress tornado
+source activate empress
 conda install -c conda-forge scikit-bio
+pip install git+https://github.com/biocore/empress.git
 ```
 
 # Run
-From the root directiory of empress type the following commands in the terminal
+Type the following commands in the terminal for more information
 
 ```
-cd empress
-python webserver.py
+empress --help
 ```
+
+TODO: Need example command + datasets
 
 You should then see 'start' in the terminal. Wait until you see 'server started at port 8080' and then open up your web brower. Type
 
