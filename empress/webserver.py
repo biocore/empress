@@ -18,7 +18,10 @@ class Application(tornado.web.Application):
                     (r"/benchmark", BenchmarkHandler),
                     (r"/collapse", CollapseHandler, dict(m=m)),
                     (r"/highlight", HighlightHandler, dict(m=m)),
-                    (r"/table_values", TableHandler,  dict(m=m))
+                    (r"/table_values", TableHandler,  dict(m=m)),
+                    (r"/leaf_headers", LeafHeaderHandler, dict(m=m)),
+                    (r"/internal_headers", InternalHeaderHandler, dict(m=m)),
+                    (r"/color_clade", ColorCladeHandler, dict(m=m))
                     ]
 
         settings = dict(
