@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import tornado
 from empress.controller import (
-    ModelHandler, EdgeHandler, NodeHandler, ZoomHandler,
-    BenchmarkHandler, HighlightHandler, TriangleHandler,
-    CollapseHandler, TableHandler)
+    ModelHandler, EdgeHandler, NodeHandler, ZoomHandler, BenchmarkHandler,
+    HighlightHandler, TriangleHandler, CollapseHandler, TableHandler,
+    LeafHeaderHandler, InternalHeaderHandler, ColorCladeHandler)
 import os.path
 
 
