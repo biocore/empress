@@ -11,9 +11,9 @@
 <script type="text/javascript" src="/static/vendor/js/jquery-2.2.4.min.js?v=052806eeee49a85fb006eece489a8d1c"></script>
 <script type="text/javascript" src="/static/vendor/js/jquery.event.drag-2.2.min.js?v=761bb3e053ce7bf2c41bdde132325c1f"></script>
 <script type="text/javascript" src="/static/js/init_webgl.js?v=de00fc9fde1be821cef63197a8647959"></script>
-<script type="text/javascript" src="/static/js/callbacks.js?v=3ce2255026fe63ad677f0c1fc4eb849e"></script>
-<script type="text/javascript" src="/static/js/drawing_loop.js?v=42ae561d43e176b61eb4c21f3e06ab2a"></script>
-<script type="text/javascript" src="/static/js/init_webpage.js?v=7ef613f1d1f7d73a5e7962788ace7453"></script>
+<script type="text/javascript" src="/static/js/callbacks.js?v=f18ada9348071284456a6c87129e78b2"></script>
+<script type="text/javascript" src="/static/js/drawing_loop.js?v=a551eb06901311d83f1410b5c14a5e66"></script>
+<script type="text/javascript" src="/static/js/init_webpage.js?v=41718cf9ca4bf8796d2f8836186506b9"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.core.min.js?v=bfd44ce7e43f91cc7c7a9f839ea46216"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.editors.min.js?v=b60ab77f525ee4ddd4cf416bc23412e6"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.formatters.min.js?v=733d94f8e307fa2daee8c1374f127116"></script>
@@ -97,6 +97,8 @@ coloredClades: []
 let numAttr = 0;
 let attrItem = {};
 let labels = {};
+let numUserSelects = 0;
+const INIT_COLOR = "FFFFFF";
 </script>
 <script type="text/javascript">
 {
@@ -116,6 +118,7 @@ edgeMetadata = data;
 showMenu("leaf");
 drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
 drawingData.largeDim = normalizeTree(edgeMetadata);
+fillTable(INIT_COLOR);
 initWebGl();
 initCallbacks();
 setUpCamera();
