@@ -32,7 +32,10 @@
 
       <div class="tab-options">
         <div>
-          <button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
+          <button class="tabs" onclick="showMenu('leaf')">Highlight Tips</button>
+        </div>
+        <div>
+          <button class="tabs" onclick="showMenu('internal')">Color Clade</button>
         </div>
       </div>
 
@@ -42,7 +45,7 @@
         </div>
 
         <div>
-          <input type = "button" value = "select" onclick = "userHighlightSelect();" />
+          <input id="select-data" type = "button" value = "select"/>
           <input type = "color" id="color-selector"/>
         </div>
 
@@ -57,7 +60,7 @@
         </div>
 
         <div class="text-field">
-          <label for="category">Category Name</label>
+          <label for="category">Equals to</label>
           <input type="text" id="category"/>
         </div>
 
@@ -77,26 +80,30 @@
     <script type="text/javascript">
       // global variables
         var urls = { // urls for webserver
-        highlightURL : 'http://' + window.location.host + '/highlight',
-        collapseURL : 'http://' + window.location.host  + '/collapse',
-        edgeURL : 'http://' + window.location.host + '/api/edges',
-        colorURL : 'http://' + window.location.host + '/color',
-        nodeURL : 'http://' + window.location.host + '/api/nodes',
-        tableURL : 'http://' + window.location.host + '/table_values'
+        highlightURL: "http://" + window.location.host + "/highlight",
+        collapseURL: "http://" + window.location.host  + "/collapse",
+        edgeURL: "http://" + window.location.host + "/api/edges",
+        colorURL: "http://" + window.location.host + "/color",
+        nodeURL: "http://"+ window.location.host + "/api/nodes",
+        tableURL: "http://" + window.location.host + "/table_values",
+        leafHeadersURL: "http://" + window.location.host + "/leaf_headers",
+        internalHeadersURL: "http://" + window.location.host + "/internal_headers",
+        cladeColorURL: "http://" + window.location.host + "/color_clade"
       };
       let field = {
-        edgeFields : ["px", "py", "branch_color", "x", "y",
+        edgeFields: ["px", "py", "branch_color", "x", "y",
             "branch_color"],
-        nodeFields : ["x", "y", "color"]
+        nodeFields: ["x", "y", "color"]
       };
       let shaderProgram = {}; // the complied vertex/fragment shaders
       let gl = {}; // webgl context - used to call webgl functions
       let drawingData = { // stores info need to draw such as vertex data
-        isMouseDown : false,
-        lastMouseX : null,
-        lastMouseY : null,
-        zoomAmount : 1,
-        scaleFactor : 5.0 / 4.0
+        isMouseDown: false,
+        lastMouseX: null,
+        lastMouseY: null,
+        zoomAmount: 1,
+        scaleFactor: 5.0 / 4.0,
+        coloredClades: []
       };
       let numAttr = 0;
       let attrItem = {};
@@ -110,20 +117,24 @@
       let nodeCoords;
 
       // this may cause some syncing issues
-      $.getJSON(urls.nodeURL, function(data) {
-        nodeCoords = data;
+      $.getJSON(urls.leafHeadersURL, function(data) {
+        field.leaf_headers = data;
       }).done(function() {
-        drawingData.nodeCoords = extractInfo(nodeCoords, field.nodeFields);
-        $.getJSON(urls.edgeURL, function(data) {
-          edgeMetadata = data;
-        }).done(function() {
-          initWebPage(edgeMetadata);
-          drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
-          drawingData.largeDim = normalizeTree(edgeMetadata);
-          initWebGl();
-          initCallbacks();
-          setProjMat();
-          draw();
+      $.getJSON(urls.internalHeadersURL, function(data) {
+        field.internal_headers = data;
+      }).done(function() {
+          drawingData.nodeCoords = [0, 0, 0, 0, 0];
+          $.getJSON(urls.edgeURL, function(data) {
+            edgeMetadata = data;
+          }).done(function() {
+            showMenu("leaf");
+            drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
+            drawingData.largeDim = normalizeTree(edgeMetadata);
+            initWebGl();
+            initCallbacks();
+            setUpCamera();
+            requestAnimationFrame(loop);
+          });
         });
       });
     }

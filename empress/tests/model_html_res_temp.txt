@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-16">
 <title>WebGL - Experiment</title>
-<link rel="stylesheet" type="text/css" href="/static/slick.grid.css?v=459dd2d912077e3463f80dfcef768141">
-<link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.11.3.custom.css?v=42468acb3ddfa7a28295e35d52f1abb9">
-<link rel="stylesheet" type="text/css" href="/static/slick.grid.format.css?v=e6a868a89793281828f8cbe74125540b">
-<link rel="stylesheet" type="text/css" href="/static/style.css?v=52f3085bd2363b0b0071cb705c88473a">
-<script type="text/javascript" src="/static/gl-matrix.min.js?v=2e2806f78ad6a835e53b0aba5ff11ea9"></script>
-<script type="text/javascript" src="/static/jquery-2.2.4.min.js?v=052806eeee49a85fb006eece489a8d1c"></script>
-<script type="text/javascript" src="/static/jquery.event.drag-2.2.min.js?v=761bb3e053ce7bf2c41bdde132325c1f"></script>
-<script type="text/javascript" src="/static/init_webgl.js?v=accf239875d43ca268c26b966318d898"></script>
-<script type="text/javascript" src="/static/callbacks.js?v=6771828659fb0a79d11f7d8a87e579d7"></script>
-<script type="text/javascript" src="/static/drawing_loop.js?v=5fb3d6440754d736062cf2d815b44ee2"></script>
-<script type="text/javascript" src="/static/init_webpage.js?v=6e8b50721b92a6138c023bc487dede10"></script>
-<script type="text/javascript" src="/static/slick.core.min.js?v=bfd44ce7e43f91cc7c7a9f839ea46216"></script>
-<script type="text/javascript" src="/static/slick.editors.min.js?v=b60ab77f525ee4ddd4cf416bc23412e6"></script>
-<script type="text/javascript" src="/static/slick.formatters.min.js?v=733d94f8e307fa2daee8c1374f127116"></script>
-<script type="text/javascript" src="/static/slick.grid.min.js?v=e9389ff282178ac012e0d6ec5eeba5c9"></script>
+<link rel="stylesheet" type="text/css" href="/static/vendor/css/slick.grid.css?v=459dd2d912077e3463f80dfcef768141">
+<link rel="stylesheet" type="text/css" href="/static/vendor/css/jquery-ui-1.11.3.custom.css?v=42468acb3ddfa7a28295e35d52f1abb9">
+<link rel="stylesheet" type="text/css" href="/static/vendor/css/slick.grid.format.css?v=e6a868a89793281828f8cbe74125540b">
+<link rel="stylesheet" type="text/css" href="/static/css/style.css?v=52f3085bd2363b0b0071cb705c88473a">
+<script type="text/javascript" src="/static/vendor/js/gl-matrix.min.js?v=38d0eb63158c9c26d4d2e6f1405e0751"></script>
+<script type="text/javascript" src="/static/vendor/js/jquery-2.2.4.min.js?v=052806eeee49a85fb006eece489a8d1c"></script>
+<script type="text/javascript" src="/static/vendor/js/jquery.event.drag-2.2.min.js?v=761bb3e053ce7bf2c41bdde132325c1f"></script>
+<script type="text/javascript" src="/static/js/init_webgl.js?v=de00fc9fde1be821cef63197a8647959"></script>
+<script type="text/javascript" src="/static/js/callbacks.js?v=3ce2255026fe63ad677f0c1fc4eb849e"></script>
+<script type="text/javascript" src="/static/js/drawing_loop.js?v=42ae561d43e176b61eb4c21f3e06ab2a"></script>
+<script type="text/javascript" src="/static/js/init_webpage.js?v=7ef613f1d1f7d73a5e7962788ace7453"></script>
+<script type="text/javascript" src="/static/vendor/js/slick.core.min.js?v=bfd44ce7e43f91cc7c7a9f839ea46216"></script>
+<script type="text/javascript" src="/static/vendor/js/slick.editors.min.js?v=b60ab77f525ee4ddd4cf416bc23412e6"></script>
+<script type="text/javascript" src="/static/vendor/js/slick.formatters.min.js?v=733d94f8e307fa2daee8c1374f127116"></script>
+<script type="text/javascript" src="/static/vendor/js/slick.grid.min.js?v=e9389ff282178ac012e0d6ec5eeba5c9"></script>
 </head>
 <body>
 <div class="container">
@@ -29,7 +29,10 @@ Your browser does not support HTML5
 <div class="metadata-tabs">
 <div class="tab-options">
 <div>
-<button class="tabs" onclick="showMenu(event,'highlight-menu')">Highlight Tips</button>
+<button class="tabs" onclick="showMenu('leaf')">Highlight Tips</button>
+</div>
+<div>
+<button class="tabs" onclick="showMenu('internal')">Color Clade</button>
 </div>
 </div>
 <div class="menu" id="highlight-menu">
@@ -37,7 +40,7 @@ Your browser does not support HTML5
 <select id = "highlight-options"></select>
 </div>
 <div>
-<input type = "button" value = "select" onclick = "userHighlightSelect();" />
+<input id="select-data" type = "button" value = "select"/>
 <input type = "color" id="color-selector"/>
 </div>
 <div class="text-field">
@@ -49,7 +52,7 @@ Your browser does not support HTML5
 <input type="text" id="upper-bound"/>
 </div>
 <div class="text-field">
-<label for="category">Category Name</label>
+<label for="category">Equals to</label>
 <input type="text" id="category"/>
 </div>
 <div class="attr-selector">
@@ -66,26 +69,30 @@ Your browser does not support HTML5
 <script type="text/javascript">
 // global variables
 var urls = { // urls for webserver
-highlightURL : 'http://' + window.location.host + '/highlight',
-collapseURL : 'http://' + window.location.host + '/collapse',
-edgeURL : 'http://' + window.location.host + '/api/edges',
-colorURL : 'http://' + window.location.host + '/color',
-nodeURL : 'http://' + window.location.host + '/api/nodes',
-tableURL : 'http://' + window.location.host + '/table_values'
+highlightURL: "http://" + window.location.host + "/highlight",
+collapseURL: "http://" + window.location.host + "/collapse",
+edgeURL: "http://" + window.location.host + "/api/edges",
+colorURL: "http://" + window.location.host + "/color",
+nodeURL: "http://"+ window.location.host + "/api/nodes",
+tableURL: "http://" + window.location.host + "/table_values",
+leafHeadersURL: "http://" + window.location.host + "/leaf_headers",
+internalHeadersURL: "http://" + window.location.host + "/internal_headers",
+cladeColorURL: "http://" + window.location.host + "/color_clade"
 };
 let field = {
-edgeFields : ["px", "py", "branch_color", "x", "y",
+edgeFields: ["px", "py", "branch_color", "x", "y",
 "branch_color"],
-nodeFields : ["x", "y", "color"]
+nodeFields: ["x", "y", "color"]
 };
 let shaderProgram = {}; // the complied vertex/fragment shaders
 let gl = {}; // webgl context - used to call webgl functions
 let drawingData = { // stores info need to draw such as vertex data
-isMouseDown : false,
-lastMouseX : null,
-lastMouseY : null,
-zoomAmount : 1,
-scaleFactor : 5.0 / 4.0
+isMouseDown: false,
+lastMouseX: null,
+lastMouseY: null,
+zoomAmount: 1,
+scaleFactor: 5.0 / 4.0,
+coloredClades: []
 };
 let numAttr = 0;
 let attrItem = {};
@@ -96,20 +103,24 @@ let labels = {};
 let edgeMetadata;
 let nodeCoords;
 // this may cause some syncing issues
-$.getJSON(urls.nodeURL, function(data) {
-nodeCoords = data;
+$.getJSON(urls.leafHeadersURL, function(data) {
+field.leaf_headers = data;
 }).done(function() {
-drawingData.nodeCoords = extractInfo(nodeCoords, field.nodeFields);
+$.getJSON(urls.internalHeadersURL, function(data) {
+field.internal_headers = data;
+}).done(function() {
+drawingData.nodeCoords = [0, 0, 0, 0, 0];
 $.getJSON(urls.edgeURL, function(data) {
 edgeMetadata = data;
 }).done(function() {
-initWebPage(edgeMetadata);
+showMenu("leaf");
 drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
 drawingData.largeDim = normalizeTree(edgeMetadata);
 initWebGl();
 initCallbacks();
-setProjMat();
-draw();
+setUpCamera();
+requestAnimationFrame(loop);
+});
 });
 });
 }
