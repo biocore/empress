@@ -71,7 +71,6 @@ function drawLabels() {
   let count = 0;
 
   for(let label = 0; label < Object.keys(labels).length ; ++label) {
-    console.log("test");
     let objSpace = vec4.fromValues(labels[label].x, labels[label].y, 0, 1);
     let clipSpace = vec4.create();
 
