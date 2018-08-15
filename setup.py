@@ -67,5 +67,4 @@ setup(
         'click >= 6.7'
     ],
     classifiers=classifiers,
-    package_data={},
 )
