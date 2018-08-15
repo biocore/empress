@@ -124,3 +124,5 @@ pvalues.txt
 # empress quick run scripts
 primate.sh
 tree_life.sh
+
+model_html_*.txt
