@@ -79,7 +79,7 @@
 
     <script type="text/javascript">
       // global variables
-        var urls = { // urls for webserver
+      var urls = { // urls for webserver
         highlightURL: "http://" + window.location.host + "/highlight",
         collapseURL: "http://" + window.location.host  + "/collapse",
         edgeURL: "http://" + window.location.host + "/api/edges",
@@ -109,6 +109,9 @@
       let attrItem = {};
 
       let labels = {};
+
+      let numUserSelects = 0;
+      const INIT_COLOR = "FFFFFF";
     </script>
 
     <script type="text/javascript">
@@ -130,6 +133,7 @@
             showMenu("leaf");
             drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
             drawingData.largeDim = normalizeTree(edgeMetadata);
+            fillTable(INIT_COLOR);
             initWebGl();
             initCallbacks();
             setUpCamera();
