@@ -87,6 +87,7 @@ function userHighlightSelect() {
 }
 
 function addAttrItem(attr, val, l, u, e) {
+  numUserSelects++;
   let newAttrItem = document.createElement("div");
   newAttrItem.setAttribute("class", "attr-item");
   newAttrItem.setAttribute("id", numAttr);
@@ -216,6 +217,11 @@ function clearSelection(obj) {
   fillTable(val);
 
   obj.parentNode.remove();
+
+  numUserSelects--;
+  if(numUserSelects === 0) {
+    fillTable(INIT_COLOR);
+  }
 }
 
 function selectTable(obj) {
