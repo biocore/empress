@@ -158,8 +158,6 @@ function selectHighlight(attr, cat, val, l, u, e) {
 }
 
 function userCladeColor() {
-  console.log("test");
-
   const attr = $("#highlight-options").val();
   const color = $("#color-selector").val().toUpperCase().slice(1);
   const clade = $("#category").val();
