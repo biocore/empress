@@ -1,7 +1,7 @@
 "use strict";
 
 function fillDropDownMenu(headers) {
-  $("#highlight-menu").show(); // dont need?
+  $("#highlight-menu").show();
 
   let menu = $("#highlight-options").empty()[0];
   for (let header of headers) {
@@ -40,7 +40,6 @@ function fillTable(color) {
       }
       datarows.push(dr);
     }
-
     let options = {
       enableCellNavigation: true,
       enableColumnReorder: false,
