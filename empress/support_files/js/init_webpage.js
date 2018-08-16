@@ -58,7 +58,7 @@ function fillTable(color) {
           sign = cols[i].sortAsc ? 1 : -1;
           value1 = dataRow1[field];
           value2 = dataRow2[field];
-          result = (value1 == value2 ? 0 : (value1 <= value2 ? 1 : -1)) * sign;
+          result = (value1 === value2 ? 0 : (value1 <= value2 ? 1 : -1)) * sign;
           if (result != 0) {
             return result;
           }
