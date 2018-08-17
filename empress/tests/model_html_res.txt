@@ -66,6 +66,8 @@ coloredClades: []
 let numAttr = 0;
 let attrItem = {};
 let labels = {};
+let numUserSelects = 0;
+const INIT_COLOR = "FFFFFF";
 </script>
 <script type="text/javascript">
 {
@@ -85,6 +87,7 @@ edgeMetadata = data;
 showMenu("leaf");
 drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
 drawingData.largeDim = normalizeTree(edgeMetadata);
+fillTable(INIT_COLOR);
 initWebGl();
 initCallbacks();
 setUpCamera();
