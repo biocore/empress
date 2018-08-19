@@ -50,6 +50,7 @@ function fillTable(color) {
 
     // taken from https://github.com/mleibman/SlickGrid/blob/gh-pages/examples/example-multi-column-sort.html
     grid.onSort.subscribe(function (e, args) {
+      console.log(args)
       let cols = args.sortCols;
       let field, sign, value1, value2, result;
       datarows.sort(function (dataRow1, dataRow2) {
@@ -58,7 +59,13 @@ function fillTable(color) {
           sign = cols[i].sortAsc ? 1 : -1;
           value1 = dataRow1[field];
           value2 = dataRow2[field];
-          result = (value1 === value2 ? 0 : (value1 <= value2 ? 1 : -1)) * sign;
+          if(value1 === null){
+            return 1;
+          }
+          if(value2 === null){
+            return -1;
+          }
+          result = (value1 === value2 ? 0 : (value1 > value2 ? 1 : -1)) * sign;
           if (result != 0) {
             return result;
           }

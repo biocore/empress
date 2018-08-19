@@ -106,23 +106,13 @@ class LabelHandler(RequestHandler):
         self.finish()
 
 
-class LeafHeaderHandler(RequestHandler):
+class HeaderHandler(RequestHandler):
     def initialize(self, m):
         self.m = m
 
     def get(self):
-        leaf_headers = self.m.retrive_leaf_headers()
-        self.write({'headers': leaf_headers})
-        self.finish()
-
-
-class InternalHeaderHandler(RequestHandler):
-    def initialize(self, m):
-        self.m = m
-
-    def get(self):
-        internal_headers = self.m.retrive_internal_headers()
-        self.write({'headers': internal_headers})
+        headers = self.m.retrive_headers()
+        self.write({'headers': headers})
         self.finish()
 
 

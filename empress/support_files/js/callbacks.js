@@ -112,19 +112,21 @@ function addAttrItem(attr, val, l, u, e) {
   newAttrItem.setAttribute("class", "attr-item");
   newAttrItem.setAttribute("id", numAttr);
 
-  let group = document.createElement("SELECT");
-  group.setAttribute("id", "group-number");
-  newAttrItem.appendChild(group);
+  // let group = document.createElement("SELECT");
+  // group.setAttribute("id", "group-number");
+  // newAttrItem.appendChild(group);
 
   let select = document.createElement("INPUT");
+  select.setAttribute("class", "btn")
   select.setAttribute("type", "button");
-  select.setAttribute("value", "select");
+  select.setAttribute("value", "Show in table");
   select.setAttribute("onclick", "selectTable(this)");
   newAttrItem.appendChild(select);
 
   let colorSelector = document.createElement("INPUT");
   colorSelector.setAttribute("type", "color");
   colorSelector.setAttribute("value", "#" + val);
+  colorSelector.setAttribute("onchange", "changeHighlightSelect(this)");
   newAttrItem.appendChild(colorSelector);
 
   let clear = document.createElement("INPUT");
@@ -157,7 +159,11 @@ function addAttrItem(attr, val, l, u, e) {
   attrLabel.innerHTML = attr + operator + compVal;
   newAttrItem.appendChild(attrLabel);
 
-  $(".attr-selector")[0].appendChild(newAttrItem);
+  $(".metadata-tabs")[0].appendChild(newAttrItem);
+}
+
+function test(arg1) {
+  console.log("blah blah");
 }
 
 /*
@@ -204,13 +210,14 @@ function userCladeColor() {
  * Shows the selected menu and hides the other ones
  */
 function showMenu(menuName) {
-  if(menuName === "leaf") {
+  if(menuName === "highlight") {
     fillDropDownMenu(field.leaf_headers.headers);
-    $("#select-data").attr("onclick", "userHighlightSelect()");
+    // $("#select-data").attr("onclick", "userHighlightSelect()");
+    $("#highlight-input").show();
   }
   else {
     fillDropDownMenu(field.internal_headers.headers);
-    $("#select-data").attr("onclick", "userCladeColor()");
+    $("#highlight-input").hide();
   }
 }
 
@@ -244,6 +251,28 @@ function clearSelection(obj) {
 function selectTable(obj) {
   const item = attrItem[obj.parentElement.id];
   const color = item.color;
+  fillTable(color);
+}
+
+function changeHighlightSelect(obj) {
+  const item = attrItem[obj.parentElement.id];
+  const attr = item.attr;
+  const cat = "branch_color";
+  console.log(obj)
+  const color = obj.value.toUpperCase().slice(1);
+  let l = '';
+  let u = '';
+  let e = '';
+
+  if(item.operator === " > " ) {
+    l = item.compVal;
+  } else if(item.operator === " < ") {
+    u = item.compVal;
+  } else {
+    e = item.compVal;
+  }
+
+  selectHighlight(attr, cat, color, l, u, e);
   fillTable(color);
 }
 
