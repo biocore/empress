@@ -28,25 +28,25 @@
     <div id="divcontainer"></div>
   </div>
 
-    <div class="metadata-tabs">
-
-      <div class="tab-options">
-        <div>
-          <button class="tabs" onclick="showMenu('leaf')">Highlight Tips</button>
-        </div>
-        <div>
-          <button class="tabs" onclick="showMenu('internal')">Color Clade</button>
-        </div>
+  <div class="metadata-tabs">
+    <div class="tab-options">
+      <div>
+        <button class="tabs" onclick="showMenu('highlight')">Highlight Tips</button>
       </div>
+      <div>
+        <button class="tabs" onclick="showMenu('color')">Color Clade</button>
+      </div>
+    </div>
 
-      <div class="menu" id="highlight-menu">
+    <div class="menu" id="highlight-menu">
+      <div id="highlight-input">
         <div>
           <select id = "highlight-options"></select>
         </div>
 
         <div>
-          <input id="select-data" type = "button" value = "select"/>
-          <input type = "color" id="color-selector"/>
+          <input id="select-data" type = "button" value = "select" onclick="userHighlightSelect()"/>
+          <input type = "color" id="color-selector" value="#ff0000"/>
         </div>
 
         <div class="text-field">
@@ -63,90 +63,117 @@
           <label for="category">Equals to</label>
           <input type="text" id="category"/>
         </div>
+      </div>
 
-        <div class="attr-selector">
+      <div id="color-input">
+        <div>
+          <input id="select-data" type = "button" value = "select" onclick="userCladeColor()"/>
+          <input type = "color" id="clade-color-selector" value="#ff0000"/>
+        </div>
+        <div class="text-field">
+          <label for="clade">clade/taxon</label>
+          <input type="text" id="clade"/>
         </div>
       </div>
     </div>
+  </div>
 
-    <table>
-      <tr>
-        <td valign="top">
-          <div id="scrolltable"></div>
-        </td>
-      </tr>
-    </table>
 
-    <script type="text/javascript">
-      // global variables
-      var urls = { // urls for webserver
-        highlightURL: "http://" + window.location.host + "/highlight",
-        collapseURL: "http://" + window.location.host  + "/collapse",
-        edgeURL: "http://" + window.location.host + "/api/edges",
-        colorURL: "http://" + window.location.host + "/color",
-        nodeURL: "http://"+ window.location.host + "/api/nodes",
-        tableURL: "http://" + window.location.host + "/table_values",
-        leafHeadersURL: "http://" + window.location.host + "/leaf_headers",
-        internalHeadersURL: "http://" + window.location.host + "/internal_headers",
-        cladeColorURL: "http://" + window.location.host + "/color_clade"
-      };
-      let field = {
-        edgeFields: ["px", "py", "branch_color", "x", "y",
-            "branch_color"],
-        nodeFields: ["x", "y", "color"]
-      };
+  <table>
+    <tr>
+      <td valign="top">
+        <div id="scrolltable"></div>
+      </td>
+    </tr>
+  </table>
 
-      let shaderProgram = {};
+  <script type="text/javascript">
+    // global variables
+    var urls = { // urls for webserver
+      highlightURL: "http://" + window.location.host + "/highlight",
+      collapseURL: "http://" + window.location.host  + "/collapse",
+      edgeURL: "http://" + window.location.host + "/api/edges",
+      colorURL: "http://" + window.location.host + "/color",
+      nodeURL: "http://"+ window.location.host + "/api/nodes",
+      tableURL: "http://" + window.location.host + "/table_values",
+      tableChangeURL: "http://" + window.location.host + "/table_change",
+      headersURL: "http://" + window.location.host + "/headers",
+      cladeColorURL: "http://" + window.location.host + "/color_clade"
+    };
+    let field = {
+      edgeFields: ["px", "py", "branch_color", "x", "y",
+          "branch_color"],
+      nodeFields: ["x", "y", "color"]
+    };
 
-      // the complied vertex/fragment shaders
-      let gl = {}; // webgl context - used to call webgl functions
-      let drawingData = { // stores info need to draw such as vertex data
-        isMouseDown: false,
-        lastMouseX: null,
-        lastMouseY: null,
-        zoomAmount: 10,
-        maxZoom: 30,
-        coloredClades: []
-      };
-      let numAttr = 0;
-      let attrItem = {};
+    let shaderProgram = {};
 
-      let labels = {};
+    // the complied vertex/fragment shaders
+    let gl = {}; // webgl context - used to call webgl functions
+    let drawingData = { // stores info need to draw such as vertex data
+      isMouseDown: false,
+      lastMouseX: null,
+      lastMouseY: null,
+      zoomAmount: 10,
+      maxZoom: 30,
+      coloredClades: []
+    };
+    let numAttr = 0;
+    let attrItem = {};
+    let grid = {};
+    let labels = {};
+    let labelPos = 0;
+    let gridInfo = {
+      initData: [],
+      data: [],
+      columns: [],
+      options: {},
+      grid: {}
+    };
+    const TRI_PER_ARC = 100;
+    const ELEMENTS_PER_VERT = 5;
+    const VERT_PER_TRI = 3;
 
-      let numUserSelects = 0;
-      const INIT_COLOR = "FFFFFF";
 
-      let camera = {};
-    </script>
+    let numUserSelects = 0;
+    const INIT_COLOR = "FFFFFF";
+    const CLEAR_COLOR_HEX = "C4C4C4";
+    const CLEAR_COLOR = 0.7686274509803922;
+    let camera = {};
+  </script>
 
-    <script type="text/javascript">
-    {
-      let edgeMetadata;
-      let nodeCoords;
+  <script type="text/javascript">
+  {
+    let edgeMetadata;
+    let nodeCoords;
 
-      // this may cause some syncing issues
-      $.getJSON(urls.leafHeadersURL, function(data) {
-        field.leaf_headers = data;
-      }).done(function() {
-      $.getJSON(urls.internalHeadersURL, function(data) {
-        field.internal_headers = data;
-      }).done(function() {
-          drawingData.nodeCoords = [0, 0, 0, 0, 0];
-          $.getJSON(urls.edgeURL, function(data) {
-            edgeMetadata = data;
-          }).done(function() {
-            showMenu("leaf");
-            drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
-            fillTable(INIT_COLOR);
-            normalizeTree(edgeMetadata);
-            initWebGl();
-            initCallbacks();
-            setPerspective();
-            requestAnimationFrame(loop);
+    // this may cause some syncing issues
+    $.getJSON(urls.headersURL, function(data) {
+      field.leaf_headers = data;
+    }).done(function() {
+    $.getJSON(urls.headersURL, function(data) {
+      field.internal_headers = data;
+    }).done(function() {
+        drawingData.nodeCoords = [0, 0, 0, 0, 0];
+        $.getJSON(urls.edgeURL, function(data) {
+          edgeMetadata = data;
+        }).done(function() {
+          fillDropDownMenu(field.leaf_headers.headers);
+          $("#highlight-input").hide();
+          $("#color-input").hide();
+          drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
+          $.getJSON(urls.tableURL, function(data) {
+            initGridTable(data);
           });
+          normalizeTree(edgeMetadata);
+          initWebGl();
+          initCallbacks();
+          setPerspective();
+          requestAnimationFrame(loop);
         });
       });
-    }
-    </script>
-    </body>
+    });
+  }
+  </script>
+</body>
 </html>

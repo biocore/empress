@@ -88,9 +88,23 @@ class TableHandler(RequestHandler):
         self.m = m
 
     def get(self):
-        color = self.get_argument('color')
-        table_values = self.m.retrive_highlighted_values(color)
+        table_values = self.m.retrive_default_table_values()
         self.write(table_values.to_json(orient='records'))
+        self.finish()
+
+class TableChangeHandler(RequestHandler):
+    def initialize(self, m):
+        self.m = m
+
+    def get(self):
+        attribute = self.get_argument('attribute')
+        lower = self.get_argument('lower')
+        equal = self.get_argument('equal')
+        upper = self.get_argument('upper')
+        selected = self.m.retrive_highlighted_values(
+            attribute, lower, equal, upper)
+        edges = selected.to_json(orient='records')
+        self.write(edges)
         self.finish()
 
 
@@ -106,23 +120,13 @@ class LabelHandler(RequestHandler):
         self.finish()
 
 
-class LeafHeaderHandler(RequestHandler):
+class HeaderHandler(RequestHandler):
     def initialize(self, m):
         self.m = m
 
     def get(self):
-        leaf_headers = self.m.retrive_leaf_headers()
-        self.write({'headers': leaf_headers})
-        self.finish()
-
-
-class InternalHeaderHandler(RequestHandler):
-    def initialize(self, m):
-        self.m = m
-
-    def get(self):
-        internal_headers = self.m.retrive_internal_headers()
-        self.write({'headers': internal_headers})
+        headers = self.m.retrive_headers()
+        self.write({'headers': headers})
         self.finish()
 
 
@@ -131,9 +135,8 @@ class ColorCladeHandler(RequestHandler):
         self.m = m
 
     def get(self):
-        clade_cat = self.get_argument('attribute')
         clade = self.get_argument('clade')
         color = self.get_argument('color')
-        colored_clades = self.m.color_clade(clade_cat, clade, color)
+        colored_clades = self.m.color_clade(clade, color)
         self.write(colored_clades)
         self.finish()
