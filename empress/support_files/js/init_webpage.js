@@ -18,7 +18,8 @@ function fillTable(color) {
     tableValues = data;
   }).done(function() {
     let templateMetadata = tableValues[0];
-    let grid;
+    // let grid;
+    labels = {};
 
     // add the header row to the table
     let columns = [];
@@ -50,7 +51,6 @@ function fillTable(color) {
 
     // taken from https://github.com/mleibman/SlickGrid/blob/gh-pages/examples/example-multi-column-sort.html
     grid.onSort.subscribe(function (e, args) {
-      console.log(args)
       let cols = args.sortCols;
       let field, sign, value1, value2, result;
       datarows.sort(function (dataRow1, dataRow2) {
@@ -131,15 +131,13 @@ function extractColor(data) {
  * r, g, b represent the color of the vertice.
  */
 function createArcSector(center, arcLength, startTheta, totalTheta, color) {
-  const TRI_PER_CIRCLE = 100;
   let sector = [];
-  let NUM_TRI = 100;
-  let theta = totalTheta / NUM_TRI;
+  let theta = totalTheta / TRI_PER_ARC;
   let rad = startTheta;
   let c = extractColor([color]);
 
   // creating the sector
-  for (let i = 0; i < NUM_TRI; i++) {
+  for (let i = 0; i < TRI_PER_ARC; i++) {
 
     // first vertice of triangle
     sector.push(center[0]);

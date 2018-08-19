@@ -48,7 +48,7 @@ function initWebGl() {
     return;
   }
 
-  gl.clearColor(0.75, 0.75, 0.75, 1);
+  gl.clearColor(CLEAR_COLOR, CLEAR_COLOR, CLEAR_COLOR, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   //

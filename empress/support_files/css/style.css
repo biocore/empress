@@ -91,6 +91,23 @@ canvas {
     padding-top: 4px;
 }
 
+.clr {
+    grid-area: clr;
+}
+
+.cld {
+    grid-area: cld;
+}
+
+.color-item {
+    display: grid;
+    grid-template-areas:
+        'cld cld .'
+        'clr . .';
+    border: 3px solid black;
+    padding-top: 4px;
+}
+
 .menu {
     display: none;
     padding: 6px 12px;
