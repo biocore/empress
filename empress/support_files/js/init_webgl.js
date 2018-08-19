@@ -48,7 +48,7 @@ function initWebGl() {
     return;
   }
 
-  gl.clearColor(0.75, 0.85, 0.8, 1.0);
+  gl.clearColor(0.75, 0.75, 0.75, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   //
@@ -110,6 +110,19 @@ function initWebGl() {
   shaderProgram.cladeVertBuffer = gl.createBuffer();
 
   shaderProgram.worldMat = mat4.create();
+  shaderProgram.xyTransMat = mat4.create();
+  shaderProgram.zTransMat = mat4.create();
+
+  shaderProgram.boundingMat = mat4.create();
+  shaderProgram.boundingTrans = mat4.create();
+  shaderProgram.boundingScale = mat4.create();
+
+  // calculate where the virtual camera is
+  camera.pos = [0, 0, drawingData.initZoom];
+  camera.lookDir = [0, 0, 0];
+  camera.upDir = [0, 1, 0];
+  shaderProgram.viewMat  = mat4.create();
+  mat4.lookAt(shaderProgram.viewMat, camera.pos, camera.lookDir, camera.upDir);
 }
 
 function setCanvasSize(canvas) {

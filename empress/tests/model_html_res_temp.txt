@@ -10,10 +10,10 @@
 <script type="text/javascript" src="/static/vendor/js/gl-matrix.min.js?v=38d0eb63158c9c26d4d2e6f1405e0751"></script>
 <script type="text/javascript" src="/static/vendor/js/jquery-2.2.4.min.js?v=052806eeee49a85fb006eece489a8d1c"></script>
 <script type="text/javascript" src="/static/vendor/js/jquery.event.drag-2.2.min.js?v=761bb3e053ce7bf2c41bdde132325c1f"></script>
-<script type="text/javascript" src="/static/js/init_webgl.js?v=de00fc9fde1be821cef63197a8647959"></script>
-<script type="text/javascript" src="/static/js/callbacks.js?v=f18ada9348071284456a6c87129e78b2"></script>
-<script type="text/javascript" src="/static/js/drawing_loop.js?v=a551eb06901311d83f1410b5c14a5e66"></script>
-<script type="text/javascript" src="/static/js/init_webpage.js?v=41718cf9ca4bf8796d2f8836186506b9"></script>
+<script type="text/javascript" src="/static/js/init_webgl.js?v=47d6559e8806eade736c76b6e1e18ee6"></script>
+<script type="text/javascript" src="/static/js/callbacks.js?v=99dae7cb02dc227ec6c9b40f53c8e14b"></script>
+<script type="text/javascript" src="/static/js/drawing_loop.js?v=b8485904c56020bf85dfead749938d23"></script>
+<script type="text/javascript" src="/static/js/init_webpage.js?v=fdbdb8a6b6b5dee603350626d02d8670"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.core.min.js?v=bfd44ce7e43f91cc7c7a9f839ea46216"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.editors.min.js?v=b60ab77f525ee4ddd4cf416bc23412e6"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.formatters.min.js?v=733d94f8e307fa2daee8c1374f127116"></script>
@@ -84,14 +84,15 @@ edgeFields: ["px", "py", "branch_color", "x", "y",
 "branch_color"],
 nodeFields: ["x", "y", "color"]
 };
-let shaderProgram = {}; // the complied vertex/fragment shaders
+let shaderProgram = {};
+// the complied vertex/fragment shaders
 let gl = {}; // webgl context - used to call webgl functions
 let drawingData = { // stores info need to draw such as vertex data
 isMouseDown: false,
 lastMouseX: null,
 lastMouseY: null,
-zoomAmount: 1,
-scaleFactor: 5.0 / 4.0,
+zoomAmount: 10,
+maxZoom: 30,
 coloredClades: []
 };
 let numAttr = 0;
@@ -99,6 +100,7 @@ let attrItem = {};
 let labels = {};
 let numUserSelects = 0;
 const INIT_COLOR = "FFFFFF";
+let camera = {};
 </script>
 <script type="text/javascript">
 {
@@ -117,11 +119,11 @@ edgeMetadata = data;
 }).done(function() {
 showMenu("leaf");
 drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
-drawingData.largeDim = normalizeTree(edgeMetadata);
 fillTable(INIT_COLOR);
+normalizeTree(edgeMetadata);
 initWebGl();
 initCallbacks();
-setUpCamera();
+setPerspective();
 requestAnimationFrame(loop);
 });
 });

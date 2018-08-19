@@ -27,40 +27,60 @@ function mouseUp(event) {
   drawingData.isMouseDown = false;
 }
 
+
 /*
- * Pans the tree if mouse down flag is set
+ * Moves the virtual camera in the xy-plane
  */
 function mouseMove(event) {
+  // dont move camera if user is not pressing down on the mouse
   if (!drawingData.isMouseDown) {
     return;
   }
 
+  // grab x,y coordinate of mouse
   const newX = event.clientX;
   const newY = event.clientY;
-  const dx = (newX - drawingData.lastMouseX) * drawingData.zoomAmount;
-  const dy = (newY - drawingData.lastMouseY) * drawingData.zoomAmount;
-  const transVec = vec3.fromValues(dx,-dy,0);
+
+  // note (0, 0) of the canvas is top left corner with +x going right and +y going down
+  const dx = (drawingData.lastMouseX - newX);
+  const dy = (newY - drawingData.lastMouseY);
+  const transVec = vec3.fromValues(dx, dy,0);
   let addTransMat = mat4.create();
 
+  // modify matrix to move camera in xy-plane
   mat4.fromTranslation(addTransMat,transVec);
-  mat4.multiply(shaderProgram.worldMat, shaderProgram.worldMat,addTransMat);
+  mat4.multiply(shaderProgram.xyTransMat, addTransMat, shaderProgram.xyTransMat);
 
+  // save current mouse coordinates
   drawingData.lastMouseX = newX;
   drawingData.lastMouseY = newY;
+
+  // redraw tree
   requestAnimationFrame(loop);
 }
 
 /*
- * zooms tree and this is where selective rendering will take place
+ * Moves the virtual camera along the z axis
  */
 function mouseWheel(event) {
-  let scaleByMat = new Float32Array(16);
-  const scaleAmount = (event.deltaY >= 0) ? drawingData.scaleFactor : 1 / drawingData.scaleFactor;
-  drawingData.zoomAmount = drawingData.zoomAmount / scaleAmount;
-  let scaleFactorVec = vec3.fromValues(scaleAmount, scaleAmount, scaleAmount);
-  mat4.fromScaling(scaleByMat, scaleFactorVec);
-  mat4.mul(shaderProgram.worldMat, scaleByMat, shaderProgram.worldMat);
+  const CAM_Z =2;
+  const Z_TRANS = 14;
 
+  let zoomByMat = new Float32Array(16);
+  let zoomAmount = (event.deltaY < 0) ? drawingData.zoomAmount : -1 * drawingData.zoomAmount;
+
+  // check to see if camera is maxed zoomed
+  let camPos = Math.abs(shaderProgram.zTransMat[Z_TRANS] + camera.pos[CAM_Z]);
+  if(camPos <= drawingData.maxZoom && zoomAmount < 0) {
+    return;
+  }
+
+  // modify the camera
+  let zoomVec = vec3.fromValues(0, 0, zoomAmount);
+  mat4.fromTranslation(zoomByMat, zoomVec);
+  mat4.mul(shaderProgram.zTransMat, zoomByMat, shaderProgram.zTransMat);
+
+  // redraw tree
   requestAnimationFrame(loop);
 }
 
@@ -69,7 +89,7 @@ function mouseWheel(event) {
  */
 function resizeCanvas(event) {
   setCanvasSize(gl.canvas);
-  setUpCamera();
+  setPerspective();
   requestAnimationFrame(loop);
 }
 
@@ -150,7 +170,6 @@ function selectHighlight(attr, cat, val, l, u, e) {
     edges = data;
   }).done(function() {
     drawingData.edgeCoords = extractInfo(edges, field.edgeFields);
-    drawingData.largeDim = normalizeTree(edges);
     gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.treeVertBuffer);
     gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(drawingData.edgeCoords));
     requestAnimationFrame(loop);
@@ -228,33 +247,21 @@ function selectTable(obj) {
   fillTable(color);
 }
 
-function selectLabel(obj) {
-  let label_coords;
-  $.getJSON(urls.labelURL, {label : "Node_id", value : "G000005825" }, function(data) {
-    label_coords = data;
-  }).done(function() {
-    labels = {};
-    for(let l in label_coords) {
-      let label = {
-        label : label_coords[l].Node_id,
-        x : label_coords[l].x,
-        y : label_coords[l].y
-      };
-      labels[l] = label;
-    }
-    requestAnimationFrame(loop);
-  });
-}
-
-function extractLabels(labs) {
-  labels = {};
-  for(let l in labs) {
-    let label = {
-      label : labs[l].Node_id,
-      x : labs[l].x,
-      y : labs[l].y
+function extractLabels(labs, labId) {
+  let tempLabels = {};
+  for(let i in labs) {
+    let label = labs[i];
+    let l = {
+      x : label["x"],
+      y : label["y"],
+      label : label[labId]
     };
-    labels[l] = label;
+    tempLabels[i] = l;
+  }
+  let numLabels = Object.keys(tempLabels).length;
+  labels = new Array(numLabels);
+  for(let i = 0; i < numLabels; ++i) {
+    labels[i] = [tempLabels[i].x, tempLabels[i].y, tempLabels[i].label];
   }
   requestAnimationFrame(loop);
 }
