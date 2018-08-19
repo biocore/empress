@@ -96,6 +96,7 @@
       colorURL: "http://" + window.location.host + "/color",
       nodeURL: "http://"+ window.location.host + "/api/nodes",
       tableURL: "http://" + window.location.host + "/table_values",
+      tableChangeURL: "http://" + window.location.host + "/table_change",
       headersURL: "http://" + window.location.host + "/headers",
       cladeColorURL: "http://" + window.location.host + "/color_clade"
     };
@@ -122,6 +123,13 @@
     let grid = {};
     let labels = {};
     let labelPos = 0;
+    let gridInfo = {
+      initData: [],
+      data: [],
+      columns: [],
+      options: {},
+      grid: {}
+    };
     const TRI_PER_ARC = 100;
     const ELEMENTS_PER_VERT = 5;
     const VERT_PER_TRI = 3;
@@ -154,7 +162,9 @@
           $("#highlight-input").hide();
           $("#color-input").hide();
           drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
-          fillTable(INIT_COLOR);
+          $.getJSON(urls.tableURL, function(data) {
+            initGridTable(data);
+          });
           normalizeTree(edgeMetadata);
           initWebGl();
           initCallbacks();

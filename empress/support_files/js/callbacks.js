@@ -105,7 +105,10 @@ function userHighlightSelect() {
   const e = $("#category").val();
 
   selectHighlight(attr, cat, val, l, u, e);
-  fillTable(val);
+  $.getJSON(urls.tableChangeURL, {attribute: attr, lower: l, equal: e,
+            upper: u}, function(data){
+    updateGridData(data);
+  });
   addHighlightItem(attr, val, l, u, e);
 }
 
@@ -245,9 +248,9 @@ function selectHighlight(attr, cat, val, l, u, e) {
   }).done(function() {
     drawingData.edgeCoords = extractInfo(edges, field.edgeFields);
     gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.treeVertBuffer);
-    gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(drawingData.edgeCoords));
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.edgeCoords), gl.DYNAMIC_DRAW);
+    // gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(drawingData.edgeCoords));
     requestAnimationFrame(loop);
-    console.log(val)
   });
 }
 
@@ -306,37 +309,49 @@ function clearSelection(obj) {
     e = item.compVal;
   }
   selectHighlight(attr, cat, "FFFFFF", l, u, e);
-  // fillTable(val);
-  grid.invalidate();
 
   delete attrItem[obj.parentElement.id];
   obj.parentNode.remove();
+  gridInfo.grid.invalidate();
 
   numUserSelects--;
   if(numUserSelects === 0) {
-    fillTable(INIT_COLOR);
+    updateGridData(gridInfo.initData);
     requestAnimationFrame(loop);
   }
   else {
+    let oldItem;
     for(let i in attrItem) {
-      item = attrItem[i]
-      if(item.operator === " > " ) {
-        l = item.compVal;
-      } else if(item.operator === " < ") {
-        u = item.compVal;
+      oldItem = attrItem[i];
+      l = '';
+      u = '';
+      e = '';
+      if(oldItem.operator === " > " ) {
+        l = oldItem.compVal;
+      } else if(oldItem.operator === " < ") {
+        u = oldItem.compVal;
       } else {
-        e = item.compVal;
+        e = oldItem.compVal;
       }
-      console.log(item);
-      selectHighlight(item.attr, cat, item.color, l, u, e)
+      selectHighlight(oldItem.attr, cat, oldItem.color, l, u, e)
     }
   }
 }
 
 function selectTable(obj) {
   const item = attrItem[obj.parentElement.id];
-  let color = item.color;
-  fillTable(color);
+  let l = '', u = '', e = '';
+  if(item.operator === " > " ) {
+    l = item.compVal;
+  } else if(item.operator === " < ") {
+    u = item.compVal;
+  } else {
+    e = item.compVal;
+  }
+  $.getJSON(urls.tableChangeURL, {attribute: item.attr, lower: l, equal: e,
+            upper: u}, function(data){
+    updateGridData(data);
+  });
 }
 
 function changeHighlightSelect(obj) {
@@ -358,7 +373,6 @@ function changeHighlightSelect(obj) {
   }
 
   selectHighlight(attr, cat, color, l, u, e);
-  fillTable(color);
 }
 
 function extractLabels(labs, labId) {
