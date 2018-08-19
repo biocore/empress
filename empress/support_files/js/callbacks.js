@@ -16,6 +16,7 @@ function initCallbacks(){
  */
 function mouseDown(event) {
   drawingData.isMouseDown = true;
+  $('body').css('cursor', 'none');
   drawingData.lastMouseX = event.clientX;
   drawingData.lastMouseY = event.clientY;
 }
@@ -25,7 +26,9 @@ function mouseDown(event) {
  */
 function mouseUp(event) {
   drawingData.isMouseDown = false;
+  $('body').css('cursor', 'default');
 }
+
 
 
 /*
@@ -103,18 +106,14 @@ function userHighlightSelect() {
 
   selectHighlight(attr, cat, val, l, u, e);
   fillTable(val);
-  addAttrItem(attr, val, l, u, e);
+  addHighlightItem(attr, val, l, u, e);
 }
 
-function addAttrItem(attr, val, l, u, e) {
+function addHighlightItem(attr, val, l, u, e) {
   numUserSelects++;
   let newAttrItem = document.createElement("div");
   newAttrItem.setAttribute("class", "attr-item");
   newAttrItem.setAttribute("id", numAttr);
-
-  // let group = document.createElement("SELECT");
-  // group.setAttribute("id", "group-number");
-  // newAttrItem.appendChild(group);
 
   let select = document.createElement("INPUT");
   select.setAttribute("class", "btn")
@@ -162,8 +161,77 @@ function addAttrItem(attr, val, l, u, e) {
   $(".metadata-tabs")[0].appendChild(newAttrItem);
 }
 
-function test(arg1) {
-  console.log("blah blah");
+function addCladeItem(clade, color) {
+  let newAttrItem = document.createElement("div");
+  newAttrItem.setAttribute("class", "color-item");
+  newAttrItem.setAttribute("id", "clade-" + labelPos++);
+
+  let clear = document.createElement("INPUT");
+  clear.setAttribute("type", "button");
+  clear.setAttribute("class", "clr");
+  clear.setAttribute("value", "clear");
+  clear.setAttribute("onclick", "clearColorSelection(this)");
+  newAttrItem.appendChild(clear);
+
+  let colorSelector = document.createElement("INPUT");
+  colorSelector.setAttribute("type", "color");
+  colorSelector.setAttribute("value", "#" + color);
+  colorSelector.setAttribute("id", "arc-color");
+  colorSelector.setAttribute("onchange", "changeColorSelection(this)");
+  newAttrItem.appendChild(colorSelector);
+
+  let attrLabel = document.createElement("label");
+  attrLabel.setAttribute("class", "cld");
+  attrLabel.innerHTML = clade;
+  newAttrItem.appendChild(attrLabel);
+
+  $(".metadata-tabs")[0].appendChild(newAttrItem);
+}
+
+function clearColorSelection(obj) {
+  let arcID = obj.parentElement.id;
+  updateColorSelection(arcID, CLEAR_COLOR_HEX);
+  obj.parentNode.remove();
+}
+
+function changeColorSelection(obj) {
+  let arcID = obj.parentElement.id;
+  let color = obj.value.slice(1);
+  updateColorSelection(arcID, color)
+}
+
+function updateColorSelection(arcID, color) {
+  const MAX_NUM = 255;
+  color = color.match(/.{1,2}/g);
+  // convert the 2 digit hex string into a float
+  color = color.map(function(element) {
+    return parseInt("0x" + element) / MAX_NUM;
+  });
+  const CLADE_ID = "clade-";
+  const BASE = 10;
+  const RED_VERT = 2;
+  const GREEN_VERT = 3;
+  const BLUE_VERT = 4;
+  const RED = 0;
+  const GREEN = 1;
+  const BLUE = 2;
+
+  // Calculate where the clade vertices begin and end
+  let start = parseInt(arcID.replace(CLADE_ID, ''), BASE);
+  start *= TRI_PER_ARC * ELEMENTS_PER_VERT * VERT_PER_TRI;
+  let end = start + TRI_PER_ARC * ELEMENTS_PER_VERT * VERT_PER_TRI;
+
+  // Change the color of the clade to be equal to the background color
+  for(let i = start; i < end; i += ELEMENTS_PER_VERT) {
+    drawingData.coloredClades[i + RED_VERT] = color[RED];
+    drawingData.coloredClades[i + GREEN_VERT] = color[GREEN];
+    drawingData.coloredClades[i + BLUE_VERT] = color[BLUE];
+  }
+
+  // update webgl buffer
+  gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.cladeVertBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.coloredClades), gl.DYNAMIC_DRAW);
+  requestAnimationFrame(loop);
 }
 
 /*
@@ -179,16 +247,16 @@ function selectHighlight(attr, cat, val, l, u, e) {
     gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.treeVertBuffer);
     gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(drawingData.edgeCoords));
     requestAnimationFrame(loop);
+    console.log(val)
   });
 }
 
 function userCladeColor() {
-  const attr = $("#highlight-options").val();
-  const color = $("#color-selector").val().toUpperCase().slice(1);
-  const clade = $("#category").val();
+  const color = $("#clade-color-selector").val().toUpperCase().slice(1);
+  const clade = $("#clade").val();
   let nodeCoords;
 
-  $.getJSON(urls.cladeColorURL, {attribute: attr, clade: clade,
+  $.getJSON(urls.cladeColorURL, { clade: clade,
             color: color}, function(data) {
     let center = vec2.create();
     vec2.set(center, data.center_x, data.center_y);
@@ -204,28 +272,28 @@ function userCladeColor() {
     requestAnimationFrame(loop);
   });
 
-  addAttrItem(attr, color, "", "", clade);
+  addCladeItem(clade, color);
 }
+
 /*
  * Shows the selected menu and hides the other ones
  */
 function showMenu(menuName) {
   if(menuName === "highlight") {
-    fillDropDownMenu(field.leaf_headers.headers);
-    // $("#select-data").attr("onclick", "userHighlightSelect()");
     $("#highlight-input").show();
+    $("#color-input").hide();
   }
   else {
-    fillDropDownMenu(field.internal_headers.headers);
     $("#highlight-input").hide();
+    $("#color-input").show();
   }
 }
 
 function clearSelection(obj) {
   let item = attrItem[obj.parentElement.id];
-  const attr = item.attr;
-  const cat = "branch_color";
-  const val = item.color;
+  let attr = item.attr;
+  let cat = "branch_color";
+  let val = item.color;
   let l = '';
   let u = '';
   let e = '';
@@ -238,19 +306,36 @@ function clearSelection(obj) {
     e = item.compVal;
   }
   selectHighlight(attr, cat, "FFFFFF", l, u, e);
-  fillTable(val);
+  // fillTable(val);
+  grid.invalidate();
 
+  delete attrItem[obj.parentElement.id];
   obj.parentNode.remove();
 
   numUserSelects--;
   if(numUserSelects === 0) {
     fillTable(INIT_COLOR);
+    requestAnimationFrame(loop);
+  }
+  else {
+    for(let i in attrItem) {
+      item = attrItem[i]
+      if(item.operator === " > " ) {
+        l = item.compVal;
+      } else if(item.operator === " < ") {
+        u = item.compVal;
+      } else {
+        e = item.compVal;
+      }
+      console.log(item);
+      selectHighlight(item.attr, cat, item.color, l, u, e)
+    }
   }
 }
 
 function selectTable(obj) {
   const item = attrItem[obj.parentElement.id];
-  const color = item.color;
+  let color = item.color;
   fillTable(color);
 }
 
@@ -258,8 +343,8 @@ function changeHighlightSelect(obj) {
   const item = attrItem[obj.parentElement.id];
   const attr = item.attr;
   const cat = "branch_color";
-  console.log(obj)
   const color = obj.value.toUpperCase().slice(1);
+  attrItem[obj.parentElement.id].color = color;
   let l = '';
   let u = '';
   let e = '';

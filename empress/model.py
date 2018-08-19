@@ -282,7 +282,11 @@ class Model(object):
             self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
         if equal is not "":
-            self.edge_metadata.loc[self.edge_metadata[attribute] == equal, category] = new_value
+            try:
+                value = float(equal)
+            except ValueError:
+                value = equal
+            self.edge_metadata.loc[self.edge_metadata[attribute] == value, category] = new_value
 
         if upper is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
