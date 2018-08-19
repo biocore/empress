@@ -32,40 +32,42 @@
 
       <div class="tab-options">
         <div>
-          <button class="tabs" onclick="showMenu('leaf')">Highlight Tips</button>
+          <button class="tabs" onclick="showMenu('highlight')">Highlight Tips</button>
         </div>
         <div>
-          <button class="tabs" onclick="showMenu('internal')">Color Clade</button>
+          <button class="tabs" onclick="showMenu('color')">Color Clade</button>
         </div>
       </div>
 
       <div class="menu" id="highlight-menu">
-        <div>
-          <select id = "highlight-options"></select>
+        <div id="highlight-input">
+          <div>
+            <select id = "highlight-options"></select>
+          </div>
+
+          <div>
+            <input id="select-data" type = "button" value = "select" onclick="userHighlightSelect()"/>
+            <input type = "color" id="color-selector"/>
+          </div>
+
+          <div class="text-field">
+            <label for="lower-bound">Lower Bound</label>
+            <input type="text" id="lower-bound"/>
+          </div>
+
+          <div class="text-field">
+            <label for="upper-bound">Upper Bound</label>
+            <input type="text" id="upper-bound"/>
+          </div>
+
+          <div class="text-field">
+            <label for="category">Equals to</label>
+            <input type="text" id="category"/>
+          </div>
         </div>
 
-        <div>
-          <input id="select-data" type = "button" value = "select"/>
-          <input type = "color" id="color-selector"/>
-        </div>
-
-        <div class="text-field">
-          <label for="lower-bound">Lower Bound</label>
-          <input type="text" id="lower-bound"/>
-        </div>
-
-        <div class="text-field">
-          <label for="upper-bound">Upper Bound</label>
-          <input type="text" id="upper-bound"/>
-        </div>
-
-        <div class="text-field">
-          <label for="category">Equals to</label>
-          <input type="text" id="category"/>
-        </div>
-
-        <div class="attr-selector">
-        </div>
+        <!-- <div class="attr-selector">
+        </div> -->
       </div>
     </div>
 
@@ -86,8 +88,7 @@
         colorURL: "http://" + window.location.host + "/color",
         nodeURL: "http://"+ window.location.host + "/api/nodes",
         tableURL: "http://" + window.location.host + "/table_values",
-        leafHeadersURL: "http://" + window.location.host + "/leaf_headers",
-        internalHeadersURL: "http://" + window.location.host + "/internal_headers",
+        headersURL: "http://" + window.location.host + "/headers",
         cladeColorURL: "http://" + window.location.host + "/color_clade"
       };
       let field = {
@@ -125,10 +126,10 @@
       let nodeCoords;
 
       // this may cause some syncing issues
-      $.getJSON(urls.leafHeadersURL, function(data) {
+      $.getJSON(urls.headersURL, function(data) {
         field.leaf_headers = data;
       }).done(function() {
-      $.getJSON(urls.internalHeadersURL, function(data) {
+      $.getJSON(urls.headersURL, function(data) {
         field.internal_headers = data;
       }).done(function() {
           drawingData.nodeCoords = [0, 0, 0, 0, 0];

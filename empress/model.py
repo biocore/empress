@@ -25,25 +25,7 @@ def name_internal_nodes(tree):
             n.name = new_name
 
 
-def read_leaf_node_metadata(file_name):
-    """ Reads in metadata for leaf nodes
-
-    Parameters
-    ----------
-    file_name :  str
-        The name of the file to read the data from
-
-    Returns
-    -------
-       pd.Dataframe
-
-    """
-    metadata = pd.read_table(file_name)
-    metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
-    return metadata
-
-
-def read_internal_node_metadata(file_name, skip_row):
+def read_metadata(file_name, skip_row, seperator):
     """ Reads in metadata for internal nodes
 
     Parameters
@@ -56,8 +38,10 @@ def read_internal_node_metadata(file_name, skip_row):
        pd.Dataframe
 
     """
-
-    metadata = pd.read_table(file_name, skiprows=skip_row)
+    cols = pd.read_csv(
+        file_name, skiprows=skip_row, nrows=1, sep=seperator).columns.tolist()
+    metadata = pd.read_table(
+        file_name, skiprows=skip_row, sep=seperator, dtype={cols[0]: object})
     metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
     return metadata
 
@@ -104,12 +88,9 @@ def read(file_name, file_format='newick'):
 
 class Model(object):
 
-    def __init__(self, tree_file=None,
-                 tree_format='newick',
-                 internal_metadata_file=None,
-                 leaf_metadata_file=None,
-                 edge_metadata=None,
-                 skip_row=3):
+    def __init__(
+            self, tree_file, main_metadata, clade_field, add_metadata, port,
+            main_skiprow, add_skiprow, main_sep, add_sep):
         """ Model constructor.
 
         This initializes the model, including
@@ -117,56 +98,49 @@ class Model(object):
 
         Parameters
         ----------
-        tree : skbio.TreeNode
-           The tree to be rendered.
-        node_metadata : pd.DataFrame
-           Contains all of the species attributes.
-           Every row corresponds to a unique species
-           and every column corresponds to an attribute.
-           Metadata may also contain ancestors.
-        edge_metadata : pd.DataFrame
-           Contains all of the edge attributes.
-           Every row corresponds to a unique edge
-           and every column corresponds to an attribute.
+        tree_file : String
+            Name of newick tree file
+        main_metadata : String
+            Name of file containing metadata
+        clade_field : String
+            Name of field within metadata that contains clade names
+        add_metadata : String
+            Name of file containing additional metadata
+        port : Integer
+            port number
+        main_skiprow : Integer
+            Number of rows to skip in the main metadata file
+        add_skiprow : Integer
+            Number of rows to skip in the secondary metadata file
+        main_sep : String
+            The seperator used in the main metadata file
+        add_sep : String
+            The seperator used in the secondary metadata file
         """
         self.zoom_level = 1
         self.scale = 1
-        tree = read(tree_file, tree_format)
+        tree = read(tree_file)
         self.tree = Tree.from_tree(tree)
+        (self.edge_metadata, self.centerX,
+            self.centerY, self.scale) = self.tree.coords(900, 1500)
 
-        if edge_metadata is None:
-            (self.edge_metadata, self.centerX,
-             self.centerY, self.scale) = self.tree.coords(900, 1500)
-        else:
-            self.edge_metadata = edge_metadata
-
-        if internal_metadata_file is not None:
-            internal_metadata = read_internal_node_metadata(internal_metadata_file, skip_row)
-            internal_headers = internal_metadata.columns.values.tolist()
-            self.internal_headers = internal_headers.copy()
-
-        if leaf_metadata_file is not None:
-            leaf_metadata = read_leaf_node_metadata(leaf_metadata_file)
-            leaf_headers = leaf_metadata.columns.values.tolist()
-            self.leaf_headers = leaf_headers.copy()
-
-        if internal_metadata_file is not None and leaf_metadata_file is not None:
-            self.metadata_headers = []
-            for header in internal_headers:
-                if header not in leaf_headers:
-                    leaf_headers.append(header)
-            self.metadata_headers = leaf_headers
-            self.edge_metadata = pd.merge(self.edge_metadata, internal_metadata,
+        # read in main metadata
+        metadata = read_metadata(main_metadata, main_skiprow, main_sep)
+        self.headers = metadata.columns.values.tolist()
+        self.edge_metadata = pd.merge(self.edge_metadata, metadata,
                                           how='outer', on="Node_id")
-            self.edge_metadata = pd.merge(self.edge_metadata, leaf_metadata,
-                                          how='outer', on="Node_id")
+
+        # read in additional metadata
+        if add_metadata is not None:
+            add_metadata = read_metadata(add_metadata, add_skiprow, add_sep)
+            add_headers = add_metadata.columns.values.tolist()
+            self.headers = self.headers + add_headers[1:]
+            self.edge_metadata = pd.merge(self.edge_metadata, add_metadata,
+                                            how='outer', on="Node_id")
+
         name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
-
-        self.model_added_columns = [
-            "px", "py", "x", "y", "branch_color",
-            "branch_is_visible", "longest", "node_color", "node_is_visible",
-            "shortest", "size", "width", "Parent_id"]
+        self.clade_field = clade_field
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -329,7 +303,7 @@ class Model(object):
         result : pd.Dataframe
             A dataframe containing the rows which contain color
         """
-        columns = list(self.metadata_headers)
+        columns = list(self.headers)
         columns.append('x')
         columns.append('y')
         result = self.edge_metadata.loc[self.edge_metadata['branch_color'] == color, columns]
@@ -409,21 +383,8 @@ class Model(object):
         self.triangles = pd.DataFrame(triData).T
         return self.triangles
 
-    def retrive_leaf_headers(self):
-        """ Returns a list of the headers for the leaf metadata
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        return : list
-            a list of the leaf metadata headers
-        """
-        return self.leaf_headers
-
-    def retrive_internal_headers(self):
-        """ Returns a list of the headers for the internal metadata
+    def retrive_headers(self):
+        """ Returns a list of the headers for the metadata
 
         Parameters
         ----------
@@ -433,7 +394,7 @@ class Model(object):
         return : list
             a list of the internal metadata headers
         """
-        return self.internal_headers
+        return self.headers
 
     def in_quad_1(self, angle):
         """ Determines if the angle is between 0 and pi / 2 radians
@@ -507,7 +468,7 @@ class Model(object):
 
         return (starting_angle, theta)
 
-    def color_clade(self, attribute, clade, color):
+    def color_clade(self, clade, color):
         """ Will highlight a certain clade by drawing a sector around the clade.
         The sector will start at the root of the clade and create an arc from the
         most to the right most tip. The sector will aslo have a defualt arc length
@@ -515,9 +476,6 @@ class Model(object):
 
         Parameters
         ----------
-        attribute : string
-            The name of the given to the column within the metadata that contains the
-            clades
         clade : string
             The clade to highlight
         color : string (hex string)
@@ -529,7 +487,7 @@ class Model(object):
             A list of all highlighted clades
         """
         # is it be safe to assume clade ids will be unique?
-        clade_root = self.edge_metadata.loc[self.edge_metadata[attribute] == clade]
+        clade_root = self.edge_metadata.loc[self.edge_metadata[self.clade_field] == clade]
         clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
 
         if clade_root_id == -1:

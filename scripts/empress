@@ -7,20 +7,46 @@ import click
 
 
 @click.command()
-@click.option('--tree_file', '-f', required=True,
-              help='The file that contains the tree')
-@click.option('--tree_format', '-e', help='The format of the tree file',
-              default='newick')
-@click.option('--internal_metadata', '-i', required=True,
-              help='The file that contains internal node metadata')
-@click.option('--leaf_metadata', '-l', required=True,
-              help='The file that contains tip node metadata')
-@click.option('--port', '-p', default=8080,
-              help='The port to run the local server on')
-@click.option('--internal_metadat_skiprow', '-isr', default=3,
-              help='The number of top rows to ignore')
-def start(tree_file, tree_format, internal_metadata, leaf_metadata, port, internal_metadat_skiprow):
-    m = Model(tree_file, tree_format, internal_metadata, leaf_metadata, skip_row=internal_metadat_skiprow)
+@click.option(
+    '--tree-file', '-f', required=True,
+    help='The file that contains the tree')
+@click.option(
+    '--metadata', '-m', required=True,
+    help='A file that contains your metadata')
+@click.option(
+    '--clade-field', '-c', required=True,
+    help='The metadata field that contains the clade names. '
+    'This is the field that will be to color clades.')
+@click.option(
+    '--additional-metadata', '-a', default=None,
+    help='An additional file that contains metadata'
+)
+@click.option(
+    '--port', '-p', default=8080, show_default=True,
+    help='The port to run the local server on.'
+)
+@click.option(
+    '--main-skiprow', '-r', default=0, show_default=True,
+    help='The number of rows to ignore in the main metadata file.'
+)
+@click.option(
+    '--additional-skiprow', default=0, show_default=True,
+    help='The number of rows to ignore on the additional metadata file.'
+)
+@click.option(
+    '--main-seperator', '-s', default='\t',
+    help='The seperator used in the metadata file. [default: \\t]'
+)
+@click.option(
+    '--additional-seperator',default='\t',
+    help='The seperator used in the additional metedata file. [default: \\t]'
+)
+def start(
+        tree_file, metadata, clade_field, additional_metadata, port,
+        main_skiprow, additional_skiprow, main_seperator, additional_seperator):
+    m = Model(
+      tree_file, metadata, clade_field, additional_metadata, port,
+      main_skiprow, additional_skiprow, main_seperator, additional_seperator)
     m.center_tree()
 
     # Create the webserver
