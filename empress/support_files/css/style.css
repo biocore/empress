@@ -72,6 +72,10 @@ canvas {
 .attr {
     grid-area: attr;
 }
+
+.btn {
+    grid-area: btn;
+}
 .attr-selector {
     overflow: auto;
     width: 32vw;
@@ -81,8 +85,25 @@ canvas {
 .attr-item {
     display: grid;
     grid-template-areas:
-        '. . .'
+        'btn btn .'
         '. attr attr';
+    border: 3px solid black;
+    padding-top: 4px;
+}
+
+.clr {
+    grid-area: clr;
+}
+
+.cld {
+    grid-area: cld;
+}
+
+.color-item {
+    display: grid;
+    grid-template-areas:
+        'cld cld .'
+        'clr . .';
     border: 3px solid black;
     padding-top: 4px;
 }
