@@ -12,71 +12,81 @@ function fillDropDownMenu(headers) {
   }
 }
 
-function fillTable(color) {
-  let tableValues;
-  $.getJSON(urls.tableURL, {color : color}, function(data) {
-    tableValues = data;
-  }).done(function() {
-    let templateMetadata = tableValues[0];
-    // let grid;
-    labels = {};
+function initGridTable(data) {
+  let templateMetadata = data[0];
 
-    // add the header row to the table
-    let columns = [];
-    for (let property in templateMetadata) {
-      let col = {
-        id  : property,
-        name : property,
-        field : property,
-        sortable: true
-      };
-      columns.push(col);
-    }
-
-    let datarows = [];
-    for(let i = 0; i < tableValues.length; i++) {
-      let dr = {};
-      for(let property in templateMetadata) {
-        dr[property] = (tableValues[i])[property];
-      }
-      datarows.push(dr);
-    }
-    let options = {
-      enableCellNavigation: true,
-      enableColumnReorder: false,
-      topPanelHeight : 0,
-      multiColumnSort: true
+  // create the header row for the table
+  for (let property in templateMetadata) {
+    let col = {
+      id  : property,
+      name : property,
+      field : property,
+      sortable: true
     };
-    grid = new Slick.Grid("#scrolltable", datarows, columns, options);
+    gridInfo.columns.push(col);
+  }
 
-    // taken from https://github.com/mleibman/SlickGrid/blob/gh-pages/examples/example-multi-column-sort.html
-    grid.onSort.subscribe(function (e, args) {
-      let cols = args.sortCols;
-      let field, sign, value1, value2, result;
-      datarows.sort(function (dataRow1, dataRow2) {
-        for (let i = 0, l = cols.length; i < l; i++) {
-          field = cols[i].sortCol.field;
-          sign = cols[i].sortAsc ? 1 : -1;
-          value1 = dataRow1[field];
-          value2 = dataRow2[field];
-          if(value1 === null){
-            return 1;
-          }
-          if(value2 === null){
-            return -1;
-          }
-          result = (value1 === value2 ? 0 : (value1 > value2 ? 1 : -1)) * sign;
-          if (result != 0) {
-            return result;
-          }
+  // get the rest of the data for the grid
+  for(let i = 0; i < data.length; i++) {
+    let dr = {};
+    for(let property in templateMetadata) {
+      dr[property] = (data[i])[property];
+    }
+    gridInfo.data.push(dr);
+  }
+  gridInfo.initData = gridInfo.data;
+
+  // create the options that slickgrid will use
+  gridInfo.options = {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    topPanelHeight : 0,
+    multiColumnSort: true
+  };
+  gridInfo.grid = new Slick.Grid("#scrolltable", gridInfo.data, gridInfo.columns, gridInfo.options);
+
+  // taken from https://github.com/mleibman/SlickGrid/blob/gh-pages/examples/example-multi-column-sort.html
+  gridInfo.grid.onSort.subscribe(function (e, args) {
+    let cols = args.sortCols;
+    let field, sign, value1, value2, result;
+    gridInfo.data.sort(function (dataRow1, dataRow2) {
+      for (let i = 0, l = cols.length; i < l; i++) {
+        field = cols[i].sortCol.field;
+        sign = cols[i].sortAsc ? 1 : -1;
+        value1 = dataRow1[field];
+        value2 = dataRow2[field];
+        if(value1 === null){
+          return 1;
         }
-        return 0;
-      });
-      grid.invalidate();
-      grid.render();
-      extractLabels(grid.getData(), field);
+        if(value2 === null){
+          return -1;
+        }
+        result = (value1 === value2 ? 0 : (value1 > value2 ? 1 : -1)) * sign;
+        if (result != 0) {
+          return result;
+        }
+      }
+      return 0;
     });
+    gridInfo.grid.invalidate();
+    gridInfo.grid.render();
+    extractLabels(gridInfo.grid.getData(), field);
   });
+}
+
+function updateGridData(data) {
+  const SCROLL_TO_TOP = true;
+  let templateMetadata = data[0];
+  gridInfo.data = [];
+  for(let i = 0; i < data.length; i++) {
+    let dr = {};
+    for(let property in templateMetadata) {
+      dr[property] = (data[i])[property];
+    }
+    gridInfo.data.push(dr);
+  }
+  gridInfo.grid.setData(gridInfo.data, SCROLL_TO_TOP);
+  gridInfo.grid.render();
 }
 
 /*

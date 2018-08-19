@@ -260,7 +260,6 @@ class Model(object):
 
         return edgeData[attributes]
 
-    # TODO: should we modify edge_metadata?
     def update_edge_category(self, attribute, category,
                              new_value="000000", lower="",
                              equal="", upper=""):
@@ -288,31 +287,40 @@ class Model(object):
                 value = equal
             self.edge_metadata.loc[self.edge_metadata[attribute] == value, category] = new_value
 
+
         if upper is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
 
         return self.edge_metadata
 
-    def retrive_highlighted_values(self, color, exclude=[]):
-        """ Returns all row entries with branch_color == to color
+    def retrive_highlighted_values(self, attribute, lower="",
+                                   equal="", upper=""):
+        """ Returns edge_metadata with that match the arguments
 
         Parameters
         ----------
-        color : str
-            The color to match row to
-        exclude : list
-            A list of columns to exlude in the return dataframe
+        attribute : str
+            The name of the attribute(column of the table).
         Returns
         -------
-        result : pd.Dataframe
-            A dataframe containing the rows which contain color
+        edgeData : pd.Dataframe
+        updated version of edge metadata
         """
         columns = list(self.headers)
         columns.append('x')
         columns.append('y')
-        result = self.edge_metadata.loc[self.edge_metadata['branch_color'] == color, columns]
+        if lower is not "":
+            return self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), columns]
 
-        return result
+        if equal is not "":
+            try:
+                value = float(equal)
+            except ValueError:
+                value = equal
+            return self.edge_metadata.loc[self.edge_metadata[attribute] == value, columns]
+
+        if upper is not "":
+            return self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), columns]
 
     def retrive_label_coords(self, label, value):
         """ Returns the coordinates of the nodes that are the the column 'label'
@@ -330,6 +338,14 @@ class Model(object):
             A dataframe containing the coordinates of the matched labels
         """
         return self.edge_metadata.loc[self.edge_metadata[label] == value, ['Node_id', 'x', 'y']]
+
+    def retrive_default_table_values(self):
+        """ Returns all edge_metadata values need to initialize slickgrid
+        """
+        columns = list(self.headers)
+        columns.append('x')
+        columns.append('y')
+        return self.edge_metadata[columns]
 
     def collapse_clades(self, sliderScale):
         """ Collapses clades in tree by doing a level order of the tree.

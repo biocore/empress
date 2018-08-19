@@ -88,9 +88,23 @@ class TableHandler(RequestHandler):
         self.m = m
 
     def get(self):
-        color = self.get_argument('color')
-        table_values = self.m.retrive_highlighted_values(color)
+        table_values = self.m.retrive_default_table_values()
         self.write(table_values.to_json(orient='records'))
+        self.finish()
+
+class TableChangeHandler(RequestHandler):
+    def initialize(self, m):
+        self.m = m
+
+    def get(self):
+        attribute = self.get_argument('attribute')
+        lower = self.get_argument('lower')
+        equal = self.get_argument('equal')
+        upper = self.get_argument('upper')
+        selected = self.m.retrive_highlighted_values(
+            attribute, lower, equal, upper)
+        edges = selected.to_json(orient='records')
+        self.write(edges)
         self.finish()
 
 
