@@ -17,16 +17,12 @@ def name_internal_nodes(tree):
     -------
     """
     # initialize tree with branch length
-    l = 0
     for i, n in enumerate(tree.postorder(include_self=True)):
         if n.length is None:
             n.length = 1
         if n.name is None:
-            new_name = "y%d" % l
-            l += 1
+            new_name = "y%d" % i
             n.name = new_name
-            print(n.name)
-
 
 
 def read_metadata(file_name, skip_row, seperator):
@@ -42,7 +38,6 @@ def read_metadata(file_name, skip_row, seperator):
        pd.Dataframe
 
     """
-    print(seperator, "is seperator")
     if seperator == ' ':
         cols = pd.read_csv(
             file_name, skiprows=skip_row, nrows=1, delim_whitespace=True).columns.tolist()
@@ -102,7 +97,7 @@ class Model(object):
 
     def __init__(
             self, tree_file, main_metadata, clade_field, add_metadata=None, port=8080,
-            main_skiprow=0, add_skiprow=0, main_sep=' ', add_sep=' '):
+            main_skiprow=0, add_skiprow=0, main_sep='\t', add_sep='\t'):
         """ Model constructor.
 
         This initializes the model, including
@@ -134,7 +129,6 @@ class Model(object):
         tree = read(tree_file)
         self.tree = Tree.from_tree(tree)
         name_internal_nodes(self.tree)
-
         (self.edge_metadata, self.centerX,
             self.centerY, self.scale) = self.tree.coords(900, 1500)
 
