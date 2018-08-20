@@ -52,7 +52,7 @@ function initGridTable(data) {
     gridInfo.data.sort(function (dataRow1, dataRow2) {
       for (let i = 0, l = cols.length; i < l; i++) {
         field = cols[i].sortCol.field;
-        sign = cols[i].sortAsc ? 1 : -1;
+        sign = cols[i].sortAsc ? -1 : 1;
         value1 = dataRow1[field];
         value2 = dataRow2[field];
         if(value1 === null){

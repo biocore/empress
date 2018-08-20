@@ -104,9 +104,8 @@ ENV/
 node/node_modules/
 
 # newick
-*.nwk
-=======
-*.nwk
+astral.cons.nid.e5p50.nwk
+
 
 # tree
 *.tree

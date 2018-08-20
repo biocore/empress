@@ -35,11 +35,11 @@ import click
 )
 @click.option(
     '--main-seperator', '-s', default='\t',
-    help='The seperator used in the metadata file. [default: \\t]'
+    help='The seperator used in the metadata file. [default: <tab>]'
 )
 @click.option(
     '--additional-seperator',default='\t',
-    help='The seperator used in the additional metedata file. [default: \\t]'
+    help='The seperator used in the additional metedata file. [default: <tab>]'
 )
 def start(
         tree_file, metadata, clade_field, additional_metadata, port,
