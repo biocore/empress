@@ -42,15 +42,15 @@ class TestModel(unittest.TestCase):
         f_leaf = io.StringIO()
         self.leaf_md.to_csv(f_leaf, sep='\t')
 
-        # need to append three blank in order for file to be read
-        self.f_internal = io.StringIO('\n\n\n' + f_internal.getvalue())
+        self.f_internal = io.StringIO(f_internal.getvalue())
         self.f_leaf = io.StringIO(f_leaf.getvalue())
 
+        print(f_internal.getvalue())
         self.tree = Model(
             self.tree_file,
-            'newick',
             self.f_internal,
-            self.f_leaf)
+            "clade",
+            add_metadata=self.f_leaf)
 
     def test_merge_metadata(self):
         merge_exp = pd.DataFrame(

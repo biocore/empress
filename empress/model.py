@@ -17,12 +17,16 @@ def name_internal_nodes(tree):
     -------
     """
     # initialize tree with branch length
+    l = 0
     for i, n in enumerate(tree.postorder(include_self=True)):
         if n.length is None:
             n.length = 1
-        if not n.is_tip() and n.name is None:
-            new_name = "y%d" % i
+        if n.name is None:
+            new_name = "y%d" % l
+            l += 1
             n.name = new_name
+            print(n.name)
+
 
 
 def read_metadata(file_name, skip_row, seperator):
@@ -38,11 +42,19 @@ def read_metadata(file_name, skip_row, seperator):
        pd.Dataframe
 
     """
-    cols = pd.read_csv(
-        file_name, skiprows=skip_row, nrows=1, sep=seperator).columns.tolist()
-    metadata = pd.read_table(
-        file_name, skiprows=skip_row, sep=seperator, dtype={cols[0]: object})
-    metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
+    print(seperator, "is seperator")
+    if seperator == ' ':
+        cols = pd.read_csv(
+            file_name, skiprows=skip_row, nrows=1, delim_whitespace=True).columns.tolist()
+        metadata = pd.read_table(
+            file_name, skiprows=skip_row, delim_whitespace=True, dtype={cols[0]: object})
+        metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
+    else:
+        cols = pd.read_csv(
+            file_name, skiprows=skip_row, nrows=1, sep=seperator).columns.tolist()
+        metadata = pd.read_table(
+            file_name, skiprows=skip_row, sep=seperator, dtype={cols[0]: object})
+        metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
     return metadata
 
 
@@ -89,8 +101,8 @@ def read(file_name, file_format='newick'):
 class Model(object):
 
     def __init__(
-            self, tree_file, main_metadata, clade_field, add_metadata, port,
-            main_skiprow, add_skiprow, main_sep, add_sep):
+            self, tree_file, main_metadata, clade_field, add_metadata=None, port=8080,
+            main_skiprow=0, add_skiprow=0, main_sep=' ', add_sep=' '):
         """ Model constructor.
 
         This initializes the model, including
@@ -121,6 +133,8 @@ class Model(object):
         self.scale = 1
         tree = read(tree_file)
         self.tree = Tree.from_tree(tree)
+        name_internal_nodes(self.tree)
+
         (self.edge_metadata, self.centerX,
             self.centerY, self.scale) = self.tree.coords(900, 1500)
 
@@ -138,7 +152,6 @@ class Model(object):
             self.edge_metadata = pd.merge(self.edge_metadata, add_metadata,
                                             how='outer', on="Node_id")
 
-        name_internal_nodes(self.tree)
         self.triangles = pd.DataFrame()
         self.clade_field = clade_field
 
