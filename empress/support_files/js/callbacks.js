@@ -1,6 +1,6 @@
 "use strict";
 
-/*
+/**
  * tells javasript what function to call for mouse/keyboard events
  */
 function initCallbacks(){
@@ -11,18 +11,27 @@ function initCallbacks(){
   window.onresize = resizeCanvas;
 }
 
-/*
+/**
  * stores (x,y) coord of mouse
+ *
+ * @param {Object} mousedown event used to collect the (x,y) where the mouse was
+ * pressed. This will be used when the user starts dragging the mouse to determine
+ * how much to move the tree.
  */
 function mouseDown(event) {
+  console.log(event);
   drawingData.isMouseDown = true;
   $('body').css('cursor', 'none');
   drawingData.lastMouseX = event.clientX;
   drawingData.lastMouseY = event.clientY;
 }
 
-/*
+/**
  * unsets the mouse down flag
+ *
+ * @param {Object} mouseup event used to unset the mouse down flag.
+ * This prevent unnecessary calculations when the mouse is being moved and
+ * the user is not pressing the mouse down.
  */
 function mouseUp(event) {
   drawingData.isMouseDown = false;
@@ -30,9 +39,12 @@ function mouseUp(event) {
 }
 
 
-
-/*
+/**
  * Moves the virtual camera in the xy-plane
+ *
+ * @param {Object} mousemove event used to collect the (x,y) coordinates of mouse. This
+ * will be used to determine which direction the user moved the mouse in order to move
+ * the tree accordingly.
  */
 function mouseMove(event) {
   // dont move camera if user is not pressing down on the mouse
@@ -45,12 +57,13 @@ function mouseMove(event) {
   const newY = event.clientY;
 
   // note (0, 0) of the canvas is top left corner with +x going right and +y going down
+  // calculate which direction the mouse moved
   const dx = (drawingData.lastMouseX - newX);
   const dy = (newY - drawingData.lastMouseY);
   const transVec = vec3.fromValues(dx, dy,0);
   let addTransMat = mat4.create();
 
-  // modify matrix to move camera in xy-plane
+  // modify matrix to move camera in xy-plane in the direction the mouse moved
   mat4.fromTranslation(addTransMat,transVec);
   mat4.multiply(shaderProgram.xyTransMat, addTransMat, shaderProgram.xyTransMat);
 
@@ -62,11 +75,17 @@ function mouseMove(event) {
   requestAnimationFrame(loop);
 }
 
-/*
+/**
  * Moves the virtual camera along the z axis
+ *
+ * @param {Object} mousewheel event used to detemine if the camera should zoom in or
+ * zoom out on the tree.
  */
 function mouseWheel(event) {
+  // the index that stores the cameras z coordinate
   const CAM_Z =2;
+
+  // index that traslation matrix that tells webgl how much to move camera in the z-direction
   const Z_TRANS = 14;
 
   let zoomByMat = new Float32Array(16);
@@ -78,7 +97,7 @@ function mouseWheel(event) {
     return;
   }
 
-  // modify the camera
+  // modify the camera translation matrix
   let zoomVec = vec3.fromValues(0, 0, zoomAmount);
   mat4.fromTranslation(zoomByMat, zoomVec);
   mat4.mul(shaderProgram.zTransMat, zoomByMat, shaderProgram.zTransMat);
@@ -87,15 +106,22 @@ function mouseWheel(event) {
   requestAnimationFrame(loop);
 }
 
-/*
+/**
  * resizes the drawing canvas to fix the screen
+ *
+ * @param {Object} resize event used to dynamically resize the html document.
  */
 function resizeCanvas(event) {
+  console.log(event);
   setCanvasSize(gl.canvas);
   setPerspective();
   requestAnimationFrame(loop);
 }
 
+/**
+ * Event called when user presses the select-data button. This method is responsible
+ * for coordinating the highlight tip feature.
+ */
 function userHighlightSelect() {
   const attr = $("#highlight-options").val();
   const cat = "branch_color";
@@ -112,12 +138,26 @@ function userHighlightSelect() {
   addHighlightItem(attr, val, l, u, e);
 }
 
+/**
+ * Creates html an html object that is used to show users the history of
+ * what they have choosen to highlight. Users can use this object to change
+ * the color of the highlighted feature or delete it.
+ *
+ * @param {String} the attribute that has been highlighted
+ * @param {String} the color of the highlighted feature
+ * @param {integer} the lower bound of the search value (if any)
+ * @param {integer} the upper bound of the search value (if any)
+ * @param {integer/string} an exact value of the search value (if any)
+ */
 function addHighlightItem(attr, val, l, u, e) {
   numUserSelects++;
+
+  // the container for the highlighted item
   let newAttrItem = document.createElement("div");
   newAttrItem.setAttribute("class", "attr-item");
   newAttrItem.setAttribute("id", numAttr);
 
+  // the button used to display the highlighted tips in SlickGrid
   let select = document.createElement("INPUT");
   select.setAttribute("class", "btn")
   select.setAttribute("type", "button");
@@ -125,20 +165,25 @@ function addHighlightItem(attr, val, l, u, e) {
   select.setAttribute("onclick", "selectTable(this)");
   newAttrItem.appendChild(select);
 
+  // the color input used to change the color of the highlighted tips
   let colorSelector = document.createElement("INPUT");
   colorSelector.setAttribute("type", "color");
   colorSelector.setAttribute("value", "#" + val);
   colorSelector.setAttribute("onchange", "changeHighlightSelect(this)");
   newAttrItem.appendChild(colorSelector);
 
+  // the clear button to clear the highlighted tips
   let clear = document.createElement("INPUT");
   clear.setAttribute("type", "button");
   clear.setAttribute("value", "clear");
   clear.setAttribute("onclick", "clearSelection(this)");
   newAttrItem.appendChild(clear);
 
+  // The label used to show the user what the search criteria
   let attrLabel = document.createElement("label");
   attrLabel.setAttribute("class", "attr");
+
+  // create the label
   let operator;
   let compVal;
   if(l !== "") {
@@ -161,14 +206,25 @@ function addHighlightItem(attr, val, l, u, e) {
   attrLabel.innerHTML = attr + operator + compVal;
   newAttrItem.appendChild(attrLabel);
 
+  // add item to html document
   $(".metadata-tabs")[0].appendChild(newAttrItem);
 }
 
+/**
+ * Creates html an html object that is used to show users the history of
+ * what clades they have choosen to color. Users can use this object to change
+ * the color of the clade or delete it.
+ *
+ * @param {string} the name the clade
+ * @param {string} a hex string that represent the color of the clade
+ */
 function addCladeItem(clade, color) {
+  // container for the item
   let newAttrItem = document.createElement("div");
   newAttrItem.setAttribute("class", "color-item");
   newAttrItem.setAttribute("id", "clade-" + labelPos++);
 
+  // the clear button
   let clear = document.createElement("INPUT");
   clear.setAttribute("type", "button");
   clear.setAttribute("class", "clr");
@@ -176,6 +232,7 @@ function addCladeItem(clade, color) {
   clear.setAttribute("onclick", "clearColorSelection(this)");
   newAttrItem.appendChild(clear);
 
+  // the color select
   let colorSelector = document.createElement("INPUT");
   colorSelector.setAttribute("type", "color");
   colorSelector.setAttribute("value", "#" + color);
@@ -183,26 +240,46 @@ function addCladeItem(clade, color) {
   colorSelector.setAttribute("onchange", "changeColorSelection(this)");
   newAttrItem.appendChild(colorSelector);
 
+  // label to show users which clade this item belongs to
   let attrLabel = document.createElement("label");
   attrLabel.setAttribute("class", "cld");
   attrLabel.innerHTML = clade;
   newAttrItem.appendChild(attrLabel);
 
+  // add item to html document
   $(".metadata-tabs")[0].appendChild(newAttrItem);
 }
 
+/**
+ * The event that is called when users presses the clear button in the clade color
+ * item
+ *
+ * @param {Object} the clear button that the user pressed. The button id is used to
+ * determine where the clade in located in drawingData.coloredClades
+ */
 function clearColorSelection(obj) {
   let arcID = obj.parentElement.id;
   updateColorSelection(arcID, CLEAR_COLOR_HEX);
   obj.parentNode.remove();
 }
 
+/**
+ * The event that is called when users change the color of a clade.
+ *
+ * @param {Object} the color input the user used to change the color.
+ */
 function changeColorSelection(obj) {
   let arcID = obj.parentElement.id;
   let color = obj.value.slice(1);
   updateColorSelection(arcID, color)
 }
 
+/**
+ * Changes the color of a clade
+ *
+ * @param {integer} The position of a clade within drawingData.coloredClades
+ * @param {string} a hex string that represent what color to change the clade to
+ */
 function updateColorSelection(arcID, color) {
   const MAX_NUM = 255;
   color = color.match(/.{1,2}/g);
@@ -239,6 +316,12 @@ function updateColorSelection(arcID, color) {
 
 /*
  * Highlights the user selected metadata
+ *
+ * @param {string} the feature to highlght
+ * @param {string} the feature that holds the color
+ * @param {integer} the lower bound of the search value (if any)
+ * @param {integer} the upper bound of the search value (if any)
+ * @param {integer/string} an exact value of the search value (if any)
  */
 function selectHighlight(attr, cat, val, l, u, e) {
   let edges;
@@ -254,6 +337,9 @@ function selectHighlight(attr, cat, val, l, u, e) {
   });
 }
 
+/**
+ * The event called when a user want to highlight a clade.
+ */
 function userCladeColor() {
   const color = $("#clade-color-selector").val().toUpperCase().slice(1);
   const clade = $("#clade").val();
@@ -280,6 +366,8 @@ function userCladeColor() {
 
 /*
  * Shows the selected menu and hides the other ones
+ *
+ * @param {string} the menu to show
  */
 function showMenu(menuName) {
   if(menuName === "highlight") {
@@ -292,6 +380,11 @@ function showMenu(menuName) {
   }
 }
 
+/**
+ * The event called when the user wants to remove a highlighted feature
+ *
+ * @param{Object} the clear button.
+ */
 function clearSelection(obj) {
   let item = attrItem[obj.parentElement.id];
   let attr = item.attr;
@@ -338,6 +431,12 @@ function clearSelection(obj) {
   }
 }
 
+/**
+ * Changes the metadata shown in SlickGrid to match the highlighted feature that
+ * was selected.
+ *
+ * @param {Object} The button that corresponds to the highlighted feature.
+ */
 function selectTable(obj) {
   const item = attrItem[obj.parentElement.id];
   let l = '', u = '', e = '';
@@ -354,6 +453,11 @@ function selectTable(obj) {
   });
 }
 
+/**
+ * Changes the color of a highlighted feature
+ *
+ * @param {Object} The color select of the highlighted feature
+ */
 function changeHighlightSelect(obj) {
   const item = attrItem[obj.parentElement.id];
   const attr = item.attr;
@@ -375,6 +479,9 @@ function changeHighlightSelect(obj) {
   selectHighlight(attr, cat, color, l, u, e);
 }
 
+/**
+ *
+ */
 function extractLabels(labs, labId) {
   let tempLabels = {};
   for(let i in labs) {

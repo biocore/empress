@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import tornado
 from empress.controller import (
-    ModelHandler, EdgeHandler, NodeHandler, ZoomHandler, BenchmarkHandler,
+    ModelHandler, EdgeHandler, NodeHandler, BenchmarkHandler,
     HighlightHandler, TriangleHandler, CollapseHandler, TableHandler,
     TableChangeHandler, HeaderHandler, ColorCladeHandler)
 import os.path
@@ -14,7 +14,6 @@ class Application(tornado.web.Application):
                     (r"/api/edges", EdgeHandler, dict(m=m)),
                     (r"/api/nodes", NodeHandler, dict(m=m)),
                     (r"/api/triangles", TriangleHandler, dict(m=m)),
-                    (r"/zoom", ZoomHandler, dict(m=m)),
                     (r"/benchmark", BenchmarkHandler),
                     (r"/collapse", CollapseHandler, dict(m=m)),
                     (r"/highlight", HighlightHandler, dict(m=m)),
