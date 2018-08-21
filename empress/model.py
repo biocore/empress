@@ -16,7 +16,7 @@ def name_internal_nodes(tree):
     Returns
     -------
     """
-    # initialize tree with branch length
+    # initialize tree with branch lengths and node names if they are missing
     for i, n in enumerate(tree.postorder(include_self=True)):
         if n.length is None:
             n.length = 1
@@ -30,8 +30,12 @@ def read_metadata(file_name, skip_row, seperator):
 
     Parameters
     ----------
-    file_name :  str
+    file_name :  String
         The name of the file to read the data from
+    skip_row : integer
+        The number of rows to skip when reading in the data
+    seperator : character
+        The delimiter used in the data file
 
     Returns
     -------
@@ -68,8 +72,8 @@ def read(file_name, file_format='newick'):
     phyloxml
     - Python has a parser for it, but it parse it into a phylogeny object.
     - We need to parse the phylogeny object into the metadata table by
-    traversing?g
-    - What is the confidence ifor each clade?
+    traversing?
+    - What is the confidence for each clade?
 
     Parameters
     ----------
@@ -166,11 +170,6 @@ class Model(object):
         layout_type : str
             This specifies the layout algorithm to be used.
 
-        Returns
-        -------
-        coords : pd.DataFrame
-            The calculated tree coordinates.
-
         Note
         ----
         This will wipe the coords and viewcoords in order to
@@ -184,43 +183,17 @@ class Model(object):
         # These are coordinates scaled for viewing
         self.viewcoords = np.array()
 
-        # TODO: These will need to be recomputed.
+        # TODO: These will need to be recomputed once the algorithms for
+        # new layouts has been created.
 
         pass
 
-    def unique_categories(self, metadata, attribute):
-        """ Returns all unique metadata categories that belong to the attribute.
-        Parameters
-        ----------
-        metadata : pd.DataFrame
-           Contains all of the species attributes.
-           Every row corresponds to a unique species
-           and every column corresponds to an attribute.
-           TODO: metadata will also want to contain
-           ancestors.
-        attribute : string
-            A string that specifies the metadata attribute header
-        Returns
-        -------
-        unique_cat : list of str
-            A list that contains all of the unique categories within the given
-            attribute.
-
-        """
-        return self.metadata_headers
-
     def center_tree(self):
-        """ Translate the tree coords in order to makes root (0,0) and
-        Returns edge metadata.
+        """ Translate the tree coords in order to makes root (0,0)
         Parameters
         ----------
         Returns
         -------
-        edge_metadata : pd.DataFrame
-           Contains all of the species attributes.
-           Every row corresponds to a unique species
-           and every column corresponds to an attribute.
-           TODO: metadata will also want to contain
         """
         self.edge_metadata['px'] = self.edge_metadata[
             ['px']].apply(lambda l: l - self.centerX)
@@ -238,6 +211,9 @@ class Model(object):
         ----------
         Returns
         -------
+        edgeData : pd.Dataframe
+            dataframe containing information necessary to draw tree in
+            webgl
         """
         # TODO: may want to add in width in the future
         attributes = ['x', 'y', 'px', 'py', 'branch_color']
@@ -275,14 +251,23 @@ class Model(object):
 
         Parameters
         ----------
-        attribute : str
+        attribute : string
             The name of the attribute(column of the table).
         category:
             The column of table that will be updated such as branch_color
+        new_value : string
+            A hex string representing color to change branch
+        lower : integer
+            The smallest number a feature must match in order for its color to change
+        equal : string/integer
+            The number/string a feature must match in order for its color to change
+        upper : integer
+            The largest number a feature can match in order for its color to change
         Returns
         -------
         edgeData : pd.Dataframe
-        updated version of edge metadata
+            All entries from self.edge_metadata that are visible and match criteria
+            passed in.
         """
         if lower is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
@@ -293,7 +278,6 @@ class Model(object):
             except ValueError:
                 value = equal
             self.edge_metadata.loc[self.edge_metadata[attribute] == value, category] = new_value
-
 
         if upper is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
@@ -306,12 +290,18 @@ class Model(object):
 
         Parameters
         ----------
-        attribute : str
+        attribute : string
             The name of the attribute(column of the table).
+        lower : integer
+            The smallest number a feature must match in order for its color to change
+        equal : string/integer
+            The number/string a feature must match in order for its color to change
+        upper : integer
+            The largest number a feature can match in order for its color to change
         Returns
         -------
         edgeData : pd.Dataframe
-        updated version of edge metadata
+            updated version of edge metadata
         """
         columns = list(self.headers)
         columns.append('x')
@@ -328,23 +318,6 @@ class Model(object):
 
         if upper is not "":
             return self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), columns]
-
-    def retrive_label_coords(self, label, value):
-        """ Returns the coordinates of the nodes that are the the column 'label'
-        and have 'value'
-
-        Parameters
-        ----------
-        label : str
-            The column to search in
-        value : str or int
-            The value to match
-        Returns
-        -------
-        result : pd.Dataframe
-            A dataframe containing the coordinates of the matched labels
-        """
-        return self.edge_metadata.loc[self.edge_metadata[label] == value, ['Node_id', 'x', 'y']]
 
     def retrive_default_table_values(self):
         """ Returns all edge_metadata values need to initialize slickgrid
@@ -369,7 +342,7 @@ class Model(object):
         Returns
         -------
         triangles : pd.DataFrame
-        rx | ry | fx | fy | cx | cy | #RGB (color string)
+            rx | ry | fx | fy | cx | cy | #RGB (color string)
         """
         triData = {}
 
@@ -426,15 +399,23 @@ class Model(object):
     def in_quad_1(self, angle):
         """ Determines if the angle is between 0 and pi / 2 radians
 
+        Parameters
+        ----------
+        angle : float
+            the angle of a vector in radians
+
         Returns
         -------
         return : bool
-            true is angle is between 0 and pi / 2 radians
+            true if angle is between 0 and pi / 2 radians
         """
         return True if angle > 0 and angle < math.pi / 2 else False
 
     def in_quad_4(self, angle):
         """ Determines if the angle is between (3 * pi) / 2 radians and 2 * pi
+
+        angle : float
+            the angle of a vector in radians
 
         Returns
         -------

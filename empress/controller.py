@@ -3,14 +3,25 @@ from tornado.web import RequestHandler
 
 class ModelHandler(RequestHandler):
     def get(self):
+        """ used by server to render html webpage
+        """
         self.render('tree_with_webgl.html')
 
 
 class EdgeHandler(RequestHandler):
     def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
         self.m = m
 
     def get(self):
+        """ Retrieves information from model to draw tree
+        """
         edges = self.m.edge_metadata
         self.write(edges.to_json(orient='records'))
         self.finish()
@@ -18,9 +29,18 @@ class EdgeHandler(RequestHandler):
 
 class NodeHandler(RequestHandler):
     def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
         self.m = m
 
     def get(self):
+        """ Retrieves information from model to draw root node
+        """
         nodes = self.m.node_coords.to_json(orient='records')
         self.write(nodes)
         self.finish()
@@ -28,31 +48,39 @@ class NodeHandler(RequestHandler):
 
 class TriangleHandler(RequestHandler):
     def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
         self.m = m
 
     def get(self):
+        """ Retrieves information from model to draw the trangles where
+        clades have been collapsed
+        """
         triangles = self.m.triangles.to_json(orient='records')
         self.write(triangles)
         self.finish()
 
 
-class ZoomHandler(RequestHandler):
-    def initialize(self, m):
-        self.m = m
-
-    def get(self):
-        level = self.get_argument('level')
-        zoomedM = self.m.zoom(level)
-        edges = zoomedM.to_json(orient='records')
-        self.write(edges)
-        self.finish()
-
-
 class HighlightHandler(RequestHandler):
     def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
         self.m = m
 
     def get(self):
+        """ Tells model which tips to highlight and the retrieves
+        updates edge information to draw newly highlighted tips
+        """
         attribute = self.get_argument('attribute')
         category = self.get_argument('category')
         value = self.get_argument('value')
@@ -73,9 +101,19 @@ class BenchmarkHandler(RequestHandler):
 
 class CollapseHandler(RequestHandler):
     def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
         self.m = m
 
     def get(self):
+        """ Tells the model how much user has zoomed in so that
+        the model may automatically collapse clades.
+        """
         sliderScale = self.get_argument('sliderScale')
         triangles = self.m.collapse_clades(sliderScale)
         tri_json = triangles.to_json(orient='records')
@@ -85,18 +123,37 @@ class CollapseHandler(RequestHandler):
 
 class TableHandler(RequestHandler):
     def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
         self.m = m
 
     def get(self):
+        """ Grabs all the metadata from model
+        """
         table_values = self.m.retrive_default_table_values()
         self.write(table_values.to_json(orient='records'))
         self.finish()
 
 class TableChangeHandler(RequestHandler):
     def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
         self.m = m
 
     def get(self):
+        """ Grabs only the metadata that corresponds to what has
+        been highlighted
+        """
         attribute = self.get_argument('attribute')
         lower = self.get_argument('lower')
         equal = self.get_argument('equal')
@@ -108,23 +165,20 @@ class TableChangeHandler(RequestHandler):
         self.finish()
 
 
-class LabelHandler(RequestHandler):
-    def initialize(self, m):
-        self.m = m
-
-    def get(self):
-        label = self.get_argument('label')
-        value = self.get_argument('value')
-        label_coords = self.m.retrive_label_coords(label, value)
-        self.write(label_coords.to_json(orient='records'))
-        self.finish()
-
-
 class HeaderHandler(RequestHandler):
     def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
         self.m = m
 
     def get(self):
+        """ Retrieves all headers from metadata
+        """
         headers = self.m.retrive_headers()
         self.write({'headers': headers})
         self.finish()
@@ -132,9 +186,18 @@ class HeaderHandler(RequestHandler):
 
 class ColorCladeHandler(RequestHandler):
     def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
         self.m = m
 
     def get(self):
+        """ Retrieves information from model in order to color a clade
+        """
         clade = self.get_argument('clade')
         color = self.get_argument('color')
         colored_clades = self.m.color_clade(clade, color)
