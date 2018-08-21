@@ -1,3 +1,6 @@
+Empress is still in early development and new features to add are currently being explored. If you would like to suggest
+something you can email kcantrel@ucsd.edu.
+
 # Installation
 Please install the following packages in order to run Empress
 
