@@ -101,17 +101,7 @@ class Tree(TreeNode):
 
         Returns
         -------
-        pd.DataFrame (Node metadata)
-            index : str
-                Name of node.
-            Node id: str
-                Name of node
-            x : float
-                x-coordinate of node.
-            y : float
-                y-coordinate of node.
-
-        pd.DataFrame (Edge metadata)
+        edgeMeta : pd.DataFrame (Edge metadata)
             index : str
                 Name of node.
             Node id: str
@@ -126,6 +116,12 @@ class Tree(TreeNode):
                 x-coorinate of parent
             py: float
                 y-coordinate of parent
+        centerX : float
+            x coordinate of root node
+        centerY : float
+            y coordinate of root
+        scale : float
+            largest scaling factor in which the tree can fit in the canvas.
         """
 
         # calculates coordinates of all nodes and the shortest/longest branches
