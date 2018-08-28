@@ -203,3 +203,41 @@ class ColorCladeHandler(RequestHandler):
         colored_clades = self.m.color_clade(clade, color)
         self.write(colored_clades)
         self.finish()
+
+class SubtreeHandler(RequestHandler):
+    def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        attribute = self.get_argument('attribute')
+        lower = self.get_argument('lower')
+        equal = self.get_argument('equal')
+        upper = self.get_argument('upper')
+        new_tree = self.m.create_subtree(attribute, lower, equal, upper)
+        new_tree = new_tree.to_json(orient='records')
+        self.write(new_tree)
+        self.finish()
+
+class OldTreeHandler(RequestHandler):
+    def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        old_tree = self.m.revive_old_tree()
+        old_tree = old_tree.to_json(orient='records')
+        self.write(old_tree)
+        self.finish()

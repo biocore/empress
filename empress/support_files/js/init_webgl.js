@@ -98,13 +98,11 @@ function initWebGl() {
 
   // buffer object for tree
   shaderProgram.treeVertBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.treeVertBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.edgeCoords), gl.DYNAMIC_DRAW);
+  fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
 
   // buffer object for nodes
   shaderProgram.nodeVertBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.nodeVertBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.nodeCoords), gl.DYNAMIC_DRAW)
+  fillBufferData(shaderProgram.nodeVertBuffer, drawingData.nodeCoords);
 
   // buffer object for colored clades
   shaderProgram.cladeVertBuffer = gl.createBuffer();
