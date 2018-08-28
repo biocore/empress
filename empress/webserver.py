@@ -3,7 +3,8 @@ import tornado
 from empress.controller import (
     ModelHandler, EdgeHandler, NodeHandler, BenchmarkHandler,
     HighlightHandler, TriangleHandler, CollapseHandler, TableHandler,
-    TableChangeHandler, HeaderHandler, ColorCladeHandler)
+    TableChangeHandler, HeaderHandler, ColorCladeHandler, SubtreeHandler,
+    OldTreeHandler)
 import os.path
 
 
@@ -20,7 +21,9 @@ class Application(tornado.web.Application):
                     (r"/table_values", TableHandler,  dict(m=m)),
                     (r"/table_change", TableChangeHandler, dict(m=m)),
                     (r"/headers", HeaderHandler, dict(m=m)),
-                    (r"/color_clade", ColorCladeHandler, dict(m=m))
+                    (r"/color_clade", ColorCladeHandler, dict(m=m)),
+                    (r"/subtree", SubtreeHandler, dict(m=m)),
+                    (r"/oldtree", OldTreeHandler, dict(m=m))
                     ]
 
         settings = dict(
