@@ -151,7 +151,7 @@ class Model(object):
         metadata = read_metadata(main_metadata, main_skiprow, main_sep)
         self.headers = metadata.columns.values.tolist()
         self.edge_metadata = pd.merge(self.edge_metadata, metadata,
-            how='outer', on="Node_id")
+                                      how='outer', on="Node_id")
 
         # read in additional metadata
         if add_metadata is not None:
@@ -159,7 +159,7 @@ class Model(object):
             add_headers = add_metadata.columns.values.tolist()
             self.headers = self.headers + add_headers[1:]
             self.edge_metadata = pd.merge(self.edge_metadata, add_metadata,
-                how='outer', on="Node_id")
+                                          how='outer', on="Node_id")
 
         # todo need to warn user that some entries in metadata do not have a mapping to tree
         self.edge_metadata = self.edge_metadata[self.edge_metadata.x.notnull()]
@@ -698,7 +698,7 @@ class Model(object):
             self.centerY, self.scale) = self.tree.coords(900, 1500)
         self.edge_metadata = self.edge_metadata[['Node_id', 'x', 'y', 'px', 'py']]
         self.edge_metadata = pd.merge(self.edge_metadata, metadata,
-            how='outer', on="Node_id")
+                                      how='outer', on="Node_id")
         self.center_tree()
         return self.edge_metadata
 
