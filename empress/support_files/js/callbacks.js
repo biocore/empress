@@ -520,6 +520,7 @@ function newTree() {
     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
     updateGridData(data);
     labels = {}
+    clearCladeHighlights();
     requestAnimationFrame(loop);
   });
 }
@@ -529,7 +530,21 @@ function getOldTree(event) {
     drawingData.edgeCoords = extractInfo(data, field.edgeFields);
     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
     updateGridData(data);
-    labels = {}
+    labels = {};
+    clearCladeHighlights();
     requestAnimationFrame(loop);
   });
+}
+
+function clearCladeHighlights() {
+  drawingData.coloredClades = [];
+  labelPos = 0;
+  fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
+  let divContainerElement = document.getElementsByClassName("color-item");
+  console.log(divContainerElement);
+  let numItems = divContainerElement.length
+  const NEXT_CHILD = 0;
+  for(let i = 0; i < numItems; i++) {
+    divContainerElement[NEXT_CHILD].parentElement.removeChild(divContainerElement[NEXT_CHILD]);
+  }
 }

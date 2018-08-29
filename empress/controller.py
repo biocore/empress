@@ -139,6 +139,7 @@ class TableHandler(RequestHandler):
         self.write(table_values.to_json(orient='records'))
         self.finish()
 
+
 class TableChangeHandler(RequestHandler):
     def initialize(self, m):
         """ Stores the model in handler
@@ -204,6 +205,7 @@ class ColorCladeHandler(RequestHandler):
         self.write(colored_clades)
         self.finish()
 
+
 class SubtreeHandler(RequestHandler):
     def initialize(self, m):
         """ Stores the model in handler
@@ -224,6 +226,7 @@ class SubtreeHandler(RequestHandler):
         new_tree = new_tree.to_json(orient='records')
         self.write(new_tree)
         self.finish()
+
 
 class OldTreeHandler(RequestHandler):
     def initialize(self, m):
