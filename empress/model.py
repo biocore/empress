@@ -1,3 +1,4 @@
+import io
 import skbio
 import math
 import pandas as pd
@@ -45,12 +46,22 @@ def read_metadata(file_name, skip_row, seperator):
     if seperator == ' ':
         cols = pd.read_csv(
             file_name, skiprows=skip_row, nrows=1, delim_whitespace=True).columns.tolist()
+
+        # StringIO is used in test cases, without this the StringIO buffer will be at end
+        if type(file_name) is io.StringIO:
+            file_name.seek(0)
+
         metadata = pd.read_table(
             file_name, skiprows=skip_row, delim_whitespace=True, dtype={cols[0]: object})
         metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
     else:
         cols = pd.read_csv(
             file_name, skiprows=skip_row, nrows=1, sep=seperator).columns.tolist()
+
+        # StringIO is used in test cases, without this the StringIO buffer will be at end
+        if type(file_name) is io.StringIO:
+            file_name.seek(0)
+
         metadata = pd.read_table(
             file_name, skiprows=skip_row, sep=seperator, dtype={cols[0]: object})
         metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
@@ -140,7 +151,7 @@ class Model(object):
         metadata = read_metadata(main_metadata, main_skiprow, main_sep)
         self.headers = metadata.columns.values.tolist()
         self.edge_metadata = pd.merge(self.edge_metadata, metadata,
-                                          how='outer', on="Node_id")
+                                      how='outer', on="Node_id")
 
         # read in additional metadata
         if add_metadata is not None:
@@ -148,10 +159,16 @@ class Model(object):
             add_headers = add_metadata.columns.values.tolist()
             self.headers = self.headers + add_headers[1:]
             self.edge_metadata = pd.merge(self.edge_metadata, add_metadata,
-                                            how='outer', on="Node_id")
+                                          how='outer', on="Node_id")
+
+        # todo need to warn user that some entries in metadata do not have a mapping to tree
+        self.edge_metadata = self.edge_metadata[self.edge_metadata.x.notnull()]
 
         self.triangles = pd.DataFrame()
         self.clade_field = clade_field
+
+        # cached subtrees
+        self.cached_subtrees = list()
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -269,6 +286,22 @@ class Model(object):
             All entries from self.edge_metadata that are visible and match criteria
             passed in.
         """
+        # change the cached tree as well
+        for edge_data, _ in self.cached_subtrees:
+            if lower is not "":
+                edge_data.loc[edge_data[attribute] > float(lower), category] = new_value
+
+            if equal is not "":
+                try:
+                    value = float(equal)
+                except ValueError:
+                    value = equal
+                edge_data.loc[edge_data[attribute] == value, category] = new_value
+
+            if upper is not "":
+                edge_data.loc[edge_data[attribute] < float(upper), category] = new_value
+
+        # change the current tree
         if lower is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
@@ -281,7 +314,6 @@ class Model(object):
 
         if upper is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
-
         return self.edge_metadata
 
     def retrive_highlighted_values(self, attribute, lower="",
@@ -467,8 +499,14 @@ class Model(object):
         # detemines the angle of the sector as well as the angle to start drawing the sector
         if (not (self.in_quad_1(a_1) and self.in_quad_4(a_2) or
                  self.in_quad_4(a_1) and self.in_quad_1(a_2))):
-            starting_angle = a_2 if a_1 > a_2 else a_1
-            theta = abs(a_1 - a_2)
+            a_min, a_max = (min(a_1, a_2), max(a_1, a_2))
+            if a_max - a_min > math.pi:
+                a_min += 2 * math.pi
+                starting_angle = a_max
+                theta = a_min - a_max
+            else:
+                starting_angle = a_2 if a_1 > a_2 else a_1
+                theta = abs(a_1 - a_2)
         else:
             starting_angle = a_1 if a_1 > a_2 else a_2
             ending_angle = a_1 if starting_angle == a_2 else a_2
@@ -501,10 +539,17 @@ class Model(object):
         if clade_root_id == -1:
             return {}
 
+        clade = self.tree.find(clade_root_id)
+
+        color_clade = self.get_sector(clade)
+        color_clade['color'] = color
+        return color_clade
+
         # Note: all calculations are down by making the clade root (0,0)
 
+    def get_sector(self, clade):
+
         # grab all of the tips of the clade
-        clade = self.tree.find(clade_root_id)
         tips = clade.tips()
 
         # stores points for the convex hull
@@ -553,7 +598,6 @@ class Model(object):
             # the left most and right most branch of the clade
             e_1 = hull_vertices[i + 1 if i < len(hull_vertices) - 1 else 0]
             e_2 = hull_vertices[i - 1]
-
             (edge_1, edge_2) = (points[e_1], points[e_2])
 
             # calculate the angle of the left and right most branch of the clade
@@ -600,7 +644,65 @@ class Model(object):
             'center_y': clade.y2,
             'starting_angle': starting_angle,
             'theta': theta,
-            'arc_length': arc_length,
-            'color': color}
+            'arc_length': arc_length}
 
         return colored_clades
+
+    def create_subtree(self, attribute, lower="", equal="", upper=""):
+        """
+        Parameters
+        ----------
+        attribute : string
+            The name of the attribute(column of the table).
+        lower : integer
+            The smallest number a feature must match in order for its color to change
+        equal : string/integer
+            The number/string a feature must match in order for its color to change
+        upper : integer
+            The largest number a feature can match in order for its color to change
+        Returns
+        -------
+        edgeData : pd.Dataframe
+            updated version of edge metadata
+        """
+        # retrive the tips of the subtree
+        nodes = self.retrive_highlighted_values(attribute, lower, equal, upper)
+        nodes = nodes['Node_id'].values
+        tips = list()
+        for node in nodes:
+            # node is a tip
+            if self.tree.find(node).is_tip():
+                tips.append(node)
+                continue
+            # retive the tips of node
+            for tip in self.tree.find(node).tips():
+                tips.append(tip.name)
+
+        # store the previous tree/metadata
+        self.cached_subtrees.append((self.edge_metadata, self.tree))
+
+        # grab relivent metadata for old metadata
+        columns = list(self.edge_metadata.columns.values)
+        columns.remove('x')
+        columns.remove('y')
+        columns.remove('px')
+        columns.remove('py')
+        self.tree = self.tree.shear(tips)
+        nodes = list()
+        for node in self.tree.postorder():
+            nodes.append(node.name)
+        metadata = self.edge_metadata.loc[self.edge_metadata["Node_id"].isin(nodes), columns]
+
+        # create new metadata
+        (self.edge_metadata, self.centerX,
+            self.centerY, self.scale) = self.tree.coords(900, 1500)
+        self.edge_metadata = self.edge_metadata[['Node_id', 'x', 'y', 'px', 'py']]
+        self.edge_metadata = pd.merge(self.edge_metadata, metadata,
+                                      how='outer', on="Node_id")
+        self.center_tree()
+        return self.edge_metadata
+
+    def revive_old_tree(self):
+        if len(self.cached_subtrees) > 0:
+            self.edge_metadata, self.tree = self.cached_subtrees.pop()
+        return self.edge_metadata

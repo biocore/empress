@@ -17,8 +17,9 @@ class TestHandler(AsyncHTTPTestCase):
     leaf_metadata_file = os.path.join(os.path.dirname(__file__), 'leaf_md.tsv')
     tree_file = os.path.join(os.path.dirname(__file__), 'tree_file.txt')
     tree_format = 'newick'
-    m = Model(tree_file, tree_format,
+    m = Model(tree_file,
               internal_metadata_file,
+              "clade",
               leaf_metadata_file)
     m.center_tree()
     app = Application(m)

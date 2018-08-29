@@ -9,6 +9,7 @@ function initCallbacks(){
   document.onmousemove = mouseMove;
   $(".tree-surface")[0].onwheel = mouseWheel;
   window.onresize = resizeCanvas;
+  $(".tree-surface")[0].ondblclick = getOldTree;
 }
 
 /**
@@ -19,7 +20,6 @@ function initCallbacks(){
  * how much to move the tree.
  */
 function mouseDown(event) {
-  console.log(event);
   drawingData.isMouseDown = true;
   $('body').css('cursor', 'none');
   drawingData.lastMouseX = event.clientX;
@@ -112,7 +112,6 @@ function mouseWheel(event) {
  * @param {Object} resize event used to dynamically resize the html document.
  */
 function resizeCanvas(event) {
-  console.log(event);
   setCanvasSize(gl.canvas);
   setPerspective();
   requestAnimationFrame(loop);
@@ -309,8 +308,7 @@ function updateColorSelection(arcID, color) {
   }
 
   // update webgl buffer
-  gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.cladeVertBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.coloredClades), gl.DYNAMIC_DRAW);
+  fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
   requestAnimationFrame(loop);
 }
 
@@ -330,9 +328,7 @@ function selectHighlight(attr, cat, val, l, u, e) {
     edges = data;
   }).done(function() {
     drawingData.edgeCoords = extractInfo(edges, field.edgeFields);
-    gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.treeVertBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.edgeCoords), gl.DYNAMIC_DRAW);
-    // gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(drawingData.edgeCoords));
+    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
     requestAnimationFrame(loop);
   });
 }
@@ -356,8 +352,7 @@ function userCladeColor() {
     let sector = createArcSector(center, arcLength, startTheta, totalTheta, color);
     drawingData.coloredClades = drawingData.coloredClades.concat(sector);
   }).done(function() {
-    gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.cladeVertBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.coloredClades), gl.DYNAMIC_DRAW);
+    fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
     requestAnimationFrame(loop);
   });
 
@@ -373,10 +368,18 @@ function showMenu(menuName) {
   if(menuName === "highlight") {
     $("#highlight-input").show();
     $("#color-input").hide();
+    $("#select-highlight").attr("onclick", "userHighlightSelect()");
+    $("#color-selector").show();
   }
   else {
     $("#highlight-input").hide();
     $("#color-input").show();
+  }
+  if(menuName === "subTree") {
+    $("#highlight-input").show();
+    $("#color-input").hide();
+    $("#select-highlight").attr("onclick", "newTree()");
+    $("#color-selector").hide();
   }
 }
 
@@ -499,4 +502,49 @@ function extractLabels(labs, labId) {
     labels[i] = [tempLabels[i].x, tempLabels[i].y, tempLabels[i].label];
   }
   requestAnimationFrame(loop);
+}
+
+function fillBufferData(buffer, data) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
+}
+
+function newTree() {
+  const attr = $("#highlight-options").val();
+  const l = $("#lower-bound").val();
+  const u = $("#upper-bound").val();
+  const e = $("#category").val();
+  $.getJSON(urls.subTreeURL, {attribute: attr, lower: l, equal: e,
+            upper: u}, function(data){
+    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
+    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+    updateGridData(data);
+    labels = {}
+    clearCladeHighlights();
+    requestAnimationFrame(loop);
+  });
+}
+
+function getOldTree(event) {
+  $.getJSON(urls.oldTreeURL, {}, function(data){
+    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
+    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+    updateGridData(data);
+    labels = {};
+    clearCladeHighlights();
+    requestAnimationFrame(loop);
+  });
+}
+
+function clearCladeHighlights() {
+  drawingData.coloredClades = [];
+  labelPos = 0;
+  fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
+  let divContainerElement = document.getElementsByClassName("color-item");
+  console.log(divContainerElement);
+  let numItems = divContainerElement.length
+  const NEXT_CHILD = 0;
+  for(let i = 0; i < numItems; i++) {
+    divContainerElement[NEXT_CHILD].parentElement.removeChild(divContainerElement[NEXT_CHILD]);
+  }
 }

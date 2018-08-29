@@ -45,7 +45,6 @@ class TestModel(unittest.TestCase):
         self.f_internal = io.StringIO(f_internal.getvalue())
         self.f_leaf = io.StringIO(f_leaf.getvalue())
 
-        print(f_internal.getvalue())
         self.tree = Model(
             self.tree_file,
             self.f_internal,
