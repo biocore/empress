@@ -28,6 +28,9 @@
     </canvas>
     <div id="divcontainer"></div>
     <div class="square"></div>
+    <div class="selected-tree-menu">
+      <input id="collapse" type = "button" value = "collapse" onclick="selectedTreeCollapse()"/>
+    </div>
   </div>
 
   <div class="metadata-tabs">
@@ -117,14 +120,17 @@
       cladeColorURL: "http://" + window.location.host + "/color_clade",
       subTreeURL: "http://" + window.location.host + "/subtree",
       oldTreeURL: "http://" + window.location.host + "/oldtree",
-      selectTreeURL: "http://" + window.location.host + "/selectNodes"
+      selectTreeURL: "http://" + window.location.host + "/selectNodes",
+      collapseSTreeURL: "http://" + window.location.host + "/collapseSTree",
+      trianglesURL: "http://" + window.location.host + "/api/triangles"
     };
 
     // fields to extract from metadata, used in extractInfo()
     let field = {
       edgeFields: ["px", "py", "branch_color", "x", "y",
           "branch_color"],
-      nodeFields: ["x", "y", "color"]
+      nodeFields: ["x", "y", "color"],
+      triangleFields: ["cx", "cy", "color", "lx", "ly", "color", "rx", "ry", "color"]
     };
 
     // stores matrices, and buffers that webgl will uses
@@ -140,7 +146,9 @@
       lastMouseY: null,
       zoomAmount: 10,
       maxZoom: 30,
-      coloredClades: []
+      coloredClades: [],
+      selectTree: [],
+      triangles: []
     };
 
     let numAttr = 0;

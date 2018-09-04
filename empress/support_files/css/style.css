@@ -42,6 +42,7 @@ canvas {
     top: 0vh;
     left: 70vw;
     width: 30vw;
+    opacity: 0.5;
 }
 
 .metadata-tabs button {
@@ -134,4 +135,9 @@ canvas {
     width: 0px;
     background-color: #555;
     opacity: 0.5;
+}
+
+.selected-tree-menu {
+    position: absolute;
+    visibility: hidden;
 }

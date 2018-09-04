@@ -17,19 +17,42 @@ function initCallbacks(){
   $(document).keydown(function(e) {
       cntrlPress = (e.which === CTRL_KEY) ? true : false;
   });
-  $(document).keyup(function(e) {
-      if(e.which == CTRL_KEY) {
-        let square = $(".square");
-        let width = square.height();
-        let length = square.height();
-        let boxCoords = toTreeCoords(drawingData.lastMouseX, drawingData.lastMouseY);
-        placeSelectBox(boxCoords.x, boxCoords.y);
+  $(document).keyup(function() {
+      if(cntrlPress) {
+        console.log("released cntr")
         cntrlPress = false;
-        $.getJSON(urls.selectTreeURL, {x: boxCoords.x, y: boxCoords.y,
-                  width: width, length: length}, function(data) {
-            console.log(data);
+        let square = $(".square");
+        let width = square.width();
+        let height = square.height();
+        let topCorner = toTreeCoords(drawingData.lastMouseX, drawingData.lastMouseY);
+        let bottomCorner = toTreeCoords(drawingData.lastMouseX + width, drawingData.lastMouseY + height);
+        let edgeMetadata;
+        $.getJSON(urls.selectTreeURL, {x1: topCorner[0], y1: topCorner[1],
+                  x2: bottomCorner[0], y2: bottomCorner[1]}, function(data) {
+          edgeMetadata = data;
+        }).done(function() {
+          drawingData.selectTree = extractInfo(edgeMetadata, field.edgeFields);
+          fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
+          requestAnimationFrame(loop);
+          $(".selected-tree-menu").css({top: drawingData.lastMouseY, left: drawingData.lastMouseX, visibility: "visible"})
         });
       }
+  });
+}
+
+function selectedTreeCollapse() {
+  $(".selected-tree-menu").css({visibility: "hidden"})
+  $.getJSON(urls.collapseSTreeURL, {}, function(data) {
+    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
+    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+    drawingData.selectTree = [];
+    fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
+    $.getJSON(urls.trianglesURL, {}, function(data) {
+      drawingData.triangles = extractInfo(data, field.triangleFields);
+      fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
+    }).done(function() {
+      requestAnimationFrame(loop);
+    });
   });
 }
 
@@ -298,6 +321,7 @@ function showMenu(menuName) {
     if($("#highlight-input").is(":visible") && $("#color-selector").is(":visible")) {
       $("#highlight-input").hide();
       $("#color-selector").hide();
+      $(".metadata-tabs").css({opacity: 0.5});
     }
     else {
       $("#highlight-input").show();
@@ -306,11 +330,13 @@ function showMenu(menuName) {
       $("#select-highlight").attr("onclick", "userHighlightSelect()");
       $("#metadata-options").hide();
       $("#highlight-history").show();
+      $(".metadata-tabs").css({opacity: 1});
     }
   }
   else if(menuName === "subTree") {
     if($("#highlight-input").is(":visible") && !$("#color-selector").is(":visible")) {
       $("#highlight-input").hide();
+      $(".metadata-tabs").css({opacity: 0.5});
     }
     else {
       $("#highlight-input").show();
@@ -319,26 +345,31 @@ function showMenu(menuName) {
       $("#select-highlight").attr("onclick", "newTree()");
       $("#metadata-options").hide();
       $("#highlight-history").hide();
+      $(".metadata-tabs").css({opacity: 1});
     }
   }
   else if (menuName === "color") {
     if($("#color-input").is(":visible")) {
       $("#color-input").hide();
+      $(".metadata-tabs").css({opacity: 0.5});
     }
     else {
       $("#highlight-input").hide();
       $("#color-input").show();
       $("#metadata-options").hide();
+      $(".metadata-tabs").css({opacity: 1});
     }
   }
   else {
     if($("#metadata-options").is(":visible")) {
       $("#metadata-options").hide();
+      $(".metadata-tabs").css({opacity: 0.5});
     }
     else {
       $("#highlight-input").hide();
       $("#color-input").hide();
       $("#metadata-options").show();
+      $(".metadata-tabs").css({opacity: 1});
     }
   }
 }
@@ -480,6 +511,8 @@ function newTree() {
     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
     updateGridData(data);
     labels = {}
+    drawingData.triangles = [];
+    fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
     clearCladeHighlights();
     requestAnimationFrame(loop);
   });

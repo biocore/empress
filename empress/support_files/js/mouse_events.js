@@ -15,7 +15,7 @@ function mouseHandler(event) {
     drawingData.isMouseDown = true;
     if(cntrlPress) {
       let boxCoords = toTreeCoords(drawingData.lastMouseX, drawingData.lastMouseY);
-      placeSelectBox(boxCoords.x, boxCoords.y);
+      placeSelectBox(boxCoords);
     }
     else {
       $('body').css('cursor', 'none');
@@ -47,24 +47,24 @@ function toTreeCoords(x, y) {
   const HALF = 2;
   const CENTER = $(window).width() / HALF;
   const SCALE_BY = (camera.pos[2] + shaderProgram.zTransMat[14]) / CENTER;
-  const X = (x - CENTER) * SCALE_BY;
-  const Y = (CENTER - y) * SCALE_BY;
-  return  {
-      x: X,
-      y: Y
-    };
+  x = (x - CENTER) * SCALE_BY;
+  y = (CENTER - y) * SCALE_BY;
+
+  // calculate the screen coordinate of the label
+  let treeSpace = vec4.fromValues(x, y, 0, 1);
+  vec4.transformMat4(treeSpace, treeSpace, shaderProgram.xyTransMat);
+
+  return treeSpace;
 }
 
 /**
  */
-function placeSelectBox(x, y) {
+function placeSelectBox(coords) {
   let canvas = $(".tree-surface")[0];
 
-   // calculate the screen coordinate of the label
-  let treeSpace = vec4.fromValues(x, y, 0, 1);
-  vec4.transformMat4(treeSpace, treeSpace, shaderProgram.xyTransMat);
   let screenSpace = vec4.create();
-  vec4.transformMat4(screenSpace, treeSpace, shaderProgram.mvpMat);
+  vec4.transformMat4(screenSpace, coords, shaderProgram.mvpMat);
+
   screenSpace[0] /= screenSpace[3];
   screenSpace[1] /= screenSpace[3];
   let pixelX = (screenSpace[0] * 0.5 + 0.5) * canvas.offsetWidth;
@@ -83,17 +83,17 @@ function resizeSelectBox(event) {
   }
   else if (dX <= 0 && dY <= 0){
     let boxCoords = toTreeCoords(event.clientX, event.clientY);
-    placeSelectBox(boxCoords.x, boxCoords.y);
+    placeSelectBox(boxCoords);
     $(".square").css({height: (Math.abs(dY)) + "px", width: (Math.abs(dX)) + "px"});
   }
   else if(dX < 0) {
     let boxCoords = toTreeCoords(event.clientX, drawingData.lastMouseY);
-    placeSelectBox(boxCoords.x, boxCoords.y);
+    placeSelectBox(boxCoords);
     $(".square").css({height: (Math.abs(dY)) + "px", width: (Math.abs(dX)) + "px"});
   }
   else if(dY < 0) {
     let boxCoords = toTreeCoords(drawingData.lastMouseX, event.clientY);
-    placeSelectBox(boxCoords.x, boxCoords.y);
+    placeSelectBox(boxCoords);
     $(".square").css({height: (Math.abs(dY)) + "px", width: (Math.abs(dX)) + "px"});
   }
 }
