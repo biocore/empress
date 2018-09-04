@@ -42,6 +42,12 @@ function loop() {
   bindBuffer(shaderProgram.nodeVertBuffer);
   gl.drawArrays(gl.POINTS, 0, drawingData.nodeCoords.length / 5 );
 
+  bindBuffer(shaderProgram.selectBuffer);
+  gl.drawArrays(gl.LINES, 0, drawingData.selectTree.length / 5);
+
+  bindBuffer(shaderProgram.triangleBuffer);
+  gl.drawArrays(gl.TRIANGLES, 0, drawingData.triangles.length / 5);
+
   drawLabels();
 }
 

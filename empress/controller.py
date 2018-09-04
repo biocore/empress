@@ -22,7 +22,7 @@ class EdgeHandler(RequestHandler):
     def get(self):
         """ Retrieves information from model to draw tree
         """
-        edges = self.m.edge_metadata
+        edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible'] == True]
         self.write(edges.to_json(orient='records'))
         self.finish()
 
@@ -61,8 +61,8 @@ class TriangleHandler(RequestHandler):
         """ Retrieves information from model to draw the trangles where
         clades have been collapsed
         """
-        triangles = self.m.triangles.to_json(orient='records')
-        self.write(triangles)
+        triangles = self.m.retrive_triangles()
+        self.write(triangles.to_json(orient='records'))
         self.finish()
 
 
@@ -258,10 +258,27 @@ class SelectHandler(RequestHandler):
         self.m = m
 
     def get(self):
-        x = self.get_argument("x")
-        y = self.get_argument("y")
-        width = self.get_argument("width")
-        length = self.get_argument("length")
-        nodes = self.m.select_sub_tree(x, y, width, length)
+        x1 = self.get_argument("x1")
+        y1 = self.get_argument("y1")
+        x2 = self.get_argument("x2")
+        y2 = self.get_argument("y2")
+        nodes = self.m.select_sub_tree(x1, y1, x2, y2)
+        nodes = nodes.to_json(orient='records')
         self.write(nodes)
-        self.finish
+        self.finish()
+
+class CollapseSelectedHandler(RequestHandler):
+    def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        edges = self.m.collapse_selected_tree()
+        self.write(edges.to_json(orient='records'))
+        self.finish()

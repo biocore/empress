@@ -168,6 +168,9 @@ class Model(object):
 
         self.triangles = pd.DataFrame()
         self.clade_field = clade_field
+        self.selected_tree = pd.DataFrame()
+        self.selected_root = self.tree
+        self.triData = {}
 
         # cached subtrees
         self.cached_subtrees = list()
@@ -566,6 +569,7 @@ class Model(object):
 
         # will store the distance to the farthest tip
         arc_length = 0
+        smallest_length = math.inf
 
         # Finds the max tip distance, largest and smallest angle
         for tip in tips:
@@ -579,6 +583,7 @@ class Model(object):
             tip_dist = distance.euclidean(tip_coords, center)
 
             arc_length = tip_dist if tip_dist > arc_length else arc_length
+            smallest_length = tip_dist if tip_dist < smallest_length else smallest_length
 
         # Note: the angle of the sector used to be found by taking the difference between the tips
         # with the smallest and largest angle. However, that lead to an edge case that became
@@ -647,7 +652,8 @@ class Model(object):
             'center_y': clade.y2,
             'starting_angle': starting_angle,
             'theta': theta,
-            'arc_length': arc_length}
+            'arc_length': arc_length,
+            'smallest_length': smallest_length}
 
         return colored_clades
 
@@ -711,11 +717,62 @@ class Model(object):
             return self.edge_metadata
         return pd.DataFrame()
 
-    def select_sub_tree(self, x, y, width, length):
+    def select_sub_tree(self, x1, y1, x2, y2):
         df = self.edge_metadata
-        print(x,y,width,length)
+        (x1, y1, x2, y2) = (float(x1), float(y1), float(x2), float(y2))
+        (smallX, smallY) = (min(x1, x2), min(y1, y2))
+        (largeX, largeY) = (max(x1, x2), max(y1, y2))
         entries = df.loc[
-            df['x'] > x & df['x'] < (x + length) &
-            df['y'] > y & df['y'] < (y + width)]
-        print(entries)
-        return entries
+            (df['x'] >= smallX) & (df['x'] <= largeX) &
+            (df['y'] >= smallY) & (df['y'] <= largeY)]
+        entries = entries["Node_id"].values
+        root = self.tree.lowest_common_ancestor(entries)
+        nodes = [node.name for node in root.postorder()]
+        selected_tree = self.edge_metadata.loc[self.edge_metadata["Node_id"].isin(nodes)]
+        self.selected_tree = selected_tree.copy()
+        self.selected_tree['branch_color'] = '00FF00'
+        self.selected_root = root
+        return self.selected_tree
+
+    def collapse_selected_tree(self):
+        s = self.get_sector(self.selected_root)
+        nodes = self.selected_tree['Node_id'].values
+
+        (rx, ry) = (self.selected_root.x2, self.selected_root.y2)
+
+        theta = s['starting_angle']
+        (c_b1, s_b1) = (math.cos(theta), math.sin(theta))
+        (x1, y1) = (s['arc_length'] * c_b1, s['arc_length'] * s_b1)
+
+        # find right most branch
+        theta += s['theta']
+        (c_b2, s_b2) = (math.cos(theta), math.sin(theta))
+        (x2, y2) = (s['smallest_length'] * c_b2, s['smallest_length'] * s_b2)
+
+        (x1, y1) = (x1 + rx, y1 + ry)
+        (x2, y2) = (x2 + rx, y2 + ry)
+
+        nId = {"Node_id": self.selected_root.name}
+        root = {'cx': rx, 'cy': ry}
+        shortest = {'lx': x1, 'ly': y1}
+        longest = {'rx': x2, 'ry': y2}
+        color = {'color': "0000FF"}
+        visible = {'visible': True}
+        self.triData[self.selected_root.name] = {**nId, **root, **shortest,
+            **longest, **color, **visible}
+
+        self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
+        self.edge_metadata.loc[self.edge_metadata['Node_id'] == self.selected_root.name, 'branch_is_visible'] = True
+
+        collapse_ids = self.triData.keys()
+        for node_id in collapse_ids:
+            ancestors = [a.name for a in self.tree.find(node_id).ancestors()]
+            if self.selected_root.name in ancestors:
+                self.triData[node_id]['visible'] = False
+
+        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible'] == True]
+
+    def retrive_triangles(self):
+        triangles = {k:v for (k, v) in self.triData.items() if v['visible']}
+        self.triangles = pd.DataFrame(triangles).T
+        return self.triangles

@@ -107,6 +107,11 @@ function initWebGl() {
   // buffer object for colored clades
   shaderProgram.cladeVertBuffer = gl.createBuffer();
 
+  // buffer object for selected sub tree
+  shaderProgram.selectBuffer = gl.createBuffer();
+
+  shaderProgram.triangleBuffer = gl.createBuffer();
+
   shaderProgram.worldMat = mat4.create();
   shaderProgram.xyTransMat = mat4.create();
   shaderProgram.zTransMat = mat4.create();
