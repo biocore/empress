@@ -1,113 +1,11 @@
-import io
-import skbio
 import math
 import pandas as pd
 import numpy as np
-from skbio import TreeNode
 from scipy.spatial import distance
 from scipy.spatial import ConvexHull
 from empress.tree import Tree
+import empress.tools as tools
 
-
-def name_internal_nodes(tree):
-    """ Name internal nodes that does not have name
-
-    Parameters
-    ----------
-    Returns
-    -------
-    """
-    # initialize tree with branch lengths and node names if they are missing
-    for i, n in enumerate(tree.postorder(include_self=True)):
-        if n.length is None:
-            n.length = 1
-        if n.name is None:
-            new_name = "y%d" % i
-            n.name = new_name
-
-
-def read_metadata(file_name, skip_row, seperator):
-    """ Reads in metadata for internal nodes
-
-    Parameters
-    ----------
-    file_name :  String
-        The name of the file to read the data from
-    skip_row : integer
-        The number of rows to skip when reading in the data
-    seperator : character
-        The delimiter used in the data file
-
-    Returns
-    -------
-       pd.Dataframe
-
-    """
-    if seperator == ' ':
-        cols = pd.read_csv(
-            file_name, skiprows=skip_row, nrows=1, delim_whitespace=True).columns.tolist()
-
-        # StringIO is used in test cases, without this the tests will fail due to the buffer
-        # being placed at the end everytime its read
-        if type(file_name) is io.StringIO:
-            file_name.seek(0)
-
-        metadata = pd.read_table(
-            file_name, skiprows=skip_row, delim_whitespace=True, dtype={cols[0]: object})
-        metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
-    else:
-        cols = pd.read_csv(
-            file_name, skiprows=skip_row, nrows=1, sep=seperator).columns.tolist()
-
-        # StringIO is used in test cases, without this the tests will fail due to the buffer
-        # being placed at the end everytime its read
-        if type(file_name) is io.StringIO:
-            file_name.seek(0)
-
-        metadata = pd.read_table(
-            file_name, skiprows=skip_row, sep=seperator, dtype={cols[0]: object})
-        metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
-    return metadata
-
-
-def read(file_name, file_format='newick'):
-    """ Reads in contents from a file.
-
-    This will create a skbio.TreeNode object
-
-    Current Support formats: newick
-
-    Future Suppoert formats: phyloxml,
-    cytoscape network.
-
-    cytoscape layout
-    - networkx
-    phyloxml
-    - Python has a parser for it, but it parse it into a phylogeny object.
-    - We need to parse the phylogeny object into the metadata table by
-    traversing?
-    - What is the confidence for each clade?
-
-    Parameters
-    ----------
-    file_name : str
-        The name of the file to read that contains the tree
-    file_format : str
-        The format of the file to read that contains the tree
-    TODO: Need to create parsers for each of these.
-
-    Returns
-    -------
-    tree - skbio.TreeNode
-        A TreeNode object of the newick file
-    None - null
-        If a non-newick file_format was passed in
-    """
-
-    if file_format == 'newick':
-        tree = skbio.read(file_name, file_format, into=TreeNode)
-        return tree
-    return None
 
 
 class Model(object):
@@ -143,21 +41,21 @@ class Model(object):
         """
         self.zoom_level = 1
         self.scale = 1
-        tree = read(tree_file)
+        tree = tools.read(tree_file)
         self.tree = Tree.from_tree(tree)
-        name_internal_nodes(self.tree)
+        tools.name_internal_nodes(self.tree)
         (self.edge_metadata, self.centerX,
             self.centerY, self.scale) = self.tree.coords(900, 1500)
 
         # read in main metadata
-        metadata = read_metadata(main_metadata, main_skiprow, main_sep)
+        metadata = tools.read_metadata(main_metadata, main_skiprow, main_sep)
         self.headers = metadata.columns.values.tolist()
         self.edge_metadata = pd.merge(self.edge_metadata, metadata,
                                       how='outer', on="Node_id")
 
         # read in additional metadata
         if add_metadata is not None:
-            add_metadata = read_metadata(add_metadata, add_skiprow, add_sep)
+            add_metadata = tools.read_metadata(add_metadata, add_skiprow, add_sep)
             add_headers = add_metadata.columns.values.tolist()
             self.headers = self.headers + add_headers[1:]
             self.edge_metadata = pd.merge(self.edge_metadata, add_metadata,
@@ -171,6 +69,7 @@ class Model(object):
         self.selected_tree = pd.DataFrame()
         self.selected_root = self.tree
         self.triData = {}
+        self.colored_clade = {}
 
         # cached subtrees
         self.cached_subtrees = list()
@@ -434,92 +333,6 @@ class Model(object):
         """
         return self.headers
 
-    def in_quad_1(self, angle):
-        """ Determines if the angle is between 0 and pi / 2 radians
-
-        Parameters
-        ----------
-        angle : float
-            the angle of a vector in radians
-
-        Returns
-        -------
-        return : bool
-            true if angle is between 0 and pi / 2 radians
-        """
-        return True if angle > 0 and angle < math.pi / 2 else False
-
-    def in_quad_4(self, angle):
-        """ Determines if the angle is between (3 * pi) / 2 radians and 2 * pi
-
-        angle : float
-            the angle of a vector in radians
-
-        Returns
-        -------
-        return : bool
-            true is angle is between 0 and pi / 2 radians
-        """
-        return True if angle > 3 * math.pi / 2 and angle < 2 * math.pi else False
-
-    def calculate_angle(self, v):
-        """ Finds the angle of the two 2-d vectors in radians
-
-        Parameters
-        ----------
-        v : tuple
-            vector
-
-        Returns
-        -------
-            angle of vector in radians
-        """
-        if v[0] == 0:
-            return math.pi / 2 if v[1] > 0 else 3 * math.pi / 2
-
-        angle = math.atan(v[1] / v[0])
-
-        if v[0] > 0:
-            return angle if angle >= 0 else 2 * math.pi + angle
-        else:
-            return angle + math.pi if angle >= 0 else (2 * math.pi + angle) - math.pi
-
-    def hull_sector_info(self, a_1, a_2):
-        """ determines the starting angle of the sector and total theta of the sector.
-        Note this is only to be used if the sector is less than pi radians
-
-        Parameters
-        ----------
-        a1 : float
-            angle (in radians) of one of the edges of the sector
-        a2 : float
-            angle (in radians of one of the edges of the sector)
-
-        Returns
-        -------
-        starting angle : float
-            the angle at which to start drawing the sector
-        theta : float
-            the angle of the sector
-        """
-        # detemines the angle of the sector as well as the angle to start drawing the sector
-        if (not (self.in_quad_1(a_1) and self.in_quad_4(a_2) or
-                 self.in_quad_4(a_1) and self.in_quad_1(a_2))):
-            a_min, a_max = (min(a_1, a_2), max(a_1, a_2))
-            if a_max - a_min > math.pi:
-                a_min += 2 * math.pi
-                starting_angle = a_max
-                theta = a_min - a_max
-            else:
-                starting_angle = a_2 if a_1 > a_2 else a_1
-                theta = abs(a_1 - a_2)
-        else:
-            starting_angle = a_1 if a_1 > a_2 else a_2
-            ending_angle = a_1 if starting_angle == a_2 else a_2
-            theta = ending_angle + abs(starting_angle - 2 * math.pi)
-
-        return (starting_angle, theta)
-
     def color_clade(self, clade, color):
         """ Will highlight a certain clade by drawing a sector around the clade.
         The sector will start at the root of the clade and create an arc from the
@@ -547,13 +360,13 @@ class Model(object):
 
         clade = self.tree.find(clade_root_id)
 
-        color_clade = self.get_sector(clade)
+        color_clade = self.__get_sector(clade)
         color_clade['color'] = color
         return color_clade
 
         # Note: all calculations are down by making the clade root (0,0)
 
-    def get_sector(self, clade):
+    def __get_sector(self, clade):
 
         # grab all of the tips of the clade
         tips = clade.tips()
@@ -609,20 +422,20 @@ class Model(object):
             (edge_1, edge_2) = (points[e_1], points[e_2])
 
             # calculate the angle of the left and right most branch of the clade
-            (a_1, a_2) = (self.calculate_angle(edge_1), self.calculate_angle(edge_2))
+            (a_1, a_2) = (tools.calculate_angle(edge_1), tools.calculate_angle(edge_2))
 
             # the starting/total angle of the sector
-            (starting_angle, theta) = self.hull_sector_info(a_1, a_2)
+            (starting_angle, theta) = tools.start_and_total_angle(a_1, a_2)
 
         else:
             # find the tips whose edge contains the angle of the ancestor branch
-            angles = [self.calculate_angle(points[x]) for x in range(0, len(points)) if set(points[x]) != set([0, 0])]
+            angles = [tools.calculate_angle(points[x]) for x in range(0, len(points)) if set(points[x]) != set([0, 0])]
             angles = sorted(angles)
 
             # calculate the angle going from clade root to its direct ancestor
             clade_ancestor = clade.parent
             ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
-            ancestor_angle = self.calculate_angle((ancestor_coords))
+            ancestor_angle = tools.calculate_angle((ancestor_coords))
 
             # find the two tips that contain the clade ancestor
             tips_found = False
@@ -735,7 +548,7 @@ class Model(object):
         return self.selected_tree
 
     def collapse_selected_tree(self):
-        s = self.get_sector(self.selected_root)
+        s = self.__get_sector(self.selected_root)
         nodes = self.selected_tree['Node_id'].values
 
         (rx, ry) = (self.selected_root.x2, self.selected_root.y2)
