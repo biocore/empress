@@ -11,6 +11,7 @@
 <script type="text/javascript" src="{{ static_url('vendor/js/jquery-2.2.4.min.js') }}"></script>
 <script type="text/javascript" src="{{ static_url('vendor/js/jquery.event.drag-2.2.min.js') }}"></script>
 <script type="text/javascript" src="{{ static_url('js/init_webgl.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('js/mouse_events.js') }}"></script>
 <script type="text/javascript" src="{{ static_url('js/callbacks.js') }}"></script>
 <script type="text/javascript" src="{{ static_url('js/drawing_loop.js') }}"></script>
 <script type="text/javascript" src="{{ static_url('js/init_webpage.js') }}"></script>
@@ -22,10 +23,11 @@
 
 <body>
   <div class="container">
-    <canvas class="tree-surface">
+    <canvas class="tree-surface", id="tree-surface">
       Your browser does not support HTML5
     </canvas>
     <div id="divcontainer"></div>
+    <div class="square"></div>
   </div>
 
   <div class="metadata-tabs">
@@ -38,6 +40,9 @@
       </div>
       <div>
         <button onclick="showMenu('subTree')">Sub Tree</button>
+      </div>
+      <div>
+        <button onclick="showMenu('metadata')">Metadata</button>
       </div>
     </div>
 
@@ -66,6 +71,9 @@
           <label for="category">Equals to</label>
           <input type="text" id="category"/>
         </div>
+
+        <div id="highlight-history">
+        </div>
       </div>
 
       <div id="color-input">
@@ -78,17 +86,22 @@
           <input type="text" id="clade"/>
         </div>
       </div>
+
+      <div id="metadata-options">
+        <input id="show-metadata" type="checkbox" onclick="toggleMetadata()"/>
+        <label for="show-metadata">show metadata table</label>
+      </div>
     </div>
   </div>
 
-
-  <table>
+  <div id="scrolltable">
+  <table id="metadata-table">
     <tr>
       <td valign="top">
-        <div id="scrolltable"></div>
       </td>
     </tr>
   </table>
+</div>
 
   <script type="text/javascript">
     // urls for webserver
@@ -103,7 +116,8 @@
       headersURL: "http://" + window.location.host + "/headers",
       cladeColorURL: "http://" + window.location.host + "/color_clade",
       subTreeURL: "http://" + window.location.host + "/subtree",
-      oldTreeURL: "http://" + window.location.host + "/oldtree"
+      oldTreeURL: "http://" + window.location.host + "/oldtree",
+      selectTreeURL: "http://" + window.location.host + "/selectNodes"
     };
 
     // fields to extract from metadata, used in extractInfo()
@@ -147,10 +161,13 @@
 
 
     let numUserSelects = 0;
-    const INIT_COLOR = "FFFFFF";
-    const CLEAR_COLOR_HEX = "C4C4C4";
-    const CLEAR_COLOR = 0.7686274509803922;
+    // const CLEAR_COLOR_HEX = "C4C4C4";
+    const CLEAR_COLOR_HEX = "FFFFFF";
+    // const CLEAR_COLOR = 0.7686274509803922;
+    const CLEAR_COLOR = 1;
+    const DEFUALT_BRANCH_COLOR = "000000";
     let camera = {};
+    let cntrlPress = false;
   </script>
 
   <script type="text/javascript">
@@ -169,6 +186,8 @@
         fillDropDownMenu(field.table_headers.headers);
         $("#highlight-input").hide();
         $("#color-input").hide();
+        $("#metadata-options").hide();
+        $("#show-metadata").prop('checked', true);
         drawingData.edgeCoords = extractInfo(edgeMetadata, field.edgeFields);
         normalizeTree(edgeMetadata);
         $.getJSON(urls.tableURL, function(data) {

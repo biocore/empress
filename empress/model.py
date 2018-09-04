@@ -47,7 +47,8 @@ def read_metadata(file_name, skip_row, seperator):
         cols = pd.read_csv(
             file_name, skiprows=skip_row, nrows=1, delim_whitespace=True).columns.tolist()
 
-        # StringIO is used in test cases, without this the StringIO buffer will be at end
+        # StringIO is used in test cases, without this the tests will fail due to the buffer
+        # being placed at the end everytime its read
         if type(file_name) is io.StringIO:
             file_name.seek(0)
 
@@ -58,7 +59,8 @@ def read_metadata(file_name, skip_row, seperator):
         cols = pd.read_csv(
             file_name, skiprows=skip_row, nrows=1, sep=seperator).columns.tolist()
 
-        # StringIO is used in test cases, without this the StringIO buffer will be at end
+        # StringIO is used in test cases, without this the tests will fail due to the buffer
+        # being placed at the end everytime its read
         if type(file_name) is io.StringIO:
             file_name.seek(0)
 
@@ -286,7 +288,7 @@ class Model(object):
             All entries from self.edge_metadata that are visible and match criteria
             passed in.
         """
-        # change the cached tree as well
+        # update the cached trees
         for edge_data, _ in self.cached_subtrees:
             if lower is not "":
                 edge_data.loc[edge_data[attribute] > float(lower), category] = new_value
@@ -301,7 +303,7 @@ class Model(object):
             if upper is not "":
                 edge_data.loc[edge_data[attribute] < float(upper), category] = new_value
 
-        # change the current tree
+        # update the current tree
         if lower is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
@@ -376,6 +378,7 @@ class Model(object):
         triangles : pd.DataFrame
             rx | ry | fx | fy | cx | cy | #RGB (color string)
         """
+        # TODO: need to collapse the cached trees as well
         triData = {}
 
         count = 0
@@ -705,4 +708,14 @@ class Model(object):
     def revive_old_tree(self):
         if len(self.cached_subtrees) > 0:
             self.edge_metadata, self.tree = self.cached_subtrees.pop()
-        return self.edge_metadata
+            return self.edge_metadata
+        return pd.DataFrame()
+
+    def select_sub_tree(self, x, y, width, length):
+        df = self.edge_metadata
+        print(x,y,width,length)
+        entries = df.loc[
+            df['x'] > x & df['x'] < (x + length) &
+            df['y'] > y & df['y'] < (y + width)]
+        print(entries)
+        return entries
