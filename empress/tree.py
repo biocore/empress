@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from operator import attrgetter
 
+DEFAULT_COLOR = "000000"
 
 class Tree(TreeNode):
     """
@@ -140,7 +141,7 @@ class Tree(TreeNode):
                 isTip = {"is_tip": child.is_tip()}
                 coords = {'x': child.x2, 'y': child.y2}
 
-                attr = {'node_color': 'FFFFFF', 'branch_color': 'FFFFFF',
+                attr = {'node_color': DEFAULT_COLOR, 'branch_color': DEFAULT_COLOR,
                         'node_is_visible': True, 'branch_is_visible': True,
                         'width': 1, 'size': 1}
                 edgeData[child.name] = {**nId, **isTip, **coords, **pId,

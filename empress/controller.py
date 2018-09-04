@@ -244,3 +244,24 @@ class OldTreeHandler(RequestHandler):
         old_tree = old_tree.to_json(orient='records')
         self.write(old_tree)
         self.finish()
+
+
+class SelectHandler(RequestHandler):
+    def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        x = self.get_argument("x")
+        y = self.get_argument("y")
+        width = self.get_argument("width")
+        length = self.get_argument("length")
+        nodes = self.m.select_sub_tree(x, y, width, length)
+        self.write(nodes)
+        self.finish

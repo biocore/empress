@@ -82,6 +82,7 @@ function bindBuffer(buffer) {
 
 
 function drawLabels() {
+  const NEGATE = -1;
   // remove old labels
   let divContainerElement = document.getElementById("divcontainer");
   while(divContainerElement.firstChild) {
@@ -95,12 +96,12 @@ function drawLabels() {
 
   // // find the top left corner of the viewing window in tree space
   let boundingBoxDim = camera.pos[2] + shaderProgram.zTransMat[14];
-  let topLeft = vec4.fromValues(-1 * boundingBoxDim, boundingBoxDim, 0, 1);
+  let topLeft = vec4.fromValues(NEGATE * boundingBoxDim, boundingBoxDim, 0, 1);
   vec4.transformMat4(topLeft, topLeft, shaderProgram.xyTransMat);
 
   // find the bottom right corner of the voewing window in tree space
-  let bottomRight = vec4.fromValues(boundingBoxDim, -1 * boundingBoxDim, 0, 1);
-  vec4.transformMat4(bottomRight, bottomRight, shaderProgram.zTransMat);
+  let bottom = NEGATE * camera["bottomSlope"] * boundingBoxDim;
+  let bottomRight = vec4.fromValues(boundingBoxDim, bottom, 0, 1);
   vec4.transformMat4(bottomRight, bottomRight, shaderProgram.xyTransMat);
 
   // find where the range of the viewing window along the the x/y axis

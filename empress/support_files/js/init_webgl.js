@@ -124,20 +124,12 @@ function initWebGl() {
 }
 
 function setCanvasSize(canvas) {
-    let realToCSSPixels = window.devicePixelRatio;
+  const HALF = 1 / 2;
 
-    // Lookup the size the browser is displaying the canvas in CSS pixels
-    // and compute a size needed to make our drawingbuffer match it in
-    // device pixels.
-    let displayWidth  = Math.floor(gl.canvas.clientWidth * 0.75  * realToCSSPixels);
-    let displayHeight = Math.floor(gl.canvas.clientHeight * 0.75 * realToCSSPixels);
-
-    // Check if the canvas is not the same size.
-    if (canvas.width  !== displayWidth ||
-        canvas.height !== displayHeight) {
-
-      // Make the canvas the same size
-      canvas.width  = displayWidth;
-      canvas.height = displayHeight;
-    }
+  // Make the canvas a square, width is choosen because it will be larger
+  canvas.width = $(window).width();
+  canvas.height = $(window).width();
+  const HALF_WIDTH = HALF * $(window).width();
+  camera["yInt"] = $(window).height() - HALF_WIDTH;
+  camera["bottomSlope"] = camera["yInt"] / HALF_WIDTH;
 }

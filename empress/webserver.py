@@ -4,7 +4,7 @@ from empress.controller import (
     ModelHandler, EdgeHandler, NodeHandler, BenchmarkHandler,
     HighlightHandler, TriangleHandler, CollapseHandler, TableHandler,
     TableChangeHandler, HeaderHandler, ColorCladeHandler, SubtreeHandler,
-    OldTreeHandler)
+    OldTreeHandler, SelectHandler)
 import os.path
 
 
@@ -23,7 +23,8 @@ class Application(tornado.web.Application):
                     (r"/headers", HeaderHandler, dict(m=m)),
                     (r"/color_clade", ColorCladeHandler, dict(m=m)),
                     (r"/subtree", SubtreeHandler, dict(m=m)),
-                    (r"/oldtree", OldTreeHandler, dict(m=m))
+                    (r"/oldtree", OldTreeHandler, dict(m=m)),
+                    (r"/selectNodes", SelectHandler, dict(m=m))
                     ]
 
         settings = dict(

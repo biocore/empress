@@ -4,107 +4,35 @@
  * tells javasript what function to call for mouse/keyboard events
  */
 function initCallbacks(){
-  $(".tree-surface")[0].onmousedown = mouseDown;
-  document.onmouseup = mouseUp;
-  document.onmousemove = mouseMove;
-  $(".tree-surface")[0].onwheel = mouseWheel;
+  const CTRL_KEY = 17;
+  $(".tree-surface")[0].onmousedown = mouseHandler;
+  document.onmouseup = mouseHandler;
+  document.onmousemove = mouseHandler;
+  $(".tree-surface")[0].onwheel = mouseHandler;
+
+
   window.onresize = resizeCanvas;
   $(".tree-surface")[0].ondblclick = getOldTree;
+
+  $(document).keydown(function(e) {
+      cntrlPress = (e.which === CTRL_KEY) ? true : false;
+  });
+  $(document).keyup(function(e) {
+      if(e.which == CTRL_KEY) {
+        let square = $(".square");
+        let width = square.height();
+        let length = square.height();
+        let boxCoords = toTreeCoords(drawingData.lastMouseX, drawingData.lastMouseY);
+        placeSelectBox(boxCoords.x, boxCoords.y);
+        cntrlPress = false;
+        $.getJSON(urls.selectTreeURL, {x: boxCoords.x, y: boxCoords.y,
+                  width: width, length: length}, function(data) {
+            console.log(data);
+        });
+      }
+  });
 }
 
-/**
- * stores (x,y) coord of mouse
- *
- * @param {Object} mousedown event used to collect the (x,y) where the mouse was
- * pressed. This will be used when the user starts dragging the mouse to determine
- * how much to move the tree.
- */
-function mouseDown(event) {
-  drawingData.isMouseDown = true;
-  $('body').css('cursor', 'none');
-  drawingData.lastMouseX = event.clientX;
-  drawingData.lastMouseY = event.clientY;
-}
-
-/**
- * unsets the mouse down flag
- *
- * @param {Object} mouseup event used to unset the mouse down flag.
- * This prevent unnecessary calculations when the mouse is being moved and
- * the user is not pressing the mouse down.
- */
-function mouseUp(event) {
-  drawingData.isMouseDown = false;
-  $('body').css('cursor', 'default');
-}
-
-
-/**
- * Moves the virtual camera in the xy-plane
- *
- * @param {Object} mousemove event used to collect the (x,y) coordinates of mouse. This
- * will be used to determine which direction the user moved the mouse in order to move
- * the tree accordingly.
- */
-function mouseMove(event) {
-  // dont move camera if user is not pressing down on the mouse
-  if (!drawingData.isMouseDown) {
-    return;
-  }
-
-  // grab x,y coordinate of mouse
-  const newX = event.clientX;
-  const newY = event.clientY;
-
-  // note (0, 0) of the canvas is top left corner with +x going right and +y going down
-  // calculate which direction the mouse moved
-  const dx = (drawingData.lastMouseX - newX);
-  const dy = (newY - drawingData.lastMouseY);
-  const transVec = vec3.fromValues(dx, dy,0);
-  let addTransMat = mat4.create();
-
-  // modify matrix to move camera in xy-plane in the direction the mouse moved
-  mat4.fromTranslation(addTransMat,transVec);
-  mat4.multiply(shaderProgram.xyTransMat, addTransMat, shaderProgram.xyTransMat);
-
-  // save current mouse coordinates
-  drawingData.lastMouseX = newX;
-  drawingData.lastMouseY = newY;
-
-  // redraw tree
-  requestAnimationFrame(loop);
-}
-
-/**
- * Moves the virtual camera along the z axis
- *
- * @param {Object} mousewheel event used to detemine if the camera should zoom in or
- * zoom out on the tree.
- */
-function mouseWheel(event) {
-  // the index that stores the cameras z coordinate
-  const CAM_Z =2;
-
-  // index that traslation matrix that tells webgl how much to move camera in the z-direction
-  const Z_TRANS = 14;
-
-  let zoomByMat = new Float32Array(16);
-  let zoomAmount = (event.deltaY < 0) ? drawingData.zoomAmount : -1 * drawingData.zoomAmount;
-
-  // check to see if camera is maxed zoomed
-  let camPos = Math.abs(shaderProgram.zTransMat[Z_TRANS] + camera.pos[CAM_Z]);
-  if(camPos <= drawingData.maxZoom && zoomAmount < 0) {
-    return;
-  }
-
-  // modify the camera translation matrix
-  let zoomVec = vec3.fromValues(0, 0, zoomAmount);
-  mat4.fromTranslation(zoomByMat, zoomVec);
-  mat4.mul(shaderProgram.zTransMat, zoomByMat, shaderProgram.zTransMat);
-
-  // redraw tree
-  requestAnimationFrame(loop);
-}
 
 /**
  * resizes the drawing canvas to fix the screen
@@ -206,7 +134,8 @@ function addHighlightItem(attr, val, l, u, e) {
   newAttrItem.appendChild(attrLabel);
 
   // add item to html document
-  $(".metadata-tabs")[0].appendChild(newAttrItem);
+  // $(".metadata-tabs")[0].appendChild(newAttrItem);
+  $("#highlight-history")[0].appendChild(newAttrItem);
 }
 
 /**
@@ -366,20 +295,51 @@ function userCladeColor() {
  */
 function showMenu(menuName) {
   if(menuName === "highlight") {
-    $("#highlight-input").show();
-    $("#color-input").hide();
-    $("#select-highlight").attr("onclick", "userHighlightSelect()");
-    $("#color-selector").show();
+    if($("#highlight-input").is(":visible") && $("#color-selector").is(":visible")) {
+      $("#highlight-input").hide();
+      $("#color-selector").hide();
+    }
+    else {
+      $("#highlight-input").show();
+      $("#color-selector").show();
+      $("#color-input").hide();
+      $("#select-highlight").attr("onclick", "userHighlightSelect()");
+      $("#metadata-options").hide();
+      $("#highlight-history").show();
+    }
+  }
+  else if(menuName === "subTree") {
+    if($("#highlight-input").is(":visible") && !$("#color-selector").is(":visible")) {
+      $("#highlight-input").hide();
+    }
+    else {
+      $("#highlight-input").show();
+      $("#color-selector").hide();
+      $("#color-input").hide();
+      $("#select-highlight").attr("onclick", "newTree()");
+      $("#metadata-options").hide();
+      $("#highlight-history").hide();
+    }
+  }
+  else if (menuName === "color") {
+    if($("#color-input").is(":visible")) {
+      $("#color-input").hide();
+    }
+    else {
+      $("#highlight-input").hide();
+      $("#color-input").show();
+      $("#metadata-options").hide();
+    }
   }
   else {
-    $("#highlight-input").hide();
-    $("#color-input").show();
-  }
-  if(menuName === "subTree") {
-    $("#highlight-input").show();
-    $("#color-input").hide();
-    $("#select-highlight").attr("onclick", "newTree()");
-    $("#color-selector").hide();
+    if($("#metadata-options").is(":visible")) {
+      $("#metadata-options").hide();
+    }
+    else {
+      $("#highlight-input").hide();
+      $("#color-input").hide();
+      $("#metadata-options").show();
+    }
   }
 }
 
@@ -404,7 +364,7 @@ function clearSelection(obj) {
   } else {
     e = item.compVal;
   }
-  selectHighlight(attr, cat, "FFFFFF", l, u, e);
+  selectHighlight(attr, cat, DEFUALT_BRANCH_COLOR, l, u, e);
 
   delete attrItem[obj.parentElement.id];
   obj.parentNode.remove();
@@ -527,6 +487,9 @@ function newTree() {
 
 function getOldTree(event) {
   $.getJSON(urls.oldTreeURL, {}, function(data){
+    if(data.length == 0) {
+      return;
+    }
     drawingData.edgeCoords = extractInfo(data, field.edgeFields);
     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
     updateGridData(data);
@@ -541,10 +504,18 @@ function clearCladeHighlights() {
   labelPos = 0;
   fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
   let divContainerElement = document.getElementsByClassName("color-item");
-  console.log(divContainerElement);
   let numItems = divContainerElement.length
   const NEXT_CHILD = 0;
   for(let i = 0; i < numItems; i++) {
     divContainerElement[NEXT_CHILD].parentElement.removeChild(divContainerElement[NEXT_CHILD]);
+  }
+}
+
+function toggleMetadata() {
+  if($("#show-metadata").prop("checked")) {
+    $("#scrolltable").show();
+  }
+  else {
+    $("#scrolltable").hide();
   }
 }
