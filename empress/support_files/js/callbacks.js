@@ -18,25 +18,25 @@ function initCallbacks(){
       cntrlPress = (e.which === CTRL_KEY) ? true : false;
   });
   $(document).keyup(function() {
-      if(cntrlPress) {
-        console.log("released cntr")
-        cntrlPress = false;
-        let square = $(".square");
-        let width = square.width();
-        let height = square.height();
-        let topCorner = toTreeCoords(drawingData.lastMouseX, drawingData.lastMouseY);
-        let bottomCorner = toTreeCoords(drawingData.lastMouseX + width, drawingData.lastMouseY + height);
-        let edgeMetadata;
-        $.getJSON(urls.selectTreeURL, {x1: topCorner[0], y1: topCorner[1],
-                  x2: bottomCorner[0], y2: bottomCorner[1]}, function(data) {
-          edgeMetadata = data;
-        }).done(function() {
-          drawingData.selectTree = extractInfo(edgeMetadata, field.edgeFields);
-          fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
-          requestAnimationFrame(loop);
-          $(".selected-tree-menu").css({top: drawingData.lastMouseY, left: drawingData.lastMouseX, visibility: "visible"})
-        });
-      }
+    if(cntrlPress) {
+      console.log("released cntr")
+      cntrlPress = false;
+      let square = $(".square");
+      let width = square.width();
+      let height = square.height();
+      let topCorner = toTreeCoords(drawingData.lastMouseX, drawingData.lastMouseY);
+      let bottomCorner = toTreeCoords(drawingData.lastMouseX + width, drawingData.lastMouseY + height);
+      let edgeMetadata;
+      $.getJSON(urls.selectTreeURL, {x1: topCorner[0], y1: topCorner[1],
+                x2: bottomCorner[0], y2: bottomCorner[1]}, function(data) {
+        edgeMetadata = data;
+      }).done(function() {
+        drawingData.selectTree = extractInfo(edgeMetadata, field.edgeFields);
+        fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
+        requestAnimationFrame(loop);
+        $(".selected-tree-menu").css({top: drawingData.lastMouseY, left: drawingData.lastMouseX, visibility: "visible"})
+      });
+    }
   });
 }
 
@@ -173,7 +173,7 @@ function addCladeItem(clade, color) {
   // container for the item
   let newAttrItem = document.createElement("div");
   newAttrItem.setAttribute("class", "color-item");
-  newAttrItem.setAttribute("id", "clade-" + labelPos++);
+  newAttrItem.setAttribute("id", clade);
 
   // the clear button
   let clear = document.createElement("INPUT");
@@ -210,8 +210,11 @@ function addCladeItem(clade, color) {
  */
 function clearColorSelection(obj) {
   let arcID = obj.parentElement.id;
-  updateColorSelection(arcID, CLEAR_COLOR_HEX);
-  obj.parentNode.remove();
+  console.log(arcID);
+  $.getJSON(urls.clearColorCladeURL, { clade: arcID}, function(data) {
+    loadColorClades(data);
+    obj.parentNode.remove();
+  });
 }
 
 /**
@@ -232,36 +235,9 @@ function changeColorSelection(obj) {
  * @param {string} a hex string that represent what color to change the clade to
  */
 function updateColorSelection(arcID, color) {
-  const MAX_NUM = 255;
-  color = color.match(/.{1,2}/g);
-  // convert the 2 digit hex string into a float
-  color = color.map(function(element) {
-    return parseInt("0x" + element) / MAX_NUM;
+  $.getJSON(urls.changeCladeURL, { clade: arcID, color: color}, function(data) {
+    loadColorClades(data);
   });
-  const CLADE_ID = "clade-";
-  const BASE = 10;
-  const RED_VERT = 2;
-  const GREEN_VERT = 3;
-  const BLUE_VERT = 4;
-  const RED = 0;
-  const GREEN = 1;
-  const BLUE = 2;
-
-  // Calculate where the clade vertices begin and end
-  let start = parseInt(arcID.replace(CLADE_ID, ''), BASE);
-  start *= TRI_PER_ARC * ELEMENTS_PER_VERT * VERT_PER_TRI;
-  let end = start + TRI_PER_ARC * ELEMENTS_PER_VERT * VERT_PER_TRI;
-
-  // Change the color of the clade to be equal to the background color
-  for(let i = start; i < end; i += ELEMENTS_PER_VERT) {
-    drawingData.coloredClades[i + RED_VERT] = color[RED];
-    drawingData.coloredClades[i + GREEN_VERT] = color[GREEN];
-    drawingData.coloredClades[i + BLUE_VERT] = color[BLUE];
-  }
-
-  // update webgl buffer
-  fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
-  requestAnimationFrame(loop);
 }
 
 /*
@@ -293,22 +269,12 @@ function userCladeColor() {
   const clade = $("#clade").val();
   let nodeCoords;
 
-  $.getJSON(urls.cladeColorURL, { clade: clade,
-            color: color}, function(data) {
-    let center = vec2.create();
-    vec2.set(center, data.center_x, data.center_y);
-    let arcLength = data.arc_length;
-    let startTheta = data.starting_angle;
-    let totalTheta = data.theta;
-    let color = data.color;
-    let sector = createArcSector(center, arcLength, startTheta, totalTheta, color);
-    drawingData.coloredClades = drawingData.coloredClades.concat(sector);
-  }).done(function() {
-    fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
-    requestAnimationFrame(loop);
+  $.getJSON(urls.cladeColorURL, {clade: clade, color: color}, function(data) {
+    if(!data.hasOwnProperty('empty')) {
+      loadColorClades(data);
+      addCladeItem(clade, color);
+    }
   });
-
-  addCladeItem(clade, color);
 }
 
 /*
@@ -507,14 +473,11 @@ function newTree() {
   const e = $("#category").val();
   $.getJSON(urls.subTreeURL, {attribute: attr, lower: l, equal: e,
             upper: u}, function(data){
-    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
-    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
-    updateGridData(data);
-    labels = {}
-    drawingData.triangles = [];
-    fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
-    clearCladeHighlights();
-    requestAnimationFrame(loop);
+    loadTree(data);
+  }).done(function() {
+    $.getJSON(urls.cladeURL, {}, function(data) {
+      loadColorClades(data);
+    });
   });
 }
 
@@ -523,26 +486,26 @@ function getOldTree(event) {
     if(data.length == 0) {
       return;
     }
-    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
-    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
-    updateGridData(data);
-    labels = {};
-    clearCladeHighlights();
-    requestAnimationFrame(loop);
+    loadTree(data);
+  }).done(function() {
+    $.getJSON(urls.cladeURL, {}, function(data) {
+      loadColorClades(data);
+    });
   });
 }
 
-function clearCladeHighlights() {
-  drawingData.coloredClades = [];
-  labelPos = 0;
-  fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
-  let divContainerElement = document.getElementsByClassName("color-item");
-  let numItems = divContainerElement.length
-  const NEXT_CHILD = 0;
-  for(let i = 0; i < numItems; i++) {
-    divContainerElement[NEXT_CHILD].parentElement.removeChild(divContainerElement[NEXT_CHILD]);
-  }
-}
+// // TODO: delete
+// function clearCladeHighlights() {
+//   drawingData.coloredClades = [];
+//   labelPos = 0;
+//   fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
+//   let divContainerElement = document.getElementsByClassName("color-item");
+//   let numItems = divContainerElement.length
+//   const NEXT_CHILD = 0;
+//   for(let i = 0; i < numItems; i++) {
+//     divContainerElement[NEXT_CHILD].parentElement.removeChild(divContainerElement[NEXT_CHILD]);
+//   }
+// }
 
 function toggleMetadata() {
   if($("#show-metadata").prop("checked")) {

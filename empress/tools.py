@@ -5,6 +5,15 @@ import pandas as pd
 from skbio import TreeNode
 
 
+NUM_TRI = 100
+VERTS_PER_TRI = 3
+ELEMENTS_PER_VERT = 5
+(R_INDEX, G_INDEX, B_INDEX) = (0, 1, 2)
+(R_OFFSET, G_OFFSET, B_OFFSET) = (2, 3, 4)
+
+
+
+
 def in_quad_1(angle):
     """ Determines if the angle is between 0 and pi / 2 radians
 
@@ -71,7 +80,7 @@ def name_internal_nodes(tree):
         if n.length is None:
             n.length = 1
         if n.name is None:
-            new_name = "y%d" % i
+            new_name = 'y%d' % i
             n.name = new_name
 
 
@@ -115,7 +124,7 @@ def read_metadata(file_name, skip_row, seperator):
 
         metadata = pd.read_table(
             file_name, skiprows=skip_row, sep=seperator, dtype={cols[0]: object})
-        metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
+        metadata.rename(columns={metadata.columns[0]: 'Node_id'}, inplace=True)
     return metadata
 
 
@@ -194,3 +203,58 @@ def start_and_total_angle(a_1, a_2):
         theta = ending_angle + abs(starting_angle - 2 * math.pi)
 
     return (starting_angle, theta)
+
+def extract_color(color):
+    HEX_BASE = 16
+    NUM_CHAR = 2
+    LARGEST_COLOR = 255
+    color = color.lower()
+    color = [color[i: i+NUM_CHAR] for i in range(0, len(color), NUM_CHAR)]
+    color = [int(hex_string, HEX_BASE) for hex_string in color]
+    color = [c / LARGEST_COLOR for c in color]
+    return (color[R_INDEX], color[G_INDEX], color[B_INDEX])
+
+def create_arc_sector(sector_info):
+    sector = []
+    theta = sector_info['theta'] / NUM_TRI
+    rad = sector_info['starting_angle']
+    (red, green, blue) = extract_color(sector_info['color'])
+    c_x = sector_info['center_x']
+    c_y = sector_info['center_y']
+    arc_length = sector_info['arc_length']
+
+
+    #  creating the sector
+    for i in range(0, NUM_TRI):
+        # first vertice of triangle
+        sector.append(c_x)
+        sector.append(c_y)
+        sector.append(red)
+        sector.append(green)
+        sector.append(blue)
+
+         # second vertice of triangle
+        sector.append(math.cos(rad) * arc_length + c_x)
+        sector.append(math.sin(rad) * arc_length + c_y)
+        sector.append(red)
+        sector.append(green)
+        sector.append(blue)
+
+        rad += theta
+
+         # third vertice of triangle
+        sector.append(math.cos(rad) * arc_length + c_x)
+        sector.append(math.sin(rad) * arc_length + c_y)
+        sector.append(red)
+        sector.append(green)
+        sector.append(blue)
+
+    return sector
+
+def change_sector_color(sector, color):
+    (red, green, blue) = extract_color(color)
+    for i in range(0, ELEMENTS_PER_VERT * VERTS_PER_TRI * NUM_TRI, ELEMENTS_PER_VERT):
+        sector[i + R_OFFSET] = red
+        sector[i + G_OFFSET] = green
+        sector[i + B_OFFSET] = blue
+    return sector

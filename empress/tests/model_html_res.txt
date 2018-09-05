@@ -1,9 +1,13 @@
 <body>
 <div class="container">
-<canvas class="tree-surface">
+<canvas class="tree-surface", id="tree-surface">
 Your browser does not support HTML5
 </canvas>
 <div id="divcontainer"></div>
+<div class="square"></div>
+<div class="selected-tree-menu">
+<input id="collapse" type = "button" value = "collapse" onclick="selectedTreeCollapse()"/>
+</div>
 </div>
 <div class="metadata-tabs">
 <div class="tab-options">
@@ -15,6 +19,9 @@ Your browser does not support HTML5
 </div>
 <div>
 <button onclick="showMenu('subTree')">Sub Tree</button>
+</div>
+<div>
+<button onclick="showMenu('metadata')">Metadata</button>
 </div>
 </div>
 <div class="menu" id="highlight-menu">
@@ -38,6 +45,8 @@ Your browser does not support HTML5
 <label for="category">Equals to</label>
 <input type="text" id="category"/>
 </div>
+<div id="highlight-history">
+</div>
 </div>
 <div id="color-input">
 <div>
@@ -49,15 +58,20 @@ Your browser does not support HTML5
 <input type="text" id="clade"/>
 </div>
 </div>
+<div id="metadata-options">
+<input id="show-metadata" type="checkbox" onclick="toggleMetadata()"/>
+<label for="show-metadata">show metadata table</label>
 </div>
 </div>
-<table>
+</div>
+<div id="scrolltable">
+<table id="metadata-table">
 <tr>
 <td valign="top">
-<div id="scrolltable"></div>
 </td>
 </tr>
 </table>
+</div>
 <script type="text/javascript">
 // urls for webserver
 var urls = {
@@ -69,15 +83,22 @@ nodeURL: "http://"+ window.location.host + "/api/nodes",
 tableURL: "http://" + window.location.host + "/table_values",
 tableChangeURL: "http://" + window.location.host + "/table_change",
 headersURL: "http://" + window.location.host + "/headers",
+cladeURL: "http://" + window.location.host + "/clades",
 cladeColorURL: "http://" + window.location.host + "/color_clade",
+changeCladeURL: "http://" + window.location.host + "/change_clade",
+clearColorCladeURL: "http://" + window.location.host + "/clear_clade",
 subTreeURL: "http://" + window.location.host + "/subtree",
-oldTreeURL: "http://" + window.location.host + "/oldtree"
+oldTreeURL: "http://" + window.location.host + "/oldtree",
+selectTreeURL: "http://" + window.location.host + "/selectNodes",
+collapseSTreeURL: "http://" + window.location.host + "/collapseSTree",
+trianglesURL: "http://" + window.location.host + "/api/triangles"
 };
 // fields to extract from metadata, used in extractInfo()
 let field = {
 edgeFields: ["px", "py", "branch_color", "x", "y",
 "branch_color"],
-nodeFields: ["x", "y", "color"]
+nodeFields: ["x", "y", "color"],
+triangleFields: ["cx", "cy", "color", "lx", "ly", "color", "rx", "ry", "color"]
 };
 // stores matrices, and buffers that webgl will uses
 let shaderProgram = {};
@@ -90,7 +111,9 @@ lastMouseX: null,
 lastMouseY: null,
 zoomAmount: 10,
 maxZoom: 30,
-coloredClades: []
+coloredClades: [],
+selectTree: [],
+triangles: []
 };
 let numAttr = 0;
 let attrItem = {};
@@ -108,10 +131,11 @@ const TRI_PER_ARC = 100;
 const ELEMENTS_PER_VERT = 5;
 const VERT_PER_TRI = 3;
 let numUserSelects = 0;
-const INIT_COLOR = "FFFFFF";
-const CLEAR_COLOR_HEX = "C4C4C4";
-const CLEAR_COLOR = 0.7686274509803922;
+const CLEAR_COLOR_HEX = "FFFFFF";
+const CLEAR_COLOR = 1;
+const DEFUALT_BRANCH_COLOR = "000000";
 let camera = {};
+let cntrlPress = false;
 </script>
 <script type="text/javascript">
 {
@@ -128,6 +152,8 @@ edgeMetadata = data;
 fillDropDownMenu(field.table_headers.headers);
 $("#highlight-input").hide();
 $("#color-input").hide();
+$("#metadata-options").hide();
+$("#show-metadata").prop('checked', true);
 drawingData.edgeCoords = extractInfo(edgeMetadata, field.edgeFields);
 normalizeTree(edgeMetadata);
 $.getJSON(urls.tableURL, function(data) {
