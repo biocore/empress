@@ -7,7 +7,6 @@ from empress.tree import Tree
 import empress.tools as tools
 
 
-
 class Model(object):
 
     def __init__(
@@ -395,7 +394,7 @@ class Model(object):
             clade_root = self.edge_metadata.loc[self.edge_metadata[self.clade_field] == k]
             clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
 
-            if clade_root_id !=  -1:
+            if clade_root_id != -1:
                 clade = self.tree.find(clade_root_id)
                 color_clade = self.__get_sector(clade)
                 color_clade['color'] = v['color']
@@ -577,7 +576,7 @@ class Model(object):
             old_clades = self.colored_clades
             self.colored_clades = self.cached_clades.pop()
             for k, v in old_clades.items():
-                if not k in self.colored_clades:
+                if k not in self.colored_clades:
                     self.colored_clades[k] = v
             self.colored_clades = self.refresh_clades()
 
@@ -626,7 +625,7 @@ class Model(object):
         color = {'color': "0000FF"}
         visible = {'visible': True}
         self.triData[self.selected_root.name] = {**nId, **root, **shortest,
-            **longest, **color, **visible}
+                                                 **longest, **color, **visible}
 
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
         self.edge_metadata.loc[self.edge_metadata['Node_id'] == self.selected_root.name, 'branch_is_visible'] = True
@@ -637,9 +636,9 @@ class Model(object):
             if self.selected_root.name in ancestors:
                 self.triData[node_id]['visible'] = False
 
-        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible'] == True]
+        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
 
     def retrive_triangles(self):
-        triangles = {k:v for (k, v) in self.triData.items() if v['visible']}
+        triangles = {k: v for (k, v) in self.triData.items() if v['visible']}
         self.triangles = pd.DataFrame(triangles).T
         return self.triangles

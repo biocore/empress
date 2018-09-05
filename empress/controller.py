@@ -22,7 +22,7 @@ class EdgeHandler(RequestHandler):
     def get(self):
         """ Retrieves information from model to draw tree
         """
-        edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible'] == True]
+        edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible']]
         self.write(edges.to_json(orient='records'))
         self.finish()
 
@@ -326,6 +326,7 @@ class SelectHandler(RequestHandler):
         nodes = nodes.to_json(orient='records')
         self.write(nodes)
         self.finish()
+
 
 class CollapseSelectedHandler(RequestHandler):
     def initialize(self, m):

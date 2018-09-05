@@ -5,6 +5,7 @@ from operator import attrgetter
 
 DEFAULT_COLOR = "000000"
 
+
 class Tree(TreeNode):
     """
     Attributes
