@@ -69,10 +69,11 @@ class Model(object):
         self.selected_tree = pd.DataFrame()
         self.selected_root = self.tree
         self.triData = {}
-        self.colored_clade = {}
+        self.colored_clades = {}
 
         # cached subtrees
         self.cached_subtrees = list()
+        self.cached_clades = list()
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -352,19 +353,57 @@ class Model(object):
             A list of all highlighted clades
         """
         # is it be safe to assume clade ids will be unique?
+        c = clade
         clade_root = self.edge_metadata.loc[self.edge_metadata[self.clade_field] == clade]
         clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
 
         if clade_root_id == -1:
-            return {}
+            return {"empty": []}
 
         clade = self.tree.find(clade_root_id)
 
         color_clade = self.__get_sector(clade)
         color_clade['color'] = color
-        return color_clade
+        color_clade_s = tools.create_arc_sector(color_clade)
+        self.colored_clades[c] = {'data': color_clade_s,
+                                  'depth': color_clade['depth'],
+                                  'color': color}
+        return self.retrive_colored_clade()
 
-        # Note: all calculations are down by making the clade root (0,0)
+    def change_clade_color(self, clade, color):
+        c = self.colored_clades[clade]['data']
+        c = tools.change_sector_color(c, color)
+        self.colored_clades[clade]['data'] = c
+        return self.retrive_colored_clade()
+
+    def clear_clade(self, clade):
+        self.colored_clades.pop(clade)
+        return self.retrive_colored_clade()
+
+    def retrive_colored_clade(self):
+        CLADE_INDEX = 0
+        DEPTH_INDEX = 1
+        clades = [(k, v['depth']) for k, v in self.colored_clades.items()]
+        clades.sort(key=lambda clade: clade[DEPTH_INDEX])
+        sorted_clades = [self.colored_clades[clade[CLADE_INDEX]]['data'] for clade in clades]
+        sorted_clades = [flat for two_d in sorted_clades for flat in two_d]
+        return {"clades": sorted_clades}
+
+    def refresh_clades(self):
+        colored_clades = {}
+        for k, v in self.colored_clades.items():
+            clade_root = self.edge_metadata.loc[self.edge_metadata[self.clade_field] == k]
+            clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
+
+            if clade_root_id !=  -1:
+                clade = self.tree.find(clade_root_id)
+                color_clade = self.__get_sector(clade)
+                color_clade['color'] = v['color']
+                color_clade_s = tools.create_arc_sector(color_clade)
+                colored_clades[k] = {'data': color_clade_s,
+                                     'depth': color_clade['depth'],
+                                     'color': color_clade['color']}
+        return colored_clades
 
     def __get_sector(self, clade):
 
@@ -449,7 +488,7 @@ class Model(object):
                 (a_1, a_2) = (angles[0], angles[i])
 
             # detemines the starting angle of the sectorr
-            if ancestor_angle <= math.pi:
+            if abs(a_1 - a_2) < math.pi:
                 starting_angle = a_1 if a_1 > a_2 else a_2
             else:
                 starting_angle = a_2 if a_1 > a_2 else a_1
@@ -459,6 +498,8 @@ class Model(object):
 
         clade_ancestor = clade.parent
 
+        depth = len([node.name for node in clade.ancestors()])
+
         # the sector webgl will draw
         colored_clades = {
             'center_x': clade.x2,
@@ -466,7 +507,8 @@ class Model(object):
             'starting_angle': starting_angle,
             'theta': theta,
             'arc_length': arc_length,
-            'smallest_length': smallest_length}
+            'smallest_length': smallest_length,
+            'depth': depth}
 
         return colored_clades
 
@@ -522,11 +564,23 @@ class Model(object):
         self.edge_metadata = pd.merge(self.edge_metadata, metadata,
                                       how='outer', on="Node_id")
         self.center_tree()
+
+        self.cached_clades.append(self.colored_clades)
+        self.colored_clades = self.refresh_clades()
+
         return self.edge_metadata
 
     def revive_old_tree(self):
         if len(self.cached_subtrees) > 0:
             self.edge_metadata, self.tree = self.cached_subtrees.pop()
+
+            old_clades = self.colored_clades
+            self.colored_clades = self.cached_clades.pop()
+            for k, v in old_clades.items():
+                if not k in self.colored_clades:
+                    self.colored_clades[k] = v
+            self.colored_clades = self.refresh_clades()
+
             return self.edge_metadata
         return pd.DataFrame()
 

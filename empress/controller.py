@@ -185,6 +185,25 @@ class HeaderHandler(RequestHandler):
         self.finish()
 
 
+class CladeHandler(RequestHandler):
+    def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        """ Retrieves all headers from metadata
+        """
+        colored_clades = self.m.retrive_colored_clade()
+        self.write(colored_clades)
+        self.finish()
+
+
 class ColorCladeHandler(RequestHandler):
     def initialize(self, m):
         """ Stores the model in handler
@@ -202,6 +221,47 @@ class ColorCladeHandler(RequestHandler):
         clade = self.get_argument('clade')
         color = self.get_argument('color')
         colored_clades = self.m.color_clade(clade, color)
+        self.write(colored_clades)
+        self.finish()
+
+
+class ChangeCladeHandler(RequestHandler):
+    def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        """ Retrieves information from model in order to color a clade
+        """
+        clade = self.get_argument('clade')
+        color = self.get_argument('color')
+        colored_clades = self.m.change_clade_color(clade, color)
+        self.write(colored_clades)
+        self.finish()
+
+
+class ClearColorCladeHandler(RequestHandler):
+    def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        """ Retrieves information from model in order to color a clade
+        """
+        clade = self.get_argument('clade')
+        colored_clades = self.m.clear_clade(clade)
         self.write(colored_clades)
         self.finish()
 
