@@ -12,8 +12,6 @@ ELEMENTS_PER_VERT = 5
 (R_OFFSET, G_OFFSET, B_OFFSET) = (2, 3, 4)
 
 
-
-
 def in_quad_1(angle):
     """ Determines if the angle is between 0 and pi / 2 radians
 
@@ -204,6 +202,7 @@ def start_and_total_angle(a_1, a_2):
 
     return (starting_angle, theta)
 
+
 def extract_color(color):
     HEX_BASE = 16
     NUM_CHAR = 2
@@ -214,6 +213,7 @@ def extract_color(color):
     color = [c / LARGEST_COLOR for c in color]
     return (color[R_INDEX], color[G_INDEX], color[B_INDEX])
 
+
 def create_arc_sector(sector_info):
     sector = []
     theta = sector_info['theta'] / NUM_TRI
@@ -222,7 +222,6 @@ def create_arc_sector(sector_info):
     c_x = sector_info['center_x']
     c_y = sector_info['center_y']
     arc_length = sector_info['arc_length']
-
 
     #  creating the sector
     for i in range(0, NUM_TRI):
@@ -233,7 +232,7 @@ def create_arc_sector(sector_info):
         sector.append(green)
         sector.append(blue)
 
-         # second vertice of triangle
+        # second vertice of triangle
         sector.append(math.cos(rad) * arc_length + c_x)
         sector.append(math.sin(rad) * arc_length + c_y)
         sector.append(red)
@@ -242,7 +241,7 @@ def create_arc_sector(sector_info):
 
         rad += theta
 
-         # third vertice of triangle
+        # third vertice of triangle
         sector.append(math.cos(rad) * arc_length + c_x)
         sector.append(math.sin(rad) * arc_length + c_y)
         sector.append(red)
@@ -250,6 +249,7 @@ def create_arc_sector(sector_info):
         sector.append(blue)
 
     return sector
+
 
 def change_sector_color(sector, color):
     (red, green, blue) = extract_color(color)
