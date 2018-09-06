@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 from operator import attrgetter
 
-DEFAULT_COLOR = "000000"
+DEFAULT_COLOR = '000000'
+SELECT_COLOR = '00FF00'
 
 
 class Tree(TreeNode):
@@ -326,7 +327,7 @@ class Tree(TreeNode):
         node_data = {}
         for node in self.postorder():
             coords = {'x': node.x2, 'y': node.y2}
-            attr = {'color': '000000'}
+            attr = {'color': DEFAULT_COLOR}
             node_data[node.name] = {**coords, **attr}
 
         # convert to pd.DataFrame

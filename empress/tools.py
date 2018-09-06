@@ -249,12 +249,3 @@ def create_arc_sector(sector_info):
         sector.append(blue)
 
     return sector
-
-
-def change_sector_color(sector, color):
-    (red, green, blue) = extract_color(color)
-    for i in range(0, ELEMENTS_PER_VERT * VERTS_PER_TRI * NUM_TRI, ELEMENTS_PER_VERT):
-        sector[i + R_OFFSET] = red
-        sector[i + G_OFFSET] = green
-        sector[i + B_OFFSET] = blue
-    return sector

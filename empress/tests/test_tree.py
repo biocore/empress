@@ -11,6 +11,7 @@ from skbio import DistanceMatrix, TreeNode
 from scipy.cluster.hierarchy import complete
 from pandas.util.testing import assert_frame_equal
 from empress.tree import Tree
+from empress.tree import DEFAULT_COLOR
 
 
 class TestDendrogram(unittest.TestCase):
@@ -48,75 +49,75 @@ class TestDendrogram(unittest.TestCase):
 
         edge_exp = pd.DataFrame(
             {
-                '7': ['7', 'y2', '000000', True, True, '000000', True,
+                '7': ['7', 'y2', DEFAULT_COLOR, True, True, DEFAULT_COLOR, True,
                       79.070722542332845, 129.00083943597397,
                       1, 1, 50.679561936771449, 55.039337408460526
                       ],
-                '8': ['8', 'y2', '000000', True, True, '000000', True,
+                '8': ['8', 'y2', DEFAULT_COLOR, True, True, DEFAULT_COLOR, True,
                       79.070722542332845, 129.00083943597397,
                       1, 1, 12.628310993232901, 85.85263286563449
                       ],
-                '4': ['4', 'y6', '000000', True, True, '000000', True,
+                '4': ['4', 'y6', DEFAULT_COLOR, True, True, DEFAULT_COLOR, True,
                       74.068217341096869, 368.43664502236788,
                       1, 1, 12.499999999999979, 418.29360437746811
                       ],
-                '6': ['6', 'y6', '000000', True, True, '000000', True,
+                '6': ['6', 'y6', DEFAULT_COLOR, True, True, DEFAULT_COLOR, True,
                       74.068217341096869, 368.43664502236788,
                       1, 1, 53.563668631852295, 444.9606625915394
                       ],
-                '9': ['9', 'y7', '000000', True, True, '000000', True,
+                '9': ['9', 'y7', DEFAULT_COLOR, True, True, DEFAULT_COLOR, True,
                       117.21642391143635, 301.99423347326797,
                       1, 1, 38.10150433604548, 306.1404707163706
                       ],
-                'y6': ['y6', 'y7', '000000', True, False, '000000', True,
+                'y6': ['y6', 'y7', DEFAULT_COLOR, True, False, DEFAULT_COLOR, True,
                        117.21642391143635, 301.99423347326797,
                        1, 1, 74.068217341096869, 368.43664502236788
                        ],
-                '0': ['0', 'y11', '000000', True, True, '000000', True,
+                '0': ['0', 'y11', DEFAULT_COLOR, True, True, DEFAULT_COLOR, True,
                       408.3850804246091, 240.10442497874831, 1, 1,
                       474.82749197370902, 283.25263154908782
                       ],
-                '3': ['3', 'y11', '000000', True, True, '000000', True,
+                '3': ['3', 'y11', DEFAULT_COLOR, True, True, DEFAULT_COLOR, True,
                       408.3850804246091, 240.10442497874831,
                       1, 1, 487.5, 235.95818773564568
                       ],
-                '2': ['2', 'y14', '000000', True, True, '000000', True,
+                '2': ['2', 'y14', DEFAULT_COLOR, True, True, DEFAULT_COLOR, True,
                       375.00926942577706, 153.15746472040379,
                       1, 1, 436.57748676687396, 103.30050536530359
                       ],
-                '5': ['5', 'y14', '000000', True, True, '000000', True,
+                '5': ['5', 'y14', DEFAULT_COLOR, True, True, DEFAULT_COLOR, True,
                       375.00926942577706, 153.15746472040379,
                       1, 1, 395.51381813502167, 76.633447151232261
                       ],
-                'y11': ['y11', 'y15', '000000', True, False, '000000', True,
+                'y11': ['y11', 'y15', DEFAULT_COLOR, True, False, DEFAULT_COLOR, True,
                         331.86106285543758, 219.59987626950374,
                         1, 1, 408.3850804246091, 240.10442497874831
                         ],
-                'y14': ['y14', 'y15', '000000', True, False, '000000', True,
+                'y14': ['y14', 'y15', DEFAULT_COLOR, True, False, DEFAULT_COLOR, True,
                         331.86106285543758, 219.59987626950374,
                         1, 1, 375.00926942577706, 153.15746472040379
                         ],
-                '1': ['1', 'y16', '000000', True, True, '000000', True,
+                '1': ['1', 'y16', DEFAULT_COLOR, True, True, DEFAULT_COLOR, True,
                       257.89956082792412, 247.99103687506513, 1, 1,
                       286.29072143348549, 321.95253890257857
                       ],
-                'y15': ['y15', 'y16', '000000', True, False, '000000', True,
+                'y15': ['y15', 'y16', DEFAULT_COLOR, True, False, DEFAULT_COLOR, True,
                         257.89956082792412, 247.99103687506513,
                         1, 1, 331.86106285543758, 219.59987626950374
                         ],
-                'y7': ['y7', 'y17', '000000', True, False, '000000', True,
+                'y7': ['y7', 'y17', DEFAULT_COLOR, True, False, DEFAULT_COLOR, True,
                        178.78464125253325, 252.13727411816777,
                        1, 1, 117.21642391143635, 301.99423347326797
                        ],
-                'y16': ['y16', 'y17', '000000', True, False, '000000', True,
+                'y16': ['y16', 'y17', DEFAULT_COLOR, True, False, DEFAULT_COLOR, True,
                         178.78464125253325, 252.13727411816777,
                         1, 1, 257.89956082792412, 247.99103687506513
                         ],
-                'y2': ['y2', 'y18', '000000', True, False, '000000', True,
+                'y2': ['y2', 'y18', DEFAULT_COLOR, True, False, DEFAULT_COLOR, True,
                        128.92768189743305, 190.56905677707087,
                        1, 1, 79.070722542332845, 129.00083943597397
                        ],
-                'y17': ['y17', 'y18', '000000', True, False, '000000', True,
+                'y17': ['y17', 'y18', DEFAULT_COLOR, True, False, DEFAULT_COLOR, True,
                         128.92768189743305, 190.56905677707087,
                         1, 1, 178.78464125253325, 252.13727411816777
                         ]
@@ -159,10 +160,10 @@ class TestDendrogram(unittest.TestCase):
                 'a': [
                     'a',
                     'f',
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     True,
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     141.35398602846797,
                     339.46141862722482,
@@ -173,10 +174,10 @@ class TestDendrogram(unittest.TestCase):
                 'e': [
                     'e',
                     'f',
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     True,
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     141.35398602846797,
                     339.46141862722482,
@@ -187,10 +188,10 @@ class TestDendrogram(unittest.TestCase):
                 'f': [
                     'f',
                     'g',
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     False,
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     215.86090210071345,
                     343.36616063979909,
@@ -201,10 +202,10 @@ class TestDendrogram(unittest.TestCase):
                 'b': [
                     'b',
                     'g',
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     True,
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     215.86090210071345,
                     343.36616063979909,
@@ -215,10 +216,10 @@ class TestDendrogram(unittest.TestCase):
                 'c': [
                     'c',
                     'h',
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     True,
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     403.57843531045097,
                     221.46096919708964,
@@ -229,10 +230,10 @@ class TestDendrogram(unittest.TestCase):
                 'd': [
                     'd',
                     'h',
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     True,
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     403.57843531045097,
                     221.46096919708964,
@@ -243,10 +244,10 @@ class TestDendrogram(unittest.TestCase):
                 'g': [
                     'g',
                     'i',
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     False,
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     278.43341317062595,
                     302.73109682556259,
@@ -257,10 +258,10 @@ class TestDendrogram(unittest.TestCase):
                 'h': [
                     'h',
                     'i',
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     False,
-                    '000000',
+                    DEFAULT_COLOR,
                     True,
                     278.43341317062595,
                     302.73109682556259,

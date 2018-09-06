@@ -22,8 +22,9 @@ function initCallbacks(){
       console.log("released cntr")
       cntrlPress = false;
       let square = $(".square");
-      let width = square.width();
-      let height = square.height();
+      let offset = square.offset();
+      drawingData.lastMouseX = offset.left, drawingData.lastMouseY = offset.top;
+      let width = square.width(), height = square.height();
       let topCorner = toTreeCoords(drawingData.lastMouseX, drawingData.lastMouseY);
       let bottomCorner = toTreeCoords(drawingData.lastMouseX + width, drawingData.lastMouseY + height);
       let edgeMetadata;
@@ -157,7 +158,6 @@ function addHighlightItem(attr, val, l, u, e) {
   newAttrItem.appendChild(attrLabel);
 
   // add item to html document
-  // $(".metadata-tabs")[0].appendChild(newAttrItem);
   $("#highlight-history")[0].appendChild(newAttrItem);
 }
 
@@ -235,7 +235,7 @@ function changeColorSelection(obj) {
  * @param {string} a hex string that represent what color to change the clade to
  */
 function updateColorSelection(arcID, color) {
-  $.getJSON(urls.changeCladeURL, { clade: arcID, color: color}, function(data) {
+  $.getJSON(urls.cladeColorURL, { clade: arcID, color: color}, function(data) {
     loadColorClades(data);
   });
 }
@@ -493,19 +493,6 @@ function getOldTree(event) {
     });
   });
 }
-
-// // TODO: delete
-// function clearCladeHighlights() {
-//   drawingData.coloredClades = [];
-//   labelPos = 0;
-//   fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
-//   let divContainerElement = document.getElementsByClassName("color-item");
-//   let numItems = divContainerElement.length
-//   const NEXT_CHILD = 0;
-//   for(let i = 0; i < numItems; i++) {
-//     divContainerElement[NEXT_CHILD].parentElement.removeChild(divContainerElement[NEXT_CHILD]);
-//   }
-// }
 
 function toggleMetadata() {
   if($("#show-metadata").prop("checked")) {

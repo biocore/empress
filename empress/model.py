@@ -4,6 +4,8 @@ import numpy as np
 from scipy.spatial import distance
 from scipy.spatial import ConvexHull
 from empress.tree import Tree
+from empress.tree import DEFAULT_COLOR
+from empress.tree import SELECT_COLOR
 import empress.tools as tools
 
 
@@ -165,8 +167,8 @@ class Model(object):
         return edgeData[attributes]
 
     def update_edge_category(self, attribute, category,
-                             new_value="000000", lower="",
-                             equal="", upper=""):
+                             new_value=DEFAULT_COLOR, lower=-np.inf,
+                             equal="", upper=np.inf):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
 
@@ -178,11 +180,11 @@ class Model(object):
             The column of table that will be updated such as branch_color
         new_value : string
             A hex string representing color to change branch
-        lower : integer
+        lower : number
             The smallest number a feature must match in order for its color to change
-        equal : string/integer
+        equal : string/number
             The number/string a feature must match in order for its color to change
-        upper : integer
+        upper : number
             The largest number a feature can match in order for its color to change
         Returns
         -------
@@ -192,7 +194,7 @@ class Model(object):
         """
         # update the cached trees
         for edge_data, _ in self.cached_subtrees:
-            if lower is not "":
+            if lower == -np.inf:
                 edge_data.loc[edge_data[attribute] > float(lower), category] = new_value
 
             if equal is not "":
@@ -202,11 +204,11 @@ class Model(object):
                     value = equal
                 edge_data.loc[edge_data[attribute] == value, category] = new_value
 
-            if upper is not "":
+            if upper == np.inf:
                 edge_data.loc[edge_data[attribute] < float(upper), category] = new_value
 
         # update the current tree
-        if lower is not "":
+        if lower == -np.inf:
             self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
         if equal is not "":
@@ -216,12 +218,12 @@ class Model(object):
                 value = equal
             self.edge_metadata.loc[self.edge_metadata[attribute] == value, category] = new_value
 
-        if upper is not "":
+        if upper == np.inf:
             self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
         return self.edge_metadata
 
-    def retrive_highlighted_values(self, attribute, lower="",
-                                   equal="", upper=""):
+    def retrive_highlighted_values(self, attribute, lower=-np.inf,
+                                   equal="", upper=np.inf):
         """ Returns edge_metadata with that match the arguments
 
         Parameters
@@ -242,7 +244,7 @@ class Model(object):
         columns = list(self.headers)
         columns.append('x')
         columns.append('y')
-        if lower is not "":
+        if lower == -np.inf:
             return self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), columns]
 
         if equal is not "":
@@ -252,7 +254,7 @@ class Model(object):
                 value = equal
             return self.edge_metadata.loc[self.edge_metadata[attribute] == value, columns]
 
-        if upper is not "":
+        if upper == np.inf:
             return self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), columns]
 
     def retrive_default_table_values(self):
@@ -357,6 +359,9 @@ class Model(object):
         clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
 
         if clade_root_id == -1:
+            for c in range(0, len(self.cached_clades)):
+                if clade in self.cached_clades[c]:
+                    self.cached_clades[c][clade]['color'] = color
             return {"empty": []}
 
         clade = self.tree.find(clade_root_id)
@@ -369,14 +374,14 @@ class Model(object):
                                   'color': color}
         return self.retrive_colored_clade()
 
-    def change_clade_color(self, clade, color):
-        c = self.colored_clades[clade]['data']
-        c = tools.change_sector_color(c, color)
-        self.colored_clades[clade]['data'] = c
-        return self.retrive_colored_clade()
-
     def clear_clade(self, clade):
         self.colored_clades.pop(clade)
+        for colored_clades in self.cached_clades:
+            try:
+                colored_clades.pop(clade)
+            except KeyError:
+                continue
+
         return self.retrive_colored_clade()
 
     def retrive_colored_clade(self):
@@ -511,7 +516,7 @@ class Model(object):
 
         return colored_clades
 
-    def create_subtree(self, attribute, lower="", equal="", upper=""):
+    def create_subtree(self, attribute, lower=-np.inf, equal="", upper=np.inf):
         """
         Parameters
         ----------
@@ -578,6 +583,8 @@ class Model(object):
             for k, v in old_clades.items():
                 if k not in self.colored_clades:
                     self.colored_clades[k] = v
+                self.colored_clades[k]['color'] = old_clades[k]['color']
+
             self.colored_clades = self.refresh_clades()
 
             return self.edge_metadata
@@ -593,10 +600,10 @@ class Model(object):
             (df['y'] >= smallY) & (df['y'] <= largeY)]
         entries = entries["Node_id"].values
         root = self.tree.lowest_common_ancestor(entries)
-        nodes = [node.name for node in root.postorder()]
+        nodes = [node.name for node in root.postorder(include_self=False)]
         selected_tree = self.edge_metadata.loc[self.edge_metadata["Node_id"].isin(nodes)]
         self.selected_tree = selected_tree.copy()
-        self.selected_tree['branch_color'] = '00FF00'
+        self.selected_tree['branch_color'] = SELECT_COLOR
         self.selected_root = root
         return self.selected_tree
 
@@ -628,7 +635,7 @@ class Model(object):
                                                  **longest, **color, **visible}
 
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
-        self.edge_metadata.loc[self.edge_metadata['Node_id'] == self.selected_root.name, 'branch_is_visible'] = True
+        # self.edge_metadata.loc[self.edge_metadata['Node_id'] == self.selected_root.name, 'branch_is_visible'] = True
 
         collapse_ids = self.triData.keys()
         for node_id in collapse_ids:
