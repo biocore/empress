@@ -150,7 +150,6 @@ function loadTree(data) {
   labels = {}
   drawingData.triangles = [];
   fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
-  // clearCladeHighlights();
   requestAnimationFrame(loop);
 }
 
