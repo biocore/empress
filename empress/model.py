@@ -414,32 +414,20 @@ class Model(object):
         # grab all of the tips of the clade
         tips = clade.tips()
 
-        # stores points for the convex hull
-        points = np.array([[0, 0]])
-
         # origin
+        center_point = np.array([[0, 0]])
         center = (0, 0)
-
-        # parallel array to points. Used to locate the node for each point
-        nodes = [clade]
 
         # will store the distance to the farthest tip
         arc_length = 0
         smallest_length = math.inf
 
-        # Finds the max tip distance, largest and smallest angle
-        for tip in tips:
-            # add tip to set of points
-            tip_coords = (tip.x2 - clade.x2, tip.y2 - clade.y2)
-            point = np.array([[tip_coords[0], tip_coords[1]]])
-            points = np.concatenate((points, point), axis=0)
-            nodes.append(tip)
-
-            # calculate distance from clade root to tip
-            tip_dist = distance.euclidean(tip_coords, center)
-
-            arc_length = tip_dist if tip_dist > arc_length else arc_length
-            smallest_length = tip_dist if tip_dist < smallest_length else smallest_length
+        tip_coords = [(tip.x2 - clade.x2, tip.y2 - clade.y2) for tip in tips]
+        points = np.array([[tip[0], tip[1]] for tip in tip_coords])
+        distances = [distance.euclidean(tip, center) for tip in points]
+        arc_length = max(distances)
+        smallest_length = min(distances)
+        points = np.concatenate((center_point, points), axis=0)
 
         # Note: the angle of the sector used to be found by taking the difference between the tips
         # with the smallest and largest angle. However, that lead to an edge case that became
@@ -506,12 +494,9 @@ class Model(object):
 
         # the sector webgl will draw
         colored_clades = {
-            'center_x': clade.x2,
-            'center_y': clade.y2,
-            'starting_angle': starting_angle,
-            'theta': theta,
-            'arc_length': arc_length,
-            'smallest_length': smallest_length,
+            'center_x': clade.x2, 'center_y': clade.y2,
+            'starting_angle': starting_angle, 'theta': theta,
+            'arc_length': arc_length, 'smallest_length': smallest_length,
             'depth': depth}
 
         return colored_clades
