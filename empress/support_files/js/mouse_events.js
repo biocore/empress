@@ -2,7 +2,7 @@
  *
  */
 function mouseHandler(event) {
-  const CTRL_KEY = 17;
+  const SHFT_KEY = 16;
   const CLEAR_SIZE = 0;
 
   if(clearSelectBox(event)) {
@@ -10,10 +10,10 @@ function mouseHandler(event) {
   }
 
   if(event.type === "mousedown") {
-    drawingData.lastMouseX = event.clientX;
-    drawingData.lastMouseY = event.clientY;
+    drawingData.lastMouseX = drawingData.mouseDownX = event.clientX;
+    drawingData.lastMouseY = drawingData.mouseDownY = event.clientY;
     drawingData.isMouseDown = true;
-    if(cntrlPress) {
+    if(shftPress) {
       let boxCoords = toTreeCoords(drawingData.lastMouseX, drawingData.lastMouseY);
       placeSelectBox(boxCoords);
     }
@@ -26,10 +26,10 @@ function mouseHandler(event) {
   }
   else if(event.type === "mousemove") {
     if(drawingData.isMouseDown) {
-      cntrlPress ? resizeSelectBox(event) : moveTree(event);
+      shftPress ? resizeSelectBox(event) : moveTree(event);
     }
   }
-  else if(event.type === "wheel" && !cntrlPress) {
+  else if(event.type === "wheel" && !shftPress) {
     mouseWheel(event);
   }
 }
@@ -106,6 +106,13 @@ function resizeSelectBox(event) {
  * the user is not pressing the mouse down.
  */
 function mouseUp(event) {
+  if(event.clientX === drawingData.mouseDownX && event.clientY === drawingData.mouseDownY) {
+    drawingData.selectTree = [];//extractInfo(edgeMetadata, field.edgeFields);
+    // updateGridData(edgeMetadata);
+    fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
+    $(".selected-tree-menu").css({top: drawingData.lastMouseY, left: drawingData.lastMouseX, visibility: "hidden"});
+    requestAnimationFrame(loop);
+  }
   drawingData.isMouseDown = false;
   $('body').css('cursor', 'default');
 }

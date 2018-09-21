@@ -41,12 +41,15 @@ import click
     '--additional-seperator',default='\t',
     help='The seperator used in the additional metedata file. [default: <tab>]'
 )
+@click.option(
+    'highlight_file', '-h', default="", show_default=True
+)
 def start(
         tree_file, metadata, clade_field, additional_metadata, port,
-        main_skiprow, additional_skiprow, main_seperator, additional_seperator):
+        main_skiprow, additional_skiprow, main_seperator, additional_seperator, highlight_file):
     m = Model(
       tree_file, metadata, clade_field, additional_metadata, port,
-      main_skiprow, additional_skiprow, main_seperator, additional_seperator)
+      main_skiprow, additional_skiprow, main_seperator, additional_seperator, highlight_file)
     m.center_tree()
 
     # Create the webserver

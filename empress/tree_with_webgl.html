@@ -47,11 +47,15 @@
       <div>
         <button onclick="showMenu('metadata')">Metadata</button>
       </div>
+      <div>
+        <button onclick="showMenu('labels')">Labels</button>
+      </div>
     </div>
 
     <div class="menu" id="highlight-menu">
       <div id="highlight-input">
         <div>
+          <lable for="highlight-options">Feature</lable>
           <select id = "highlight-options"></select>
         </div>
         <div>
@@ -90,8 +94,27 @@
       </div>
 
       <div id="metadata-options">
-        <input id="show-metadata" type="checkbox" onclick="toggleMetadata()"/>
         <label for="show-metadata">show metadata table</label>
+        <input id="show-metadata" type="checkbox" onclick="toggleMetadata()"/>
+      </div>
+
+       <div id="label-input">
+        <div id="label-dropbox">
+          <div>
+            <label for="show-options"> Display Feature</label>
+            <select id = "show-options"></select>
+          </div>
+          <div>
+            <label for="prioritize-options">Prioritize Feature</label>
+            <select id = "prioritize-options"></select>
+          </div>
+          <div>
+            <label for="descending-toggle">Descending</label>
+            <input id="descending-toggle" type="checkbox"/>
+          </div>
+        </div>
+        <input id="show-labels" type="button" value="Show labels" onclick="showLables()"</div>
+        <input id="clear-lbl" type="button" value="clear labels" onclick="clearLabels()"/>
       </div>
     </div>
   </div>
@@ -174,7 +197,7 @@
     const CLEAR_COLOR = 1;
     const DEFUALT_BRANCH_COLOR = "000000";
     let camera = {};
-    let cntrlPress = false;
+    let shftPress = false;
   </script>
 
   <script type="text/javascript">
@@ -190,10 +213,10 @@
       $.getJSON(urls.edgeURL, function(data) {
         edgeMetadata = data;
       }).done(function() {
-        fillDropDownMenu(field.table_headers.headers);
-        $("#highlight-input").hide();
-        $("#color-input").hide();
-        $("#metadata-options").hide();
+        fillDropDownMenu(field.table_headers.headers, "#highlight-options");
+        fillDropDownMenu(field.table_headers.headers, "#show-options");
+        fillDropDownMenu(field.table_headers.headers, "#prioritize-options");
+        hideMenu();
         $("#show-metadata").prop('checked', true);
         drawingData.edgeCoords = extractInfo(edgeMetadata, field.edgeFields);
         normalizeTree(edgeMetadata);

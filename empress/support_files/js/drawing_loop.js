@@ -85,7 +85,6 @@ function bindBuffer(buffer) {
   );
 }
 
-
 function drawLabels() {
   const NEGATE = -1;
   // remove old labels
