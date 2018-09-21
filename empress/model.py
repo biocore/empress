@@ -14,9 +14,8 @@ DEFAULT_HEIGHT = 1920
 
 class Model(object):
 
-    def __init__(
-            self, tree_file, main_metadata, clade_field, add_metadata=None, port=8080,
-            main_skiprow=0, add_skiprow=0, main_sep='\t', add_sep='\t', highlight_file=""):
+    def __init__(self, tree, metadata, clade_field, highlight_ids=None,
+                 port=8080):
         """ Model constructor.
 
         This initializes the model, including
@@ -24,48 +23,33 @@ class Model(object):
 
         Parameters
         ----------
-        tree_file : str
-            Name of newick tree file
-        main_metadata : str
-            Name of file containing metadata
+        tree : skbio.TreeNode
+            Tree data structure.
+        metadata : str
+            Metadata object for the features being plotted on the tree.
         clade_field : str
             Name of field within metadata that contains clade names
-        add_metadata : str
-            Name of file containing additional metadata
+        highlight_file : list of str
+            List of nodes to highlight
         port : int
             port number
-        main_skiprow : int
-            Number of rows to skip in the main metadata file
-        add_skiprow : int
-            Number of rows to skip in the secondary metadata file
-        main_sep : str
-            The seperator used in the main metadata file
-        add_sep : str
-            The seperator used in the secondary metadata file
-        highlight_file : str
-            csv file of Node_ids
+
+        Notes
+        -----
+        The first column name should be renamed to Node_id
         """
         self.zoom_level = 1
         self.scale = 1
-        tree = tools.read(tree_file)
+        # convert to empress tree
         self.tree = Tree.from_tree(tree)
         tools.name_internal_nodes(self.tree)
         (self.edge_metadata, self.centerX,
             self.centerY, self.scale) = self.tree.coords(DEFAULT_WIDTH, DEFAULT_HEIGHT)
 
         # read in main metadata
-        metadata = tools.read_metadata(main_metadata, main_skiprow, main_sep)
         self.headers = metadata.columns.values.tolist()
         self.edge_metadata = pd.merge(self.edge_metadata, metadata,
                                       how='outer', on="Node_id")
-
-        # read in additional metadata
-        if add_metadata is not None:
-            add_metadata = tools.read_metadata(add_metadata, add_skiprow, add_sep)
-            add_headers = add_metadata.columns.values.tolist()
-            self.headers = self.headers + add_headers[1:]
-            self.edge_metadata = pd.merge(self.edge_metadata, add_metadata,
-                                          how='outer', on="Node_id")
 
         # todo need to warn user that some entries in metadata do not have a mapping to tree
         self.edge_metadata = self.edge_metadata[self.edge_metadata.x.notnull()]
@@ -81,7 +65,7 @@ class Model(object):
         self.cached_subtrees = list()
         self.cached_clades = list()
 
-        self.highlight_from_file(highlight_file)
+        self.highlight_nodes(highlight_ids)
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -232,17 +216,15 @@ class Model(object):
             self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
         return self.edge_metadata
 
-    def highlight_from_file(self, file):
+    def highlight_nodes(self, highlight_ids=None, highlight_color='FF0000'):
         """ Reads in Node_ids for 'file' and colors their branches red
         Parameters
         ----------
         file : csv file containing Node_ids
         """
-        if file is not "":
-            nodes = tools.read_metadata(file, seperator=',')
-            print(nodes)
-            nodes = nodes['id'].tolist()
-            self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_color'] = 'FF0000'
+        if highlight_ids is not None:
+            idx = self.edge_metadata['Node_id'].isin(highlight_ids)
+            self.edge_metadata.loc[idx, 'branch_color'] = highlight_color
 
 
     def retrive_highlighted_values(self, attribute, lower="",

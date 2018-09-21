@@ -11,22 +11,24 @@ import io
 from pandas.util.testing import assert_frame_equal
 from empress.model import Model
 from empress.tree import DEFAULT_COLOR
+from skbio import TreeNode
 
 
 class TestModel(unittest.TestCase):
+
 
     def setUp(self):
         self.RT_X = 750
         self.RT_Y = 450
 
-        self.tree_file = io.StringIO(r'((a, b)le1, (c,d)ri1)r;')
+        self.tree_obj = TreeNode.read(['((a, b)le1, (c,d)ri1)r;\n'])
 
         self.internal_md = pd.DataFrame(
             {
              'clade': ['left', 'right'],
              'time': [11, 12]
             },
-            index=['le1', 'ri1']
+            index=pd.Index(['le1', 'ri1'], name='Node_id')
         )
 
         self.leaf_md = pd.DataFrame(
@@ -34,41 +36,12 @@ class TestModel(unittest.TestCase):
              'species': ['a1', 'b1', 'c1', 'd1'],
              'gram-positive': [True, False, True, False]
             },
-            index=['a', 'b', 'c', 'd']
+            index=pd.Index(['a', 'b', 'c', 'd'], name='Node_id')
         )
+        self.md = pd.merge(self.internal_md, self.leaf_md,
+                           how='outer', on='Node_id')
+        self.tree = Model(self.tree_obj, self.md, 'clade')
 
-        f_internal = io.StringIO()
-        self.internal_md.to_csv(f_internal, sep='\t')
-        f_leaf = io.StringIO()
-        self.leaf_md.to_csv(f_leaf, sep='\t')
-
-        self.f_internal = io.StringIO(f_internal.getvalue())
-        self.f_leaf = io.StringIO(f_leaf.getvalue())
-
-        self.tree = Model(
-            self.tree_file,
-            self.f_internal,
-            "clade",
-            add_metadata=self.f_leaf)
-
-    def test_merge_metadata(self):
-        merge_exp = pd.DataFrame(
-            {
-                0: [np.nan, np.nan, True, 'a1'],
-                1: [np.nan, np.nan, False, 'b1'],
-                2: [np.nan, np.nan, True, 'c1'],
-                3: [np.nan, np.nan, False, 'd1'],
-                4: ['left', 11, np.nan, np.nan],
-                5: ['right', 12, np.nan, np.nan],
-            },
-            index=['clade', 'time', 'gram-positive', 'species']).T
-
-        # hack to make time column's dtype to be float64 instead of object
-        merge_exp[['time']] = merge_exp[['time']].apply(pd.to_numeric)
-
-        merge_res = self.tree.edge_metadata[[
-            'clade', 'time', 'gram-positive', 'species']].copy()
-        assert_frame_equal(merge_exp, merge_res)
 
     def test_center(self):
         center_exp = pd.DataFrame({
