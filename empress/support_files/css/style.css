@@ -7,6 +7,8 @@ canvas {
     position: fixed;
     top: 0vh;
     left: 0vw;
+    width: 100vw;
+    height: 100vw;
 }
 
 /* referenced from  https://webglfundamentals.org/webgl/lessons/webgl-text-html.html*/
@@ -38,19 +40,21 @@ canvas {
     background: #eee;
     position: fixed;
     top: 0vh;
-    left: 66vw;
-    width: 34vw;
+    left: 70vw;
+    width: 30vw;
+    opacity: 0.5;
 }
 
 .metadata-tabs button {
     background-color: #eee;
     float: left;
-    border-style: none solid none solid;
     outline: none;
     cursor: pointer;
     padding: 14px 16px;
     transition: 0.3s;
-    font-size: 17px;
+    font-size: 12px;
+    width: 100%;
+    height: 100%;
 }
 
 .metadata-tabs button:hover {
@@ -63,7 +67,7 @@ canvas {
 
 .tab-options {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     grid-auto-rows: auto;
     height: unset;
     background: grey;
@@ -125,4 +129,20 @@ canvas {
     padding: 0;
 }
 
+.square {
+    position: absolute;
+    height: 0px;
+    width: 0px;
+    background-color: #555;
+    opacity: 0.5;
+}
 
+.selected-tree-menu {
+    position: absolute;
+    visibility: hidden;
+}
+
+#label-dropbox {
+    display: grid;
+    grid-template-columns: 1fr;
+}

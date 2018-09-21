@@ -98,16 +98,19 @@ function initWebGl() {
 
   // buffer object for tree
   shaderProgram.treeVertBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.treeVertBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.edgeCoords), gl.DYNAMIC_DRAW);
+  fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
 
   // buffer object for nodes
   shaderProgram.nodeVertBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, shaderProgram.nodeVertBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawingData.nodeCoords), gl.DYNAMIC_DRAW)
+  fillBufferData(shaderProgram.nodeVertBuffer, drawingData.nodeCoords);
 
   // buffer object for colored clades
   shaderProgram.cladeVertBuffer = gl.createBuffer();
+
+  // buffer object for selected sub tree
+  shaderProgram.selectBuffer = gl.createBuffer();
+
+  shaderProgram.triangleBuffer = gl.createBuffer();
 
   shaderProgram.worldMat = mat4.create();
   shaderProgram.xyTransMat = mat4.create();
@@ -126,20 +129,12 @@ function initWebGl() {
 }
 
 function setCanvasSize(canvas) {
-    let realToCSSPixels = window.devicePixelRatio;
+  const HALF = 1 / 2;
 
-    // Lookup the size the browser is displaying the canvas in CSS pixels
-    // and compute a size needed to make our drawingbuffer match it in
-    // device pixels.
-    let displayWidth  = Math.floor(gl.canvas.clientWidth * 0.75  * realToCSSPixels);
-    let displayHeight = Math.floor(gl.canvas.clientHeight * 0.75 * realToCSSPixels);
-
-    // Check if the canvas is not the same size.
-    if (canvas.width  !== displayWidth ||
-        canvas.height !== displayHeight) {
-
-      // Make the canvas the same size
-      canvas.width  = displayWidth;
-      canvas.height = displayHeight;
-    }
+  // Make the canvas a square, width is choosen because it will be larger
+  canvas.width = $(window).width();
+  canvas.height = $(window).width();
+  const HALF_WIDTH = HALF * $(window).width();
+  camera["yInt"] = $(window).height() - HALF_WIDTH;
+  camera["bottomSlope"] = camera["yInt"] / HALF_WIDTH;
 }
