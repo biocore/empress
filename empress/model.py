@@ -1,107 +1,22 @@
-import skbio
 import math
 import pandas as pd
 import numpy as np
-from skbio import TreeNode
 from scipy.spatial import distance
 from scipy.spatial import ConvexHull
 from empress.tree import Tree
+from empress.tree import DEFAULT_COLOR
+from empress.tree import SELECT_COLOR
+import empress.tools as tools
 
-
-def name_internal_nodes(tree):
-    """ Name internal nodes that does not have name
-
-    Parameters
-    ----------
-    Returns
-    -------
-    """
-    # initialize tree with branch lengths and node names if they are missing
-    for i, n in enumerate(tree.postorder(include_self=True)):
-        if n.length is None:
-            n.length = 1
-        if n.name is None:
-            new_name = "y%d" % i
-            n.name = new_name
-
-
-def read_metadata(file_name, skip_row, seperator):
-    """ Reads in metadata for internal nodes
-
-    Parameters
-    ----------
-    file_name :  String
-        The name of the file to read the data from
-    skip_row : integer
-        The number of rows to skip when reading in the data
-    seperator : character
-        The delimiter used in the data file
-
-    Returns
-    -------
-       pd.Dataframe
-
-    """
-    if seperator == ' ':
-        cols = pd.read_csv(
-            file_name, skiprows=skip_row, nrows=1, delim_whitespace=True).columns.tolist()
-        metadata = pd.read_table(
-            file_name, skiprows=skip_row, delim_whitespace=True, dtype={cols[0]: object})
-        metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
-    else:
-        cols = pd.read_csv(
-            file_name, skiprows=skip_row, nrows=1, sep=seperator).columns.tolist()
-        metadata = pd.read_table(
-            file_name, skiprows=skip_row, sep=seperator, dtype={cols[0]: object})
-        metadata.rename(columns={metadata.columns[0]: "Node_id"}, inplace=True)
-    return metadata
-
-
-def read(file_name, file_format='newick'):
-    """ Reads in contents from a file.
-
-    This will create a skbio.TreeNode object
-
-    Current Support formats: newick
-
-    Future Suppoert formats: phyloxml,
-    cytoscape network.
-
-    cytoscape layout
-    - networkx
-    phyloxml
-    - Python has a parser for it, but it parse it into a phylogeny object.
-    - We need to parse the phylogeny object into the metadata table by
-    traversing?
-    - What is the confidence for each clade?
-
-    Parameters
-    ----------
-    file_name : str
-        The name of the file to read that contains the tree
-    file_format : str
-        The format of the file to read that contains the tree
-    TODO: Need to create parsers for each of these.
-
-    Returns
-    -------
-    tree - skbio.TreeNode
-        A TreeNode object of the newick file
-    None - null
-        If a non-newick file_format was passed in
-    """
-
-    if file_format == 'newick':
-        tree = skbio.read(file_name, file_format, into=TreeNode)
-        return tree
-    return None
+DEFAULT_WIDTH =  1920
+DEFAULT_HEIGHT = 1920
 
 
 class Model(object):
 
     def __init__(
             self, tree_file, main_metadata, clade_field, add_metadata=None, port=8080,
-            main_skiprow=0, add_skiprow=0, main_sep='\t', add_sep='\t'):
+            main_skiprow=0, add_skiprow=0, main_sep='\t', add_sep='\t', highlight_file=""):
         """ Model constructor.
 
         This initializes the model, including
@@ -109,49 +24,64 @@ class Model(object):
 
         Parameters
         ----------
-        tree_file : String
+        tree_file : str
             Name of newick tree file
-        main_metadata : String
+        main_metadata : str
             Name of file containing metadata
-        clade_field : String
+        clade_field : str
             Name of field within metadata that contains clade names
-        add_metadata : String
+        add_metadata : str
             Name of file containing additional metadata
-        port : Integer
+        port : int
             port number
-        main_skiprow : Integer
+        main_skiprow : int
             Number of rows to skip in the main metadata file
-        add_skiprow : Integer
+        add_skiprow : int
             Number of rows to skip in the secondary metadata file
-        main_sep : String
+        main_sep : str
             The seperator used in the main metadata file
-        add_sep : String
+        add_sep : str
             The seperator used in the secondary metadata file
+        highlight_file : str
+            csv file of Node_ids
         """
         self.zoom_level = 1
         self.scale = 1
-        tree = read(tree_file)
+        tree = tools.read(tree_file)
         self.tree = Tree.from_tree(tree)
-        name_internal_nodes(self.tree)
+        tools.name_internal_nodes(self.tree)
         (self.edge_metadata, self.centerX,
-            self.centerY, self.scale) = self.tree.coords(900, 1500)
+            self.centerY, self.scale) = self.tree.coords(DEFAULT_WIDTH, DEFAULT_HEIGHT)
 
         # read in main metadata
-        metadata = read_metadata(main_metadata, main_skiprow, main_sep)
+        metadata = tools.read_metadata(main_metadata, main_skiprow, main_sep)
         self.headers = metadata.columns.values.tolist()
         self.edge_metadata = pd.merge(self.edge_metadata, metadata,
-                                          how='outer', on="Node_id")
+                                      how='outer', on="Node_id")
 
         # read in additional metadata
         if add_metadata is not None:
-            add_metadata = read_metadata(add_metadata, add_skiprow, add_sep)
+            add_metadata = tools.read_metadata(add_metadata, add_skiprow, add_sep)
             add_headers = add_metadata.columns.values.tolist()
             self.headers = self.headers + add_headers[1:]
             self.edge_metadata = pd.merge(self.edge_metadata, add_metadata,
-                                            how='outer', on="Node_id")
+                                          how='outer', on="Node_id")
+
+        # todo need to warn user that some entries in metadata do not have a mapping to tree
+        self.edge_metadata = self.edge_metadata[self.edge_metadata.x.notnull()]
 
         self.triangles = pd.DataFrame()
         self.clade_field = clade_field
+        self.selected_tree = pd.DataFrame()
+        self.selected_root = self.tree
+        self.triData = {}
+        self.colored_clades = {}
+
+        # cached subtrees
+        self.cached_subtrees = list()
+        self.cached_clades = list()
+
+        self.highlight_from_file(highlight_file)
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -226,6 +156,9 @@ class Model(object):
         ----------
         Returns
         -------
+        edgeData : pd.Dataframe
+            dataframe containing information necessary to draw tree in
+            webgl
         """
         attributes = ['x', 'y', 'node_color', 'size']
         return self.select_category(attributes, 'node_is_visible')
@@ -234,34 +167,34 @@ class Model(object):
         """ Returns edge_metadata whose 'is_visible_col is True'
         Parameters
         ----------
-        attributes : list
-            List of columns names to select
+        edgeData : pd.Dataframe
+            dataframe containing information necessary to draw tree in
+            webgl
         """
-
         is_visible = self.edge_metadata[is_visible_col]
         edgeData = self.edge_metadata[is_visible]
 
         return edgeData[attributes]
 
     def update_edge_category(self, attribute, category,
-                             new_value="000000", lower="",
+                             new_value=DEFAULT_COLOR, lower="",
                              equal="", upper=""):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
 
         Parameters
         ----------
-        attribute : string
+        attribute : str
             The name of the attribute(column of the table).
         category:
             The column of table that will be updated such as branch_color
-        new_value : string
+        new_value : str
             A hex string representing color to change branch
-        lower : integer
+        lower : float
             The smallest number a feature must match in order for its color to change
-        equal : string/integer
+        equal : str/float
             The number/string a feature must match in order for its color to change
-        upper : integer
+        upper : float
             The largest number a feature can match in order for its color to change
         Returns
         -------
@@ -269,6 +202,22 @@ class Model(object):
             All entries from self.edge_metadata that are visible and match criteria
             passed in.
         """
+        # update the cached trees
+        for edge_data, _ in self.cached_subtrees:
+            if lower is not "":
+                edge_data.loc[edge_data[attribute] > float(lower), category] = new_value
+
+            if equal is not "":
+                try:
+                    value = float(equal)
+                except ValueError:
+                    value = equal
+                edge_data.loc[edge_data[attribute] == value, category] = new_value
+
+            if upper is not "":
+                edge_data.loc[edge_data[attribute] < float(upper), category] = new_value
+
+        # update the current tree
         if lower is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
@@ -281,8 +230,20 @@ class Model(object):
 
         if upper is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
-
         return self.edge_metadata
+
+    def highlight_from_file(self, file):
+        """ Reads in Node_ids for 'file' and colors their branches red
+        Parameters
+        ----------
+        file : csv file containing Node_ids
+        """
+        if file is not "":
+            nodes = tools.read_metadata(file, seperator=',')
+            print(nodes)
+            nodes = nodes['id'].tolist()
+            self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_color'] = 'FF0000'
+
 
     def retrive_highlighted_values(self, attribute, lower="",
                                    equal="", upper=""):
@@ -290,13 +251,13 @@ class Model(object):
 
         Parameters
         ----------
-        attribute : string
+        attribute : str
             The name of the attribute(column of the table).
-        lower : integer
+        lower : int
             The smallest number a feature must match in order for its color to change
-        equal : string/integer
+        equal : str/int
             The number/string a feature must match in order for its color to change
-        upper : integer
+        upper : int
             The largest number a feature can match in order for its color to change
         Returns
         -------
@@ -310,10 +271,7 @@ class Model(object):
             return self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), columns]
 
         if equal is not "":
-            try:
-                value = float(equal)
-            except ValueError:
-                value = equal
+            value = equal
             return self.edge_metadata.loc[self.edge_metadata[attribute] == value, columns]
 
         if upper is not "":
@@ -321,6 +279,13 @@ class Model(object):
 
     def retrive_default_table_values(self):
         """ Returns all edge_metadata values need to initialize slickgrid
+        Parameters
+        ----------
+        Returns
+        -------
+        pd.DataFrame
+            dataframe containing information necessary to draw tree in
+            webgl
         """
         columns = list(self.headers)
         columns.append('x')
@@ -344,6 +309,7 @@ class Model(object):
         triangles : pd.DataFrame
             rx | ry | fx | fy | cx | cy | #RGB (color string)
         """
+        # TODO: need to collapse the cached trees as well
         triData = {}
 
         count = 0
@@ -396,86 +362,6 @@ class Model(object):
         """
         return self.headers
 
-    def in_quad_1(self, angle):
-        """ Determines if the angle is between 0 and pi / 2 radians
-
-        Parameters
-        ----------
-        angle : float
-            the angle of a vector in radians
-
-        Returns
-        -------
-        return : bool
-            true if angle is between 0 and pi / 2 radians
-        """
-        return True if angle > 0 and angle < math.pi / 2 else False
-
-    def in_quad_4(self, angle):
-        """ Determines if the angle is between (3 * pi) / 2 radians and 2 * pi
-
-        angle : float
-            the angle of a vector in radians
-
-        Returns
-        -------
-        return : bool
-            true is angle is between 0 and pi / 2 radians
-        """
-        return True if angle > 3 * math.pi / 2 and angle < 2 * math.pi else False
-
-    def calculate_angle(self, v):
-        """ Finds the angle of the two 2-d vectors in radians
-
-        Parameters
-        ----------
-        v : tuple
-            vector
-
-        Returns
-        -------
-            angle of vector in radians
-        """
-        if v[0] == 0:
-            return math.pi / 2 if v[1] > 0 else 3 * math.pi / 2
-
-        angle = math.atan(v[1] / v[0])
-
-        if v[0] > 0:
-            return angle if angle >= 0 else 2 * math.pi + angle
-        else:
-            return angle + math.pi if angle >= 0 else (2 * math.pi + angle) - math.pi
-
-    def hull_sector_info(self, a_1, a_2):
-        """ determines the starting angle of the sector and total theta of the sector.
-        Note this is only to be used if the sector is less than pi radians
-
-        Parameters
-        ----------
-        a1 : float
-            angle (in radians) of one of the edges of the sector
-        a2 : float
-            angle (in radians of one of the edges of the sector)
-
-        Returns
-        -------
-        starting angle : float
-            the angle at which to start drawing the sector
-        theta : float
-            the angle of the sector
-        """
-        # detemines the angle of the sector as well as the angle to start drawing the sector
-        if (not (self.in_quad_1(a_1) and self.in_quad_4(a_2) or
-                 self.in_quad_4(a_1) and self.in_quad_1(a_2))):
-            starting_angle = a_2 if a_1 > a_2 else a_1
-            theta = abs(a_1 - a_2)
-        else:
-            starting_angle = a_1 if a_1 > a_2 else a_2
-            ending_angle = a_1 if starting_angle == a_2 else a_2
-            theta = ending_angle + abs(starting_angle - 2 * math.pi)
-
-        return (starting_angle, theta)
-
     def color_clade(self, clade, color):
         """ Will highlight a certain clade by drawing a sector around the clade.
         The sector will start at the root of the clade and create an arc from the
@@ -495,42 +381,80 @@ class Model(object):
             A list of all highlighted clades
         """
         # is it be safe to assume clade ids will be unique?
+        c = clade
         clade_root = self.edge_metadata.loc[self.edge_metadata[self.clade_field] == clade]
         clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
 
         if clade_root_id == -1:
-            return {}
+            for c in range(0, len(self.cached_clades)):
+                if clade in self.cached_clades[c]:
+                    self.cached_clades[c][clade]['color'] = color
+            return {"empty": []}
 
-        # Note: all calculations are down by making the clade root (0,0)
+        clade = self.tree.find(clade_root_id)
+
+        color_clade = self.__get_sector(clade)
+        color_clade['color'] = color
+        color_clade_s = tools.create_arc_sector(color_clade)
+        self.colored_clades[c] = {'data': color_clade_s,
+                                  'depth': color_clade['depth'],
+                                  'color': color}
+        return self.retrive_colored_clade()
+
+    def clear_clade(self, clade):
+        self.colored_clades.pop(clade)
+        for colored_clades in self.cached_clades:
+            try:
+                colored_clades.pop(clade)
+            except KeyError:
+                continue
+
+        return self.retrive_colored_clade()
+
+    def retrive_colored_clade(self):
+        CLADE_INDEX = 0
+        DEPTH_INDEX = 1
+        clades = [(k, v['depth']) for k, v in self.colored_clades.items()]
+        clades.sort(key=lambda clade: clade[DEPTH_INDEX])
+        sorted_clades = [self.colored_clades[clade[CLADE_INDEX]]['data'] for clade in clades]
+        sorted_clades = [flat for two_d in sorted_clades for flat in two_d]
+        return {"clades": sorted_clades}
+
+    def refresh_clades(self):
+        colored_clades = {}
+        for k, v in self.colored_clades.items():
+            clade_root = self.edge_metadata.loc[self.edge_metadata[self.clade_field] == k]
+            clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
+
+            if clade_root_id != -1:
+                clade = self.tree.find(clade_root_id)
+                color_clade = self.__get_sector(clade)
+                color_clade['color'] = v['color']
+                color_clade_s = tools.create_arc_sector(color_clade)
+                colored_clades[k] = {'data': color_clade_s,
+                                     'depth': color_clade['depth'],
+                                     'color': color_clade['color']}
+        return colored_clades
+
+    def __get_sector(self, clade):
 
         # grab all of the tips of the clade
-        clade = self.tree.find(clade_root_id)
         tips = clade.tips()
 
-        # stores points for the convex hull
-        points = np.array([[0, 0]])
-
         # origin
+        center_point = np.array([[0, 0]])
         center = (0, 0)
-
-        # parallel array to points. Used to locate the node for each point
-        nodes = [clade]
 
         # will store the distance to the farthest tip
         arc_length = 0
+        smallest_length = math.inf
 
-        # Finds the max tip distance, largest and smallest angle
-        for tip in tips:
-            # add tip to set of points
-            tip_coords = (tip.x2 - clade.x2, tip.y2 - clade.y2)
-            point = np.array([[tip_coords[0], tip_coords[1]]])
-            points = np.concatenate((points, point), axis=0)
-            nodes.append(tip)
-
-            # calculate distance from clade root to tip
-            tip_dist = distance.euclidean(tip_coords, center)
-
-            arc_length = tip_dist if tip_dist > arc_length else arc_length
+        tip_coords = [(tip.x2 - clade.x2, tip.y2 - clade.y2) for tip in tips]
+        points = np.array([[tip[0], tip[1]] for tip in tip_coords])
+        distances = [distance.euclidean(tip, center) for tip in points]
+        arc_length = max(distances)
+        smallest_length = min(distances)
+        points = np.concatenate((center_point, points), axis=0)
 
         # Note: the angle of the sector used to be found by taking the difference between the tips
         # with the smallest and largest angle. However, that lead to an edge case that became
@@ -549,28 +473,30 @@ class Model(object):
 
         # calculates the bounding angles of the sector based on whether the clade root
         # is part of the convex hull
-        if clade_index != -1:
+        if len(clade.ancestors()) == 0:
+            starting_angle = 0
+            theta = 2 * math.pi
+        elif clade_index != -1:
             # the left most and right most branch of the clade
             e_1 = hull_vertices[i + 1 if i < len(hull_vertices) - 1 else 0]
             e_2 = hull_vertices[i - 1]
-
             (edge_1, edge_2) = (points[e_1], points[e_2])
 
             # calculate the angle of the left and right most branch of the clade
-            (a_1, a_2) = (self.calculate_angle(edge_1), self.calculate_angle(edge_2))
+            (a_1, a_2) = (tools.calculate_angle(edge_1), tools.calculate_angle(edge_2))
 
             # the starting/total angle of the sector
-            (starting_angle, theta) = self.hull_sector_info(a_1, a_2)
+            (starting_angle, theta) = tools.start_and_total_angle(a_1, a_2)
 
         else:
             # find the tips whose edge contains the angle of the ancestor branch
-            angles = [self.calculate_angle(points[x]) for x in range(0, len(points)) if set(points[x]) != set([0, 0])]
+            angles = [tools.calculate_angle(points[x]) for x in range(0, len(points)) if set(points[x]) != set([0, 0])]
             angles = sorted(angles)
 
             # calculate the angle going from clade root to its direct ancestor
             clade_ancestor = clade.parent
             ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
-            ancestor_angle = self.calculate_angle((ancestor_coords))
+            ancestor_angle = tools.calculate_angle((ancestor_coords))
 
             # find the two tips that contain the clade ancestor
             tips_found = False
@@ -584,7 +510,7 @@ class Model(object):
                 (a_1, a_2) = (angles[0], angles[i])
 
             # detemines the starting angle of the sectorr
-            if ancestor_angle <= math.pi:
+            if abs(a_1 - a_2) < math.pi:
                 starting_angle = a_1 if a_1 > a_2 else a_2
             else:
                 starting_angle = a_2 if a_1 > a_2 else a_1
@@ -594,13 +520,170 @@ class Model(object):
 
         clade_ancestor = clade.parent
 
+        depth = len([node.name for node in clade.ancestors()])
+
         # the sector webgl will draw
         colored_clades = {
-            'center_x': clade.x2,
-            'center_y': clade.y2,
-            'starting_angle': starting_angle,
-            'theta': theta,
-            'arc_length': arc_length,
-            'color': color}
+            'center_x': clade.x2, 'center_y': clade.y2,
+            'starting_angle': starting_angle, 'theta': theta,
+            'arc_length': arc_length, 'smallest_length': smallest_length,
+            'depth': depth}
 
         return colored_clades
+
+    def create_subtree(self, attribute, lower="", equal="", upper=""):
+        """ Creates a subtree from from the tips whose metadata matches the users query. Also, if
+        the attribute referes to an inner node, then this method will first locate the tips whose
+        ansestor is the inner node. This will create a subtree by passing in the tips to skbio.shear()
+        Parameters
+        ----------
+        attribute : string
+            The name of the attribute(column of the table).
+        lower : integer
+            The smallest number a feature must match in order for its color to change
+        equal : string/integer
+            The number/string a feature must match in order for its color to change
+        upper : integer
+            The largest number a feature can match in order for its color to change
+        Returns
+        -------
+        edgeData : pd.Dataframe
+            updated version of edge metadata
+        """
+        # retrive the tips of the subtree
+        nodes = self.retrive_highlighted_values(attribute, lower, equal, upper)
+        nodes = nodes['Node_id'].values
+        tips = list()
+        for node in nodes:
+            # node is a tip
+            if self.tree.find(node).is_tip():
+                tips.append(node)
+                continue
+            # retive the tips of node
+            for tip in self.tree.find(node).tips():
+                tips.append(tip.name)
+
+        # store the previous tree/metadata
+        self.cached_subtrees.append((self.edge_metadata, self.tree))
+
+        # grab relivent metadata for old metadata
+        columns = list(self.edge_metadata.columns.values)
+        columns.remove('x')
+        columns.remove('y')
+        columns.remove('px')
+        columns.remove('py')
+        self.tree = self.tree.shear(tips)
+        nodes = list()
+        for node in self.tree.postorder():
+            nodes.append(node.name)
+        metadata = self.edge_metadata.loc[self.edge_metadata["Node_id"].isin(nodes), columns]
+
+        # create new metadata
+        (self.edge_metadata, self.centerX,
+            self.centerY, self.scale) = self.tree.coords(900, 1500)
+        self.edge_metadata = self.edge_metadata[['Node_id', 'x', 'y', 'px', 'py']]
+        self.edge_metadata = pd.merge(self.edge_metadata, metadata,
+                                      how='outer', on="Node_id")
+        self.center_tree()
+
+        self.cached_clades.append(self.colored_clades)
+        self.colored_clades = self.refresh_clades()
+
+        return self.edge_metadata
+
+    def revive_old_tree(self):
+        """ retrives the nost recently cached tree if one exists.
+        """
+        if len(self.cached_subtrees) > 0:
+            self.edge_metadata, self.tree = self.cached_subtrees.pop()
+
+            old_clades = self.colored_clades
+            self.colored_clades = self.cached_clades.pop()
+            for k, v in old_clades.items():
+                if k not in self.colored_clades:
+                    self.colored_clades[k] = v
+                self.colored_clades[k]['color'] = old_clades[k]['color']
+
+            self.colored_clades = self.refresh_clades()
+
+            return self.edge_metadata
+        return pd.DataFrame()
+
+    def select_sub_tree(self, x1, y1, x2, y2):
+        """ Marks all tips whose coordinates in the box created by (x1, y1) and (x2, y2). The marked
+        tips can then be used in collapse_selected_tree
+
+        Parameters
+        ----------
+        x1 : Number
+            The x coordinate of the top left corner of the select box
+        y1 : Number
+            The y coordinate of the top left corner of the select box
+        x2 : Number
+            The x coordinate of the bottom right corner of the select box
+        y2 : Number
+            The y coordinate of the bottom right corner of the select box
+        """
+        df = self.edge_metadata
+        (x1, y1, x2, y2) = (float(x1), float(y1), float(x2), float(y2))
+        (smallX, smallY) = (min(x1, x2), min(y1, y2))
+        (largeX, largeY) = (max(x1, x2), max(y1, y2))
+        entries = df.loc[
+            (df['x'] >= smallX) & (df['x'] <= largeX) &
+            (df['y'] >= smallY) & (df['y'] <= largeY)]
+        entries = entries["Node_id"].values
+        if len(entries) == 0:
+            return pd.DataFrame()
+        if len(entries) == 1:
+            nodes = entries
+            root = entries
+        else:
+            root = self.tree.lowest_common_ancestor(entries)
+            nodes = [node.name for node in root.postorder(include_self=False)]
+        selected_tree = self.edge_metadata.loc[self.edge_metadata["Node_id"].isin(nodes)]
+        self.selected_tree = selected_tree.copy()
+        self.selected_tree['branch_color'] = SELECT_COLOR
+        self.selected_root = root
+        return self.selected_tree
+
+    def collapse_selected_tree(self):
+        s = self.__get_sector(self.selected_root)
+        nodes = self.selected_tree['Node_id'].values
+
+        (rx, ry) = (self.selected_root.x2, self.selected_root.y2)
+
+        theta = s['starting_angle']
+        (c_b1, s_b1) = (math.cos(theta), math.sin(theta))
+        (x1, y1) = (s['arc_length'] * c_b1, s['arc_length'] * s_b1)
+
+        # find right most branch
+        theta += s['theta']
+        (c_b2, s_b2) = (math.cos(theta), math.sin(theta))
+        (x2, y2) = (s['smallest_length'] * c_b2, s['smallest_length'] * s_b2)
+
+        (x1, y1) = (x1 + rx, y1 + ry)
+        (x2, y2) = (x2 + rx, y2 + ry)
+
+        nId = {"Node_id": self.selected_root.name}
+        root = {'cx': rx, 'cy': ry}
+        shortest = {'lx': x1, 'ly': y1}
+        longest = {'rx': x2, 'ry': y2}
+        color = {'color': "0000FF"}
+        visible = {'visible': True}
+        self.triData[self.selected_root.name] = {**nId, **root, **shortest,
+                                                 **longest, **color, **visible}
+
+        self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
+
+        collapse_ids = self.triData.keys()
+        for node_id in collapse_ids:
+            ancestors = [a.name for a in self.tree.find(node_id).ancestors()]
+            if self.selected_root.name in ancestors:
+                self.triData[node_id]['visible'] = False
+
+        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
+
+    def retrive_triangles(self):
+        triangles = {k: v for (k, v) in self.triData.items() if v['visible']}
+        self.triangles = pd.DataFrame(triangles).T
+        return self.triangles
