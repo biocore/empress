@@ -1,9 +1,9 @@
 "use strict";
 
-function fillDropDownMenu(headers) {
+function fillDropDownMenu(headers, menuName) {
   $("#highlight-menu").show();
 
-  let menu = $("#highlight-options").empty()[0];
+  let menu = $(menuName).empty()[0];
   for (let header of headers) {
     let option = document.createElement("option");
       option.text = header;
@@ -70,7 +70,6 @@ function initGridTable(data) {
     });
     gridInfo.grid.invalidate();
     gridInfo.grid.render();
-    extractLabels(gridInfo.grid.getData(), field);
   });
 }
 
@@ -132,47 +131,25 @@ function extractColor(data) {
   return data;
 }
 
-/*
- * creates a sector composed of triangles. Each triangle is made out of three vertices.
- * The first vertice is always center and the other two vertices with line on the arc
- * starting from startTheta and ending of totalTheta. Here is an example of what a triangle
- * will look like [cx, cy, r, g, b, sx, sy, r, g, b, ex, ey, r, g, b].
- * cx, cy, sx, sy, ex, ey represent the first, second, and third verties respectifully.
- * r, g, b represent the color of the vertice.
- */
-function createArcSector(center, arcLength, startTheta, totalTheta, color) {
-  let sector = [];
-  let theta = totalTheta / TRI_PER_ARC;
-  let rad = startTheta;
-  let c = extractColor([color]);
-
-  // creating the sector
-  for (let i = 0; i < TRI_PER_ARC; i++) {
-
-    // first vertice of triangle
-    sector.push(center[0]);
-    sector.push(center[1]);
-    sector.push(c[0]);
-    sector.push(c[1]);
-    sector.push(c[2]);
-
-    // second vertice of triangle
-    sector.push(Math.cos(rad) * arcLength + center[0]);
-    sector.push(Math.sin(rad) * arcLength + center[1]);
-    sector.push(c[0]);
-    sector.push(c[1]);
-    sector.push(c[2]);
-
-    rad += theta;
-
-    // third vertice of triangle
-    sector.push(Math.cos(rad) * arcLength + center[0]);
-    sector.push(Math.sin(rad) * arcLength + center[1]);
-    sector.push(c[0]);
-    sector.push(c[1]);
-    sector.push(c[2]);
+function loadColorClades(data) {
+  drawingData.coloredClades = [];
+  for(let clade in data) {
+    drawingData.coloredClades.push(data[clade])
   }
-  return sector;
+  // convert to 1d-array
+  drawingData.coloredClades = [].concat.apply([], drawingData.coloredClades);
+  fillBufferData(shaderProgram.cladeVertBuffer, drawingData.coloredClades);
+  requestAnimationFrame(loop);
+}
+
+function loadTree(data) {
+  drawingData.edgeCoords = extractInfo(data, field.edgeFields);
+  fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+  updateGridData(data);
+  labels = {}
+  drawingData.triangles = [];
+  fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
+  requestAnimationFrame(loop);
 }
 
 /*
