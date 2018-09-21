@@ -6,14 +6,15 @@
 <link rel="stylesheet" type="text/css" href="/static/vendor/css/slick.grid.css?v=459dd2d912077e3463f80dfcef768141">
 <link rel="stylesheet" type="text/css" href="/static/vendor/css/jquery-ui-1.11.3.custom.css?v=42468acb3ddfa7a28295e35d52f1abb9">
 <link rel="stylesheet" type="text/css" href="/static/vendor/css/slick.grid.format.css?v=e6a868a89793281828f8cbe74125540b">
-<link rel="stylesheet" type="text/css" href="/static/css/style.css?v=52f3085bd2363b0b0071cb705c88473a">
+<link rel="stylesheet" type="text/css" href="/static/css/style.css?v=7e9951ea6fa8cd7a2daa0f1ca7d81a08">
 <script type="text/javascript" src="/static/vendor/js/gl-matrix.min.js?v=38d0eb63158c9c26d4d2e6f1405e0751"></script>
 <script type="text/javascript" src="/static/vendor/js/jquery-2.2.4.min.js?v=052806eeee49a85fb006eece489a8d1c"></script>
 <script type="text/javascript" src="/static/vendor/js/jquery.event.drag-2.2.min.js?v=761bb3e053ce7bf2c41bdde132325c1f"></script>
-<script type="text/javascript" src="/static/js/init_webgl.js?v=47d6559e8806eade736c76b6e1e18ee6"></script>
-<script type="text/javascript" src="/static/js/callbacks.js?v=99dae7cb02dc227ec6c9b40f53c8e14b"></script>
-<script type="text/javascript" src="/static/js/drawing_loop.js?v=b8485904c56020bf85dfead749938d23"></script>
-<script type="text/javascript" src="/static/js/init_webpage.js?v=fdbdb8a6b6b5dee603350626d02d8670"></script>
+<script type="text/javascript" src="/static/js/init_webgl.js?v=3d1a1d188784f37ec1d9f36616057b66"></script>
+<script type="text/javascript" src="/static/js/mouse_events.js?v=c0cf12bb91371fe6c49bcf2865712dff"></script>
+<script type="text/javascript" src="/static/js/callbacks.js?v=9e3c1c6c03011b1411518bb76e9feeb3"></script>
+<script type="text/javascript" src="/static/js/drawing_loop.js?v=576dbadd9761f4fa2333a341a5d638db"></script>
+<script type="text/javascript" src="/static/js/init_webpage.js?v=be5a09585fdcc3845dc8d14fc11c2b55"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.core.min.js?v=bfd44ce7e43f91cc7c7a9f839ea46216"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.editors.min.js?v=b60ab77f525ee4ddd4cf416bc23412e6"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.formatters.min.js?v=733d94f8e307fa2daee8c1374f127116"></script>
@@ -21,27 +22,38 @@
 </head>
 <body>
 <div class="container">
-<canvas class="tree-surface">
+<canvas class="tree-surface", id="tree-surface">
 Your browser does not support HTML5
 </canvas>
 <div id="divcontainer"></div>
+<div class="square"></div>
+<div class="selected-tree-menu">
+<input id="collapse" type = "button" value = "collapse" onclick="selectedTreeCollapse()"/>
+</div>
 </div>
 <div class="metadata-tabs">
 <div class="tab-options">
 <div>
-<button class="tabs" onclick="showMenu('leaf')">Highlight Tips</button>
+<button onclick="showMenu('highlight')">Highlight Tips</button>
 </div>
 <div>
-<button class="tabs" onclick="showMenu('internal')">Color Clade</button>
+<button onclick="showMenu('color')">Color Clade</button>
+</div>
+<div>
+<button onclick="showMenu('subTree')">Sub Tree</button>
+</div>
+<div>
+<button onclick="showMenu('metadata')">Metadata</button>
 </div>
 </div>
 <div class="menu" id="highlight-menu">
+<div id="highlight-input">
 <div>
 <select id = "highlight-options"></select>
 </div>
 <div>
-<input id="select-data" type = "button" value = "select"/>
-<input type = "color" id="color-selector"/>
+<input id="select-highlight" type = "button" value = "select"/>
+<input type = "color" id="color-selector" value="#ff0000"/>
 </div>
 <div class="text-field">
 <label for="lower-bound">Lower Bound</label>
@@ -55,77 +67,124 @@ Your browser does not support HTML5
 <label for="category">Equals to</label>
 <input type="text" id="category"/>
 </div>
-<div class="attr-selector">
+<div id="highlight-history">
+</div>
+</div>
+<div id="color-input">
+<div>
+<input id="select-data" type="button" value="select" onclick="userCladeColor()"/>
+<input type = "color" id="clade-color-selector" value="#ff0000"/>
+</div>
+<div class="text-field">
+<label for="clade">clade/taxon</label>
+<input type="text" id="clade"/>
+</div>
+</div>
+<div id="metadata-options">
+<input id="show-metadata" type="checkbox" onclick="toggleMetadata()"/>
+<label for="show-metadata">show metadata table</label>
 </div>
 </div>
 </div>
-<table>
+<div id="scrolltable">
+<table id="metadata-table">
 <tr>
 <td valign="top">
-<div id="scrolltable"></div>
 </td>
 </tr>
 </table>
+</div>
 <script type="text/javascript">
-// global variables
-var urls = { // urls for webserver
+// urls for webserver
+var urls = {
 highlightURL: "http://" + window.location.host + "/highlight",
 collapseURL: "http://" + window.location.host + "/collapse",
 edgeURL: "http://" + window.location.host + "/api/edges",
 colorURL: "http://" + window.location.host + "/color",
 nodeURL: "http://"+ window.location.host + "/api/nodes",
 tableURL: "http://" + window.location.host + "/table_values",
-leafHeadersURL: "http://" + window.location.host + "/leaf_headers",
-internalHeadersURL: "http://" + window.location.host + "/internal_headers",
-cladeColorURL: "http://" + window.location.host + "/color_clade"
+tableChangeURL: "http://" + window.location.host + "/table_change",
+headersURL: "http://" + window.location.host + "/headers",
+cladeURL: "http://" + window.location.host + "/clades",
+cladeColorURL: "http://" + window.location.host + "/color_clade",
+changeCladeURL: "http://" + window.location.host + "/change_clade",
+clearColorCladeURL: "http://" + window.location.host + "/clear_clade",
+subTreeURL: "http://" + window.location.host + "/subtree",
+oldTreeURL: "http://" + window.location.host + "/oldtree",
+selectTreeURL: "http://" + window.location.host + "/selectNodes",
+collapseSTreeURL: "http://" + window.location.host + "/collapseSTree",
+trianglesURL: "http://" + window.location.host + "/api/triangles"
 };
+// fields to extract from metadata, used in extractInfo()
 let field = {
 edgeFields: ["px", "py", "branch_color", "x", "y",
 "branch_color"],
-nodeFields: ["x", "y", "color"]
+nodeFields: ["x", "y", "color"],
+triangleFields: ["cx", "cy", "color", "lx", "ly", "color", "rx", "ry", "color"]
 };
+// stores matrices, and buffers that webgl will uses
 let shaderProgram = {};
 // the complied vertex/fragment shaders
 let gl = {}; // webgl context - used to call webgl functions
-let drawingData = { // stores info need to draw such as vertex data
+// stores info need to draw such as vertex data
+let drawingData = {
 isMouseDown: false,
 lastMouseX: null,
 lastMouseY: null,
 zoomAmount: 10,
 maxZoom: 30,
-coloredClades: []
+coloredClades: [],
+selectTree: [],
+triangles: []
 };
 let numAttr = 0;
 let attrItem = {};
+let grid = {};
 let labels = {};
+let labelPos = 0;
+let gridInfo = {
+initData: [],
+data: [],
+columns: [],
+options: {},
+grid: {}
+};
+const TRI_PER_ARC = 100;
+const ELEMENTS_PER_VERT = 5;
+const VERT_PER_TRI = 3;
 let numUserSelects = 0;
-const INIT_COLOR = "FFFFFF";
+const CLEAR_COLOR_HEX = "FFFFFF";
+const CLEAR_COLOR = 1;
+const DEFUALT_BRANCH_COLOR = "000000";
 let camera = {};
+let cntrlPress = false;
 </script>
 <script type="text/javascript">
 {
 let edgeMetadata;
 let nodeCoords;
 // this may cause some syncing issues
-$.getJSON(urls.leafHeadersURL, function(data) {
-field.leaf_headers = data;
-}).done(function() {
-$.getJSON(urls.internalHeadersURL, function(data) {
-field.internal_headers = data;
+$.getJSON(urls.headersURL, function(data) {
+field.table_headers = data;
 }).done(function() {
 drawingData.nodeCoords = [0, 0, 0, 0, 0];
 $.getJSON(urls.edgeURL, function(data) {
 edgeMetadata = data;
 }).done(function() {
-showMenu("leaf");
-drawingData.edgeCoords = extractInfo(edgeMetadata,field.edgeFields);
-fillTable(INIT_COLOR);
+fillDropDownMenu(field.table_headers.headers);
+$("#highlight-input").hide();
+$("#color-input").hide();
+$("#metadata-options").hide();
+$("#show-metadata").prop('checked', true);
+drawingData.edgeCoords = extractInfo(edgeMetadata, field.edgeFields);
 normalizeTree(edgeMetadata);
+$.getJSON(urls.tableURL, function(data) {
+initGridTable(data);
+});
 initWebGl();
 initCallbacks();
 setPerspective();
 requestAnimationFrame(loop);
-});
 });
 });
 }

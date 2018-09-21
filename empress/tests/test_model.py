@@ -8,9 +8,9 @@ import unittest
 import numpy as np
 import pandas as pd
 import io
-import math
 from pandas.util.testing import assert_frame_equal
 from empress.model import Model
+from empress.tree import DEFAULT_COLOR
 
 
 class TestModel(unittest.TestCase):
@@ -45,7 +45,6 @@ class TestModel(unittest.TestCase):
         self.f_internal = io.StringIO(f_internal.getvalue())
         self.f_leaf = io.StringIO(f_leaf.getvalue())
 
-        print(f_internal.getvalue())
         self.tree = Model(
             self.tree_file,
             self.f_internal,
@@ -111,17 +110,17 @@ class TestModel(unittest.TestCase):
         select_exp = pd.DataFrame(
             {
                 0: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (154.873 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 1: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (745.127 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 2: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (745.127 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 3: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (154.873 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 4: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (332.627 - self.RT_X), (self.RT_Y - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 5: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (1167.37 - self.RT_X), (self.RT_Y - self.RT_Y),
-                    'FFFFFF']
+                    DEFAULT_COLOR]
             },
             index=['px', 'py', 'x', 'y', 'branch_color']).T
         select_res = self.tree.select_edge_category()
@@ -137,12 +136,12 @@ class TestModel(unittest.TestCase):
         self.tree.center_tree()
         select_exp = pd.DataFrame(
             {
-                0: [(37.5 - self.RT_X), (154.873 - self.RT_Y), 'FFFFFF', 1],
-                1: [(37.5 - self.RT_X), (745.127 - self.RT_Y), 'FFFFFF', 1],
-                2: [(1462.5 - self.RT_X), (745.127 - self.RT_Y), 'FFFFFF', 1],
-                3: [(1462.5 - self.RT_X), (154.873 - self.RT_Y), 'FFFFFF', 1],
-                4: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), 'FFFFFF', 1],
-                5: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), 'FFFFFF', 1]
+                0: [(37.5 - self.RT_X), (154.873 - self.RT_Y), DEFAULT_COLOR, 1],
+                1: [(37.5 - self.RT_X), (745.127 - self.RT_Y), DEFAULT_COLOR, 1],
+                2: [(1462.5 - self.RT_X), (745.127 - self.RT_Y), DEFAULT_COLOR, 1],
+                3: [(1462.5 - self.RT_X), (154.873 - self.RT_Y), DEFAULT_COLOR, 1],
+                4: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), DEFAULT_COLOR, 1],
+                5: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), DEFAULT_COLOR, 1]
             },
             index=['x', 'y', 'node_color', 'size']).T
         select_res = self.tree.select_node_category()
@@ -159,17 +158,17 @@ class TestModel(unittest.TestCase):
         update_equal_exp = pd.DataFrame(
             {
                 0: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (154.873 - self.RT_Y),
-                    '000000'],
+                    DEFAULT_COLOR],
                 1: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (745.127 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 2: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (745.127 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 3: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (154.873 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 4: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (332.627 - self.RT_X), (self.RT_Y - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 5: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (1167.37 - self.RT_X), (self.RT_Y - self.RT_Y),
-                    'FFFFFF']
+                    DEFAULT_COLOR]
             },
             index=['px', 'py', 'x', 'y', 'branch_color']).T
         update_equal_res = self.tree.update_edge_category(
@@ -187,13 +186,13 @@ class TestModel(unittest.TestCase):
         update_less_exp = pd.DataFrame(
             {
                 0: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (154.873 - self.RT_Y),
-                    '000000'],
+                    DEFAULT_COLOR],
                 1: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (745.127 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 2: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (745.127 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 3: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (154.873 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 4: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (332.627 - self.RT_X), (self.RT_Y - self.RT_Y),
                     '111111'],
                 5: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (1167.37 - self.RT_X), (self.RT_Y - self.RT_Y),
@@ -215,13 +214,13 @@ class TestModel(unittest.TestCase):
         update_greater_exp = pd.DataFrame(
             {
                 0: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (154.873 - self.RT_Y),
-                    '000000'],
+                    DEFAULT_COLOR],
                 1: [(332.627 - self.RT_X), (self.RT_Y - self.RT_Y), (37.5 - self.RT_X), (745.127 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 2: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (745.127 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 3: [(1167.37 - self.RT_X), (self.RT_Y - self.RT_Y), (1462.5 - self.RT_X), (154.873 - self.RT_Y),
-                    'FFFFFF'],
+                    DEFAULT_COLOR],
                 4: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (332.627 - self.RT_X), (self.RT_Y - self.RT_Y),
                     '121212'],
                 5: [(self.RT_X - self.RT_X), (self.RT_Y - self.RT_Y), (1167.37 - self.RT_X), (self.RT_Y - self.RT_Y),
@@ -239,78 +238,6 @@ class TestModel(unittest.TestCase):
         update_greater_res[['px', 'py', 'x', 'y']] = update_greater_res[[
             'px', 'py', 'x', 'y']].astype(int)
         assert_frame_equal(update_greater_exp, update_greater_res)
-
-    def test_in_quad_1(self):
-        q_1 = math.pi / 4
-        q_2 = 3 * math.pi / 4
-        q_3 = 5 * math.pi / 4
-        q_4 = 7 * math.pi / 4
-
-        self.assertEqual(self.tree.in_quad_1(q_1), True)
-        self.assertEqual(self.tree.in_quad_1(q_2), False)
-        self.assertEqual(self.tree.in_quad_1(q_3), False)
-        self.assertEqual(self.tree.in_quad_1(q_4), False)
-
-    def test_in_quad_4(self):
-        q_1 = math.pi / 4
-        q_2 = 3 * math.pi / 4
-        q_3 = 5 * math.pi / 4
-        q_4 = 7 * math.pi / 4
-
-        self.assertEqual(self.tree.in_quad_4(q_1), False)
-        self.assertEqual(self.tree.in_quad_4(q_2), False)
-        self.assertEqual(self.tree.in_quad_4(q_3), False)
-        self.assertEqual(self.tree.in_quad_4(q_4), True)
-
-    def test_calculate_angle(self):
-        p_x_axis = (1, 0)
-        p_y_axis = (0, 1)
-        n_x_axis = (-1, 0)
-        n_y_axis = (0, -1)
-        self.assertEqual(0, self.tree.calculate_angle(p_x_axis))
-        self.assertEqual(math.pi / 2, self.tree.calculate_angle(p_y_axis))
-        self.assertEqual(math.pi, self.tree.calculate_angle(n_x_axis))
-        self.assertEqual(3 * math.pi / 2, self.tree.calculate_angle(n_y_axis))
-
-        p_1 = (1, 1)
-        p_2 = (-1, 1)
-        p_3 = (-1, -1)
-        p_4 = (1, -1)
-        self.assertEqual(math.pi / 4, self.tree.calculate_angle(p_1))
-        self.assertEqual(3 * math.pi / 4, self.tree.calculate_angle(p_2))
-        self.assertEqual(5 * math.pi / 4, self.tree.calculate_angle(p_3))
-        self.assertEqual(7 * math.pi / 4, self.tree.calculate_angle(p_4))
-
-    def test_hull_sector_into(self):
-        a_1 = 0
-        a_2 = math.pi / 2
-        (starting_angle, theta) = self.tree.hull_sector_info(a_1, a_2)
-        self.assertEqual(starting_angle, 0)
-        self.assertEqual(theta, math.pi / 2)
-
-        a_2 = 0
-        a_1 = math.pi / 2
-        (starting_angle, theta) = self.tree.hull_sector_info(a_1, a_2)
-        self.assertEqual(starting_angle, 0)
-        self.assertEqual(theta, math.pi / 2)
-
-        a_1 = math.pi / 2
-        a_2 = math.pi
-        (starting_angle, theta) = self.tree.hull_sector_info(a_1, a_2)
-        self.assertEqual(starting_angle, math.pi / 2)
-        self.assertEqual(theta, math.pi / 2)
-
-        a_2 = math.pi / 2
-        a_1 = math.pi
-        (starting_angle, theta) = self.tree.hull_sector_info(a_1, a_2)
-        self.assertEqual(starting_angle, math.pi / 2)
-        self.assertEqual(theta, math.pi / 2)
-
-        a_1 = math.pi / 4
-        a_2 = 7 * math.pi / 4
-        (starting_angle, theta) = self.tree.hull_sector_info(a_1, a_2)
-        self.assertEqual(starting_angle, 7 * math.pi / 4)
-        self.assertEqual(theta, math.pi / 2)
 
 
 if __name__ == '__main__':
