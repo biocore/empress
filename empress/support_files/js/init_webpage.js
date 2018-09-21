@@ -1,9 +1,9 @@
 "use strict";
 
-function fillDropDownMenu(headers) {
+function fillDropDownMenu(headers, menuName) {
   $("#highlight-menu").show();
 
-  let menu = $("#highlight-options").empty()[0];
+  let menu = $(menuName).empty()[0];
   for (let header of headers) {
     let option = document.createElement("option");
       option.text = header;
@@ -70,7 +70,6 @@ function initGridTable(data) {
     });
     gridInfo.grid.invalidate();
     gridInfo.grid.render();
-    extractLabels(gridInfo.grid.getData(), field);
   });
 }
 

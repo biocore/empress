@@ -67,7 +67,7 @@ canvas {
 
 .tab-options {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     grid-auto-rows: auto;
     height: unset;
     background: grey;
@@ -140,4 +140,9 @@ canvas {
 .selected-tree-menu {
     position: absolute;
     visibility: hidden;
+}
+
+#label-dropbox {
+    display: grid;
+    grid-template-columns: 1fr;
 }

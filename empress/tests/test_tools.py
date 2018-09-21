@@ -8,6 +8,7 @@ import unittest
 import math
 import empress.tools as tools
 
+
 def test_in_quad_1(self):
     q_1 = math.pi / 4
     q_2 = 3 * math.pi / 4
@@ -19,6 +20,7 @@ def test_in_quad_1(self):
     self.assertEqual(tools.in_quad_1(q_3), False)
     self.assertEqual(tools.in_quad_1(q_4), False)
 
+
 def test_in_quad_4(self):
     q_1 = math.pi / 4
     q_2 = 3 * math.pi / 4
@@ -29,6 +31,7 @@ def test_in_quad_4(self):
     self.assertEqual(tools.in_quad_4(q_2), False)
     self.assertEqual(tools.in_quad_4(q_3), False)
     self.assertEqual(tools.in_quad_4(q_4), True)
+
 
 def test_calculate_angle(self):
     p_x_axis = (1, 0)
@@ -48,6 +51,7 @@ def test_calculate_angle(self):
     self.assertEqual(3 * math.pi / 4, tools.calculate_angle(p_2))
     self.assertEqual(5 * math.pi / 4, tools.calculate_angle(p_3))
     self.assertEqual(7 * math.pi / 4, tools.calculate_angle(p_4))
+
 
 def test_hull_sector_into(self):
     a_1 = 0

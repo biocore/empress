@@ -52,7 +52,7 @@ def calculate_angle(v):
 
     Returns
     -------
-        angle of vector in radians
+    angle of vector in radians
     """
     if v[0] == 0:
         return math.pi / 2 if v[1] > 0 else 3 * math.pi / 2
@@ -68,10 +68,15 @@ def calculate_angle(v):
 def name_internal_nodes(tree):
     """ Name internal nodes that does not have name
 
-    Parameters
-    ----------
+     Parameters
+     ----------
+     tree : skbio.TreeNode or empress.Tree
+         Input tree with labeled tips and partially unlabeled internal nodes or branch lengths.
+
     Returns
     -------
+    skbio.TreeNode or empress.Tree
+         Tree with fully labeled internal nodes and branches.
     """
     # initialize tree with branch lengths and node names if they are missing
     for i, n in enumerate(tree.postorder(include_self=True)):
@@ -82,21 +87,21 @@ def name_internal_nodes(tree):
             n.name = new_name
 
 
-def read_metadata(file_name, skip_row, seperator):
+def read_metadata(file_name, skip_row=0, seperator='\t'):
     """ Reads in metadata for internal nodes
 
     Parameters
     ----------
-    file_name :  String
+    file_name :  str
         The name of the file to read the data from
-    skip_row : integer
+    skip_row : int
         The number of rows to skip when reading in the data
-    seperator : character
+    seperator : str
         The delimiter used in the data file
 
     Returns
     -------
-       pd.Dataframe
+    pd.Dataframe
 
     """
     if seperator == ' ':

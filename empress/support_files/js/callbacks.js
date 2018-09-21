@@ -4,23 +4,22 @@
  * tells javasript what function to call for mouse/keyboard events
  */
 function initCallbacks(){
-  const CTRL_KEY = 17;
+  const SHFT_KEY = 16;
   $(".tree-surface")[0].onmousedown = mouseHandler;
   document.onmouseup = mouseHandler;
   document.onmousemove = mouseHandler;
   $(".tree-surface")[0].onwheel = mouseHandler;
 
-
   window.onresize = resizeCanvas;
+
   $(".tree-surface")[0].ondblclick = getOldTree;
 
   $(document).keydown(function(e) {
-      cntrlPress = (e.which === CTRL_KEY) ? true : false;
+      shftPress = (e.which === SHFT_KEY) ? true : false;
   });
   $(document).keyup(function() {
-    if(cntrlPress) {
-      console.log("released cntr")
-      cntrlPress = false;
+    if(shftPress) {
+      shftPress = false;
       let square = $(".square");
       let offset = square.offset();
       drawingData.lastMouseX = offset.left, drawingData.lastMouseY = offset.top;
@@ -32,10 +31,15 @@ function initCallbacks(){
                 x2: bottomCorner[0], y2: bottomCorner[1]}, function(data) {
         edgeMetadata = data;
       }).done(function() {
+        if(edgeMetadata.length === 0) {
+          $(".selected-tree-menu").css({top: drawingData.lastMouseY, left: drawingData.lastMouseX, visibility: "hidden"});
+          return;
+        }
         drawingData.selectTree = extractInfo(edgeMetadata, field.edgeFields);
+        updateGridData(edgeMetadata);
         fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
+        $(".selected-tree-menu").css({top: drawingData.lastMouseY, left: drawingData.lastMouseX, visibility: "visible"});
         requestAnimationFrame(loop);
-        $(".selected-tree-menu").css({top: drawingData.lastMouseY, left: drawingData.lastMouseX, visibility: "visible"})
       });
     }
   });
@@ -210,7 +214,6 @@ function addCladeItem(clade, color) {
  */
 function clearColorSelection(obj) {
   let arcID = obj.parentElement.id;
-  console.log(arcID);
   $.getJSON(urls.clearColorCladeURL, { clade: arcID}, function(data) {
     loadColorClades(data);
     obj.parentNode.remove();
@@ -285,59 +288,102 @@ function userCladeColor() {
 function showMenu(menuName) {
   if(menuName === "highlight") {
     if($("#highlight-input").is(":visible") && $("#color-selector").is(":visible")) {
-      $("#highlight-input").hide();
-      $("#color-selector").hide();
+      hideMenu();
       $(".metadata-tabs").css({opacity: 0.5});
     }
     else {
+      hideMenu();
       $("#highlight-input").show();
       $("#color-selector").show();
-      $("#color-input").hide();
       $("#select-highlight").attr("onclick", "userHighlightSelect()");
-      $("#metadata-options").hide();
       $("#highlight-history").show();
       $(".metadata-tabs").css({opacity: 1});
     }
   }
   else if(menuName === "subTree") {
     if($("#highlight-input").is(":visible") && !$("#color-selector").is(":visible")) {
-      $("#highlight-input").hide();
+      hideMenu();
       $(".metadata-tabs").css({opacity: 0.5});
     }
     else {
+      hideMenu();
       $("#highlight-input").show();
-      $("#color-selector").hide();
-      $("#color-input").hide();
       $("#select-highlight").attr("onclick", "newTree()");
-      $("#metadata-options").hide();
-      $("#highlight-history").hide();
       $(".metadata-tabs").css({opacity: 1});
     }
   }
   else if (menuName === "color") {
     if($("#color-input").is(":visible")) {
-      $("#color-input").hide();
+      hideMenu();
       $(".metadata-tabs").css({opacity: 0.5});
     }
     else {
-      $("#highlight-input").hide();
+      hideMenu()
       $("#color-input").show();
-      $("#metadata-options").hide();
       $(".metadata-tabs").css({opacity: 1});
     }
   }
-  else {
+  else if(menuName === 'metadata'){
     if($("#metadata-options").is(":visible")) {
-      $("#metadata-options").hide();
+      hideMenu();
       $(".metadata-tabs").css({opacity: 0.5});
     }
     else {
-      $("#highlight-input").hide();
-      $("#color-input").hide();
+      hideMenu();
       $("#metadata-options").show();
       $(".metadata-tabs").css({opacity: 1});
     }
   }
+  else {
+    if($("#label-input").is(":visible")) {
+      hideMenu();
+      $(".metadata-tabs").css({opacity: 0.5});
+    }
+    else {
+      hideMenu()
+      $('#label-input').show();
+      $(".metadata-tabs").css({opacity: 1});
+    }
+  }
+}
+
+/**
+ * Resets the user menu
+ */
+function hideMenu() {
+  $("#highlight-input").hide();
+  $("#color-selector").hide();
+  $("#color-input").hide();
+  $("#metadata-options").hide();
+  $("#highlight-history").hide();
+  $('#label-input').hide();
+}
+
+function showLables() {
+  const attr = $("#highlight-options").val();
+  let labelsToShow = $("#show-options").val();
+  let prioritizeLabel = $("#prioritize-options").val();
+  let lbls = gridInfo.grid.getData();
+  let sign = $("#descending-toggle").prop("checked") ? -1 : 1;
+  let val1, val2, result;
+  lbls = lbls.sort(function(dataRow1, dataRow2) {
+      val1 = dataRow1[prioritizeLabel];
+      val2 = dataRow2[prioritizeLabel];
+      if(val1 === null){
+        return 1;
+      }
+      if(val2 === null){
+        return -1;
+      }
+      result = (val1 > val2 ? 1 : -1) * sign;
+      return result;
+  });
+  extractLabels(lbls, labelsToShow);
+}
+
+function clearLabels() {
+  labels = {};
+  requestAnimationFrame(drawLabels);
 }
 
 /**

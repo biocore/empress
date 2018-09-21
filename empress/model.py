@@ -8,12 +8,15 @@ from empress.tree import DEFAULT_COLOR
 from empress.tree import SELECT_COLOR
 import empress.tools as tools
 
+DEFAULT_WIDTH =  1920
+DEFAULT_HEIGHT = 1920
+
 
 class Model(object):
 
     def __init__(
             self, tree_file, main_metadata, clade_field, add_metadata=None, port=8080,
-            main_skiprow=0, add_skiprow=0, main_sep='\t', add_sep='\t'):
+            main_skiprow=0, add_skiprow=0, main_sep='\t', add_sep='\t', highlight_file=""):
         """ Model constructor.
 
         This initializes the model, including
@@ -21,24 +24,26 @@ class Model(object):
 
         Parameters
         ----------
-        tree_file : String
+        tree_file : str
             Name of newick tree file
-        main_metadata : String
+        main_metadata : str
             Name of file containing metadata
-        clade_field : String
+        clade_field : str
             Name of field within metadata that contains clade names
-        add_metadata : String
+        add_metadata : str
             Name of file containing additional metadata
-        port : Integer
+        port : int
             port number
-        main_skiprow : Integer
+        main_skiprow : int
             Number of rows to skip in the main metadata file
-        add_skiprow : Integer
+        add_skiprow : int
             Number of rows to skip in the secondary metadata file
-        main_sep : String
+        main_sep : str
             The seperator used in the main metadata file
-        add_sep : String
+        add_sep : str
             The seperator used in the secondary metadata file
+        highlight_file : str
+            csv file of Node_ids
         """
         self.zoom_level = 1
         self.scale = 1
@@ -46,7 +51,7 @@ class Model(object):
         self.tree = Tree.from_tree(tree)
         tools.name_internal_nodes(self.tree)
         (self.edge_metadata, self.centerX,
-            self.centerY, self.scale) = self.tree.coords(900, 1500)
+            self.centerY, self.scale) = self.tree.coords(DEFAULT_WIDTH, DEFAULT_HEIGHT)
 
         # read in main metadata
         metadata = tools.read_metadata(main_metadata, main_skiprow, main_sep)
@@ -75,6 +80,8 @@ class Model(object):
         # cached subtrees
         self.cached_subtrees = list()
         self.cached_clades = list()
+
+        self.highlight_from_file(highlight_file)
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -149,6 +156,9 @@ class Model(object):
         ----------
         Returns
         -------
+        edgeData : pd.Dataframe
+            dataframe containing information necessary to draw tree in
+            webgl
         """
         attributes = ['x', 'y', 'node_color', 'size']
         return self.select_category(attributes, 'node_is_visible')
@@ -157,34 +167,34 @@ class Model(object):
         """ Returns edge_metadata whose 'is_visible_col is True'
         Parameters
         ----------
-        attributes : list
-            List of columns names to select
+        edgeData : pd.Dataframe
+            dataframe containing information necessary to draw tree in
+            webgl
         """
-
         is_visible = self.edge_metadata[is_visible_col]
         edgeData = self.edge_metadata[is_visible]
 
         return edgeData[attributes]
 
     def update_edge_category(self, attribute, category,
-                             new_value=DEFAULT_COLOR, lower=-np.inf,
-                             equal="", upper=np.inf):
+                             new_value=DEFAULT_COLOR, lower="",
+                             equal="", upper=""):
         """ Returns edge_metadata with updated width value which tells View
         what to hightlight
 
         Parameters
         ----------
-        attribute : string
+        attribute : str
             The name of the attribute(column of the table).
         category:
             The column of table that will be updated such as branch_color
-        new_value : string
+        new_value : str
             A hex string representing color to change branch
-        lower : number
+        lower : float
             The smallest number a feature must match in order for its color to change
-        equal : string/number
+        equal : str/float
             The number/string a feature must match in order for its color to change
-        upper : number
+        upper : float
             The largest number a feature can match in order for its color to change
         Returns
         -------
@@ -194,7 +204,7 @@ class Model(object):
         """
         # update the cached trees
         for edge_data, _ in self.cached_subtrees:
-            if lower == -np.inf:
+            if lower is not "":
                 edge_data.loc[edge_data[attribute] > float(lower), category] = new_value
 
             if equal is not "":
@@ -204,11 +214,11 @@ class Model(object):
                     value = equal
                 edge_data.loc[edge_data[attribute] == value, category] = new_value
 
-            if upper == np.inf:
+            if upper is not "":
                 edge_data.loc[edge_data[attribute] < float(upper), category] = new_value
 
         # update the current tree
-        if lower == -np.inf:
+        if lower is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
 
         if equal is not "":
@@ -218,23 +228,36 @@ class Model(object):
                 value = equal
             self.edge_metadata.loc[self.edge_metadata[attribute] == value, category] = new_value
 
-        if upper == np.inf:
+        if upper is not "":
             self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
         return self.edge_metadata
 
-    def retrive_highlighted_values(self, attribute, lower=-np.inf,
-                                   equal="", upper=np.inf):
+    def highlight_from_file(self, file):
+        """ Reads in Node_ids for 'file' and colors their branches red
+        Parameters
+        ----------
+        file : csv file containing Node_ids
+        """
+        if file is not "":
+            nodes = tools.read_metadata(file, seperator=',')
+            print(nodes)
+            nodes = nodes['id'].tolist()
+            self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_color'] = 'FF0000'
+
+
+    def retrive_highlighted_values(self, attribute, lower="",
+                                   equal="", upper=""):
         """ Returns edge_metadata with that match the arguments
 
         Parameters
         ----------
-        attribute : string
+        attribute : str
             The name of the attribute(column of the table).
-        lower : integer
+        lower : int
             The smallest number a feature must match in order for its color to change
-        equal : string/integer
+        equal : str/int
             The number/string a feature must match in order for its color to change
-        upper : integer
+        upper : int
             The largest number a feature can match in order for its color to change
         Returns
         -------
@@ -244,21 +267,25 @@ class Model(object):
         columns = list(self.headers)
         columns.append('x')
         columns.append('y')
-        if lower == -np.inf:
+        if lower is not "":
             return self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), columns]
 
         if equal is not "":
-            try:
-                value = float(equal)
-            except ValueError:
-                value = equal
+            value = equal
             return self.edge_metadata.loc[self.edge_metadata[attribute] == value, columns]
 
-        if upper == np.inf:
+        if upper is not "":
             return self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), columns]
 
     def retrive_default_table_values(self):
         """ Returns all edge_metadata values need to initialize slickgrid
+        Parameters
+        ----------
+        Returns
+        -------
+        pd.DataFrame
+            dataframe containing information necessary to draw tree in
+            webgl
         """
         columns = list(self.headers)
         columns.append('x')
@@ -446,7 +473,10 @@ class Model(object):
 
         # calculates the bounding angles of the sector based on whether the clade root
         # is part of the convex hull
-        if clade_index != -1:
+        if len(clade.ancestors()) == 0:
+            starting_angle = 0
+            theta = 2 * math.pi
+        elif clade_index != -1:
             # the left most and right most branch of the clade
             e_1 = hull_vertices[i + 1 if i < len(hull_vertices) - 1 else 0]
             e_2 = hull_vertices[i - 1]
@@ -501,8 +531,10 @@ class Model(object):
 
         return colored_clades
 
-    def create_subtree(self, attribute, lower=-np.inf, equal="", upper=np.inf):
-        """
+    def create_subtree(self, attribute, lower="", equal="", upper=""):
+        """ Creates a subtree from from the tips whose metadata matches the users query. Also, if
+        the attribute referes to an inner node, then this method will first locate the tips whose
+        ansestor is the inner node. This will create a subtree by passing in the tips to skbio.shear()
         Parameters
         ----------
         attribute : string
@@ -560,6 +592,8 @@ class Model(object):
         return self.edge_metadata
 
     def revive_old_tree(self):
+        """ retrives the nost recently cached tree if one exists.
+        """
         if len(self.cached_subtrees) > 0:
             self.edge_metadata, self.tree = self.cached_subtrees.pop()
 
@@ -576,6 +610,20 @@ class Model(object):
         return pd.DataFrame()
 
     def select_sub_tree(self, x1, y1, x2, y2):
+        """ Marks all tips whose coordinates in the box created by (x1, y1) and (x2, y2). The marked
+        tips can then be used in collapse_selected_tree
+
+        Parameters
+        ----------
+        x1 : Number
+            The x coordinate of the top left corner of the select box
+        y1 : Number
+            The y coordinate of the top left corner of the select box
+        x2 : Number
+            The x coordinate of the bottom right corner of the select box
+        y2 : Number
+            The y coordinate of the bottom right corner of the select box
+        """
         df = self.edge_metadata
         (x1, y1, x2, y2) = (float(x1), float(y1), float(x2), float(y2))
         (smallX, smallY) = (min(x1, x2), min(y1, y2))
@@ -584,8 +632,14 @@ class Model(object):
             (df['x'] >= smallX) & (df['x'] <= largeX) &
             (df['y'] >= smallY) & (df['y'] <= largeY)]
         entries = entries["Node_id"].values
-        root = self.tree.lowest_common_ancestor(entries)
-        nodes = [node.name for node in root.postorder(include_self=False)]
+        if len(entries) == 0:
+            return pd.DataFrame()
+        if len(entries) == 1:
+            nodes = entries
+            root = entries
+        else:
+            root = self.tree.lowest_common_ancestor(entries)
+            nodes = [node.name for node in root.postorder(include_self=False)]
         selected_tree = self.edge_metadata.loc[self.edge_metadata["Node_id"].isin(nodes)]
         self.selected_tree = selected_tree.copy()
         self.selected_tree['branch_color'] = SELECT_COLOR
@@ -620,7 +674,6 @@ class Model(object):
                                                  **longest, **color, **visible}
 
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
-        # self.edge_metadata.loc[self.edge_metadata['Node_id'] == self.selected_root.name, 'branch_is_visible'] = True
 
         collapse_ids = self.triData.keys()
         for node_id in collapse_ids:
