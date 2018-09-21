@@ -8,7 +8,7 @@ from empress.tree import DEFAULT_COLOR
 from empress.tree import SELECT_COLOR
 import empress.tools as tools
 
-DEFAULT_WIDTH =  1920
+DEFAULT_WIDTH = 1920
 DEFAULT_HEIGHT = 1920
 
 
@@ -243,7 +243,6 @@ class Model(object):
             print(nodes)
             nodes = nodes['id'].tolist()
             self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_color'] = 'FF0000'
-
 
     def retrive_highlighted_values(self, attribute, lower="",
                                    equal="", upper=""):

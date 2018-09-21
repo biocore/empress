@@ -6,15 +6,15 @@
 <link rel="stylesheet" type="text/css" href="/static/vendor/css/slick.grid.css?v=459dd2d912077e3463f80dfcef768141">
 <link rel="stylesheet" type="text/css" href="/static/vendor/css/jquery-ui-1.11.3.custom.css?v=42468acb3ddfa7a28295e35d52f1abb9">
 <link rel="stylesheet" type="text/css" href="/static/vendor/css/slick.grid.format.css?v=e6a868a89793281828f8cbe74125540b">
-<link rel="stylesheet" type="text/css" href="/static/css/style.css?v=7e9951ea6fa8cd7a2daa0f1ca7d81a08">
+<link rel="stylesheet" type="text/css" href="/static/css/style.css?v=600f1fc742bd24c93ddb9fcc055a7a60">
 <script type="text/javascript" src="/static/vendor/js/gl-matrix.min.js?v=38d0eb63158c9c26d4d2e6f1405e0751"></script>
 <script type="text/javascript" src="/static/vendor/js/jquery-2.2.4.min.js?v=052806eeee49a85fb006eece489a8d1c"></script>
 <script type="text/javascript" src="/static/vendor/js/jquery.event.drag-2.2.min.js?v=761bb3e053ce7bf2c41bdde132325c1f"></script>
 <script type="text/javascript" src="/static/js/init_webgl.js?v=3d1a1d188784f37ec1d9f36616057b66"></script>
-<script type="text/javascript" src="/static/js/mouse_events.js?v=c0cf12bb91371fe6c49bcf2865712dff"></script>
-<script type="text/javascript" src="/static/js/callbacks.js?v=9e3c1c6c03011b1411518bb76e9feeb3"></script>
-<script type="text/javascript" src="/static/js/drawing_loop.js?v=576dbadd9761f4fa2333a341a5d638db"></script>
-<script type="text/javascript" src="/static/js/init_webpage.js?v=be5a09585fdcc3845dc8d14fc11c2b55"></script>
+<script type="text/javascript" src="/static/js/mouse_events.js?v=e45022af8c4be93827657006f3058f63"></script>
+<script type="text/javascript" src="/static/js/callbacks.js?v=f33a27ff5666e66522274054680fb18a"></script>
+<script type="text/javascript" src="/static/js/drawing_loop.js?v=24029e86f9f5fc8745cca2ed63b2c0b5"></script>
+<script type="text/javascript" src="/static/js/init_webpage.js?v=feedf688e5120073f240929c2464788c"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.core.min.js?v=bfd44ce7e43f91cc7c7a9f839ea46216"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.editors.min.js?v=b60ab77f525ee4ddd4cf416bc23412e6"></script>
 <script type="text/javascript" src="/static/vendor/js/slick.formatters.min.js?v=733d94f8e307fa2daee8c1374f127116"></script>
@@ -45,10 +45,14 @@ Your browser does not support HTML5
 <div>
 <button onclick="showMenu('metadata')">Metadata</button>
 </div>
+<div>
+<button onclick="showMenu('labels')">Labels</button>
+</div>
 </div>
 <div class="menu" id="highlight-menu">
 <div id="highlight-input">
 <div>
+<lable for="highlight-options">Feature</lable>
 <select id = "highlight-options"></select>
 </div>
 <div>
@@ -81,8 +85,26 @@ Your browser does not support HTML5
 </div>
 </div>
 <div id="metadata-options">
-<input id="show-metadata" type="checkbox" onclick="toggleMetadata()"/>
 <label for="show-metadata">show metadata table</label>
+<input id="show-metadata" type="checkbox" onclick="toggleMetadata()"/>
+</div>
+<div id="label-input">
+<div id="label-dropbox">
+<div>
+<label for="show-options"> Display Feature</label>
+<select id = "show-options"></select>
+</div>
+<div>
+<label for="prioritize-options">Prioritize Feature</label>
+<select id = "prioritize-options"></select>
+</div>
+<div>
+<label for="descending-toggle">Descending</label>
+<input id="descending-toggle" type="checkbox"/>
+</div>
+</div>
+<input id="show-labels" type="button" value="Show labels" onclick="showLables()"</div>
+<input id="clear-lbl" type="button" value="clear labels" onclick="clearLabels()"/>
 </div>
 </div>
 </div>
@@ -107,7 +129,6 @@ tableChangeURL: "http://" + window.location.host + "/table_change",
 headersURL: "http://" + window.location.host + "/headers",
 cladeURL: "http://" + window.location.host + "/clades",
 cladeColorURL: "http://" + window.location.host + "/color_clade",
-changeCladeURL: "http://" + window.location.host + "/change_clade",
 clearColorCladeURL: "http://" + window.location.host + "/clear_clade",
 subTreeURL: "http://" + window.location.host + "/subtree",
 oldTreeURL: "http://" + window.location.host + "/oldtree",
@@ -157,7 +178,7 @@ const CLEAR_COLOR_HEX = "FFFFFF";
 const CLEAR_COLOR = 1;
 const DEFUALT_BRANCH_COLOR = "000000";
 let camera = {};
-let cntrlPress = false;
+let shftPress = false;
 </script>
 <script type="text/javascript">
 {
@@ -171,10 +192,10 @@ drawingData.nodeCoords = [0, 0, 0, 0, 0];
 $.getJSON(urls.edgeURL, function(data) {
 edgeMetadata = data;
 }).done(function() {
-fillDropDownMenu(field.table_headers.headers);
-$("#highlight-input").hide();
-$("#color-input").hide();
-$("#metadata-options").hide();
+fillDropDownMenu(field.table_headers.headers, "#highlight-options");
+fillDropDownMenu(field.table_headers.headers, "#show-options");
+fillDropDownMenu(field.table_headers.headers, "#prioritize-options");
+hideMenu();
 $("#show-metadata").prop('checked', true);
 drawingData.edgeCoords = extractInfo(edgeMetadata, field.edgeFields);
 normalizeTree(edgeMetadata);
