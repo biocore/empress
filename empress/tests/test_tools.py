@@ -8,6 +8,7 @@ import unittest
 import math
 import empress.tools as tools
 
+
 class TestTools(unittest.TestCase):
 
     def test_in_quad_1(self):
