@@ -6,7 +6,6 @@
 # ----------------------------------------------------------------------------
 import os
 import filecmp
-import io
 from empress.tests.test_handler import TestHandler
 from unittest import main
 
