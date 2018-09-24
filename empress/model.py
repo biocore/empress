@@ -1,8 +1,6 @@
 import math
 import pandas as pd
 import numpy as np
-from scipy.spatial import distance
-from scipy.spatial import ConvexHull
 from empress.tree import Tree
 from empress.tree import DEFAULT_COLOR
 from empress.tree import SELECT_COLOR
@@ -226,7 +224,7 @@ class Model(object):
             idx = self.edge_metadata['Node_id'].isin(highlight_ids)
             self.edge_metadata.loc[idx, 'branch_color'] = highlight_color
 
-    def retrive_highlighted_values(self, attribute, lower="",
+    def get_highlighted_values(self, attribute, lower="",
                                    equal="", upper=""):
         """ Returns edge_metadata with that match the arguments
 
@@ -258,7 +256,7 @@ class Model(object):
         if upper is not "":
             return self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), columns]
 
-    def retrive_default_table_values(self):
+    def get_default_table_values(self):
         """ Returns all edge_metadata values need to initialize slickgrid
         Parameters
         ----------
@@ -330,7 +328,7 @@ class Model(object):
         self.triangles = pd.DataFrame(triData).T
         return self.triangles
 
-    def retrive_headers(self):
+    def get_headers(self):
         """ Returns a list of the headers for the metadata
 
         Parameters
@@ -374,15 +372,25 @@ class Model(object):
 
         clade = self.tree.find(clade_root_id)
 
-        color_clade = self.__get_sector(clade)
+        tips = clade.tips()
+        clade_ancestor = clade.parent
+        center_coords = (clade.x2, clade.y2)
+        ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
+        points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
+        color_clade = tools.sector_info(points, center_coords, ancestor_coords)
         color_clade['color'] = color
         color_clade_s = tools.create_arc_sector(color_clade)
+        depth = len([node.name for node in clade.ancestors()])
         self.colored_clades[c] = {'data': color_clade_s,
-                                  'depth': color_clade['depth'],
+                                  'depth': depth,
                                   'color': color}
-        return self.retrive_colored_clade()
+        return self.get_colored_clade()
 
     def clear_clade(self, clade):
+        """ Removes the colored clade
+        Note this doesn't remove any branches from the tree. It only removes the artifacts
+        created by javascript
+        """
         self.colored_clades.pop(clade)
         for colored_clades in self.cached_clades:
             try:
@@ -390,9 +398,9 @@ class Model(object):
             except KeyError:
                 continue
 
-        return self.retrive_colored_clade()
+        return self.get_colored_clade()
 
-    def retrive_colored_clade(self):
+    def get_colored_clade(self):
         CLADE_INDEX = 0
         DEPTH_INDEX = 1
         clades = [(k, v['depth']) for k, v in self.colored_clades.items()]
@@ -409,107 +417,18 @@ class Model(object):
 
             if clade_root_id != -1:
                 clade = self.tree.find(clade_root_id)
-                color_clade = self.__get_sector(clade)
+                tips = clade.tips()
+                clade_ancestor = clade.parent
+                center_coords = (clade.x2, clade.y2)
+                ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
+                points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
+                color_clade = tools.sector_info(points, center_coords, ancestor_coords)
                 color_clade['color'] = v['color']
                 color_clade_s = tools.create_arc_sector(color_clade)
+                depth = len([node.name for node in clade.ancestors()])
                 colored_clades[k] = {'data': color_clade_s,
-                                     'depth': color_clade['depth'],
+                                     'depth': depth,
                                      'color': color_clade['color']}
-        return colored_clades
-
-    def __get_sector(self, clade):
-
-        # grab all of the tips of the clade
-        tips = clade.tips()
-
-        # origin
-        center_point = np.array([[0, 0]])
-        center = (0, 0)
-
-        # will store the distance to the farthest tip
-        arc_length = 0
-        smallest_length = math.inf
-
-        tip_coords = [(tip.x2 - clade.x2, tip.y2 - clade.y2) for tip in tips]
-        points = np.array([[tip[0], tip[1]] for tip in tip_coords])
-        distances = [distance.euclidean(tip, center) for tip in points]
-        arc_length = max(distances)
-        smallest_length = min(distances)
-        points = np.concatenate((center_point, points), axis=0)
-
-        # Note: the angle of the sector used to be found by taking the difference between the tips
-        # with the smallest and largest angle. However, that lead to an edge case that became
-        # fairly messy to deal with.
-
-        # find angle of sector by find the two points that are adjacent to (clade.x2, clade.y2)
-        # in the convex hull
-        hull = ConvexHull(points)
-        hull_vertices = hull.vertices
-        clade_index = -1
-
-        for i in range(0, len(hull_vertices)):
-            if hull_vertices[i] == 0:
-                clade_index = i
-                break
-
-        # calculates the bounding angles of the sector based on whether the clade root
-        # is part of the convex hull
-        if len(clade.ancestors()) == 0:
-            starting_angle = 0
-            theta = 2 * math.pi
-        elif clade_index != -1:
-            # the left most and right most branch of the clade
-            e_1 = hull_vertices[i + 1 if i < len(hull_vertices) - 1 else 0]
-            e_2 = hull_vertices[i - 1]
-            (edge_1, edge_2) = (points[e_1], points[e_2])
-
-            # calculate the angle of the left and right most branch of the clade
-            (a_1, a_2) = (tools.calculate_angle(edge_1), tools.calculate_angle(edge_2))
-
-            # the starting/total angle of the sector
-            (starting_angle, theta) = tools.start_and_total_angle(a_1, a_2)
-
-        else:
-            # find the tips whose edge contains the angle of the ancestor branch
-            angles = [tools.calculate_angle(points[x]) for x in range(0, len(points)) if set(points[x]) != set([0, 0])]
-            angles = sorted(angles)
-
-            # calculate the angle going from clade root to its direct ancestor
-            clade_ancestor = clade.parent
-            ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
-            ancestor_angle = tools.calculate_angle((ancestor_coords))
-
-            # find the two tips that contain the clade ancestor
-            tips_found = False
-            for i in range(0, len(angles)):
-                if angles[i] < ancestor_angle < angles[i + 1]:
-                    (a_1, a_2) = (angles[i], angles[i + 1])
-                    tips_found = True
-                    break
-
-            if not tips_found:
-                (a_1, a_2) = (angles[0], angles[i])
-
-            # detemines the starting angle of the sectorr
-            if abs(a_1 - a_2) < math.pi:
-                starting_angle = a_1 if a_1 > a_2 else a_2
-            else:
-                starting_angle = a_2 if a_1 > a_2 else a_1
-
-            # calculate the theta of the sector
-            theta = 2 * math.pi - abs(a_1 - a_2)
-
-        clade_ancestor = clade.parent
-
-        depth = len([node.name for node in clade.ancestors()])
-
-        # the sector webgl will draw
-        colored_clades = {
-            'center_x': clade.x2, 'center_y': clade.y2,
-            'starting_angle': starting_angle, 'theta': theta,
-            'arc_length': arc_length, 'smallest_length': smallest_length,
-            'depth': depth}
-
         return colored_clades
 
     def create_subtree(self, attribute, lower="", equal="", upper=""):
@@ -532,7 +451,7 @@ class Model(object):
             updated version of edge metadata
         """
         # retrive the tips of the subtree
-        nodes = self.retrive_highlighted_values(attribute, lower, equal, upper)
+        nodes = self.get_highlighted_values(attribute, lower, equal, upper)
         nodes = nodes['Node_id'].values
         tips = list()
         for node in nodes:
@@ -572,7 +491,7 @@ class Model(object):
 
         return self.edge_metadata
 
-    def revive_old_tree(self):
+    def get_old_tree(self):
         """ retrives the nost recently cached tree if one exists.
         """
         if len(self.cached_subtrees) > 0:
@@ -628,19 +547,25 @@ class Model(object):
         return self.selected_tree
 
     def collapse_selected_tree(self):
-        s = self.__get_sector(self.selected_root)
+        clade = self.selected_root
+        tips = clade.tips()
+        clade_ancestor = clade.parent
+        center_coords = (clade.x2, clade.y2)
+        ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
+        points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
+        s = tools.sector_info(points, center_coords, ancestor_coords)
         nodes = self.selected_tree['Node_id'].values
 
         (rx, ry) = (self.selected_root.x2, self.selected_root.y2)
 
         theta = s['starting_angle']
         (c_b1, s_b1) = (math.cos(theta), math.sin(theta))
-        (x1, y1) = (s['arc_length'] * c_b1, s['arc_length'] * s_b1)
+        (x1, y1) = (s['largest_branch'] * c_b1, s['largest_branch'] * s_b1)
 
         # find right most branch
         theta += s['theta']
         (c_b2, s_b2) = (math.cos(theta), math.sin(theta))
-        (x2, y2) = (s['smallest_length'] * c_b2, s['smallest_length'] * s_b2)
+        (x2, y2) = (s['smallest_branch'] * c_b2, s['smallest_branch'] * s_b2)
 
         (x1, y1) = (x1 + rx, y1 + ry)
         (x2, y2) = (x2 + rx, y2 + ry)
@@ -664,7 +589,7 @@ class Model(object):
 
         return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
 
-    def retrive_triangles(self):
+    def get_triangles(self):
         triangles = {k: v for (k, v) in self.triData.items() if v['visible']}
         self.triangles = pd.DataFrame(triangles).T
         return self.triangles
