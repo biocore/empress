@@ -5,9 +5,11 @@
 #
 # ----------------------------------------------------------------------------
 import os
+import pandas as pd
 from tornado.testing import AsyncHTTPTestCase
 from empress.webserver import Application
 from empress.model import Model
+from skbio import TreeNode
 
 
 class TestHandler(AsyncHTTPTestCase):
@@ -15,12 +17,21 @@ class TestHandler(AsyncHTTPTestCase):
         os.path.dirname(__file__),
         'internal_md.txt')
     leaf_metadata_file = os.path.join(os.path.dirname(__file__), 'leaf_md.tsv')
+
+    internal_md = pd.read_table(internal_metadata_file, index_col=0)
+    leaf_md = pd.read_table(leaf_metadata_file, index_col=0)
+
+    # TODO: we will want to knock this out later
+    internal_md.index.name = 'Node_id'
+    leaf_md.index.name = 'Node_id'
+
+    md = pd.merge(internal_md, leaf_md,
+                  how='outer', on='Node_id')
+
     tree_file = os.path.join(os.path.dirname(__file__), 'tree_file.txt')
-    tree_format = 'newick'
-    m = Model(tree_file,
-              internal_metadata_file,
-              "clade",
-              leaf_metadata_file)
+    tree = TreeNode.read(tree_file)
+
+    m = Model(tree, md, "clade")
     m.center_tree()
     app = Application(m)
 
