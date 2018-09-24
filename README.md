@@ -92,4 +92,18 @@ Open up a browser and type the following into the search bar.
 ```
 http://localhost:8080/
 ```
+After you should see
+
 ![Alt text](images/greeting_screen.png?raw=true "Start Screen")
+
+# Hiding Metadata
+To hide metadata go to the metadata tab and unselect. You can then press the metadata tab again to make the menu transparent.
+
+# Selecting Branches/Collapsing branches
+To select parts of the tree hold down the shift key and move the mouse around the part of the tree you want to select. This will
+find the lowest common ancestor of the nodes within the select box and color that subtree green.
+//picture
+Once you select a part of the tree, the corresponding metadata is now what shows in the table. Once you select a part of the tree you
+can then collapse the selected part or click anywhere on the canvas to unselect the tree. Collapsing the subtree will create a
+triangle whose side lengths are equal to the longest branch and sortest branch and the wit
+
