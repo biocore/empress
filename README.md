@@ -92,3 +92,4 @@ Open up a browser and type the following into the search bar.
 ```
 http://localhost:8080/
 ```
+![Alt text](images/greeting_screen.jpg?raw=true "Start Screen")
