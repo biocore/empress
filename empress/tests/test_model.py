@@ -5,9 +5,7 @@
 #
 # ----------------------------------------------------------------------------
 import unittest
-import numpy as np
 import pandas as pd
-import io
 from pandas.util.testing import assert_frame_equal
 from empress.model import Model
 from empress.tree import DEFAULT_COLOR
@@ -15,7 +13,6 @@ from skbio import TreeNode
 
 
 class TestModel(unittest.TestCase):
-
 
     def setUp(self):
         self.RT_X = 750
@@ -41,7 +38,6 @@ class TestModel(unittest.TestCase):
         self.md = pd.merge(self.internal_md, self.leaf_md,
                            how='outer', on='Node_id')
         self.tree = Model(self.tree_obj, self.md, 'clade')
-
 
     def test_center(self):
         center_exp = pd.DataFrame({
