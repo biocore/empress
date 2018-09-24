@@ -80,7 +80,6 @@ class Model(object):
         self.cached_clades = list()
 
         self.highlight_from_file(highlight_file)
-        print("!!!!!!!!!!!!!!!!!!!!!!!!????????????", self.tree.name)
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -239,12 +238,11 @@ class Model(object):
         """
         if file is not "":
             nodes = tools.read_metadata(file, seperator=',')
-            print(nodes)
             nodes = nodes['id'].tolist()
             self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_color'] = 'FF0000'
 
     def get_highlighted_values(self, attribute, lower="",
-                                   equal="", upper=""):
+                               equal="", upper=""):
         """ Returns edge_metadata with that match the arguments
 
         Parameters
