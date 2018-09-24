@@ -13,7 +13,7 @@ from setuptools import setup
 extensions = []
 
 classes = """
-    Development Status :: 4 - Beta
+    Development Status :: 2 - Pre-Alpha
     License :: OSI Approved :: BSD License
     Topic :: Software Development :: Libraries
     Topic :: Scientific/Engineering
