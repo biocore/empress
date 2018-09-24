@@ -6,7 +6,6 @@
 # ----------------------------------------------------------------------------
 import unittest
 import math
-import sys
 import empress.tools as tools
 
 
@@ -78,7 +77,7 @@ class TestTools(unittest.TestCase):
         self.assertEqual(theta, math.pi / 2)
 
     def test_extract_color(self):
-        exp_color =  (1, 1, 1)
+        exp_color = (1, 1, 1)
         res_color = tools.extract_color('FFFFFF')
         self.assertEqual(exp_color, res_color)
 

@@ -294,6 +294,7 @@ def is_sector_large(points):
             clade_index = i
     return False if clade_index == -1 else True
 
+
 def sector_info(points, center, ancestor_coords):
     """
     'create_sector' will find the left most branch, right most branch, deepest branch, and
