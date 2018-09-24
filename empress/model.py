@@ -63,11 +63,7 @@ class Model(object):
         self.cached_subtrees = list()
         self.cached_clades = list()
 
-<<<<<<< HEAD
         self.highlight_nodes(highlight_ids)
-=======
-        self.highlight_from_file(highlight_file)
->>>>>>> 24b9852f73b9c776c089c480224ea45687e8721e
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -224,16 +220,10 @@ class Model(object):
         ----------
         file : csv file containing Node_ids
         """
-<<<<<<< HEAD
+
         if highlight_ids is not None:
             idx = self.edge_metadata['Node_id'].isin(highlight_ids)
             self.edge_metadata.loc[idx, 'branch_color'] = highlight_color
-=======
-        if file is not "":
-            nodes = tools.read_metadata(file, seperator=',')
-            nodes = nodes['id'].tolist()
-            self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_color'] = 'FF0000'
->>>>>>> 24b9852f73b9c776c089c480224ea45687e8721e
 
     def get_highlighted_values(self, attribute, lower="",
                                equal="", upper=""):
