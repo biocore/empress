@@ -65,7 +65,7 @@ class TriangleHandler(RequestHandler):
         """ Retrieves information from model to draw the trangles where
         clades have been collapsed
         """
-        triangles = self.m.retrive_triangles()
+        triangles = self.m.get_triangles()
         self.write(triangles.to_json(orient='records'))
         self.finish()
 
@@ -158,7 +158,7 @@ class TableHandler(RequestHandler):
     def get(self):
         """ Grabs all the metadata from model
         """
-        table_values = self.m.retrive_default_table_values()
+        table_values = self.m.get_default_table_values()
         self.write(table_values.to_json(orient='records'))
         self.finish()
 
@@ -197,7 +197,7 @@ class TableChangeHandler(RequestHandler):
         lower = self.get_argument('lower')
         equal = self.get_argument('equal')
         upper = self.get_argument('upper')
-        selected = self.m.retrive_highlighted_values(
+        selected = self.m.get_highlighted_values(
             attribute, lower, equal, upper)
         edges = selected.to_json(orient='records')
         self.write(edges)
@@ -220,7 +220,7 @@ class HeaderHandler(RequestHandler):
     def get(self):
         """ Retrieves all headers from metadata
         """
-        headers = self.m.retrive_headers()
+        headers = self.m.get_headers()
         self.write({'headers': headers})
         self.finish()
 
@@ -241,7 +241,7 @@ class CladeHandler(RequestHandler):
     def get(self):
         """ Retrives the currently colored clades
         """
-        colored_clades = self.m.retrive_colored_clade()
+        colored_clades = self.m.get_colored_clade()
         self.write(colored_clades)
         self.finish()
 
@@ -354,7 +354,7 @@ class OldTreeHandler(RequestHandler):
         self.m = m
 
     def get(self):
-        old_tree = self.m.revive_old_tree()
+        old_tree = self.m.get_old_tree()
         old_tree = old_tree.to_json(orient='records')
         self.write(old_tree)
         self.finish()
