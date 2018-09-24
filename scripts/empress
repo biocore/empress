@@ -3,6 +3,8 @@ from empress.model import Model
 from empress.webserver import Application
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+from skbio import TreeNode
+import empress.tools as tools
 import click
 
 
@@ -42,14 +44,33 @@ import click
     help='The seperator used in the additional metedata file. [default: <tab>]'
 )
 @click.option(
-    'highlight_file', '-h', default="", show_default=True
+    'highlight_file', '-h', default=None, show_default=True
 )
 def start(
         tree_file, metadata, clade_field, additional_metadata, port,
-        main_skiprow, additional_skiprow, main_seperator, additional_seperator, highlight_file):
-    m = Model(
-      tree_file, metadata, clade_field, additional_metadata, port,
-      main_skiprow, additional_skiprow, main_seperator, additional_seperator, highlight_file)
+        main_skiprow, additional_skiprow, main_seperator, additional_seperator,
+        highlight_file):
+
+    try:
+        import qiime2
+        tree = qiime.Artifact.load(tree_file).view(TreeNode)
+    except:
+        tree = tools.read(tree_file)
+
+    metadata = tools.read_metadata(metadata, main_skiprow, main_seperator)
+
+    # read in main metadata
+
+    headers = metadata.columns.values.tolist()
+    edge_metadata = pd.merge(edge_metadata, metadata,
+                             how='outer', on="Node_id")
+    if highlight_file is not None:
+        nodes = tools.read_metadata(
+            highlight_file, seperator=',')['id'].tolist()
+    else:
+        nodes = None
+
+    m = Model(tree, metadata, clade_field, highlight_ids=nodes)
     m.center_tree()
 
     # Create the webserver
