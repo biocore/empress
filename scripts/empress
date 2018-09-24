@@ -53,7 +53,9 @@ def start(
 
     try:
         import qiime2
+        from qiime2 import Metadata
         tree = qiime.Artifact.load(tree_file).view(TreeNode)
+        metadata = Metadata.load('sample-metadata.tsv').to_dataframe()
     except:
         tree = tools.read(tree_file)
 
