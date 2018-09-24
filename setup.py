@@ -33,17 +33,17 @@ with open('README.md') as f:
 
 # version parsing from __init__ pulled from Flask's setup.py
 # https://github.com/mitsuhiko/flask/blob/master/setup.py
-version = "0.0.1"
+version = "0.0.2"
 
 setup(
-    name='Empress',
+    name='empress',
     version=version,
     license='BSD',
     description=description,
     long_description=long_description,
-    author="Empress development team",
+    author="empress development team",
     author_email="cantrell.kalen@gmail.com",
-    maintainer="Empress development team",
+    maintainer="empress development team",
     maintainer_email="cantrell.kalen@gmail.com",
     packages=['empress'],
     scripts=glob('scripts/empress'),
@@ -62,8 +62,8 @@ setup(
         'pandas >= 0.18.0',
         'scipy >= 0.15.1',
         'nose >= 1.3.7',
-        'scikit-bio==0.5.1',
-        'tornado==4.4.2',
+        'scikit-bio >=0.5.1',
+        'tornado >=4.4.2',
         'click >= 6.7'
     ],
     classifiers=classifiers,
