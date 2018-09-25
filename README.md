@@ -108,3 +108,11 @@ can then collapse the selected part or click anywhere on the canvas to unselect 
 triangle whose side lengths are equal to the longest branch/sortest branch and edge lie on the left/right most branch of the select
 subtree.
 ![Alt text](images/collapsed_selected_tree.png?raw=true)
+
+# Highlighting tips/internal branches
+To color tips, select the 'Highlight Tips' tab. Then select the feature from the metedata you wish to use and the color. Next, enter a
+value you wish to search for in one of the text boxes. The 'Lower Bound' is used to to highlight all tips that have a value greater
+than the value entered in the box. For example, say you have a species count feature in your metadata. If you enter 5 in the 'Lower 
+Bound'. 'Upper Bound is the same as 'Lower Bound' expect it will color all tips whose value is less than the one entered in the text box. 'Equals to' will match all tips whose value matches the one in the text box. 
+The examlpe below uses colors all 
+all tips that have species count greater than 5 will be colored. 
