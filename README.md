@@ -94,7 +94,7 @@ http://localhost:8080/
 ```
 After you should see
 
-![Alt text](images/greeting_screen.png?raw=true "Start Screen")
+![Alt text](images/greeting_screen.png?raw=true)
 
 # Hiding Metadata
 To hide metadata go to the metadata tab and unselect the checkbox. You can then press the metadata tab again to make the menu transparent. In future releases, the ability to save the metadata table to a file will be available.
@@ -105,6 +105,6 @@ find the lowest common ancestor of the nodes within the select box and color tha
 ![Alt text](images/selectedd_tree.png?raw=true)
 Once you select a part of the tree, the corresponding metadata will show in the metadata table. Once you select a part of the tree you
 can then collapse the selected part or click anywhere on the canvas to unselect the tree. Collapsing the subtree will create a
-triangle whose side lengths are equal to the longest branch/sortest branch and edge lie on the left/right most branch of the select subtree.
+triangle whose side lengths are equal to the longest branch/sortest branch and edge lie on the left/right most branch of the select
+subtree.
 ![Alt text](images/collapsed_selected_tree.png?raw=true)
-
