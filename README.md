@@ -102,7 +102,7 @@ To hide metadata go to the metadata tab and unselect the checkbox. You can then 
 # Selecting Branches
 To select parts of the tree hold down the shift key and move the mouse around the part of the tree you want to select. This will
 find the lowest common ancestor of the nodes within the select box and color that subtree green.
-![Alt text](images/selectedd_tree.png?raw=true)
+![Alt text](images/selected_tree.png?raw=true)
 Once you select a part of the tree, the corresponding metadata will show in the metadata table. Once you select a part of the tree you
 can then collapse the selected part or click anywhere on the canvas to unselect the tree. Collapsing the subtree will create a
 triangle whose side lengths are equal to the longest branch/sortest branch and edge lie on the left/right most branch of the select
