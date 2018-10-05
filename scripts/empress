@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import pandas as pd
 from empress.model import Model
 from empress.webserver import Application
 from tornado.httpserver import HTTPServer
@@ -60,12 +61,13 @@ def start(
         tree = tools.read(tree_file)
 
     metadata = tools.read_metadata(metadata, main_skiprow, main_seperator)
+    additional_metadata = tools.read_metadata(
+        additional_metadata, main_skiprow, main_seperator)
 
     # read in main metadata
-
     headers = metadata.columns.values.tolist()
-    edge_metadata = pd.merge(edge_metadata, metadata,
-                             how='outer', on="Node_id")
+    metadata = pd.merge(additional_metadata, metadata,
+                        how='outer', on="Node_id")
     if highlight_file is not None:
         nodes = tools.read_metadata(
             highlight_file, seperator=',')['id'].tolist()
