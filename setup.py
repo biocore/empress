@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 
 # ----------------------------------------------------------------------------
-# Copyright (c) 2016--, gneiss development team.
+# Copyright (c) 2016--, Empress development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 # ----------------------------------------------------------------------------
-
-from setuptools import find_packages, setup
+from glob import glob
+from setuptools import setup
 
 extensions = []
 
 classes = """
-    Development Status :: 4 - Beta
+    Development Status :: 2 - Pre-Alpha
     License :: OSI Approved :: BSD License
     Topic :: Software Development :: Libraries
     Topic :: Scientific/Engineering
@@ -33,19 +33,26 @@ with open('README.md') as f:
 
 # version parsing from __init__ pulled from Flask's setup.py
 # https://github.com/mitsuhiko/flask/blob/master/setup.py
-version = "0.0.1"
+version = "0.0.2"
 
 setup(
-    name='phyloviz',
+    name='empress',
     version=version,
     license='BSD',
     description=description,
     long_description=long_description,
-    author="phyloviz development team",
-    author_email="jamietmorton@gmail.com",
-    maintainer="phyloviz development team",
-    maintainer_email="jamietmorton@gmail.com",
-    packages=find_packages(),
+    author="empress development team",
+    author_email="cantrell.kalen@gmail.com",
+    maintainer="empress development team",
+    maintainer_email="cantrell.kalen@gmail.com",
+    packages=['empress'],
+    scripts=glob('scripts/empress'),
+    package_data={
+        'empress': ['tree_with_webgl.html',
+                    'support_files/vendor/js/*.js',
+                    'support_files/vendor/css/*.css',
+                    'support_files/css/*.css',
+                    'support_files/js/*.js']},
     setup_requires=['numpy >= 1.9.2'],
     ext_modules=extensions,
     install_requires=[
@@ -55,8 +62,9 @@ setup(
         'pandas >= 0.18.0',
         'scipy >= 0.15.1',
         'nose >= 1.3.7',
-        'scikit-bio==0.5.1',
+        'scikit-bio >=0.5.1',
+        'tornado >=4.4.2',
+        'click >= 6.7'
     ],
     classifiers=classifiers,
-    package_data={},
 )

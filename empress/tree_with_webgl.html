@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-16">
+  <title>WebGL - Experiment</title>
+   <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/slick.grid.css') }}">
+   <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/jquery-ui-1.11.3.custom.css') }}">
+   <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/slick.grid.format.css') }}">
+   <link rel="stylesheet" type="text/css" href="{{ static_url('css/style.css') }}">
+  <script type="text/javascript" src="{{ static_url('vendor/js/gl-matrix.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/jquery-2.2.4.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/jquery.event.drag-2.2.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('js/init_webgl.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('js/mouse_events.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('js/callbacks.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('js/drawing_loop.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('js/init_webpage.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/slick.core.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/slick.editors.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/slick.formatters.min.js') }}"></script>
+<script type="text/javascript" src="{{ static_url('vendor/js/slick.grid.min.js') }}"></script>
+</head>
+
+<body>
+  <div class="container">
+    <canvas class="tree-surface", id="tree-surface">
+      Your browser does not support HTML5
+    </canvas>
+    <div id="divcontainer"></div>
+    <div class="square"></div>
+    <div class="selected-tree-menu">
+      <input id="collapse" type = "button" value = "collapse" onclick="selectedTreeCollapse()"/>
+    </div>
+  </div>
+
+  <div class="metadata-tabs">
+    <div class="tab-options">
+      <div>
+        <button onclick="showMenu('highlight')">Highlight Tips</button>
+      </div>
+      <div>
+        <button onclick="showMenu('color')">Color Clade</button>
+      </div>
+      <div>
+        <button onclick="showMenu('subTree')">Sub Tree</button>
+      </div>
+      <div>
+        <button onclick="showMenu('metadata')">Metadata</button>
+      </div>
+      <div>
+        <button onclick="showMenu('labels')">Labels</button>
+      </div>
+    </div>
+
+    <div class="menu" id="highlight-menu">
+      <div id="highlight-input">
+        <div>
+          <lable for="highlight-options">Feature</lable>
+          <select id = "highlight-options"></select>
+        </div>
+        <div>
+          <input id="select-highlight" type = "button" value = "select"/>
+          <input type = "color" id="color-selector" value="#ff0000"/>
+        </div>
+
+        <div class="text-field">
+          <label for="lower-bound">Lower Bound</label>
+          <input type="text" id="lower-bound"/>
+        </div>
+
+        <div class="text-field">
+          <label for="upper-bound">Upper Bound</label>
+          <input type="text" id="upper-bound"/>
+        </div>
+
+        <div class="text-field">
+          <label for="category">Equals to</label>
+          <input type="text" id="category"/>
+        </div>
+
+        <div id="highlight-history">
+        </div>
+      </div>
+
+      <div id="color-input">
+        <div>
+          <input id="select-data" type="button" value="select" onclick="userCladeColor()"/>
+          <input type = "color" id="clade-color-selector" value="#ff0000"/>
+        </div>
+        <div class="text-field">
+          <label for="clade">clade/taxon</label>
+          <input type="text" id="clade"/>
+        </div>
+      </div>
+
+      <div id="metadata-options">
+        <label for="show-metadata">show metadata table</label>
+        <input id="show-metadata" type="checkbox" onclick="toggleMetadata()"/>
+      </div>
+
+       <div id="label-input">
+        <div id="label-dropbox">
+          <div>
+            <label for="show-options"> Display Feature</label>
+            <select id = "show-options"></select>
+          </div>
+          <div>
+            <label for="prioritize-options">Prioritize Feature</label>
+            <select id = "prioritize-options"></select>
+          </div>
+          <div>
+            <label for="descending-toggle">Descending</label>
+            <input id="descending-toggle" type="checkbox"/>
+          </div>
+        </div>
+        <input id="show-labels" type="button" value="Show labels" onclick="showLables()"</div>
+        <input id="clear-lbl" type="button" value="clear labels" onclick="clearLabels()"/>
+      </div>
+    </div>
+  </div>
+
+  <div id="scrolltable">
+  <table id="metadata-table">
+    <tr>
+      <td valign="top">
+      </td>
+    </tr>
+  </table>
+</div>
+
+  <script type="text/javascript">
+    // urls for webserver
+    var urls = {
+      highlightURL: "http://" + window.location.host + "/highlight",
+      collapseURL: "http://" + window.location.host + "/collapse",
+      edgeURL: "http://" + window.location.host + "/api/edges",
+      colorURL: "http://" + window.location.host + "/color",
+      nodeURL: "http://"+ window.location.host + "/api/nodes",
+      tableURL: "http://" + window.location.host + "/table_values",
+      tableChangeURL: "http://" + window.location.host + "/table_change",
+      headersURL: "http://" + window.location.host + "/headers",
+      cladeURL: "http://" + window.location.host + "/clades",
+      cladeColorURL: "http://" + window.location.host + "/color_clade",
+      clearColorCladeURL: "http://" + window.location.host + "/clear_clade",
+      subTreeURL: "http://" + window.location.host + "/subtree",
+      oldTreeURL: "http://" + window.location.host + "/oldtree",
+      selectTreeURL: "http://" + window.location.host + "/selectNodes",
+      collapseSTreeURL: "http://" + window.location.host + "/collapseSTree",
+      trianglesURL: "http://" + window.location.host + "/api/triangles"
+    };
+
+    // fields to extract from metadata, used in extractInfo()
+    let field = {
+      edgeFields: ["px", "py", "branch_color", "x", "y",
+          "branch_color"],
+      nodeFields: ["x", "y", "color"],
+      triangleFields: ["cx", "cy", "color", "lx", "ly", "color", "rx", "ry", "color"]
+    };
+
+    // stores matrices, and buffers that webgl will uses
+    let shaderProgram = {};
+
+    // the complied vertex/fragment shaders
+    let gl = {}; // webgl context - used to call webgl functions
+
+    // stores info need to draw such as vertex data
+    let drawingData = {
+      isMouseDown: false,
+      lastMouseX: null,
+      lastMouseY: null,
+      zoomAmount: 10,
+      maxZoom: 30,
+      coloredClades: [],
+      selectTree: [],
+      triangles: []
+    };
+
+    let numAttr = 0;
+    let attrItem = {};
+    let grid = {};
+    let labels = {};
+    let labelPos = 0;
+    let gridInfo = {
+      initData: [],
+      data: [],
+      columns: [],
+      options: {},
+      grid: {}
+    };
+    const TRI_PER_ARC = 100;
+    const ELEMENTS_PER_VERT = 5;
+    const VERT_PER_TRI = 3;
+
+
+    let numUserSelects = 0;
+    const CLEAR_COLOR_HEX = "FFFFFF";
+    const CLEAR_COLOR = 1;
+    const DEFUALT_BRANCH_COLOR = "000000";
+    let camera = {};
+    let shftPress = false;
+  </script>
+
+  <script type="text/javascript">
+  {
+    let edgeMetadata;
+    let nodeCoords;
+
+    // this may cause some syncing issues
+    $.getJSON(urls.headersURL, function(data) {
+      field.table_headers = data;
+    }).done(function() {
+      drawingData.nodeCoords = [0, 0, 0, 0, 0];
+      $.getJSON(urls.edgeURL, function(data) {
+        edgeMetadata = data;
+      }).done(function() {
+        fillDropDownMenu(field.table_headers.headers, "#highlight-options");
+        fillDropDownMenu(field.table_headers.headers, "#show-options");
+        fillDropDownMenu(field.table_headers.headers, "#prioritize-options");
+        hideMenu();
+        $("#show-metadata").prop('checked', true);
+        drawingData.edgeCoords = extractInfo(edgeMetadata, field.edgeFields);
+        normalizeTree(edgeMetadata);
+        $.getJSON(urls.tableURL, function(data) {
+          initGridTable(data);
+        });
+        initWebGl();
+        initCallbacks();
+        setPerspective();
+        requestAnimationFrame(loop);
+      });
+    });
+  }
+  </script>
+</body>
+</html>
