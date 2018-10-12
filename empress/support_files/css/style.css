@@ -1,0 +1,148 @@
+canvas {
+    width: 66vw;
+    height: 75vh;
+}
+
+.tree-surface {
+    position: fixed;
+    top: 0vh;
+    left: 0vw;
+    width: 100vw;
+    height: 100vw;
+}
+
+/* referenced from  https://webglfundamentals.org/webgl/lessons/webgl-text-html.html*/
+.container {
+    position: absolute;
+    top: 0vh;
+    left: 0vw;
+    overflow: none;
+    width: 66vw;
+    height: 75vh;
+}
+
+#dvicontainer {
+    position: fixed;
+    top: 0vh;
+    left: 0vw;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.floating-div {
+    position: absolute;
+}
+/* end of reference */
+
+.metadata-tabs {
+    background: #eee;
+    position: fixed;
+    top: 0vh;
+    left: 70vw;
+    width: 30vw;
+    opacity: 0.5;
+}
+
+.metadata-tabs button {
+    background-color: #eee;
+    float: left;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 12px;
+    width: 100%;
+    height: 100%;
+}
+
+.metadata-tabs button:hover {
+    background-color: #ddd;
+}
+
+.metadata-tabs button:active {
+    background-color: #000;
+}
+
+.tab-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-auto-rows: auto;
+    height: unset;
+    background: grey;
+}
+
+.attr {
+    grid-area: attr;
+}
+
+.btn {
+    grid-area: btn;
+}
+.attr-selector {
+    overflow: auto;
+    width: 32vw;
+    height: 50vh;
+}
+
+.attr-item {
+    display: grid;
+    grid-template-areas:
+        'btn btn .'
+        '. attr attr';
+    border: 3px solid black;
+    padding-top: 4px;
+}
+
+.clr {
+    grid-area: clr;
+}
+
+.cld {
+    grid-area: cld;
+}
+
+.color-item {
+    display: grid;
+    grid-template-areas:
+        'cld cld .'
+        'clr . .';
+    border: 3px solid black;
+    padding-top: 4px;
+}
+
+.menu {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+#scrolltable {
+    top: 74vh;
+    left: -1vw;
+    width: 99vw;
+    height: 23vh;
+    outline: 0;
+    border:1px solid gray;
+    padding: 0;
+}
+
+.square {
+    position: absolute;
+    height: 0px;
+    width: 0px;
+    background-color: #555;
+    opacity: 0.5;
+}
+
+.selected-tree-menu {
+    position: absolute;
+    visibility: hidden;
+}
+
+#label-dropbox {
+    display: grid;
+    grid-template-columns: 1fr;
+}
