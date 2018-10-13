@@ -295,7 +295,7 @@ def is_sector_large(points):
     return False if clade_index == -1 else True
 
 
-def sector_info(points, center, ancestor_coords):
+def sector_info(points, sector_center, ancestor_coords):
     """
     'create_sector' will find the left most branch, right most branch, deepest branch, and
     shortes branch of the clade. Then, 'create_sector' will also find the angle between the
@@ -352,7 +352,7 @@ def sector_info(points, center, ancestor_coords):
 
     # the sector webgl will draw
     colored_clades = {
-        'center_x': center[0], 'center_y': center[1],
+        'center_x': sector_center[0], 'center_y': sector_center[1],
         'starting_angle': starting_angle, 'theta': theta,
         'largest_branch': longest_branch, 'smallest_branch': smallest_branch}
 
