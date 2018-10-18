@@ -590,6 +590,20 @@ class Model(object):
 
         return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
 
+    def uncollapse_selected_tree(self, x, y):
+        """
+            Parameters
+            ----------
+            x: The x coordinate of the double click
+            y: The y coordinate of the double click
+        """
+
+    def uncollapse_selected_tree(self, root):
+        nodes = [node.name for node in root.postorder(include_self=False)]
+        del self.triData[root.name]
+        self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = True
+        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
+
     def get_triangles(self):
         triangles = {k: v for (k, v) in self.triData.items() if v['visible']}
         self.triangles = pd.DataFrame(triangles).T

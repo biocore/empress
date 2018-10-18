@@ -414,3 +414,22 @@ class CollapseSelectedHandler(RequestHandler):
         edges = self.m.collapse_selected_tree()
         self.write(edges.to_json(orient='records'))
         self.finish()
+
+class ClearCollapseSelectedHandler(RequestHandler):
+    """ Uncollapses the sub-tree selected by SelectHandler
+    """
+    def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        triangle_root = self.get_argument("triangle_root")
+        edges = self.m.uncollapse_selected_tree(triangle_root)
+        self.write(edges.to_json(orient='records'))
+        self.finish()
