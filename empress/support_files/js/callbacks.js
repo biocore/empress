@@ -62,6 +62,15 @@ function selectedTreeCollapse() {
 }
 
 
+
+function clearSelectedTreeCollapse(obj) {
+  let arcID = obj.parentElement.id;
+  $.getJSON(urls.clearColorCladeURL, { clade: arcID}, function(data) {
+    loadColorClades(data);
+    obj.parentNode.remove();
+  });
+}
+
 /**
  * resizes the drawing canvas to fix the screen
  *
