@@ -61,13 +61,15 @@ def start(
         tree = tools.read(tree_file)
 
     metadata = tools.read_metadata(metadata, main_skiprow, main_seperator)
-    additional_metadata = tools.read_metadata(
-        additional_metadata, main_skiprow, main_seperator)
+    if additional_metadata is not None:
+        additional_metadata = tools.read_metadata(
+            additional_metadata, main_skiprow, main_seperator)
+        metadata = pd.merge(additional_metadata, metadata,
+                        how='outer', on="Node_id")
 
     # read in main metadata
     headers = metadata.columns.values.tolist()
-    metadata = pd.merge(additional_metadata, metadata,
-                        how='outer', on="Node_id")
+
     if highlight_file is not None:
         nodes = tools.read_metadata(
             highlight_file, seperator=',')['id'].tolist()

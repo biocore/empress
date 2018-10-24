@@ -213,6 +213,12 @@
       $.getJSON(urls.edgeURL, function(data) {
         edgeMetadata = data;
       }).done(function() {
+        $.getJSON(urls.trianglesURL, {}, function(data) {
+          drawingData.triangles = extractInfo(data, field.triangleFields);
+          fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
+        }).done(function() {
+          requestAnimationFrame(loop);
+        });
         fillDropDownMenu(field.table_headers.headers, "#highlight-options");
         fillDropDownMenu(field.table_headers.headers, "#show-options");
         fillDropDownMenu(field.table_headers.headers, "#prioritize-options");
