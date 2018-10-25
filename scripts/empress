@@ -60,6 +60,7 @@ def start(
     except:
         print('reading in tree')
         tree = tools.read(tree_file)
+        print('done reading in tree')
 
     print('reading metadata')
     metadata = tools.read_metadata(metadata, main_skiprow, main_seperator)

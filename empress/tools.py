@@ -86,7 +86,7 @@ def name_internal_nodes(tree):
         if n.length is None:
             n.length = 1
         if n.name is None:
-            new_name = 'y%d' % i
+            new_name = 'EmpressNode%d' % i
             n.name = new_name
 
 

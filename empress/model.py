@@ -10,13 +10,13 @@ import empress.tools as tools
 
 DEFAULT_WIDTH = 1920
 DEFAULT_HEIGHT = 1920
-TIP_LIMIT = 200000
+TIP_LIMIT = 10
 
 
 class Model(object):
 
     def __init__(self, tree, metadata, clade_field, highlight_ids=None,
-                 port=8080, debug=True):
+                 port=8080):
         """ Model constructor.
 
         This initializes the model, including
@@ -42,11 +42,19 @@ class Model(object):
         self.zoom_level = 1
         self.scale = 1
         # convert to empress tree
+        start = time.time()
+        print('converting tree TreeNode to Tree')
         self.tree = Tree.from_tree(tree)
+        end = time.time()
+        print('finished converting in %d seconds' % (end - start))
         tools.name_internal_nodes(self.tree)
+
+        start = time.time()
+        print('calculating tree coords')
         (self.edge_metadata, self.centerX,
             self.centerY, self.scale) = self.tree.coords(DEFAULT_WIDTH, DEFAULT_HEIGHT)
-
+        end = time.time()
+        print('finished calculating tree coords in %d' % (end - start))
         # read in main metadata
         self.headers = metadata.columns.values.tolist()
         self.edge_metadata = pd.merge(self.edge_metadata, metadata,
@@ -65,11 +73,23 @@ class Model(object):
         # cached subtrees
         self.cached_subtrees = list()
         self.cached_clades = list()
-        self.total_tips = self.tree.count(tips=True)
-        TIP_LIMIT = int(self.total_tips * 0.1)
+
+        start = time.time()
+        print('calculating depth level of each node')
         self.__clade_level()
+        end = time.time()
+        print('finished calculating depth in %d' % (end - start))
+
+        start = time.time()
+        print('calculating number of tips per subclade')
         self.__tip_count_per_subclade()
+        end = time.time()
+        print('finished calculating num tips in %d' % (end - start))
+
+        start = time.time()
+        print('starting auto collapse')
         self.default_auto_collapse()
+        print('finished auto collapse in %d' % (end - start))
 
         self.highlight_nodes(highlight_ids)
 
@@ -568,7 +588,6 @@ class Model(object):
         return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
 
     def __collapse_clade(self, clade):
-        start = time.time()
         tips = clade.tips()
         clade_ancestor = clade.parent
         center_coords = (clade.x2, clade.y2)
@@ -576,7 +595,7 @@ class Model(object):
         points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
         s = tools.sector_info(points, center_coords, ancestor_coords)
         collapsed_nodes = [node for node in clade.postorder(include_self=False)]
-        nodes = [node.name for node in clade.postorder(include_self=False)]
+        nodes = [node.name for node in collapsed_nodes]
 
         (rx, ry) = (clade.x2, clade.y2)
 
@@ -611,14 +630,12 @@ class Model(object):
 
     def __tip_count_per_subclade(self):
         """
-        caches and counts tips in each subclade.
+        calculates the number of tips in each subclade of the tree.
         """
         for tip in self.tree.tips():
-            node = tip.parent
-            while node is not None:
-                node.tip_count += 1
-                node.tips.append(tip)
-                node = node.parent
+            while tip is not None:
+                tip.tip_count += 1
+                tip = tip.parent
 
     def __clade_level(self):
         """
@@ -627,11 +644,6 @@ class Model(object):
         for node in self.tree.levelorder():
             node.level = len(node.ancestors())
             node.tip_count = 0
-            node.tips = []
-            node.subtree_nodes = []
-            parent_node = node.parent
-            while parent_node is not None:
-                parent_node.subtree_nodes.append(node)
 
     def __get_tie_breaker_num(self):
         self.tie_breaker += 1
@@ -642,7 +654,6 @@ class Model(object):
         collapses clades with fewest num of tips until number of tips is TIP_LIMIT
         WARNING: this method will automatically uncollapse all clades.
         """
-        print('start collapse')
         TIP_COUNT = 1
         NODE = 3
         self.tie_breaker = 0
@@ -655,11 +666,8 @@ class Model(object):
             if collapse_amount == 0:
                     break
             if collapse_amount - clade[TIP_COUNT] >= 0 and clade[NODE] not in collapsed_nodes:
-                    # and self.edge_metadata.query('Node_id == %s' % clade[NODE].name)['branch_is_visible'].values[0]):
-                    #and self.edge_metadata.loc[self.edge_metadata['Node_id']==clade[NODE].name, 'branch_is_visible'].values[0]):
                 if clade[TIP_COUNT] > 1:
                     collapsed = set(self.__collapse_clade(clade[NODE]))
                     collapsed_nodes |= collapsed
                 collapse_amount -= clade[TIP_COUNT]
-        print('end collapse')
 
