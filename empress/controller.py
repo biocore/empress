@@ -24,7 +24,7 @@ class EdgeHandler(RequestHandler):
         self.m = m
 
     def get(self):
-        edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible']]
+        edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible'] == True]
         self.write(edges.to_json(orient='records'))
         self.finish()
 

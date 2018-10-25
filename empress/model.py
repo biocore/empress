@@ -10,13 +10,13 @@ import empress.tools as tools
 
 DEFAULT_WIDTH = 1920
 DEFAULT_HEIGHT = 1920
-TIP_LIMIT = 10
+TIP_LIMIT = 200000
 
 
 class Model(object):
 
     def __init__(self, tree, metadata, clade_field, highlight_ids=None,
-                 port=8080):
+                 port=8080, debug=True):
         """ Model constructor.
 
         This initializes the model, including
@@ -70,7 +70,6 @@ class Model(object):
         self.__clade_level()
         self.__tip_count_per_subclade()
         self.default_auto_collapse()
-        self.collapsed_nodes = set()
 
         self.highlight_nodes(highlight_ids)
 
@@ -576,7 +575,8 @@ class Model(object):
         ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
         points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
         s = tools.sector_info(points, center_coords, ancestor_coords)
-        nodes = [node for node in clade.postorder(include_self=False)]
+        collapsed_nodes = [node for node in clade.postorder(include_self=False)]
+        nodes = [node.name for node in clade.postorder(include_self=False)]
 
         (rx, ry) = (clade.x2, clade.y2)
 
@@ -602,7 +602,7 @@ class Model(object):
                                                  **longest, **color, **visible}
 
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
-        end = time.time()
+        return collapsed_nodes
 
     def get_triangles(self):
         triangles = {k: v for (k, v) in self.triData.items() if v['visible']}
@@ -611,12 +611,14 @@ class Model(object):
 
     def __tip_count_per_subclade(self):
         """
-        calculates the number of tips in each subclade of the tree.
+        caches and counts tips in each subclade.
         """
         for tip in self.tree.tips():
-            while tip is not None:
-                tip.tip_count += 1
-                tip = tip.parent
+            node = tip.parent
+            while node is not None:
+                node.tip_count += 1
+                node.tips.append(tip)
+                node = node.parent
 
     def __clade_level(self):
         """
@@ -625,6 +627,11 @@ class Model(object):
         for node in self.tree.levelorder():
             node.level = len(node.ancestors())
             node.tip_count = 0
+            node.tips = []
+            node.subtree_nodes = []
+            parent_node = node.parent
+            while parent_node is not None:
+                parent_node.subtree_nodes.append(node)
 
     def __get_tie_breaker_num(self):
         self.tie_breaker += 1
@@ -635,22 +642,24 @@ class Model(object):
         collapses clades with fewest num of tips until number of tips is TIP_LIMIT
         WARNING: this method will automatically uncollapse all clades.
         """
-        LEVEL = 0
+        print('start collapse')
         TIP_COUNT = 1
         NODE = 3
         self.tie_breaker = 0
         self.edge_metadata['branch_is_visible'] = True
         collapse_amount = self.tree.tip_count - TIP_LIMIT
-        cur_level = 0
         pq = [(clade.level, clade.tip_count, self.__get_tie_breaker_num(), clade)
                 for clade in self.tree.levelorder(include_self=False)]
-
+        collapsed_nodes = set()
         for clade in pq:
             if collapse_amount == 0:
                     break
-            if (collapse_amount - clade[TIP_COUNT] >= 0
-                    and self.edge_metadata.loc[self.edge_metadata['Node_id']==clade[NODE].name, 'branch_is_visible'].values[0]):
+            if collapse_amount - clade[TIP_COUNT] >= 0 and clade[NODE] not in collapsed_nodes:
+                    # and self.edge_metadata.query('Node_id == %s' % clade[NODE].name)['branch_is_visible'].values[0]):
+                    #and self.edge_metadata.loc[self.edge_metadata['Node_id']==clade[NODE].name, 'branch_is_visible'].values[0]):
                 if clade[TIP_COUNT] > 1:
-                    self.__collapse_clade(clade[NODE])
+                    collapsed = set(self.__collapse_clade(clade[NODE]))
+                    collapsed_nodes |= collapsed
                 collapse_amount -= clade[TIP_COUNT]
+        print('end collapse')
 

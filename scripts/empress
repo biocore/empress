@@ -58,14 +58,17 @@ def start(
         tree = qiime.Artifact.load(tree_file).view(TreeNode)
         metadata = Metadata.load('sample-metadata.tsv').to_dataframe()
     except:
+        print('reading in tree')
         tree = tools.read(tree_file)
 
+    print('reading metadata')
     metadata = tools.read_metadata(metadata, main_skiprow, main_seperator)
     if additional_metadata is not None:
         additional_metadata = tools.read_metadata(
             additional_metadata, main_skiprow, main_seperator)
         metadata = pd.merge(additional_metadata, metadata,
                         how='outer', on="Node_id")
+    print('done reading metadata')
 
     # read in main metadata
     headers = metadata.columns.values.tolist()
