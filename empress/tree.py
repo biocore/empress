@@ -60,6 +60,38 @@ class Tree(TreeNode):
         tree.update_geometry(use_lengths)
         return tree
 
+    # def update_geometry(self, use_lengths, depth=None):
+    #     """Calculate tree node attributes such as height and depth.
+
+    #     Parameters
+    #     ----------
+    #     use_lengths: bool
+    #        Specify if the branch length should be incorporated into
+    #        the geometry calculations for visualization.
+    #     depth: int
+    #        The number of nodes in the longest path from root to leaf.
+    #     This is agnostic to scale and orientation.
+
+    #     """
+    #     if self.length is None or not use_lengths:
+    #         if depth is None:
+    #             self.length = 0
+    #         else:
+    #             self.length = 1
+
+    #     self.depth = (depth or 0) + self.length
+
+    #     children = self.children
+    #     if children:
+    #         for c in children:
+    #             c.update_geometry(use_lengths, self.depth)
+    #         self.height = max([c.height for c in children]) + self.length
+    #         self.leafcount = sum([c.leafcount for c in children])
+
+    #     else:
+    #         self.height = self.length
+    #         self.leafcount = self.edgecount = 1
+
     def update_geometry(self, use_lengths, depth=None):
         """Calculate tree node attributes such as height and depth.
 
@@ -73,24 +105,23 @@ class Tree(TreeNode):
         This is agnostic to scale and orientation.
 
         """
-        if self.length is None or not use_lengths:
-            if depth is None:
-                self.length = 0
+        for node in self.postorder():
+            if node.length is None or not use_lengths:
+                if depth is None:
+                    node.length = 0
+                else:
+                    node.length = 1
+
+            node.depth = (depth or 0) + node.length
+
+            children = node.children
+            if children:
+                node.height = max([c.height for c in children]) + node.length
+                node.leafcount = sum([c.leafcount for c in children])
+
             else:
-                self.length = 1
-
-        self.depth = (depth or 0) + self.length
-
-        children = self.children
-        if children:
-            for c in children:
-                c.update_geometry(use_lengths, self.depth)
-            self.height = max([c.height for c in children]) + self.length
-            self.leafcount = sum([c.leafcount for c in children])
-
-        else:
-            self.height = self.length
-            self.leafcount = self.edgecount = 1
+                node.height = node.length
+                node.leafcount = 1
 
     def coords(self, height, width):
         """ Returns coordinates of nodes to be rendered in plot.

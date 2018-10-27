@@ -10,8 +10,6 @@ import empress.tools as tools
 
 DEFAULT_WIDTH = 1920
 DEFAULT_HEIGHT = 1920
-TIP_LIMIT = 10
-
 
 class Model(object):
 
@@ -39,6 +37,7 @@ class Model(object):
         -----
         The first column name should be renamed to Node_id
         """
+        self.TIP_LIMIT = 1000
         self.zoom_level = 1
         self.scale = 1
         # convert to empress tree
@@ -300,63 +299,6 @@ class Model(object):
         columns.append('y')
         return self.edge_metadata[columns]
 
-    def collapse_clades(self, sliderScale):
-        """ Collapses clades in tree by doing a level order of the tree.
-
-        sliderScale of 1 (min) means no clades are hidden, and sliderScale
-        of 2 (max) means the whole tree is one large triangle.
-        Changes the visibility of hidden nodes to be false.
-
-        Parameters
-        ----------
-        sliderScale : int
-            The scale of the slider of how much to collapse
-
-        Returns
-        -------
-        triangles : pd.DataFrame
-            rx | ry | fx | fy | cx | cy | #RGB (color string)
-        """
-        # TODO: need to collapse the cached trees as well
-        triData = {}
-
-        count = 0
-        total_nodes = self.tree.count()
-        nodes_limit = total_nodes - int(sliderScale) * total_nodes
-
-        for node in self.tree.levelorder():
-            if count >= nodes_limit:
-                # done selecting nodes to render
-                # set visibility of the rest to false
-                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'visibility'] = False
-                self.node_metadata.loc[self.node_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = False
-
-                # if parent was visible
-                # add triangle coordinates to dataframe
-                if self.edge_metadata.query('Node_id == "%s"' % node.parent.name)['visibility']:
-                    nId = {"Node_id": node.parent.name}
-                    root = {'rx': node.parent.x2, 'ry': node.parent.y2}
-                    shortest = {'sx': node.parent.shortest.x2,
-                                'sy': node.parent.shortest.y2}
-                    longest = {'lx': node.parent.longest.x2,
-                               'ly': node.parent.longest.y2}
-                    triData[node.parent.name] = {**nId, **root, **shortest,
-                                                 **longest}
-
-            else:
-                # reset visibility of higher level nodes
-                self.edge_metadata.loc[self.edge_metadata['Node_id'] ==
-                                       node.name, 'visibility'] = True
-                self.node_metadata.loc[self.node_metadata['Node_id'] ==
-                                       node.name, 'is_visible'] = True
-            # increment node count
-            count = count + 1
-
-        self.triangles = pd.DataFrame(triData).T
-        return self.triangles
-
     def get_headers(self):
         """ Returns a list of the headers for the metadata
 
@@ -587,6 +529,33 @@ class Model(object):
 
         return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
 
+
+    def get_triangles(self):
+        triangles = {k: v for (k, v) in self.triData.items() if v['visible']}
+        self.triangles = pd.DataFrame(triangles).T
+        return self.triangles
+
+    def __tip_count_per_subclade(self):
+        """
+        calculates the number of tips in each subclade of the tree.
+        """
+        for tip in self.tree.tips():
+            while tip is not None:
+                tip.tip_count += 1
+                tip = tip.parent
+
+    def __clade_level(self):
+        """
+        calculates the depth of each node in self.tree
+        """
+        for node in self.tree.levelorder():
+            node.level = len(node.ancestors())
+            node.tip_count = 0
+
+    def __get_tie_breaker_num(self):
+        self.tie_breaker += 1
+        return self.tie_breaker
+
     def __collapse_clade(self, clade):
         tips = clade.tips()
         clade_ancestor = clade.parent
@@ -623,32 +592,6 @@ class Model(object):
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
         return collapsed_nodes
 
-    def get_triangles(self):
-        triangles = {k: v for (k, v) in self.triData.items() if v['visible']}
-        self.triangles = pd.DataFrame(triangles).T
-        return self.triangles
-
-    def __tip_count_per_subclade(self):
-        """
-        calculates the number of tips in each subclade of the tree.
-        """
-        for tip in self.tree.tips():
-            while tip is not None:
-                tip.tip_count += 1
-                tip = tip.parent
-
-    def __clade_level(self):
-        """
-        calculates the depth of each node in self.tree
-        """
-        for node in self.tree.levelorder():
-            node.level = len(node.ancestors())
-            node.tip_count = 0
-
-    def __get_tie_breaker_num(self):
-        self.tie_breaker += 1
-        return self.tie_breaker
-
     def default_auto_collapse(self):
         """
         collapses clades with fewest num of tips until number of tips is TIP_LIMIT
@@ -657,10 +600,13 @@ class Model(object):
         TIP_COUNT = 1
         NODE = 3
         self.tie_breaker = 0
+
+        # uncollapse everything
         self.edge_metadata['branch_is_visible'] = True
-        collapse_amount = self.tree.tip_count - TIP_LIMIT
+        self.triData = {}
+        collapse_amount = self.tree.tip_count - self.TIP_LIMIT
         pq = [(clade.level, clade.tip_count, self.__get_tie_breaker_num(), clade)
-                for clade in self.tree.levelorder(include_self=False)]
+                for clade in self.tree.levelorder(include_self=False) if clade.tip_count < collapse_amount]
         collapsed_nodes = set()
         for clade in pq:
             if collapse_amount == 0:
@@ -669,5 +615,7 @@ class Model(object):
                 if clade[TIP_COUNT] > 1:
                     collapsed = set(self.__collapse_clade(clade[NODE]))
                     collapsed_nodes |= collapsed
+                else:
+                    self.edge_metadata.loc[self.edge_metadata['Node_id'] == clade[NODE].name, 'branch_color'] = '0000FF'
                 collapse_amount -= clade[TIP_COUNT]
 
