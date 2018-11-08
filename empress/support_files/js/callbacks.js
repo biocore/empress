@@ -63,11 +63,18 @@ function selectedTreeCollapse() {
 
 
 
-function clearSelectedTreeCollapse(obj) {
-  let arcID = obj.parentElement.id;
-  $.getJSON(urls.clearColorCladeURL, { clade: arcID}, function(data) {
-    loadColorClades(data);
-    obj.parentNode.remove();
+function clearSelectedTreeCollapse(x1, y1) {
+  $.getJSON(urls.uncollapseSTreeURL, {x1: x1, y1:y1}, function(data) {
+    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
+    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+    drawingData.selectTree = [];
+    fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
+    $.getJSON(urls.trianglesURL, {}, function(data) {
+      drawingData.triangles = extractInfo(data, field.triangleFields);
+      fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
+    }).done(function() {
+      requestAnimationFrame(loop);
+    });
   });
 }
 

@@ -30,7 +30,6 @@
     <div class="square"></div>
     <div class="selected-tree-menu">
       <input id="collapse" type = "button" value = "collapse" onclick="selectedTreeCollapse()"/>
-      <input id="uncollapse" type = "button" value = "uncollapse" onclick="selectedTreeCollapse()"/>
     </div>
   </div>
 
@@ -147,7 +146,8 @@
       oldTreeURL: "http://" + window.location.host + "/oldtree",
       selectTreeURL: "http://" + window.location.host + "/selectNodes",
       collapseSTreeURL: "http://" + window.location.host + "/collapseSTree",
-      trianglesURL: "http://" + window.location.host + "/api/triangles"
+      trianglesURL: "http://" + window.location.host + "/api/triangles",
+      uncollapseSTreeURL: "http://" + window.location.host + "/uncollapseSTree"
     };
 
     // fields to extract from metadata, used in extractInfo()

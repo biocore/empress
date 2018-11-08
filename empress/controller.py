@@ -429,7 +429,8 @@ class ClearCollapseSelectedHandler(RequestHandler):
         self.m = m
 
     def get(self):
-        triangle_root = self.get_argument("triangle_root")
-        edges = self.m.uncollapse_selected_tree(triangle_root)
+        x1 = self.get_argument("x1")
+        y1 = self.get_argument("y1")
+        edges = self.m.uncollapse_selected_tree(x1,y1)
         self.write(edges.to_json(orient='records'))
         self.finish()

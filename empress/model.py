@@ -590,6 +590,8 @@ class Model(object):
 
         return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
 
+
+
     def uncollapse_selected_tree(self, x, y):
         """
             Parameters
@@ -597,12 +599,58 @@ class Model(object):
             x: The x coordinate of the double click
             y: The y coordinate of the double click
         """
+        selected_ids = []
+        for k in triData.keys():
+            if is_in_triangle(k, x, y):
+                if k.has_children():
+                    k = k.children[0]
+                selected_ids.append(k)
+        root_to_uncollapse = self.tree.lca(selected_ids).name
 
-    def uncollapse_selected_tree(self, root):
+        root = self.tree.find(root_to_uncollapse)
         nodes = [node.name for node in root.postorder(include_self=False)]
-        del self.triData[root.name]
+        del self.triData[root]
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = True
         return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
+
+    def is_in_triangle(self, root, x, y):
+        triangle = self.triData[root.name]
+        area = triangle_area(
+            triangle['cx'],
+            triangle['cy'],
+            triangle['lx'],
+            triangle['ly'],
+            triangle['rx'],
+            triangle['ry'],
+        )
+        sub_1 = triangle_area(
+            x,
+            y,
+            triangle['lx'],
+            triangle['ly'],
+            triangle['rx'],
+            triangle['ry'],
+        )
+        sub_2 = triangle_area(
+            x,
+            y,
+            triangle['cx'],
+            triangle['cy'],
+            triangle['rx'],
+            triangle['ry'],
+        )
+        sub_3 = triangle_area(
+            x,
+            y,
+            triangle['lx'],
+            triangle['ly'],
+            triangle['cx'],
+            triangle['cy'],
+        )
+        return True if sub_1 + sub_2 + sub_3 == area else False
+
+    def triangle_area(x1, y1, x2, y2, x3, y3):
+        return abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0)
 
     def get_triangles(self):
         triangles = {k: v for (k, v) in self.triData.items() if v['visible']}

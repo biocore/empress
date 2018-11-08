@@ -8,7 +8,6 @@ function mouseHandler(event) {
   if(clearSelectBox(event)) {
     $(".square").css({height: CLEAR_SIZE + "px", width: CLEAR_SIZE + "px"});
   }
-
   if(event.type === "mousedown") {
     drawingData.lastMouseX = drawingData.mouseDownX = event.clientX;
     drawingData.lastMouseY = drawingData.mouseDownY = event.clientY;
@@ -31,6 +30,10 @@ function mouseHandler(event) {
   }
   else if(event.type === "wheel" && !shftPress) {
     mouseWheel(event);
+  }
+  else if(event.type === "dblclick") {
+    alert("double click");
+    doubleClick(event);
   }
 }
 
@@ -178,4 +181,8 @@ function mouseWheel(event) {
 
   // redraw tree
   requestAnimationFrame(loop);
+}
+function doubleClick(event){
+  coords = toTreeCoords(event.clientX, event.clientY);
+  clearSelectedTreeCollapse(coords[0], coords[1]);
 }
