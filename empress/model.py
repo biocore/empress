@@ -599,23 +599,30 @@ class Model(object):
             x: The x coordinate of the double click
             y: The y coordinate of the double click
         """
+        print("uncollapse")
         selected_ids = []
-        for k in triData.keys():
-            if is_in_triangle(k, x, y):
-                if k.has_children():
-                    k = k.children[0]
-                selected_ids.append(k)
+        for k in self.triData.keys():
+            print(k)
+            if self.is_in_triangle(k, x, y):
+                print("in tri")
+                root = self.tree.find(k)
+                if root.has_children():
+                    root = root.children[0]
+                selected_ids.append(root.name)
+        print(selected_ids)
         root_to_uncollapse = self.tree.lca(selected_ids).name
 
         root = self.tree.find(root_to_uncollapse)
         nodes = [node.name for node in root.postorder(include_self=False)]
-        del self.triData[root]
+        del self.triData[root.name]
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = True
         return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
 
     def is_in_triangle(self, root, x, y):
-        triangle = self.triData[root.name]
-        area = triangle_area(
+        x = np.float64(x)
+        y = np.float64(y)
+        triangle = self.triData[root]
+        area = self.triangle_area(
             triangle['cx'],
             triangle['cy'],
             triangle['lx'],
@@ -623,7 +630,7 @@ class Model(object):
             triangle['rx'],
             triangle['ry'],
         )
-        sub_1 = triangle_area(
+        sub_1 = self.triangle_area(
             x,
             y,
             triangle['lx'],
@@ -631,7 +638,7 @@ class Model(object):
             triangle['rx'],
             triangle['ry'],
         )
-        sub_2 = triangle_area(
+        sub_2 = self.triangle_area(
             x,
             y,
             triangle['cx'],
@@ -639,7 +646,7 @@ class Model(object):
             triangle['rx'],
             triangle['ry'],
         )
-        sub_3 = triangle_area(
+        sub_3 = self.triangle_area(
             x,
             y,
             triangle['lx'],
@@ -649,7 +656,7 @@ class Model(object):
         )
         return True if sub_1 + sub_2 + sub_3 == area else False
 
-    def triangle_area(x1, y1, x2, y2, x3, y3):
+    def triangle_area(self, x1, y1, x2, y2, x3, y3):
         return abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0)
 
     def get_triangles(self):

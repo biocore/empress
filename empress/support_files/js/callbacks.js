@@ -12,7 +12,8 @@ function initCallbacks(){
 
   window.onresize = resizeCanvas;
 
-  $(".tree-surface")[0].ondblclick = getOldTree;
+  //$(".tree-surface")[0].ondblclick = getOldTree;
+  $(".tree-surface")[0].ondblclick = clearSelectedTreeCollapse;
 
   $(document).keydown(function(e) {
       shftPress = (e.which === SHFT_KEY) ? true : false;
@@ -63,8 +64,10 @@ function selectedTreeCollapse() {
 
 
 
-function clearSelectedTreeCollapse(x1, y1) {
-  $.getJSON(urls.uncollapseSTreeURL, {x1: x1, y1:y1}, function(data) {
+function clearSelectedTreeCollapse(event) {
+  let treeCoords = toTreeCoords(event.clientX, event.clientY);
+  alert(treeCoords[0]);
+  $.getJSON(urls.uncollapseSTreeURL, {x1: treeCoords[0], y1: treeCoords[1]}, function(data) {
     drawingData.edgeCoords = extractInfo(data, field.edgeFields);
     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
     drawingData.selectTree = [];
