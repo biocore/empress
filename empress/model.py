@@ -314,6 +314,7 @@ class Model(object):
                                 'sy': node.parent.shortest.y2}
                     longest = {'lx': node.parent.longest.x2,
                                'ly': node.parent.longest.y2}
+                    #depth = {'depth': node.parent.}
                     triData[node.parent.name] = {**nId, **root, **shortest,
                                                  **longest}
 
