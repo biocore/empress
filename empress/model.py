@@ -1,4 +1,5 @@
 import math
+import sys
 import pandas as pd
 import numpy as np
 from empress.tree import Tree
@@ -550,7 +551,6 @@ class Model(object):
         return self.selected_tree
 
     def collapse_selected_tree(self):
-        print("collapse")
         clade = self.selected_root
         tips = clade.tips()
         clade_ancestor = clade.parent
@@ -580,9 +580,9 @@ class Model(object):
         longest = {'rx': x2, 'ry': y2}
         color = {'color': "0000FF"}
         visible = {'visible': True}
-        print(self.selected_root.name)
+        depth = {'depth': self.selected_root.level}
         self.triData[self.selected_root.name] = {**nId, **root, **shortest,
-                                                 **longest, **color, **visible}
+                                                 **longest, **color, **visible, **depth}
 
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
 
@@ -607,18 +607,41 @@ class Model(object):
         for k in self.triData.keys():
             if self.is_in_triangle(k, x, y):
                 selected_ids.append(k)
-        print(selected_ids)
-        depth = min([self.triData[id]['depth'] for id in selected_ids])
-        root_to_uncollapse = [id for id in selected_id if triData[id]['depth'] == depth][0]
-        print(root_to_uncollapse)
-        root = self.tree.find(root_to_uncollapse)
+        outer = sys.maxsize
+        outer_node = None
+        for id in selected_ids:
+            if self.triData[id]['depth'] < outer:
+                outer = self.triData[id]['depth']
+                outer_node = id
+        nodes_outer = [node.name for node in self.tree.find(outer_node).postorder(include_self=False)]
+        for id in selected_ids:
+            if id in nodes_outer:
+                selected_ids.append(id)
+        inner = sys.maxsize
+        inner_node = None
+        for id in selected_ids:
+            depth = self.triData[id]['depth']
+            if depth >= outer and depth < inner:
+                inner = self.triData[id]['depth']
+                inner_node = id
+
+        print(inner_node)
+        print(outer_node)
+        root = self.tree.find(outer_node)
         nodes = [node.name for node in root.postorder(include_self=False)]
         del self.triData[root.name]
+        if inner_node:
+            nodes = [node.name for node in self.tree.find(inner_node).postorder(include_self=False)]
+        for id in self.triData.keys():
+            self.triData[id]['visible'] = True
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = True
         return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
 
 
     def is_in_triangle(self, root, x, y):
+        """
+        Check if a point is in triangle of root
+        """
         x = np.float64(x)
         y = np.float64(y)
         triangle = self.triData[root]
@@ -657,6 +680,9 @@ class Model(object):
         return abs(sub_1 + sub_2 + sub_3-area) < 0.001
 
     def triangle_area(self, x1, y1, x2, y2, x3, y3):
+        """
+        Calculate triangle area
+        """
         return abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0)
 
     def get_triangles(self):
