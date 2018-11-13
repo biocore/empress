@@ -66,7 +66,6 @@ function selectedTreeCollapse() {
 
 function clearSelectedTreeCollapse(event) {
   let treeCoords = toTreeCoords(event.clientX, event.clientY);
-  alert(treeCoords[0]);
   $.getJSON(urls.uncollapseSTreeURL, {x1: treeCoords[0], y1: treeCoords[1]}, function(data) {
     drawingData.edgeCoords = extractInfo(data, field.edgeFields);
     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
