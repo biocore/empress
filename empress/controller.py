@@ -429,6 +429,7 @@ class ClearCollapseSelectedHandler(RequestHandler):
         self.m = m
 
     def get(self):
+        print("uncollapse controller")
         x1 = self.get_argument("x1")
         y1 = self.get_argument("y1")
         edges = self.m.uncollapse_selected_tree(x1,y1)
