@@ -334,7 +334,7 @@ function showMenu(menuName) {
       $(".metadata-tabs").css({opacity: 1});
     }
   }
-  else {
+  else if(menuName === "labels") {
     if($("#label-input").is(":visible")) {
       hideMenu();
       $(".metadata-tabs").css({opacity: 0.5});
@@ -345,18 +345,30 @@ function showMenu(menuName) {
       $(".metadata-tabs").css({opacity: 1});
     }
   }
+  else {
+    if($('#collapse-options').is(':visible')){
+      hideMenu();
+      $(".metadata-tabs").css({opacity: 0.5});
+    }
+    else {
+      hideMenu();
+      $('#collapse-options').show();
+      $(".metadata-tabs").css({opacity: 1});
+    }
+  }
 }
 
 /**
  * Resets the user menu
  */
 function hideMenu() {
-  $("#highlight-input").hide();
-  $("#color-selector").hide();
-  $("#color-input").hide();
-  $("#metadata-options").hide();
+  $('#highlight-input').hide();
+  $('#color-selector').hide();
+  $('#color-input').hide();
+  $('#metadata-options').hide();
   $("#highlight-history").hide();
   $('#label-input').hide();
+  $('#collapse-options').hide();
 }
 
 function showLables() {
@@ -547,4 +559,18 @@ function toggleMetadata() {
   else {
     $("#scrolltable").hide();
   }
+}
+
+function autoCollapse() {
+  let tps = $('#tip-slider').val();
+  let thrshld = $('#threshold-slider').val();
+  $.getJSON(urls.autoCollapse, {tips: tps, threshold: thrshld}, function(data) {
+    loadTree(data);
+    $.getJSON(urls.trianglesURL, {}, function(data) {
+      drawingData.triangles = extractInfo(data, field.triangleFields);
+      fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
+    }).done(function() {
+      requestAnimationFrame(loop);
+    });
+  });
 }

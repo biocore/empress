@@ -47,10 +47,13 @@ import click
 @click.option(
     'highlight_file', '-h', default=None, show_default=True
 )
+@click.option(
+    '--empress-coords-file', '-e', default=None
+)
 def start(
         tree_file, metadata, clade_field, additional_metadata, port,
         main_skiprow, additional_skiprow, main_seperator, additional_seperator,
-        highlight_file):
+        highlight_file, empress_coords_file):
 
     try:
         import qiime2
@@ -80,8 +83,7 @@ def start(
     else:
         nodes = None
 
-    m = Model(tree, metadata, clade_field, highlight_ids=nodes)
-    m.center_tree()
+    m = Model(tree, metadata, clade_field, highlight_ids=nodes, coords_file=empress_coords_file)
 
     # Create the webserver
     print("build web server")

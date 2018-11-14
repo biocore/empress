@@ -25,6 +25,7 @@ class EdgeHandler(RequestHandler):
 
     def get(self):
         edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible'] == True]
+        edges = edges[["px", "py", "x", "y", "branch_color"]]
         self.write(edges.to_json(orient='records'))
         self.finish()
 
@@ -412,5 +413,27 @@ class CollapseSelectedHandler(RequestHandler):
 
     def get(self):
         edges = self.m.collapse_selected_tree()
+        self.write(edges.to_json(orient='records'))
+        self.finish()
+
+class AutoCollapseHandler(RequestHandler):
+    """ Automatically collapses the tree based on a priority queue
+    """
+    def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        """
+        """
+        tips = self.get_argument('tips')
+        threshold = self.get_argument('threshold')
+        edges = self.m.balance_auto_collapse(tips, threshold)
         self.write(edges.to_json(orient='records'))
         self.finish()
