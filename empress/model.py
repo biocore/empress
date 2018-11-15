@@ -614,13 +614,15 @@ class Model(object):
                 outer = self.triData[id]['depth']
                 outer_node = id
         nodes_outer = [node.name for node in self.tree.find(outer_node).postorder(include_self=False)]
-        for id in selected_ids:
+        for id in self.triData.keys():
             if id in nodes_outer:
                 selected_ids.append(id)
         inner = sys.maxsize
         inner_node = None
+        print(selected_ids)
         for id in selected_ids:
             depth = self.triData[id]['depth']
+            print(id+str(depth))
             if depth >= outer and depth < inner:
                 inner = self.triData[id]['depth']
                 inner_node = id
