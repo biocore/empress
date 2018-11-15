@@ -574,3 +574,9 @@ function autoCollapse() {
     });
   });
 }
+
+function parseTree(data) {
+  drawingData.edgeCoords = extractInfo(data, field.edgeFields);
+  console.log('test 2');
+  normalizeTree(data);
+}

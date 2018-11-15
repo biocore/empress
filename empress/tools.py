@@ -267,34 +267,6 @@ def create_arc_sector(sector_info):
 
     return sector
 
-
-def is_sector_large(points):
-    """
-    determines if a sector spans more than pi / 2 radians
-
-    parameters
-    ----------
-    points : np.array
-        the set of points that define the sector
-
-    Return
-    ------
-    boolean
-        True if sector is larger than pi / 2 radians False otherwise
-    """
-    # find angle of sector by find the two points that are adjacent to (clade.x2, clade.y2)
-    # in the convex hull
-    center = 0
-    hull = ConvexHull(points)
-    hull_vertices = hull.vertices
-    clade_index = -1
-
-    for i in range(0, len(hull_vertices)):
-        if hull_vertices[i] == center:
-            clade_index = i
-    return False if clade_index == -1 else True
-
-
 def sector_info(points, sector_center, ancestor_coords):
     """
     'create_sector' will find the left most branch, right most branch, deepest branch, and
@@ -347,8 +319,8 @@ def sector_info(points, sector_center, ancestor_coords):
         starting_angle = a_2 if a_1 > a_2 else a_1
 
     # calculate the angle between the left and right most branches
-    large_sector = is_sector_large(np.concatenate((center_point, points), axis=0))
-    theta = total_angle(a_1, a_2, large_sector)
+    small_sector = False if angles[-1] - angles[0] > math.pi else True
+    theta = total_angle(a_1, a_2, small_sector)
 
     # the sector webgl will draw
     colored_clades = {

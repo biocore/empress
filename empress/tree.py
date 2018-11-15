@@ -142,6 +142,14 @@ class Tree(TreeNode):
             node.y2 = node.y2 - centerY
 
         edgeMeta = self.to_df()
+        print('calculating depth level of each node')
+        self.clade_level()
+
+        print('calculating number of tips per subclade')
+        self.tip_count_per_subclade()
+
+        print('calculating clade info')
+        self.create_clade_info()
         return edgeMeta
 
     def to_df(self):
@@ -150,7 +158,6 @@ class Tree(TreeNode):
         # edge metadata
         i = 0
         print('starting to create dictionary')
-        start = time.time()
         edgeData = {}
         uId = {'unique_id': i}
         nId = {'Node_id': self.name}
@@ -180,11 +187,8 @@ class Tree(TreeNode):
                 edgeData[i] = {**nId, **uId, **isTip, **coords, **pId,
                                         **pCoords, **attr}
                 i  += 1
-        end = time.time()
-        print('finished creating dictionary in %f' % (end - start))
 
         print('create pandas')
-        start = time.time()
         index_list = pd.Index([
                 'Node_id',
                 'unique_id',
@@ -204,8 +208,6 @@ class Tree(TreeNode):
         edgeMeta = pd.DataFrame(
             edgeData,
             index=index_list).T
-        end = time.time()
-        print('finished creating pandas in %f' % (end - start))
         return edgeMeta
 
     def from_file(self, file_name):
@@ -425,7 +427,7 @@ class Tree(TreeNode):
         for node in self.levelorder():
             node.level = len(node.ancestors())
 
-    def clade_info(self):
+    def create_clade_info(self):
         for clade in self.postorder():
             if not clade.is_tip() and clade is not self:
                 tips = clade.tips()
@@ -433,7 +435,10 @@ class Tree(TreeNode):
                 center_coords = (clade.x2, clade.y2)
                 ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
                 points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
-                s = tools.sector_info(points, center_coords, ancestor_coords)
+                try:
+                    s = tools.sector_info(points, center_coords, ancestor_coords)
+                except:
+                    print(points, clade.name, clade.level)
                 clade.sa = s['starting_angle']
                 clade.ta = s['theta']
                 clade.lb = s['largest_branch']
@@ -443,3 +448,13 @@ class Tree(TreeNode):
                 clade.ta = 0
                 clade.lb = 0
                 clade.sb = 0
+
+    def get_clade_info(self, clade):
+        info = {
+            'center_x': clade.x2, 'center_y': clade.y2,
+            'starting_angle': clade.sa, 'theta': clade.ta,
+            'largest_branch': clade.lb, 'smallest_branch': clade.sb}
+        return info
+
+    def test(self):
+        print('test')

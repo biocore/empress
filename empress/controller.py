@@ -434,6 +434,8 @@ class AutoCollapseHandler(RequestHandler):
         """
         tips = self.get_argument('tips')
         threshold = self.get_argument('threshold')
-        edges = self.m.balance_auto_collapse(tips, threshold)
+        # edges = self.m.balance_auto_collapse(tips, threshold)
+        edges = self.m.default_auto_collapse(tips)
+        edges = edges[["px", "py", "x", "y", "branch_color"]]
         self.write(edges.to_json(orient='records'))
         self.finish()

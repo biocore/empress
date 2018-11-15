@@ -79,7 +79,9 @@ def start(
 
     if highlight_file is not None:
         nodes = tools.read_metadata(
-            highlight_file, seperator=',')['id'].tolist()
+            highlight_file, seperator='\t')
+        nodes['index'] = nodes['Node_id']
+        nodes = nodes.set_index('index')
     else:
         nodes = None
 

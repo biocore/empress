@@ -485,7 +485,8 @@
     }).done(function() {
       drawingData.nodeCoords = [0, 0, 0, 0, 0];
       $.getJSON(urls.edgeURL, function(data) {
-        edgeMetadata = data;
+        parseTree(data);
+        // edgeMetadata = data;
       }).done(function() {
         $.getJSON(urls.trianglesURL, {}, function(data) {
           drawingData.triangles = extractInfo(data, field.triangleFields);
@@ -499,9 +500,6 @@
         hideMenu();
         $("#show-metadata").prop('checked', true);
         console.log('test 1');
-        drawingData.edgeCoords = extractInfo(edgeMetadata, field.edgeFields);
-        console.log('test 2');
-        normalizeTree(edgeMetadata);
         $.getJSON(urls.tableURL, function(data) {
           initGridTable(data);
         });
@@ -509,6 +507,7 @@
         initCallbacks();
         setPerspective();
         requestAnimationFrame(loop);
+        console.log('finished')
       });
     });
   }

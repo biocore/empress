@@ -1,6 +1,7 @@
 import math
 import heapq
 import time
+import re
 import pandas as pd
 import numpy as np
 from collections import namedtuple
@@ -11,9 +12,8 @@ from empress.tree import DEFAULT_COLOR
 from empress.tree import SELECT_COLOR
 import empress.tools as tools
 
-DEFAULT_WIDTH = 1920
-DEFAULT_HEIGHT = 1920
-
+DEFAULT_WIDTH = 4096
+DEFAULT_HEIGHT = 4096
 class Model(object):
 
     def __init__(self, tree, metadata, clade_field, highlight_ids=None,
@@ -44,45 +44,18 @@ class Model(object):
         self.zoom_level = 1
         self.scale = 1
         # convert to empress tree
-        start = time.time()
         print('converting tree TreeNode to Tree')
         self.tree = Tree.from_tree(tree)
-        end = time.time()
-        print('finished converting in %d seconds' % (end - start))
         tools.name_internal_nodes(self.tree)
 
         if coords_file is None:
-            start = time.time()
             print('calculating tree coords')
             self.tree.tip_count_per_subclade()
             self.edge_metadata = self.tree.coords(DEFAULT_WIDTH, DEFAULT_HEIGHT)
-            end = time.time()
-            print('finished calculating tree coords in %d' % (end - start))
-
-            start = time.time()
-            print('calculating depth level of each node')
-            self.tree.clade_level()
-            end = time.time()
-            print('finished calculating depth in %d' % (end - start))
-
-            start = time.time()
-            print('calculating number of tips per subclade')
-            self.tree.tip_count_per_subclade()
-            end = time.time()
-            print('finished calculating num tips in %d' % (end - start))
-
-            start = time.time()
-            print('calculating clade info')
-            self.tree.clade_info()
-            end = time.time()
-            print('finished calculating clade info in %f' % (end - start))
         else:
-            start = time.time()
             print('extracting tree coords from file')
             self.tree.from_file(coords_file)
             self.edge_metadata = self.tree.to_df()
-            end = time.time()
-            print('finished extracting tree coords in %d' % (end - start))
 
         # read in main metadata
         self.headers = metadata.columns.values.tolist()
@@ -91,6 +64,8 @@ class Model(object):
 
         # todo need to warn user that some entries in metadata do not have a mapping to tree
         self.edge_metadata = self.edge_metadata[self.edge_metadata.x.notnull()]
+        self.edge_metadata['index'] = self.edge_metadata['Node_id']
+        self.edge_metadata = self.edge_metadata.set_index('index')
 
         self.triangles = pd.DataFrame()
         self.clade_field = clade_field
@@ -103,11 +78,13 @@ class Model(object):
         self.cached_subtrees = list()
         self.cached_clades = list()
 
-        start = time.time()
-        print('starting auto collapse')
-        self.default_auto_collapse()
-        print('finished auto collapse in %d' % (end - start))
+        # start = time.time()
+        # print('starting auto collapse')
+        # self.default_auto_collapse(100)
+        # end = time.time()
+        # print('finished auto collapse in %d' % (end - start))
 
+        print('highlight_ids')
         self.highlight_nodes(highlight_ids)
 
     def layout(self, layout_type):
@@ -243,16 +220,24 @@ class Model(object):
             self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
         return self.edge_metadata
 
-    def highlight_nodes(self, highlight_ids=None, highlight_color='FF0000'):
+    def highlight_nodes(self, highlight_ids=None):
         """ Reads in Node_ids for 'file' and colors their branches red
         Parameters
         ----------
         file : csv file containing Node_ids
         """
+        # with open(highlight_ids, 'r') as file:
+        #     lines = file.readlines()
+        # ids = [re.split(';', item) for item in lines]
+        # em = self.edge_metadata
+        # for i in range(len(ids)):
+        #     em.loc[em['Node_id'] == ids[i][0], 'branch_color'] = ids[i][1]
+
 
         if highlight_ids is not None:
-            idx = self.edge_metadata['Node_id'].isin(highlight_ids)
-            self.edge_metadata.loc[idx, 'branch_color'] = highlight_color
+            # idx = self.edge_metadata['Node_id'].isin(highlight_ids)
+            # self.edge_metadata.loc[idx, 'branch_color'] = highlight_color
+            self.edge_metadata.update(highlight_ids)
 
     def get_highlighted_values(self, attribute, lower="",
                                equal="", upper=""):
@@ -345,12 +330,7 @@ class Model(object):
 
         clade = self.tree.find(clade_root_id)
 
-        tips = clade.tips()
-        clade_ancestor = clade.parent
-        center_coords = (clade.x2, clade.y2)
-        ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
-        points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
-        color_clade = tools.sector_info(points, center_coords, ancestor_coords)
+        color_clade = self.tree.get_clade_info(clade)
         color_clade['color'] = color
         color_clade_s = tools.create_arc_sector(color_clade)
         depth = len([node.name for node in clade.ancestors()])
@@ -390,12 +370,7 @@ class Model(object):
 
             if clade_root_id != -1:
                 clade = self.tree.find(clade_root_id)
-                tips = clade.tips()
-                clade_ancestor = clade.parent
-                center_coords = (clade.x2, clade.y2)
-                ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
-                points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
-                color_clade = tools.sector_info(points, center_coords, ancestor_coords)
+                color_clade = self.tree.get_clade_info(clade)
                 color_clade['color'] = v['color']
                 color_clade_s = tools.create_arc_sector(color_clade)
                 depth = len([node.name for node in clade.ancestors()])
@@ -456,7 +431,6 @@ class Model(object):
         self.edge_metadata = self.edge_metadata[['Node_id', 'x', 'y', 'px', 'py']]
         self.edge_metadata = pd.merge(self.edge_metadata, metadata,
                                       how='outer', on="Node_id")
-        self.center_tree()
 
         self.cached_clades.append(self.colored_clades)
         self.colored_clades = self.refresh_clades()
@@ -545,61 +519,19 @@ class Model(object):
         self.tie_breaker += 1
         return self.tie_breaker
 
-    # def __collapse_clade(self, clade):
-    #     if not clade.is_tip():
-    #         tips = clade.tips()
-    #         clade_ancestor = clade.parent
-    #         center_coords = (clade.x2, clade.y2)
-    #         ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
-    #         points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
-    #         s = tools.sector_info(points, center_coords, ancestor_coords)
-    #         collapsed_nodes = [node for node in clade.postorder(include_self=False)]
-    #         nodes = [node.name for node in collapsed_nodes]
-
-    #         (rx, ry) = (clade.x2, clade.y2)
-
-    #         theta = s['starting_angle']
-    #         (c_b1, s_b1) = (math.cos(theta), math.sin(theta))
-    #         (x1, y1) = (s['largest_branch'] * c_b1, s['largest_branch'] * s_b1)
-
-    #         # find right most branch
-    #         theta += s['theta']
-    #         (c_b2, s_b2) = (math.cos(theta), math.sin(theta))
-    #         (x2, y2) = (s['smallest_branch'] * c_b2, s['smallest_branch'] * s_b2)
-
-    #         (x1, y1) = (x1 + rx, y1 + ry)
-    #         (x2, y2) = (x2 + rx, y2 + ry)
-    #     else:
-    #         (rx, ry) = (clade.parent.x2, clade.parent.y2)
-    #         (x1, y1) = (x2, y2) = (clade.x2, clade.y2)
-    #         collapsed_nodes = [clade]
-    #         nodes = [clade.name]
-
-
-    #     nId = {"Node_id": clade.name}
-    #     root = {'cx': rx, 'cy': ry}
-    #     shortest = {'lx': x1, 'ly': y1}
-    #     longest = {'rx': x2, 'ry': y2}
-    #     color = {'color': "0000FF"}
-    #     visible = {'visible': True}
-    #     self.triData[clade.name] = {**nId, **root, **shortest,
-    #                                              **longest, **color, **visible}
-
-    #     self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
-    #     return collapsed_nodes
-
     def __collapse_clade(self, clade):
         if not clade.is_tip():
-            (rx, ry) = (clade.x2, clade.y2)
+            s = self.tree.get_clade_info(clade)
 
-            theta = clade.sa
+            (rx, ry) = (clade.x2, clade.y2)
+            theta = s['starting_angle']
             (c_b1, s_b1) = (math.cos(theta), math.sin(theta))
-            (x1, y1) = (clade.lb * c_b1, clade.lb * s_b1)
+            (x1, y1) = (s['largest_branch'] * c_b1, s['largest_branch'] * s_b1)
 
             # find right most branch
-            theta += clade.ta
+            theta += s['theta']
             (c_b2, s_b2) = (math.cos(theta), math.sin(theta))
-            (x2, y2) = (clade.sb * c_b2, clade.sb * s_b2)
+            (x2, y2) = (s['smallest_branch'] * c_b2, s['smallest_branch'] * s_b2)
 
             (x1, y1) = (x1 + rx, y1 + ry)
             (x2, y2) = (x2 + rx, y2 + ry)
@@ -609,9 +541,9 @@ class Model(object):
             collapsed_nodes = [clade]
             nodes = [clade.name]
 
+
         collapsed_nodes = [node for node in clade.postorder(include_self=False)]
         nodes = [node.name for node in collapsed_nodes]
-
         nId = {"Node_id": clade.name}
         root = {'cx': rx, 'cy': ry}
         shortest = {'lx': x1, 'ly': y1}
@@ -624,7 +556,8 @@ class Model(object):
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
         return collapsed_nodes
 
-    def default_auto_collapse(self):
+
+    def default_auto_collapse(self, tips):
         """
         collapses clades with fewest num of tips until number of tips is TIP_LIMIT
         WARNING: this method will automatically uncollapse all clades.
@@ -634,8 +567,8 @@ class Model(object):
         # uncollapse everything
         self.edge_metadata['branch_is_visible'] = True
         self.triData = {}
-        collapse_amount = self.tree.tip_count - self.TIP_LIMIT
-        print(collapse_amount)
+        num_tips = int(self.tree.tip_count * (float(tips)/ 100.0))
+        collapse_amount = self.tree.tip_count - num_tips
         Element = namedtuple('Element', ' level tips breaker clade')
         pq = [Element(clade.level, clade.tip_count, self.__get_tie_breaker_num(), clade)
                 for clade in self.tree.levelorder(include_self=False) if clade.tip_count < collapse_amount]
@@ -651,8 +584,10 @@ class Model(object):
                 else:
                     self.edge_metadata.loc[self.edge_metadata['Node_id'] == clade.clade.name, 'branch_color'] = '0000FF'
                 collapse_amount -= clade.tips
-                self.update_collapse_clades()
 
+        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
+
+    # TODO: Needs to implement set
     def balance_auto_collapse(self, tips, threshold):
         """
         collapses clades with fewest num of tips until number of tips is TIP_LIMIT
