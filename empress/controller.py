@@ -24,9 +24,11 @@ class EdgeHandler(RequestHandler):
         self.m = m
 
     def get(self):
+        print('EdgeHandler start')
         edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible'] == True]
         edges = edges[["px", "py", "x", "y", "branch_color"]]
         self.write(edges.to_json(orient='records'))
+        print('EdgeHandler end')
         self.finish()
 
 
@@ -159,10 +161,11 @@ class TableHandler(RequestHandler):
     def get(self):
         """ Grabs all the metadata from model
         """
+        print('TableHandler start')
         table_values = self.m.get_default_table_values()
         self.write(table_values.to_json(orient='records'))
+        print('TableHandler end')
         self.finish()
-
 
 class TableChangeHandler(RequestHandler):
     """ This is used to update the SlickGrid when, for example, a user hightlights
