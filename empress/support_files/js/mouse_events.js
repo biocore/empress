@@ -32,8 +32,11 @@ function mouseHandler(event) {
     mouseWheel(event);
   }
   else if(event.type === "dblclick") {
-    alert("double click");
-    doubleClick(event);
+    if(shftPress){
+      getOldTree(event);
+    } else {
+      clearSelectedTreeCollapse(event);
+    }
   }
 }
 
