@@ -604,36 +604,36 @@ class Model(object):
             y: The y coordinate of the double click
         """
         selected_ids = []
+        # Find triangles that contains the point
         for k in self.triData.keys():
             if self.is_in_triangle(k, x, y):
                 selected_ids.append(k)
+
+        # Find the highest level of triangle
         outer = sys.maxsize
         outer_node = None
         for id in selected_ids:
             if self.triData[id]['depth'] < outer:
                 outer = self.triData[id]['depth']
                 outer_node = id
-        nodes_outer = [node.name for node in self.tree.find(outer_node).postorder(include_self=False)]
+        nodes = [node.name for node in self.tree.find(outer_node).postorder(include_self=False)]
         for id in self.triData.keys():
-            if id in nodes_outer:
+            if id in nodes:
                 selected_ids.append(id)
+
+        # Find the next highest level of triangle if there is any
         inner = sys.maxsize
         inner_node = None
-        print(selected_ids)
         for id in selected_ids:
             depth = self.triData[id]['depth']
-            print(id+str(depth))
-            if depth >= outer and depth < inner:
+            if depth > outer and depth < inner:
                 inner = self.triData[id]['depth']
                 inner_node = id
 
-        print(inner_node)
-        print(outer_node)
-        root = self.tree.find(outer_node)
-        nodes = [node.name for node in root.postorder(include_self=False)]
-        del self.triData[root.name]
+        del self.triData[outer_node]
         if inner_node:
-            nodes = [node.name for node in self.tree.find(inner_node).postorder(include_self=False)]
+            nodes_inner = [node.name for node in self.tree.find(inner_node).postorder(include_self=False)]
+            nodes = list(set(nodes)-set(nodes_inner))
         for id in self.triData.keys():
             self.triData[id]['visible'] = True
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = True

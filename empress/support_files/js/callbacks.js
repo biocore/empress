@@ -12,8 +12,7 @@ function initCallbacks(){
 
   window.onresize = resizeCanvas;
 
-  //$(".tree-surface")[0].ondblclick = getOldTree;
-  $(".tree-surface")[0].ondblclick = clearSelectedTreeCollapse;
+  $(".tree-surface")[0].ondblclick = mouseHandler;
 
   $(document).keydown(function(e) {
       shftPress = (e.which === SHFT_KEY) ? true : false;
