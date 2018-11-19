@@ -238,7 +238,7 @@ function changeColorSelection(obj) {
  * @param {string} a hex string that represent what color to change the clade to
  */
 function updateColorSelection(arcID, color) {
-  $.getJSON(urls.cladeColorURL, { clade: arcID, color: color}, function(data) {
+  $.getJSON(urls.cladeColorURL, {cat: "None", clade: arcID, color: color}, function(data) {
     loadColorClades(data);
   });
 }
@@ -268,11 +268,12 @@ function selectHighlight(attr, cat, val, l, u, e) {
  * The event called when a user want to highlight a clade.
  */
 function userCladeColor() {
+  const cat = $("#clade-options").val();
   const color = $("#clade-color-selector").val().toUpperCase().slice(1);
   const clade = $("#clade").val();
   let nodeCoords;
 
-  $.getJSON(urls.cladeColorURL, {clade: clade, color: color}, function(data) {
+  $.getJSON(urls.cladeColorURL, {cat: cat, clade: clade, color: color}, function(data) {
     if(!data.hasOwnProperty('empty')) {
       loadColorClades(data);
       addCladeItem(clade, color);

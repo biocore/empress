@@ -17,10 +17,6 @@ import click
     '--metadata', '-m', required=True,
     help='A file that contains your metadata')
 @click.option(
-    '--clade-field', '-c', required=True,
-    help='The metadata field that contains the clade names. '
-    'This is the field that will be to color clades.')
-@click.option(
     '--additional-metadata', '-a', default=None,
     help='An additional file that contains metadata'
 )
@@ -51,7 +47,7 @@ import click
     '--empress-coords-file', '-e', default=None
 )
 def start(
-        tree_file, metadata, clade_field, additional_metadata, port,
+        tree_file, metadata, additional_metadata, port,
         main_skiprow, additional_skiprow, main_seperator, additional_seperator,
         highlight_file, empress_coords_file):
 
@@ -69,7 +65,7 @@ def start(
     metadata = tools.read_metadata(metadata, main_skiprow, main_seperator)
     if additional_metadata is not None:
         additional_metadata = tools.read_metadata(
-            additional_metadata, main_skiprow, main_seperator)
+            additional_metadata, additional_skiprow, additional_seperator)
         metadata = pd.merge(additional_metadata, metadata,
                         how='outer', on="Node_id")
     print('done reading metadata')
@@ -85,7 +81,7 @@ def start(
     else:
         nodes = None
 
-    m = Model(tree, metadata, clade_field, highlight_ids=nodes, coords_file=empress_coords_file)
+    m = Model(tree, metadata, highlight_ids=nodes, coords_file=empress_coords_file)
 
     # Create the webserver
     print("build web server")

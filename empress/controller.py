@@ -26,7 +26,7 @@ class EdgeHandler(RequestHandler):
     def get(self):
         print('EdgeHandler start')
         edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible'] == True]
-        edges = edges[["px", "py", "x", "y", "branch_color"]]
+        # edges = edges[["px", "py", "x", "y", "branch_color"]]
         self.write(edges.to_json(orient='records'))
         print('EdgeHandler end')
         self.finish()
@@ -273,9 +273,10 @@ class ColorCladeHandler(RequestHandler):
         color : string
             A hex string representing the color
         """
+        cat = self.get_argument('cat')
         clade = self.get_argument('clade')
         color = self.get_argument('color')
-        colored_clades = self.m.color_clade(clade, color)
+        colored_clades = self.m.color_clade(cat, clade, color)
         self.write(colored_clades)
         self.finish()
 

@@ -208,6 +208,7 @@ class Tree(TreeNode):
         edgeMeta = pd.DataFrame(
             edgeData,
             index=index_list).T
+        print('done creating pandas')
         return edgeMeta
 
     def from_file(self, file_name):

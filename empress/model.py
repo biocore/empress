@@ -16,7 +16,7 @@ DEFAULT_WIDTH = 4096
 DEFAULT_HEIGHT = 4096
 class Model(object):
 
-    def __init__(self, tree, metadata, clade_field, highlight_ids=None,
+    def __init__(self, tree, metadata, highlight_ids=None,
                  coords_file=None, port=8080):
         """ Model constructor.
 
@@ -68,7 +68,6 @@ class Model(object):
         self.edge_metadata = self.edge_metadata.set_index('index')
 
         self.triangles = pd.DataFrame()
-        self.clade_field = clade_field
         self.selected_tree = pd.DataFrame()
         self.selected_root = self.tree
         self.triData = {}
@@ -299,7 +298,7 @@ class Model(object):
         """
         return self.headers
 
-    def color_clade(self, clade, color):
+    def color_clade(self, clade_field, clade, color):
         """ Will highlight a certain clade by drawing a sector around the clade.
         The sector will start at the root of the clade and create an arc from the
         most to the right most tip. The sector will aslo have a defualt arc length
@@ -317,26 +316,45 @@ class Model(object):
         return : list
             A list of all highlighted clades
         """
-        # is it be safe to assume clade ids will be unique?
-        c = clade
-        clade_root = self.edge_metadata.loc[self.edge_metadata[self.clade_field] == clade]
-        clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
+        if clade_field != 'None':
+            c = clade
+            clade_root = self.edge_metadata.loc[self.edge_metadata[clade_field] == clade]
+            clade_roots_id = clade_root['Node_id'].values
 
-        if clade_root_id == -1:
-            for c in range(0, len(self.cached_clades)):
-                if clade in self.cached_clades[c]:
-                    self.cached_clades[c][clade]['color'] = color
-            return {"empty": []}
+            if len(clade_roots_id) == 0:
+                for c in range(0, len(self.cached_clades)):
+                    if clade in self.cached_clades[c]:
+                        self.cached_clades[c][clade]['color'] = color
+                return {"empty": []}
 
-        clade = self.tree.find(clade_root_id)
-
-        color_clade = self.tree.get_clade_info(clade)
-        color_clade['color'] = color
-        color_clade_s = tools.create_arc_sector(color_clade)
-        depth = len([node.name for node in clade.ancestors()])
-        self.colored_clades[c] = {'data': color_clade_s,
-                                  'depth': depth,
-                                  'color': color}
+            i = 0
+            for clade_root_id in clade_roots_id:
+                clade = self.tree.find(clade_root_id)
+                color_clade = self.tree.get_clade_info(clade)
+                color_clade['color'] = color
+                color_clade_s = tools.create_arc_sector(color_clade)
+                depth = len([node.name for node in clade.ancestors()])
+                self.colored_clades[c+str(i)] = {'data': color_clade_s,
+                                          'depth': depth,
+                                          'color': color,
+                                          'id': clade_root_id}
+                i += 1
+        else:
+            i = 0
+            clade_name = clade
+            for (k,v) in self.colored_clades.items():
+                if clade_name in k:
+                    clade_id = v['id']
+                    clade = self.tree.find(clade_id)
+                    color_clade = self.tree.get_clade_info(clade)
+                    color_clade['color'] = color
+                    color_clade_s = tools.create_arc_sector(color_clade)
+                    depth = len([node.name for node in clade.ancestors()])
+                    self.colored_clades[k] = {'data': color_clade_s,
+                                              'depth': depth,
+                                              'color': color,
+                                              'id': clade_id}
+                    i += 1
         return self.get_colored_clade()
 
     def clear_clade(self, clade):
@@ -344,12 +362,18 @@ class Model(object):
         Note this doesn't remove any branches from the tree. It only removes the artifacts
         created by javascript
         """
-        self.colored_clades.pop(clade)
+        clades = self.colored_clades.keys()
+        clades = [c for c in clades]
+        for c in clades:
+            if clade in c:
+                self.colored_clades.pop(c)
+
         for colored_clades in self.cached_clades:
-            try:
-                colored_clades.pop(clade)
-            except KeyError:
-                continue
+            clades = colored_clades.keys()
+            clades = [c for c in clades]
+            for c in clades:
+                if clade in c:
+                    colored_clades.pop(c)
 
         return self.get_colored_clade()
 
@@ -365,18 +389,15 @@ class Model(object):
     def refresh_clades(self):
         colored_clades = {}
         for k, v in self.colored_clades.items():
-            clade_root = self.edge_metadata.loc[self.edge_metadata[self.clade_field] == k]
-            clade_root_id = clade_root['Node_id'].values[0] if len(clade_root) > 0 else -1
-
-            if clade_root_id != -1:
-                clade = self.tree.find(clade_root_id)
-                color_clade = self.tree.get_clade_info(clade)
-                color_clade['color'] = v['color']
-                color_clade_s = tools.create_arc_sector(color_clade)
-                depth = len([node.name for node in clade.ancestors()])
-                colored_clades[k] = {'data': color_clade_s,
-                                     'depth': depth,
-                                     'color': color_clade['color']}
+            clade_id = self.colored_clades[k]['id']
+            clade = self.tree.find(clade_id)
+            color_clade = self.tree.get_clade_info(clade)
+            color_clade['color'] = v['color']
+            color_clade_s = tools.create_arc_sector(color_clade)
+            depth = len([node.name for node in clade.ancestors()])
+            colored_clades[k] = {'data': color_clade_s,
+                                 'depth': depth,
+                                 'color': color_clade['color']}
         return colored_clades
 
     def create_subtree(self, attribute, lower="", equal="", upper=""):
