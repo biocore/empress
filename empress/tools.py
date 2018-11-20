@@ -329,3 +329,4 @@ def sector_info(points, sector_center, ancestor_coords):
         'largest_branch': longest_branch, 'smallest_branch': smallest_branch}
 
     return colored_clades
+

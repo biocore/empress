@@ -60,6 +60,7 @@ class Tree(TreeNode):
             n.__class__ = Tree
             n.tip_count = 0
 
+
         tree.update_geometry(use_lengths)
         return tree
 
@@ -171,6 +172,7 @@ class Tree(TreeNode):
         edgeData[i] = {**nId, **uId, **isTip, **coords, **pId,
                                 **pCoords, **attr}
         i += 1
+
         for node in self.postorder():
             node.alpha = 0.0
             pId = {"Parent_id": node.name}
@@ -459,3 +461,4 @@ class Tree(TreeNode):
 
     def test(self):
         print('test')
+

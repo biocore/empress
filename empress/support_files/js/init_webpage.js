@@ -121,6 +121,7 @@ function extractColor(data) {
   });
 
   // convert to array
+
   data = data.flat();
 
   // convert the 2 digit hex string into a float
