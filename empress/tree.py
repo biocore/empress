@@ -1,7 +1,9 @@
 from skbio import TreeNode
 import pandas as pd
 import numpy as np
+import time
 from operator import attrgetter
+import empress.tools as tools
 
 DEFAULT_COLOR = '000000'
 SELECT_COLOR = '00FF00'
@@ -56,6 +58,8 @@ class Tree(TreeNode):
         """
         for n in tree.postorder():
             n.__class__ = Tree
+            n.tip_count = 0
+
 
         tree.update_geometry(use_lengths)
         return tree
@@ -73,24 +77,26 @@ class Tree(TreeNode):
         This is agnostic to scale and orientation.
 
         """
-        if self.length is None or not use_lengths:
-            if depth is None:
-                self.length = 0
+        # i = 0
+        for node in self.postorder():
+            # node.name = i
+            # i += 1
+            if node.length is None or not use_lengths:
+                if depth is None:
+                    node.length = 0
+                else:
+                    node.length = 1
+
+            node.depth = (depth or 0) + node.length
+
+            children = node.children
+            if children:
+                node.height = max([c.height for c in children]) + node.length
+                node.leafcount = sum([c.leafcount for c in children])
+
             else:
-                self.length = 1
-
-        self.depth = (depth or 0) + self.length
-
-        children = self.children
-        if children:
-            for c in children:
-                c.update_geometry(use_lengths, self.depth)
-            self.height = max([c.height for c in children]) + self.length
-            self.leafcount = sum([c.leafcount for c in children])
-
-        else:
-            self.height = self.length
-            self.leafcount = self.edgecount = 1
+                node.height = node.length
+                node.leafcount = 1
 
     def coords(self, height, width):
         """ Returns coordinates of nodes to be rendered in plot.
@@ -132,13 +138,47 @@ class Tree(TreeNode):
         centerX = self.x2
         centerY = self.y2
 
+        for node in self.postorder():
+            node.x2 = node.x2 - centerX
+            node.y2 = node.y2 - centerY
+
+        edgeMeta = self.to_df()
+        print('calculating depth level of each node')
+        self.clade_level()
+
+        print('calculating number of tips per subclade')
+        self.tip_count_per_subclade()
+
+        print('calculating clade info')
+        self.create_clade_info()
+        return edgeMeta
+
+    def to_df(self):
+        """ Creates a dataframe from the tree
+        """
         # edge metadata
+        i = 0
+        print('starting to create dictionary')
         edgeData = {}
+        uId = {'unique_id': i}
+        nId = {'Node_id': self.name}
+        isTip = {'is_tip': False}
+        coords = {'x': self.x2, 'y': self.y2}
+        pId = {'Parent_id': self.name}
+        pCoords = {'px': self.x2, 'py': self.y2}
+        attr = {'node_color': DEFAULT_COLOR, 'branch_color': DEFAULT_COLOR,
+                        'node_is_visible': True, 'branch_is_visible': True,
+                        'width': 1, 'size': 1}
+        edgeData[i] = {**nId, **uId, **isTip, **coords, **pId,
+                                **pCoords, **attr}
+        i += 1
+
         for node in self.postorder():
             node.alpha = 0.0
             pId = {"Parent_id": node.name}
             pCoords = {'px': node.x2, 'py': node.y2}
             for child in node.children:
+                uId = {'unique_id': i}
                 nId = {"Node_id": child.name}
                 isTip = {"is_tip": child.is_tip()}
                 coords = {'x': child.x2, 'y': child.y2}
@@ -146,15 +186,14 @@ class Tree(TreeNode):
                 attr = {'node_color': DEFAULT_COLOR, 'branch_color': DEFAULT_COLOR,
                         'node_is_visible': True, 'branch_is_visible': True,
                         'width': 1, 'size': 1}
-                edgeData[child.name] = {**nId, **isTip, **coords, **pId,
+                edgeData[i] = {**nId, **uId, **isTip, **coords, **pId,
                                         **pCoords, **attr}
+                i  += 1
 
-        for node in self.postorder():
-            node.x2 = node.x2 - centerX
-            node.y2 = node.y2 - centerY
-
+        print('create pandas')
         index_list = pd.Index([
                 'Node_id',
+                'unique_id',
                 'is_tip',
                 'x',
                 'y',
@@ -171,7 +210,33 @@ class Tree(TreeNode):
         edgeMeta = pd.DataFrame(
             edgeData,
             index=index_list).T
-        return (edgeMeta, centerX, centerY, scale)
+        print('done creating pandas')
+        return edgeMeta
+
+    def from_file(self, file_name):
+        """ sets the (x, y) coords of each node in tree, node depth, number of tips under
+        node, and clade collapse info from file
+        file format:
+        x
+        y
+        # tips
+        depth
+        starting angle
+        total angle
+        longest branch (length)
+        smallest branch (length)
+        """
+        with open(file_name, 'r') as file:
+            for node in self.postorder():
+                node.x2 = float(file.readline())
+                node.y2 = float(file.readline())
+                node.tip_count = int(file.readline())
+                node.level = int(file.readline())
+                node.sa = float(file.readline())
+                node.ta = float(file.readline())
+                node.lb = float(file.readline())
+                node.sb = float(file.readline())
+
 
     def rescale(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
@@ -335,3 +400,65 @@ class Tree(TreeNode):
         node_data = pd.DataFrame(node_data, index=index_list).T
 
         return node_data
+
+    def create_sector_info(self):
+        """
+        Pre-caclulates left most branch, right most branch, length of deepest branch,
+        and length of shallowest branch for each node in tree
+        """
+        for clade in self.postorder():
+            tips = clade.tips()
+            clade_ancestor = clade.parent
+            center_coords = (clade.x2, clade.y2)
+            ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
+            points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
+            s = tools.sector_info(points, center_coords, ancestor_coords)
+
+    def tip_count_per_subclade(self):
+        """
+        calculates the number of tips in each subclade of the tree.
+        """
+        for tip in self.tips():
+            while tip is not None:
+                tip.tip_count += 1
+                tip = tip.parent
+
+    def clade_level(self):
+        """
+        calculates the depth of each node in self.tree
+        """
+        for node in self.levelorder():
+            node.level = len(node.ancestors())
+
+    def create_clade_info(self):
+        for clade in self.postorder():
+            if not clade.is_tip() and clade is not self:
+                tips = clade.tips()
+                clade_ancestor = clade.parent
+                center_coords = (clade.x2, clade.y2)
+                ancestor_coords = (clade_ancestor.x2 - clade.x2, clade_ancestor.y2 - clade.y2)
+                points = [[tip.x2 - clade.x2, tip.y2 - clade.y2] for tip in tips]
+                try:
+                    s = tools.sector_info(points, center_coords, ancestor_coords)
+                except:
+                    print(points, clade.name, clade.level)
+                clade.sa = s['starting_angle']
+                clade.ta = s['theta']
+                clade.lb = s['largest_branch']
+                clade.sb = s['smallest_branch']
+            else:
+                clade.sa = 0
+                clade.ta = 0
+                clade.lb = 0
+                clade.sb = 0
+
+    def get_clade_info(self, clade):
+        info = {
+            'center_x': clade.x2, 'center_y': clade.y2,
+            'starting_angle': clade.sa, 'theta': clade.ta,
+            'largest_branch': clade.lb, 'smallest_branch': clade.sb}
+        return info
+
+    def test(self):
+        print('test')
+

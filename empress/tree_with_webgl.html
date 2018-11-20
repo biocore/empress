@@ -50,12 +50,15 @@
       <div>
         <button onclick="showMenu('labels')">Labels</button>
       </div>
+      <div>
+        <button onclick="showMenu('collapse')">Priority Collapse</button>
+      </div>
     </div>
 
     <div class="menu" id="highlight-menu">
       <div id="highlight-input">
         <div>
-          <lable for="highlight-options">Feature</lable>
+          <label for="highlight-options">Feature</label>
           <select id = "highlight-options"></select>
         </div>
         <div>
@@ -87,6 +90,10 @@
           <input id="select-data" type="button" value="select" onclick="userCladeColor()"/>
           <input type = "color" id="clade-color-selector" value="#ff0000"/>
         </div>
+         <div>
+            <label for="show-options"> Display Feature</label>
+            <select id = "clade-options"></select>
+          </div>
         <div class="text-field">
           <label for="clade">clade/taxon</label>
           <input type="text" id="clade"/>
@@ -116,6 +123,14 @@
         <input id="show-labels" type="button" value="Show labels" onclick="showLables()"</div>
         <input id="clear-lbl" type="button" value="clear labels" onclick="clearLabels()"/>
       </div>
+      <div id="collapse-options">
+        <label for="tip-slider">Tips Visible</label>
+        <input type='range' min='1' max='100' value='0' class='slider' id='tip-slider'
+                  oninput='autoCollapse()'>
+        <label for="threshold-slider">Threshold</label>
+        <input type='range' min='1' max='100' value='0' class='slider' id='threshold-slider'
+                  oninput='autoCollapse()'>
+      </div>
     </div>
   </div>
 
@@ -144,10 +159,12 @@
       clearColorCladeURL: "http://" + window.location.host + "/clear_clade",
       subTreeURL: "http://" + window.location.host + "/subtree",
       oldTreeURL: "http://" + window.location.host + "/oldtree",
-      selectTreeURL: "http://" + window.location.host + "/selectNodes",
-      collapseSTreeURL: "http://" + window.location.host + "/collapseSTree",
+      selectTreeURL: "http://" + window.location.host + "/select_nodes",
+      collapseSTreeURL: "http://" + window.location.host + "/collapse_Tree",
       trianglesURL: "http://" + window.location.host + "/api/triangles",
+      autoCollapse: 'http://' + window.location.host + '/auto_collapse',
       uncollapseSTreeURL: "http://" + window.location.host + "/uncollapseSTree"
+
     };
 
     // fields to extract from metadata, used in extractInfo()
@@ -205,6 +222,7 @@
   {
     let edgeMetadata;
     let nodeCoords;
+    console.log('test 0');
 
     // this may cause some syncing issues
     $.getJSON(urls.headersURL, function(data) {
@@ -212,15 +230,23 @@
     }).done(function() {
       drawingData.nodeCoords = [0, 0, 0, 0, 0];
       $.getJSON(urls.edgeURL, function(data) {
-        edgeMetadata = data;
+        parseTree(data);
+        // edgeMetadata = data;
       }).done(function() {
+        $.getJSON(urls.trianglesURL, {}, function(data) {
+          drawingData.triangles = extractInfo(data, field.triangleFields);
+          fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
+        }).done(function() {
+          requestAnimationFrame(loop);
+        });
         fillDropDownMenu(field.table_headers.headers, "#highlight-options");
+        fillDropDownMenu(field.table_headers.headers, '#clade-options');
+
         fillDropDownMenu(field.table_headers.headers, "#show-options");
         fillDropDownMenu(field.table_headers.headers, "#prioritize-options");
         hideMenu();
         $("#show-metadata").prop('checked', true);
-        drawingData.edgeCoords = extractInfo(edgeMetadata, field.edgeFields);
-        normalizeTree(edgeMetadata);
+        console.log('test 1');
         $.getJSON(urls.tableURL, function(data) {
           initGridTable(data);
         });
@@ -228,6 +254,7 @@
         initCallbacks();
         setPerspective();
         requestAnimationFrame(loop);
+        console.log('finished');
       });
     });
   }

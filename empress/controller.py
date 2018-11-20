@@ -24,8 +24,12 @@ class EdgeHandler(RequestHandler):
         self.m = m
 
     def get(self):
-        edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible']]
+        print('EdgeHandler start')
+        edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible'] == True]
+        # edges = edges[["px", "py", "x", "y", "branch_color"]]
         self.write(edges.to_json(orient='records'))
+        print('EdgeHandler end')
+
         self.finish()
 
 
@@ -158,10 +162,11 @@ class TableHandler(RequestHandler):
     def get(self):
         """ Grabs all the metadata from model
         """
+        print('TableHandler start')
         table_values = self.m.get_default_table_values()
         self.write(table_values.to_json(orient='records'))
+        print('TableHandler end')
         self.finish()
-
 
 class TableChangeHandler(RequestHandler):
     """ This is used to update the SlickGrid when, for example, a user hightlights
@@ -269,9 +274,10 @@ class ColorCladeHandler(RequestHandler):
         color : string
             A hex string representing the color
         """
+        cat = self.get_argument('cat')
         clade = self.get_argument('clade')
         color = self.get_argument('color')
-        colored_clades = self.m.color_clade(clade, color)
+        colored_clades = self.m.color_clade(cat, clade, color)
         self.write(colored_clades)
         self.finish()
 
@@ -415,10 +421,11 @@ class CollapseSelectedHandler(RequestHandler):
         self.write(edges.to_json(orient='records'))
         self.finish()
 
+        
 class ClearCollapseSelectedHandler(RequestHandler):
     """ Uncollapses the sub-tree selected by SelectHandler
     """
-    def initialize(self, m):
+     def initialize(self, m):
         """ Stores the model in handler
 
         Parameter
@@ -432,5 +439,28 @@ class ClearCollapseSelectedHandler(RequestHandler):
         x1 = self.get_argument("x1")
         y1 = self.get_argument("y1")
         edges = self.m.uncollapse_selected_tree(x1,y1)
+        self.write(edges.to_json(orient='records'))
+        self.finish()
+        
+class AutoCollapseHandler(RequestHandler):
+    """ Automatically collapses the tree based on a priority queue
+    """
+    def initialize(self, m):
+        """ Stores the model in handler
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        """
+        """
+        tips = self.get_argument('tips')
+        threshold = self.get_argument('threshold')
+        # edges = self.m.balance_auto_collapse(tips, threshold)
+        edges = self.m.default_auto_collapse(tips)
+        edges = edges[["px", "py", "x", "y", "branch_color"]]
         self.write(edges.to_json(orient='records'))
         self.finish()
