@@ -5,7 +5,7 @@ from empress.controller import (
     HighlightHandler, TriangleHandler, CollapseHandler, TableHandler,
     TableChangeHandler, HeaderHandler, ColorCladeHandler, SubtreeHandler,
     OldTreeHandler, SelectHandler, CollapseSelectedHandler, ClearColorCladeHandler,
-    CladeHandler, AutoCollapseHandler)
+    CladeHandler, AutoCollapseHandler, ClearCollapseSelectedHandler)
 import os.path
 
 
@@ -29,7 +29,8 @@ class Application(tornado.web.Application):
                     (r'/oldtree', OldTreeHandler, dict(m=m)),
                     (r'/select_nodes', SelectHandler, dict(m=m)),
                     (r'/collapse_tree', CollapseSelectedHandler, dict(m=m)),
-                    (r'/auto_collapse', AutoCollapseHandler, dict(m=m))
+                    (r'/auto_collapse', AutoCollapseHandler, dict(m=m)),
+                    (r"/uncollapseSTree", ClearCollapseSelectedHandler, dict(m=m))
                     ]
 
         settings = dict(

@@ -60,6 +60,7 @@ class Tree(TreeNode):
             n.__class__ = Tree
             n.tip_count = 0
 
+
         tree.update_geometry(use_lengths)
         return tree
 
@@ -158,6 +159,7 @@ class Tree(TreeNode):
         """
         # edge metadata
         print('starting to create dictionary')
+
         edgeData = []
 
         for node in self.postorder():
@@ -452,3 +454,4 @@ class Tree(TreeNode):
 
     def test(self):
         print('test')
+

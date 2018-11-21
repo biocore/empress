@@ -12,7 +12,7 @@ function initCallbacks(){
 
   window.onresize = resizeCanvas;
 
-  $(".tree-surface")[0].ondblclick = getOldTree;
+  $(".tree-surface")[0].ondblclick = mouseHandler;
 
   $(document).keydown(function(e) {
       shftPress = (e.which === SHFT_KEY) ? true : false;
@@ -61,6 +61,22 @@ function selectedTreeCollapse() {
   });
 }
 
+
+function clearSelectedTreeCollapse(event) {
+  let treeCoords = toTreeCoords(event.clientX, event.clientY);
+  $.getJSON(urls.uncollapseSTreeURL, {x1: treeCoords[0], y1: treeCoords[1]}, function(data) {
+    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
+    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+    drawingData.selectTree = [];
+    fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
+    $.getJSON(urls.trianglesURL, {}, function(data) {
+      drawingData.triangles = extractInfo(data, field.triangleFields);
+      fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
+    }).done(function() {
+      requestAnimationFrame(loop);
+    });
+  });
+}
 
 /**
  * resizes the drawing canvas to fix the screen
@@ -357,6 +373,7 @@ function showMenu(menuName) {
       $(".metadata-tabs").css({opacity: 1});
     }
   }
+
 }
 
 /**

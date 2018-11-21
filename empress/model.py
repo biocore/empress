@@ -1,4 +1,5 @@
 import math
+import sys
 import heapq
 import time
 import re
@@ -85,6 +86,7 @@ class Model(object):
 
         print('highlight_ids')
         self.highlight_nodes(highlight_ids)
+        self.__clade_level()
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.
@@ -220,11 +222,13 @@ class Model(object):
         return self.edge_metadata
 
     def highlight_nodes(self, highlight_ids=None):
+
         """ Reads in Node_ids for 'file' and colors their branches red
         Parameters
         ----------
         file : csv file containing Node_ids
         """
+
         # with open(highlight_ids, 'r') as file:
         #     lines = file.readlines()
         # ids = [re.split(';', item) for item in lines]
@@ -297,6 +301,7 @@ class Model(object):
             a list of the internal metadata headers
         """
         return self.headers
+
 
     def color_clade(self, clade_field, clade, color):
         """ Will highlight a certain clade by drawing a sector around the clade.
@@ -556,11 +561,13 @@ class Model(object):
 
             (x1, y1) = (x1 + rx, y1 + ry)
             (x2, y2) = (x2 + rx, y2 + ry)
+            level = clade.level
         else:
             (rx, ry) = (clade.parent.x2, clade.parent.y2)
             (x1, y1) = (x2, y2) = (clade.x2, clade.y2)
             collapsed_nodes = [clade]
             nodes = [clade.name]
+            level = clade.parent.level
 
 
         collapsed_nodes = [node for node in clade.postorder(include_self=False)]
@@ -571,8 +578,9 @@ class Model(object):
         longest = {'rx': x2, 'ry': y2}
         color = {'color': "0000FF"}
         visible = {'visible': True}
+        depth = {'depth': level}
         self.triData[clade.name] = {**nId, **root, **shortest,
-                                                 **longest, **color, **visible}
+                                                 **longest, **color, **visible, **depth}
 
         self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
         return collapsed_nodes
@@ -665,3 +673,108 @@ class Model(object):
             # handle threshold
 
         return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
+
+    def uncollapse_selected_tree(self, x, y):
+        """
+            Parameters
+            ----------
+            x: The x coordinate of the double click
+            y: The y coordinate of the double click
+        """
+        selected_ids = []
+        # Find triangles that contains the point
+        for k in self.triData.keys():
+            if self.is_in_triangle(k, x, y):
+                selected_ids.append(k)
+
+        # Find the highest level of triangle
+        outer = 
+        .maxsize
+        outer_node = None
+        for id in selected_ids:
+            if self.triData[id]['depth'] < outer:
+                outer = self.triData[id]['depth']
+                outer_node = id
+        nodes = [node.name for node in self.tree.find(outer_node).postorder(include_self=False)]
+        for id in self.triData.keys():
+            if id in nodes:
+                selected_ids.append(id)
+
+        # Find the next highest level of triangle if there is any
+        inner = sys.maxsize
+        inner_node = None
+        for id in selected_ids:
+            depth = self.triData[id]['depth']
+            if depth > outer and depth < inner:
+                inner = self.triData[id]['depth']
+                inner_node = id
+
+        del self.triData[outer_node]
+        if inner_node:
+            nodes_inner = [node.name for node in self.tree.find(inner_node).postorder(include_self=False)]
+            nodes = list(set(nodes)-set(nodes_inner))
+        for id in self.triData.keys():
+            self.triData[id]['visible'] = True
+        self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = True
+        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
+
+
+    def is_in_triangle(self, root, x, y):
+        """
+        Check if a point is in triangle of root
+        """
+        x = np.float64(x)
+        y = np.float64(y)
+        triangle = self.triData[root]
+        area = self.triangle_area(
+            triangle['cx'],
+            triangle['cy'],
+            triangle['lx'],
+            triangle['ly'],
+            triangle['rx'],
+            triangle['ry'],
+        )
+        sub_1 = self.triangle_area(
+            x,
+            y,
+            triangle['lx'],
+            triangle['ly'],
+            triangle['rx'],
+            triangle['ry'],
+        )
+        sub_2 = self.triangle_area(
+            x,
+            y,
+            triangle['cx'],
+            triangle['cy'],
+            triangle['rx'],
+            triangle['ry'],
+        )
+        sub_3 = self.triangle_area(
+            x,
+            y,
+            triangle['lx'],
+            triangle['ly'],
+            triangle['cx'],
+            triangle['cy'],
+        )
+        return abs(sub_1 + sub_2 + sub_3-area) < 0.001
+
+    def triangle_area(self, x1, y1, x2, y2, x3, y3):
+        """
+        Calculate triangle area
+        """
+        return abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0)
+
+    def get_triangles(self):
+        triangles = {k: v for (k, v) in self.triData.items() if v['visible']}
+        self.triangles = pd.DataFrame(triangles).T
+        return self.triangles
+
+    def __clade_level(self):
+        """
+        Calculates the depth of each node in self.tree
+        """
+        for node in self.tree.levelorder():
+            node.level = len(node.ancestors())
+            node.tip_count = 0
