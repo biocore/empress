@@ -688,8 +688,7 @@ class Model(object):
                 selected_ids.append(k)
 
         # Find the highest level of triangle
-        outer = 
-        .maxsize
+        outer = sys.maxsize
         outer_node = None
         for id in selected_ids:
             if self.triData[id]['depth'] < outer:

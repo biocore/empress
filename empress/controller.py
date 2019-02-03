@@ -421,11 +421,11 @@ class CollapseSelectedHandler(RequestHandler):
         self.write(edges.to_json(orient='records'))
         self.finish()
 
-        
+
 class ClearCollapseSelectedHandler(RequestHandler):
     """ Uncollapses the sub-tree selected by SelectHandler
     """
-     def initialize(self, m):
+    def initialize(self, m):
         """ Stores the model in handler
 
         Parameter
@@ -441,7 +441,7 @@ class ClearCollapseSelectedHandler(RequestHandler):
         edges = self.m.uncollapse_selected_tree(x1,y1)
         self.write(edges.to_json(orient='records'))
         self.finish()
-        
+
 class AutoCollapseHandler(RequestHandler):
     """ Automatically collapses the tree based on a priority queue
     """
