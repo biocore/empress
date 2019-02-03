@@ -66,6 +66,7 @@ class Model(object):
         self.edge_metadata = self.edge_metadata[self.edge_metadata.x.notnull()]
         self.edge_metadata['index'] = self.edge_metadata['Node_id']
         self.edge_metadata = self.edge_metadata.set_index('index')
+        print(metadata)
 
         self.triangles = pd.DataFrame()
         self.selected_tree = pd.DataFrame()
@@ -190,6 +191,7 @@ class Model(object):
             passed in.
         """
         # update the cached trees
+        new_value = DEFAULT_COLOR if new_value == "DEFAULT" else new_value
         for edge_data, _ in self.cached_subtrees:
             if lower is not "":
                 edge_data.loc[edge_data[attribute] > float(lower), category] = new_value

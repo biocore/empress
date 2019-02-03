@@ -420,7 +420,7 @@ function clearSelection(obj) {
   } else {
     e = item.compVal;
   }
-  selectHighlight(attr, cat, DEFUALT_BRANCH_COLOR, l, u, e);
+  selectHighlight(attr, cat, "DEFAULT", l, u, e);
 
   delete attrItem[obj.parentElement.id];
   obj.parentNode.remove();

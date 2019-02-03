@@ -82,10 +82,13 @@ class Tree(TreeNode):
             # node.name = i
             # i += 1
             if node.length is None or not use_lengths:
-                if depth is None:
-                    node.length = 0
+                if not use_lengths:
+                    if node.is_tip():
+                        node.length = 5
+                    else:
+                        node.length = 1
                 else:
-                    node.length = 1
+                    node.length = 0
 
             node.depth = (depth or 0) + node.length
 
@@ -270,9 +273,8 @@ class Tree(TreeNode):
             if y_diff != 0:
                 height_min = float(height) / y_diff
             scale = min(width_min, height_min)
-
             scale *= 0.95  # extra margin for labels
-            if scale > best_scale:
+            if scale >= best_scale:
                 best_scale = scale
                 mid_x = width / 2 - ((max_x + min_x) / 2) * scale
                 mid_y = height / 2 - ((max_y + min_y) / 2) * scale
