@@ -26,6 +26,7 @@ class EdgeHandler(RequestHandler):
     def get(self):
         print('EdgeHandler start')
         edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible'] == True]
+        print(self.m.headers)
         # edges = edges[["px", "py", "x", "y", "branch_color"]]
         self.write(edges.to_json(orient='records'))
         print('EdgeHandler end')
@@ -226,6 +227,7 @@ class HeaderHandler(RequestHandler):
         """ Retrieves all headers from metadata
         """
         headers = self.m.get_headers()
+        print(headers)
         self.write({'headers': headers})
         self.finish()
 

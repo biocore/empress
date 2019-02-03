@@ -5,7 +5,7 @@ import time
 from operator import attrgetter
 import empress.tools as tools
 
-DEFAULT_COLOR = '000000'
+DEFAULT_COLOR = 'AAAAAA'
 SELECT_COLOR = '00FF00'
 
 
@@ -82,10 +82,13 @@ class Tree(TreeNode):
             # node.name = i
             # i += 1
             if node.length is None or not use_lengths:
-                if depth is None:
-                    node.length = 0
+                if not use_lengths:
+                    if node.is_tip():
+                        node.length = 5
+                    else:
+                        node.length = 1
                 else:
-                    node.length = 1
+                    node.length = 0
 
             node.depth = (depth or 0) + node.length
 
@@ -142,6 +145,7 @@ class Tree(TreeNode):
             node.x2 = node.x2 - centerX
             node.y2 = node.y2 - centerY
 
+        self.assign_ids()
         edgeMeta = self.to_df()
         print('calculating depth level of each node')
         self.clade_level()
@@ -157,38 +161,30 @@ class Tree(TreeNode):
         """ Creates a dataframe from the tree
         """
         # edge metadata
-        i = 0
         print('starting to create dictionary')
-        edgeData = {}
-        uId = {'unique_id': i}
-        nId = {'Node_id': self.name}
-        isTip = {'is_tip': False}
-        coords = {'x': self.x2, 'y': self.y2}
-        pId = {'Parent_id': self.name}
-        pCoords = {'px': self.x2, 'py': self.y2}
-        attr = {'node_color': DEFAULT_COLOR, 'branch_color': DEFAULT_COLOR,
-                        'node_is_visible': True, 'branch_is_visible': True,
-                        'width': 1, 'size': 1}
-        edgeData[i] = {**nId, **uId, **isTip, **coords, **pId,
-                                **pCoords, **attr}
-        i += 1
+
+        edgeData = []
 
         for node in self.postorder():
             node.alpha = 0.0
-            pId = {"Parent_id": node.name}
-            pCoords = {'px': node.x2, 'py': node.y2}
             for child in node.children:
-                uId = {'unique_id': i}
-                nId = {"Node_id": child.name}
-                isTip = {"is_tip": child.is_tip()}
-                coords = {'x': child.x2, 'y': child.y2}
-
-                attr = {'node_color': DEFAULT_COLOR, 'branch_color': DEFAULT_COLOR,
-                        'node_is_visible': True, 'branch_is_visible': True,
-                        'width': 1, 'size': 1}
-                edgeData[i] = {**nId, **uId, **isTip, **coords, **pId,
-                                        **pCoords, **attr}
-                i  += 1
+                item = [
+                        child.name,
+                        child.id,
+                        child.is_tip(),
+                        child.x2,
+                        child.y2,
+                        node.name,
+                        node.x2,
+                        node.y2,
+                        DEFAULT_COLOR,
+                        DEFAULT_COLOR,
+                        True,
+                        True,
+                        1,
+                        1
+                        ]
+                edgeData.append(item)
 
         print('create pandas')
         index_list = pd.Index([
@@ -209,7 +205,7 @@ class Tree(TreeNode):
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(
             edgeData,
-            index=index_list).T
+            columns=index_list)
         print('done creating pandas')
         return edgeMeta
 
@@ -277,9 +273,8 @@ class Tree(TreeNode):
             if y_diff != 0:
                 height_min = float(height) / y_diff
             scale = min(width_min, height_min)
-
             scale *= 0.95  # extra margin for labels
-            if scale > best_scale:
+            if scale >= best_scale:
                 best_scale = scale
                 mid_x = width / 2 - ((max_x + min_x) / 2) * scale
                 mid_y = height / 2 - ((max_y + min_y) / 2) * scale

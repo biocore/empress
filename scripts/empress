@@ -41,7 +41,7 @@ import click
     help='The seperator used in the additional metedata file. [default: <tab>]'
 )
 @click.option(
-    'highlight_file', '-h', default=None, show_default=True
+    '--color-file', '-c', default=None, show_default=True
 )
 @click.option(
     '--empress-coords-file', '-e', default=None
@@ -49,7 +49,7 @@ import click
 def start(
         tree_file, metadata, additional_metadata, port,
         main_skiprow, additional_skiprow, main_seperator, additional_seperator,
-        highlight_file, empress_coords_file):
+        color_file, empress_coords_file):
 
     try:
         import qiime2
@@ -70,12 +70,9 @@ def start(
                         how='outer', on="Node_id")
     print('done reading metadata')
 
-    # read in main metadata
-    headers = metadata.columns.values.tolist()
-
-    if highlight_file is not None:
+    if color_file is not None:
         nodes = tools.read_metadata(
-            highlight_file, seperator='\t')
+            color_file, seperator='\t')
         nodes['index'] = nodes['Node_id']
         nodes = nodes.set_index('index')
     else:
