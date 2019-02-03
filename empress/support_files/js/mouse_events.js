@@ -38,6 +38,7 @@ function mouseHandler(event) {
       clearSelectedTreeCollapse(event);
     }
   }
+
 }
 
 /**
@@ -59,6 +60,7 @@ function toTreeCoords(x, y) {
   // calculate the screen coordinate of the label
   let treeSpace = vec4.fromValues(x, y, 0, 1);
   vec4.transformMat4(treeSpace, treeSpace, shaderProgram.xyTransMat);
+
   return treeSpace;
 }
 
@@ -183,4 +185,6 @@ function mouseWheel(event) {
 
   // redraw tree
   requestAnimationFrame(loop);
+
 }
+

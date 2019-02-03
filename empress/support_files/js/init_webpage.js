@@ -102,7 +102,7 @@ function extractInfo(metaData, fields) {
   });
 
   // flatten array
-  extractedFields = [].concat.apply([], extractedFields);
+  extractedFields = extractedFields.flat();
 
   // convert convert color hex string into three floats
   extractedFields = extractColor(extractedFields);
@@ -121,7 +121,8 @@ function extractColor(data) {
   });
 
   // convert to array
-  data = [].concat.apply([], data);
+
+  data = data.flat();
 
   // convert the 2 digit hex string into a float
   data = data.map(function(element) {
@@ -158,9 +159,18 @@ function loadTree(data) {
 function normalizeTree(edgeMeta) {
   const xCoords = edgeMeta.map(edge => edge.x);
   const yCoords = edgeMeta.map(edge => edge.y);
-  let maxX, maxY, minX, minY;
-  [maxX, minX] = [Math.abs(Math.max(...xCoords)), Math.abs(Math.min(...xCoords))];
-  [maxY, minY] = [Math.abs(Math.max(...yCoords)), Math.abs(Math.min(...yCoords))];
-  const [xDim, yDim] = [Math.max(maxX, minX), Math.max(maxY, minY)];
-  drawingData.initZoom = Math.max(xDim, yDim);
+  console.log(xCoords);
+  let maxX = 0, maxY = 0, minX = 0, minY = 0;
+  let x = 0, y = 0;
+  for(let x in xCoords) {
+    if(Math.abs(xCoords[x]) > maxX){
+      maxX = xCoords[x];
+    }
+  }
+  for(let y in yCoords) {
+    if(Math.abs(yCoords[y]) > maxY){
+      maxY = yCoords[x];
+    }
+  }
+  drawingData.initZoom = Math.max(maxX, maxY);
 }

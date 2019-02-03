@@ -62,7 +62,6 @@ function selectedTreeCollapse() {
 }
 
 
-
 function clearSelectedTreeCollapse(event) {
   let treeCoords = toTreeCoords(event.clientX, event.clientY);
   $.getJSON(urls.uncollapseSTreeURL, {x1: treeCoords[0], y1: treeCoords[1]}, function(data) {
@@ -255,7 +254,7 @@ function changeColorSelection(obj) {
  * @param {string} a hex string that represent what color to change the clade to
  */
 function updateColorSelection(arcID, color) {
-  $.getJSON(urls.cladeColorURL, { clade: arcID, color: color}, function(data) {
+  $.getJSON(urls.cladeColorURL, {cat: "None", clade: arcID, color: color}, function(data) {
     loadColorClades(data);
   });
 }
@@ -285,11 +284,12 @@ function selectHighlight(attr, cat, val, l, u, e) {
  * The event called when a user want to highlight a clade.
  */
 function userCladeColor() {
+  const cat = $("#clade-options").val();
   const color = $("#clade-color-selector").val().toUpperCase().slice(1);
   const clade = $("#clade").val();
   let nodeCoords;
 
-  $.getJSON(urls.cladeColorURL, {clade: clade, color: color}, function(data) {
+  $.getJSON(urls.cladeColorURL, {cat: cat, clade: clade, color: color}, function(data) {
     if(!data.hasOwnProperty('empty')) {
       loadColorClades(data);
       addCladeItem(clade, color);
@@ -351,7 +351,7 @@ function showMenu(menuName) {
       $(".metadata-tabs").css({opacity: 1});
     }
   }
-  else {
+  else if(menuName === "labels") {
     if($("#label-input").is(":visible")) {
       hideMenu();
       $(".metadata-tabs").css({opacity: 0.5});
@@ -362,18 +362,31 @@ function showMenu(menuName) {
       $(".metadata-tabs").css({opacity: 1});
     }
   }
+  else {
+    if($('#collapse-options').is(':visible')){
+      hideMenu();
+      $(".metadata-tabs").css({opacity: 0.5});
+    }
+    else {
+      hideMenu();
+      $('#collapse-options').show();
+      $(".metadata-tabs").css({opacity: 1});
+    }
+  }
+
 }
 
 /**
  * Resets the user menu
  */
 function hideMenu() {
-  $("#highlight-input").hide();
-  $("#color-selector").hide();
-  $("#color-input").hide();
-  $("#metadata-options").hide();
+  $('#highlight-input').hide();
+  $('#color-selector').hide();
+  $('#color-input').hide();
+  $('#metadata-options').hide();
   $("#highlight-history").hide();
   $('#label-input').hide();
+  $('#collapse-options').hide();
 }
 
 function showLables() {
@@ -564,4 +577,24 @@ function toggleMetadata() {
   else {
     $("#scrolltable").hide();
   }
+}
+
+function autoCollapse() {
+  let tps = $('#tip-slider').val();
+  let thrshld = $('#threshold-slider').val();
+  $.getJSON(urls.autoCollapse, {tips: tps, threshold: thrshld}, function(data) {
+    loadTree(data);
+    $.getJSON(urls.trianglesURL, {}, function(data) {
+      drawingData.triangles = extractInfo(data, field.triangleFields);
+      fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
+    }).done(function() {
+      requestAnimationFrame(loop);
+    });
+  });
+}
+
+function parseTree(data) {
+  drawingData.edgeCoords = extractInfo(data, field.edgeFields);
+  console.log('test 2');
+  normalizeTree(data);
 }
