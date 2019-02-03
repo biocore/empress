@@ -48,6 +48,7 @@ function initCallbacks(){
 function selectedTreeCollapse() {
   $(".selected-tree-menu").css({visibility: "hidden"})
   $.getJSON(urls.collapseSTreeURL, {}, function(data) {
+    console.log('???')
     drawingData.edgeCoords = extractInfo(data, field.edgeFields);
     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
     drawingData.selectTree = [];

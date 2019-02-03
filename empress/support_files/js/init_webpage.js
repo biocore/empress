@@ -4,6 +4,9 @@ function fillDropDownMenu(headers, menuName) {
   $("#highlight-menu").show();
 
   let menu = $(menuName).empty()[0];
+  headers.sort().sort(function (a, b) {
+    return a.toLowerCase().localeCompare(b.toLowerCase());
+  });
   for (let header of headers) {
     let option = document.createElement("option");
       option.text = header;
