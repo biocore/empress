@@ -67,6 +67,7 @@ class Model(object):
         self.edge_metadata = self.edge_metadata[self.edge_metadata.x.notnull()]
         self.edge_metadata['index'] = self.edge_metadata['Node_id']
         self.edge_metadata = self.edge_metadata.set_index('index')
+        print(metadata)
 
         self.triangles = pd.DataFrame()
         self.selected_tree = pd.DataFrame()
@@ -192,6 +193,7 @@ class Model(object):
             passed in.
         """
         # update the cached trees
+        new_value = DEFAULT_COLOR if new_value == "DEFAULT" else new_value
         for edge_data, _ in self.cached_subtrees:
             if lower is not "":
                 edge_data.loc[edge_data[attribute] > float(lower), category] = new_value
@@ -334,23 +336,23 @@ class Model(object):
 
             i = 0
             for clade_root_id in clade_roots_id:
-                clade = self.tree.find(clade_root_id)
-                color_clade = self.tree.get_clade_info(clade)
-                color_clade['color'] = color
-                color_clade_s = tools.create_arc_sector(color_clade)
-                depth = len([node.name for node in clade.ancestors()])
-                self.colored_clades[c+str(i)] = {'data': color_clade_s,
-                                          'depth': depth,
-                                          'color': color,
-                                          'id': clade_root_id}
-                i += 1
+                clades = self.tree.find_all(clade_root_id)
+                for clade in clades:
+                    color_clade = self.tree.get_clade_info(clade)
+                    color_clade['color'] = color
+                    color_clade_s = tools.create_arc_sector(color_clade)
+                    depth = len([node.name for node in clade.ancestors()])
+                    self.colored_clades[c+str(i)] = {'data': color_clade_s,
+                                              'depth': depth,
+                                              'color': color,
+                                              'node': clade}
+                    i += 1
         else:
             i = 0
             clade_name = clade
             for (k,v) in self.colored_clades.items():
                 if clade_name in k:
-                    clade_id = v['id']
-                    clade = self.tree.find(clade_id)
+                    clade = v['node']
                     color_clade = self.tree.get_clade_info(clade)
                     color_clade['color'] = color
                     color_clade_s = tools.create_arc_sector(color_clade)
@@ -358,7 +360,7 @@ class Model(object):
                     self.colored_clades[k] = {'data': color_clade_s,
                                               'depth': depth,
                                               'color': color,
-                                              'id': clade_id}
+                                              'node': clade}
                     i += 1
         return self.get_colored_clade()
 
@@ -391,6 +393,7 @@ class Model(object):
         sorted_clades = [flat for two_d in sorted_clades for flat in two_d]
         return {"clades": sorted_clades}
 
+    # Todo need to added the other items in colored-clades
     def refresh_clades(self):
         colored_clades = {}
         for k, v in self.colored_clades.items():
