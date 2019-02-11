@@ -141,7 +141,10 @@ function moveTree(event) {
   // calculate which direction the mouse moved
   const dx = (drawingData.lastMouseX - newX);
   const dy = (newY - drawingData.lastMouseY);
-  const transVec = vec3.fromValues(dx, dy,0);
+  const dirVec = vec3.fromValues(dx, dy,0);
+  let transVec = vec3.create();
+  vec3.normalize(transVec, dirVec);
+  vec3.scale(transVec, transVec, drawingData.currentZoom / 50.0);
   let addTransMat = mat4.create();
 
   // modify matrix to move camera in xy-plane in the direction the mouse moved
@@ -182,7 +185,7 @@ function mouseWheel(event) {
   let zoomVec = vec3.fromValues(0, 0, zoomAmount);
   mat4.fromTranslation(zoomByMat, zoomVec);
   mat4.mul(shaderProgram.zTransMat, zoomByMat, shaderProgram.zTransMat);
-
+  drawingData.currentZoom += zoomAmount;
   // redraw tree
   requestAnimationFrame(loop);
 

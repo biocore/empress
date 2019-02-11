@@ -453,7 +453,3 @@ class Tree(TreeNode):
             'starting_angle': clade.sa, 'theta': clade.ta,
             'largest_branch': clade.lb, 'smallest_branch': clade.sb}
         return info
-
-    def test(self):
-        print('test')
-

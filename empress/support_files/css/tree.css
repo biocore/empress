@@ -146,3 +146,12 @@ canvas {
     display: grid;
     grid-template-columns: 1fr;
 }
+
+#toggle-pages {
+    position: absolute;
+    top: 0vh;
+    left: 0vw;
+    height: 12px;
+    width: 60;
+    border: 2px sold black;
+}

@@ -330,3 +330,18 @@ def sector_info(points, sector_center, ancestor_coords):
 
     return colored_clades
 
+def rotate_vector(v, theta):
+    X = 0
+    Y = 1
+    prev_x = v[X]
+    prev_y = v[Y]
+    v[X] = prev_x*math.cos(theta) + -1*prev_y*math.sin(theta)
+    v[Y] = prev_y* math.cos(theta) + prev_x*math.sin(theta)
+    return v
+
+def scale_vector(v, s):
+    X = 0
+    Y = 1
+    v[X] = v[X] * s
+    v[Y] = v[Y] * s
+    return v

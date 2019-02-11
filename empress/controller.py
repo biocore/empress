@@ -7,7 +7,7 @@ class ModelHandler(RequestHandler):
     def get(self):
         """ used by server to render html webpage
         """
-        self.render('tree_with_webgl.html')
+        self.render('support_files/html/tree_with_webgl.html')
 
 
 class EdgeHandler(RequestHandler):

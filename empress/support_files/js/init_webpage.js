@@ -176,4 +176,5 @@ function normalizeTree(edgeMeta) {
     }
   }
   drawingData.initZoom = Math.max(maxX, maxY);
+  drawingData.currentZoom = drawingData.initZoom;
 }

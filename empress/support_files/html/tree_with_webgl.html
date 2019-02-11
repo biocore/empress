@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-16">
+  <meta charset="UTF-8">
   <title>WebGL - Experiment</title>
    <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/slick.grid.css') }}">
    <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/jquery-ui-1.11.3.custom.css') }}">
    <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/slick.grid.format.css') }}">
-   <link rel="stylesheet" type="text/css" href="{{ static_url('css/style.css') }}">
+   <link rel="stylesheet" type="text/css" href="{{ static_url('css/tree.css') }}">
   <script type="text/javascript" src="{{ static_url('vendor/js/gl-matrix.min.js') }}"></script>
 <script type="text/javascript" src="{{ static_url('vendor/js/jquery-2.2.4.min.js') }}"></script>
 <script type="text/javascript" src="{{ static_url('vendor/js/jquery.event.drag-2.2.min.js') }}"></script>
@@ -22,6 +22,7 @@
 </head>
 
 <body>
+
   <div class="container">
     <canvas class="tree-surface", id="tree-surface">
       Your browser does not support HTML5
@@ -182,16 +183,17 @@
     let gl = {}; // webgl context - used to call webgl functions
 
     // stores info need to draw such as vertex data
-    let drawingData = {
+    sessionStorage.setItem("drawingData", {
       isMouseDown: false,
       lastMouseX: null,
       lastMouseY: null,
       zoomAmount: 10,
+      currentZoom: 0,
       maxZoom: 30,
       coloredClades: [],
       selectTree: [],
       triangles: []
-    };
+    });
 
     let numAttr = 0;
     let attrItem = {};
@@ -219,6 +221,7 @@
 
   <script type="text/javascript">
   {
+    let drawingData = sessionStorage.getItem("drawingData");
     let edgeMetadata;
     let nodeCoords;
     console.log('test 0');
@@ -258,5 +261,6 @@
     });
   }
   </script>
+
 </body>
 </html>
