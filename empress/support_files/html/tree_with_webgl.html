@@ -183,7 +183,7 @@
     let gl = {}; // webgl context - used to call webgl functions
 
     // stores info need to draw such as vertex data
-    sessionStorage.setItem("drawingData", {
+    let drawingData = {
       isMouseDown: false,
       lastMouseX: null,
       lastMouseY: null,
@@ -193,7 +193,7 @@
       coloredClades: [],
       selectTree: [],
       triangles: []
-    });
+    };
 
     let numAttr = 0;
     let attrItem = {};
