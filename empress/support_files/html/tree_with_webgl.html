@@ -7,6 +7,7 @@
    <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/jquery-ui-1.11.3.custom.css') }}">
    <link rel="stylesheet" type="text/css" href="{{ static_url('vendor/css/slick.grid.format.css') }}">
    <link rel="stylesheet" type="text/css" href="{{ static_url('css/tree.css') }}">
+   <link rel="stylesheet" type="text/css" href="{{ static_url('css/metadata.css') }}">
   <script type="text/javascript" src="{{ static_url('vendor/js/gl-matrix.min.js') }}"></script>
 <script type="text/javascript" src="{{ static_url('vendor/js/jquery-2.2.4.min.js') }}"></script>
 <script type="text/javascript" src="{{ static_url('vendor/js/jquery.event.drag-2.2.min.js') }}"></script>
@@ -22,131 +23,332 @@
 </head>
 
 <body>
+  <!-- The tree -->
+  <div class="tree-container">
+    <div class="container">
+      <canvas class="tree-surface", id="tree-surface">
+        Your browser does not support HTML5
+      </canvas>
+      <div id="divcontainer"></div>
+      <div class="square"></div>
+      <div class="selected-tree-menu">
+        <input id="collapse" type = "button" value = "collapse" onclick="selectedTreeCollapse()"/>
+      </div>
+    </div>
 
-  <div class="container">
-    <canvas class="tree-surface", id="tree-surface">
-      Your browser does not support HTML5
-    </canvas>
-    <div id="divcontainer"></div>
-    <div class="square"></div>
-    <div class="selected-tree-menu">
-      <input id="collapse" type = "button" value = "collapse" onclick="selectedTreeCollapse()"/>
+    <div class="metadata-tabs">
+
+      <!-- Branch tab -->
+      <button class="collapsible">Branches</button>
+      <div class="content">
+        <div>
+            <label for="highlight-options">Color by...</label>
+            <select id = "highlight-options">
+                <option value=0 disabled> -- select an option -- </option>
+            </select>
+          </div>
+          <div>
+            <label for="color-options">Choose Color Map</label>
+            <select id = "color-options">
+                <option disabled> -- Sequential -- </option>
+                <option value="viridis" color="red">viridis</option>
+                <option value="Blues">Blue</option>
+                <option value="Greens">Green</option>
+                <option value="Reds">Red</option>
+                <option value="BuGn">Blue to Green</option>
+                <option value="cool">Blue to Purple</option>
+                <option value="YlOrRd">Yellow to Red</option>
+                <option value="hot">Hot</option>
+                <option value="winter">Winter</option>
+                <option disabled>-- Diverging --</option>
+                <option value="seismic">Blue to Red</option>
+                <option value=coolwarm>Cool to Warm</option>
+                <option value="PRGn">Purple to Green</option>
+            </select>
+          </div>
+          <div>
+            <button onclick="userHighlightSelect()">Color Branches</button>
+          </div>
+          <div class="gradient-bar">
+            <div>0</div>
+            <div class="gradient-color">
+            </div>
+            <div>50000</div>
+          </div>
+          <!-- <button></button> -->
+
+          <!-- <div class="text-field">
+            <label for="lower-bound">Lower Bound</label>
+            <input type="text" id="lower-bound"/>
+          </div>
+
+          <div class="text-field">
+            <label for="upper-bound">Upper Bound</label>
+            <input type="text" id="upper-bound"/>
+          </div>
+
+          <div class="text-field">
+            <label for="category">Equals to</label>
+            <input type="text" id="category"/>
+          </div>
+
+          <div id="highlight-history">
+          </div> -->
+      </div>
+
+      <!-- Color Clades -->
+      <button class="collapsible">Color Clades</button>
+      <div class="content">
+        <div>
+          <label for="tax-level">Taxonomic Level...</label>
+          <select id = "tax-level">
+            <option value=0 disabled> -- select an option -- </option>
+            <option>Kindom</option>
+            <option>Phylum</option>
+            <option>Class</option>
+            <option>Order</option>
+            <option>Family</option>
+            <option>Genus</option>
+            <option>Species</option>
+          </select>
+        </div>
+        <div>
+            <label for="clade-options">Color by...</label>
+            <select id = "clade-options">
+                <option value=0 disabled> -- select an option -- </option>
+                <option value=0>Default</option>
+            </select>
+          </div>
+        <div>
+          <label for="color-options-tax">Choose Color Map</label>
+          <select id = "color-options-tax">
+              <option disabled> -- Sequential -- </option>
+              <option value="viridis" color="red">viridis</option>
+              <option value="Blues">Blue</option>
+              <option value="Greens">Green</option>
+              <option value="Reds">Red</option>
+              <option value="BuGn">Blue to Green</option>
+              <option value="cool">Blue to Purple</option>
+              <option value="YlOrRd">Yellow to Red</option>
+              <option value="hot">Hot</option>
+              <option value="winter">Winter</option>
+              <option disabled>-- Diverging --</option>
+              <option value="seismic">Blue to Red</option>
+              <option value=coolwarm>Cool to Warm</option>
+              <option value="PRGn">Purple to Green</option>
+          </select>
+        </div>
+        <div id="taxonomic-color-div" >
+          <label for="taxonomic-color-options">Taxonomic Color Map</label>
+          <select id = "taxonomic-color-options">
+              <option disabled> -- Sequential -- </option>
+              <option value="viridis" color="red">viridis</option>
+              <option value="Blues">Blue</option>
+              <option value="Greens">Green</option>
+              <option value="Reds">Red</option>
+              <option value="BuGn">Blue to Green</option>
+              <option value="cool">Blue to Purple</option>
+              <option value="YlOrRd">Yellow to Red</option>
+              <option value="hot">Hot</option>
+              <option value="winter">Winter</option>
+              <option disabled>-- Diverging --</option>
+              <option value="seismic">Blue to Red</option>
+              <option value=coolwarm>Cool to Warm</option>
+              <option value="PRGn">Purple to Green</option>
+          </select>
+        </div>
+        <div>
+          <button onclick="userCladeColor()">Color Clades</button>
+        </div>
+      </div>
+      <!-- Collapse -->
+      <button class="collapsible">Auto-Collapse</button>
+      <div class="content">
+        <div>
+          <label for="collapse-level">Collapse BY...</label>
+          <select id = "collapse-level">
+            <option value=0 disabled> -- select an option -- </option>
+            <option>Kindom</option>
+            <option>Phylum</option>
+            <option>Class</option>
+            <option>Order</option>
+            <option>Family</option>
+            <option>Genus</option>
+            <option>Species</option>
+          </select>
+        </div>
+        <div>
+          <label for="color-options-tax">Choose Color Map</label>
+          <select id = "color-options-collapse">
+              <option disabled> -- Sequential -- </option>
+              <option value="viridis" color="red">viridis</option>
+              <option value="Blues">Blue</option>
+              <option value="Greens">Green</option>
+              <option value="Reds">Red</option>
+              <option value="BuGn">Blue to Green</option>
+              <option value="cool">Blue to Purple</option>
+              <option value="YlOrRd">Yellow to Red</option>
+              <option value="hot">Hot</option>
+              <option value="winter">Winter</option>
+              <option disabled>-- Diverging --</option>
+              <option value="seismic">Blue to Red</option>
+              <option value=coolwarm>Cool to Warm</option>
+              <option value="PRGn">Purple to Green</option>
+          </select>
+        </div>
+        <div>
+          <label for="collapse-options">Color by...</label>
+          <select id = "collapse-options">
+              <option value=0 disabled> -- select an option -- </option>
+          </select>
+        </div>
+        <div>
+        <div>
+          <button onclick="autoCollapseTree()">Collapse Tree</button>
+        </div>
+      </div>
+      <!-- <div class="tab-options">
+        <div>
+          <button onclick="showMenu('highlight')">Highlight Tips</button>
+        </div>
+        <div>
+          <button onclick="showMenu('color')">Color Clade</button>
+        </div>
+        <div>
+          <button onclick="showMenu('subTree')">Sub Tree</button>
+        </div>
+        <div>
+          <button onclick="showMenu('metadata')">Metadata</button>
+        </div>
+        <div>
+          <button onclick="showMenu('labels')">Labels</button>
+        </div>
+        <div>
+          <button onclick="showMenu('collapse')">Priority Collapse</button>
+        </div>
+      </div> -->
+
+      <!-- <div class="menu" id="highlight-menu">
+        <div id="highlight-input">
+          <div>
+            <label for="highlight-options">Feature</label>
+            <select id = "highlight-options"></select>
+          </div>
+          <div>
+            <input id="select-highlight" type = "button" value = "select"/>
+            <input type = "color" id="color-selector" value="#ff0000"/>
+          </div>
+
+          <div class="text-field">
+            <label for="lower-bound">Lower Bound</label>
+            <input type="text" id="lower-bound"/>
+          </div>
+
+          <div class="text-field">
+            <label for="upper-bound">Upper Bound</label>
+            <input type="text" id="upper-bound"/>
+          </div>
+
+          <div class="text-field">
+            <label for="category">Equals to</label>
+            <input type="text" id="category"/>
+          </div>
+
+          <div id="highlight-history">
+          </div>
+        </div>
+
+        <div id="color-input">
+          <div>
+            <input id="select-data" type="button" value="select" onclick="userCladeColor()"/>
+            <input type = "color" id="clade-color-selector" value="#ff0000"/>
+          </div>
+           <div>
+              <label for="show-options"> Display Feature</label>
+              <select id = "clade-options"></select>
+            </div>
+          <div class="text-field">
+            <label for="clade">clade/taxon</label>
+            <input type="text" id="clade"/>
+          </div>
+        </div>
+
+        <div id="metadata-options">
+          <label for="show-metadata">show metadata table</label>
+          <input id="show-metadata" type="checkbox" onclick="toggleMetadata()"/>
+        </div>
+
+         <div id="label-input">
+          <div id="label-dropbox">
+            <div>
+              <label for="show-options"> Display Feature</label>
+              <select id = "show-options"></select>
+            </div>
+            <div>
+              <label for="prioritize-options">Prioritize Feature</label>
+              <select id = "prioritize-options"></select>
+            </div>
+            <div>
+              <label for="descending-toggle">Descending</label>
+              <input id="descending-toggle" type="checkbox"/>
+            </div>
+          </div>
+          <input id="show-labels" type="button" value="Show labels" onclick="showLables()"</div>
+          <input id="clear-lbl" type="button" value="clear labels" onclick="clearLabels()"/>
+        </div>
+        <div id="collapse-options">
+          <label for="tip-slider">Tips Visible</label>
+          <input type='range' min='1' max='100' value='0' class='slider' id='tip-slider'
+                    oninput='autoCollapse()'>
+          <label for="threshold-slider">Threshold</label>
+          <input type='range' min='1' max='100' value='0' class='slider' id='threshold-slider'
+                    oninput='autoCollapse()'>
+        </div>
+      </div> -->
     </div>
   </div>
 
-  <div class="metadata-tabs">
-    <div class="tab-options">
-      <div>
-        <button onclick="showMenu('highlight')">Highlight Tips</button>
-      </div>
-      <div>
-        <button onclick="showMenu('color')">Color Clade</button>
-      </div>
-      <div>
-        <button onclick="showMenu('subTree')">Sub Tree</button>
-      </div>
-      <div>
-        <button onclick="showMenu('metadata')">Metadata</button>
-      </div>
-      <div>
-        <button onclick="showMenu('labels')">Labels</button>
-      </div>
-      <div>
-        <button onclick="showMenu('collapse')">Priority Collapse</button>
-      </div>
-    </div>
+  <script type="text/javascript">
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
 
-    <div class="menu" id="highlight-menu">
-      <div id="highlight-input">
-        <div>
-          <label for="highlight-options">Feature</label>
-          <select id = "highlight-options"></select>
-        </div>
-        <div>
-          <input id="select-highlight" type = "button" value = "select"/>
-          <input type = "color" id="color-selector" value="#ff0000"/>
-        </div>
+    for (i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+          content.style.display = "none";
+          // this.style.opacity = 0.5;
+        } else {
+          content.style.display = "block";
+          // this.style.opacity = 1;
+        }
+      });
+    }
+  </script>
 
-        <div class="text-field">
-          <label for="lower-bound">Lower Bound</label>
-          <input type="text" id="lower-bound"/>
-        </div>
-
-        <div class="text-field">
-          <label for="upper-bound">Upper Bound</label>
-          <input type="text" id="upper-bound"/>
-        </div>
-
-        <div class="text-field">
-          <label for="category">Equals to</label>
-          <input type="text" id="category"/>
-        </div>
-
-        <div id="highlight-history">
-        </div>
-      </div>
-
-      <div id="color-input">
-        <div>
-          <input id="select-data" type="button" value="select" onclick="userCladeColor()"/>
-          <input type = "color" id="clade-color-selector" value="#ff0000"/>
-        </div>
-         <div>
-            <label for="show-options"> Display Feature</label>
-            <select id = "clade-options"></select>
-          </div>
-        <div class="text-field">
-          <label for="clade">clade/taxon</label>
-          <input type="text" id="clade"/>
-        </div>
-      </div>
-
-      <div id="metadata-options">
-        <label for="show-metadata">show metadata table</label>
-        <input id="show-metadata" type="checkbox" onclick="toggleMetadata()"/>
-      </div>
-
-       <div id="label-input">
-        <div id="label-dropbox">
-          <div>
-            <label for="show-options"> Display Feature</label>
-            <select id = "show-options"></select>
-          </div>
-          <div>
-            <label for="prioritize-options">Prioritize Feature</label>
-            <select id = "prioritize-options"></select>
-          </div>
-          <div>
-            <label for="descending-toggle">Descending</label>
-            <input id="descending-toggle" type="checkbox"/>
-          </div>
-        </div>
-        <input id="show-labels" type="button" value="Show labels" onclick="showLables()"</div>
-        <input id="clear-lbl" type="button" value="clear labels" onclick="clearLabels()"/>
-      </div>
-      <div id="collapse-options">
-        <label for="tip-slider">Tips Visible</label>
-        <input type='range' min='1' max='100' value='0' class='slider' id='tip-slider'
-                  oninput='autoCollapse()'>
-        <label for="threshold-slider">Threshold</label>
-        <input type='range' min='1' max='100' value='0' class='slider' id='threshold-slider'
-                  oninput='autoCollapse()'>
-      </div>
+  <div class="metadata-container">
+    <button>Metadata</button>
+    <div id="scrolltable">
+      <!-- <table id="metadata-table">
+        <tr>
+          <td valign="top">
+        </td>
+        </tr>
+      </table> -->
     </div>
   </div>
 
-  <div id="scrolltable">
-  <table id="metadata-table">
-    <tr>
-      <td valign="top">
-      </td>
-    </tr>
-  </table>
+
+<div class="switch-button-container">
+  <button id="switch-btn" onclick="switchContainers()">Metadata</button>
 </div>
 
   <script type="text/javascript">
     // urls for webserver
     var urls = {
+      autoCollapseURL: "http://" + window.location.host + "/auto_collapse_tree",
+      newHighlightURL: "http://" + window.location.host + "/new_highlight",
       highlightURL: "http://" + window.location.host + "/highlight",
       collapseURL: "http://" + window.location.host + "/collapse",
       edgeURL: "http://" + window.location.host + "/api/edges",
@@ -156,6 +358,7 @@
       tableChangeURL: "http://" + window.location.host + "/table_change",
       headersURL: "http://" + window.location.host + "/headers",
       cladeURL: "http://" + window.location.host + "/clades",
+      newCladeColor: "http://" + window.location.host + "/new_color_clade",
       cladeColorURL: "http://" + window.location.host + "/color_clade",
       clearColorCladeURL: "http://" + window.location.host + "/clear_clade",
       subTreeURL: "http://" + window.location.host + "/subtree",
@@ -176,6 +379,19 @@
       triangleFields: ["cx", "cy", "color", "lx", "ly", "color", "rx", "ry", "color"]
     };
 
+    // sort the edges by position of (x, y) x has index 3 y has index 4
+    let edgeSort = function(a, b) {
+      if(a[3] < b[3]) {
+        return -1;
+      }
+      if(a[3] > b[3]) {
+        return 1;
+      }
+      if(a[4] < b[4]) {
+        return -1;
+      }
+      return 1;
+    }
     // stores matrices, and buffers that webgl will uses
     let shaderProgram = {};
 
@@ -221,10 +437,10 @@
 
   <script type="text/javascript">
   {
-    let drawingData = sessionStorage.getItem("drawingData");
     let edgeMetadata;
     let nodeCoords;
-    console.log('test 0');
+
+    $(".metadata-container").hide();
 
     // this may cause some syncing issues
     $.getJSON(urls.headersURL, function(data) {
@@ -232,7 +448,8 @@
     }).done(function() {
       drawingData.nodeCoords = [0, 0, 0, 0, 0];
       $.getJSON(urls.edgeURL, function(data) {
-        parseTree(data);
+        console.log(data);
+        parseTree(data, edgeSort);
         // edgeMetadata = data;
       }).done(function() {
         $.getJSON(urls.trianglesURL, {}, function(data) {
@@ -243,20 +460,19 @@
         });
         fillDropDownMenu(field.table_headers.headers, "#highlight-options");
         fillDropDownMenu(field.table_headers.headers, '#clade-options');
+        fillDropDownMenu(field.table_headers.headers, '#collapse-options');
 
-        fillDropDownMenu(field.table_headers.headers, "#show-options");
-        fillDropDownMenu(field.table_headers.headers, "#prioritize-options");
-        hideMenu();
+        // fillDropDownMenu(field.table_headers.headers, "#show-options");
+        // fillDropDownMenu(field.table_headers.headers, "#prioritize-options");
+        // hideMenu();
         $("#show-metadata").prop('checked', true);
-        console.log('test 1');
-        $.getJSON(urls.tableURL, function(data) {
-          initGridTable(data);
-        });
+        // $.getJSON(urls.tableURL, function(data) {
+        //   initGridTable(data);
+        // });
         initWebGl();
         initCallbacks();
         setPerspective();
         requestAnimationFrame(loop);
-        console.log('finished');
       });
     });
   }

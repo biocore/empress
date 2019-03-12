@@ -5,7 +5,7 @@ import time
 from operator import attrgetter
 import empress.tools as tools
 
-DEFAULT_COLOR = 'AAAAAA'
+DEFAULT_COLOR = [0.5,0.5,0.5]
 SELECT_COLOR = '00FF00'
 
 

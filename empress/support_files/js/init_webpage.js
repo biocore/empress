@@ -1,9 +1,26 @@
 "use strict";
 
-function fillDropDownMenu(headers, menuName) {
-  $("#highlight-menu").show();
+function switchContainers() {
+  let BUFFER = 15;
+  if($("#switch-btn").text() == "Metadata") {
+    $(".tree-container").hide();
+    $(".metadata-container").css({top: "" +  ($("#switch-btn").height() + BUFFER) + "px"}).show();
+    $("#switch-btn").text("Tree");
+  }
+  else{
+    $(".tree-container").show();
+    $(".metadata-container").hide();
+    $("#switch-btn").text("Metadata");
+  }
+}
 
-  let menu = $(menuName).empty()[0];
+function fillDropDownMenu(headers, menuName) {
+  // $("#highlight-menu").show();
+  $(menuName).val(0);
+
+
+  let menu = $(menuName)[0];
+  // let menu = $(menuName).empty()[0];
   headers.sort().sort(function (a, b) {
     return a.toLowerCase().localeCompare(b.toLowerCase());
   });
@@ -16,23 +33,32 @@ function fillDropDownMenu(headers, menuName) {
 }
 
 function initGridTable(data) {
-  let templateMetadata = data[0];
+  let columns = data[0];
+  let columnNames = Object.keys(columns).sort();
+  let key_column = "Node_id"
+  gridInfo.columns.push({id: key_column, name: key_column, field: key_column, sortable: true})
 
   // create the header row for the table
-  for (let property in templateMetadata) {
-    let col = {
-      id  : property,
-      name : property,
-      field : property,
-      sortable: true
-    };
-    gridInfo.columns.push(col);
+  // for (let property in templateMetadata) {
+  let name = ""
+  for(let i = 0; i < columnNames.length; i++) {
+    name = columnNames[i];
+    if(name !== key_column) {
+      let col = {
+        id  : columnNames[i],
+        name : columnNames[i],
+        field : columnNames[i],
+        sortable: true
+      };
+      gridInfo.columns.push(col);
+    }
   }
 
   // get the rest of the data for the grid
+  let property = "";
   for(let i = 0; i < data.length; i++) {
     let dr = {};
-    for(let property in templateMetadata) {
+    for(property in columns) {
       dr[property] = (data[i])[property];
     }
     gridInfo.data.push(dr);
@@ -76,6 +102,7 @@ function initGridTable(data) {
   });
 }
 
+// TODO: change this so columns are sorted
 function updateGridData(data) {
   const SCROLL_TO_TOP = true;
   let templateMetadata = data[0];
@@ -94,7 +121,7 @@ function updateGridData(data) {
 /*
  * Extracts the coordinates/color info from metadata and format it for webgl
  */
-function extractInfo(metaData, fields) {
+function extractInfo(metaData, fields, sortFunc=null) {
   // create an array containing all entries that belong to a "field" and ignore the rest
   let extractedFields = metaData.map(function(edge) {
     let extracted = [];
@@ -103,7 +130,13 @@ function extractInfo(metaData, fields) {
     };
     return extracted;
   });
-
+  // console.log("before sort");
+  // console.log(extractedFields);
+  // if(sortFunc !== null) {
+  //   extractedFields.sort(sortFunc);
+  // }
+  // console.log("after sort");
+  // console.log(extractedFields);
   // flatten array
   extractedFields = extractedFields.flat();
 
@@ -131,7 +164,22 @@ function extractColor(data) {
   data = data.map(function(element) {
     return (typeof element === "string" ? parseInt("0x" + element) / 255 : element)
   });
+  return data;
+}
 
+function updateBranches(data, replace) {
+  const XCOORD = 3, YCOORD = 4;
+  const PCOLOR = 2, CCOLOR = 5;
+  let dataI = 0, replaceI = 0;
+  while(replace != replace.length) {
+    if(data[dataI + XCOORD] == replace[replaceI + XCOORD] &&
+          data[dataI + YCOORD] == replace[replaceI + YCOORD]) {
+      data[dataI + PCOLOR] = replace[replaceI + PCOLOR];
+      data[dataI + CCOLOR] = replace[replaceI + CCOLOR];
+      replaceI += 1;
+    }
+    dataI += 1;
+  }
   return data;
 }
 
@@ -162,7 +210,6 @@ function loadTree(data) {
 function normalizeTree(edgeMeta) {
   const xCoords = edgeMeta.map(edge => edge.x);
   const yCoords = edgeMeta.map(edge => edge.y);
-  console.log(xCoords);
   let maxX = 0, maxY = 0, minX = 0, minY = 0;
   let x = 0, y = 0;
   for(let x in xCoords) {

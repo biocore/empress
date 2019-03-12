@@ -15,7 +15,7 @@ function initCallbacks(){
   $(".tree-surface")[0].ondblclick = mouseHandler;
 
   $(document).keydown(function(e) {
-      shftPress = (e.which === SHFT_KEY) ? true : false;
+    shftPress = (e.which === SHFT_KEY) ? true : false;
   });
   $(document).keyup(function() {
     if(shftPress) {
@@ -45,10 +45,26 @@ function initCallbacks(){
   });
 }
 
+function autoCollapseTree() {
+  console.log('Auto Collapse Tree')
+  let collapsLevel = $("#collapse-level").val();
+  const cm = $("#color-options-collapse").val();
+  const attribute = $("#collapse-options").val();
+  $.getJSON(urls.autoCollapseURL, {attribute: attribute, collapse_level: collapsLevel, cm : cm}, function(data){
+    console.log("Auto Collapse Tree data return")
+    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
+    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+    $.getJSON(urls.trianglesURL, {}, function(data) {
+      drawingData.triangles = extractInfo(data, field.triangleFields);
+      fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
+    }).done(function() {
+      requestAnimationFrame(loop);
+    });
+  });
+}
 function selectedTreeCollapse() {
   $(".selected-tree-menu").css({visibility: "hidden"})
   $.getJSON(urls.collapseSTreeURL, {}, function(data) {
-    console.log('???')
     drawingData.edgeCoords = extractInfo(data, field.edgeFields);
     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
     drawingData.selectTree = [];
@@ -96,19 +112,38 @@ function resizeCanvas(event) {
  */
 function userHighlightSelect() {
   const attr = $("#highlight-options").val();
-  const cat = "branch_color";
-  const val = $("#color-selector").val().toUpperCase().slice(1);
-  const l = $("#lower-bound").val();
-  const u = $("#upper-bound").val();
-  const e = $("#category").val();
+  const cm = $("#color-options").val();
+  selectHighlight(attr, cm);
 
-  selectHighlight(attr, cat, val, l, u, e);
-  $.getJSON(urls.tableChangeURL, {attribute: attr, lower: l, equal: e,
-            upper: u}, function(data){
-    updateGridData(data);
-  });
-  addHighlightItem(attr, val, l, u, e);
+  // update table?
+  // $.getJSON(urls.tableChangeURL, {attribute: attr, lower: l, equal: e,
+  //           upper: u}, function(data){
+  //   updateGridData(data);
+  // });
+
+  //DELETE?
+  // addHighlightItem(attr, val, l, u, e);
 }
+
+// /** OLD VERSION
+//  * Event called when user presses the select-data button. This method is responsible
+//  * for coordinating the highlight tip feature.
+//  */
+// function userHighlightSelect() {
+//   const attr = $("#highlight-options").val();
+//   const cat = "branch_color";
+//   const val = $("#color-selector").val().toUpperCase().slice(1);
+//   const l = $("#lower-bound").val();
+//   const u = $("#upper-bound").val();
+//   const e = $("#category").val();
+
+//   selectHighlight(attr, cat, val, l, u, e);
+//   $.getJSON(urls.tableChangeURL, {attribute: attr, lower: l, equal: e,
+//             upper: u}, function(data){
+//     updateGridData(data);
+//   });
+//   addHighlightItem(attr, val, l, u, e);
+// }
 
 /**
  * Creates html an html object that is used to show users the history of
@@ -269,34 +304,71 @@ function updateColorSelection(arcID, color) {
  * @param {integer} the upper bound of the search value (if any)
  * @param {integer/string} an exact value of the search value (if any)
  */
-function selectHighlight(attr, cat, val, l, u, e) {
-  let edges;
-  $.getJSON(urls.highlightURL, {attribute: attr, category: cat,
-            value: val, lower: l, equal: e, upper: u}, function(data) {
-    edges = data;
+function selectHighlight(attr, cm) {
+  let highlight;
+  $.getJSON(urls.newHighlightURL, {attribute: attr, cm: cm}, function(data) {
+    highlight = data;
   }).done(function() {
-    drawingData.edgeCoords = extractInfo(edges, field.edgeFields);
+    // console.log('start parse')
+    // console.log(JSON.parse(highlight.edges))
+    drawingData.edgeCoords = extractInfo(JSON.parse(highlight.edges), field.edgeFields);
+    // update_selection_grid(highlght);
     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
     requestAnimationFrame(loop);
+    console.log('done')
   });
 }
 
-/**
- * The event called when a user want to highlight a clade.
- */
-function userCladeColor() {
-  const cat = $("#clade-options").val();
-  const color = $("#clade-color-selector").val().toUpperCase().slice(1);
-  const clade = $("#clade").val();
-  let nodeCoords;
+// /* OLD VERSION
+//  * Highlights the user selected metadata
+//  *
+//  * @param {string} the feature to highlght
+//  * @param {string} the feature that holds the color
+//  * @param {integer} the lower bound of the search value (if any)
+//  * @param {integer} the upper bound of the search value (if any)
+//  * @param {integer/string} an exact value of the search value (if any)
+//  */
+// function selectHighlight(attr, cat, val, l, u, e) {
+//   let edges;
+//   $.getJSON(urls.highlightURL, {attribute: attr, category: cat,
+//             value: val, lower: l, equal: e, upper: u}, function(data) {
+//     edges = data;
+//   }).done(function() {
+//     drawingData.edgeCoords = extractInfo(edges, field.edgeFields);
+//     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+//     requestAnimationFrame(loop);
+//   });
+// }
 
-  $.getJSON(urls.cladeColorURL, {cat: cat, clade: clade, color: color}, function(data) {
-    if(!data.hasOwnProperty('empty')) {
+function userCladeColor(){
+  console.log('ColorClades')
+  const attribute = $('#clade-options').val();
+  const taxLevel = $("#tax-level").val();
+  const cm = $("#color-options-tax").val();
+  $.getJSON(urls.newCladeColor, {attribute: attribute, tax_level: taxLevel, cm: cm}, function(data){
+    // if(!data.hasOwnProperty('empty')) {
+      console.log('loadColorClades');
       loadColorClades(data);
-      addCladeItem(clade, color);
-    }
-  });
+    // }
+  })
 }
+// /**
+//  * OLD VERSION
+//  * The event called when a user want to highlight a clade.
+//  */
+// function userCladeColor() {
+//   const cat = $("#clade-options").val();
+//   const color = $("#clade-color-selector").val().toUpperCase().slice(1);
+//   const clade = $("#clade").val();
+//   let nodeCoords;
+
+//   $.getJSON(urls.cladeColorURL, {cat: cat, clade: clade, color: color}, function(data) {
+//     if(!data.hasOwnProperty('empty')) {
+//       loadColorClades(data);
+//       addCladeItem(clade, color);
+//     }
+//   });
+// }
 
 /*
  * Shows the selected menu and hides the other ones
@@ -594,8 +666,7 @@ function autoCollapse() {
   });
 }
 
-function parseTree(data) {
-  drawingData.edgeCoords = extractInfo(data, field.edgeFields);
-  console.log('test 2');
+function parseTree(data, sortFunc=null) {
+  drawingData.edgeCoords = extractInfo(data, field.edgeFields, sortFunc);
   normalizeTree(data);
 }

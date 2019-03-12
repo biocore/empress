@@ -235,7 +235,8 @@ def create_arc_sector(sector_info):
     sector = []
     theta = sector_info['theta'] / NUM_TRI
     rad = sector_info['starting_angle']
-    (red, green, blue) = extract_color(sector_info['color'])
+    # (red, green, blue) = extract_color(sector_info['color'])
+    red, green, blue = sector_info['color']
     c_x = sector_info['center_x']
     c_y = sector_info['center_y']
     longest_branch = sector_info['largest_branch']

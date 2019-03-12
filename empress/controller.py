@@ -1,4 +1,5 @@
 from tornado.web import RequestHandler
+import json
 
 
 class ModelHandler(RequestHandler):
@@ -26,7 +27,6 @@ class EdgeHandler(RequestHandler):
     def get(self):
         print('EdgeHandler start')
         edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible'] == True]
-        print(self.m.headers)
         # edges = edges[["px", "py", "x", "y", "branch_color"]]
         self.write(edges.to_json(orient='records'))
         print('EdgeHandler end')
@@ -74,6 +74,39 @@ class TriangleHandler(RequestHandler):
         self.write(triangles.to_json(orient='records'))
         self.finish()
 
+class NewHighlightHandler(RequestHandler):
+    """ Updates the model and retrives edge metadata
+    """
+    def initialize(self, m):
+        """ Stores the model in handler
+
+        Parameter
+        ---------
+        m : Model
+            The model that stores the tree
+        """
+        self.m = m
+
+    def get(self):
+        """ Tells model which tips to highlight and the retrieves
+        updates edge information to draw newly highlighted tips
+
+        Parameter
+        ---------
+        attribute : string
+            The feature that will highlighted
+        """
+        highlight = {}
+        attribute = self.get_argument('attribute')
+        color = self.get_argument('cm')
+        selected, max_val, min_val = self.m.new_update_edge_category(attribute, color)
+        highlight['max'] = max_val
+        highlight['min'] = min_val
+        highlight['edges'] = selected.to_json(orient='records')
+        # edges = selected.to_json(orient='records')
+        print('Type:', type(highlight['edges']))
+        self.write(json.dumps(highlight))
+        self.finish()
 
 class HighlightHandler(RequestHandler):
     """ Updates the model and retrives edge metadata
@@ -227,7 +260,6 @@ class HeaderHandler(RequestHandler):
         """ Retrieves all headers from metadata
         """
         headers = self.m.get_headers()
-        print(headers)
         self.write({'headers': headers})
         self.finish()
 
@@ -249,6 +281,17 @@ class CladeHandler(RequestHandler):
         """ Retrives the currently colored clades
         """
         colored_clades = self.m.get_colored_clade()
+        self.write(colored_clades)
+        self.finish()
+
+class NewColorCladeHandler(RequestHandler):
+    def initialize(self, m):
+        self.m = m
+    def get(self):
+        attribute = self.get_argument('attribute')
+        tax_level = self.get_argument('tax_level')
+        color = self.get_argument('cm')
+        colored_clades = self.m.new_color_clades(attribute, tax_level, color)
         self.write(colored_clades)
         self.finish()
 
@@ -402,6 +445,19 @@ class SelectHandler(RequestHandler):
         nodes = self.m.select_sub_tree(x1, y1, x2, y2)
         nodes = nodes.to_json(orient='records')
         self.write(nodes)
+        self.finish()
+
+class AutoCollapseTreeHandler(RequestHandler):
+    def initialize(self, m):
+        self.m = m
+
+    def get(self):
+        print("Auto Collapse Tree Handler")
+        attribute = self.get_argument("attribute")
+        collapse_level = self.get_argument("collapse_level")
+        color = self.get_argument('cm')
+        edges = self.m.auto_tree_collapse(attribute, collapse_level, color)
+        self.write(edges.to_json(orient='records'))
         self.finish()
 
 

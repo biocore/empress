@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import tornado
 from empress.controller import (
-    ModelHandler, EdgeHandler, NodeHandler, BenchmarkHandler,
+    ModelHandler, EdgeHandler, NodeHandler, BenchmarkHandler, NewHighlightHandler,
     HighlightHandler, TriangleHandler, CollapseHandler, TableHandler,
-    TableChangeHandler, HeaderHandler, ColorCladeHandler, SubtreeHandler,
-    OldTreeHandler, SelectHandler, CollapseSelectedHandler, ClearColorCladeHandler,
+    TableChangeHandler, HeaderHandler, NewColorCladeHandler, ColorCladeHandler, SubtreeHandler,
+    OldTreeHandler, SelectHandler, CollapseSelectedHandler, AutoCollapseTreeHandler, ClearColorCladeHandler,
     CladeHandler, AutoCollapseHandler, ClearCollapseSelectedHandler)
 import os.path
 
@@ -18,11 +18,14 @@ class Application(tornado.web.Application):
                     (r'/api/triangles', TriangleHandler, dict(m=m)),
                     (r'/benchmark', BenchmarkHandler),
                     (r'/collapse', CollapseHandler, dict(m=m)),
+                    (r'/auto_collapse_tree', AutoCollapseTreeHandler, dict(m=m)),
+                    (r'/new_highlight', NewHighlightHandler, dict(m=m)),
                     (r'/highlight', HighlightHandler, dict(m=m)),
                     (r'/table_values', TableHandler,  dict(m=m)),
                     (r'/table_change', TableChangeHandler, dict(m=m)),
                     (r'/headers', HeaderHandler, dict(m=m)),
                     (r'/clades', CladeHandler, dict(m=m)),
+                    (r'/new_color_clade', NewColorCladeHandler, dict(m=m)),
                     (r'/color_clade', ColorCladeHandler, dict(m=m)),
                     (r'/clear_clade', ClearColorCladeHandler, dict(m=m)),
                     (r'/subtree', SubtreeHandler, dict(m=m)),

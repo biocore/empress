@@ -5,6 +5,9 @@ import time
 import re
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plot
+from matplotlib.colors import Normalize as norm
+import matplotlib.cm as cm
 from collections import namedtuple
 from empress.compare import Default_Cmp
 from empress.compare import Balace_Cmp
@@ -67,7 +70,6 @@ class Model(object):
         self.edge_metadata = self.edge_metadata[self.edge_metadata.x.notnull()]
         self.edge_metadata['index'] = self.edge_metadata['Node_id']
         self.edge_metadata = self.edge_metadata.set_index('index')
-        print(metadata)
 
         self.triangles = pd.DataFrame()
         self.selected_tree = pd.DataFrame()
@@ -165,6 +167,44 @@ class Model(object):
         edgeData = self.edge_metadata[is_visible]
 
         return edgeData[attributes]
+
+    def new_update_edge_category(self, attribute, color, change_cat='branch_color'):
+        """ Returns edge_metadata with updated value which tells View
+        what to hightlight
+
+        Parameters
+        ----------
+        attribute : str
+            The name of the attribute(column of the table).
+        Returns
+        -------
+        edgeData : pd.Dataframe
+            All entries from self.edge_metadata that are visible and match criteria
+            passed in.
+        """
+        # TODO: update the cached trees
+        # for edge_data, _ in self.cached_subtrees:
+        #     max_val = edge_data[attribute].max()
+        #     edge_data[change_cat] = edge_data[[attribute]].notna().apply(lambda x: np.asarray(cm.viridis(x)[:3]), axis=0)
+        df = self.edge_metadata
+        if df[attribute].dtype == object:
+            cat = df[attribute].copy()
+            unique_cat = dict((v,k) for k, v in enumerate(cat.loc[~cat.isnull()].unique()))
+            cat = cat.map(unique_cat, na_action='ignore')
+            max_val = len(unique_cat)
+            min_val = 1
+
+            n = norm(vmin=min_val, vmax=max_val)
+            cmap = cm.ScalarMappable(norm=n, cmap=color)
+            df.loc[~df[attribute].isnull(),change_cat] = cat.loc[~cat.isnull()].map(lambda x: np.asarray(cmap.to_rgba(x)[:3]))
+        else:
+            max_val = df[attribute].max()
+            min_val = df[attribute].min()
+            n = norm(vmin=min_val, vmax=max_val)
+            cmap = cm.ScalarMappable(norm=n, cmap=color)
+            df = self.edge_metadata
+            df.loc[~df[attribute].isnull(),change_cat] = df.loc[~df[attribute].isnull(),attribute].map(lambda x: np.asarray(cmap.to_rgba(x)[:3]))
+        return self.edge_metadata, max_val, min_val
 
     def update_edge_category(self, attribute, category,
                              new_value=DEFAULT_COLOR, lower="",
@@ -304,6 +344,51 @@ class Model(object):
         """
         return self.headers
 
+    def new_color_clades(self, attribute, tax_level, color):
+        self.colored_clades = {}
+        df = self.edge_metadata
+        if attribute == '0':
+            tax_nodes = df[['Node_id', tax_level]].copy()
+            tax_nodes = tax_nodes.dropna()
+            clade_root_ids = tax_nodes['Node_id'].tolist()
+            clades_tax = tax_nodes[tax_level].tolist()
+            color_clades = {clade_id: clades_tax[i] for i, clade_id in enumerate(clade_root_ids)}
+            clades_tax = list(set(clades_tax))
+            tax_to_float = {clade: i for i, clade in enumerate(clades_tax)}
+            max_val = max(tax_to_float.values())
+            min_val = min(tax_to_float.values())
+        elif True:
+            tax_nodes = df[['Node_id', tax_level, attribute]].copy()
+            tax_nodes = tax_nodes.dropna()
+            clade_root_ids = tax_nodes['Node_id'].tolist()
+            scores = tax_nodes[attribute].tolist()
+            id_to_float = {clade_id: scores[i] for i, clade_id in enumerate(clade_root_ids)}
+            other_att = 'o' + attribute[1:]
+            max_val = max(df[attribute].max(), df[other_att].max())
+            print(max_val)
+            min_val = 0
+        else:
+            tax_to_float = self.__sum_clade_vals(attribute, "sample_type", "gut", color_clades)
+            max_val = max(tax_to_float.values())
+            min_val = min(tax_to_float.values())
+        n = norm(vmin=min_val, vmax=max_val)
+        cmap = cm.ScalarMappable(norm=n, cmap=color)
+
+        # TODO: this double for loop is pointless since self.tre.find_all will only return
+        #       single entry
+        for clade_id, tax in id_to_float.items():
+            clade = self.tree.find(clade_id)
+            color = cmap.to_rgba(id_to_float[clade_id])[:3]
+            color_clade = self.tree.get_clade_info(clade)
+            color_clade['color'] = color
+            color_clade_s = tools.create_arc_sector(color_clade)
+            depth = len([node.name for node in clade.ancestors()])
+            self.colored_clades[clade_id] = {'data': color_clade_s,
+                                      'depth': depth,
+                                      'color': color,
+                                      'node': clade,
+                                      'value': id_to_float[clade_id]}
+        return self.get_colored_clade()
 
     def color_clade(self, clade_field, clade, color):
         """ Will highlight a certain clade by drawing a sector around the clade.
@@ -521,6 +606,51 @@ class Model(object):
         self.selected_root = root
         return self.selected_tree
 
+    # def get_clade_labels(collapsed=False):
+
+
+    def auto_tree_collapse(self, attribute, collapse_level, color):
+        self.triData = {}
+        self.edge_metadata['branch_is_visible'] = True
+        df = self.edge_metadata
+
+        if attribute == 0:
+            tax_to_float = {clade: i for i, clade in enumerate(clades_tax)}
+        elif True:
+            tax_nodes = df[['Node_id', collapse_level, attribute]].copy()
+            tax_nodes = tax_nodes.dropna()
+            clade_root_ids = tax_nodes['Node_id'].tolist()
+            scores = tax_nodes[attribute].tolist()
+            id_to_float = {clade_id: scores[i] for i, clade_id in enumerate(clade_root_ids)}
+            other_att = 'g' + attribute[1:]
+            max_val = max(df[attribute].max(), df[other_att].max())
+            min_val = 0
+        else:
+            tax_to_float = self.__sum_clade_vals(attribute, "sample_type", "oral", color_clades)
+            max_val = max(tax_to_float.values())
+            min_val = min(tax_to_float.values())
+        n = norm(vmin=min_val, vmax=max_val)
+        cmap = cm.ScalarMappable(norm=n, cmap=color)
+        for clade_id, tax in id_to_float.items():
+            clade = self.tree.find(clade_id)
+            self.__collapse_clade(clade)
+            self.triData[clade_id]['color'] = cmap.to_rgba(id_to_float[clade_id])[:3]
+            self.triData[clade_id]['value'] = id_to_float[clade_id]
+            self.update_collapse_clades()
+
+        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
+
+    def __sum_clade_vals(self, attribute, filter_cat, filter_val, node_clade_dict):
+        df = self.edge_metadata
+        tax_to_float = {tax: 0 for tax in node_clade_dict.values()}
+        for clade_id, tax in node_clade_dict.items():
+            nodes = [node.name for node in self.tree.find(clade_id).levelorder(include_self=True)]
+            temp = df[df["Node_id"].isin(nodes)]
+            temp = temp.loc[(temp[filter_cat] == filter_val) & (temp['sex'] == 'female')]
+            val = temp[attribute].sum()
+            tax_to_float[tax] += val
+        return tax_to_float
+
     def collapse_selected_tree(self):
         clade = self.selected_root
         self.__collapse_clade(clade)
@@ -555,12 +685,12 @@ class Model(object):
             (rx, ry) = (clade.x2, clade.y2)
             theta = s['starting_angle']
             (c_b1, s_b1) = (math.cos(theta), math.sin(theta))
-            (x1, y1) = (s['largest_branch'] * c_b1, s['largest_branch'] * s_b1)
+            (x1, y1) = (s['largest_branch'] * c_b1 / 2.0, s['largest_branch'] * s_b1 / 2.0)
 
             # find right most branch
             theta += s['theta']
             (c_b2, s_b2) = (math.cos(theta), math.sin(theta))
-            (x2, y2) = (s['smallest_branch'] * c_b2, s['smallest_branch'] * s_b2)
+            (x2, y2) = (s['largest_branch'] / 2.0 * c_b2, s['largest_branch'] * s_b2 / 2.0)
 
             (x1, y1) = (x1 + rx, y1 + ry)
             (x2, y2) = (x2 + rx, y2 + ry)
