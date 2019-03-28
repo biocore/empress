@@ -62,9 +62,10 @@ class Model(object):
             self.edge_metadata = self.tree.to_df()
 
         # read in main metadata
-        self.headers = metadata.columns.values.tolist()
-        self.edge_metadata = pd.merge(self.edge_metadata, metadata,
-                                      how='outer', on="Node_id")
+        if metadata is not None:
+            self.headers = metadata.columns.values.tolist()
+            self.edge_metadata = pd.merge(self.edge_metadata, metadata,
+                                          how='outer', on="Node_id")
 
         # todo need to warn user that some entries in metadata do not have a mapping to tree
         self.edge_metadata = self.edge_metadata[self.edge_metadata.x.notnull()]

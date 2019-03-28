@@ -14,7 +14,7 @@ import click
     '--tree-file', '-f', required=True,
     help='The file that contains the tree')
 @click.option(
-    '--metadata', '-m', required=True,
+    '--metadata', '-m', default=None,
     help='A file that contains your metadata')
 @click.option(
     '--additional-metadata', '-a', default=None,
@@ -62,7 +62,8 @@ def start(
         print('done reading in tree')
 
     print('reading metadata')
-    metadata = tools.read_metadata(metadata, main_skiprow, main_seperator)
+    if metadata is not None:
+        metadata = tools.read_metadata(metadata, main_skiprow, main_seperator)
     if additional_metadata is not None:
         additional_metadata = tools.read_metadata(
             additional_metadata, additional_skiprow, additional_seperator)

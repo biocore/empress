@@ -121,7 +121,7 @@ function updateGridData(data) {
 /*
  * Extracts the coordinates/color info from metadata and format it for webgl
  */
-function extractInfo(metaData, fields, sortFunc=null) {
+function extractInfo(metaData, fields) {
   // create an array containing all entries that belong to a "field" and ignore the rest
   let extractedFields = metaData.map(function(edge) {
     let extracted = [];
@@ -130,13 +130,7 @@ function extractInfo(metaData, fields, sortFunc=null) {
     };
     return extracted;
   });
-  // console.log("before sort");
-  // console.log(extractedFields);
-  // if(sortFunc !== null) {
-  //   extractedFields.sort(sortFunc);
-  // }
-  // console.log("after sort");
-  // console.log(extractedFields);
+
   // flatten array
   extractedFields = extractedFields.flat();
 
@@ -195,8 +189,9 @@ function loadColorClades(data) {
 }
 
 function loadTree(data) {
-  drawingData.edgeCoords = extractInfo(data, field.edgeFields);
-  fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+  let edgeData = extractInfo(data, field.edgeFields);
+  drawingData.numBranches = edgeData.length
+  fillBufferData(shaderProgram.treeVertBuffer, edgeData);
   updateGridData(data);
   labels = {}
   drawingData.triangles = [];
@@ -207,21 +202,36 @@ function loadTree(data) {
 /*
  * Find length along the x or y axis of the tree so webgl can fit tree into a 1x1 square
  */
-function normalizeTree(edgeMeta) {
-  const xCoords = edgeMeta.map(edge => edge.x);
-  const yCoords = edgeMeta.map(edge => edge.y);
-  let maxX = 0, maxY = 0, minX = 0, minY = 0;
-  let x = 0, y = 0;
-  for(let x in xCoords) {
-    if(Math.abs(xCoords[x]) > maxX){
-      maxX = xCoords[x];
+function normalizeTree(edgeData) {
+  // const xCoords = edgeData.map(edge => edge.x);
+  // const yCoords = edgeData.map(edge => edge.y);
+  // let maxX = 0, maxY = 0, minX = 0, minY = 0;
+  // let x = 0, y = 0;
+  // for(let x in xCoords) {
+  //   if(Math.abs(xCoords[x]) > maxX){
+  //     maxX = Math.abs((xCoords[x]));
+  //   }
+  // }
+  // for(let y in yCoords) {
+  //   if(Math.abs(yCoords[y]) > maxY){
+  //     maxY = Math.abs((yCoords[x]));
+  //   }
+  // }
+  let max = 0;
+  let val;
+  let i;
+  for(i = 0; i < edgeData.length; i++) {
+    if( i == 1) {
+      console.log(edgeData[i])
+    }
+    if(edgeData[i] >max) {
+      max = edgeData[i];
     }
   }
-  for(let y in yCoords) {
-    if(Math.abs(yCoords[y]) > maxY){
-      maxY = yCoords[x];
-    }
-  }
-  drawingData.initZoom = Math.max(maxX, maxY);
+  console.log(max)
+  drawingData.initZoom = max;
+  // let max = Math.max(maxY, maxY);
+  // console.log(max);
+  drawingData.initZoom = max;
   drawingData.currentZoom = drawingData.initZoom;
 }

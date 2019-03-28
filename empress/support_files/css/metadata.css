@@ -1,0 +1,15 @@
+.metadata-container{
+    position: absolute;
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+}
+#scrolltable {
+    /*top: 0vh;*/
+    left: 0vw;
+    width: 75vw;
+    height: 95vh;
+    outline: 0;
+    border:1px solid gray;
+    padding: 0;
+}
+

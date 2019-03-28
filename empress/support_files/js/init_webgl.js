@@ -34,7 +34,7 @@ window.fragmentShaderText =
 /*
  * compliles shader programs and initializes webgl
  */
-function initWebGl() {
+function initWebGl(edgeData) {
   gl = $(".tree-surface")[0].getContext("webgl");
   setCanvasSize(gl.canvas);
 
@@ -98,7 +98,7 @@ function initWebGl() {
 
   // buffer object for tree
   shaderProgram.treeVertBuffer = gl.createBuffer();
-  fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+  fillBufferData(shaderProgram.treeVertBuffer, edgeData);
 
   // buffer object for nodes
   shaderProgram.nodeVertBuffer = gl.createBuffer();

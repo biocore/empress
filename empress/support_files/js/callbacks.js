@@ -52,8 +52,9 @@ function autoCollapseTree() {
   const attribute = $("#collapse-options").val();
   $.getJSON(urls.autoCollapseURL, {attribute: attribute, collapse_level: collapsLevel, cm : cm}, function(data){
     console.log("Auto Collapse Tree data return")
-    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
-    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+    let edgeData = extractInfo(data, field.edgeFields);
+    drawingData.numBranches = edgeData.length
+    fillBufferData(shaderProgram.treeVertBuffer, edgeData);
     $.getJSON(urls.trianglesURL, {}, function(data) {
       drawingData.triangles = extractInfo(data, field.triangleFields);
       fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
@@ -65,8 +66,9 @@ function autoCollapseTree() {
 function selectedTreeCollapse() {
   $(".selected-tree-menu").css({visibility: "hidden"})
   $.getJSON(urls.collapseSTreeURL, {}, function(data) {
-    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
-    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+    let edgeData = extractInfo(data, field.edgeFields);
+    drawingData.numBranches = edgeData.length
+    fillBufferData(shaderProgram.treeVertBuffer, edgeData);
     drawingData.selectTree = [];
     fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
     $.getJSON(urls.trianglesURL, {}, function(data) {
@@ -82,8 +84,9 @@ function selectedTreeCollapse() {
 function clearSelectedTreeCollapse(event) {
   let treeCoords = toTreeCoords(event.clientX, event.clientY);
   $.getJSON(urls.uncollapseSTreeURL, {x1: treeCoords[0], y1: treeCoords[1]}, function(data) {
-    drawingData.edgeCoords = extractInfo(data, field.edgeFields);
-    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+    let edgeData = extractInfo(data, field.edgeFields);
+    drawingData.numBranches = edgeData.length
+    fillBufferData(shaderProgram.treeVertBuffer, edgeData);
     drawingData.selectTree = [];
     fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
     $.getJSON(urls.trianglesURL, {}, function(data) {
@@ -311,34 +314,14 @@ function selectHighlight(attr, cm) {
   }).done(function() {
     // console.log('start parse')
     // console.log(JSON.parse(highlight.edges))
-    drawingData.edgeCoords = extractInfo(JSON.parse(highlight.edges), field.edgeFields);
+    let edgeData = extractInfo(JSON.parse(highlight.edges), field.edgeFields);
+    drawingData.numBranches = edgeData.length
     // update_selection_grid(highlght);
-    fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
+    fillBufferData(shaderProgram.treeVertBuffer, edgeData);
     requestAnimationFrame(loop);
     console.log('done')
   });
 }
-
-// /* OLD VERSION
-//  * Highlights the user selected metadata
-//  *
-//  * @param {string} the feature to highlght
-//  * @param {string} the feature that holds the color
-//  * @param {integer} the lower bound of the search value (if any)
-//  * @param {integer} the upper bound of the search value (if any)
-//  * @param {integer/string} an exact value of the search value (if any)
-//  */
-// function selectHighlight(attr, cat, val, l, u, e) {
-//   let edges;
-//   $.getJSON(urls.highlightURL, {attribute: attr, category: cat,
-//             value: val, lower: l, equal: e, upper: u}, function(data) {
-//     edges = data;
-//   }).done(function() {
-//     drawingData.edgeCoords = extractInfo(edges, field.edgeFields);
-//     fillBufferData(shaderProgram.treeVertBuffer, drawingData.edgeCoords);
-//     requestAnimationFrame(loop);
-//   });
-// }
 
 function userCladeColor(){
   console.log('ColorClades')
@@ -664,9 +647,4 @@ function autoCollapse() {
       requestAnimationFrame(loop);
     });
   });
-}
-
-function parseTree(data, sortFunc=null) {
-  drawingData.edgeCoords = extractInfo(data, field.edgeFields, sortFunc);
-  normalizeTree(data);
 }

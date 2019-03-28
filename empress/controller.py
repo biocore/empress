@@ -1,6 +1,7 @@
 from tornado.web import RequestHandler
 import json
-
+import numpy as np
+import itertools
 
 class ModelHandler(RequestHandler):
     """ Loads the webpage
@@ -26,11 +27,22 @@ class EdgeHandler(RequestHandler):
 
     def get(self):
         print('EdgeHandler start')
-        edges = self.m.edge_metadata.loc[self.m.edge_metadata['branch_is_visible'] == True]
-        # edges = edges[["px", "py", "x", "y", "branch_color"]]
-        self.write(edges.to_json(orient='records'))
+        df = self.m.edge_metadata
+        df = df[['px', 'py', 'branch_color', 'x', 'y', 'branch_color']].loc[df['branch_is_visible'] == True]
+        edges = np.concatenate(df.to_numpy())
+        print('concated')
+        edgeData = []
+        for i, edge in enumerate(edges):
+            if type(edge) is list:
+                for color in edge:
+                    edgeData.append(color)
+            else:
+                edgeData.append(edge)
+        maxX = df['x'].abs().max()
+        maxY = df['y'].abs().max()
+        max_val = max(maxX, maxY)
+        self.write(json.dumps({'data':edgeData, 'max': max_val}))
         print('EdgeHandler end')
-
         self.finish()
 
 

@@ -35,7 +35,7 @@ function loop() {
 
   // draw the tree
   bindBuffer(shaderProgram.treeVertBuffer);
-  gl.drawArrays(gl.LINES, 0, drawingData.edgeCoords.length / 5 );
+  gl.drawArrays(gl.LINES, 0, drawingData.numBranches / 5 );
 
   // draw any nodes
   bindBuffer(shaderProgram.nodeVertBuffer);
