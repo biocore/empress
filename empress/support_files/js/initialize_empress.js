@@ -6,10 +6,10 @@ function initialize(){
 
   console.log('Start')
   // this may cause some syncing issues
-  $.getJSON(urls.headersURL, function(data) {
-    console.log('headers')
-    field.table_headers = data;
-  }).done(function() {
+  // $.getJSON(urls.headersURL, function(data) {
+  //   console.log('headers')
+  //   field.table_headers = data;
+  // }).done(function() {
     drawingData.nodeCoords = [0, 0, 0, 0, 0];
     $.getJSON(urls.edgeURL, function(data) {
       edgeData = data.data;
@@ -42,5 +42,5 @@ function initialize(){
       setPerspective();
       requestAnimationFrame(loop);
     });
-  });
+  // });
 }

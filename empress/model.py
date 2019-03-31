@@ -15,7 +15,7 @@ from empress.tree import Tree
 from empress.tree import DEFAULT_COLOR
 from empress.tree import SELECT_COLOR
 import empress.tools as tools
-
+# from empress.custom_tree import Tree
 DEFAULT_WIDTH = 4096
 DEFAULT_HEIGHT = 4096
 class Model(object):
@@ -50,6 +50,7 @@ class Model(object):
         # convert to empress tree
         print('converting tree TreeNode to Tree')
         self.tree = Tree.from_tree(tree)
+        self.tree = tree
         tools.name_internal_nodes(self.tree)
 
         if coords_file is None:
@@ -82,15 +83,10 @@ class Model(object):
         self.cached_subtrees = list()
         self.cached_clades = list()
 
-        # start = time.time()
-        # print('starting auto collapse')
-        # self.default_auto_collapse(100)
-        # end = time.time()
-        # print('finished auto collapse in %d' % (end - start))
-
         print('highlight_ids')
         self.highlight_nodes(highlight_ids)
-        self.__clade_level()
+        # self.__clade_level()
+
 
     def layout(self, layout_type):
         """ Calculates the coordinates for the tree.

@@ -145,7 +145,7 @@ class Tree(TreeNode):
             node.x2 = node.x2 - centerX
             node.y2 = node.y2 - centerY
 
-        self.assign_ids()
+        # self.assign_ids()
         edgeMeta = self.to_df()
         print('calculating depth level of each node')
         self.clade_level()
