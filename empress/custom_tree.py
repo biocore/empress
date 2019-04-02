@@ -5,6 +5,9 @@ import pandas as pd
 import math
 import numpy as np
 
+RED = 0.5
+GREEN = 0.5
+BLUE = 0.5
 DEFAULT_COLOR = [0.5,0.5,0.5]
 SELECT_COLOR = '00FF00'
 
@@ -130,8 +133,9 @@ class Tree(object):
     #              'angle']
     __slots__ = ['x2', 'y2', 'parent', 'lchild', 'rchild', 'name']
 
-    def __init__(self, name=None, children=None):
-        self.name = name
+    # def __init__(self, name=None, children=None):
+    def __init__(self, children=None):
+        self.name = 0
         if children is not None:
             self.lchild = children[0]
             self.rchild = children[1]
@@ -153,11 +157,11 @@ class Tree(object):
         UnrootedDendrogram
 
         """
-        for n in tree.postorder():
-            n.tip_count = 0
+        # for n in tree.postorder():
+        #     n.tip_count = 0
 
 
-        tree.update_geometry(use_lengths)
+        # tree.update_geometry(use_lengths)
         return tree
 
     def update_geometry(self, use_lengths, depth=None):
@@ -456,16 +460,15 @@ class Tree(object):
             if children[0] is not None:
                 for child in children:
                     item = [
-                            child.name,
-                            # child.id,
                             child.is_tip(),
+                            child.name,
                             child.x2,
                             child.y2,
-                            node.name,
                             node.x2,
                             node.y2,
-                            DEFAULT_COLOR,
-                            DEFAULT_COLOR,
+                            RED,
+                            GREEN,
+                            BLUE,
                             True,
                             True,
                             1,
@@ -475,16 +478,15 @@ class Tree(object):
 
         print('create pandas')
         index_list = pd.Index([
-                'Node_id',
-                # 'unique_id',
                 'is_tip',
+                'Node_id',
                 'x',
                 'y',
-                'Parent_id',
                 'px',
                 'py',
-                'node_color',
-                'branch_color',
+                'red',
+                'green',
+                'blue',
                 'node_is_visible',
                 'branch_is_visible',
                 'width',

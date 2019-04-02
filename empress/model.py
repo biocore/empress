@@ -11,11 +11,11 @@ import matplotlib.cm as cm
 from collections import namedtuple
 from empress.compare import Default_Cmp
 from empress.compare import Balace_Cmp
-from empress.tree import Tree
+# from empress.tree import Tree
 from empress.tree import DEFAULT_COLOR
 from empress.tree import SELECT_COLOR
 import empress.tools as tools
-# from empress.custom_tree import Tree
+from empress.custom_tree import Tree
 DEFAULT_WIDTH = 4096
 DEFAULT_HEIGHT = 4096
 class Model(object):
@@ -47,9 +47,10 @@ class Model(object):
         self.TIP_LIMIT = 100
         self.zoom_level = 1
         self.scale = 1
+        metadata=None
         # convert to empress tree
         print('converting tree TreeNode to Tree')
-        self.tree = Tree.from_tree(tree)
+        # self.tree = Tree.from_tree(tree)
         self.tree = tree
         tools.name_internal_nodes(self.tree)
 
@@ -73,18 +74,18 @@ class Model(object):
         self.edge_metadata['index'] = self.edge_metadata['Node_id']
         self.edge_metadata = self.edge_metadata.set_index('index')
 
-        self.triangles = pd.DataFrame()
-        self.selected_tree = pd.DataFrame()
-        self.selected_root = self.tree
-        self.triData = {}
-        self.colored_clades = {}
+        # self.triangles = pd.DataFrame()
+        # self.selected_tree = pd.DataFrame()
+        # self.selected_root = self.tree
+        # self.triData = {}
+        # self.colored_clades = {}
 
-        # cached subtrees
-        self.cached_subtrees = list()
-        self.cached_clades = list()
+        # # cached subtrees
+        # self.cached_subtrees = list()
+        # self.cached_clades = list()
 
-        print('highlight_ids')
-        self.highlight_nodes(highlight_ids)
+        # print('highlight_ids')
+        # self.highlight_nodes(highlight_ids)
         # self.__clade_level()
 
 

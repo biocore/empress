@@ -28,20 +28,21 @@ class EdgeHandler(RequestHandler):
     def get(self):
         print('EdgeHandler start')
         df = self.m.edge_metadata
-        df = df[['px', 'py', 'branch_color', 'x', 'y', 'branch_color']].loc[df['branch_is_visible'] == True]
-        edges = np.concatenate(df.to_numpy())
+        # df = df[['px', 'py', 'branch_color', 'x', 'y', 'branch_color']].loc[df['branch_is_visible'] == True]
+        df = df[['px', 'py', 'red', 'green', 'blue', 'x', 'y', 'red', 'green', 'blue',]].loc[df['branch_is_visible'] == True]
+        edges = np.concatenate(df.to_numpy()).tolist()
         print('concated')
-        edgeData = []
-        for i, edge in enumerate(edges):
-            if type(edge) is list:
-                for color in edge:
-                    edgeData.append(color)
-            else:
-                edgeData.append(edge)
+        # edgeData = df.to_json(orient='records')
+        # for i, edge in enumerate(edges):
+        #     if type(edge) is list:
+        #         for color in edge:
+        #             edgeData.append(color)
+        #     else:
+        #         edgeData.append(edge)
         maxX = df['x'].abs().max()
         maxY = df['y'].abs().max()
         max_val = max(maxX, maxY)
-        self.write(json.dumps({'data':edgeData, 'max': max_val}))
+        self.write(json.dumps({'data':edges, 'max': max_val}))
         print('EdgeHandler end')
         self.finish()
 

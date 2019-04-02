@@ -83,12 +83,14 @@ def name_internal_nodes(tree):
          Tree with fully labeled internal nodes and branches.
     """
     # initialize tree with branch lengths and node names if they are missing
-    for i, n in enumerate(tree.postorder(include_self=True)):
+    l = 0
+    for n in tree.postorder(include_self=True):
         # if n.length is None:
         #     n.length = 1
-        if n.name is None:
-            new_name = 'EmpressNode%d' % i
-            n.name = new_name
+        # if n.name is None:
+            # new_name = 'EmpressNode%d' % i
+            n.name = l
+            l += 1
 
 
 def read_metadata(file_name, skip_row=0, seperator='\t'):
@@ -169,83 +171,83 @@ def read(file_name, file_format='newick'):
         If a non-newick file_format was passed in
     """
 
-    if file_format == 'newick':
-        tree = skbio.read(file_name, file_format, into=TreeNode)
-        return tree
-    return None
+    # if file_format == 'newick':
+    #     tree = skbio.read(file_name, file_format, into=TreeNode)
+    #     return tree
+    # return None
 
-    # with open('archive/DeblurReferencephylogenyforSEPPGreengenes138Trimminglength90/insertion_tree.relabelled.tre', 'r') as file:
-    #     newick = file.readline()
-    # print('done reading')
-    # tree_stack = []
-    # link_roots = False
-    # s_n = -1
-    # e_n = 0
-    # # entry = ""
-    # s_l = -1
-    # e_l = 0
-    # length = ""
-    # on_name = True
-    # on_comment = False
-    # on_literal = False
-    # for i, c in enumerate(newick):
-    #     if on_literal:
-    #         if c != "'":
-    #             continue
-    #         else:
-    #             on_literal = False
-    #     elif c == '(':
-    #         if s_n != -1:
-    #             s_n += 1
-    #             e_n += 1
-    #         if s_l != -1:
-    #             s_l += 1
-    #             e_l += 1
-    #         continue
-    #     elif c == ',' or c == ')' or c == ';':
-    # #         length = float(length) if len(length) > 0 else None
-    #         length = float(newick[s_l:e_l+1]) if s_l != -1 else None
-    # #         entry = entry if len(entry) > 0 else None
-    #         entry = newick[s_n:e_n+1] if s_n != -1 else None
-    #         if link_roots == True:
-    #             r = tree_stack.pop()
-    #             l = tree_stack.pop()
-    #             node = Tree(name=entry, children=(l,r))
-    #             l.parent = node
-    #             r.parent = node
-    #             link_roots = False
-    #         else:
-    #             node = Tree(name=entry)
+    with open('archive/DeblurReferencephylogenyforSEPPGreengenes138Trimminglength90/insertion_tree.relabelled.tre', 'r') as file:
+        newick = file.readline()
+    print('done reading')
+    tree_stack = []
+    link_roots = False
+    s_n = -1
+    e_n = 0
+    # entry = ""
+    s_l = -1
+    e_l = 0
+    length = ""
+    on_name = True
+    on_comment = False
+    on_literal = False
+    for i, c in enumerate(newick):
+        if on_literal:
+            if c != "'":
+                continue
+            else:
+                on_literal = False
+        elif c == '(':
+            if s_n != -1:
+                s_n += 1
+                e_n += 1
+            if s_l != -1:
+                s_l += 1
+                e_l += 1
+            continue
+        elif c == ',' or c == ')' or c == ';':
+    #         length = float(length) if len(length) > 0 else None
+            length = float(newick[s_l:e_l+1]) if s_l != -1 else None
+    #         entry = entry if len(entry) > 0 else None
+            # entry = newick[s_n:e_n+1] if s_n != -1 else None
+            if link_roots == True:
+                r = tree_stack.pop()
+                l = tree_stack.pop()
+                node = Tree(children=(l,r))
+                l.parent = node
+                r.parent = node
+                link_roots = False
+            else:
+                node = Tree()
 
-    #         tree_stack.append(node)
-    # #         entry = ""
-    # #         length = ""
-    #         s_n = -1
-    #         s_l = -1
-    #         on_name = True
-    #         if c == ')':
-    #             link_roots = True
-    #     elif c == ':':
-    #         on_name = False
-    #     elif c == "'":
-    #         on_literal = True
-    #         # continue
-    #     elif on_name:
-    #         if s_n == -1:
-    #             s_n = i
-    #             e_n = i
-    #         else:
-    #             e_n +=1
-    # #         entry = entry + c
-    #     else:
-    #         if s_l == -1:
-    #             s_l = i
-    #             e_l = i
-    #         else:
-    #             e_l += 1
-    # print('done creating tree')
+            tree_stack.append(node)
+    #         entry = ""
+    #         length = ""
+            s_n = -1
+            s_l = -1
+            on_name = True
+            if c == ')':
+                link_roots = True
+        elif c == ':':
+            on_name = False
+        elif c == "'":
+            on_literal = True
+            # continue
+        elif on_name:
+            if s_n == -1:
+                s_n = i
+                e_n = i
+            else:
+                e_n +=1
+    #         entry = entry + c
+        else:
+            if s_l == -1:
+                s_l = i
+                e_l = i
+            else:
+                e_l += 1
+    print('done creating tree')
 
-    # return tree_stack.pop()
+    return tree_stack.pop()
 
 
 def total_angle(a_1, a_2, small_sector=True):

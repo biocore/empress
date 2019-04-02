@@ -102,7 +102,7 @@ function initWebGl(edgeData) {
 
   // buffer object for nodes
   shaderProgram.nodeVertBuffer = gl.createBuffer();
-  fillBufferData(shaderProgram.nodeVertBuffer, drawingData.nodeCoords);
+  // fillBufferData(shaderProgram.nodeVertBuffer, drawingData.nodeCoords);
 
   // buffer object for colored clades
   shaderProgram.cladeVertBuffer = gl.createBuffer();
@@ -126,6 +126,7 @@ function initWebGl(edgeData) {
   camera.upDir = [0, 1, 0];
   shaderProgram.viewMat  = mat4.create();
   mat4.lookAt(shaderProgram.viewMat, camera.pos, camera.lookDir, camera.upDir);
+  console.log('webgl');
 }
 
 function setCanvasSize(canvas) {

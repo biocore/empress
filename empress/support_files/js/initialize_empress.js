@@ -13,6 +13,7 @@ function initialize(){
     drawingData.nodeCoords = [0, 0, 0, 0, 0];
     $.getJSON(urls.edgeURL, function(data) {
       edgeData = data.data;
+      // console.log(edgeData);
       let max = data.max
       drawingData.numBranches = edgeData.length
       drawingData.initZoom = max;
@@ -20,15 +21,15 @@ function initialize(){
       // normalizeTree(edgeData);
       console.log("recived data")
     }).done(function() {
-      $.getJSON(urls.trianglesURL, {}, function(data) {
-        drawingData.triangles = extractInfo(data, field.triangleFields);
-        fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
-      }).done(function() {
-        requestAnimationFrame(loop);
-      });
-      fillDropDownMenu(field.table_headers.headers, "#highlight-options");
-      fillDropDownMenu(field.table_headers.headers, '#clade-options');
-      fillDropDownMenu(field.table_headers.headers, '#collapse-options');
+      // $.getJSON(urls.trianglesURL, {}, function(data) {
+      //   drawingData.triangles = extractInfo(data, field.triangleFields);
+      //   fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
+      // }).done(function() {
+      //   requestAnimationFrame(loop);
+      // });
+      // fillDropDownMenu(field.table_headers.headers, "#highlight-options");
+      // fillDropDownMenu(field.table_headers.headers, '#clade-options');
+      // fillDropDownMenu(field.table_headers.headers, '#collapse-options');
 
       // fillDropDownMenu(field.table_headers.headers, "#show-options");
       // fillDropDownMenu(field.table_headers.headers, "#prioritize-options");
