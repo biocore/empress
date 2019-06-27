@@ -148,13 +148,13 @@ class Tree(TreeNode):
         # self.assign_ids()
         edgeMeta = self.to_df()
         print('calculating depth level of each node')
-        self.clade_level()
+        # self.clade_level()
 
-        print('calculating number of tips per subclade')
-        self.tip_count_per_subclade()
+        # print('calculating number of tips per subclade')
+        # self.tip_count_per_subclade()
 
-        print('calculating clade info')
-        self.create_clade_info()
+        # print('calculating clade info')
+        # self.create_clade_info()
         return edgeMeta
 
     def to_df(self):
@@ -177,8 +177,9 @@ class Tree(TreeNode):
                         node.name,
                         node.x2,
                         node.y2,
-                        DEFAULT_COLOR,
-                        DEFAULT_COLOR,
+                        0.5,
+                        0.5,
+                        0.5,
                         True,
                         True,
                         1,
@@ -196,8 +197,9 @@ class Tree(TreeNode):
                 'Parent_id',
                 'px',
                 'py',
-                'node_color',
-                'branch_color',
+                'red',
+                'green',
+                'blue',
                 'node_is_visible',
                 'branch_is_visible',
                 'width',
@@ -325,8 +327,10 @@ class Tree(TreeNode):
         y2 = y1 + self.length * s * np.cos(a)
         (self.x1, self.y1, self.x2, self.y2, self.angle) = (x1, y1, x2, y2,
                                                             a)
-
-        for node in self.preorder(include_self=False):
+        nodes = [node for node in self.postorder(include_self=False)]
+        nodes.reverse()
+        # for node in self.preorder(include_self=False):
+        for node in nodes:
             x1 = node.parent.x2
             y1 = node.parent.y2
 

@@ -11,11 +11,12 @@ import matplotlib.cm as cm
 from collections import namedtuple
 from empress.compare import Default_Cmp
 from empress.compare import Balace_Cmp
-# from empress.tree import Tree
+from empress.tree import Tree
 from empress.tree import DEFAULT_COLOR
 from empress.tree import SELECT_COLOR
 import empress.tools as tools
-from empress.custom_tree import Tree
+# from empress.custom_tree import Tree
+#from empress.bp_tree import Bp_Tree
 DEFAULT_WIDTH = 4096
 DEFAULT_HEIGHT = 4096
 class Model(object):
@@ -50,8 +51,8 @@ class Model(object):
         metadata=None
         # convert to empress tree
         print('converting tree TreeNode to Tree')
-        # self.tree = Tree.from_tree(tree)
-        self.tree = tree
+        self.tree = Tree.from_tree(tree)
+        # self.tree = Bp_Tree(tree)
         tools.name_internal_nodes(self.tree)
 
         if coords_file is None:
@@ -62,6 +63,7 @@ class Model(object):
             print('extracting tree coords from file')
             self.tree.from_file(coords_file)
             self.edge_metadata = self.tree.to_df()
+        print("done calculating")
 
         # read in main metadata
         if metadata is not None:
@@ -74,19 +76,19 @@ class Model(object):
         self.edge_metadata['index'] = self.edge_metadata['Node_id']
         self.edge_metadata = self.edge_metadata.set_index('index')
 
-        # self.triangles = pd.DataFrame()
-        # self.selected_tree = pd.DataFrame()
-        # self.selected_root = self.tree
-        # self.triData = {}
-        # self.colored_clades = {}
+        self.triangles = pd.DataFrame()
+        self.selected_tree = pd.DataFrame()
+        self.selected_root = self.tree
+        self.triData = {}
+        self.colored_clades = {}
 
         # # cached subtrees
-        # self.cached_subtrees = list()
-        # self.cached_clades = list()
+        self.cached_subtrees = list()
+        self.cached_clades = list()
 
-        # print('highlight_ids')
-        # self.highlight_nodes(highlight_ids)
-        # self.__clade_level()
+        print('highlight_ids')
+        self.highlight_nodes(highlight_ids)
+        self.__clade_level()
 
 
     def layout(self, layout_type):
