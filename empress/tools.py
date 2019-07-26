@@ -10,7 +10,7 @@ from empress.custom_tree import Tree
 import bp
 
 
-NUM_TRI = 100
+NUM_TRI = 15
 VERTS_PER_TRI = 3
 ELEMENTS_PER_VERT = 5
 (R_INDEX, G_INDEX, B_INDEX) = (0, 1, 2)
@@ -86,10 +86,10 @@ def name_internal_nodes(tree):
     # initialize tree with branch lengths and node names if they are missing
     l = 0
     for n in tree.postorder(include_self=True):
-        # if n.length is None:
-        #     n.length = 1
-        # if n.name is None:
-            # new_name = 'EmpressNode%d' % i
+        if n.length is None:
+            n.length = 1
+        if n.name is None:
+            new_name = 'EmpressNode%d' % l
             n.name = l
             l += 1
 
@@ -428,3 +428,23 @@ def scale_vector(v, s):
     v[X] = v[X] * s
     v[Y] = v[Y] * s
     return v
+
+def get_color_hex_code(color_array):
+    """ Returns the hex string that represents a rbg array
+    @param {array} colorArray - an rbg array whose entries are between 0 and 1
+
+    Parameters
+    ----------
+    color_array : float array
+        The color array
+    """
+    RED = 0
+    GREEN = 1
+    BLUE = 2
+    HEX = 16
+    LARGEST_COLOR = 256
+    HEX_FORMAT = "%0.2x"
+    hex_string = HEX_FORMAT % int(color_array[RED]*LARGEST_COLOR) \
+        + HEX_FORMAT % int(color_array[GREEN]*LARGEST_COLOR) \
+        + HEX_FORMAT % int(color_array[BLUE]*LARGEST_COLOR)
+    return "#" + hex_string

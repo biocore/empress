@@ -34,20 +34,31 @@ function loop() {
   gl.drawArrays(gl.TRIANGLES, 0, drawingData.coloredClades.length / 5);
 
   // draw the tree
+  gl.uniform1i(shaderProgram.isSingle, 0);
   bindBuffer(shaderProgram.treeVertBuffer);
   gl.drawArrays(gl.LINES, 0, drawingData.numBranches / 5 );
 
   // draw any nodes
-  // bindBuffer(shaderProgram.nodeVertBuffer);
-  // gl.drawArrays(gl.POINTS, 0, drawingData.nodeCoords.length / 5 );
+  gl.uniform1i(shaderProgram.isSingle, 1);
+  bindBuffer(shaderProgram.treeVertBuffer);
+  gl.drawArrays(gl.POINTS, 0, drawingData.numBranches / 5 );
+  // draw hovered node
+  bindBuffer(shaderProgram.hoverNodeBuffer);
+  gl.drawArrays(gl.POINTS, 0, drawingData.hoveredNode.length / 5 );
+
+  gl.uniform1i(shaderProgram.isSingle, 0);
 
   bindBuffer(shaderProgram.selectBuffer);
   gl.drawArrays(gl.LINES, 0, drawingData.selectTree.length / 5);
 
   bindBuffer(shaderProgram.triangleBuffer);
   gl.drawArrays(gl.TRIANGLES, 0, drawingData.triangles.length / 5);
-  console.log('drawing');
-  // drawLabels();
+
+  bindBuffer(shaderProgram.highTriBuffer);
+  gl.drawArrays(gl.TRIANGLES, 0, drawingData.highTri.length / 5);
+
+  drawLabels(tipLabels, "tip-label-container");
+  drawLabels(nodeLabels, "node-label-container");
 }
 
 /*
@@ -85,81 +96,46 @@ function bindBuffer(buffer) {
   );
 }
 
-function drawLabels() {
-  const NEGATE = -1;
-  // remove old labels
-  let divContainerElement = document.getElementById("divcontainer");
-  while(divContainerElement.firstChild) {
-    divContainerElement.removeChild(divContainerElement.firstChild);
-  }
+function drawLabels(labels, container) {
   let canvas = $(".tree-surface")[0];
-
   const X = 0;
   const Y = 1;
   const VALUE = 2;
 
-  // // find the top left corner of the viewing window in tree space
-  let boundingBoxDim = camera.pos[2] + shaderProgram.zTransMat[14];
-  let topLeft = vec4.fromValues(NEGATE * boundingBoxDim, boundingBoxDim, 0, 1);
-  vec4.transformMat4(topLeft, topLeft, shaderProgram.xyTransMat);
+  let divContainerElement = document.getElementById(container);
+  divContainerElement.innerHTML = "";
 
-  // find the bottom right corner of the voewing window in tree space
-  let bottom = NEGATE * camera["bottomSlope"] * boundingBoxDim;
-  let bottomRight = vec4.fromValues(boundingBoxDim, bottom, 0, 1);
-  vec4.transformMat4(bottomRight, bottomRight, shaderProgram.xyTransMat);
-
-  // find where the range of the viewing window along the the x/y axis
-  let minX = topLeft[X], maxX = bottomRight[X];
-  let minY = bottomRight[Y], maxY = topLeft[Y];
-
-  // predefine variables need in for loop to speed up loop
+  // draw top 10 node labels within the viewing window
   let i;
   let pixelX = 0, pixelY = 0;
   let div, textNode;
   let treeSpace = vec4.create();
   let screenSpace = vec4.create();
-  let treeX, treeY, numLabels;
-  let count = 0;
+  for(i = 0; i < labels.length; ++i) {
+    // calculate the screen coordinate of the label
+    treeSpace = vec4.fromValues(labels[i][X], labels[i][Y], 0, 1);
+    screenSpace = vec4.create();
+    vec4.transformMat4(screenSpace, treeSpace, shaderProgram.mvpMat);
+    screenSpace[0] /= screenSpace[3];
+    screenSpace[1] /= screenSpace[3];
+    pixelX = (screenSpace[0] * 0.5 + 0.5) * canvas.offsetWidth;
+    pixelY = (screenSpace[1] * -0.5 + 0.5)* canvas.offsetHeight;
 
-  // draw top 10 labels within the viewing window
-  numLabels = labels.length;
-  for(i = 0; i < numLabels; ++i) {
-    // grad x,y coordinate of node in tree space and check to see if its in the viewing window
-    treeX = labels[i][X];
-    treeY = labels[i][Y];
-    if(minX <= treeX && treeX <= maxX &&
-        minY <= treeY && treeY <= maxY) {
-      // calculate the screen coordinate of the label
-      treeSpace = vec4.fromValues(labels[i][X], labels[i][Y], 0, 1);
-      screenSpace = vec4.create();
-      vec4.transformMat4(screenSpace, treeSpace, shaderProgram.mvpMat);
-      screenSpace[0] /= screenSpace[3];
-      screenSpace[1] /= screenSpace[3];
-      pixelX = (screenSpace[0] * 0.5 + 0.5) * canvas.offsetWidth;
-      pixelY = (screenSpace[1] * -0.5 + 0.5)* canvas.offsetHeight;
+    // make the div
+    div = document.createElement("div");
 
-      // make the div
-      div = document.createElement("div");
+    // assign it a CSS class
+    div.className = "floating-div";
 
-      // assign it a CSS class
-      div.className = "floating-div";
+    // make a text node for its content
+    textNode = document.createTextNode(labels[i][VALUE]);
+    div.appendChild(textNode);
 
-      // make a text node for its content
-      textNode = document.createTextNode(labels[i][VALUE]);
-      div.appendChild(textNode);
-
-      // add it to the divcontainer
-      divContainerElement.appendChild(div);
-      div.style.left = Math.floor(pixelX) + "px";
-      div.style.top = Math.floor(pixelY) + "px";
-      div.id = labels[i][VALUE];
-
-      // stop once 10 labels have been drawn to screen
-      count++;
-      if(count === 10) {
-        break;
-      }
-    }
+    // add it to the divcontainer
+    divContainerElement.appendChild(div);
+    div.style.left = Math.floor(pixelX) + "px";
+    div.style.top = Math.floor(pixelY) + "px";
+    div.id = labels[i][VALUE];
   }
 }
 

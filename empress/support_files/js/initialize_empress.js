@@ -1,47 +1,45 @@
 function initialize(){
-  let edgeData;
-  let nodeCoords;
+  console.log('Start')
 
   $(".metadata-container").hide();
+  drawingData.nodeCoords = [0, 0, 0, 0, 0];
+  drawingData.highTri = [];
 
-  console.log('Start')
-  // this may cause some syncing issues
-  // $.getJSON(urls.headersURL, function(data) {
-  //   console.log('headers')
-  //   field.table_headers = data;
-  // }).done(function() {
-    drawingData.nodeCoords = [0, 0, 0, 0, 0];
-    $.getJSON(urls.edgeURL, function(data) {
-      edgeData = data.data;
-      // console.log(edgeData);
-      let max = data.max
-      drawingData.numBranches = edgeData.length
-      drawingData.initZoom = max;
-      drawingData.currentZoom = drawingData.initZoom;
-      // normalizeTree(edgeData);
-      console.log("recived data")
-    }).done(function() {
-      // $.getJSON(urls.trianglesURL, {}, function(data) {
-      //   drawingData.triangles = extractInfo(data, field.triangleFields);
-      //   fillBufferData(shaderProgram.triangleBuffer, drawingData.triangles);
-      // }).done(function() {
-      //   requestAnimationFrame(loop);
-      // });
-      // fillDropDownMenu(field.table_headers.headers, "#highlight-options");
-      // fillDropDownMenu(field.table_headers.headers, '#clade-options');
-      // fillDropDownMenu(field.table_headers.headers, '#collapse-options');
+  // get metadata information
+  $.getJSON(urls.edgeURL, function(data) {
+    // grab tree coord info from tree, this will be used to intialize WebGl
+    drawingData.numBranches = data.edges.length
+    drawingData.initZoom = data.max;
+    drawingData.currentZoom = drawingData.initZoom;
 
-      // fillDropDownMenu(field.table_headers.headers, "#show-options");
-      // fillDropDownMenu(field.table_headers.headers, "#prioritize-options");
-      // hideMenu();
-      $("#show-metadata").prop('checked', true);
-      // $.getJSON(urls.tableURL, function(data) {
-      //   initGridTable(data);
-      // });
-      initWebGl(edgeData);
-      initCallbacks();
-      setPerspective();
-      requestAnimationFrame(loop);
-    });
-  // });
+    // intializes webgl and creates callback events for users inputs
+    initWebGl(data.edges);
+    initCallbacks();
+    setPerspective();
+    requestAnimationFrame(loop);
+  });
+
+  $.getJSON(urls.headersURL, function(data) {
+    // TODO: should we have option of spliting headers into tips/nodes
+
+    // // fill the internal node drop down menus
+    ["#branch-color-options", "#nodes-find-level"].forEach(function(id) {
+        fillDropDownMenu(data.node, id);
+      });
+
+    // // fill the tip drop down menus
+    ["#tip-color-options", "#tips-find-level"].forEach(function(id) {
+        fillDropDownMenu(data.tip, id);
+      });
+
+    // fill the collapse menu
+    fillDropDownMenu(data.node, "#collapse-level");
+
+    // fill the rank menu
+    fillDropDownMenu(data.node, "#rank-color-options")
+
+    // TODO: create coloring drop box
+  });
+
+  $("#show-metadata").prop('checked', true);
 }

@@ -1,11 +1,317 @@
-.gradient-bar {
-    display: grid;
-    grid-template-columns: 1fr 4fr 1fr;
-    height: 5vh;
+/* global settings */
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 80%;
 }
-.gradient-color {
-    background: linear-gradient(to right, #ff0000, #00ff00);
+
+
+/* general classes */
+
+.hidden {
+    display: none !important;
 }
+
+
+/* general control styles */
+
+a:link, a:visited {
+    color: steelblue;
+}
+
+button::-moz-focus-inner {
+    border: 0;
+}
+
+input[type=text], input[type=number], select {
+    box-sizing: border-box;
+    background-color: white;
+    height: 28px;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    border-radius: 3px;
+    padding-left: 5px;
+    margin-right: 5px;
+}
+
+input[type=text]:hover:enabled, input[type=number]:hover:enabled,
+input[type=radio]:hover:enabled, input[type=checkbox]:hover:enabled,
+select:hover:enabled {
+    background-color: lightgray;
+}
+
+input[type=text] {
+    padding-right: 5px;
+}
+
+input[type=text], select {
+    min-width: 120px;
+}
+
+input[type=number] {
+    width: 40px;
+}
+
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    appearance: none;
+    padding-right: 30px;
+}
+
+select::-ms-expand {
+    display: none;
+}
+
+select:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 black;
+}
+
+.select-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.select-container:after {
+    position: absolute;
+    content: "\203A";
+    transform: rotate(90deg);
+    color: gray;
+    font-size: 13.5pt;
+    right: 12px;
+    top: 1px;
+    pointer-events: none;
+}
+
+input[type=radio], input[type=checkbox] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    appearance: none;
+    display: inline-block;
+    position: relative;
+    background-color: white;
+    color: dimgray;
+    border: 0;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-right: 10px;
+    outline: none;
+}
+
+input[type=radio] {
+    border-radius: 50px;
+    height: 25px;
+    width: 25px;
+}
+
+input[type=checkbox] {
+    border-radius: 3px;
+    height: 20px;
+    width: 20px;
+}
+
+input[type=radio]:checked::before {
+    position: absolute;
+    content: "\02143";
+    transform: rotate(40deg);
+    font-size: 15px;
+    left: 9px;
+    top: 4px;
+}
+
+input[type=checkbox]:checked::before {
+    position: absolute;
+    content: "\02143";
+    transform: rotate(40deg);
+    font-size: 15px;
+    left: 7px;
+    top: 1px;
+}
+
+
+/* slide checkbox */
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: lightgray;
+    border-radius: 26px;
+}
+
+.slider:hover {
+    background-color: darkgray;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: gray;
+}
+
+input:checked + .slider:hover {
+    background-color: dimgray;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px gray;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(20px);
+    -ms-transform: translateX(20px);
+    transform: translateX(20px);
+}
+
+
+/* tooltip */
+
+.infomark {
+    color: steelblue;
+    cursor: pointer;
+    vertical-align: super;
+    font-size: smaller;
+}
+
+.infomark:before {
+    content: "\2139";
+}
+
+.tooltip {
+    visibility: hidden;
+    background-color: black;
+    color: white;
+    font-size: 9pt;
+    padding: 10px 15px;
+    border-radius: 5px;
+    position: absolute;
+    z-index: 2;
+    max-width: 300px;
+    margin-top: 35px;
+    transform: translateX(-50%);
+    line-height: 125%;
+    transition-delay: 0.5s;
+}
+
+.tooltip a:link, .tooltip a:visited {
+    color: steelblue;
+}
+
+label:hover .tooltip {
+    visibility: visible;
+}
+
+.tooltip::after {
+    content: " ";
+    position: absolute;
+    left: calc(50% - 5px);
+    bottom: 100%;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent black transparent;
+}
+
+
+/* hover box */
+
+#hover-box {
+    position: fixed;
+    border: 1px solid transparent;
+    background-color: white;
+    opacity: 0.75;
+    padding: 20px;
+}
+
+#hover-box:hover {
+    opacity: 1.0;
+    box-shadow: 10px 10px 40px rgba(0, 0, 0, 0.2);
+    border: 1px solid lightgray;
+}
+
+#hover-box::after, #hover-box:hover::before {
+    content: " ";
+    position: absolute;
+    border-style: solid;
+    right: 100%;
+    margin-top: -10px;
+}
+
+#hover-box:after {
+    top: 40px;
+    border-width: 10px;
+    border-color: transparent white transparent transparent;
+}
+
+#hover-box:hover:before {
+    top: 39px;
+    border-width: 11px;
+    border-color: transparent lightgray transparent transparent;
+}
+
+#hover-table tr td {
+    vertical-align: top;
+}
+
+#hover-table tr td:nth-last-child(2) {
+    width: 60px;
+    font-weight: bold;
+}
+
+#hover-table tr td:nth-last-child(2):first-letter {
+    text-transform: capitalize;
+}
+
+#hover-table tr td:nth-last-child(1) {
+    max-width: 200px;
+    text-overflow: ellipsis;
+}
+
+#hover-table tr td button:only-child {
+    background-color: lightgray;
+    height: 25px;
+    margin-top: 10px;
+    border: 0;
+    cursor: pointer;
+    outline: none;
+    padding: 0px 15px;
+    border-radius: 2px;
+    font-size: 8pt;
+}
+
+#hover-table tr td button:only-child:hover {
+    background-color: darkgray;
+}
+
 .switch-button-container {
     position: absolute;
     top: 0vh;
@@ -38,8 +344,6 @@ canvas {
     top: 0vh;
     left: 0vw;
     overflow: none;
-    /*width: 66vw;
-    height: 75vh;*/
     width: 100vw;
     height: 100vh;
 }
@@ -54,40 +358,181 @@ canvas {
     overflow: hidden;
 }
 
+
+/* dynamic label */
+
 .floating-div {
     position: absolute;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    border: 1px solid transparent;
+    padding-left: 9px;
+    padding-right: 7px;
 }
+
+.floating-div:hover {
+    background: white;
+    border: 1px solid lightgray;
+    box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.floating-div:hover::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-top: 8px solid dimgray;
+    border-right: 8px solid transparent;
+    width: 0;
+}
+
 /* end of reference */
 
-.metadata-tabs {
-    background: #fff;
+
+/* control panel */
+
+#side-panel {
     position: fixed;
     top: 0vh;
-    left: 70vw;
-    width: 30vw;
-    /*opacity: 0.5;*/
+    left: 100vw;
+    transform: translateX(-100%);
+    width: 450px;
+    opacity: 0.5;
 }
 
-.collapsible {
+#show-ctrl {
+    position: fixed;
+    top: 0vh;
+    left: 100vw;
+    transform: translateX(-100%);
+    opacity: 0.5;
+    background-color: #777;
+}
+
+.panel-active {
+    opacity: 1.0 !important;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+}
+
+.side-header {
     background-color: #777;
     color: white;
     cursor: pointer;
-    padding: 18px;
-    width: 100%;
     border: none;
     text-align: left;
     outline: none;
-    font-size: 15px;
+    margin: 0;
 }
-.active, .collapsible:hover {
-    background-color: #555;
 
+button.side-header {
+    padding: 15px 20px;
+    width: 100%;
+    font-size: 11pt;
 }
-.content {
-  padding: 0 18px;
-  display: none;
-  overflow: hidden;
-  background-color: #f1f1f1;
+
+p.side-header {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+p.side-header input[type=text]:hover {
+    background-color: lightgray;
+}
+
+p.side-header button, #show-ctrl {
+    height: 40px;
+    width: 40px;
+    min-width: 40px;
+    border: none;
+    outline: none;
+    color: white;
+    cursor: pointer;
+}
+
+p.side-header button {
+    background-color: transparent;
+}
+
+.active, button.side-header:hover, p.side-header button:hover, #show-ctrl:hover {
+    background-color: #555;
+}
+
+
+/* quick search */
+
+#quick-search {
+    color: white;
+    height: 36px;
+    margin-left: 2px;
+    margin-right: 2px;
+    padding-left: 18px;
+    padding-right: 18px;
+    border-radius: 0;
+    background-color: transparent;
+    font-size: 10.5pt;
+}
+
+#quick-search:hover {
+    background-color: lightgray;
+}
+
+#quick-search::placeholder {
+    color: lightgray;
+}
+
+#quick-search:hover::placeholder {
+    color: dimgray;
+}
+
+
+/* controls */
+
+.control {
+    padding: 5px 20px;
+    overflow: hidden;
+    color: #444;
+    background-color: #e5e5e5;
+    font-size: 10.5pt;
+}
+
+.control p {
+    line-height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.control p label:first-of-type {
+    margin-right: auto;
+}
+
+.control p button {
+    color: white;
+    background-color: gray;
+    height: 32px;
+    border: 0;
+    cursor: pointer;
+    outline: none;
+    padding: 5px 15px;
+    border-radius: 3px;
+    font-size: 10pt;
+}
+
+.control p button:hover {
+    background-color: dimgray;
+}
+
+.control p button:only-child {
+    margin-right: auto;
+}
+
+.control hr {
+    border-top: 1px solid darkgray;
+    border-bottom: none;
+    margin-bottom: 20px;
 }
 
 .tab-options {
@@ -169,4 +614,197 @@ canvas {
     height: 12px;
     width: 60;
     border: 2px sold black;
+}
+
+
+/* loading screen */
+
+#loading-screen {
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#loading-text {
+    position: fixed;
+    top: calc(50% - 8px);
+    font-size: 12pt;
+    color: dimgray;
+}
+
+#loading-animation {
+    border: 20px solid lightgray;
+    border-top: 20px solid dimgray;
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    animation: spin 3s linear infinite;
+    -moz-animation: spin 3s linear infinite;
+    -webkit-animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+/* legend */
+
+#legend-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 20px;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+div.legend {
+    margin: 20px;
+    padding: 5px;
+    border: 1px solid darkgray;
+    max-height: 33vh;
+    min-width: 150px;
+    max-width: 300px;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+div.legend:hover {
+    border: 1px solid dimgray;
+    background-color: white;
+    overflow: auto;
+}
+
+.legend-title {
+    text-align: center;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+/* color key */
+
+.gradient-label {
+    overflow: hidden;
+    white-space: nowrap;
+    display: inline-block;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.gradient-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    column-gap: 3px;
+    height: 18px;
+    padding: 3px;
+}
+
+.gradient-color {
+    width: 150px;
+}
+
+.category-color {
+    height: 15px;
+    width: 15px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+
+/* toast */
+
+#toast {
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: black;
+    opacity: 0.75;
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    padding: 15px;
+    position: fixed;
+    z-index: 3;
+    left: 50%;
+    bottom: 50px;
+}
+
+
+/* modal */
+
+div.modal {
+    position: fixed;
+    z-index: 3;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+div.modal-body {
+    border: none;
+    box-shadow: 10px 10px 40px rgba(0, 0, 0, 0.2);
+    background: white;
+    width: 80%;
+    max-width: 700px;
+    margin: 5% auto;
+    overflow: hidden;
+}
+
+div.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 15px;
+    height: 40px;
+    font-size: 11pt;
+    background-color: #777;
+    color: white;
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
+
+div.modal-header label:first-letter {
+    text-transform: capitalize;
+}
+
+div.modal-content {
+    padding: 20px;
+    background-color: #e5e5e5;
+    font-size: 10.5pt;
+}
+
+div.modal-footer {
+    height: 3px;
+    background-color: #777;
+}
+
+button.close {
+    background-color: transparent;
+    color: white;
+    font-size: 16pt;
+    width: 40px;
+    height: 40px;
+    border: none;
+    outline: none;
+  }
+
+button.close:hover {
+    background-color: gray;
 }

@@ -24,6 +24,13 @@ function mouseHandler(event) {
     mouseUp(event);
   }
   else if(event.type === "mousemove") {
+    if(window.onTreeSurface){
+      drawingData.hoveredNode = [];
+      fillBufferData(shaderProgram.hoverNodeBuffer, drawingData.hoveredNode);
+      clearTimeout(window.timer);
+      window.timer = setTimeout(hover, 250, event.clientX, event.clientY);
+    }
+
     if(drawingData.isMouseDown) {
       shftPress ? resizeSelectBox(event) : moveTree(event);
     }
@@ -113,13 +120,12 @@ function resizeSelectBox(event) {
  * the user is not pressing the mouse down.
  */
 function mouseUp(event) {
-  if(event.clientX === drawingData.mouseDownX && event.clientY === drawingData.mouseDownY) {
-    drawingData.selectTree = [];//extractInfo(edgeMetadata, field.edgeFields);
-    // updateGridData(edgeMetadata);
-    fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
-    $(".selected-tree-menu").css({top: drawingData.lastMouseY, left: drawingData.lastMouseX, visibility: "hidden"});
-    requestAnimationFrame(loop);
-  }
+  // if(event.clientX === drawingData.mouseDownX && event.clientY === drawingData.mouseDownY) {
+  //   drawingData.selectTree = [];
+  //   fillBufferData(shaderProgram.selectBuffer, drawingData.selectTree);
+  //   $(".selected-tree-menu").css({top: drawingData.lastMouseY, left: drawingData.lastMouseX, visibility: "hidden"});
+  //   requestAnimationFrame(loop);
+  // }
   drawingData.isMouseDown = false;
   $('body').css('cursor', 'default');
 }
@@ -133,6 +139,8 @@ function mouseUp(event) {
  * the tree accordingly.
  */
 function moveTree(event) {
+  clearTimeout(labelTimer);
+  window.labelTimer = setTimeout(retrieveTaxonNodes, 200, "timeout");
   // grab x,y coordinate of mouse
   const newX = event.clientX;
   const newY = event.clientY;
@@ -141,10 +149,10 @@ function moveTree(event) {
   // calculate which direction the mouse moved
   const dx = (drawingData.lastMouseX - newX);
   const dy = (newY - drawingData.lastMouseY);
-  const dirVec = vec3.fromValues(dx, dy,0);
+  const dirVec = vec3.fromValues(dx, dy, 0);
   let transVec = vec3.create();
   vec3.normalize(transVec, dirVec);
-  vec3.scale(transVec, transVec, drawingData.currentZoom / 50.0);
+  vec3.scale(transVec, transVec, drawingData.currentZoom / 20.0);
   let addTransMat = mat4.create();
 
   // modify matrix to move camera in xy-plane in the direction the mouse moved
@@ -166,6 +174,8 @@ function moveTree(event) {
  * zoom out on the tree.
  */
 function mouseWheel(event) {
+  clearTimeout(labelTimer);
+  window.labelTimer = setTimeout(retrieveTaxonNodes, 200, "timeout");
   // the index that stores the cameras z coordinate
   const CAM_Z =2;
 
@@ -188,6 +198,4 @@ function mouseWheel(event) {
   drawingData.currentZoom += zoomAmount;
   // redraw tree
   requestAnimationFrame(loop);
-
 }
-

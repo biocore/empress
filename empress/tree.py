@@ -5,7 +5,7 @@ import time
 from operator import attrgetter
 import empress.tools as tools
 
-DEFAULT_COLOR = [0.5,0.5,0.5]
+DEFAULT_COLOR = [0.7,0.7,0.7]
 SELECT_COLOR = '00FF00'
 
 
@@ -145,16 +145,16 @@ class Tree(TreeNode):
             node.x2 = node.x2 - centerX
             node.y2 = node.y2 - centerY
 
-        # self.assign_ids()
+        self.assign_ids()
         edgeMeta = self.to_df()
         print('calculating depth level of each node')
-        # self.clade_level()
+        self.clade_level()
 
-        # print('calculating number of tips per subclade')
-        # self.tip_count_per_subclade()
+        print('calculating number of tips per subclade')
+        self.tip_count_per_subclade()
 
-        # print('calculating clade info')
-        # self.create_clade_info()
+        print('calculating clade info')
+        self.create_clade_info()
         return edgeMeta
 
     def to_df(self):
@@ -164,6 +164,9 @@ class Tree(TreeNode):
         print('starting to create dictionary')
 
         edgeData = []
+        r = DEFAULT_COLOR[0]
+        g = DEFAULT_COLOR[1]
+        b = DEFAULT_COLOR[2]
 
         for node in self.postorder():
             node.alpha = 0.0
@@ -177,13 +180,15 @@ class Tree(TreeNode):
                         node.name,
                         node.x2,
                         node.y2,
-                        0.5,
-                        0.5,
-                        0.5,
+                        r,
+                        g,
+                        b,
                         True,
                         True,
                         1,
-                        1
+                        1,
+                        child.is_tip(),
+                        child.count(tips=True)
                         ]
                 edgeData.append(item)
 
@@ -203,7 +208,9 @@ class Tree(TreeNode):
                 'node_is_visible',
                 'branch_is_visible',
                 'width',
-                'size'])
+                'size',
+                'is_child',
+                'num_tips'])
         # convert to pd.DataFrame
         edgeMeta = pd.DataFrame(
             edgeData,
@@ -457,3 +464,7 @@ class Tree(TreeNode):
             'starting_angle': clade.sa, 'theta': clade.ta,
             'largest_branch': clade.lb, 'smallest_branch': clade.sb}
         return info
+
+    def extract_taxon(self, file):
+        """ use to extract FeatureData[taxonomy]
+        """

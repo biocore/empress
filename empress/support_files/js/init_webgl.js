@@ -7,14 +7,17 @@ window.vertexShaderText =
 '',
 'attribute vec2 vertPosition;',
 'uniform mat4 mvpMat;',
+// 'uniform int singleNode;',
 'attribute vec3 color;',
 'varying vec3 c;',
+// 'varying int isSingle;',
 '',
 'void main()',
 '{',
 '  c = color;',
 '  gl_Position = mvpMat * vec4(vertPosition, 0.0, 1.0);',
-'  gl_PointSize = 1.0;',
+'  gl_PointSize = 4.0;',
+// '  isSingle = singleNode;',
 '}'
 ].join('\n');
 
@@ -23,13 +26,16 @@ window.fragmentShaderText =
 [
 'precision mediump float;',
 'varying vec3 c;',
+'uniform int isSingle;',
 '',
 'void main()',
 '{',
+'float r = 0.0;',
+'vec2 cxy = 2.0 * gl_PointCoord - 1.0;',
+'r = dot(cxy, cxy);',
 '  gl_FragColor = vec4(c,1);',
 '}'
 ].join('\n');
-
 
 /*
  * compliles shader programs and initializes webgl
@@ -51,40 +57,8 @@ function initWebGl(edgeData) {
   gl.clearColor(CLEAR_COLOR, CLEAR_COLOR, CLEAR_COLOR, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  //
-  // Create shaders
-  //
-  let vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-
-  gl.shaderSource(vertexShader, window.vertexShaderText);
-  gl.shaderSource(fragmentShader, window.fragmentShaderText);
-
-  gl.compileShader(vertexShader);
-  if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-    console.error("ERROR compiling vertex shader!", gl.getShaderInfoLog(vertexShader));
-    return;
-  }
-
-  gl.compileShader(fragmentShader);
-  if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-    console.error("ERROR compiling fragment shader!", gl.getShaderInfoLog(fragmentShader));
-    return;
-  }
-
-  shaderProgram = gl.createProgram();
-  gl.attachShader(shaderProgram, vertexShader);
-  gl.attachShader(shaderProgram, fragmentShader);
-  gl.linkProgram(shaderProgram);
-  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-    console.error("ERROR linking program!", gl.getProgramInfoLog(shaderProgram));
-    return;
-  }
-  gl.validateProgram(shaderProgram);
-  if (!gl.getProgramParameter(shaderProgram, gl.VALIDATE_STATUS)) {
-    console.error("ERROR validating program!", gl.getProgramInfoLog(shaderProgram));
-    return;
-  }
+  shaderProgram = createShaderProgram(window.vertexShaderText, window.fragmentShaderText);
+  // c_shaderProgram = createShaderProgram(window.c_vertexShaderText, window.c_fragmentShaderText);
 
   gl.useProgram(shaderProgram);
 
@@ -95,6 +69,7 @@ function initWebGl(edgeData) {
 
   // shader matrix uniform
   shaderProgram.mvpUniform = gl.getUniformLocation(shaderProgram,"mvpMat");
+  shaderProgram.isSingle = gl.getUniformLocation(shaderProgram, "isSingle");
 
   // buffer object for tree
   shaderProgram.treeVertBuffer = gl.createBuffer();
@@ -102,7 +77,10 @@ function initWebGl(edgeData) {
 
   // buffer object for nodes
   shaderProgram.nodeVertBuffer = gl.createBuffer();
-  // fillBufferData(shaderProgram.nodeVertBuffer, drawingData.nodeCoords);
+  fillBufferData(shaderProgram.nodeVertBuffer, drawingData.nodeCoords);
+
+  // buufer object for hovered node
+  shaderProgram.hoverNodeBuffer = gl.createBuffer();
 
   // buffer object for colored clades
   shaderProgram.cladeVertBuffer = gl.createBuffer();
@@ -111,6 +89,7 @@ function initWebGl(edgeData) {
   shaderProgram.selectBuffer = gl.createBuffer();
 
   shaderProgram.triangleBuffer = gl.createBuffer();
+  shaderProgram.highTriBuffer = gl.createBuffer();
 
   shaderProgram.worldMat = mat4.create();
   shaderProgram.xyTransMat = mat4.create();
@@ -120,13 +99,7 @@ function initWebGl(edgeData) {
   shaderProgram.boundingTrans = mat4.create();
   shaderProgram.boundingScale = mat4.create();
 
-  // calculate where the virtual camera is
-  camera.pos = [0, 0, drawingData.initZoom];
-  camera.lookDir = [0, 0, 0];
-  camera.upDir = [0, 1, 0];
-  shaderProgram.viewMat  = mat4.create();
-  mat4.lookAt(shaderProgram.viewMat, camera.pos, camera.lookDir, camera.upDir);
-  console.log('webgl');
+  placeCamera(drawingData.initZoom);
 }
 
 function setCanvasSize(canvas) {
@@ -138,4 +111,54 @@ function setCanvasSize(canvas) {
   const HALF_WIDTH = HALF * $(window).width();
   camera["yInt"] = $(window).height() - HALF_WIDTH;
   camera["bottomSlope"] = camera["yInt"] / HALF_WIDTH;
+}
+
+function createShaderProgram(vShader, fShader) {
+  // create shaders
+  let vertexShader = gl.createShader(gl.VERTEX_SHADER);
+  let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+  gl.shaderSource(vertexShader, vShader);
+  gl.shaderSource(fragmentShader, fShader);
+
+  // compile shaders
+  gl.compileShader(vertexShader);
+  if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+    console.error("ERROR compiling vertex shader!", gl.getShaderInfoLog(vertexShader));
+    return;
+  }
+  gl.compileShader(fragmentShader);
+  if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+    console.error("ERROR compiling fragment shader!", gl.getShaderInfoLog(fragmentShader));
+    return;
+  }
+
+  // create program
+  let sProgram = gl.createProgram();
+  gl.attachShader(sProgram, vertexShader);
+  gl.attachShader(sProgram, fragmentShader);
+  gl.linkProgram(sProgram);
+  if (!gl.getProgramParameter(sProgram, gl.LINK_STATUS)) {
+    console.error("ERROR linking program!", gl.getProgramInfoLog(srogram));
+    return;
+  }
+  gl.validateProgram(sProgram);
+  if (!gl.getProgramParameter(sProgram, gl.VALIDATE_STATUS)) {
+    console.error("ERROR validating program!", gl.getProgramInfoLog(sProgram));
+    return;
+  }
+
+  return sProgram
+}
+
+/**
+ * Places the camera at (0, 0, z) where z represents the zoom level
+ * @param {number} z - the zoom level
+*/
+function placeCamera(z) {
+  // calculate where the virtual camera is
+  camera.pos = [0, 0, z];
+  camera.lookDir = [0, 0, 0];
+  camera.upDir = [0, 1, 0];
+  shaderProgram.viewMat  = mat4.create();
+  mat4.lookAt(shaderProgram.viewMat, camera.pos, camera.lookDir, camera.upDir);
 }

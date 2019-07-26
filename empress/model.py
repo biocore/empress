@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plot
 from matplotlib.colors import Normalize as norm
 import matplotlib.cm as cm
+from scipy.spatial.distance import cdist
 from collections import namedtuple
 from empress.compare import Default_Cmp
 from empress.compare import Balace_Cmp
@@ -15,8 +16,7 @@ from empress.tree import Tree
 from empress.tree import DEFAULT_COLOR
 from empress.tree import SELECT_COLOR
 import empress.tools as tools
-# from empress.custom_tree import Tree
-#from empress.bp_tree import Bp_Tree
+
 DEFAULT_WIDTH = 4096
 DEFAULT_HEIGHT = 4096
 class Model(object):
@@ -48,11 +48,10 @@ class Model(object):
         self.TIP_LIMIT = 100
         self.zoom_level = 1
         self.scale = 1
-        metadata=None
+
         # convert to empress tree
         print('converting tree TreeNode to Tree')
         self.tree = Tree.from_tree(tree)
-        # self.tree = Bp_Tree(tree)
         tools.name_internal_nodes(self.tree)
 
         if coords_file is None:
@@ -67,15 +66,21 @@ class Model(object):
 
         # read in main metadata
         if metadata is not None:
-            self.headers = metadata.columns.values.tolist()
             self.edge_metadata = pd.merge(self.edge_metadata, metadata,
                                           how='outer', on="Node_id")
+            # get tip/internal node columns
+            em = self.edge_metadata
+            self.headers = metadata.columns.values.tolist()
+            self.headers.remove("Node_id")
+            self.tip_headers = em.loc[em["is_child"] == True].dropna(axis=1, how='all').columns.values.tolist()
+            self.tip_headers = list(set(self.tip_headers) & set(self.headers))
+            self.node_headers = em.loc[em["is_child"] == False].dropna(axis=1, how='all').columns.values.tolist()
+            self.node_headers = list(set(self.node_headers) & set(self.headers))
 
         # todo need to warn user that some entries in metadata do not have a mapping to tree
         self.edge_metadata = self.edge_metadata[self.edge_metadata.x.notnull()]
         self.edge_metadata['index'] = self.edge_metadata['Node_id']
         self.edge_metadata = self.edge_metadata.set_index('index')
-
         self.triangles = pd.DataFrame()
         self.selected_tree = pd.DataFrame()
         self.selected_root = self.tree
@@ -91,180 +96,140 @@ class Model(object):
         self.__clade_level()
 
 
-    def layout(self, layout_type):
-        """ Calculates the coordinates for the tree.
-
-        Pipeline function
-
-        This calculates the actual coordinates for
-        the tree. These are not the coordinates that
-        will be rendered.  The calculated coordinates
-        will be updated as a class property.
-        The layout will only be utilized during
-        initialization.
-
-        Parameters
-        ----------
-        layout_type : str
-            This specifies the layout algorithm to be used.
-
-        Note
-        ----
-        This will wipe the coords and viewcoords in order to
-        recalculate the coordinates with the new layout.
-        """
-        self.coords = pd.DataFrame()
-
-        # These are coordinates scaled to the canvas
-        self._canvascoords = np.array()
-
-        # These are coordinates scaled for viewing
-        self.viewcoords = np.array()
-
-        # TODO: These will need to be recomputed once the algorithms for
-        # new layouts has been created.
-
-        pass
-
-    def select_edge_category(self):
-        """
-        Select categories required by webgl to plot edges
-        Parameters
-        ----------
-        Returns
-        -------
-        edgeData : pd.Dataframe
-            dataframe containing information necessary to draw tree in
-            webgl
-        """
-        # TODO: may want to add in width in the future
-        attributes = ['x', 'y', 'px', 'py', 'branch_color']
-        return self.select_category(attributes, 'branch_is_visible')
-
-    def select_node_category(self):
-        """
-        Select categories required by webgl to plot nodes
-        Parameters
-        ----------
-        Returns
-        -------
-        edgeData : pd.Dataframe
-            dataframe containing information necessary to draw tree in
-            webgl
-        """
-        attributes = ['x', 'y', 'node_color', 'size']
-        return self.select_category(attributes, 'node_is_visible')
-
-    def select_category(self, attributes, is_visible_col):
-        """ Returns edge_metadata whose 'is_visible_col is True'
-        Parameters
-        ----------
-        edgeData : pd.Dataframe
-            dataframe containing information necessary to draw tree in
-            webgl
-        """
-        is_visible = self.edge_metadata[is_visible_col]
-        edgeData = self.edge_metadata[is_visible]
-
-        return edgeData[attributes]
-
-    def new_update_edge_category(self, attribute, color, change_cat='branch_color'):
-        """ Returns edge_metadata with updated value which tells View
-        what to hightlight
+    def color_branches(self, attribute, color, total_unique=8, tip=True):
+        """ Colors tree branches based on attribute. If attribute is numeric than branches will
+        be colored using a gradient. If attribute is catergorical than the largest "total_unique" categories
+        will be colored and the reset will be colored as "other".
 
         Parameters
         ----------
         attribute : str
-            The name of the attribute(column of the table).
+            The name of the attribute (column of the table).
+        color : str
+            The color scheme to use
+        total_unique : int
+            The number of unique catergories to color. if attribute is numberic, this can be ignored
+        tip : Boolean
+            If tip is tree than only the tip will be colored. Otherwise only the internal
+            branches will be colored.
         Returns
         -------
         edgeData : pd.Dataframe
             All entries from self.edge_metadata that are visible and match criteria
             passed in.
         """
-        # TODO: update the cached trees
-        # for edge_data, _ in self.cached_subtrees:
-        #     max_val = edge_data[attribute].max()
-        #     edge_data[change_cat] = edge_data[[attribute]].notna().apply(lambda x: np.asarray(cm.viridis(x)[:3]), axis=0)
+        change_cat=['red', 'green', 'blue']
         df = self.edge_metadata
-        if df[attribute].dtype == object:
-            cat = df[attribute].copy()
-            unique_cat = dict((v,k) for k, v in enumerate(cat.loc[~cat.isnull()].unique()))
-            cat = cat.map(unique_cat, na_action='ignore')
-            max_val = len(unique_cat)
-            min_val = 1
+        result = {}
 
+        if attribute == "reset":
+            df.loc[df["is_tip"] == tip, change_cat] = DEFAULT_COLOR
+        elif df[attribute].dtype == object: # attribute is a categorical variable
+            # grab either the internal branches or tips
+            cat = df.loc[df["is_tip"] == tip, attribute].copy()
+            cat = cat.loc[~cat.isnull()]
+
+            # find if there are more than 8 categories
+            unique_cat = cat.value_counts()
+            m_t_eight = True if len(unique_cat) > total_unique else False
+
+            # convert category to number; if more than 8 categgoires than largest 8 categories get a unique number
+            # and the rest are assign to other (number 9)
+            if m_t_eight:
+                unique_cat[0:total_unique] = list(range(0, total_unique))
+            else:
+                unique_cat[0:len(unique_cat)] = list(range(1, len(unique_cat) + 1))
+            unique_cat[total_unique:] = total_unique + 1
+            unique_cat = unique_cat.to_dict()
+            max_val = total_unique if m_t_eight else len(unique_cat)
+            min_val = 0
+
+            # create color map
             n = norm(vmin=min_val, vmax=max_val)
             cmap = cm.ScalarMappable(norm=n, cmap=color)
-            df.loc[~df[attribute].isnull(),change_cat] = cat.loc[~cat.isnull()].map(lambda x: np.asarray(cmap.to_rgba(x)[:3]))
+            colors = dict({(k, tuple(cmap.to_rgba(v)[:3])) if v <= total_unique \
+                            else (k, tuple(DEFAULT_COLOR)) for k, v in unique_cat.items()})
+
+            # color branches
+            new_colors = cat.values.tolist()
+            new_colors = [colors[c] for c in new_colors]
+            cat = pd.DataFrame(new_colors, columns=change_cat, index=cat.index)
+            df.update(cat)
+
+            # collect information that will be used to create the color key in js
+            # result["keyInfo"] = dict({("other",tools.get_color_hex_code(v)) if unique_cat[k] > total_unique and m_t_eight \
+            #                 else (k,tools.get_color_hex_code(v)) for k, v in colors.items()})
+            result["keyInfo"] = dict({(k,tools.get_color_hex_code(v)) for k, v in colors.items() if unique_cat[k] <= total_unique })
+            result["gradient"] = False
         else:
-            max_val = df[attribute].max()
-            min_val = df[attribute].min()
-            n = norm(vmin=min_val, vmax=max_val)
-            cmap = cm.ScalarMappable(norm=n, cmap=color)
-            df = self.edge_metadata
-            df.loc[~df[attribute].isnull(),change_cat] = df.loc[~df[attribute].isnull(),attribute].map(lambda x: np.asarray(cmap.to_rgba(x)[:3]))
-        return self.edge_metadata, max_val, min_val
+             # attribute is treated as a continuous variable
+            cat = df.loc[df["is_tip"] == tip, attribute].copy()
+            cat = cat.loc[~cat.isnull()]
 
-    def update_edge_category(self, attribute, category,
-                             new_value=DEFAULT_COLOR, lower="",
-                             equal="", upper=""):
-        """ Returns edge_metadata with updated width value which tells View
-        what to hightlight
+            # create data bins in order to transform continusous data into categorical
+            max_val = cat.max()
+            min_val = cat.min()
+            labels = list(range(1,1001))
 
-        Parameters
-        ----------
-        attribute : str
-            The name of the attribute(column of the table).
-        category:
-            The column of table that will be updated such as branch_color
-        new_value : str
-            A hex string representing color to change branch
-        lower : float
-            The smallest number a feature must match in order for its color to change
-        equal : str/float
-            The number/string a feature must match in order for its color to change
-        upper : float
-            The largest number a feature can match in order for its color to change
-        Returns
-        -------
-        edgeData : pd.Dataframe
-            All entries from self.edge_metadata that are visible and match criteria
-            passed in.
-        """
-        # update the cached trees
-        new_value = DEFAULT_COLOR if new_value == "DEFAULT" else new_value
-        for edge_data, _ in self.cached_subtrees:
-            if lower is not "":
-                edge_data.loc[edge_data[attribute] > float(lower), category] = new_value
+            # bin attribute
+            binned_data = pd.cut(cat, bins=1000, labels=labels)
 
-            if equal is not "":
-                try:
-                    value = float(equal)
-                except ValueError:
-                    value = equal
-                edge_data.loc[edge_data[attribute] == value, category] = new_value
+            # create color object
+            n = norm(vmin=1, vmax=1000)
+            cmap = cm.ScalarMappable(norm=n, cmap='viridis')
 
-            if upper is not "":
-                edge_data.loc[edge_data[attribute] < float(upper), category] = new_value
+            # create assign each bin a color
+            bin_colors = {k:cmap.to_rgba(k)[:3] for k in labels}
 
-        # update the current tree
-        if lower is not "":
-            self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), category] = new_value
+            # color data
+            new_colors = binned_data.values.tolist()
+            new_colors = [bin_colors[c] for c in new_colors]
+            cat = pd.DataFrame(new_colors, columns=change_cat, index=cat.index)
+            df.update(cat)
+            result["keyInfo"] = {
+                "min": [min_val, tools.get_color_hex_code(bin_colors[1])],
+                "max": [max_val, tools.get_color_hex_code(bin_colors[1000])]
+            }
+            result["gradient"] = True
 
-        if equal is not "":
-            try:
-                value = float(equal)
-            except ValueError:
-                value = equal
-            self.edge_metadata.loc[self.edge_metadata[attribute] == value, category] = new_value
+        df = df[['px', 'py', 'red', 'green', 'blue', 'x', 'y', 'red', 'green', 'blue',]].loc[df['branch_is_visible'] == True]
+        edges = np.concatenate(df.to_numpy()).tolist()
+        result["edgeData"] = edges
+        return result
 
-        if upper is not "":
-            self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), category] = new_value
-        return self.edge_metadata
+    def retrive_top_labels(self, min_x, max_x, min_y, max_y, attribute, n=10, tip=True):
+        df = self.edge_metadata
+
+        if df[attribute].dtype == object: # attribute is a categorical variable
+            # attribute is treated as a continuous variable
+            cat = df.loc[(df["is_tip"] == tip) & (df["branch_is_visible"] == True), ["x", "y", attribute, "num_tips"]].copy()
+            cat = cat.loc[~cat[attribute].isnull()]
+            cat = cat.loc[(cat["x"] >= min_x) & (cat["x"] <= max_x) & \
+                          (cat["y"] >= min_y) & (cat["y"] <= max_y)]
+
+            # find top n categories
+            unique_cat = cat[attribute].value_counts()
+            unique_cat = unique_cat.index[0:n].tolist()
+            cat = cat[cat[attribute].isin(unique_cat)]
+            top_cat = cat.groupby([attribute])["num_tips"].idxmax()
+            cat = cat.loc[top_cat]
+            # cat = cat.sort_values(by="num_tips", ascending=False)
+            cat = cat[0:n]
+            print(cat)
+            result = cat[["x", "y", attribute]].values.tolist()
+        else:
+            # attribute is treated as a continuous variable
+            cat = df.loc[(df["is_tip"] == tip) & (df["branch_is_visible"] == True), ["x", "y", attribute]].copy()
+            cat = cat.loc[~cat[attribute].isnull()]
+            cat = cat.loc[(cat["x"] >= min_x) & (cat["x"] <= max_x) & \
+                          (cat["y"] >= min_y) & (cat["y"] <= max_y), ["x", "y",attribute]]
+            cat = cat.sort_values(by=attribute, ascending=False)
+            cat = cat[0:n]
+            result = cat.values.tolist()
+
+        return {"labels": result}
 
     def highlight_nodes(self, highlight_ids=None):
-
         """ Reads in Node_ids for 'file' and colors their branches red
         Parameters
         ----------
@@ -284,53 +249,6 @@ class Model(object):
             # self.edge_metadata.loc[idx, 'branch_color'] = highlight_color
             self.edge_metadata.update(highlight_ids)
 
-    def get_highlighted_values(self, attribute, lower="",
-                               equal="", upper=""):
-        """ Returns edge_metadata with that match the arguments
-
-        Parameters
-        ----------
-        attribute : str
-            The name of the attribute(column of the table).
-        lower : int
-            The smallest number a feature must match in order for its color to change
-        equal : str/int
-            The number/string a feature must match in order for its color to change
-        upper : int
-            The largest number a feature can match in order for its color to change
-        Returns
-        -------
-        edgeData : pd.Dataframe
-            updated version of edge metadata
-        """
-        columns = list(self.headers)
-        columns.append('x')
-        columns.append('y')
-        if lower is not "":
-            return self.edge_metadata.loc[self.edge_metadata[attribute] > float(lower), columns]
-
-        if equal is not "":
-            value = equal
-            return self.edge_metadata.loc[self.edge_metadata[attribute] == value, columns]
-
-        if upper is not "":
-            return self.edge_metadata.loc[self.edge_metadata[attribute] < float(upper), columns]
-
-    def get_default_table_values(self):
-        """ Returns all edge_metadata values need to initialize slickgrid
-        Parameters
-        ----------
-        Returns
-        -------
-        pd.DataFrame
-            dataframe containing information necessary to draw tree in
-            webgl
-        """
-        columns = list(self.headers)
-        columns.append('x')
-        columns.append('y')
-        return self.edge_metadata[columns]
-
     def get_headers(self):
         """ Returns a list of the headers for the metadata
 
@@ -339,46 +257,63 @@ class Model(object):
 
         Returns
         -------
-        return : list
-            a list of the internal metadata headers
+        return : dictionary
+            a dictionary contaning the tip and internal node headers
         """
-        return self.headers
+        headers = {'tip': self.tip_headers, 'node': self.node_headers}
+        return headers
 
-    def new_color_clades(self, attribute, tax_level, color):
+    # def new_color_clades(self, attribute, tax_level, color):
+    def color_clades(self,tax_level, total_unique=15, color='viridis'):
+        """ Colors taxonomic clades based on rank. The largest 15 clades will be colored.
+
+        Parameters
+        ----------
+        tax_level : str
+            The taxonoimc level to be used i.e. kingdom, phylumn, ...
+        Returns
+        -------
+        return : dictionary
+            the information webgl needs to draw the colored clades
+        """
         self.colored_clades = {}
         df = self.edge_metadata
-        if attribute == '0':
-            tax_nodes = df[['Node_id', tax_level]].copy()
+        if tax_level == "reset":
+            return {}
+        if tax_level != "reset":
+            tax_nodes = df[['Node_id', tax_level, 'num_tips']].copy()
             tax_nodes = tax_nodes.dropna()
-            clade_root_ids = tax_nodes['Node_id'].tolist()
-            clades_tax = tax_nodes[tax_level].tolist()
-            color_clades = {clade_id: clades_tax[i] for i, clade_id in enumerate(clade_root_ids)}
-            clades_tax = list(set(clades_tax))
-            tax_to_float = {clade: i for i, clade in enumerate(clades_tax)}
-            max_val = max(tax_to_float.values())
-            min_val = min(tax_to_float.values())
-        elif True:
-            tax_nodes = df[['Node_id', tax_level, attribute]].copy()
-            tax_nodes = tax_nodes.dropna()
-            clade_root_ids = tax_nodes['Node_id'].tolist()
-            scores = tax_nodes[attribute].tolist()
-            id_to_float = {clade_id: scores[i] for i, clade_id in enumerate(clade_root_ids)}
-            other_att = 'o' + attribute[1:]
-            max_val = max(df[attribute].max(), df[other_att].max())
-            print(max_val)
-            min_val = 0
-        else:
-            tax_to_float = self.__sum_clade_vals(attribute, "sample_type", "gut", color_clades)
-            max_val = max(tax_to_float.values())
-            min_val = min(tax_to_float.values())
-        n = norm(vmin=min_val, vmax=max_val)
-        cmap = cm.ScalarMappable(norm=n, cmap=color)
 
-        # TODO: this double for loop is pointless since self.tre.find_all will only return
-        #       single entry
-        for clade_id, tax in id_to_float.items():
+            # find if there are more than 8 categories
+            unique_tax = tax_nodes[tax_level].value_counts()
+            m_t_eight = True if len(unique_tax) > total_unique else False
+
+            # convert category to number if more than 8 categgoires than largest 7 categories get a unique number
+            # and the rest are assign to other (number 8)
+            if m_t_eight:
+                unique_tax[0:total_unique] = list(range(0, total_unique))
+                unique_tax = unique_tax[0:total_unique]
+            else:
+                unique_tax[0:len(unique_tax)] = list(range(0, len(unique_tax)))
+
+            unique_tax = unique_tax.to_dict()
+            max_val = total_unique if m_t_eight else len(unique_tax)
+            min_val = 0
+
+            # color
+            n = norm(vmin=min_val, vmax=max_val)
+            cmap = cm.ScalarMappable(norm=n, cmap=color)
+            colors = {k:cmap.to_rgba(v)[:3] for k,v in unique_tax.items()}
+
+            # find the root of the clades
+            clade_root_ids = []
+            for taxon in unique_tax:
+                root_id = tax_nodes.loc[tax_nodes[tax_level] == taxon, "num_tips"].idxmax()
+                clade_root_ids.append((root_id,taxon))
+
+        for clade_id,tax in clade_root_ids:
             clade = self.tree.find(clade_id)
-            color = cmap.to_rgba(id_to_float[clade_id])[:3]
+            color = colors[tax]
             color_clade = self.tree.get_clade_info(clade)
             color_clade['color'] = color
             color_clade_s = tools.create_arc_sector(color_clade)
@@ -387,66 +322,7 @@ class Model(object):
                                       'depth': depth,
                                       'color': color,
                                       'node': clade,
-                                      'value': id_to_float[clade_id]}
-        return self.get_colored_clade()
-
-    def color_clade(self, clade_field, clade, color):
-        """ Will highlight a certain clade by drawing a sector around the clade.
-        The sector will start at the root of the clade and create an arc from the
-        most to the right most tip. The sector will aslo have a defualt arc length
-        equal to the distance from the root of the clade to the deepest tip..
-
-        Parameters
-        ----------
-        clade : string
-            The clade to highlight
-        color : string (hex string)
-            The color to highlight the clade with
-
-        Returns
-        -------
-        return : list
-            A list of all highlighted clades
-        """
-        if clade_field != 'None':
-            c = clade
-            clade_root = self.edge_metadata.loc[self.edge_metadata[clade_field] == clade]
-            clade_roots_id = clade_root['Node_id'].values
-
-            if len(clade_roots_id) == 0:
-                for c in range(0, len(self.cached_clades)):
-                    if clade in self.cached_clades[c]:
-                        self.cached_clades[c][clade]['color'] = color
-                return {"empty": []}
-
-            i = 0
-            for clade_root_id in clade_roots_id:
-                clades = self.tree.find_all(clade_root_id)
-                for clade in clades:
-                    color_clade = self.tree.get_clade_info(clade)
-                    color_clade['color'] = color
-                    color_clade_s = tools.create_arc_sector(color_clade)
-                    depth = len([node.name for node in clade.ancestors()])
-                    self.colored_clades[c+str(i)] = {'data': color_clade_s,
-                                              'depth': depth,
-                                              'color': color,
-                                              'node': clade}
-                    i += 1
-        else:
-            i = 0
-            clade_name = clade
-            for (k,v) in self.colored_clades.items():
-                if clade_name in k:
-                    clade = v['node']
-                    color_clade = self.tree.get_clade_info(clade)
-                    color_clade['color'] = color
-                    color_clade_s = tools.create_arc_sector(color_clade)
-                    depth = len([node.name for node in clade.ancestors()])
-                    self.colored_clades[k] = {'data': color_clade_s,
-                                              'depth': depth,
-                                              'color': color,
-                                              'node': clade}
-                    i += 1
+                                      'clade': tax}
         return self.get_colored_clade()
 
     def clear_clade(self, clade):
@@ -472,11 +348,14 @@ class Model(object):
     def get_colored_clade(self):
         CLADE_INDEX = 0
         DEPTH_INDEX = 1
+        result = {}
         clades = [(k, v['depth']) for k, v in self.colored_clades.items()]
         clades.sort(key=lambda clade: clade[DEPTH_INDEX])
         sorted_clades = [self.colored_clades[clade[CLADE_INDEX]]['data'] for clade in clades]
         sorted_clades = [flat for two_d in sorted_clades for flat in two_d]
-        return {"clades": sorted_clades}
+        result["clades"] = sorted_clades
+        result["keyInfo"] = dict({(v["clade"],tools.get_color_hex_code(v["color"])) for k, v in self.colored_clades.items()})
+        return result
 
     # Todo need to added the other items in colored-clades
     def refresh_clades(self):
@@ -493,153 +372,6 @@ class Model(object):
                                  'color': color_clade['color']}
         return colored_clades
 
-    def create_subtree(self, attribute, lower="", equal="", upper=""):
-        """ Creates a subtree from from the tips whose metadata matches the users query. Also, if
-        the attribute referes to an inner node, then this method will first locate the tips whose
-        ansestor is the inner node. This will create a subtree by passing in the tips to skbio.shear()
-        Parameters
-        ----------
-        attribute : string
-            The name of the attribute(column of the table).
-        lower : integer
-            The smallest number a feature must match in order for its color to change
-        equal : string/integer
-            The number/string a feature must match in order for its color to change
-        upper : integer
-            The largest number a feature can match in order for its color to change
-        Returns
-        -------
-        edgeData : pd.Dataframe
-            updated version of edge metadata
-        """
-        # retrive the tips of the subtree
-        nodes = self.get_highlighted_values(attribute, lower, equal, upper)
-        nodes = nodes['Node_id'].values
-        tips = list()
-        for node in nodes:
-            # node is a tip
-            if self.tree.find(node).is_tip():
-                tips.append(node)
-                continue
-            # retive the tips of node
-            for tip in self.tree.find(node).tips():
-                tips.append(tip.name)
-
-        # store the previous tree/metadata
-        self.cached_subtrees.append((self.edge_metadata, self.tree))
-
-        # grab relivent metadata for old metadata
-        columns = list(self.edge_metadata.columns.values)
-        columns.remove('x')
-        columns.remove('y')
-        columns.remove('px')
-        columns.remove('py')
-        self.tree = self.tree.shear(tips)
-        nodes = list()
-        for node in self.tree.postorder():
-            nodes.append(node.name)
-        metadata = self.edge_metadata.loc[self.edge_metadata["Node_id"].isin(nodes), columns]
-
-        # create new metadata
-        self.edge_metadata = self.tree.coords(900, 1500)
-        self.edge_metadata = self.edge_metadata[['Node_id', 'x', 'y', 'px', 'py']]
-        self.edge_metadata = pd.merge(self.edge_metadata, metadata,
-                                      how='outer', on="Node_id")
-
-        self.cached_clades.append(self.colored_clades)
-        self.colored_clades = self.refresh_clades()
-
-        return self.edge_metadata
-
-    def get_old_tree(self):
-        """ retrives the nost recently cached tree if one exists.
-        """
-        if len(self.cached_subtrees) > 0:
-            self.edge_metadata, self.tree = self.cached_subtrees.pop()
-
-            old_clades = self.colored_clades
-            self.colored_clades = self.cached_clades.pop()
-            for k, v in old_clades.items():
-                if k not in self.colored_clades:
-                    self.colored_clades[k] = v
-                self.colored_clades[k]['color'] = old_clades[k]['color']
-
-            self.colored_clades = self.refresh_clades()
-
-            return self.edge_metadata
-        return pd.DataFrame()
-
-    def select_sub_tree(self, x1, y1, x2, y2):
-        """ Marks all tips whose coordinates in the box created by (x1, y1) and (x2, y2). The marked
-        tips can then be used in collapse_selected_tree
-
-        Parameters
-        ----------
-        x1 : Number
-            The x coordinate of the top left corner of the select box
-        y1 : Number
-            The y coordinate of the top left corner of the select box
-        x2 : Number
-            The x coordinate of the bottom right corner of the select box
-        y2 : Number
-            The y coordinate of the bottom right corner of the select box
-        """
-        df = self.edge_metadata
-        (x1, y1, x2, y2) = (float(x1), float(y1), float(x2), float(y2))
-        (smallX, smallY) = (min(x1, x2), min(y1, y2))
-        (largeX, largeY) = (max(x1, x2), max(y1, y2))
-        entries = df.loc[
-            (df['x'] >= smallX) & (df['x'] <= largeX) &
-            (df['y'] >= smallY) & (df['y'] <= largeY)]
-        entries = entries["Node_id"].values
-        if len(entries) == 0:
-            return pd.DataFrame()
-        if len(entries) == 1:
-            nodes = entries
-            root = entries
-        else:
-            root = self.tree.lowest_common_ancestor(entries)
-            nodes = [node.name for node in root.postorder(include_self=False)]
-        selected_tree = self.edge_metadata.loc[self.edge_metadata["Node_id"].isin(nodes)]
-        self.selected_tree = selected_tree.copy()
-        self.selected_tree['branch_color'] = SELECT_COLOR
-        self.selected_root = root
-        return self.selected_tree
-
-    # def get_clade_labels(collapsed=False):
-
-
-    def auto_tree_collapse(self, attribute, collapse_level, color):
-        self.triData = {}
-        self.edge_metadata['branch_is_visible'] = True
-        df = self.edge_metadata
-
-        if attribute == 0:
-            tax_to_float = {clade: i for i, clade in enumerate(clades_tax)}
-        elif True:
-            tax_nodes = df[['Node_id', collapse_level, attribute]].copy()
-            tax_nodes = tax_nodes.dropna()
-            clade_root_ids = tax_nodes['Node_id'].tolist()
-            scores = tax_nodes[attribute].tolist()
-            id_to_float = {clade_id: scores[i] for i, clade_id in enumerate(clade_root_ids)}
-            other_att = 'g' + attribute[1:]
-            max_val = max(df[attribute].max(), df[other_att].max())
-            min_val = 0
-        else:
-            tax_to_float = self.__sum_clade_vals(attribute, "sample_type", "oral", color_clades)
-            max_val = max(tax_to_float.values())
-            min_val = min(tax_to_float.values())
-        n = norm(vmin=min_val, vmax=max_val)
-        cmap = cm.ScalarMappable(norm=n, cmap=color)
-        for clade_id, tax in id_to_float.items():
-            clade = self.tree.find(clade_id)
-            self.__collapse_clade(clade)
-            self.triData[clade_id]['color'] = cmap.to_rgba(id_to_float[clade_id])[:3]
-            self.triData[clade_id]['value'] = id_to_float[clade_id]
-            self.update_collapse_clades()
-
-        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
-
     def __sum_clade_vals(self, attribute, filter_cat, filter_val, node_clade_dict):
         df = self.edge_metadata
         tax_to_float = {tax: 0 for tax in node_clade_dict.values()}
@@ -651,11 +383,33 @@ class Model(object):
             tax_to_float[tax] += val
         return tax_to_float
 
-    def collapse_selected_tree(self):
-        clade = self.selected_root
-        self.__collapse_clade(clade)
+    def collapse_tree_taxon(self, tax_level):
+        df = self.edge_metadata
+        df["branch_is_visible"] = True
+        self.triangles = {}
+        self.triData = {}
+
+        if tax_level == "reset":
+            df = df[['px', 'py', 'red', 'green', 'blue', 'x', 'y', 'red', 'green', 'blue',]].loc[df['branch_is_visible'] == True]
+            edges = np.concatenate(df.to_numpy()).tolist()
+            return {"edges": edges, "triData": []}
+
+        tax_nodes = df[['Node_id', tax_level, 'num_tips']].copy()
+        tax_nodes = tax_nodes.dropna()
+
+        clade_root_ids = tax_nodes.groupby([tax_level])["num_tips"].idxmax()
+        clades = tax_nodes.loc[clade_root_ids, ["Node_id", tax_level]].values.tolist()
+        for clade in clades:
+            clade_id = self.tree.find(clade[0])
+            self.__collapse_clade(clade_id, clade[1], tax_level)
+
         self.update_collapse_clades()
-        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
+        df = df[['px', 'py', 'red', 'green', 'blue', 'x', 'y', 'red', 'green', 'blue',]].loc[df['branch_is_visible'] == True]
+        edges = np.concatenate(df.to_numpy()).tolist()
+        triData = self.get_triangles()
+        result = {"edges": edges, "triData": triData}
+
+        return result
 
     def update_collapse_clades(self):
         """
@@ -663,34 +417,48 @@ class Model(object):
         collapsed clades
         """
         collapse_ids = self.triData.keys()
-        for node_id in collapse_ids:
-            ancestors = [a.name for a in self.tree.find(node_id).ancestors()]
-            for other_id in collapse_ids:
-                if other_id in ancestors:
-                    self.triData[node_id]['visible'] = False
+        color = self.edge_metadata.loc[collapse_ids,["red", "green", "blue"]].values.tolist()
+        for i, node_id in enumerate(collapse_ids):
+            self.triData[node_id]["red"] = color[i][0]
+            self.triData[node_id]["green"] = color[i][1]
+            self.triData[node_id]['"blue'] = color[i][2]
+
+            # use this if general nodes are allowed to be collapsed
+            # Note: would need to speed up, this makes it so only the top level triangles are shown
+            # ancestors = [a.name for a in self.tree.find(node_id).ancestors()]
+            # for other_id in collapse_ids:
+            #     if other_id in ancestors:
+            #         self.triData[node_id]['visible'] = False
+
 
     def get_triangles(self):
+        triData = []
         triangles = {k: v for (k, v) in self.triData.items() if v['visible']}
+        if not triangles:
+            return []
         self.triangles = pd.DataFrame(triangles).T
-        return self.triangles
+        triangles = self.triangles[["cx", "cy", "red", "green", "blue", "lx", "ly","red", "green", "blue",
+                                    "rx", "ry", "red", "green", "blue"]].loc[self.triangles['visible'] == True]
+        triData = np.concatenate(triangles.to_numpy()).tolist()
+        return triData
 
     def __get_tie_breaker_num(self):
         self.tie_breaker += 1
         return self.tie_breaker
 
-    def __collapse_clade(self, clade):
+    def __collapse_clade(self, clade, taxon, tax_level):
         if not clade.is_tip():
             s = self.tree.get_clade_info(clade)
 
             (rx, ry) = (clade.x2, clade.y2)
             theta = s['starting_angle']
             (c_b1, s_b1) = (math.cos(theta), math.sin(theta))
-            (x1, y1) = (s['largest_branch'] * c_b1 / 2.0, s['largest_branch'] * s_b1 / 2.0)
+            (x1, y1) = (s['largest_branch'] * c_b1, s['largest_branch'] * s_b1)
 
             # find right most branch
             theta += s['theta']
             (c_b2, s_b2) = (math.cos(theta), math.sin(theta))
-            (x2, y2) = (s['largest_branch'] / 2.0 * c_b2, s['largest_branch'] * s_b2 / 2.0)
+            (x2, y2) = (s['smallest_branch'] * c_b2, s['smallest_branch'] * s_b2 )
 
             (x1, y1) = (x1 + rx, y1 + ry)
             (x2, y2) = (x2 + rx, y2 + ry)
@@ -702,154 +470,25 @@ class Model(object):
             nodes = [clade.name]
             level = clade.parent.level
 
-
         collapsed_nodes = [node for node in clade.postorder(include_self=False)]
         nodes = [node.name for node in collapsed_nodes]
         nId = {"Node_id": clade.name}
         root = {'cx': rx, 'cy': ry}
         shortest = {'lx': x1, 'ly': y1}
         longest = {'rx': x2, 'ry': y2}
-        color = {'color': "0000FF"}
+        red = {'red': DEFAULT_COLOR[0]}
+        green = {'green': DEFAULT_COLOR[1]}
+        blue = {'blue': DEFAULT_COLOR[2]}
         visible = {'visible': True}
         depth = {'depth': level}
-        self.triData[clade.name] = {**nId, **root, **shortest,
-                                                 **longest, **color, **visible, **depth}
+        taxon = {'taxon': taxon}
+        rank = {'rank': tax_level}
+        self.triData[clade.name] = {**nId, **root, **shortest,**longest, **red,
+                                    **green, **blue, **visible, **depth, **taxon,
+                                    **rank}
 
-        self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = False
+        self.edge_metadata.loc[nodes, 'branch_is_visible'] = False
         return collapsed_nodes
-
-
-    def default_auto_collapse(self, tips):
-        """
-        collapses clades with fewest num of tips until number of tips is TIP_LIMIT
-        WARNING: this method will automatically uncollapse all clades.
-        """
-        self.tie_breaker = 0
-
-        # uncollapse everything
-        self.edge_metadata['branch_is_visible'] = True
-        self.triData = {}
-        num_tips = int(self.tree.tip_count * (float(tips)/ 100.0))
-        collapse_amount = self.tree.tip_count - num_tips
-        Element = namedtuple('Element', ' level tips breaker clade')
-        pq = [Element(clade.level, clade.tip_count, self.__get_tie_breaker_num(), clade)
-                for clade in self.tree.levelorder(include_self=False) if clade.tip_count < collapse_amount]
-        pq = sorted(pq, key=Default_Cmp)
-        collapsed_nodes = set()
-        for clade in pq:
-            if collapse_amount == 0:
-                    break
-            if collapse_amount - clade.tips >= 0 and clade.clade not in collapsed_nodes:
-                if clade.tips > 1:
-                    collapsed = set(self.__collapse_clade(clade.clade))
-                    collapsed_nodes |= collapsed
-                else:
-                    self.edge_metadata.loc[self.edge_metadata['Node_id'] == clade.clade.name, 'branch_color'] = '0000FF'
-                collapse_amount -= clade.tips
-
-        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
-
-    # TODO: Needs to implement set
-    def balance_auto_collapse(self, tips, threshold):
-        """
-        collapses clades with fewest num of tips until number of tips is TIP_LIMIT
-        WARNING: this method will automatically uncollapse all clades.
-        """
-        L_CHLD = 0
-        R_CHLD = 1
-        # uncollapse everything
-        self.edge_metadata['branch_is_visible'] = True
-        self.triData = {}
-        num_tips = int(self.tree.tip_count * (float(tips)/ 100.0))
-        collapse_amount = self.tree.tip_count - num_tips
-        threshold = -1 #float(float(threshold) / 100.0)
-        cur_node = self.tree
-        Element = namedtuple('Element', 'node left right')
-        start_node = Element(self.tree, False, False)
-        holdings = [start_node]
-        balances = dict(self.edge_metadata[['Node_id', 'C(diet)[T.Not]']].values)
-        count = 0
-        while collapse_amount > 0 and len(holdings) > 0:
-            count += 1
-            item = holdings.pop()
-            node = item.node
-            if node.is_tip():
-                self.__collapse_clade(node)
-                collapse_amount -= node.tip_count
-                continue
-
-            # collapse node if both children have been explored
-            if item.left and item.right:
-                self.__collapse_clade(node)
-                continue
-
-            # collapse the subtree that contributes the least to the balance
-            if abs(balances[node.name]) > threshold:
-                if balances[node.name] < 0:
-                    if collapse_amount - node.children[L_CHLD].tip_count > 0:
-                        self.__collapse_clade(node.children[L_CHLD])
-                        collapse_amount -= node.children[L_CHLD].tip_count
-                        holdings.append(Element(node, True, True))
-                        holdings.append(Element(node.children[R_CHLD], False, False))
-                    else:
-                        holdings.append(Element(node.children[L_CHLD], False, False))
-
-                else:
-                    if collapse_amount - node.children[R_CHLD].tip_count > 0:
-                        self.__collapse_clade(node.children[R_CHLD])
-                        collapse_amount -= node.children[R_CHLD].tip_count
-                        holdings.append(Element(node, True, True))
-                        holdings.append(Element(node.children[L_CHLD], False, False))
-                    else:
-                        holdings.append(Element(node.children[R_CHLD], False, False))
-
-            # handle threshold
-
-        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
-
-    def uncollapse_selected_tree(self, x, y):
-        """
-            Parameters
-            ----------
-            x: The x coordinate of the double click
-            y: The y coordinate of the double click
-        """
-        selected_ids = []
-        # Find triangles that contains the point
-        for k in self.triData.keys():
-            if self.is_in_triangle(k, x, y):
-                selected_ids.append(k)
-
-        # Find the highest level of triangle
-        outer = sys.maxsize
-        outer_node = None
-        for id in selected_ids:
-            if self.triData[id]['depth'] < outer:
-                outer = self.triData[id]['depth']
-                outer_node = id
-        nodes = [node.name for node in self.tree.find(outer_node).postorder(include_self=False)]
-        for id in self.triData.keys():
-            if id in nodes:
-                selected_ids.append(id)
-
-        # Find the next highest level of triangle if there is any
-        inner = sys.maxsize
-        inner_node = None
-        for id in selected_ids:
-            depth = self.triData[id]['depth']
-            if depth > outer and depth < inner:
-                inner = self.triData[id]['depth']
-                inner_node = id
-
-        del self.triData[outer_node]
-        if inner_node:
-            nodes_inner = [node.name for node in self.tree.find(inner_node).postorder(include_self=False)]
-            nodes = list(set(nodes)-set(nodes_inner))
-        for id in self.triData.keys():
-            self.triData[id]['visible'] = True
-        self.edge_metadata.loc[self.edge_metadata['Node_id'].isin(nodes), 'branch_is_visible'] = True
-        return self.edge_metadata.loc[self.edge_metadata['branch_is_visible']]
-
 
     def is_in_triangle(self, root, x, y):
         """
@@ -898,11 +537,6 @@ class Model(object):
         """
         return abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0)
 
-    def get_triangles(self):
-        triangles = {k: v for (k, v) in self.triData.items() if v['visible']}
-        self.triangles = pd.DataFrame(triangles).T
-        return self.triangles
-
     def __clade_level(self):
         """
         Calculates the depth of each node in self.tree
@@ -910,3 +544,69 @@ class Model(object):
         for node in self.tree.levelorder():
             node.level = len(node.ancestors())
             node.tip_count = 0
+
+    def find_closes_node(self, x=0, y=0, columns=["Node_id"], delta=20):
+        """ Finds the closes node to (x,y)
+
+        Parameters
+        ----------
+        x : float
+            The x coordinate
+        y : float
+            The y coordinate
+        columns : string list
+            A list containing the metada columns to be returned
+        delta : float
+            The farthest a node can be from (x,y) to be considered close
+
+        Returns
+        -------
+        info : dictionary
+            a dictionary whose keys are columns and values are the corresponding values
+            of the closest node
+        """
+        x = float(x)
+        y = float(y)
+        columns.append("x")
+        columns.append("y")
+        df = self.edge_metadata
+        df = df.loc[df["branch_is_visible"] == True]
+        points = [(x,y) for x, y in zip(df["x"], df["y"])]
+        closes_index = cdist([(x,y)], points).argmin()
+        cx, cy = points[closes_index]
+        if math.sqrt((cx - x)**2 + (cy - y)**2) <= delta:
+            info = df.loc[(df["x"] == cx) & (df["y"] == cy), columns].to_dict(orient="list")
+        else:
+            info = {}
+        return info
+
+    def find_closes_triangle(self, x=0, y=0, columns=["Node_id", "taxon"], delta=20):
+        """ Finds the closes triangle to (x,y)
+
+        Parameters
+        ----------
+        x : float
+            The x coordinate
+        y : float
+            The y coordinate
+        columns : string list
+            A list containing the metada columns to be returned
+        delta : float
+            The farthest a node can be from (x,y) to be considered close
+
+        Returns
+        -------
+        info : dictionary
+            a dictionary whose keys are columns and values are the corresponding values
+            of the closest triangle
+        """
+        x = float(x)
+        y = float(y)
+        info = {}
+        for k in self.triData:
+            if self.is_in_triangle(k, x, y):
+                info["Root_id"] = k
+                info["Rank"] = self.triData[k]["rank"]
+                info["Taxonomy"] = self.triData[k]["taxon"]
+                return info
+        return {}
