@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Test suite</title>
+
+   <link rel="stylesheet" href="vendor/qunit-min.css">
+
+  <!-- Use qunit to help run tests -->
+  <script src="vendor/qunit-min.js"></script>
+
+  <!-- Use requireJS to help make test modular -->
+  <script src="../empress/vendor/require-2.1.22.min.js"></script>
+</head>
+<body>
+  <!-- required for qunit -->
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+
+
+  <script>
+    QUnit.config.autostart = false;
+
+    requirejs.config({
+        'baseUrl' : '../empress/',
+
+        // all paths are relative to baseUrl, note that .js extension should
+        // not be used
+        'paths' : {
+          /* vendor paths */
+          'jquery' : './vendor/jquery-2.2.4.min',
+          'glMatrix' : './vendor/gl-matrix.min',
+
+          /* empress paths */
+          'camera' : 'camera',
+
+          /* test paths */
+          'testCamera' : './../tests/test-camera'
+        }
+    });
+
+    // load tests
+    require(
+        ['jquery', 'glMatrix', 'camera', 'testCamera'],
+
+        // start tests
+        function ($, gl, Camera, testHelloWorld) {
+            $(document).ready(function() {
+                QUnit.start();
+            });
+
+    });
+  </script>
+</body>
+</html>
