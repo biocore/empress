@@ -9,6 +9,7 @@ function loop() {
   vec4.transformMat4(hCamPos, hCamPos, shaderProgram.xyTransMat);
   vec4.transformMat4(hCamPos, hCamPos, shaderProgram.zTransMat);
   vec4.transformMat4(hLookDir, hLookDir, shaderProgram.xyTransMat);
+  vec4.transformMat4(hLookDir, hLookDir, shaderProgram.zTransMat);
 
 
   // create virtual camera
