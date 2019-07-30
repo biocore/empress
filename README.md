@@ -1,1 +1,1 @@
-empress is currently begin rewritten to a client based model
+Empress is currently being rebuilt. Please see legacy branch for the last stable build.
