@@ -81,8 +81,25 @@ define(['glMatrix'], function(gl) {
      *                be ignored.
      */
     Camera.prototype.zoom = function(x) {
-        this.pos[2] = (this.pos[2] + x > 0) ? this.pos[2] + x : this.pos[2];
-        
+        // multiply by -1 so that a positive x will zoom the camera in
+        x = -1*x;
+
+        this.pos_[2] = (this.pos_[2] + x > 0) ? this.pos_[2] + x : this.pos_[2];
+        this.lookDir_[2] = (this.pos_[2] + x > 0) ? this.lookDir_[2] + x
+                                                  : this.lookDir_[2];
+    };
+
+    /**
+     * Moves the camera to an exact location
+     *
+     * @param {vec3} pos The new position of the camera
+     * @param {vec3} lookDir Where the camera will be looking
+     * param {vec3} upDir What direction the camera considers up
+     */
+    Camera.prototype.placeCamera = function(pos, lookDir, upDir) {
+        this.pos_ = pos;
+        this.lookDir_ = lookDir;
+        this.upDir_ = upDir;
     };
 
 

@@ -57,5 +57,30 @@ require(['jquery', 'camera', 'glMatrix'], function($, Camera, gl) {
             deepEqual(cam.pos_, p, "Test: cam pos translation");
             deepEqual(cam.lookDir_, l, "Test: cam lookDir translation");
         });
+
+        test('Test zoom()', function() {
+            // move camera 5 units forward
+            var x = 5;
+            initPos[2] = initPos[2] - x;
+            cam.zoom(x);
+            deepEqual(cam.pos_, initPos, 'Test: move camera 5 units in');
+
+            // try moving camera past (0,0)
+            x = 100;
+            cam.zoom(x);
+
+            // camera should be at same locaiton
+            deepEqual(cam.pos_, initPos, 'Test: move past (0,0');
+        });
+
+        test('Test placeCamera()', function() {
+            var newPos = gl.vec3.fromValues(10, 10, 10);
+            var newLook = gl.vec3.fromValues(10, 10, 0);
+            var newUp = gl.vec3.fromValues(0, 0, 2);
+            cam.placeCamera(newPos, newLook, newUp);
+            deepEqual(cam.pos_, newPos, "Test: set postion");
+            deepEqual(cam.lookDir_, newLook, 'Test: set look direction');
+            deepEqual(cam.upDir_, newUp, 'Test: set up direction');
+        });
     });
 });
