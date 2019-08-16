@@ -10,7 +10,7 @@
   <script src="vendor/qunit-min.js"></script>
 
   <!-- Use requireJS to help make test modular -->
-  <script src="../empress/vendor/require-2.1.22.min.js"></script>
+  <script src="../empress/support_files/vendor/require-2.1.22.min.js"></script>
 </head>
 <body>
   <!-- required for qunit -->
@@ -28,23 +28,30 @@
         // not be used
         'paths' : {
           /* vendor paths */
-          'jquery' : './vendor/jquery-2.2.4.min',
-          'glMatrix' : './vendor/gl-matrix.min',
+          'jquery' : './support_files/vendor/jquery-2.2.4.min',
 
-          /* empress paths */
-          'camera' : 'camera',
+          /* succinct tree paths */
+          'ByteArray': './support_files/js/byte-array',
+          'BPTree' : './support_files/js/bp-tree',
+          'SidePanel' : './support_files/js/side-panel-handler',
+          'ColorHandler' : './support_files/js/color-handler',
+
 
           /* test paths */
-          'testCamera' : './../tests/test-camera'
+          'testBPTree' : './../tests/test-bp-tree',
+          'testByteTree' : './../tests/test-byte-array',
+          'testSidePanel' : './../tests/test-side-panel'
         }
     });
 
     // load tests
     require(
-        ['jquery', 'glMatrix', 'camera', 'testCamera'],
+        ['jquery', 'ByteArray', 'BPTree', 'SidePanel', 'ColorHandler',
+         'testBPTree', 'testByteTree', 'testSidePanel'],
 
         // start tests
-        function ($, gl, Camera, testHelloWorld) {
+        function ($, ByteArray, BPTree, SidePanel, ColorHandler, testBPTree,
+                  testByteTree, testSidePanel) {
             $(document).ready(function() {
                 QUnit.start();
             });
