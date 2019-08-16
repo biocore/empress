@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Test suite</title>
+
+   <link rel="stylesheet" href="vendor/qunit-min.css">
+
+  <!-- Use qunit to help run tests -->
+  <script src="vendor/qunit-min.js"></script>
+
+  <!-- Use requireJS to help make test modular -->
+  <script src="../empress/support_files/vendor/require-2.1.22.min.js"></script>
+</head>
+<body>
+  <!-- required for qunit -->
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+
+
+  <script>
+    QUnit.config.autostart = false;
+
+    requirejs.config({
+        'baseUrl' : '../empress/',
+
+        // all paths are relative to baseUrl, note that .js extension should
+        // not be used
+        'paths' : {
+          /* vendor paths */
+          'jquery' : './support_files/vendor/jquery-2.2.4.min',
+
+          /* succinct tree paths */
+          'ByteArray': './support_files/js/byte-array',
+          'BPTree' : './support_files/js/bp-tree',
+
+          /* test paths */
+          'testBPTree' : './../tests/test-bp-tree',
+          'testByteTree' : './../tests/test-byte-array',
+        }
+    });
+
+    // load tests
+    require(
+        ['jquery', 'ByteArray', 'BPTree', 'testBPTree', 'testByteTree'],
+
+        // start tests
+        function ($, ByteArray, BPTree, testBPTree, testByteTree,
+                  testSidePanel) {
+            $(document).ready(function() {
+                QUnit.start();
+            });
+
+    });
+  </script>
+</body>
+</html>
