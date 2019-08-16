@@ -455,5 +455,31 @@ define(['ByteArray'], function(ByteArray) {
         return this.open(this.select(0, k));
     };
 
+    /**
+     * Finds preorder rank of node i
+     *
+     * @param {Number} i The node index to asses preorder rank
+     *
+     * @return {Number} The preorder rank of node i
+     */
+    BPTree.prototype.preorder = function(i) {
+        if (this.b_[i]) {
+            return this.rank(1, i);
+        } else {
+            return this.preorder(this.open(i));
+        }
+    };
+
+    /**
+     * Find the index of the node with preorder k
+     *
+     * @param {Number} k The preorder to search for
+     *
+     * @return {Number} The index position of the node in the tree
+     */
+    BPTree.prototype.preorderselect = function(k) {
+        return this.select(1, k);
+    };
+
     return BPTree;
 });

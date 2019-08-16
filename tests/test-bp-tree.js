@@ -238,5 +238,20 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
                 equal(bpObj.postorderselect(k + 1), exp[k]);
             }
         });
+
+        test('Test preorder', function() {
+            exp = [1, 2, 3, 3, 4, 4, 5, 6, 6, 5, 2, 7, 7, 8, 9, 10, 10, 11, 11,
+                   9, 8, 1];
+            for (var i = 0; i < exp.length; i++) {
+                equal(bpObj.preorder(i), exp[i]);
+            }
+        });
+
+        test('Test preorderselect', function() {
+            exp = [0, 1, 2, 4, 6, 7, 11, 13, 14, 15, 17];
+            for (var k = 0; k < exp.length; k++) {
+                equal(bpObj.preorderselect(k + 1), exp[k]);
+            }
+        });
     });
 });
