@@ -34,7 +34,7 @@ define(['ByteArray'], function(ByteArray) {
          * Note: if memory becomes an issue this could be converted into a
          *       Uint16Array
          */
-        this.names_ = (names) ? names : null;
+        this.names_ = names ? names : null;
 
         /**
          * @type{Float32Array}
@@ -43,7 +43,7 @@ define(['ByteArray'], function(ByteArray) {
          * provided then lengths will be set to 0.
          * Note: lengths are assumed to be smaller that 3.4 * 10^38
          */
-        this.lengths_ = (lengths) ? new Float32Array(lengths) : null;
+        this.lengths_ = lengths ? new Float32Array(lengths) : null;
 
         /**
          * @type {Uint32Array}
