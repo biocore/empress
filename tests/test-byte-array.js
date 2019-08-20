@@ -5,7 +5,7 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
 
         // Note: for some of the tests, set the first n elements of array
         //       equal to 1-n
-        module('Succinct Tree' , {
+        module('Byte Array' , {
             setup: function() {
                 array = new Uint8Array([1, 2, 3, 1, 1, 2, 1, 3]);
             },

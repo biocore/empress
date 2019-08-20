@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Empress</title>
+    <link rel='stylesheet' type="text/css"
+      href='{{ base_url }}/css/empress.css'>
+    <script src='{{ base_url }}/vendor/require-2.1.22.min.js'></script>
+  </head>
+  <body>
+    <!-- The tree -->
+    <div class="tree-container">
+      <div class="container">
+        <canvas class="tree-surface" id="tree-surface">
+            Your browser does not support HTML5
+        </canvas>
+        <div id="tip-label-container"></div>
+        <div id="node-label-container"></div>
+        <div class="square"></div>
+      </div>
+
+      <!-- Side panel -->
+      <div id="side-panel"></div>
+    </div>
+
+    <!-- hover box -->
+    <div class="hidden" id="hover-box">
+      <table id="hover-table"></table>
+    </div>
+
+    <!-- color keys -->
+    <div id="legend-panel">
+      <div id="tip-color-key" class="legend hidden" disabled="true"></div>
+      <div id="node-color-key" class="legend hidden" disabled="true"></div>
+      <div id="clade-color-key" class="legend hidden" disabled="true"></div>
+    </div>
+
+    <!-- toast -->
+    <div id="toast" class="hidden"></div>
+
+    <!-- loading screen -->
+    <div id="loading-screen">
+      <div id="loading-animation"></div>
+      <div id="loading-text">Loading...</div>
+    </div>
+  </body>
+
+  <script>
+    var empressRequire = requirejs.config({
+        'baseUrl' : '{{ base_url }}',
+
+        // paths are relative to baseUrl (.js not needed)
+        'paths' : {
+            /* vendor paths */
+            'jquery' : './vendor/jquery-2.2.4.min',
+            'glMatrix' : './vendor/gl-matrix.min',
+
+            'ByteArray' : './js/byte-array',
+            'BPTree' : './js/bp-tree',
+            'Camera' : './js/camera',
+            'Drawer' : './js/drawer'
+        }
+    });
+
+    empressRequire(['jquery', 'glMatrix', 'BPTree', 'ByteArray',
+                    'Camera', 'Drawer'],
+        function($, gl, BPTree, ByteArray, Camera, Drawer) {
+        // initialze the tree and model
+        var tArr = new Uint8Array({{ tree }});
+        var tree = new BPTree(tArr);
+
+        var cam = new Camera();
+        var canvas = document.getElementById('tree-surface')
+        var drawer = new Drawer(canvas, cam);
+        drawer.initialze();
+        drawer.loadTreeBuf({{ coords}});
+        drawer.draw();
+        document.getElementById("loading-screen").classList.add("hidden");
+    });
+  </script>
+</html>

@@ -29,24 +29,28 @@
         'paths' : {
           /* vendor paths */
           'jquery' : './support_files/vendor/jquery-2.2.4.min',
+          'glMatrix' : './support_files/vendor/gl-matrix.min',
 
           /* succinct tree paths */
           'ByteArray': './support_files/js/byte-array',
           'BPTree' : './support_files/js/bp-tree',
+          'Camera' : './support_files/js/camera',
 
           /* test paths */
           'testBPTree' : './../tests/test-bp-tree',
           'testByteTree' : './../tests/test-byte-array',
+          'testCamera' : './../tests/test-camera'
         }
     });
 
     // load tests
     require(
-        ['jquery', 'ByteArray', 'BPTree', 'testBPTree', 'testByteTree'],
+        ['jquery', 'glMatrix', 'ByteArray', 'BPTree', 'Camera', 'testBPTree',
+         'testByteTree', 'testCamera'],
 
         // start tests
-        function ($, ByteArray, BPTree, testBPTree, testByteTree,
-                  testSidePanel) {
+        function ($, gl, ByteArray, BPTree, Camera, testBPTree, testByteTree,
+                  testCamera) {
             $(document).ready(function() {
                 QUnit.start();
             });
