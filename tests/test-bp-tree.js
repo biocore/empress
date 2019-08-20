@@ -1,11 +1,5 @@
 require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
     $(document).ready(function() {
-
-        // test variables
-        // var bpArray;
-        // var bpObj;
-        // var r0, r1, s0, s1;
-
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray without
         // effecting other test
