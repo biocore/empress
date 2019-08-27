@@ -1,5 +1,14 @@
 {
+    "name": "headless-karma-travis",
+    "main": "test-main.js",
+    "author": "Kalen Cantrell",
     "scripts": {
       "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js"
+    },
+    "devDependencies": {
+        "qunit": "^2.9.2",
+        "karma-qunit": "^4.0.0",
+        "requirejs": "^2.3.6",
+        "karma-requirejs": "^1.1.0"
     }
 }
