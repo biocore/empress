@@ -12,6 +12,6 @@ cache:
   directories:
     - node_modules
 install:
-  - yarn
+  - npm
 script:
-  - yarn test
+  - npm test
