@@ -13,7 +13,7 @@ cache:
     - node_modules
 script:
   - npm install
-  - npm install karma --save-dev
-  - npm install karma-qunit karma-requirejs qunit requirejs karma-chrome-launcher --save-dev
+  #- npm install karma --save-dev
+  #- npm install karma-qunit karma-requirejs qunit requirejs karma-chrome-launcher --save-dev
   - npm install -g karma-cli
   - npm test
