@@ -8,13 +8,12 @@ sudo: required
 addons:
   chrome: stable # have Travis install Chrome stable.
 cache:
-  npm: true
+  npm: false
   directories:
     - node_modules
-install:
-  - npm
 script:
+  - npm install
   - npm install karma --save-dev
   - npm install karma-qunit karma-requirejs qunit requirejs karma-chrome-launcher --save-dev
   - npm install -g karma-cli
-  - yarn test
+  - npm test
