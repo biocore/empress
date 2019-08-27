@@ -1,0 +1,5 @@
+{
+    "scripts": {
+      "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js"
+    }
+}
