@@ -1,0 +1,19 @@
+language: node_js
+node_js:
+  - "10"
+dist: trusty # needs Ubuntu Trusty
+# Note: if you switch to sudo: false, you'll need to launch Chrome with --no-sandbox.
+# See https://github.com/travis-ci/travis-ci/issues/8836
+sudo: required
+addons:
+  chrome: stable # have Travis install Chrome stable.
+cache:
+  npm: false
+  directories:
+    - node_modules
+script:
+  - npm install
+  #- npm install karma --save-dev
+  #- npm install karma-qunit karma-requirejs qunit requirejs karma-chrome-launcher --save-dev
+  - npm install -g karma-cli
+  - npm test
