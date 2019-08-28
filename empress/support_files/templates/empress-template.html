@@ -50,21 +50,26 @@
 
         // paths are relative to baseUrl (.js not needed)
         'paths' : {
-            'Model' : './js/model',
+            /* vendor paths */
+            'jquery' : './vendor/jquery-2.2.4.min',
+            'glMatrix' : './vendor/gl-matrix.min',
+
             'ByteArray' : './js/byte-array',
             'BPTree' : './js/bp-tree',
+            'Camera' : './js/camera',
+            'Drawer' : './js/drawer',
             'SidePanel' : './js/side-panel-handler',
             'ColorHandler': './js/color-handler'
         }
     });
 
-    empressRequire(['Model', 'BPTree', 'ByteArray', 'SidePanel',
-                    'ColorHandler'],
-        function(Model, BPTree, ByteArray, SidePanel, ColorHandler) {
+    empressRequire(['jquery', 'glMatrix', 'BPTree', 'ByteArray', 'SidePanel',
+                    'ColorHandler', 'Camera', 'Drawer'],
+        function($, gl, BPTree, ByteArray, SidePanel, ColorHandler, Camera,
+                 Drawer) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr);
-        model = new Model(tree);
 
         // The side menu
         var sPanel = new SidePanel(document.getElementById('side-panel'));
@@ -77,6 +82,13 @@
               document.querySelector(".side-content:not(.hidden)"));
           });
         });
+
+        var cam = new Camera();
+        var canvas = document.getElementById('tree-surface')
+        var drawer = new Drawer(canvas, cam);
+        drawer.initialze();
+        drawer.loadTreeBuf({{ coords }});
+        drawer.draw();
         document.getElementById("loading-screen").classList.add("hidden");
     });
   </script>

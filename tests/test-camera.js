@@ -1,4 +1,4 @@
-require(['jquery', 'camera', 'glMatrix'], function($, Camera, gl) {
+require(['jquery', 'Camera', 'glMatrix'], function($, Camera, gl) {
     $(document).ready(function() {
 
         // variables shared across all tests
@@ -13,7 +13,8 @@ require(['jquery', 'camera', 'glMatrix'], function($, Camera, gl) {
                 initPos = gl.vec3.fromValues(0, 0, 10);
                 lookDir = gl.vec3.fromValues(0, 0, 0);
                 upDir = gl.vec3.fromValues(0, 0, 1);
-                cam = new Camera(initPos, lookDir, upDir);
+                // cam = new Camera(initPos, lookDir, upDir);
+                cam = new Camera();
             },
 
             teardown : function() {
@@ -24,19 +25,15 @@ require(['jquery', 'camera', 'glMatrix'], function($, Camera, gl) {
             }
         });
 
-        test('Test constructor', function() {
-            deepEqual(cam.pos_, initPos, 'Test: cam init pos');
-            deepEqual(cam.lookDir_, lookDir, 'Test: cam init lookDir');
-            deepEqual(cam.upDir_, upDir, 'Test: Cam init upDir');
-        });
-
         test('Test getViewMat()', function() {
+            cam.placeCamera(initPos, lookDir, upDir);
             var viewMat = gl.mat4.create();
             gl.mat4.lookAt(viewMat, initPos, lookDir, upDir);
             deepEqual(cam.getViewMat(), viewMat, 'Test: getViewMmat()');
         });
 
         test('Test moveCam()', function() {
+            cam.placeCamera(initPos, lookDir, upDir);
             // translate initPos and lookDir
             var translation = gl.vec3.fromValues(1,1, 0);
             var transMat = gl.mat4.create();
@@ -59,6 +56,7 @@ require(['jquery', 'camera', 'glMatrix'], function($, Camera, gl) {
         });
 
         test('Test zoom()', function() {
+            cam.placeCamera(initPos, lookDir, upDir);
             // move camera 5 units forward
             var x = 5;
             initPos[2] = initPos[2] - x;

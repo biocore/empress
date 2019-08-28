@@ -34,7 +34,7 @@ define(['ByteArray'], function(ByteArray) {
          * Note: if memory becomes an issue this could be converted into a
          *       Uint16Array
          */
-        this.names_ = (names) ? names : null;
+        this.names_ = names ? names : null;
 
         /**
          * @type{Float32Array}
@@ -43,7 +43,7 @@ define(['ByteArray'], function(ByteArray) {
          * provided then lengths will be set to 0.
          * Note: lengths are assumed to be smaller that 3.4 * 10^38
          */
-        this.lengths_ = (lengths) ? new Float32Array(lengths) : null;
+        this.lengths_ = lengths ? new Float32Array(lengths) : null;
 
         /**
          * @type {Uint32Array}
@@ -453,6 +453,32 @@ define(['ByteArray'], function(ByteArray) {
      */
     BPTree.prototype.postorderselect = function(k) {
         return this.open(this.select(0, k));
+    };
+
+    /**
+     * Finds preorder rank of node i
+     *
+     * @param {Number} i The node index to asses preorder rank
+     *
+     * @return {Number} The preorder rank of node i
+     */
+    BPTree.prototype.preorder = function(i) {
+        if (this.b_[i]) {
+            return this.rank(1, i);
+        } else {
+            return this.preorder(this.open(i));
+        }
+    };
+
+    /**
+     * Find the index of the node with preorder k
+     *
+     * @param {Number} k The preorder to search for
+     *
+     * @return {Number} The index position of the node in the tree
+     */
+    BPTree.prototype.preorderselect = function(k) {
+        return this.select(1, k);
     };
 
     return BPTree;

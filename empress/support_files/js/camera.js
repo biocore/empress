@@ -13,11 +13,11 @@ define(['glMatrix'], function(gl) {
      * @return {Camera}
      * constructs Camera
      */
-     function Camera(initPos, lookDir, upDir) {
+     function Camera() {
         // The inital setup of the camera
-        this.pos_ = initPos;
-        this.lookDir_ = lookDir;
-        this.upDir_ = upDir;
+        this.pos_ = null;
+        this.lookDir_ = null;
+        this.upDir_ = null;
 
         // Set the initial perspective of camera
         var fov = {
@@ -52,8 +52,10 @@ define(['glMatrix'], function(gl) {
      *    Note: translation[2] be set to zero.
      */
     Camera.prototype.moveCam = function(translation) {
-        // create the transformation matrix
+        // set z-axis to 0
         translation[2] = 0;
+
+        // create the transformation matrix
         var transMat = gl.mat4.create();
         gl.mat4.fromTranslation(transMat, translation);
 
@@ -94,12 +96,22 @@ define(['glMatrix'], function(gl) {
      *
      * @param {vec3} pos The new position of the camera
      * @param {vec3} lookDir Where the camera will be looking
-     * param {vec3} upDir What direction the camera considers up
+     * @param {vec3} upDir What direction the camera considers up
      */
     Camera.prototype.placeCamera = function(pos, lookDir, upDir) {
         this.pos_ = pos;
         this.lookDir_ = lookDir;
         this.upDir_ = upDir;
+    };
+
+    /**
+     * Returns the virtical position of the camera. This can be used to convert
+     * screen coordinates to world coordinates.
+     *
+     * @return {Number} The virtical position of the camera
+     */
+    Camera.prototype.getVirticalPos = function() {
+        return this.pos_[2];
     };
 
 
