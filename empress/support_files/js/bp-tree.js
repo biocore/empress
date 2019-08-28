@@ -90,6 +90,26 @@ define(['ByteArray'], function(ByteArray) {
             eCache.push((2 * this.r1Cache_[i]) - i - 1);
         }
         this.eCache_ = new Uint32Array(eCache);
+
+        /**
+         *
+         * @type {Uint32Array}
+         * @private
+         * open/close cache to boost performance but at cost of memory. This can
+         * be optimized with use of rrm-tre
+         */
+         this.ocCache_ = new Uint32Array(this.b_.length);
+         var openInx = 0;
+         var oc = [];
+         for (var i = 0; i < this.b_.length; i++) {
+            if (this.b_[i]) {
+                oc.push(i);
+            } else {
+                openInx = oc.pop();
+                this.ocCache_[openInx] = i;
+                this.ocCache_[i] = openInx;
+            }
+         }
     };
 
     /**
@@ -242,12 +262,7 @@ define(['ByteArray'], function(ByteArray) {
      * @return {Number}
      */
     BPTree.prototype.open = function(i) {
-        // i is already an open paraenthesis or is negative
-        if (this.b_[i] || i <= 0) {
-            return i;
-        }
-
-        return this.bwdsearch(i, 0) + 1;
+        return this.b_[i] ? i : this.ocCache_[i];
     };
 
     /**
@@ -259,11 +274,7 @@ define(['ByteArray'], function(ByteArray) {
      * @return {Number}
      */
     BPTree.prototype.close = function(i) {
-        if (!this.b_[i] || i < 0) {
-            return i;
-        }
-
-        return this.fwdsearch(i, -1);
+        return this.b_[i] ? this.ocCache_[i] : i;
     };
 
     /**
