@@ -49,7 +49,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
     /**
      * Compliles the shaders and sets up the necessary array buffers.
      */
-    Drawer.prototype.initialze = function() {
+    Drawer.prototype.initialize = function() {
         // shorten name, will be using this frequently
         var c = this.contex_;
 
@@ -244,7 +244,6 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         // draw tree
         this.bindBuffer(s.treeVertBuff);
         c.drawArrays(c.LINES, 0, this.treeVertSize);
-
     };
 
     /**

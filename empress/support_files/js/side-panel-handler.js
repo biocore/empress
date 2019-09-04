@@ -1,4 +1,4 @@
-define(['ColorHandler'], function(ColorHandler) {
+define(['ColorSelect'], function(ColorSelect) {
 
     // class name for css tags
     var COLLAPSE_CLASS = 'collapsible';
@@ -12,11 +12,12 @@ define(['ColorHandler'], function(ColorHandler) {
      * initialization function.
      *
      * @param {div} the container where the side panel will live.
+     * @param {Empress} The tree/metadata
      *
      * @return {SidePanel}
      * @constructs SidePanel
      */
-    function SidePanel(container) {
+    function SidePanel(container, empress) {
         // the container for the side menu
         this.container = container;
         this.SIDE_PANEL_ID = container.id;
@@ -27,7 +28,10 @@ define(['ColorHandler'], function(ColorHandler) {
         this.COLLAPSE_ID = 'hide-ctrl';
         this.SHOW_ID = 'show-ctrl';
 
-        this.color
+        // used to event triggers
+        this.empress = empress;
+
+        this.colorSelect = new ColorSelect();
 
         // used in event closers
         var panel = this;
@@ -101,7 +105,7 @@ define(['ColorHandler'], function(ColorHandler) {
     };
 
     SidePanel.prototype.createCatSelector = function(lblMsg, chkId, selId,
-            numId=null, numMsg=null) {
+            selOpts, numId=null, numMsg=null) {
         // holds the category selector
         var container = document.createElement('p');
 
@@ -137,6 +141,12 @@ define(['ColorHandler'], function(ColorHandler) {
         var sel = document.createElement('select');
         sel.id = selId;
         sel.disabled = true;
+        for (var i = 0; i < selOpts.length; i++) {
+            var opt = document.createElement('option');
+            opt.value = selOpts[i];
+            opt.innerHTML = selOpts[i];
+            sel.appendChild(opt);
+        }
         selContainer.appendChild(sel);
 
         return container;
@@ -151,7 +161,7 @@ define(['ColorHandler'], function(ColorHandler) {
         lbl.innerHTML = 'Choose Color Map';
         container.appendChild(lbl);
 
-        var colorSel = ColorHandler.createSelect()
+        var colorSel = this.colorSelect.createSelect()
         container.appendChild(colorSel);
 
         container.select = colorSel;
@@ -160,6 +170,9 @@ define(['ColorHandler'], function(ColorHandler) {
     }
 
     SidePanel.prototype.addSampleTab = function() {
+        // for use in closers
+        var sp = this;
+
         // collapse button
         var tab = document.createElement('button');
         tab.classList.add('side-header');
@@ -176,19 +189,33 @@ define(['ColorHandler'], function(ColorHandler) {
         var lblMsg = 'Color by...';
         var chkId = 'sample-color';
         var selId = 'sample-color-options';
-        var chkbox = this.createCatSelector(lblMsg, chkId, selId);
-        container.appendChild(chkbox);
+        var sampleContainer = this.createCatSelector(lblMsg, chkId, selId,
+            this.empress.getSampleCats());
+        container.appendChild(sampleContainer);
 
-
+        // The color map selector
         var cm = this.createColorMap_();
         cm.select.onchange(function() {
             console.log(cm.select.getColor());
         });
         container.appendChild(cm);
 
-        chkbox.onclick = function() {
-            cm.classList.toggle('hidden');
-            console.log(cm.select.getColor());
+        // toggle the sample/color map selectors
+        sampleContainer.onclick = function() {
+            var chkbox = document.getElementById('sample-color');
+            var sel = document.getElementById('sample-color-options');
+            if (chkbox.checked) {
+                sel.disabled = false;
+                cm.classList.remove('hidden');
+                sp.empress.colorBySample();
+                sp.empress.drawTree();
+            }
+            else {
+                sel.disabled = true;
+                cm.classList.add('hidden');
+                sp.empress.resetTree();
+                sp.empress.drawTree();
+            }
         };
 
 

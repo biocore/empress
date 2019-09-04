@@ -59,20 +59,29 @@
             'Camera' : './js/camera',
             'Drawer' : './js/drawer',
             'SidePanel' : './js/side-panel-handler',
-            'ColorHandler': './js/color-handler'
+            'ColorSelect': './js/color-select',
+            'BiomTable' : './js/biom-table',
+            'Empress' : './js/empress'
         }
     });
 
     empressRequire(['jquery', 'glMatrix', 'BPTree', 'ByteArray', 'SidePanel',
-                    'ColorHandler', 'Camera', 'Drawer'],
-        function($, gl, BPTree, ByteArray, SidePanel, ColorHandler, Camera,
-                 Drawer) {
+                    'ColorSelect', 'Camera', 'Drawer', 'BiomTable', 'Empress'],
+        function($, gl, BPTree, ByteArray, SidePanel, ColorSelect, Camera,
+                 Drawer, BiomTable, Empress) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
-        var tree = new BPTree(tArr);
+        var tree = new BPTree(tArr, {{ names }});
+
+        var canvas = document.getElementById('tree-surface')
+        var biom = new BiomTable({{ obs_data }}, {{ sample_data }});
+        var empress = new Empress(tree, {{ tree_data }}, biom, {{ p_to_n }},
+            canvas);
+        empress.initialize();
 
         // The side menu
-        var sPanel = new SidePanel(document.getElementById('side-panel'));
+        var sPanel = new SidePanel(document.getElementById('side-panel'),
+            empress);
         sPanel.addSampleTab();
         document.querySelectorAll(".collapsible").forEach(function(btn) {
             btn.addEventListener("click", function() {
@@ -83,12 +92,6 @@
           });
         });
 
-        var cam = new Camera();
-        var canvas = document.getElementById('tree-surface')
-        var drawer = new Drawer(canvas, cam);
-        drawer.initialze();
-        drawer.loadTreeBuf({{ coords }});
-        drawer.draw();
         document.getElementById("loading-screen").classList.add("hidden");
     });
   </script>

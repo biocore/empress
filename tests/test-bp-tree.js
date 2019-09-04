@@ -114,8 +114,8 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
             var lengths = names.map(k => parseInt(k));
             var resBP = new BPTree(this.bpArray, names, lengths);
             for (var i = 0; i < this.bpObj.size; i++) {
-                equal(resBP.name(i), names[i] ,'Name');
-                equal(resBP.length(i), lengths[i], 'Length');
+                equal(resBP.name(i + 1), names[i] ,'Name');
+                equal(resBP.length(i + 1), lengths[i], 'Length');
             }
         });
 

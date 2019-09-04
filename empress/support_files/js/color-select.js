@@ -9,9 +9,10 @@ define([], function() {
      * creates chroma.brewer.
      */
 
-    var ColorHandler = {};
+    function ColorSelect() {
+    };
 
-    ColorHandler.createSelect = function() {
+    ColorSelect.prototype.createSelect = function() {
         // the container for the select
         var container = document.createElement('label');
         container.classList.add('select-container');
@@ -25,8 +26,8 @@ define([], function() {
         // iteration
         var map = null;
         var opt = null;
-        for (var i = 0; i < this.Colormaps_.length; i++) {
-            map = this.Colormaps_[i];
+        for (var i = 0; i < ColorSelect.Colormaps_.length; i++) {
+            map = ColorSelect.Colormaps_[i];
             opt = document.createElement('option');
             opt.innerHTML = map.name;
             opt.value = map.id;
@@ -54,7 +55,7 @@ define([], function() {
     //https://github.com/biocore/emperor/blob/
     //     027aa16f1dcf9536cd2dd9c9800ece5fc359ecbc/emperor/
     //     support_files/js/color-view-controller.js#L573-L613
-    ColorHandler.Colormaps_ = [
+    ColorSelect.Colormaps_ = [
         {name: '-- Discrete --', type: HEADER},
         {id: 'discrete-coloring-qiime', name: 'Classic QIIME Colors',
          type: DISCRETE},
@@ -101,12 +102,12 @@ define([], function() {
 
     // taken from the qiime/colors.py module; a total of 24 colors
     /** @private */
-    ColorHandler.qiimeDiscrete_ = [
+    ColorSelect.qiimeDiscrete_ = [
         '#ff0000', '#0000ff', '#f27304', '#008000', '#91278d', '#ffff00',
         '#7cecf4', '#f49ac2', '#5da09e', '#6b440b', '#808080', '#f79679',
         '#7da9d8', '#fcc688', '#80c99b', '#a287bf', '#fff899', '#c49c6b',
         '#c0c0c0', '#ed008a', '#00b6ff', '#a54700', '#808000', '#008080'
     ];
 
-    return ColorHandler;
+    return ColorSelect;
 })

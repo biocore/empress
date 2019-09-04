@@ -35,8 +35,7 @@
           'ByteArray': './support_files/js/byte-array',
           'BPTree' : './support_files/js/bp-tree',
           'SidePanel' : './support_files/js/side-panel-handler',
-          'ColorHandler' : './support_files/js/color-handler',
-
+          'ColorSelect' : './support_files/js/color-select',
           'Camera' : './support_files/js/camera',
 
           /* test paths */
@@ -50,13 +49,12 @@
     // load tests
     require(
         ['jquery', 'glMatrix', 'ByteArray', 'BPTree', 'Camera', 'SidePanel',
-         'ColorHandler', 'testBPTree', 'testByteTree', 'testCamera',
+         'ColorSelect', 'testBPTree', 'testByteTree', 'testCamera',
          'testSidePanel'],
 
         // start tests
-        function ($, gl, ByteArray, BPTree, Camera, SidePanel, ColorHandler,
-                  testBPTree, testByteTree,
-                  testCamera, testSidePanel) {
+        function ($, gl, ByteArray, BPTree, Camera, SidePanel, ColorSelect,
+                  testBPTree, testByteTree, testCamera, testSidePanel) {
             $(document).ready(function() {
                 QUnit.start();
             });

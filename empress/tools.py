@@ -21,8 +21,9 @@ def name_internal_nodes(tree):
             n.length = 1
         if n.name is None:
             new_name = 'EmpressNode%d' % l
-            n.name = l
+            n.name = new_name
             l += 1
+        # n.name = str(n.name)
 
 def read(file_name, file_format='newick'):
     """ Reads in contents from a file.
