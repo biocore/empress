@@ -117,59 +117,30 @@ define(['Camera', 'Drawer'], function(Camera, Drawer) {
      */
     Empress.prototype.colorBySample = function(cat) {
         var obs = this._biom.getObsBy('env_package');
-        var prms = [2, 3, 5];
-        for (var i = 0; i < obs['human-oral'].length; i++) {
-            // set color for current node
-            var node = this._pToName[obs['human-oral'][i]]
-            this._treeData[node]['sampVal'] *= 2;
+        delete obs['human-vaginal'];
+        var primes = [2, 3, 5];
+        var curPrime = 0;
+        for (var key in obs) {
+            for (var i = 0; i < obs[key].length; i++) {
+                var prime = primes[curPrime];
 
-            // project color up tree
-            var p = this._tree.parent(this._tree.preorderselect(node));
-            while (p !== -1) {
-                var pName = this._tree.name(this._tree.preorder(p));
-                if (this._treeData[pName]['sampVal'] % 2 !== 0) {
-                    this._treeData[pName]['sampVal'] *= 2;
+                // set color for current node
+                var node = this._pToName[obs[key][i]]
+                this._treeData[node]['sampVal'] *= prime;
+
+                // project color up tree
+                var p = this._tree.parent(this._tree.preorderselect(node));
+                while (p !== -1) {
+                    var pName = this._tree.name(this._tree.preorder(p));
+                    if (this._treeData[pName]['sampVal'] % prime !== 0) {
+                        this._treeData[pName]['sampVal'] *= prime;
+                    }
+
+                    // get next parent
+                    p = this._tree.parent(p);
                 }
-
-                // get next parent
-                p = this._tree.parent(p);
             }
-        }
-
-        for (var i = 0; i < obs['human-skin'].length; i++) {
-            // set color for current node
-            var node = this._pToName[obs['human-skin'][i]];
-            this._treeData[node]['sampVal'] *= 3;
-
-            // project color up tree
-            var p = this._tree.parent(this._tree.preorderselect(node));
-            while (p !== -1) {
-                var pName = this._tree.name(this._tree.preorder(p));
-                if (this._treeData[pName]['sampVal'] % 3 !== 0) {
-                    this._treeData[pName]['sampVal'] *= 3;
-                }
-
-                // get next parent
-                p = this._tree.parent(p);
-            }
-        }
-
-        for (var i = 0; i < obs['human-gut'].length; i++) {
-            // set color for current node
-            var node = this._pToName[obs['human-gut'][i]];
-            this._treeData[node]['sampVal'] *= 5;
-
-            // project color up tree
-            var p = this._tree.parent(this._tree.preorderselect(node));
-            while (p !== -1) {
-                var pName = this._tree.name(this._tree.preorder(p));
-                if (this._treeData[pName]['sampVal'] % 5 !== 0) {
-                    this._treeData[pName]['sampVal'] *= 5;
-                }
-
-                // get next parent
-                p = this._tree.parent(p);
-            }
+            curPrime++;
         }
 
         // colo tree
