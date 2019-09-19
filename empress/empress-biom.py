@@ -14,7 +14,7 @@ from statistics import mean
 from tree import Tree
 
 # create/parse tree
-# tree_file = 'data/tree_p.nwk'
+# tree_file = 'data/97_sites.nwk'
 tree_file = 'data/97_otus_no_none.tree'
 with open(tree_file) as file:
     nwk = file.readline();
@@ -34,7 +34,9 @@ for i, node in enumerate(empress_tree.preorder(include_self=True)):
             'x' : node.x2,
             'y' : node.y2,
             'color' : [0.75, 0.75, 0.75],
-            'sampVal': 1}
+            'sampVal': 1,
+            'visible': True,
+            'single_samp': False}
         pre_to_name[node.name] = i;
 names = []
 for i,node in enumerate(empress_tree.preorder(include_self=True)):

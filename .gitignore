@@ -1,4 +1,4 @@
-# trees/metadata used for development
+trees/metadata used for development
 data/
 
 # NodeJS file used for chrome headless QUnit tests
@@ -6,3 +6,6 @@ node_modules/
 
 # Templated filed created when running empress-tree.py
 test_init.html
+
+# Python Byte code folder
+empress/__pycache__/

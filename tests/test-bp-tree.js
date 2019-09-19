@@ -66,6 +66,10 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
             }
         });
 
+        test('Test number of leafs', function() {
+            equal(this.bpObj.numleafs(), 6);
+        });
+
         test('Test rank property', function() {
             var BIT_0 = 0, BIT_1 = 1;
             var l = this.bpArray.length;

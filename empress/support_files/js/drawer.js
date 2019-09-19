@@ -44,6 +44,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         this.contex_ = canvas.getContext('webgl');
         this.CLR_COL = 1;
         this.cam = cam;
+        this._test = false;
     };
 
     /**
@@ -85,6 +86,10 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         // buffer object for tree
         s.treeVertBuff = c.createBuffer();
         this.treeVertSize = 0;
+
+        // buffer object used to thicken sampleLines
+        s.sampleThinkBuff = c.createBuffer();
+        this.sampleThinkSize = 0;
 
         // buffer object for tree nodes
         s.nodeVertBuff = c.createBuffer();
@@ -168,7 +173,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
      * @param {WebGLBuffer} buff The WebGLBuffer
      * @param {Array} data The coordinate and color data to fill the buffer
      */
-    Drawer.prototype.fillBufferData = function(buff, data) {
+    Drawer.prototype.fillBufferData_ = function(buff, data) {
         var c = this.contex_;
         c.bindBuffer(c.ARRAY_BUFFER, buff);
         c.bufferData(c.ARRAY_BUFFER, data, c.DYNAMIC_DRAW);
@@ -219,7 +224,18 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
     Drawer.prototype.loadTreeBuf = function(data) {
         data = new Float32Array(data);
         this.treeVertSize = data.length / 5;
-        this.fillBufferData(this.sProg_.treeVertBuff, data);
+        this.fillBufferData_(this.sProg_.treeVertBuff, data);
+    };
+
+    /**
+     * Fills the buffer used to thicken sample lines
+     *
+     * @param {Array} data The coordinate and color data to fill sampleThink
+     */
+    Drawer.prototype.loadSampleThickBuf = function(data) {
+        data = new Float32Array(data);
+        this.sampleThinkSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.sampleThinkBuff, data);
     };
 
     /**
@@ -244,6 +260,10 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         // draw tree
         this.bindBuffer(s.treeVertBuff);
         c.drawArrays(c.LINES, 0, this.treeVertSize);
+
+        this.bindBuffer(s.sampleThinkBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.sampleThinkSize);
+
     };
 
     /**

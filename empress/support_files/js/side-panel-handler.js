@@ -1,4 +1,4 @@
-define(['ColorSelect'], function(ColorSelect) {
+define(['Colorer'], function(Colorer) {
 
     // class name for css tags
     var COLLAPSE_CLASS = 'collapsible';
@@ -17,7 +17,7 @@ define(['ColorSelect'], function(ColorSelect) {
      * @return {SidePanel}
      * @constructs SidePanel
      */
-    function SidePanel(container, empress) {
+    function SidePanel(container, empress, legend) {
         // the container for the side menu
         this.container = container;
         this.SIDE_PANEL_ID = container.id;
@@ -31,24 +31,22 @@ define(['ColorSelect'], function(ColorSelect) {
         // used to event triggers
         this.empress = empress;
 
-        this.colorSelect = new ColorSelect();
+        this.legend = legend;
+
+        // sample GUI components
+        this.sChk = document.getElementById('sample-chk');
+        this.sSel = document.getElementById('sample-options');
+        this.sAddOpts = document.getElementById('sample-add');
+        this.sColor = document.getElementById('sample-color');
+        this.sHideChk = document.getElementById('sample-hide-non-feature');
+        this.sLineWidth = document.getElementById('sample-line-width');
+        this.sUpdateBtn = document.getElementById('sample-update');
 
         // used in event closers
         var panel = this;
 
-        //header bar container
-        var header = document.createElement('p',);
-        header.classList.add(this.HEADER_CLASS);
-
-        // search bar
-        var search = document.createElement('input');
-        search.id = this.SEARCH_ID;
-        search.placeholder = 'Search...';
-        search.title = 'Enter a taxonomic name to search';
-        search.style = 'width: 100%;';
-        header.appendChild(search);
-
-        // triggers search when enter key is pressed in search menu
+        // // triggers search when enter key is pressed in search menu
+        var search = document.getElementById(this.SEARCH_ID);
         search.keyup = function(e) {
             e.preventDefault();
             if (e.keyCode === 13) {
@@ -69,159 +67,162 @@ define(['ColorSelect'], function(ColorSelect) {
                   document.querySelector(".side-content:not(.hidden)"));
         };
 
-        // collapse menu button
-        var collapse = document.createElement('button');
-        collapse.id = this.COLLAPSE_ID;
-        collapse.title = 'Hide control panel';
-        collapse.innerHTML = '&#9701;';
-        collapse.style = 'font-size: 10pt; padding: 0 0 3px 3px;';
-        header.appendChild(collapse);
-
-        // hides the side menu
+        // // hides the side menu
+        var collapse = document.getElementById(this.COLLAPSE_ID);
         collapse.onclick = function() {
             document.getElementById(panel.SIDE_PANEL_ID)
                 .classList.add("hidden");
             document.getElementById(panel.SHOW_ID).classList.remove("hidden");
         }
 
-        // show side menu button
-        var show = document.createElement('button');
-        show.id = this.SHOW_ID;
-        show.classList.add('hidden');
-        show.title = 'Show control panel';
-        show.innerHTML = '&#9699;';
-        show.style = 'font-size: 10pt; padding: 0 0 3px 3px;';
-
-        // shows the side menu
+        // // shows the side menu
+        var show = document.getElementById(this.SHOW_ID);
         show.onclick = function() {
             document.getElementById(panel.SHOW_ID).classList.add("hidden");
             document.getElementById(panel.SIDE_PANEL_ID)
                 .classList.remove("hidden");
         }
-
-        // add header to top of side menu
-        this.container.appendChild(header);
-        this.container.parentNode.appendChild(show);
     };
 
-    SidePanel.prototype.createCatSelector = function(lblMsg, chkId, selId,
-            selOpts, numId=null, numMsg=null) {
-        // holds the category selector
-        var container = document.createElement('p');
+    /**
+     * Sets the components of the samples panel back to there default value
+     */
+    SidePanel.prototype.__samplePanelReset = function() {
+        // set color map back to default
+        this.sColor.value = 'discrete-coloring-qiime';
 
-        // label for checkbox
-        var lbl = document.createElement('label');
-        lbl.for = chkId;
-        lbl.innerHTML = lblMsg;
-        container.appendChild(lbl);
+        // uncheck button
+        this.sHideChk.checked = true;
 
-        // toggle button for the category select
-        var chkbox = document.createElement('input');
-        chkbox.id = chkId;
-        chkbox.type = 'checkbox';
-        container.appendChild(chkbox);
+        // set default branch length back to 1
+        var thickenBranch = document.getElementById('sample-line-width');
+        this.sLineWidth.value = 1;
 
-        // add number controller to allow user to adjust how many items are
-        // displayed
-        if (numId != null) {
-            var numCtrl = document.createElement('input');
-            numCtrl,id = numId;
-            numCtrl.type = 'number';
-            numCtrl.title = numMsg;
-            numCtrl.disabled = true;
-            container.appendChild(numCtrl);
+
+        // hide update button
+        this.sUpdateBtn.classList.add('hidden');
+    };
+
+    /**
+     * Sets the components of the samples panel back to there default value
+     * and hides the additional options
+     */
+    SidePanel.prototype.__samplePanelClose = function() {
+        // disable sample check box
+        this.sChk.checked = false;
+
+        // disable the sample category select
+        this.sSel.disabled = true;
+
+        // hide the additional options
+        this.sAddOpts.classList.add('hidden');
+
+        // reset panel
+        this.__samplePanelReset();
+
+        //reset tree
+        this.empress.resetTree();
+        this.empress.drawTree();
+
+        // clear legends
+        this.legend.clearAllLegends();
+    };
+
+    /**
+     * Updates/redraws the tree
+     */
+    SidePanel.prototype._updateSample = function() {
+        // clear legends
+        this.legend.clearAllLegends();
+
+        // color tree
+        this._colorSampleTree();
+
+        var lWidth = this.sLineWidth.value;
+        if (lWidth !== 1) {
+            this.empress.thickenSameSampleLines(lWidth - 1);
         }
+        this.empress.drawTree();
 
-        // container for select box
-        var selContainer = document.createElement('label');
-        selContainer.classList.add('select-container');
-        container.appendChild(selContainer);
+        // hide update button
+        this.sUpdateBtn.classList.add('hidden');
+    };
 
-        // select box
-        var sel = document.createElement('select');
-        sel.id = selId;
-        sel.disabled = true;
-        for (var i = 0; i < selOpts.length; i++) {
-            var opt = document.createElement('option');
-            opt.value = selOpts[i];
-            opt.innerHTML = selOpts[i];
-            sel.appendChild(opt);
-        }
-        selContainer.appendChild(sel);
+    /**
+     * Colors the tree
+     */
+    SidePanel.prototype._colorSampleTree = function() {
+        var colBy = this.sSel.value;
+        var col = this.sColor.value;
+        var hide = this.sHideChk.checked;
+        var keyInfo = this.empress.colorBySample(colBy, col);
+        this.empress.hideUnColoredTips(hide);
+        this.legend.addColorKey(colBy, keyInfo, 'node', false);
+    };
 
-        return container;
-    }
-
-    SidePanel.prototype.createColorMap_  = function() {
-        // color map row
-        var container = document.createElement('p');
-        container.classList.add('hidden');
-        // color select
-        var lbl = document.createElement('label');
-        lbl.innerHTML = 'Choose Color Map';
-        container.appendChild(lbl);
-
-        var colorSel = this.colorSelect.createSelect()
-        container.appendChild(colorSel);
-
-        container.select = colorSel;
-
-        return container;
-    }
-
+    /**
+     * Initializes sample components
+     */
     SidePanel.prototype.addSampleTab = function() {
         // for use in closers
         var sp = this;
 
-        // collapse button
-        var tab = document.createElement('button');
-        tab.classList.add('side-header');
-        tab.classList.add('collapsible');
-        tab.innerHTML = 'Sample Coloring';
+        // add sample categories
+        var selOpts = this.empress.getSampleCats();
+         for (var i = 0; i < selOpts.length; i++) {
+            var opt = document.createElement('option');
+            opt.value = selOpts[i];
+            opt.innerHTML = selOpts[i];
+            this.sSel.appendChild(opt);
+        }
 
-        // container that holds the different option to color sample data
-        var container = document.createElement('div');
-        container.classList.add('side-content');
-        container.classList.add('control');
-        container.classList.add('hidden');
+        // // The color map selector
+        for (var i = 0; i < Colorer.__Colormaps.length; i++) {
+            var map = Colorer.__Colormaps[i];
+            var opt = document.createElement('option');
+            opt.innerHTML = map.name;
+            opt.value = map.id;
 
-        // sample category selector
-        var lblMsg = 'Color by...';
-        var chkId = 'sample-color';
-        var selId = 'sample-color-options';
-        var sampleContainer = this.createCatSelector(lblMsg, chkId, selId,
-            this.empress.getSampleCats());
-        container.appendChild(sampleContainer);
-
-        // The color map selector
-        var cm = this.createColorMap_();
-        cm.select.onchange(function() {
-            console.log(cm.select.getColor());
-        });
-        container.appendChild(cm);
+            if (map.type == 'Header') {
+                opt.disabled = true;
+            }
+            this.sColor.appendChild(opt);
+        }
 
         // toggle the sample/color map selectors
-        sampleContainer.onclick = function() {
-            var chkbox = document.getElementById('sample-color');
-            var sel = document.getElementById('sample-color-options');
-            if (chkbox.checked) {
-                sel.disabled = false;
-                cm.classList.remove('hidden');
-                sp.empress.colorBySample();
+        this.sChk.onclick = function() {
+            if (sp.sChk.checked) {
+                sp.sSel.disabled = false;
+                sp.sAddOpts.classList.remove('hidden');
+                sp._colorSampleTree();
                 sp.empress.drawTree();
             }
             else {
-                sel.disabled = true;
-                cm.classList.add('hidden');
-                sp.empress.resetTree();
-                sp.empress.drawTree();
+                sp.__samplePanelClose();
             }
         };
 
+        this.sSel.onchange = function() {
+            sp.sUpdateBtn.classList.remove('hidden');
+        };
 
-        // add sample tob to side panel
-        this.container.appendChild(tab);
-        this.container.appendChild(container);
+        this.sColor.onchange = function() {
+            sp.sUpdateBtn.classList.remove('hidden');
+        }
+
+        this.sLineWidth.onchange = function() {
+            sp.sUpdateBtn.classList.remove('hidden');
+        }
+
+        // deterines whether to show features not in samples
+        this.sHideChk.onclick = function() {
+            sp.empress.hideUnColoredTips(this.checked);
+            sp.empress.drawTree();
+        };
+
+        this.sUpdateBtn.onclick = function() {
+            sp._updateSample();
+        };
     };
 
      return SidePanel;

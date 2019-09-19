@@ -7,6 +7,7 @@
     <script src='{{ base_url }}/vendor/require-2.1.22.min.js'></script>
   </head>
   <body>
+
     <!-- The tree -->
     <div class="tree-container">
       <div class="container">
@@ -19,7 +20,13 @@
       </div>
 
       <!-- Side panel -->
-      <div id="side-panel"></div>
+      <div id="side-panel">
+        {% include 'side-panel.html'%}
+      </div>
+
+      <!-- show control panel button -->
+      <button id="show-ctrl" title="Show control panel" style="font-size: 10pt;
+                padding: 0 0 3px 3px;" class="hidden">&#9699;</button>
     </div>
 
     <!-- hover box -->
@@ -33,7 +40,6 @@
       <div id="node-color-key" class="legend hidden" disabled="true"></div>
       <div id="clade-color-key" class="legend hidden" disabled="true"></div>
     </div>
-
     <!-- toast -->
     <div id="toast" class="hidden"></div>
 
@@ -53,35 +59,44 @@
             /* vendor paths */
             'jquery' : './vendor/jquery-2.2.4.min',
             'glMatrix' : './vendor/gl-matrix.min',
+            'chroma' : './vendor/chroma.min',
 
             'ByteArray' : './js/byte-array',
             'BPTree' : './js/bp-tree',
             'Camera' : './js/camera',
             'Drawer' : './js/drawer',
             'SidePanel' : './js/side-panel-handler',
-            'ColorSelect': './js/color-select',
             'BiomTable' : './js/biom-table',
-            'Empress' : './js/empress'
+            'Empress' : './js/empress',
+            'Legend' : './js/legend',
+            'Colorer' : './js/colorer',
+            'VectorOps' : './js/vector-ops'
         }
     });
 
-    empressRequire(['jquery', 'glMatrix', 'BPTree', 'ByteArray', 'SidePanel',
-                    'ColorSelect', 'Camera', 'Drawer', 'BiomTable', 'Empress'],
-        function($, gl, BPTree, ByteArray, SidePanel, ColorSelect, Camera,
-                 Drawer, BiomTable, Empress) {
+    empressRequire(['jquery', 'glMatrix', 'chroma', 'BPTree', 'ByteArray',
+                    'SidePanel', 'Camera', 'Drawer', 'BiomTable', 'Empress',
+                    'Legend', 'Colorer', 'VectorOps'],
+        function($, gl, chroma, BPTree, ByteArray, SidePanel, Camera, Drawer,
+                 BiomTable, Empress, Legend, Colorer,
+                 VectorOps) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr, {{ names }});
 
         var canvas = document.getElementById('tree-surface')
         var biom = new BiomTable({{ obs_data }}, {{ sample_data }});
-        var empress = new Empress(tree, {{ tree_data }}, biom, {{ p_to_n }},
+        var empress = new Empress(tree, {{ tree_data | tojson }}, biom, {{ p_to_n }},
             canvas);
         empress.initialize();
 
+        var legend = new Legend(document.getElementById('tip-color-key'),
+                                document.getElementById('node-color-key'),
+                                document.getElementById('clade-color-key'));
+
         // The side menu
         var sPanel = new SidePanel(document.getElementById('side-panel'),
-            empress);
+                                   empress, legend);
         sPanel.addSampleTab();
         document.querySelectorAll(".collapsible").forEach(function(btn) {
             btn.addEventListener("click", function() {
@@ -91,7 +106,6 @@
               document.querySelector(".side-content:not(.hidden)"));
           });
         });
-
         document.getElementById("loading-screen").classList.add("hidden");
     });
   </script>

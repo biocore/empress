@@ -343,7 +343,7 @@ canvas {
     position: absolute;
     top: 0vh;
     left: 0vw;
-    overflow: none;
+    overflow: hidden;
     width: 100vw;
     height: 100vh;
 }
@@ -372,7 +372,7 @@ canvas {
 }
 
 .floating-div:hover {
-    background: white;
+    background-color: white;
     border: 1px solid lightgray;
     box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2);
 }
@@ -540,7 +540,7 @@ p.side-header button {
     grid-template-columns: 1fr 1fr 1fr;
     grid-auto-rows: auto;
     height: unset;
-    background: grey;
+    background-color: grey;
 }
 
 .attr {
@@ -612,8 +612,8 @@ p.side-header button {
     top: 0vh;
     left: 0vw;
     height: 12px;
-    width: 60;
-    border: 2px sold black;
+    width: 60px;
+    border: 2px solid black;
 }
 
 
@@ -759,7 +759,7 @@ div.modal {
 div.modal-body {
     border: none;
     box-shadow: 10px 10px 40px rgba(0, 0, 0, 0.2);
-    background: white;
+    background-color: white;
     width: 80%;
     max-width: 700px;
     margin: 5% auto;

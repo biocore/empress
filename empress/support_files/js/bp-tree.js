@@ -186,6 +186,20 @@ define(['ByteArray'], function(ByteArray) {
 
     /**
      *
+     * The number of leaf noes in tree
+     *
+     * @return {Number}
+     */
+    BPTree.prototype.numleafs = function() {
+        var total = 0;
+        for (var i = 0; i < this.b_.length - 1; i++) {
+            total = this.isleaf(i) ? total + 1 : total;
+        }
+        return total;
+    };
+
+    /**
+     *
      * The length of the ith node in preorder
      *
      * @param{Number} i Node i in preorder

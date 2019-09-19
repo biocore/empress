@@ -1,61 +1,47 @@
-// define(['chroma'], function(chroma) {
-define([], function() {
+define(['chroma'], function(chroma) {
     // class globals closure variables
     var DISCRETE = 'Discrete';
     var SEQUENTIAL = 'Sequential';
     var DIVERGING = 'Diverging';
-    var HEADER = 'Hearder';
+    var HEADER = 'Header';
+
     /**
-     * creates chroma.brewer.
+     * @class Colorer
      */
-
-    function ColorSelect() {
-    };
-
-    ColorSelect.prototype.createSelect = function() {
-        // the container for the select
-        var container = document.createElement('label');
-        container.classList.add('select-container');
-
-        // make select initially hidden. Expect behavior is for the select to
-        // become visible after user chooses to color
-        var select = document.createElement('select');
-        container.appendChild(select);
-
-        // define map variable outside of loop so it does not created every loop
-        // iteration
-        var map = null;
-        var opt = null;
-        for (var i = 0; i < ColorSelect.Colormaps_.length; i++) {
-            map = ColorSelect.Colormaps_[i];
-            opt = document.createElement('option');
-            opt.innerHTML = map.name;
-            opt.value = map.id;
-
-            if (map.type == HEADER) {
-                opt.disabled = true;
-            }
-            select.appendChild(opt);
+    function Colorer(color, min, max) {
+        if (color === Colorer.__QIIME_COLOR) {
+            this.__colorer = chroma.scale(Colorer.__qiimeDiscrete);
+        } else {
+            this.__colorer = chroma.scale(color);
         }
-
-        container.getColor = function() {
-            // TODO: return chroma.brewer
-            return select.options[select.selectedIndex].value;
-        };
-
-        container.onchange = function(func) {
-            select.onchange = func;
-        };
-
-        return container;
+        this.__colorer.domain([min, max]);
     };
+
+    Colorer.prototype.getColorRGB = function(color) {
+        return this.__colorer(color).rgb().map(x => x / 256);
+    };
+
+    Colorer.prototype.getColorHex = function(color) {
+        return this.__colorer(color).hex();
+    };
+
+    Colorer.__QIIME_COLOR = 'discrete-coloring-qiime';
+
+    // taken from the qiime/colors.py module; a total of 24 colors
+    /** @private */
+    Colorer.__qiimeDiscrete = [
+        '#ff0000', '#0000ff', '#f27304', '#008000', '#91278d', '#ffff00',
+        '#7cecf4', '#f49ac2', '#5da09e', '#6b440b', '#808080', '#f79679',
+        '#7da9d8', '#fcc688', '#80c99b', '#a287bf', '#fff899', '#c49c6b',
+        '#c0c0c0', '#ed008a', '#00b6ff', '#a54700', '#808000', '#008080'
+    ];
 
     // Used to create color select option and chroma.brewer
     //Modified from:
     //https://github.com/biocore/emperor/blob/
     //     027aa16f1dcf9536cd2dd9c9800ece5fc359ecbc/emperor/
     //     support_files/js/color-view-controller.js#L573-L613
-    ColorSelect.Colormaps_ = [
+    Colorer.__Colormaps = [
         {name: '-- Discrete --', type: HEADER},
         {id: 'discrete-coloring-qiime', name: 'Classic QIIME Colors',
          type: DISCRETE},
@@ -99,15 +85,5 @@ define([], function() {
         {id: 'PuOr', name: 'Purple-Orange', type: DIVERGING},
         {id: 'PRGn', name: 'Purple-Green', type: DIVERGING}
     ];
-
-    // taken from the qiime/colors.py module; a total of 24 colors
-    /** @private */
-    ColorSelect.qiimeDiscrete_ = [
-        '#ff0000', '#0000ff', '#f27304', '#008000', '#91278d', '#ffff00',
-        '#7cecf4', '#f49ac2', '#5da09e', '#6b440b', '#808080', '#f79679',
-        '#7da9d8', '#fcc688', '#80c99b', '#a287bf', '#fff899', '#c49c6b',
-        '#c0c0c0', '#ed008a', '#00b6ff', '#a54700', '#808000', '#008080'
-    ];
-
-    return ColorSelect;
+    return Colorer;
 })

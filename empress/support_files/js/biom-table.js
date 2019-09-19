@@ -1,4 +1,3 @@
-
 define([], function() {
 /**
  * biom-table
@@ -51,6 +50,25 @@ BiomTable.prototype.getObsBy = function(cat) {
 
     return result;
 };
+
+/**
+ * Returns number of unique observations in samples.
+ *
+ * @return {Number}
+ */
+BiomTable.prototype.getUniqueObs = function() {
+    var obs = new Set();
+
+    for (var sample in this._samp) {
+        for (var i = 0; i < this._obs[sample].length; i++) {
+            obs.add(this._obs[sample][i]);
+        }
+    }
+
+    return obs.size;
+};
+
+
 
 /**
  * Returns a list of sample categories

@@ -34,27 +34,24 @@
           /* succinct tree paths */
           'ByteArray': './support_files/js/byte-array',
           'BPTree' : './support_files/js/bp-tree',
-          'SidePanel' : './support_files/js/side-panel-handler',
-          'ColorSelect' : './support_files/js/color-select',
           'Camera' : './support_files/js/camera',
+          'Colorer' : './support_files/js/colorer',
 
           /* test paths */
           'testBPTree' : './../tests/test-bp-tree',
           'testByteTree' : './../tests/test-byte-array',
-          'testSidePanel' : './../tests/test-side-panel',
           'testCamera' : './../tests/test-camera'
         }
     });
 
     // load tests
     require(
-        ['jquery', 'glMatrix', 'ByteArray', 'BPTree', 'Camera', 'SidePanel',
-         'ColorSelect', 'testBPTree', 'testByteTree', 'testCamera',
-         'testSidePanel'],
+        ['jquery', 'glMatrix', 'ByteArray', 'BPTree', 'Camera', 'testBPTree',
+         'testByteTree', 'testCamera'],
 
         // start tests
-        function ($, gl, ByteArray, BPTree, Camera, SidePanel, ColorSelect,
-                  testBPTree, testByteTree, testCamera, testSidePanel) {
+        function ($, gl, ByteArray, BPTree, Camera,testBPTree, testByteTree,
+                  testCamera) {
             $(document).ready(function() {
                 QUnit.start();
             });
