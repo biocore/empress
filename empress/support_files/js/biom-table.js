@@ -24,14 +24,20 @@ define([], function() {
     };
 
     /**
-     * Returns the list of observations in the sample
+     * Returns a list of observations in the samples
      *
-     * @param {String} The sample Id
+     * @param {Array} sIds - Array of sample Ids
      *
      * @return {Array}
      */
-    BiomTable.prototype.getSampleObs = function(sId) {
+    BiomTable.prototype.getSampleObs = function(sIds) {
         var result = new Set();
+        for(var i = 0; i < sIds.length; i++) {
+            var obs = this._obs[sIds[i]];
+            obs.forEach(function(ob) {
+                result.add(ob);
+            });
+        }
         return this._obs[sId];
     };
 

@@ -132,6 +132,8 @@ define(['Colorer'], function(Colorer) {
      * Updates/redraws the tree
      */
     SidePanel.prototype._updateSample = function() {
+        this.empress.resetTree();
+        
         // clear legends
         this.legend.clearAllLegends();
 
