@@ -14,8 +14,8 @@ from statistics import mean
 from tree import Tree
 
 # create/parse tree
-# tree_file = 'data/97_sites.nwk'
-tree_file = 'data/97_otus_no_none.tree'
+tree_file = 'data/97_sites.nwk'
+# tree_file = 'data/97_otus_no_none.tree'
 with open(tree_file) as file:
     nwk = file.readline();
 t = parse_newick(nwk)

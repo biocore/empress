@@ -1,4 +1,4 @@
-trees/metadata used for development
+# trees/metadata used for development
 data/
 
 # NodeJS file used for chrome headless QUnit tests

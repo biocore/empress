@@ -6,9 +6,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
     const BLUE = 2;
 
     /**
-     *
      * @class EmpressTree
-     *
      */
     function Empress(tree, treeData, biom, pToName, canvas ) {
         /**
@@ -224,6 +222,20 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
     }
 
     /**
+     * Color the tree by sample IDs
+     *
+     * @param {Array} sID - The sample IDs
+     * @param {Array} rgb - The rgb array which defines the color
+     */
+    Empress.prototype.colorSampleIDs = function(sIds, rgb) {
+        var tree = this._tree;
+        var obs = this._biom.getSampleObs(sIds);
+        for (var i = 0; i < obs.length; i++) {
+            this._treeData[obs].color = rgb;
+        }
+    };
+
+    /**
      * Color the tree using sample data
      *
      * @param {String} cat The sample category to use
@@ -231,7 +243,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
      *
      * @return {dictionary} Maps keys to colors
      */
-    Empress.prototype.colorBySample = function(cat, color) {
+    Empress.prototype.colorBySampleCat = function(cat, color) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var primes = [2, 3, 5, 7];
@@ -316,10 +328,6 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         return keyInfo;
     };
 
-    // Empress.prototype.getSampleKeyInfo = function(cat) {
-
-    // };
-
     /**
      * Sets the color of the tree back to default
      */
@@ -327,11 +335,9 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         var keys = Object.keys(this._treeData);
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
-            this._treeData[key].color = this.DEFAULT_COLOR;
-            // this._treeData[key].sampVal = this.DEFAULT_BRANCH_VAL;
-            this._treeData[key].visible = true;
+            this._treeData[key].color = this.DEFAULT_COLOR;                                                                                         this._treeData[key].visible = true;
         }
-        // this._drawer.loadSampleThickBuf([]);
+        this._drawer.loadSampleThickBuf([]);
     };
 
     /**

@@ -155,7 +155,7 @@ define(['Colorer'], function(Colorer) {
         var colBy = this.sSel.value;
         var col = this.sColor.value;
         var hide = this.sHideChk.checked;
-        var keyInfo = this.empress.colorBySample(colBy, col);
+        var keyInfo = this.empress.colorBySampleCat(colBy, col);
         this.empress.hideUnColoredTips(hide);
         this.legend.addColorKey(colBy, keyInfo, 'node', false);
     };
