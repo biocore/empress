@@ -38,7 +38,7 @@ define([], function() {
                 result.add(ob);
             });
         }
-        return this._obs[sId];
+        return Array(result);
     };
 
     /**

@@ -133,7 +133,7 @@ define(['Colorer'], function(Colorer) {
      */
     SidePanel.prototype._updateSample = function() {
         this.empress.resetTree();
-        
+
         // clear legends
         this.legend.clearAllLegends();
 
