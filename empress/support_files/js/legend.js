@@ -91,19 +91,19 @@ define([], function() {
             component.title = key;
             div.appendChild(component);
 
-            // total percentage of leafs
-            component = document.createElement("label");
-            component.classList.add("gradient-label");
-            component.innerHTML = this.__formatNumLabel(info[key].tPercent);
-            div.appendChild(component);
-                container.appendChild(div);
+            // // total percentage of leafs
+            // component = document.createElement("label");
+            // component.classList.add("gradient-label");
+            // component.innerHTML = this.__formatNumLabel(info[key].tPercent);
+            // div.appendChild(component);
+            //     container.appendChild(div);
 
-            // relative percentage of leafs
-            component = document.createElement("label");
-            component.classList.add("gradient-label");
-            component.innerHTML = this.__formatNumLabel(info[key].rPercent);
-            div.appendChild(component);
-                container.appendChild(div);
+            // // relative percentage of leafs
+            // component = document.createElement("label");
+            // component.classList.add("gradient-label");
+            // component.innerHTML = this.__formatNumLabel(info[key].rPercent);
+            // div.appendChild(component);
+            container.appendChild(div);
         }
     };
 

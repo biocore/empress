@@ -688,6 +688,31 @@ div.legend:hover {
     overflow: auto;
 }
 
+/* Timeframe*/
+#timeframe-panel {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    padding: 20px;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+div.timeframe {
+    margin: 20px;
+    padding: 5px;
+    border: 1px solid darkgray;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+div.timeframe:hover {
+    border: 1px solid dimgray;
+    background-color: white;
+    overflow: auto;
+}
+
 .legend-title {
     text-align: center;
     font-weight: bold;

@@ -14,8 +14,8 @@ from statistics import mean
 from tree import Tree
 
 # create/parse tree
-tree_file = 'data/97_sites.nwk'
-# tree_file = 'data/97_otus_no_none.tree'
+# tree_file = 'data/97_sites.nwk'
+tree_file = 'data/97_otus_no_none.tree'
 with open(tree_file) as file:
     nwk = file.readline();
 t = parse_newick(nwk)
@@ -50,15 +50,33 @@ temp = env.get_template('empress-template.html')
 
 # biom table
 with biom_open('data/76695_hmp_only_rare1250.biom') as f:
+# with biom_open('data/17638_feature-table_merged_age1_7_and_hmp_rare1250.biom') as f:
     table = Table.from_hdf5(f)
 
 data = pd.read_csv('data/17638_metadata_merged_age1_7_and_hmp.txt', sep='\t')
 data = data[['#SampleID', 'env_package', 'age', 'host_age']]
 sampMeta = data.values.tolist()
-sampMeta = {samp[0]: {'env_package': samp[1], 'host_age': samp[3]}
+sampMeta = {samp[0]: {'env_package': samp[1], 'age': samp[3]}
               for samp in sampMeta if table.exists(samp[0])}
 
 sampleIDs = [id for id in sampMeta.keys()]
+with open('test-animation.txt', 'w') as file:
+    file.write('Day 1')
+    for sample, data in sampMeta.items():
+        print(data)
+        if data['age'] == '1':
+            file.write(',')
+            file.write(sample)
+    file.write('\n')
+
+    file.write('Day 2')
+    for sample, data in sampMeta.items():
+        if data['age'] == '7':
+            file.write(',')
+            file.write(sample)
+    file.write('\n')
+
+
 obsID = table.ids(axis='observation')
 
 obsMeta = {id : table.data(id, axis='sample') for id in sampleIDs}

@@ -22,6 +22,8 @@
       <!-- Side panel -->
       <div id="side-panel">
         {% include 'side-panel.html'%}
+
+        {% include 'animate-panel.html' %}
       </div>
 
       <!-- show control panel button -->
@@ -40,6 +42,20 @@
       <div id="node-color-key" class="legend hidden" disabled="true"></div>
       <div id="clade-color-key" class="legend hidden" disabled="true"></div>
     </div>
+
+    <!-- Timeframe Panel -->
+    <div id="timeframe-panel" class="hidden">
+      <div class="timeframe">
+        <p align="center">
+          <div id="current-timeframe" align="center"></div>
+        </p>
+        <p align="center">
+          <button id="animate-backward-btn">&#9666;</button>
+          <button id="animate-forward-btn">&#9656;</button>
+        </p>
+      </div>
+    </div>
+
     <!-- toast -->
     <div id="toast" class="hidden"></div>
 
@@ -66,6 +82,8 @@
             'Camera' : './js/camera',
             'Drawer' : './js/drawer',
             'SidePanel' : './js/side-panel-handler',
+            'AnimatePanel' : './js/animation-panel-handler',
+            'Animator' : './js/animator',
             'BiomTable' : './js/biom-table',
             'Empress' : './js/empress',
             'Legend' : './js/legend',
@@ -76,18 +94,19 @@
 
     empressRequire(['jquery', 'glMatrix', 'chroma', 'BPTree', 'ByteArray',
                     'SidePanel', 'Camera', 'Drawer', 'BiomTable', 'Empress',
-                    'Legend', 'Colorer', 'VectorOps'],
+                    'Legend', 'Colorer', 'VectorOps', 'AnimatePanel',
+                    'Animator'],
         function($, gl, chroma, BPTree, ByteArray, SidePanel, Camera, Drawer,
-                 BiomTable, Empress, Legend, Colorer,
-                 VectorOps) {
+                 BiomTable, Empress, Legend, Colorer, VectorOps, AnimatePanel,
+                 Animator) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr, {{ names }});
 
         var canvas = document.getElementById('tree-surface')
         var biom = new BiomTable({{ obs_data }}, {{ sample_data }});
-        var empress = new Empress(tree, {{ tree_data | tojson }}, biom, {{ p_to_n }},
-            canvas);
+        var empress = new Empress(tree, {{ tree_data | tojson }}, biom, 
+            {{ p_to_n }}, canvas);
         empress.initialize();
 
         var legend = new Legend(document.getElementById('tip-color-key'),
@@ -95,9 +114,17 @@
                                 document.getElementById('clade-color-key'));
 
         // The side menu
+        // TODO: rename class to SamplePanel
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress, legend);
         sPanel.addSampleTab();
+
+        // animate tab
+        var animator = new Animator(empress, biom);
+        var animatePanel = new AnimatePanel(
+                                    document.getElementById('timeframe-panel'),
+                                    animator, legend);
+        animatePanel.addAnimationTab();
         document.querySelectorAll(".collapsible").forEach(function(btn) {
             btn.addEventListener("click", function() {
             this.classList.toggle("active");

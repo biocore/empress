@@ -7,5 +7,8 @@ node_modules/
 # Templated filed created when running empress-tree.py
 test_init.html
 
+# Test file for animation file input
+test-animation.txt
+
 # Python Byte code folder
 empress/__pycache__/

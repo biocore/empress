@@ -41,6 +41,9 @@ define([], function() {
         return Array(result);
     };
 
+    BiomTable.prototype.getAllSampleIds = function() {
+        return Object.keys(this._samp);
+    }
     /**
      * Returns a dictionary of observation ids whose keys are the values of a sample
      * category.
@@ -49,16 +52,16 @@ define([], function() {
      *
      * @return {Dictionary}
      */
-    BiomTable.prototype.getObsBy = function(cat) {
+    BiomTable.prototype.getObsBy = function(cat, sIds) {
         var result = {};
-        var cVal;
-        for (var sample in this._samp) {
-            cVal = this._samp[sample][cat];
+        for (var i = 0; i < sIds.length; i++) {
+            var sample = sIds[i];
+            var cVal = this._samp[sample][cat];
             if (!(cVal in result)) {
                 result[cVal] = new Set();
             }
-            for (var i = 0; i < this._obs[sample].length; i++) {
-                result[cVal].add(this._obs[sample][i]);
+            for (var j = 0; j < this._obs[sample].length; j++) {
+                result[cVal].add(this._obs[sample][j]);
             }
         }
 
@@ -74,16 +77,22 @@ define([], function() {
      *
      * @return {Number}
      */
-    BiomTable.prototype.getUniqueObs = function() {
-        var obs = new Set();
+    BiomTable.prototype.getNumUniqueObs = function(obs) {
+        var uniqueObs = new Set();
 
-        for (var sample in this._samp) {
-            for (var i = 0; i < this._obs[sample].length; i++) {
-                obs.add(this._obs[sample][i]);
+        // for (var sample in this._samp) {
+        //     for (var i = 0; i < this._obs[sample].length; i++) {
+        //         obs.add(this._obs[sample][i]);
+        //     }
+        // }
+        for (var cat in obs) {
+            var catObs = obs[cat];
+            for (var i = 0; i < catObs.length; i++) {
+                uniqueObs.add(catObs[i]);
             }
         }
 
-        return obs.size;
+        return uniqueObs.size;
     };
 
 

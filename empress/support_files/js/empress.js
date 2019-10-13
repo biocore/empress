@@ -120,7 +120,6 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         return coords;
     };
 
-
     /**
      * Sets flag to hide branches not in samples
      */
@@ -225,29 +224,13 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
      * Color the tree by sample IDs
      *
      * @param {Array} sID - The sample IDs
+     * @param {string} cat - The sample category to use
      * @param {Array} rgb - The rgb array which defines the color
      */
-    Empress.prototype.colorSampleIDs = function(sIds, rgb) {
+    Empress.prototype.colorSampleIDs = function(obs, color) {
         var tree = this._tree;
-        var obs = this._biom.getSampleObs(sIds);
-        for (var i = 0; i < obs.length; i++) {
-            this._treeData[obs].color = rgb;
-        }
-    };
-
-    /**
-     * Color the tree using sample data
-     *
-     * @param {String} cat The sample category to use
-     * @param {String} color - the Color map to use
-     *
-     * @return {dictionary} Maps keys to colors
-     */
-    Empress.prototype.colorBySampleCat = function(cat, color) {
-        var tree = this._tree;
-        var obs = this._biom.getObsBy(cat);
         var primes = [2, 3, 5, 7];
-        var cTips = this._biom.getUniqueObs();
+        var cTips = this._biom.getNumUniqueObs(obs);
         var curPrime = 0;
 
          // create color brewer
@@ -329,13 +312,29 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
     };
 
     /**
+     * Color the tree using sample data
+     *
+     * @param {String} cat The sample category to use
+     * @param {String} color - the Color map to use
+     *
+     * @return {dictionary} Maps keys to colors
+     */
+    Empress.prototype.colorBySampleCat = function(cat, color) {
+        var sIds = this._biom.getAllSampleIds();
+        var obs = this._biom.getObsBy(cat, sIds);
+        return this.colorSampleIDs(obs, color);
+    };
+
+    /**
      * Sets the color of the tree back to default
      */
     Empress.prototype.resetTree = function() {
         var keys = Object.keys(this._treeData);
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
-            this._treeData[key].color = this.DEFAULT_COLOR;                                                                                         this._treeData[key].visible = true;
+            this._treeData[key].color = this.DEFAULT_COLOR;
+            this._treeData[key].visible = true;
+            this._treeData[key].sampVal = this.DEFAULT_BRANCH_VAL;
         }
         this._drawer.loadSampleThickBuf([]);
     };
