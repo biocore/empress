@@ -6,13 +6,14 @@ define(['Colorer'], function(Colorer) {
      *
      * @class SidePanel
      *
-     * Creates table for the side panel and handles their events events. This
+     * Creates table for the side panel and handles their events. This
      * class will init a side panel with the search bar and collapse button.
      * Additional tabs such as Sample Metadata can be added by calling their
      * initialization function.
      *
-     * @param {div} the container where the side panel will live.
-     * @param {Empress} The tree/metadata
+     * @param {div} container Container where the side panel will live.
+     * @param {Empress} empress The empress tree
+     * @param {div} legend Container that holds the legend
      *
      * @return {SidePanel}
      * @constructs SidePanel
@@ -158,7 +159,7 @@ define(['Colorer'], function(Colorer) {
         var col = this.sColor.value;
         var hide = this.sHideChk.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col);
-        this.empress.hideUnColoredTips(hide);
+        this.empress.setUncoloredTipVisibility(hide);
         this.legend.addColorKey(colBy, keyInfo, 'node', false);
     };
 
@@ -170,7 +171,7 @@ define(['Colorer'], function(Colorer) {
         var sp = this;
 
         // add sample categories
-        var selOpts = this.empress.getSampleCats();
+        var selOpts = this.empress.getSampleCategories();
          for (var i = 0; i < selOpts.length; i++) {
             var opt = document.createElement('option');
             opt.value = selOpts[i];
@@ -218,7 +219,7 @@ define(['Colorer'], function(Colorer) {
 
         // deterines whether to show features not in samples
         this.sHideChk.onclick = function() {
-            sp.empress.hideUnColoredTips(this.checked);
+            sp.empress.setUncoloredTipVisibility(this.checked);
             sp.empress.drawTree();
         };
 

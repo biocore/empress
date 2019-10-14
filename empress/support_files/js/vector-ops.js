@@ -31,7 +31,7 @@ define([], function() {
      *
      * @return {Number}
      */
-    VectorOps.getLength = function(point) {
+    VectorOps.magnitude = function(point) {
         var x = point[0], y = point[1];
         return Math.sqrt(x*x + y*y);
     };
@@ -39,17 +39,20 @@ define([], function() {
     /**
      * Rotates the vector
      *
-     * @param {Number} angle - the amount to rotate the vector
+     * @param {Array} point (x, y) coordinates
+     * @param {Number} angle The amount to rotate the vector
+     * @param {Boolean} over if true rotate point in positve sine direction
+     *                       if false rotate point in negative sine direction
      *
      * @return {Array}
      */
-    VectorOps.rotate = function(angle, point, over) {
+    VectorOps.rotate = function(point, angle, over) {
         var cos = angle['cos'];
         var sin = angle['sin'];
         var x = point[0];
         var y = point[1];
 
-        // rotate an additional pi radians or 3/2 pi radians
+        // rotate the point in the negative sine direction (i.e. beneath x axis)
         if (over) {
             sin = -1*sin;
         }

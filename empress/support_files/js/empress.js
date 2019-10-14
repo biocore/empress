@@ -7,6 +7,21 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
     /**
      * @class EmpressTree
+     *
+     * @param {BPTree} tree The phylogentic tree
+     * @param {Object} treeData The metadata associated with the tree
+     *                 Note: currently treeData uses the preorder position of
+     *                       each node as a key. Originally this was to save a
+     *                       a bit of space but it be better if it used the
+     *                       actual name of the name in tree.
+     *                 TODO: revert treeData back to using actual name.
+     * @param {BIOMTable} biom The BIOM table used to color the tree
+     * @param {Array} pToName An array that contains the name of the nodes in
+     *                preorder.
+     *                Note: This is currently being used to traslate observation
+     *                      ids (i.e. branch tips) to their preorder position
+     *                      in order to look up their metadata in treeData.
+     * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
     function Empress(tree, treeData, biom, pToName, canvas ) {
         /**
@@ -53,7 +68,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         this._pToName = pToName;
 
         /**
-         * @type {Dictionary}
+         * @type {Object}
          * The metadata associated with the tree branches
          * @private
          */
@@ -83,16 +98,21 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         this._drawer.draw();
     };
 
-    /** Retrives the coordinate info of the tree.
+    /**
+     * Retrives the coordinate info of the tree.
      *  format of coordinate info: [x, y, red, green, blue, ...]
      *
      * @return {Array}
      */
     Empress.prototype.getCoords = function() {
+        // size of branch coordinates. 2 coordinates represent a single branch
+        var coords_size = (this._tree.size - 1) * this._drawer.VERTEX_SIZE * 2;
+
         // the coordinate of the tree.
-        var coords = [];
+        var coords = new Float32Array(coords_size);
 
         // iterate throught the tree in preorder, skip root
+        var coords_index = 0;
         for (var i = 2; i <= this._tree.size ; i++) {
             // name of current node
             var node = this._tree.name(i);
@@ -107,14 +127,16 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
             var color = this._treeData[node].color;
 
             // coordinate info for parent
-            coords.push(this._treeData[parent].x);
-            coords.push(this._treeData[parent].y);
-            coords.push(...color);
+            coords[coords_index++] = this._treeData[parent].x;
+            coords[coords_index++] = this._treeData[parent].y;
+            coords.set(color, coords_index);
+            coords_index += 3;
 
             // coordinate info for current node
-            coords.push(this._treeData[node].x);
-            coords.push(this._treeData[node].y);
-            coords.push(...color);
+            coords[coords_index++] = this._treeData[node].x;
+            coords[coords_index++] = this._treeData[node].y;
+            coords.set(color, coords_index);
+            coords_index += 3;
         }
 
         return coords;
@@ -123,8 +145,11 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
     /**
      * Sets flag to hide branches not in samples
+     *
+     * @param {Boolean} hide If true then hide uncolored tips
+     *                       if false then show uncolored tips
      */
-    Empress.prototype.hideUnColoredTips = function(hide) {
+    Empress.prototype.setUncoloredTipVisibility = function(hide) {
         var visible = !hide;
 
         // check sample Value for all branches
@@ -159,7 +184,6 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
             var c1 = this._treeData[parent].color;
             if (c1[0] === 0.75 && c1[1] === 0.75 && c1[2] === 0.75) {
-                // child = this._tree.nsibling(child);
                 continue;
             }
 
@@ -172,25 +196,25 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
             // find angle/length of branch
             var angle = VectorOps.getAngle(point);
-            var length = VectorOps.getLength(point);
+            var length = VectorOps.magnitude(point);
             var over = point[1] < 0;
 
             //find top left of box of think line
             var tL = [0, amount];
-            tL = VectorOps.rotate(angle, tL, over);
+            tL = VectorOps.rotate(tL, angle, over);
             tL = VectorOps.translate(tL, x2, y2);
 
             var tR = [length, amount];
-            tR = VectorOps.rotate(angle, tR, over);
+            tR = VectorOps.rotate(tR, angle, over);
             tR = VectorOps.translate(tR, x2, y2);
 
             // find bottom point of think line
             var bL = [0, -1*amount];
-            bL = VectorOps.rotate(angle, bL, over);
+            bL = VectorOps.rotate(bL, angle, over);
             bL = VectorOps.translate(bL, x2, y2);
 
             var bR = [length, -1*amount];
-            bR = VectorOps.rotate(angle, bR, over);
+            bR = VectorOps.rotate(bR, angle, over);
             bR = VectorOps.translate(bR, x2, y2);
 
             // t1 v1
@@ -247,7 +271,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var primes = [2, 3, 5, 7];
-        var cTips = this._biom.getUniqueObs();
+        var cTips = this._biom.getObservations().size;
         var curPrime = 0;
 
          // create color brewer
@@ -345,8 +369,8 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
      *
      * @return {Array}
      */
-    Empress.prototype.getSampleCats = function() {
-        return this._biom.getSampleCats();
+    Empress.prototype.getSampleCategories = function() {
+        return this._biom.getSampleCategories();
     };
 
     return Empress;

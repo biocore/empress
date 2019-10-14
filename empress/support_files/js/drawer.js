@@ -44,7 +44,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         this.contex_ = canvas.getContext('webgl');
         this.CLR_COL = 1;
         this.cam = cam;
-        this._test = false;
+        this.VERTEX_SIZE = 5;
     };
 
     /**
@@ -88,8 +88,8 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         this.treeVertSize = 0;
 
         // buffer object used to thicken sampleLines
-        s.sampleThinkBuff = c.createBuffer();
-        this.sampleThinkSize = 0;
+        s.sampleThickBuff = c.createBuffer();
+        this.sampleThickSize = 0;
 
         // buffer object for tree nodes
         s.nodeVertBuff = c.createBuffer();
@@ -186,7 +186,6 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
      */
     Drawer.prototype.bindBuffer = function(buffer) {
         // defines constants for a vertex. A vertex is the form [x, y, r, g, b]
-        const VERTEX_SIZE = 5;
         const COORD_SIZE = 2;
         const COORD_OFFSET = 0;
         const COLOR_SIZE = 3;
@@ -203,7 +202,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
             COORD_SIZE,
             c.FLOAT,
             c.FALSE,
-            VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
+            this.VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
             COORD_OFFSET);
 
         c.vertexAttribPointer(
@@ -211,7 +210,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
             COLOR_SIZE,
             c.FLOAT,
             c.FALSE,
-            VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
+            this.VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
             COLOR_OFFEST * Float32Array.BYTES_PER_ELEMENT
             );
     };
@@ -234,8 +233,8 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
      */
     Drawer.prototype.loadSampleThickBuf = function(data) {
         data = new Float32Array(data);
-        this.sampleThinkSize = data.length / 5;
-        this.fillBufferData_(this.sProg_.sampleThinkBuff, data);
+        this.sampleThickSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.sampleThickBuff, data);
     };
 
     /**
@@ -261,8 +260,8 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         this.bindBuffer(s.treeVertBuff);
         c.drawArrays(c.LINES, 0, this.treeVertSize);
 
-        this.bindBuffer(s.sampleThinkBuff);
-        c.drawArrays(c.TRIANGLES, 0, this.sampleThinkSize);
+        this.bindBuffer(s.sampleThickBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.sampleThickSize);
 
     };
 

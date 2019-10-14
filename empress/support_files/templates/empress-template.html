@@ -66,7 +66,7 @@
             'Camera' : './js/camera',
             'Drawer' : './js/drawer',
             'SidePanel' : './js/side-panel-handler',
-            'BiomTable' : './js/biom-table',
+            'BIOMTable' : './js/biom-table',
             'Empress' : './js/empress',
             'Legend' : './js/legend',
             'Colorer' : './js/colorer',
@@ -75,17 +75,17 @@
     });
 
     empressRequire(['jquery', 'glMatrix', 'chroma', 'BPTree', 'ByteArray',
-                    'SidePanel', 'Camera', 'Drawer', 'BiomTable', 'Empress',
+                    'SidePanel', 'Camera', 'Drawer', 'BIOMTable', 'Empress',
                     'Legend', 'Colorer', 'VectorOps'],
         function($, gl, chroma, BPTree, ByteArray, SidePanel, Camera, Drawer,
-                 BiomTable, Empress, Legend, Colorer,
+                 BIOMTable, Empress, Legend, Colorer,
                  VectorOps) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr, {{ names }});
 
         var canvas = document.getElementById('tree-surface')
-        var biom = new BiomTable({{ obs_data }}, {{ sample_data }});
+        var biom = new BIOMTable({{ obs_data }}, {{ sample_data }});
         var empress = new Empress(tree, {{ tree_data | tojson }}, biom, {{ p_to_n }},
             canvas);
         empress.initialize();

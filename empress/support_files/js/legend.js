@@ -14,8 +14,8 @@ define([], function() {
      * @param {Object} container - container DOM
      * @param {boolean} gradient - gradient or discrete
      */
-    Legend.prototype.addColorKey = function(name, info, leg, gradient) {
-        var container =  this.__getLegend(leg);
+    Legend.prototype.addColorKey = function(name, info, container, gradient) {
+        var container =  this.__getLegend(container);
         if (name) {
             let div = document.createElement("div");
             div.classList.add("legend-title");

@@ -42,7 +42,7 @@ class Tree(TreeNode):
 
     @classmethod
     def from_tree(cls, tree, use_lengths=True):
-        """ Creates an UnrootedDendrogram object from a skbio tree.
+        """ Creates an Tree object from a skbio tree.
 
         Parameters
         ----------
@@ -51,7 +51,7 @@ class Tree(TreeNode):
 
         Returns
         -------
-        UnrootedDendrogram
+        Tree
 
         """
         for n in tree.postorder():
@@ -68,11 +68,11 @@ class Tree(TreeNode):
         Parameters
         ----------
         use_lengths: bool
-           Specify if the branch length should be incorporated into
-           the geometry calculations for visualization.
+            Specify if the branch length should be incorporated into
+            the geometry calculations for visualization.
         depth: int
-           The number of nodes in the longest path from root to leaf.
-        This is agnostic to scale and orientation.
+            The number of nodes in the longest path from root to leaf.
+            This is agnostic to scale and orientation.
 
         """
         # i = 0
