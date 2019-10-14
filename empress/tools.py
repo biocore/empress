@@ -19,7 +19,7 @@ def name_internal_nodes(tree):
     l = 0
     for n in tree.postorder(include_self=True):
         if n.length is None:
-            n.length = 1
+            n.length = 0
         if n.name is None:
             new_name = 'EmpressNode%d' % l
             n.name = new_name

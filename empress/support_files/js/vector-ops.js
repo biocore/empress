@@ -1,11 +1,5 @@
+/** @module vector utility-functions */
 define([], function() {
-
-    /**
-     * @class VectorOps
-     * Class functions for vector operations used in empress
-     */
-    function VectorOps() { };
-
     /**
      * Finds the angle of vector w.r.t the x-axis
      *
@@ -13,7 +7,7 @@ define([], function() {
      *
      * @return {Dictionary}
      */
-    VectorOps.getAngle = function(point) {
+    function getAngle(point) {
         var x = point[0], y = point[1];
         var cos = (x) / Math.sqrt(x*x + y*y);
         var sin = Math.sqrt(1 - cos*cos);
@@ -31,7 +25,7 @@ define([], function() {
      *
      * @return {Number}
      */
-    VectorOps.magnitude = function(point) {
+    function magnitude(point) {
         var x = point[0], y = point[1];
         return Math.sqrt(x*x + y*y);
     };
@@ -46,7 +40,7 @@ define([], function() {
      *
      * @return {Array}
      */
-    VectorOps.rotate = function(point, angle, over) {
+    function rotate(point, angle, over) {
         var cos = angle['cos'];
         var sin = angle['sin'];
         var x = point[0];
@@ -74,12 +68,13 @@ define([], function() {
      *
      * @return {Array}
      */
-    VectorOps.translate = function(point, x, y) {
+    function translate(point, x, y) {
         point[0] = point[0] + x;
         point[1] = point[1] + y;
         return point;
     }
 
 
-    return VectorOps;
+    return {'getAngle': getAngle, 'magnitude': magnitude, 'rotate': rotate,
+            'translate': translate};
 });
