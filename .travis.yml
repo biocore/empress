@@ -1,6 +1,7 @@
 language: node_js
 node_js:
   - "10"
+dist: trusty
 # Note: if you switch to sudo: false, you'll need to launch Chrome with --no-sandbox.
 # See https://github.com/travis-ci/travis-ci/issues/8836
 sudo: required
