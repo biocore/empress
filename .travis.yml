@@ -1,6 +1,9 @@
 language: node_js
 node_js:
   - "10"
-script:
+addons:
+  chrome: stable # have Travis install Chrome stable
+install:
   - npm install -g qunit-puppeteer
+script:
   - make test
