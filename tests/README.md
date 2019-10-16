@@ -21,7 +21,7 @@ First off, install qunit-puppeteer. You only need to do this once for any
 computer you're running Empress on.
 
 ```bash
-$ npm install -g qunit-puppeteer
+npm install -g qunit-puppeteer
 ```
 
 Once qunit-puppeteer has been installed, you should be able to run tests from
