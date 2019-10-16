@@ -29,5 +29,5 @@ the command line! (You'll need to run this from the root directory of the
 Empress repository -- that is, the one above this one.)
 
 ```bash
-$ make test
+make test
 ```
