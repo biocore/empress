@@ -4,12 +4,10 @@
 # Distributed under the terms of the Modified BSD License.
 #
 # ----------------------------------------------------------------------------
-import sys
-sys.path.append('../../empress')
 import unittest
 from skbio import TreeNode
-from tree import Tree
-import tools
+from empress import Tree
+import empress.tools as tools
 
 class TestTools(unittest.TestCase):
 

@@ -1,6 +1,7 @@
 import skbio
 from skbio import TreeNode
 
+
 def name_internal_nodes(tree):
     """ Name internal nodes that don't have a name
 
