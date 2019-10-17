@@ -262,7 +262,6 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
 
         this.bindBuffer(s.sampleThickBuff);
         c.drawArrays(c.TRIANGLES, 0, this.sampleThickSize);
-
     };
 
     /**

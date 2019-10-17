@@ -7,10 +7,8 @@ import tools
 from biom.table import Table
 from biom.util import biom_open
 import pandas as pd
-import json
 import skbio
 from skbio import TreeNode
-from statistics import mean
 from tree import Tree
 
 # create/parse tree

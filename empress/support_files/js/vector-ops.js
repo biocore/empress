@@ -5,7 +5,7 @@ define([], function() {
      *
      * @param {Array} point - the point to find the angle for
      *
-     * @return {Dictionary}
+     * @return {Object}
      */
     function getAngle(point) {
         var x = point[0], y = point[1];
