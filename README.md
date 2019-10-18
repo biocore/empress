@@ -9,7 +9,7 @@ To install the current development version, we recommend creating a new conda
 environment:
 
 ```bash
-conda create -n empress python=3.6 numpy scipy matplotlib pandas cython
+conda create -n empress python=3.6 numpy scipy pandas cython
 conda install -c bioconda scikit-bio biom-format
 pip install .
 ```
