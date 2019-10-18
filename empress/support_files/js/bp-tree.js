@@ -176,11 +176,26 @@ define(['ByteArray'], function(ByteArray) {
      * The name of node ith node in preorder
      *
      * @param{Number} i Node i in preorder
+     *                Note: i starts at 1
      *
      * @return{String}
      */
     BPTree.prototype.name = function(i) {
-        return this.names_[i];
+        return this.names_[i - 1];
+    };
+
+    /**
+     *
+     * The number of leaf noes in tree
+     *
+     * @return {Number}
+     */
+    BPTree.prototype.numleafs = function() {
+        var total = 0;
+        for (var i = 0; i < this.b_.length - 1; i++) {
+            total = this.isleaf(i) ? total + 1 : total;
+        }
+        return total;
     };
 
     /**
@@ -188,11 +203,12 @@ define(['ByteArray'], function(ByteArray) {
      * The length of the ith node in preorder
      *
      * @param{Number} i Node i in preorder
+     *                Note i starts at 1
      *
      * @return{Number}
      */
     BPTree.prototype.length = function(i) {
-        return this.lengths_[i];
+        return this.lengths_[i - 1];
     };
 
     /**
@@ -459,6 +475,7 @@ define(['ByteArray'], function(ByteArray) {
      * Find the index of the node with postorder k
      *
      * @param {Number} k The postorder to search for
+     *                 Note: k starts at 1
      *
      * @return {Number} The index position of the node in the tree
      */
@@ -484,7 +501,8 @@ define(['ByteArray'], function(ByteArray) {
     /**
      * Find the index of the node with preorder k
      *
-     * @param {Number} k The preorder to search for
+     * @param {Number} k The preorder to search for.
+     *                 Note: k starts at 1.
      *
      * @return {Number} The index position of the node in the tree
      */
