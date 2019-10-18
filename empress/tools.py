@@ -17,14 +17,15 @@ def name_internal_nodes(tree):
         Tree with fully labeled internal nodes and branches.
     """
     # initialize tree with branch lengths and node names if they are missing
-    l = 0
+    current_unlabled_node = 0
     for n in tree.postorder(include_self=True):
         if n.length is None:
             n.length = 0
         if n.name is None:
-            new_name = 'EmpressNode%d' % l
+            new_name = 'EmpressNode%d' % current_unlabled_node
             n.name = new_name
-            l += 1
+            current_unlabled_node += 1
+
 
 def read(file_name, file_format='newick'):
     """ Reads in contents from a file.

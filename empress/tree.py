@@ -1,6 +1,7 @@
 from skbio import TreeNode
 import numpy as np
 
+
 class Tree(TreeNode):
     """
     Attributes
@@ -53,7 +54,6 @@ class Tree(TreeNode):
         for n in tree.postorder():
             n.__class__ = Tree
             n.tip_count = 0
-
 
         tree.update_geometry(use_lengths)
         return tree
@@ -108,7 +108,7 @@ class Tree(TreeNode):
         """
 
         # calculates coordinates of all nodes and the shortest/longest branches
-        scale = self.rescale(width, height)
+        self.rescale(width, height)
         centerX = self.x2
         centerY = self.y2
 

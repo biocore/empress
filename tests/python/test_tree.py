@@ -5,9 +5,9 @@
 #
 # ----------------------------------------------------------------------------
 import unittest
-import numpy as np
 from skbio import TreeNode
 from empress import Tree
+
 
 class TestTree(unittest.TestCase):
 
@@ -32,14 +32,14 @@ class TestTree(unittest.TestCase):
                   (40.6350638142365, 62.57251106991248),
                   (-77.36538561589865, -199.6519382120705),
                   (-290.23109682556253, -205.35762294073118),
-                  (-81.27012762847295,-125.14502213982503),
+                  (-81.27012762847295, -125.14502213982503),
                   (0.0, 0.0)]
 
         for i, node in enumerate(t.postorder()):
-          x_test,y_test = (node.x2, node.y2)
-          x, y = coords[i]
-          self.assertAlmostEqual(x_test, x, places=5)
-          self.assertAlmostEqual(y_test, y, places=5)
+            x_test, y_test = (node.x2, node.y2)
+            x, y = coords[i]
+            self.assertAlmostEqual(x_test, x, places=5)
+            self.assertAlmostEqual(y_test, y, places=5)
 
     def test_rescale(self):
         t = Tree.from_tree(self.tree)

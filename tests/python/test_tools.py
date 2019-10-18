@@ -9,6 +9,7 @@ from skbio import TreeNode
 from empress import Tree
 import empress.tools as tools
 
+
 class TestTools(unittest.TestCase):
 
     def mock_tree_from_nwk(self):
