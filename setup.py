@@ -48,12 +48,17 @@ setup(
     maintainer=__maintainer__,
     maintainer_email=__email__,
     url='http://github.com/biocore/empress',
+    entry_points={
+        'qiime2.plugins':
+        ['q2-empress=empress.plugin_setup:plugin']
+    },
     packages=find_packages(),
     package_data={
         'empress': ['support_files/vendor/*.js',
                     'support_files/css/*.css',
                     'support_files/js/*.js',
-                    'support_files/templates/*.html']},
+                    'support_files/templates/*.html',
+                    'empress/citations.bib']},
     data_files={},
     install_requires=base,
     extras_require={'test': test, 'all': all_deps},
