@@ -44,12 +44,13 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         this.contex_ = canvas.getContext('webgl');
         this.CLR_COL = 1;
         this.cam = cam;
+        this.VERTEX_SIZE = 5;
     };
 
     /**
      * Compliles the shaders and sets up the necessary array buffers.
      */
-    Drawer.prototype.initialze = function() {
+    Drawer.prototype.initialize = function() {
         // shorten name, will be using this frequently
         var c = this.contex_;
 
@@ -85,6 +86,10 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         // buffer object for tree
         s.treeVertBuff = c.createBuffer();
         this.treeVertSize = 0;
+
+        // buffer object used to thicken sampleLines
+        s.sampleThickBuff = c.createBuffer();
+        this.sampleThickSize = 0;
 
         // buffer object for tree nodes
         s.nodeVertBuff = c.createBuffer();
@@ -168,7 +173,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
      * @param {WebGLBuffer} buff The WebGLBuffer
      * @param {Array} data The coordinate and color data to fill the buffer
      */
-    Drawer.prototype.fillBufferData = function(buff, data) {
+    Drawer.prototype.fillBufferData_ = function(buff, data) {
         var c = this.contex_;
         c.bindBuffer(c.ARRAY_BUFFER, buff);
         c.bufferData(c.ARRAY_BUFFER, data, c.DYNAMIC_DRAW);
@@ -181,7 +186,6 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
      */
     Drawer.prototype.bindBuffer = function(buffer) {
         // defines constants for a vertex. A vertex is the form [x, y, r, g, b]
-        const VERTEX_SIZE = 5;
         const COORD_SIZE = 2;
         const COORD_OFFSET = 0;
         const COLOR_SIZE = 3;
@@ -198,7 +202,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
             COORD_SIZE,
             c.FLOAT,
             c.FALSE,
-            VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
+            this.VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
             COORD_OFFSET);
 
         c.vertexAttribPointer(
@@ -206,7 +210,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
             COLOR_SIZE,
             c.FLOAT,
             c.FALSE,
-            VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
+            this.VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
             COLOR_OFFEST * Float32Array.BYTES_PER_ELEMENT
             );
     };
@@ -219,7 +223,18 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
     Drawer.prototype.loadTreeBuf = function(data) {
         data = new Float32Array(data);
         this.treeVertSize = data.length / 5;
-        this.fillBufferData(this.sProg_.treeVertBuff, data);
+        this.fillBufferData_(this.sProg_.treeVertBuff, data);
+    };
+
+    /**
+     * Fills the buffer used to thicken sample lines
+     *
+     * @param {Array} data The coordinate and color data to fill sampleThink
+     */
+    Drawer.prototype.loadSampleThickBuf = function(data) {
+        data = new Float32Array(data);
+        this.sampleThickSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.sampleThickBuff, data);
     };
 
     /**
@@ -245,6 +260,8 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         this.bindBuffer(s.treeVertBuff);
         c.drawArrays(c.LINES, 0, this.treeVertSize);
 
+        this.bindBuffer(s.sampleThickBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.sampleThickSize);
     };
 
     /**
