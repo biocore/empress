@@ -44,11 +44,12 @@ define([], function() {
      */
     BIOMTable.prototype.getObjservationUnionForSamples = function(sIds) {
         var result = new Set();
+        var addToResult = function(ob) {
+            result.add(ob);
+        };
         for(var i = 0; i < sIds.length; i++) {
             var obs = this._obs[sIds[i]];
-            obs.forEach(function(ob) {
-                result.add(ob);
-            });
+            obs.forEach(addToResult);
         }
         return Array(result);
     };
