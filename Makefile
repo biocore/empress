@@ -9,7 +9,6 @@
 .PHONY: test pytest jstest stylecheck festyle
 
 JSLOCS = empress/support_files/js/*.js
-HTMLCSSLOCS = empress/support_files/css/*.css empress/support_files/templates/*.html
 
 test: pytest jstest
 
@@ -23,12 +22,12 @@ jstest:
 # Lints and checks code style
 stylecheck:
 	jshint $(JSLOCS)
-	prettier --check --tab-width 4 $(JSLOCS) $(HTMLCSSLOCS)
+	prettier --check --tab-width 4 $(JSLOCS)
 	flake8 empress/*.py tests/python/*.py setup.py
 
 # Auto-formats the JS, HTML, and CSS code
 festyle:
 	@# To be extra safe, do a dry run of prettier and check that it hasn't
 	@# changed the code's abstract syntax tree (AST)
-	prettier --debug-check --tab-width 4 $(JSLOCS) $(HTMLCSSLOCS)
-	prettier --write --tab-width 4 $(JSLOCS) $(HTMLCSSLOCS)
+	prettier --debug-check --tab-width 4 $(JSLOCS)
+	prettier --write --tab-width 4 $(JSLOCS)
