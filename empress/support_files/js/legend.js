@@ -5,7 +5,7 @@ define([], function() {
         this.__nodeLeg = node;
         this.__cladeLeg = clade;
         this.__legends = ['tip', 'node', 'clade'];
-    };
+    }
 
     /**
      * Display a color key in the legend box.
@@ -50,8 +50,7 @@ define([], function() {
         // color gradient
         component = document.createElement("div");
         component.classList.add("gradient-color");
-        component.setAttribute("style", "background: linear-gradient(to right, "
-            + info.min[1] + " 0%, " + info.max[1] + " 100%);");
+        component.setAttribute("style", "background: linear-gradient(to right, " + info.min[1] + " 0%, " + info.max[1] + " 100%);");
         div.appendChild(component);
 
         // max label
@@ -80,8 +79,7 @@ define([], function() {
             // color gradient
             let component = document.createElement("div");
             component.classList.add("category-color");
-            component.setAttribute("style", "background: " + info[key].color
-                + ";");
+            component.setAttribute("style", "background: " + info[key].color + ";");
             div.appendChild(component);
 
             // label
@@ -130,10 +128,13 @@ define([], function() {
         switch(leg) {
             case "tip":
                 container = this.__tipLeg;
+                break;
             case "node":
                 container = this.__nodeLeg;
+                break;
             case "clade":
                 container = this.__cladeLeg;
+                break;
         }
 
         return container;

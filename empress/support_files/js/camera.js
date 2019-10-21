@@ -31,7 +31,7 @@ define(['glMatrix'], function(gl) {
         // Note: this can be modified to create fish eye effect
         this.projMat = gl.mat4.create();
         gl.mat4.perspectiveFromFieldOfView(this.projMat, fov, 0.1, -10);
-     };
+     }
 
      /**
       * Creates a view matrix based on camera pos, lookDir, and upDir

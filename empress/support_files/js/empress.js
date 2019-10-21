@@ -80,7 +80,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
          * @private
          */
         this._biom = biom;
-    };
+    }
 
     /**
      * Initializes WebGL and then draws the tree
@@ -243,7 +243,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         }
 
         this._drawer.loadSampleThickBuf(coords);
-    }
+    };
 
     /**
      * Color the tree by sample IDs
@@ -283,20 +283,21 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         // legend key
         var keyInfo = {};
 
+        var node, prime, key, i;
         // color tips
         var keys = Object.keys(obs);
         keys.sort();
         for (var k = 0; k < keys.length; k++) {
-            var key = keys[k];
-            var prime = primes[curPrime];
+            key = keys[k];
+            prime = primes[curPrime];
             cm[prime] = colorer.getColorRGB(prime);
             keyInfo[key] = {
                 color : colorer.getColorHex(prime),
                 tPercent : 0,
                 rPercent : 0};
-            for (var i = 0; i < obs[key].length; i++) {
+            for (i = 0; i < obs[key].length; i++) {
                 // set color for current node
-                var node = this._pToName[obs[key][i]];
+                node = this._pToName[obs[key][i]];
                 this._treeData[node].sampVal = prime;
             }
             curPrime++;
@@ -304,14 +305,14 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
         // project sampVal up tree
         // iterate using postorder.
-        for (var i = 1; i <= tree.size; i++) {
+        for (i = 1; i <= tree.size; i++) {
             if (tree.postorderselect(i) !== tree.root()) {
-                var node = tree.name(tree.preorder(tree.postorderselect(i)));
+                node = tree.name(tree.preorder(tree.postorderselect(i)));
                 var parent = tree.name(tree.preorder(tree.parent(
                                 tree.postorderselect(i))));
 
                 for (var j = 0; j < primes.length; j++) {
-                    var prime = primes[j];
+                    prime = primes[j];
                     if (this._treeData[node].sampVal % prime === 0 &&
                             this._treeData[parent].sampVal % prime !== 0) {
                         this._treeData[parent].sampVal *= prime;
@@ -319,11 +320,10 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
                 }
             }
         }
-
         // color tree
         keys = Object.keys(this._treeData);
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
+        for (i = 0; i < keys.length; i++) {
+            key = keys[i];
             var item = this._treeData[key];
             if (item.sampVal === this.DEFAULT_BRANCH_VAL) {
                 item.color = this.DEFAULT_COLOR;
@@ -336,10 +336,10 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         keys = Object.keys(obs);
         keys.sort();
         var p = 0;
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            for (var j = 1; j <= this._tree.size; j++) {
-                if (this._treeData[j].sampVal === primes[p]) {
+        for (i = 0; i < keys.length; i++) {
+            key = keys[i];
+            for (var jj = 1; jj <= this._tree.size; jj++) {
+                if (this._treeData[jj].sampVal === primes[p]) {
                     keyInfo[key].tPercent++;
                     keyInfo[key].rPercent++;
                 }

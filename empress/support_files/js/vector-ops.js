@@ -16,7 +16,7 @@ define([], function() {
             'cos' : cos,
             'sin' : sin
         };
-    };
+    }
 
     /**
      * Finds the magnitude of the vector
@@ -28,7 +28,7 @@ define([], function() {
     function magnitude(point) {
         var x = point[0], y = point[1];
         return Math.sqrt(x*x + y*y);
-    };
+    }
 
     /**
      * Rotates the vector
@@ -41,8 +41,8 @@ define([], function() {
      * @return {Array}
      */
     function rotate(point, angle, over) {
-        var cos = angle['cos'];
-        var sin = angle['sin'];
+        var cos = angle.cos;
+        var sin = angle.sin;
         var x = point[0];
         var y = point[1];
 
@@ -58,7 +58,7 @@ define([], function() {
         point[1] = sin*x + cos*y;
 
         return point;
-    };
+    }
 
     /**
      * Translates the vector

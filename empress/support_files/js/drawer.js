@@ -45,7 +45,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         this.CLR_COL = 1;
         this.cam = cam;
         this.VERTEX_SIZE = 5;
-    };
+    }
 
     /**
      * Compliles the shaders and sets up the necessary array buffers.
@@ -72,7 +72,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
 
         // again shorten var name
         var s = this.sProg_;
-        c.useProgram(s)
+        c.useProgram(s);
 
         // store references to the vertex and color attributes in the shaders
         s.vertPosition = c.getAttribLocation(s, 'vertPosition');

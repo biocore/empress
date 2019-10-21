@@ -74,7 +74,7 @@ define(['Colorer'], function(Colorer) {
             document.getElementById(panel.SIDE_PANEL_ID)
                 .classList.add("hidden");
             document.getElementById(panel.SHOW_ID).classList.remove("hidden");
-        }
+        };
 
         // // shows the side menu
         var show = document.getElementById(this.SHOW_ID);
@@ -82,8 +82,8 @@ define(['Colorer'], function(Colorer) {
             document.getElementById(panel.SHOW_ID).classList.add("hidden");
             document.getElementById(panel.SIDE_PANEL_ID)
                 .classList.remove("hidden");
-        }
-    };
+        };
+    }
 
     /**
      * Sets the components of the samples panel back to there default value
@@ -170,19 +170,20 @@ define(['Colorer'], function(Colorer) {
         // for use in closers
         var sp = this;
 
+        var i, opt;
         // add sample categories
         var selOpts = this.empress.getSampleCategories();
-         for (var i = 0; i < selOpts.length; i++) {
-            var opt = document.createElement('option');
+         for (i = 0; i < selOpts.length; i++) {
+            opt = document.createElement('option');
             opt.value = selOpts[i];
             opt.innerHTML = selOpts[i];
             this.sSel.appendChild(opt);
         }
 
         // // The color map selector
-        for (var i = 0; i < Colorer.__Colormaps.length; i++) {
+        for (i = 0; i < Colorer.__Colormaps.length; i++) {
             var map = Colorer.__Colormaps[i];
-            var opt = document.createElement('option');
+            opt = document.createElement('option');
             opt.innerHTML = map.name;
             opt.value = map.id;
 
@@ -211,11 +212,11 @@ define(['Colorer'], function(Colorer) {
 
         this.sColor.onchange = function() {
             sp.sUpdateBtn.classList.remove('hidden');
-        }
+        };
 
         this.sLineWidth.onchange = function() {
             sp.sUpdateBtn.classList.remove('hidden');
-        }
+        };
 
         // deterines whether to show features not in samples
         this.sHideChk.onclick = function() {

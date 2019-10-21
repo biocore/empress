@@ -101,7 +101,8 @@ define(['ByteArray'], function(ByteArray) {
          this.ocCache_ = new Uint32Array(this.b_.length);
          var openInx = 0;
          var oc = [];
-         for (var i = 0; i < this.b_.length; i++) {
+         // We don't declare "var i" since it was already declared above
+         for (i = 0; i < this.b_.length; i++) {
             if (this.b_[i]) {
                 oc.push(i);
             } else {
@@ -110,7 +111,7 @@ define(['ByteArray'], function(ByteArray) {
                 this.ocCache_[i] = openInx;
             }
          }
-    };
+    }
 
     /**
      *
@@ -267,7 +268,7 @@ define(['ByteArray'], function(ByteArray) {
      */
     BPTree.prototype.bwdsearch = function(i, d) {
         return this.bwdsearchNaive(i, d);
-    }
+    };
 
     /**
      * Finds the position of the opening parenthesis that matches b[i]

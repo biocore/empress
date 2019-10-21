@@ -51,5 +51,5 @@ define([], function() {
         return new ArrayType(unqArr);
     };
 
-     return ByteArray
+     return ByteArray;
 });

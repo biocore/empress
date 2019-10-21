@@ -33,7 +33,7 @@ define([], function() {
          * @private
          */
         this._samp = samp;
-    };
+    }
 
     /**
      * Returns a list of observations in the samples

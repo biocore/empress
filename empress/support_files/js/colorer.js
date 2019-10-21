@@ -15,7 +15,7 @@ define(['chroma'], function(chroma) {
             this.__colorer = chroma.scale(color);
         }
         this.__colorer.domain([min, max]);
-    };
+    }
 
     Colorer.prototype.getColorRGB = function(color) {
         return this.__colorer(color).rgb().map(x => x / 256);
@@ -86,4 +86,4 @@ define(['chroma'], function(chroma) {
         {id: 'PRGn', name: 'Purple-Green', type: DIVERGING}
     ];
     return Colorer;
-})
+});
