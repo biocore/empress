@@ -31,3 +31,10 @@ festyle:
 	@# changed the code's abstract syntax tree (AST)
 	prettier --debug-check --tab-width 4 $(JSLOCS)
 	prettier --write --tab-width 4 $(JSLOCS)
+
+githook:
+	@# Try to add in a pre-commit hook that runs "make stylecheck"
+	@# Solution loosely inspired by
+	@# https://www.viget.com/articles/two-ways-to-share-git-hooks-with-your-team/
+	echo "#!/bin/bash\nmake stylecheck" > .git/hooks/pre-commit
+	chmod +x .git/hooks/pre-commit
