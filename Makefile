@@ -1,12 +1,12 @@
 # Based on https://github.com/biocore/qurro/blob/master/Makefile.
 # This file contains a few directives that make it easy to run all tests for
 # Empress ("make test", run style-checking ("make stylecheck"), auto-format the
-# front-end code ("make festyle"), etc.
+# JS code ("make jsstyle"), etc.
 #
 # Requires that a few command-line utilities are installed; see the Travis-CI
 # config file (.travis.yml) for examples of installing these utilities.
 
-.PHONY: test pytest jstest stylecheck festyle
+.PHONY: test pytest jstest stylecheck jsstyle githook
 
 JSLOCS = empress/support_files/js/*.js
 
@@ -25,8 +25,8 @@ stylecheck:
 	prettier --check --tab-width 4 $(JSLOCS)
 	flake8 empress/*.py tests/python/*.py setup.py
 
-# Auto-formats the JS, HTML, and CSS code
-festyle:
+# Auto-formats the JS code
+jsstyle:
 	@# To be extra safe, do a dry run of prettier and check that it hasn't
 	@# changed the code's abstract syntax tree (AST)
 	prettier --debug-check --tab-width 4 $(JSLOCS)
