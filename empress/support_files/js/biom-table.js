@@ -47,7 +47,7 @@ define([], function() {
         var addToResult = function(ob) {
             result.add(ob);
         };
-        for(var i = 0; i < sIds.length; i++) {
+        for (var i = 0; i < sIds.length; i++) {
             var obs = this._obs[sIds[i]];
             obs.forEach(addToResult);
         }
@@ -99,16 +99,14 @@ define([], function() {
         return obs;
     };
 
-
-
     /**
      * Returns a sorted list of sample categories
      *
      * @return{Array}
      */
     BIOMTable.prototype.getSampleCategories = function() {
-        return Object.keys((Object.values(this._samp)[0])).sort();
+        return Object.keys(Object.values(this._samp)[0]).sort();
     };
 
- return BIOMTable;
+    return BIOMTable;
 });

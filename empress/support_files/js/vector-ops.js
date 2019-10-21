@@ -8,13 +8,14 @@ define([], function() {
      * @return {Object}
      */
     function getAngle(point) {
-        var x = point[0], y = point[1];
-        var cos = (x) / Math.sqrt(x*x + y*y);
-        var sin = Math.sqrt(1 - cos*cos);
+        var x = point[0],
+            y = point[1];
+        var cos = x / Math.sqrt(x * x + y * y);
+        var sin = Math.sqrt(1 - cos * cos);
 
         return {
-            'cos' : cos,
-            'sin' : sin
+            cos: cos,
+            sin: sin
         };
     }
 
@@ -26,8 +27,9 @@ define([], function() {
      * @return {Number}
      */
     function magnitude(point) {
-        var x = point[0], y = point[1];
-        return Math.sqrt(x*x + y*y);
+        var x = point[0],
+            y = point[1];
+        return Math.sqrt(x * x + y * y);
     }
 
     /**
@@ -48,14 +50,14 @@ define([], function() {
 
         // rotate the point in the negative sine direction (i.e. beneath x axis)
         if (over) {
-            sin = -1*sin;
+            sin = -1 * sin;
         }
 
         x = point[0];
         y = point[1];
 
-        point[0] = cos*x + -1*sin*y;
-        point[1] = sin*x + cos*y;
+        point[0] = cos * x + -1 * sin * y;
+        point[1] = sin * x + cos * y;
 
         return point;
     }
@@ -74,7 +76,10 @@ define([], function() {
         return point;
     }
 
-
-    return {'getAngle': getAngle, 'magnitude': magnitude, 'rotate': rotate,
-            'translate': translate};
+    return {
+        getAngle: getAngle,
+        magnitude: magnitude,
+        rotate: rotate,
+        translate: translate
+    };
 });
