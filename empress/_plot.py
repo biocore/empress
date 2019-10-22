@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import os
 import pkg_resources
 
 import qiime2
@@ -15,7 +16,8 @@ import numpy as np
 from q2_types.tree import NewickFormat
 from biom import Table
 
-# TEMPLATES = pkg_resources.resource_filename('q2_empress', 'assets')
+TEMPLATES = pkg_resources.resource_filename('empress', 'support_files',
+                                            'templates')
 
 
 def plot(output_dir: str,
@@ -27,23 +29,11 @@ def plot(output_dir: str,
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()
 
-    # if other_pcoa is None:
-    #     procrustes = None
-    # else:
-    #     procrustes = [other_pcoa]
+    #line of code generates empress ui
+    # lines of code to copy empress support files into output_dir
 
-    # if custom_axes is not None:
-    #     viz.custom_axes = custom_axes
-
-    # if other_pcoa:
-    #     viz.procrustes_names = ['reference', 'other']
-
-    # viz.settings = settings
-
-    # html = viz.make_empress(standalone=True)
-    # viz.copy_support_files(output_dir)
     # with open(os.path.join(output_dir, 'empress.html'), 'w') as fh:
     #     fh.write(html)
 
-    # index = os.path.join(TEMPLATES, 'index.html')
-    # q2templates.render(index, output_dir, context={'plot_name': plot_name})
+    index = os.path.join(TEMPLATES, 'index.html')
+    q2templates.render(index, output_dir)
