@@ -14,7 +14,6 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
      *                       each node as a key. Originally this was to save a
      *                       a bit of space but it be better if it used the
      *                       actual name of the name in tree.
-     *                 TODO: revert treeData back to using actual name.
      * @param {Object} nameToKeys Converts tree node names to an array of keys.
      * @param {BIOMTable} biom The BIOM table used to color the tree
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
@@ -149,7 +148,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
      * @param {Boolean} hide If true then hide uncolored tips
      *                       if false then show uncolored tips
      */
-    Empress.prototype.setUncoloredTipVisibility = function(hide) {
+    Empress.prototype.setNonSampleBranchVisibility = function(hide) {
         var visible = !hide;
 
         // check sample Value for all branches
@@ -179,7 +178,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
 
-            if (!this._treeData[node].visible) {
+            if (!this._treeData[node].sampleColored) {
                 continue;
             }
 
@@ -257,6 +256,13 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         }
     };
 
+    /**
+     * Converts a list of tree node names to their respectives keys in _treeData
+     *
+     * @param {Array} names Array of tree node names
+     *
+     * @return {Array}
+     */
     Empress.prototype._namesToKeys = function(names) {
         var keys = [];
         for( var i = 0; i < names.length; i++) {
@@ -302,7 +308,17 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         return result;
     }
 
-    Empress.prototype._assignColor = function(items, color, rgb) {
+    /**
+     * Creates a color map for each categoy in items
+     *
+     * @param{Array} items List of categories
+     * @param {String} color The chroma color map to use
+     * @param {Boolean} rbg if true than a webGL color map will be created
+     *                      if false than a javascript color map will be created
+     *
+     * @return {Object} A color map that uses the categories in items as keys
+     */
+    Empress.prototype._assignColor = function(items, color, forWebGl) {
         // create color brewer
         var colorer = new Colorer(color, 0, Math.pow(2,items.length));
         var colorBlockSize = items.length;
@@ -311,14 +327,13 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         for(var i = 0; i < items.length; i++) {
             var item = items[i];
             cm[item] = {
-                'color': rgb ? colorer.getColorRGB(i*colorBlockSize)
+                'color': forWebGl ? colorer.getColorRGB(i*colorBlockSize)
                              : colorer.getColorHex(i*colorBlockSize)
             };
         }
 
         return cm;
     }
-
 
     /**
      * Color the tree using sample data
@@ -371,20 +386,47 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
             for(var j = 0; j < keys.length; j++) {
                 var key = keys[j];
                 this._treeData[key].color = cm[category].color;
+                this._treeData[key].sampleColored = true;
             }
         }
 
+
+
         // get percent of branches belonging to unique category (i.e. just gut)
-        var keys = Object.keys(obs);
-        keys.sort();
-        var p = 0;
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            keyInfo[key].tPercent = 1;
-            keyInfo[key].rPercent = 1;
-        }
+        this.percentColoredBySample(obs, keyInfo);
+        console.log(keyInfo)
 
         return keyInfo;
+    };
+
+    /**
+     * Cacluates the total and relative pertange of the tree that was colored by
+     * each category in sampleObs
+     *
+     * @param {Object} sampleObs The object containing which tree branches are
+     *                colored by which sample category
+     * @param {Object} keyInfo The object containing the information to be
+     *                 displayed in the sample legend
+     */
+    Empress.prototype.percentColoredBySample = function(sampleObs, keyInfo) {
+        // calculate relative tree size i.e. the subtree spanned by the samples
+        // iterate over tree using postorder
+        var relativeTreeSize = 0;
+        for (var i = 1; i <= this._tree.size; i++) {
+            if (this._treeData[i].inSample) {
+                relativeTreeSize++;
+            }
+        }
+
+        // calculate total and relative percentages in each group
+        var sampleCategies = Object.keys(sampleObs);
+        for (var i = 0; i < sampleCategies.length; i++) {
+            var category = sampleCategies[i];
+            var branchesInCategory = sampleObs[category].length;
+            console.log(branchesInCategory)
+            keyInfo[category].tPercent = branchesInCategory / this._tree.size;
+            keyInfo[category].rPercent = branchesInCategory / relativeTreeSize;
+        }
     };
 
     /**
@@ -395,7 +437,8 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
             this._treeData[key].color = this.DEFAULT_COLOR;
-            this._treeData[key].inSample = false;                                                                                        this._treeData[key].visible = true;
+            this._treeData[key].inSample = false;
+            this._treeData[key].sampleColored = false;                                                                             this._treeData[key].visible = true;
         }
         this._drawer.loadSampleThickBuf([]);
     };
