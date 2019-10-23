@@ -86,8 +86,8 @@
 
         var canvas = document.getElementById('tree-surface')
         var biom = new BIOMTable({{ obs_data }}, {{ sample_data }});
-        var empress = new Empress(tree, {{ tree_data | tojson }}, biom, {{ p_to_n }},
-            canvas);
+        var empress = new Empress(tree, {{ tree_data | tojson }},
+                                  {{ names_to_keys | tojson }}, biom, canvas);
         empress.initialize();
 
         var legend = new Legend(document.getElementById('tip-color-key'),

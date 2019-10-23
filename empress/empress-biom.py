@@ -21,10 +21,14 @@ empress_tree = Tree.from_tree(empress_tree)
 tools.name_internal_nodes(empress_tree)
 print('cacluate coords')
 empress_tree.coords(4020, 4020)
+
+# cannot assume tree contains unique names, there index tree_data by
+# use the nodes postorder position as key instead of name
+# keys begin at 1 since bp tree start with 1
 tree_data = {}
-pre_to_name = {}
-for i, node in enumerate(empress_tree.preorder(include_self=True)):
-    tree_data[i+1] = {
+names_to_keys = {}
+for i, node in enumerate(empress_tree.postorder(include_self=True), start=1):
+    tree_data[i] = {
         'name': node.name,
         'x': node.x2,
         'y': node.y2,
@@ -32,10 +36,14 @@ for i, node in enumerate(empress_tree.preorder(include_self=True)):
         'sampVal': 1,
         'visible': True,
         'single_samp': False}
-    pre_to_name[node.name] = i
+    if node.name in names_to_keys:
+        names_to_keys[node.name].append(i)
+    else:
+        names_to_keys[node.name] = [i]
+
 names = []
-for i, node in enumerate(empress_tree.preorder(include_self=True)):
-    names.append(i+1)
+for node in empress_tree.preorder(include_self=True):
+    names.append(node.name)
 
 # create template
 loader = FileSystemLoader('support_files/templates')
@@ -65,10 +73,10 @@ dev_temp_str = temp.render({
     'base_url': './support_files',
     'tree': tree,
     'tree_data': tree_data,
+    'names_to_keys': names_to_keys,
     'sample_data': sampMeta,
     'obs_data': obsMeta,
-    'names': names,
-    'p_to_n': pre_to_name
+    'names': names
     })
 with open('test_init.html', 'w') as file:
     file.write(dev_temp_str)
