@@ -10,6 +10,7 @@ environment:
 
 ```bash
 conda create -n empress python=3.6 numpy scipy pandas cython
+conda activate empress
 conda install -c bioconda scikit-bio biom-format
 pip install .
 ```
