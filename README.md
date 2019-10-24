@@ -15,6 +15,11 @@ conda install -c bioconda scikit-bio biom-format
 pip install .
 ```
 
-## Empress' tests
+#### Empress' tests
 
 Please see the `tests/README.md` file for instructions on how to run Empress' tests.
+
+## Acknowledgements
+
+This work is supported by IBM Research AI through the AI Horizons Network. For
+more information visit the [IBM AI Horizons Network website](https://www.research.ibm.com/artificial-intelligence/horizons-network/).
