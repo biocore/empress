@@ -1,5 +1,9 @@
-define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
-        function(Camera, Drawer, Colorer, VectorOps) {
+define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
+    Camera,
+    Drawer,
+    Colorer,
+    VectorOps
+) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -18,7 +22,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
      * @param {BIOMTable} biom The BIOM table used to color the tree
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
-    function Empress(tree, treeData, nameToKeys, biom, canvas ) {
+    function Empress(tree, treeData, nameToKeys, biom, canvas) {
         /**
          * @type {Camera}
          * The camera used to look at the tree
@@ -78,7 +82,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
          * @private
          */
         this._biom = biom;
-    };
+    }
 
     /**
      * Initializes WebGL and then draws the tree
@@ -113,7 +117,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
         // iterate throught the tree in postorder, skip root
         var coords_index = 0;
-        for (var i = 1; i < tree.size ; i++) {
+        for (var i = 1; i < tree.size; i++) {
             // name of current node
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
@@ -140,7 +144,6 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
         return coords;
     };
-
 
     /**
      * Sets flag to hide branches not in samples
@@ -173,7 +176,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         this._drawer.loadSampleThickBuf([]);
 
         // iterate throught the tree in postorder, skip root
-        for (var i = 1; i < this._tree.size ; i++) {
+        for (var i = 1; i < this._tree.size; i++) {
             // name of current node
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
@@ -189,7 +192,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
             var y1 = this._treeData[parent].y;
             var x2 = this._treeData[node].x;
             var y2 = this._treeData[node].y;
-            var point =  VectorOps.translate([x1, y1], -1*x2, -1*y2);
+            var point = VectorOps.translate([x1, y1], -1 * x2, -1 * y2);
 
             // find angle/length of branch
             var angle = VectorOps.getAngle(point);
@@ -206,11 +209,11 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
             tR = VectorOps.translate(tR, x2, y2);
 
             // find bottom point of think line
-            var bL = [0, -1*amount];
+            var bL = [0, -1 * amount];
             bL = VectorOps.rotate(bL, angle, over);
             bL = VectorOps.translate(bL, x2, y2);
 
-            var bR = [length, -1*amount];
+            var bR = [length, -1 * amount];
             bR = VectorOps.rotate(bR, angle, over);
             bR = VectorOps.translate(bR, x2, y2);
 
@@ -240,7 +243,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         }
 
         this._drawer.loadSampleThickBuf(coords);
-    }
+    };
 
     /**
      * Color the tree by sample IDs
@@ -265,12 +268,12 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
      */
     Empress.prototype._namesToKeys = function(names) {
         var keys = [];
-        for( var i = 0; i < names.length; i++) {
+        for (var i = 0; i < names.length; i++) {
             var name = names[i];
             keys.push(...this._nameToKeys[name]);
         }
         return keys;
-    }
+    };
 
     /**
      * Remove the keys non unique keys in keys
@@ -285,28 +288,33 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         // set differnce: a \ b
         var difference = function(a, b) {
             return new Set([...a].filter(x => !b.has(x)));
-        }
+        };
 
         // set union: a U b
         var union = function(a, b) {
             return new Set([...a, ...b]);
-        }
+        };
+
+        var unionOtherSets = function(currentIndex, allKeys, itemsInKeys) {
+            var otherSets = new Set();
+            itemsInKeys.forEach(function(item, index) {
+                if (index !== currentIndex) {
+                    otherSets = union(otherSets, allKeys[item]);
+                }
+            });
+            return otherSets;
+        };
 
         // for each item in keys, only keep the unique ones
         var items = Object.keys(keys);
-        for(var i = 0; i < items.length; i++) {
+        for (var i = 0; i < items.length; i++) {
             var itemKeys = new Set(keys[items[i]]);
-            var keysInOtherSets = new Set();
-            items.forEach(function(item, index) {
-                if (index !== i) {
-                    keysInOtherSets = union(keysInOtherSets, keys[item]);
-                }
-            });
+            var keysInOtherSets = unionOtherSets(i, keys, items);
             result[items[i]] = [...difference(itemKeys, keysInOtherSets)];
         }
 
         return result;
-    }
+    };
 
     /**
      * Creates a color map for each categoy in items
@@ -320,20 +328,20 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
      */
     Empress.prototype._assignColor = function(items, color, forWebGl) {
         // create color brewer
-        var colorer = new Colorer(color, 0, Math.pow(2,items.length));
+        var colorer = new Colorer(color, 0, Math.pow(2, items.length));
+        var colorFunction = forWebGl ? "getColorRGB" : "getColorHex";
         var colorBlockSize = items.length;
 
         var cm = {};
-        for(var i = 0; i < items.length; i++) {
+        for (var i = 0; i < items.length; i++) {
             var item = items[i];
             cm[item] = {
-                'color': forWebGl ? colorer.getColorRGB(i*colorBlockSize)
-                             : colorer.getColorHex(i*colorBlockSize)
+                color: colorer[colorFunction](i * colorBlockSize)
             };
         }
 
         return cm;
-    }
+    };
 
     /**
      * Color the tree using sample data
@@ -349,9 +357,12 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         var categories = Object.keys(obs);
         categories.sort();
 
+        // shared by the following for loops
+        var i, j, category;
+
         // convert observation IDs to _treeData keys
-        for(var i = 0; i < categories.length; i++) {
-            var category = categories[i];
+        for (i = 0; i < categories.length; i++) {
+            category = categories[i];
             obs[category] = new Set([...this._namesToKeys(obs[category])]);
         }
 
@@ -361,15 +372,14 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         // legend key
         var keyInfo = this._assignColor(categories, color, false);
 
-
         // assign internal nodes to approperiate category based on its children
         // iterate using postorder
-        for (var i = 1; i < tree.size; i++) {
+        for (i = 1; i < tree.size; i++) {
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
 
-            for (var j = 0; j < categories.length; j++) {
-                var category = categories[j];
+            for (j = 0; j < categories.length; j++) {
+                category = categories[j];
                 if (obs[category].has(node)) {
                     this._treeData[node].inSample = true;
                     obs[category].add(parent);
@@ -379,22 +389,19 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         obs = this._keepUniqueKeys(obs);
 
         // color tree
-        for (var i = 0; i < categories.length; i++) {
-            var category = categories[i];
+        for (i = 0; i < categories.length; i++) {
+            category = categories[i];
             var keys = [...obs[category]];
 
-            for(var j = 0; j < keys.length; j++) {
+            for (j = 0; j < keys.length; j++) {
                 var key = keys[j];
                 this._treeData[key].color = cm[category].color;
                 this._treeData[key].sampleColored = true;
             }
         }
 
-
-
         // get percent of branches belonging to unique category (i.e. just gut)
         this.percentColoredBySample(obs, keyInfo);
-        console.log(keyInfo)
 
         return keyInfo;
     };
@@ -411,8 +418,10 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
     Empress.prototype.percentColoredBySample = function(sampleObs, keyInfo) {
         // calculate relative tree size i.e. the subtree spanned by the samples
         // iterate over tree using postorder
-        var relativeTreeSize = 0;
-        for (var i = 1; i <= this._tree.size; i++) {
+
+        var i,
+            relativeTreeSize = 0;
+        for (i = 1; i <= this._tree.size; i++) {
             if (this._treeData[i].inSample) {
                 relativeTreeSize++;
             }
@@ -420,10 +429,9 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
         // calculate total and relative percentages in each group
         var sampleCategies = Object.keys(sampleObs);
-        for (var i = 0; i < sampleCategies.length; i++) {
+        for (i = 0; i < sampleCategies.length; i++) {
             var category = sampleCategies[i];
             var branchesInCategory = sampleObs[category].length;
-            console.log(branchesInCategory)
             keyInfo[category].tPercent = branchesInCategory / this._tree.size;
             keyInfo[category].rPercent = branchesInCategory / relativeTreeSize;
         }
@@ -438,7 +446,8 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
             var key = keys[i];
             this._treeData[key].color = this.DEFAULT_COLOR;
             this._treeData[key].inSample = false;
-            this._treeData[key].sampleColored = false;                                                                             this._treeData[key].visible = true;
+            this._treeData[key].sampleColored = false;
+            this._treeData[key].visible = true;
         }
         this._drawer.loadSampleThickBuf([]);
     };
