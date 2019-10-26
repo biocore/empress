@@ -202,8 +202,7 @@ define(["Colorer"], function(Colorer) {
             if (sp.sChk.checked) {
                 sp.sSel.disabled = false;
                 sp.sAddOpts.classList.remove("hidden");
-                sp._colorSampleTree();
-                sp.empress.drawTree();
+                sp.sUpdateBtn.classList.remove("hidden");
             } else {
                 sp.__samplePanelClose();
             }
