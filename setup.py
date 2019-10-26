@@ -58,7 +58,7 @@ setup(
                     'support_files/css/*.css',
                     'support_files/js/*.js',
                     'support_files/templates/*.html',
-                    'empress/citations.bib']},
+                    'citations.bib']},
     data_files={},
     install_requires=base,
     extras_require={'test': test, 'all': all_deps},

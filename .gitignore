@@ -1,5 +1,8 @@
 # trees/metadata used for development
 data/
+*.qza
+*.qzv
+*.tsv
 
 # NodeJS file used for chrome headless QUnit tests
 node_modules/
