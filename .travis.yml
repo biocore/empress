@@ -14,11 +14,7 @@ before_install:
   # Update conda itself
   - conda update --yes conda
 install:
-<<<<<<< HEAD
-  - npm install -g qunit-puppeteer
-=======
   - npm install -g qunit-puppeteer jshint prettier
->>>>>>> 50487d8c679ebd5b8163780d169d176f2d193a20
   # install requests using conda to avoid a distutils error in certifi
   - conda create --yes -n travis python=3.6 pip numpy scipy matplotlib pandas flake8 pep8  cython nose
   - source activate travis
@@ -26,9 +22,4 @@ install:
   - pip install -e . --verbose
 script:
   - make test
-<<<<<<< HEAD
-  - nosetests tests/python
-  - flake8 empress/*.py tests/python/*.py setup.py
-=======
   - make stylecheck
->>>>>>> 50487d8c679ebd5b8163780d169d176f2d193a20
