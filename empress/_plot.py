@@ -10,18 +10,12 @@ import os
 import pkg_resources
 
 import qiime2
-import skbio
 import q2templates
-import numpy as np
 from q2_types.tree import NewickFormat
 
 from jinja2 import Environment, FileSystemLoader
 from bp import parse_newick, to_skbio_treenode
-import webbrowser
-import os
 from empress import tools
-from biom import Table
-from biom.util import biom_open
 import pandas as pd
 from empress.tree import Tree
 from shutil import copytree
@@ -87,7 +81,6 @@ def plot(output_dir: str,
     for _, series in feature_table.iteritems():
         sample_ids = series[series].index.tolist()
         obs_data[series.name] = sample_ids
-
 
     main_page = temp.render({
         'base_url': './support_files',

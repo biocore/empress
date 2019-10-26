@@ -1,4 +1,4 @@
-define(['glMatrix'], function(gl) {
+define(["glMatrix"], function(gl) {
     /**
      *
      * @class Camera
@@ -13,7 +13,7 @@ define(['glMatrix'], function(gl) {
      * @return {Camera}
      * constructs Camera
      */
-     function Camera() {
+    function Camera() {
         // The inital setup of the camera
         this.pos_ = null;
         this.lookDir_ = null;
@@ -31,13 +31,13 @@ define(['glMatrix'], function(gl) {
         // Note: this can be modified to create fish eye effect
         this.projMat = gl.mat4.create();
         gl.mat4.perspectiveFromFieldOfView(this.projMat, fov, 0.1, -10);
-     };
+    }
 
-     /**
-      * Creates a view matrix based on camera pos, lookDir, and upDir
-      *
-      * @return {mat4}
-      */
+    /**
+     * Creates a view matrix based on camera pos, lookDir, and upDir
+     *
+     * @return {mat4}
+     */
     Camera.prototype.getViewMat = function() {
         var viewMat = gl.mat4.create();
         gl.mat4.lookAt(viewMat, this.pos_, this.lookDir_, this.upDir_);
@@ -62,10 +62,18 @@ define(['glMatrix'], function(gl) {
         // perform the transformation
         // Note: Need to use homogenous coordinates to perform translation
         //       with a single matrix
-        var pos = gl.vec4.fromValues(this.pos_[0], this.pos_[1],
-                                     this.pos_[2], 1);
-        var look = gl.vec4.fromValues(this.lookDir_[0], this.lookDir_[1],
-                                      this.lookDir_[2], 1);
+        var pos = gl.vec4.fromValues(
+            this.pos_[0],
+            this.pos_[1],
+            this.pos_[2],
+            1
+        );
+        var look = gl.vec4.fromValues(
+            this.lookDir_[0],
+            this.lookDir_[1],
+            this.lookDir_[2],
+            1
+        );
         gl.vec4.transformMat4(pos, pos, transMat);
         gl.vec4.transformMat4(look, look, transMat);
 
@@ -84,11 +92,11 @@ define(['glMatrix'], function(gl) {
      */
     Camera.prototype.zoom = function(x) {
         // multiply by -1 so that a positive x will zoom the camera in
-        x = -1*x;
+        x = -1 * x;
 
-        this.pos_[2] = (this.pos_[2] + x > 0) ? this.pos_[2] + x : this.pos_[2];
-        this.lookDir_[2] = (this.pos_[2] + x > 0) ? this.lookDir_[2] + x
-                                                  : this.lookDir_[2];
+        this.pos_[2] = this.pos_[2] + x > 0 ? this.pos_[2] + x : this.pos_[2];
+        this.lookDir_[2] =
+            this.pos_[2] + x > 0 ? this.lookDir_[2] + x : this.lookDir_[2];
     };
 
     /**
@@ -114,6 +122,5 @@ define(['glMatrix'], function(gl) {
         return this.pos_[2];
     };
 
-
-     return Camera;
+    return Camera;
 });

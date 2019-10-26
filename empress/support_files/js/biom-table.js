@@ -33,7 +33,7 @@ define([], function() {
          * @private
          */
         this._samp = samp;
-    };
+    }
 
     /**
      * Returns a list of observations in the samples
@@ -44,11 +44,12 @@ define([], function() {
      */
     BIOMTable.prototype.getObjservationUnionForSamples = function(sIds) {
         var result = new Set();
-        for(var i = 0; i < sIds.length; i++) {
+        var addToResult = function(ob) {
+            result.add(ob);
+        };
+        for (var i = 0; i < sIds.length; i++) {
             var obs = this._obs[sIds[i]];
-            obs.forEach(function(ob) {
-                result.add(ob);
-            });
+            obs.forEach(addToResult);
         }
         return Array(result);
     };
@@ -98,16 +99,14 @@ define([], function() {
         return obs;
     };
 
-
-
     /**
      * Returns a sorted list of sample categories
      *
      * @return{Array}
      */
     BIOMTable.prototype.getSampleCategories = function() {
-        return Object.keys((Object.values(this._samp)[0])).sort();
+        return Object.keys(Object.values(this._samp)[0]).sort();
     };
 
- return BIOMTable;
+    return BIOMTable;
 });

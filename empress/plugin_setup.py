@@ -9,9 +9,8 @@
 
 from ._plot import plot
 
-from qiime2.plugin import (Plugin, Metadata, Str, List, Citations, Int,
-                           Bool, Properties)
-from q2_types.tree import Phylogeny, Rooted, Unrooted
+from qiime2.plugin import Plugin, Metadata, Citations
+from q2_types.tree import Phylogeny, Rooted
 from q2_types.feature_table import FeatureTable, Frequency
 
 import pkg_resources
@@ -36,10 +35,13 @@ plugin = Plugin(
 
 plugin.visualizers.register_function(
     function=plot,
-    inputs={'tree': Phylogeny[Rooted],
-            'feature_table': FeatureTable[Frequency]},
-    parameters={'sample_metadata': Metadata,
-                'feature_metadata': Metadata
+    inputs={
+        'tree': Phylogeny[Rooted],
+        'feature_table': FeatureTable[Frequency]
+    },
+    parameters={
+        'sample_metadata': Metadata,
+        'feature_metadata': Metadata
     },
     input_descriptions={
         'tree': 'The phylogentic tree to visualize.',
@@ -48,7 +50,7 @@ plugin.visualizers.register_function(
     parameter_descriptions={
         'sample_metadata': 'The sample metadata',
         'feature_metadata': 'The feature metadata',
-        },
+    },
     name='Visualize and Explore Phylogenies with Empress',
     description='Generates an interactive phylgentic tree where the user '
                 'can visually integrate sample and feature metadata. '

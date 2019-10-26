@@ -1,5 +1,9 @@
-define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
-        function(Camera, Drawer, Colorer, VectorOps) {
+define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
+    Camera,
+    Drawer,
+    Colorer,
+    VectorOps
+) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -23,7 +27,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
      *                      in order to look up their metadata in treeData.
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
-    function Empress(tree, treeData, biom, pToName, canvas ) {
+    function Empress(tree, treeData, biom, pToName, canvas) {
         /**
          * @type {Camera}
          * The camera used to look at the tree
@@ -80,7 +84,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
          * @private
          */
         this._biom = biom;
-    };
+    }
 
     /**
      * Initializes WebGL and then draws the tree
@@ -113,11 +117,12 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
         // iterate throught the tree in preorder, skip root
         var coords_index = 0;
-        for (var i = 2; i <= this._tree.size ; i++) {
+        for (var i = 2; i <= this._tree.size; i++) {
             // name of current node
             var node = this._tree.name(i);
             var parent = this._tree.preorder(
-                    this._tree.parent(this._tree.preorderselect(i)));
+                this._tree.parent(this._tree.preorderselect(i))
+            );
 
             if (!this._treeData[node].visible) {
                 continue;
@@ -141,7 +146,6 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
         return coords;
     };
-
 
     /**
      * Sets flag to hide branches not in samples
@@ -172,11 +176,12 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         this._drawer.loadSampleThickBuf([]);
 
         // iterate throught the tree in preorder, skip root
-        for (var i = 2; i <= this._tree.size ; i++) {
+        for (var i = 2; i <= this._tree.size; i++) {
             // name of current node
             var node = this._tree.name(i);
             var parent = this._tree.preorder(
-                    this._tree.parent(this._tree.preorderselect(i)));
+                this._tree.parent(this._tree.preorderselect(i))
+            );
 
             if (!this._treeData[node].visible) {
                 continue;
@@ -192,7 +197,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
             var y1 = this._treeData[parent].y;
             var x2 = this._treeData[node].x;
             var y2 = this._treeData[node].y;
-            var point =  VectorOps.translate([x1, y1], -1*x2, -1*y2);
+            var point = VectorOps.translate([x1, y1], -1 * x2, -1 * y2);
 
             // find angle/length of branch
             var angle = VectorOps.getAngle(point);
@@ -209,11 +214,11 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
             tR = VectorOps.translate(tR, x2, y2);
 
             // find bottom point of think line
-            var bL = [0, -1*amount];
+            var bL = [0, -1 * amount];
             bL = VectorOps.rotate(bL, angle, over);
             bL = VectorOps.translate(bL, x2, y2);
 
-            var bR = [length, -1*amount];
+            var bR = [length, -1 * amount];
             bR = VectorOps.rotate(bR, angle, over);
             bR = VectorOps.translate(bR, x2, y2);
 
@@ -243,7 +248,7 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         }
 
         this._drawer.loadSampleThickBuf(coords);
-    }
+    };
 
     /**
      * Color the tree by sample IDs
@@ -274,8 +279,8 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         var cTips = this._biom.getObservations().size;
         var curPrime = 0;
 
-         // create color brewer
-        var colorer = new Colorer(color, primes[0], primes[primes.length-1]);
+        // create color brewer
+        var colorer = new Colorer(color, primes[0], primes[primes.length - 1]);
 
         // assign colors to primes
         var cm = {};
@@ -283,20 +288,22 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         // legend key
         var keyInfo = {};
 
+        var node, prime, key, i;
         // color tips
         var keys = Object.keys(obs);
         keys.sort();
         for (var k = 0; k < keys.length; k++) {
-            var key = keys[k];
-            var prime = primes[curPrime];
+            key = keys[k];
+            prime = primes[curPrime];
             cm[prime] = colorer.getColorRGB(prime);
             keyInfo[key] = {
-                color : colorer.getColorHex(prime),
-                tPercent : 0,
-                rPercent : 0};
-            for (var i = 0; i < obs[key].length; i++) {
+                color: colorer.getColorHex(prime),
+                tPercent: 0,
+                rPercent: 0
+            };
+            for (i = 0; i < obs[key].length; i++) {
                 // set color for current node
-                var node = this._pToName[obs[key][i]];
+                node = this._pToName[obs[key][i]];
                 this._treeData[node].sampVal = prime;
             }
             curPrime++;
@@ -304,26 +311,28 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
 
         // project sampVal up tree
         // iterate using postorder.
-        for (var i = 1; i <= tree.size; i++) {
+        for (i = 1; i <= tree.size; i++) {
             if (tree.postorderselect(i) !== tree.root()) {
-                var node = tree.name(tree.preorder(tree.postorderselect(i)));
-                var parent = tree.name(tree.preorder(tree.parent(
-                                tree.postorderselect(i))));
+                node = tree.name(tree.preorder(tree.postorderselect(i)));
+                var parent = tree.name(
+                    tree.preorder(tree.parent(tree.postorderselect(i)))
+                );
 
                 for (var j = 0; j < primes.length; j++) {
-                    var prime = primes[j];
-                    if (this._treeData[node].sampVal % prime === 0 &&
-                            this._treeData[parent].sampVal % prime !== 0) {
+                    prime = primes[j];
+                    if (
+                        this._treeData[node].sampVal % prime === 0 &&
+                        this._treeData[parent].sampVal % prime !== 0
+                    ) {
                         this._treeData[parent].sampVal *= prime;
                     }
                 }
             }
         }
-
         // color tree
         keys = Object.keys(this._treeData);
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
+        for (i = 0; i < keys.length; i++) {
+            key = keys[i];
             var item = this._treeData[key];
             if (item.sampVal === this.DEFAULT_BRANCH_VAL) {
                 item.color = this.DEFAULT_COLOR;
@@ -336,10 +345,10 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         keys = Object.keys(obs);
         keys.sort();
         var p = 0;
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            for (var j = 1; j <= this._tree.size; j++) {
-                if (this._treeData[j].sampVal === primes[p]) {
+        for (i = 0; i < keys.length; i++) {
+            key = keys[i];
+            for (var jj = 1; jj <= this._tree.size; jj++) {
+                if (this._treeData[jj].sampVal === primes[p]) {
                     keyInfo[key].tPercent++;
                     keyInfo[key].rPercent++;
                 }
@@ -359,7 +368,8 @@ define(['Camera', 'Drawer', 'Colorer', 'VectorOps'],
         var keys = Object.keys(this._treeData);
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
-            this._treeData[key].color = this.DEFAULT_COLOR;                                                                                         this._treeData[key].visible = true;
+            this._treeData[key].color = this.DEFAULT_COLOR;
+            this._treeData[key].visible = true;
         }
         this._drawer.loadSampleThickBuf([]);
     };
