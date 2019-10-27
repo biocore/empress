@@ -264,19 +264,18 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @param {Array} names Array of tree node names
      *
-     * @return {Array}
+     * @return {Array} A list of keys cooresponding to entries in _treeData
      */
     Empress.prototype._namesToKeys = function(names) {
         var keys = [];
         for (var i = 0; i < names.length; i++) {
-            var name = names[i];
-            keys.push(...this._nameToKeys[name]);
+            keys.push(...this._nameToKeys[names[i]]);
         }
         return keys;
     };
 
     /**
-     * Remove the keys non unique keys in keys
+     * Remove all non unique keys
      *
      * @param {Object} keys An object containing multiple lists of keys
      *
@@ -319,10 +318,10 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
     /**
      * Creates a color map for each categoy in items
      *
-     * @param{Array} items List of categories
+     * @param {Array} items List of categories
      * @param {String} color The chroma color map to use
-     * @param {Boolean} rbg if true than a webGL color map will be created
-     *                      if false than a javascript color map will be created
+     * @param {Boolean} rbg if true then a webGL color map will be created
+     *                      if false then a javascript color map will be created
      *
      * @return {Object} A color map that uses the categories in items as keys
      */
