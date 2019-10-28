@@ -51,7 +51,7 @@ define([], function() {
             var obs = this._obs[sIds[i]];
             obs.forEach(addToResult);
         }
-        return Array(result);
+        return Array.from(result);
     };
 
     /**
