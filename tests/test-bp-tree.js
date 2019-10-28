@@ -118,8 +118,9 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
             var lengths = names.map(k => parseInt(k));
             var resBP = new BPTree(this.bpArray, names, lengths);
             for (var i = 0; i < this.bpObj.size; i++) {
-                equal(resBP.name(i + 1), names[i] ,'Name');
-                equal(resBP.length(i + 1), lengths[i], 'Length');
+                var index = resBP.preorderselect(i+1);
+                equal(resBP.name(index), names[i] ,'Name');
+                equal(resBP.length(index), lengths[i], 'Length');
             }
         });
 
