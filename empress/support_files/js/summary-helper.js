@@ -4,7 +4,7 @@ define([], function() {
      * @class SummaryHelper
      * Class functions for generating summary used in empress
      */
-    function SummaryHelper() { };
+    function SummaryHelper() { }
 
     /**
      * Returns unifrac value for 2 set of sample IDs given biom table
@@ -18,24 +18,45 @@ define([], function() {
      SummaryHelper.unifrac = function(biomTable, tree, sIds1, sIds2) {
         var uniq = 0;
         var total = 0;
-        uniqObs1 = biomTable.getObjservationUnionForSamples(sIds1)[0];
-        uniqObs2 = biomTable.getObjservationUnionForSamples(sIds2)[0];
+        var uniqObs1 = biomTable.getObjservationUnionForSamples(sIds1);
+        var uniqObs2 = biomTable.getObjservationUnionForSamples(sIds2);
 
+        // Elements are in postorder with first element at index 0
+        // To keep track of if the node is in the sample1
+        var count1 = new Uint8Array(tree.names_.length);
+        // To keep track of if the node is in the sample2
+        var count2 = new Uint8Array(tree.names_.length);
+
+        // Based on the info in count1 and count2, calculate branch length
+        // Some optimization can be done, maybe perform the operation on the arrays
         for (var i = 1; i <= tree.size; i++) {
             if (tree.postorderselect(i) !== tree.root()) {
+
                 var treeIndex = tree.postorderselect(i);
                 var node = tree.name(treeIndex);
 
-                var inObs1 = uniqObs1.has(node);
-                var inObs2 = uniqObs2.has(node);
-                if (inObs1 ^ inObs2){
+                // If the node is leaf, check if it is in the union for sample
+                if(tree.isleaf(treeIndex)){
+                  count1[i-1] = uniqObs1.includes(node);
+                  count2[i-1] = uniqObs2.includes(node);
+                }
+
+                // Update parent status
+                var parentPostOrder = tree.postorder(tree.parent(treeIndex));
+                count1[parentPostOrder-1] |= count1[i-1];
+                count2[parentPostOrder-1] |= count2[i-1];
+                
+                // Unique branch
+                if (count1[i-1] ^ count2[i-1]){
                   uniq += tree.length(treeIndex);
                 }
-                if (inObs1 || inObs2) {
+                // The branch belongs to either or both samples
+                if (count1[i-1] || count2[i-1]) {
                   total += tree.length(treeIndex);
                 }
             }
         }
+
         return uniq / total;
     };
 
