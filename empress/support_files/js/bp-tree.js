@@ -174,15 +174,14 @@ define(["ByteArray"], function(ByteArray) {
 
     /**
      *
-     * The name of node ith node in preorder
+     * The name of the ith node in bp tree
      *
-     * @param{Number} i Node i in preorder
-     *                Note: i starts at 1
+     * @param{Number} i Node i in bp tree
      *
      * @return{String}
      */
     BPTree.prototype.name = function(i) {
-        return this.names_[i - 1];
+        return this.names_[this.preorder(i) - 1];
     };
 
     /**
@@ -201,15 +200,14 @@ define(["ByteArray"], function(ByteArray) {
 
     /**
      *
-     * The length of the ith node in preorder
+     * The length of the ith node in bp tree
      *
-     * @param{Number} i Node i in preorder
-     *                Note i starts at 1
+     * @param{Number} i Node i in bp tree
      *
      * @return{Number}
      */
     BPTree.prototype.length = function(i) {
-        return this.lengths_[i - 1];
+        return this.lengths_[this.preorder(i) - 1];
     };
 
     /**
