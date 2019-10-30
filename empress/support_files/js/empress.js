@@ -1,4 +1,5 @@
-define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
+define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
+    _,
     Camera,
     Drawer,
     Colorer,
@@ -282,34 +283,28 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
      * @return {Object} A new object with the non unique keys removed
      */
     Empress.prototype._keepUniqueKeys = function(keys) {
+        // get unique keys
+        var uniqueKeys = _.chain(keys)
+            .values()
+            .map(function(item) {
+                return [...item];
+            })
+            .flatten()
+            .groupBy(function(key) {
+                return key;
+            })
+            .filter(function(key) {
+                return key.length === 1;
+            })
+            .flatten()
+            .value();
+
+        // get the unique keys in each item
         var result = {};
-
-        // set differnce: a \ b
-        var difference = function(a, b) {
-            return new Set([...a].filter(x => !b.has(x)));
-        };
-
-        // set union: a U b
-        var union = function(a, b) {
-            return new Set([...a, ...b]);
-        };
-
-        var unionOtherSets = function(currentIndex, allKeys, itemsInKeys) {
-            var otherSets = new Set();
-            itemsInKeys.forEach(function(item, index) {
-                if (index !== currentIndex) {
-                    otherSets = union(otherSets, allKeys[item]);
-                }
-            });
-            return otherSets;
-        };
-
-        // for each item in keys, only keep the unique ones
         var items = Object.keys(keys);
         for (var i = 0; i < items.length; i++) {
-            var itemKeys = new Set(keys[items[i]]);
-            var keysInOtherSets = unionOtherSets(i, keys, items);
-            result[items[i]] = [...difference(itemKeys, keysInOtherSets)];
+            var itemKeys = [...keys[items[i]]];
+            result[items[i]] = _.intersection(itemKeys, uniqueKeys);
         }
 
         return result;
@@ -329,7 +324,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
         // create color brewer
         var colorer = new Colorer(color, 0, Math.pow(2, items.length));
         var colorFunction = forWebGl ? "getColorRGB" : "getColorHex";
-        var colorBlockSize = items.length;
+        var colorBlockSize = Math.pow(2, items.length) / items.length;
 
         var cm = {};
         for (var i = 0; i < items.length; i++) {

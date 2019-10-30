@@ -60,6 +60,7 @@
             'jquery' : './vendor/jquery-2.2.4.min',
             'glMatrix' : './vendor/gl-matrix.min',
             'chroma' : './vendor/chroma.min',
+            'underscore' : './vendor/underscore-min',
 
             'ByteArray' : './js/byte-array',
             'BPTree' : './js/bp-tree',
@@ -74,11 +75,11 @@
         }
     });
 
-    empressRequire(['jquery', 'glMatrix', 'chroma', 'BPTree', 'ByteArray',
-                    'SidePanel', 'Camera', 'Drawer', 'BIOMTable', 'Empress',
-                    'Legend', 'Colorer', 'VectorOps'],
-        function($, gl, chroma, BPTree, ByteArray, SidePanel, Camera, Drawer,
-                 BIOMTable, Empress, Legend, Colorer,
+    empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore',  'BPTree',
+                    'ByteArray', 'SidePanel', 'Camera', 'Drawer', 'BIOMTable',
+                    'Empress', 'Legend', 'Colorer', 'VectorOps'],
+        function($, gl, chroma, underscore, BPTree, ByteArray, SidePanel,
+                 Camera, Drawer, BIOMTable, Empress, Legend, Colorer,
                  VectorOps) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
