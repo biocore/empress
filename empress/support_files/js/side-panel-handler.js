@@ -163,7 +163,7 @@ define(["Colorer"], function(Colorer) {
         var col = this.sColor.value;
         var hide = this.sHideChk.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col);
-        this.empress.setUncoloredTipVisibility(hide);
+        this.empress.setNonSampleBranchVisibility(hide);
         this.legend.addColorKey(colBy, keyInfo, "node", false);
     };
 
@@ -202,8 +202,7 @@ define(["Colorer"], function(Colorer) {
             if (sp.sChk.checked) {
                 sp.sSel.disabled = false;
                 sp.sAddOpts.classList.remove("hidden");
-                sp._colorSampleTree();
-                sp.empress.drawTree();
+                sp.sUpdateBtn.classList.remove("hidden");
             } else {
                 sp.__samplePanelClose();
             }
@@ -223,7 +222,7 @@ define(["Colorer"], function(Colorer) {
 
         // deterines whether to show features not in samples
         this.sHideChk.onclick = function() {
-            sp.empress.setUncoloredTipVisibility(this.checked);
+            sp.empress.setNonSampleBranchVisibility(this.checked);
             sp.empress.drawTree();
         };
 

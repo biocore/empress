@@ -1,4 +1,5 @@
-define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
+define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
+    _,
     Camera,
     Drawer,
     Colorer,
@@ -18,16 +19,11 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
      *                       each node as a key. Originally this was to save a
      *                       a bit of space but it be better if it used the
      *                       actual name of the name in tree.
-     *                 TODO: revert treeData back to using actual name.
+     * @param {Object} nameToKeys Converts tree node names to an array of keys.
      * @param {BIOMTable} biom The BIOM table used to color the tree
-     * @param {Array} pToName An array that contains the name of the nodes in
-     *                preorder.
-     *                Note: This is currently being used to traslate observation
-     *                      ids (i.e. branch tips) to their preorder position
-     *                      in order to look up their metadata in treeData.
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
-    function Empress(tree, treeData, biom, pToName, canvas) {
+    function Empress(tree, treeData, nameToKeys, biom, canvas) {
         /**
          * @type {Camera}
          * The camera used to look at the tree
@@ -65,18 +61,21 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
         }
 
         /**
-         * @tyoe {Array}
-         * Translates between a nodes preorder position and its name
-         * @private
-         */
-        this._pToName = pToName;
-
-        /**
          * @type {Object}
          * The metadata associated with the tree branches
+         * Note: postorder positions are used as keys because node names are not
+         *       assumed to be unique. Use nameToKeys to convert a name to list
+         *       of keys associated with it. Keys start at 1
          * @private
          */
         this._treeData = treeData;
+
+        /**
+         * @type{Object}
+         * Converts tree node names to an array of _treeData keys.
+         * @private
+         */
+        this._nameToKeys = nameToKeys;
 
         /**
          * @type {BiomTable}
@@ -109,20 +108,20 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
      * @return {Array}
      */
     Empress.prototype.getCoords = function() {
+        var tree = this._tree;
+
         // size of branch coordinates. 2 coordinates represent a single branch
-        var coords_size = (this._tree.size - 1) * this._drawer.VERTEX_SIZE * 2;
+        var coords_size = (tree.size - 1) * this._drawer.VERTEX_SIZE * 2;
 
         // the coordinate of the tree.
         var coords = new Float32Array(coords_size);
 
-        // iterate throught the tree in preorder, skip root
+        // iterate throught the tree in postorder, skip root
         var coords_index = 0;
-        for (var i = 2; i <= this._tree.size; i++) {
+        for (var i = 1; i < tree.size; i++) {
             // name of current node
-            var node = this._tree.name(i);
-            var parent = this._tree.preorder(
-                this._tree.parent(this._tree.preorderselect(i))
-            );
+            var node = i;
+            var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
 
             if (!this._treeData[node].visible) {
                 continue;
@@ -137,7 +136,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
             coords.set(color, coords_index);
             coords_index += 3;
 
-            // coordinate info for current node
+            // coordinate info for current nodeN
             coords[coords_index++] = this._treeData[node].x;
             coords[coords_index++] = this._treeData[node].y;
             coords.set(color, coords_index);
@@ -153,12 +152,12 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
      * @param {Boolean} hide If true then hide uncolored tips
      *                       if false then show uncolored tips
      */
-    Empress.prototype.setUncoloredTipVisibility = function(hide) {
+    Empress.prototype.setNonSampleBranchVisibility = function(hide) {
         var visible = !hide;
 
         // check sample Value for all branches
         for (var node in this._treeData) {
-            if (this._treeData[node].sampVal === this.DEFAULT_BRANCH_VAL) {
+            if (!this._treeData[node].inSample) {
                 this._treeData[node].visible = visible;
             }
         }
@@ -171,26 +170,23 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
      * @param {Number} amount - How thick to make branch
      */
     Empress.prototype.thickenSameSampleLines = function(amount) {
+        var tree = this._tree;
+
         // the coordinate of the tree.
         var coords = [];
         this._drawer.loadSampleThickBuf([]);
 
-        // iterate throught the tree in preorder, skip root
-        for (var i = 2; i <= this._tree.size; i++) {
+        // iterate throught the tree in postorder, skip root
+        for (var i = 1; i < this._tree.size; i++) {
             // name of current node
-            var node = this._tree.name(i);
-            var parent = this._tree.preorder(
-                this._tree.parent(this._tree.preorderselect(i))
-            );
+            var node = i;
+            var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
 
-            if (!this._treeData[node].visible) {
+            if (!this._treeData[node].sampleColored) {
                 continue;
             }
 
-            var c1 = this._treeData[parent].color;
-            if (c1[0] === 0.75 && c1[1] === 0.75 && c1[2] === 0.75) {
-                continue;
-            }
+            var color = this._treeData[node].color;
 
             // center branch such that parent node is at (0,0)
             var x1 = this._treeData[parent].x;
@@ -224,27 +220,27 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
 
             // t1 v1
             coords.push(...tL);
-            coords.push(...c1);
+            coords.push(...color);
 
             // t1 v2
             coords.push(...bL);
-            coords.push(...c1);
+            coords.push(...color);
 
             // t1 v3
             coords.push(...bR);
-            coords.push(...c1);
+            coords.push(...color);
 
             // t2 v1
             coords.push(...tL);
-            coords.push(...c1);
+            coords.push(...color);
 
             // t2 v2
             coords.push(...tR);
-            coords.push(...c1);
+            coords.push(...color);
 
             // t2 v3
             coords.push(...bR);
-            coords.push(...c1);
+            coords.push(...color);
         }
 
         this._drawer.loadSampleThickBuf(coords);
@@ -265,100 +261,174 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
     };
 
     /**
+     * Converts a list of tree node names to their respectives keys in _treeData
+     *
+     * @param {Array} names Array of tree node names
+     *
+     * @return {Array} A list of keys cooresponding to entries in _treeData
+     */
+    Empress.prototype._namesToKeys = function(names) {
+        var keys = [];
+        for (var i = 0; i < names.length; i++) {
+            keys.push(...this._nameToKeys[names[i]]);
+        }
+        return keys;
+    };
+
+    /**
+     * Remove all non unique keys
+     *
+     * @param {Object} keys An object containing multiple lists of keys
+     *
+     * @return {Object} A new object with the non unique keys removed
+     */
+    Empress.prototype._keepUniqueKeys = function(keys) {
+        // get unique keys
+        var uniqueKeys = _.chain(keys)
+            .values()
+            .map(function(item) {
+                return [...item];
+            })
+            .flatten()
+            .groupBy(function(key) {
+                return key;
+            })
+            .filter(function(key) {
+                return key.length === 1;
+            })
+            .flatten()
+            .value();
+
+        // get the unique keys in each item
+        var result = {};
+        var items = Object.keys(keys);
+        for (var i = 0; i < items.length; i++) {
+            var itemKeys = [...keys[items[i]]];
+            result[items[i]] = _.intersection(itemKeys, uniqueKeys);
+        }
+
+        return result;
+    };
+
+    /**
+     * Creates a color map for each categoy in items
+     *
+     * @param {Array} items List of categories
+     * @param {String} color The chroma color map to use
+     * @param {Boolean} rbg if true then a webGL color map will be created
+     *                      if false then a javascript color map will be created
+     *
+     * @return {Object} A color map that uses the categories in items as keys
+     */
+    Empress.prototype._assignColor = function(items, color, forWebGl) {
+        // create color brewer
+        var colorer = new Colorer(color, 0, Math.pow(2, items.length));
+        var colorFunction = forWebGl ? "getColorRGB" : "getColorHex";
+        var colorBlockSize = Math.pow(2, items.length) / items.length;
+
+        var cm = {};
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            cm[item] = {
+                color: colorer[colorFunction](i * colorBlockSize)
+            };
+        }
+
+        return cm;
+    };
+
+    /**
      * Color the tree using sample data
      *
      * @param {String} cat The sample category to use
      * @param {String} color - the Color map to use
      *
-     * @return {dictionary} Maps keys to colors
+     * @return {Object} Maps keys to colors
      */
     Empress.prototype.colorBySampleCat = function(cat, color) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
-        var primes = [2, 3, 5, 7];
-        var cTips = this._biom.getObservations().size;
-        var curPrime = 0;
+        var categories = Object.keys(obs);
+        categories.sort();
 
-        // create color brewer
-        var colorer = new Colorer(color, primes[0], primes[primes.length - 1]);
+        // shared by the following for loops
+        var i, j, category;
 
-        // assign colors to primes
-        var cm = {};
-
-        // legend key
-        var keyInfo = {};
-
-        var node, prime, key, i;
-        // color tips
-        var keys = Object.keys(obs);
-        keys.sort();
-        for (var k = 0; k < keys.length; k++) {
-            key = keys[k];
-            prime = primes[curPrime];
-            cm[prime] = colorer.getColorRGB(prime);
-            keyInfo[key] = {
-                color: colorer.getColorHex(prime),
-                tPercent: 0,
-                rPercent: 0
-            };
-            for (i = 0; i < obs[key].length; i++) {
-                // set color for current node
-                node = this._pToName[obs[key][i]];
-                this._treeData[node].sampVal = prime;
-            }
-            curPrime++;
+        // convert observation IDs to _treeData keys
+        for (i = 0; i < categories.length; i++) {
+            category = categories[i];
+            obs[category] = new Set([...this._namesToKeys(obs[category])]);
         }
 
-        // project sampVal up tree
-        // iterate using postorder.
-        for (i = 1; i <= tree.size; i++) {
-            if (tree.postorderselect(i) !== tree.root()) {
-                node = tree.name(tree.preorder(tree.postorderselect(i)));
-                var parent = tree.name(
-                    tree.preorder(tree.parent(tree.postorderselect(i)))
-                );
+        // assign colors to categories
+        var cm = this._assignColor(categories, color, true);
 
-                for (var j = 0; j < primes.length; j++) {
-                    prime = primes[j];
-                    if (
-                        this._treeData[node].sampVal % prime === 0 &&
-                        this._treeData[parent].sampVal % prime !== 0
-                    ) {
-                        this._treeData[parent].sampVal *= prime;
-                    }
+        // legend key
+        var keyInfo = this._assignColor(categories, color, false);
+
+        // assign internal nodes to approperiate category based on its children
+        // iterate using postorder
+        for (i = 1; i < tree.size; i++) {
+            var node = i;
+            var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
+
+            for (j = 0; j < categories.length; j++) {
+                category = categories[j];
+                if (obs[category].has(node)) {
+                    this._treeData[node].inSample = true;
+                    obs[category].add(parent);
                 }
             }
         }
+        obs = this._keepUniqueKeys(obs);
+
         // color tree
-        keys = Object.keys(this._treeData);
-        for (i = 0; i < keys.length; i++) {
-            key = keys[i];
-            var item = this._treeData[key];
-            if (item.sampVal === this.DEFAULT_BRANCH_VAL) {
-                item.color = this.DEFAULT_COLOR;
-            } else if (item.sampVal in cm) {
-                item.color = cm[item.sampVal];
+        for (i = 0; i < categories.length; i++) {
+            category = categories[i];
+            var keys = [...obs[category]];
+
+            for (j = 0; j < keys.length; j++) {
+                var key = keys[j];
+                this._treeData[key].color = cm[category].color;
+                this._treeData[key].sampleColored = true;
             }
         }
 
         // get percent of branches belonging to unique category (i.e. just gut)
-        keys = Object.keys(obs);
-        keys.sort();
-        var p = 0;
-        for (i = 0; i < keys.length; i++) {
-            key = keys[i];
-            for (var jj = 1; jj <= this._tree.size; jj++) {
-                if (this._treeData[jj].sampVal === primes[p]) {
-                    keyInfo[key].tPercent++;
-                    keyInfo[key].rPercent++;
-                }
-            }
-            p++;
-            keyInfo[key].tPercent /= this._tree.size;
-            keyInfo[key].rPercent /= cTips;
-        }
+        this.percentColoredBySample(obs, keyInfo);
 
         return keyInfo;
+    };
+
+    /**
+     * Cacluates the total and relative pertange of the tree that was colored by
+     * each category in sampleObs
+     *
+     * @param {Object} sampleObs The object containing which tree branches are
+     *                colored by which sample category
+     * @param {Object} keyInfo The object containing the information to be
+     *                 displayed in the sample legend
+     */
+    Empress.prototype.percentColoredBySample = function(sampleObs, keyInfo) {
+        // calculate relative tree size i.e. the subtree spanned by the samples
+        // iterate over tree using postorder
+
+        var i,
+            relativeTreeSize = 0;
+        for (i = 1; i <= this._tree.size; i++) {
+            if (this._treeData[i].inSample) {
+                relativeTreeSize++;
+            }
+        }
+
+        // calculate total and relative percentages in each group
+        var sampleCategies = Object.keys(sampleObs);
+        for (i = 0; i < sampleCategies.length; i++) {
+            var category = sampleCategies[i];
+            var branchesInCategory = sampleObs[category].length;
+            keyInfo[category].tPercent = branchesInCategory / this._tree.size;
+            keyInfo[category].rPercent = branchesInCategory / relativeTreeSize;
+        }
     };
 
     /**
@@ -369,6 +439,8 @@ define(["Camera", "Drawer", "Colorer", "VectorOps"], function(
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
             this._treeData[key].color = this.DEFAULT_COLOR;
+            this._treeData[key].inSample = false;
+            this._treeData[key].sampleColored = false;
             this._treeData[key].visible = true;
         }
         this._drawer.loadSampleThickBuf([]);
