@@ -27,6 +27,12 @@ define([], function() {
         // To keep track of if the node is in the sample2
         var count2 = new Uint8Array(tree.names_.length);
 
+        // Elements are in postorder with first element at index 0
+        // To keep track of if the node is in the sample1
+        var count1 = new Uint8Array(tree.names_.length);
+        // To keep track of if the node is in the sample2
+        var count2 = new Uint8Array(tree.names_.length);
+
         // Based on the info in count1 and count2, calculate branch length
         // Some optimization can be done, maybe perform the operation on the arrays
         for (var i = 1; i <= tree.size; i++) {
@@ -45,7 +51,7 @@ define([], function() {
                 var parentPostOrder = tree.postorder(tree.parent(treeIndex));
                 count1[parentPostOrder-1] |= count1[i-1];
                 count2[parentPostOrder-1] |= count2[i-1];
-                
+
                 // Unique branch
                 if (count1[i-1] ^ count2[i-1]){
                   uniq += tree.length(treeIndex);
