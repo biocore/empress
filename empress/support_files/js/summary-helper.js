@@ -46,13 +46,16 @@ define([], function() {
                 count1[parentPostOrder-1] |= count1[i-1];
                 count2[parentPostOrder-1] |= count2[i-1];
 
-                // Unique branch
-                if (count1[i-1] ^ count2[i-1]){
-                  uniq += tree.length(treeIndex);
-                }
-                // The branch belongs to either or both samples
-                if (count1[i-1] || count2[i-1]) {
-                  total += tree.length(treeIndex);
+                var branchLength = tree.length(treeIndex);
+                if (branchLength){
+                  // Unique branch
+                  if (count1[i-1] ^ count2[i-1]){
+                    uniq += branchLength;
+                  }
+                  // The branch belongs to either or both samples
+                  if (count1[i-1] || count2[i-1]) {
+                    total += branchLength;
+                  }
                 }
             }
         }
