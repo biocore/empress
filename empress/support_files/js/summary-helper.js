@@ -1,10 +1,9 @@
 define([], function() {
-
     /**
      * @class SummaryHelper
      * Class functions for generating summary used in empress
      */
-    function SummaryHelper() { }
+    function SummaryHelper() {}
 
     /**
      * Returns unifrac value for 2 set of sample IDs given biom table
@@ -15,7 +14,7 @@ define([], function() {
      *
      * @return{Number}
      */
-     SummaryHelper.unifrac = function(biomTable, tree, sIds1, sIds2) {
+    SummaryHelper.unifrac = function(biomTable, tree, sIds1, sIds2) {
         var uniq = 0;
         var total = 0;
         var uniqObs1 = biomTable.getObjservationUnionForSamples(sIds1);
@@ -31,31 +30,30 @@ define([], function() {
         // Some optimization can be done, maybe perform the operation on the arrays
         for (var i = 1; i <= tree.size; i++) {
             if (tree.postorderselect(i) !== tree.root()) {
-
                 var treeIndex = tree.postorderselect(i);
                 var node = tree.name(treeIndex);
 
                 // If the node is leaf, check if it is in the union for sample
-                if(tree.isleaf(treeIndex)){
-                  count1[i-1] = uniqObs1.includes(node);
-                  count2[i-1] = uniqObs2.includes(node);
+                if (tree.isleaf(treeIndex)) {
+                    count1[i - 1] = uniqObs1.includes(node);
+                    count2[i - 1] = uniqObs2.includes(node);
                 }
 
                 // Update parent status
                 var parentPostOrder = tree.postorder(tree.parent(treeIndex));
-                count1[parentPostOrder-1] |= count1[i-1];
-                count2[parentPostOrder-1] |= count2[i-1];
+                count1[parentPostOrder - 1] |= count1[i - 1];
+                count2[parentPostOrder - 1] |= count2[i - 1];
 
                 var branchLength = tree.length(treeIndex);
-                if (branchLength){
-                  // Unique branch
-                  if (count1[i-1] ^ count2[i-1]){
-                    uniq += branchLength;
-                  }
-                  // The branch belongs to either or both samples
-                  if (count1[i-1] || count2[i-1]) {
-                    total += branchLength;
-                  }
+                if (branchLength) {
+                    // Unique branch
+                    if (count1[i - 1] ^ count2[i - 1]) {
+                        uniq += branchLength;
+                    }
+                    // The branch belongs to either or both samples
+                    if (count1[i - 1] || count2[i - 1]) {
+                        total += branchLength;
+                    }
                 }
             }
         }
