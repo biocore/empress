@@ -6,7 +6,7 @@ define([], function() {
     function SummaryHelper() {}
 
     /**
-     * Returns unifrac value for 2 set of sample IDs given biom table
+     * Returns unifrac value for 2 sets of sample IDs given a biom table
      * @param {BiomTable} biomTable - biom table that contains info about samples
      * @param {BPTree} tree - bp tree
      * @param {Array} sIds1 - First array of sample IDs to calculate unifrac for
