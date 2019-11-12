@@ -28,37 +28,39 @@ define([], function() {
 
         // Based on the info in count1 and count2, calculate branch length
         // Some optimization can be done, maybe perform the operation on the arrays
-        for (var i = 1; i <= tree.size; i++) {
-            if (tree.postorderselect(i) !== tree.root()) {
-                var treeIndex = tree.postorderselect(i);
-                var node = tree.name(treeIndex);
+        for (var i = 1; i < tree.size; i++) {
+            var treeIndex = tree.postorderselect(i);
+            var node = tree.name(treeIndex);
 
-                // If the node is leaf, check if it is in the union for sample
-                if (tree.isleaf(treeIndex)) {
-                    count1[i - 1] = uniqObs1.includes(node);
-                    count2[i - 1] = uniqObs2.includes(node);
+            // If the node is leaf, check if it is in the union for sample
+            if (tree.isleaf(treeIndex)) {
+                count1[i - 1] = uniqObs1.includes(node);
+                count2[i - 1] = uniqObs2.includes(node);
+            }
+
+            // Update parent status
+            var parentPostOrder = tree.postorder(tree.parent(treeIndex));
+            count1[parentPostOrder - 1] |= count1[i - 1];
+            count2[parentPostOrder - 1] |= count2[i - 1];
+
+            var branchLength = tree.length(treeIndex);
+            if (branchLength) {
+                // Unique branch
+                if (count1[i - 1] ^ count2[i - 1]) {
+                    uniq += branchLength;
                 }
-
-                // Update parent status
-                var parentPostOrder = tree.postorder(tree.parent(treeIndex));
-                count1[parentPostOrder - 1] |= count1[i - 1];
-                count2[parentPostOrder - 1] |= count2[i - 1];
-
-                var branchLength = tree.length(treeIndex);
-                if (branchLength) {
-                    // Unique branch
-                    if (count1[i - 1] ^ count2[i - 1]) {
-                        uniq += branchLength;
-                    }
-                    // The branch belongs to either or both samples
-                    if (count1[i - 1] || count2[i - 1]) {
-                        total += branchLength;
-                    }
+                // The branch belongs to either or both samples
+                if (count1[i - 1] || count2[i - 1]) {
+                    total += branchLength;
                 }
             }
         }
 
-        return uniq / total;
+        console.log(count1);
+        console.log(count2);
+        console.log(uniq);
+        console.log(total);
+        return total == 0 ? 0 : uniq / total;
     };
 
     return SummaryHelper;

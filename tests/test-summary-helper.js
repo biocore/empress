@@ -5,29 +5,39 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
         // effecting other test
         module('SummaryHelper' , {
             setup: function() {
-                this.bpArray = new Uint8Array([1, 1, 1, 0, 1, 0, 1, 1 ,0, 0, 0,
-                        1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]);
+                this.t1 = new Uint8Array([1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0]);
+                this.t1_w_extra_tips = new Uint8Array([1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0]);
+                this.t2 = new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0]);
 
-                this.names = [...Array(11).keys()];
-                this.lengths = this.names.map(k => parseInt(k));
 
-                this.bpObj = new BPTree(this.bpArray, this.names, this.lengths);
+                this.t1_names = ['root', 'EmpressNode4', 'EmpressNode2', 'EmpressNode1', 'EmpressNode0', 'OTU1', 'OTU2', 'OTU3', 'EmpressNode3', 'OTU4', 'OTU5'];
+                this.t1_lengths = [0, 0.0, 0.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.25, 0.75, 0.75];
 
-                this.obs = {"1": [2, 3],"2":[3,5],"3":[2,9,10]};
+                this.t1_w_extra_tips_names = ['root', 'EmpressNode6', 'EmpressNode2', 'EmpressNode1', 'EmpressNode0', 'OTU1', 'OTU2', 'OTU3', 'EmpressNode5', 'OTU4', 'EmpressNode4', 'OTU5', 'EmpressNode3', 'OTU6', 'OTU7'];
+                this.t1_w_extra_tips_lengths = [0, 0.0, 0.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.25, 0.75, 0.5, 0.25, 0.5, 0.5, 0.5];
+
+
+                this.t2_names = ['root', 'EmpressNode0', 'OTU1', 'OTU2', 'EmpressNode1', 'OTU3', 'OTU4'];
+                this.t2_lengths = [0, 0.3, 0.1, 0.2, 1.1, 0.5, 0.7];
+
+                this.t1Obj = new BPTree(this.t1, this.t1_names, this.t1_lengths);
+                this.t1WExtraTipsObj = new BPTree(this.t1_w_extra_tips, this.t1_w_extra_tips_names, this.t1_w_extra_tips_lengths);
+                this.t2Obj = new BPTree(this.t2, this.t2_names, this.t2_lengths);
+
+                this.b1 = [[1, 3, 0, 1, 0],
+                   [0, 2, 0, 4, 4],
+                   [0, 0, 6, 2, 1],
+                   [0, 0, 1, 1, 1],
+                   [5, 3, 5, 0, 0],
+                   [0, 0, 0, 3, 5]];
+                this.sids1 = ["A", "B", "C", "D", "E", "F"];
+                this.oids1 = Array.from(Array(6), (x, index) => "OTU"+ (index+1));
+                this.oids2 = Array.from(Array(5), (x, index) => "OTU"+ (index+1));
                 this.samp = {
                   "1": {"cat1": 0},
                   "2": {"cat2": 0},
                   "3": {"cat3": 0}
                 };
-                this.biomTable = new BiomTable(this.obs, this.samp);
-
-                // rank caches
-                this.r0 = ByteArray.sumVal(this.bpArray, Uint32Array, 0);
-                this.r1 = ByteArray.sumVal(this.bpArray, Uint32Array, 1);
-
-                // select caches
-                this.s0 = ByteArray.seqUniqueIndx(this.r0, Uint32Array);
-                this.s1 = ByteArray.seqUniqueIndx(this.r1, Uint32Array);
             },
 
             teardown: function() {
@@ -35,13 +45,257 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
             }
         });
 
+        /**
+         * Helper function for setting up biom table from counts arrays
+         *
+         * @params counts1 - Array of counts for first sample
+         * @params counts2 - Array of counts for second sample
+         * @params sids - Array of available sample Ids
+         * @params oids - Array of observation ids, index matches counts
+         * @params sid1 - Sample1 ID
+         * @params sid2 - Sample2 ID
+         *
+         * @return {BiomTable}
+         */
+        function setupBiomTable(counts1, counts2, sids, oids, sid1=0, sid2=1){
+          var obs = {};
+          obs[sids[sid1]] = BiomTable.convertToObs(counts1, oids);
+          obs[sids[sid2]] = BiomTable.convertToObs(counts2, oids);
+          return new BiomTable(obs, this.samp);
+        }
+
+        /**
+         * Checks if difference between values is within threshold
+         *
+         * @params actual - the actual value to compare
+         * @params expected - the expected value
+         * @params maxDiff - the threshold
+         *
+         * @return {undefined}
+         */
+        function almostEqual(actual, expected, maxDiff=0.0000001){
+          // Compare actual with expected and allow difference of maxDiff
+          var message = "actual: " + actual + " expected: "+ expected + " maxDifference allowed is: " + maxDiff;
+          var result = Math.abs(actual - expected) <= maxDiff;
+          ok(result, message);
+        }
+
         // tests unifrac small
-        test('Test unifrac', function() {
-            var sIds1 = ["1", "3"]
-            var sIds2 = ["1", "2"]
-            equal(SummaryHelper.unifrac(this.biomTable, this.bpObj, sIds1, sIds2), 43/49);
+        test('Test unifrac small, multiple samples', function() {
+            var bpArray = new Uint8Array([1, 1, 1, 0, 1, 0, 1, 1 ,0, 0, 0,
+                  1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]);
+
+            var names = [...Array(11).keys()];
+            var lengths = names.map(k => parseInt(k));
+
+            var bpObj = new BPTree(bpArray, names, lengths);
+
+            var obs = {"1": [2, 3],"2":[3,5],"3":[2,9,10]};
+            var biomTable = new BiomTable(obs, this.samp);
+            var sIds1 = ["1", "3"];
+            var sIds2 = ["1", "2"];
+            equal(SummaryHelper.unifrac(biomTable, bpObj, sIds1, sIds2), 43/49);
         });
 
+        // UniFrac API does not assert the observations are in tip order of the
+        // input tree
+        test('Test unifrac otus_out_of_order', function() {
+          shuffled_ids = this.oids1;
+          shuffled_b1 = [...this.b1];
+
+          // swap ids
+          var tmp = shuffled_ids[0];
+          shuffled_ids[0] = shuffled_ids[shuffled_ids.length-1];
+          shuffled_ids[shuffled_ids.length-1] = tmp;
+
+          // swap data in counts
+          for (var i = 0; i < shuffled_b1.length; ++i){
+            var tmp = shuffled_b1[i][0];
+            shuffled_b1[i][0] = shuffled_b1[i][-1];
+            shuffled_b1[i][-1] = tmp;
+          }
+
+          for (var i = 0; i < this.b1.length; ++i){
+              for (var j = 0; j < this.b1.length; ++j){
+                var biomTable = setupBiomTable(this.b1[i], this.b1[j], this.sids1, this.oids1, i, j);
+                var shuffled_biomTable =  setupBiomTable(shuffled_b1[i], shuffled_b1[j], this.sids1, shuffled_ids, i, j);
+                var actual = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[i]),Array(this.sids1[j]));
+                var expected = SummaryHelper.unifrac(shuffled_biomTable, this.t1Obj, Array(this.sids1[i]),Array(this.sids1[j]));
+                equal(actual, expected);
+              }
+          }
+        });
+
+        // UniFrac values are the same despite unobserved tips in the tree
+        test('Test unifrac unweighted extra tips', function() {
+          for (var i = 0; i < this.b1.length; ++i){
+              for (var j = 0; j < this.b1.length; ++j){
+                var biomTable =  setupBiomTable(this.b1[i], this.b1[j], this.sids1, this.oids1, i, j);
+                var actual = SummaryHelper.unifrac(biomTable, this.t1WExtraTipsObj, Array(this.sids1[i]),Array(this.sids1[j]));
+                var expected = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[i]),Array(this.sids1[j]));
+                equal(actual, expected);
+              }
+          }
+        });
+
+
+        // Two tips
+        test('Test unifrac unweighted minimal trees', function() {
+          var minTree = new Uint8Array([1, 1, 0, 1, 0, 0]);
+          var minTree_names = ['root', 'OTU1', 'OTU2'];
+          var minTree_lengths = [0, 0.25, 0.25];
+          var minTreeObj = new BPTree(minTree, minTree_names, minTree_lengths);
+
+          var biomTable =  setupBiomTable([1,0], [0,0], this.sids1, ['OTU1', 'OTU2']);
+          var actual = SummaryHelper.unifrac(biomTable, minTreeObj, Array(this.sids1[0]),Array(this.sids1[1]));
+          var expected = 1.0;
+          equal(actual, expected);
+        });
+
+        // Expected values computed with QIIME 1.9.1 and by hand
+        // root node not observed, but branch between (OTU1, OTU2) and root
+        // is considered shared
+        test('Test unifrac unweighted root not observed', function() {
+          var maxDiff = 0.0000001;
+          var biomTable = setupBiomTable([1,1,0,0],[1,0,0,0], this.sids1, this.oids2);
+          var actual = SummaryHelper.unifrac(biomTable, this.t2Obj, Array(this.sids1[0]),Array(this.sids1[1]));
+          /*
+          for clarity of what I'm testing, compute expected as it would
+          based on the branch lengths. the values that compose shared was
+          a point of confusion for me here, so leaving these in for
+          future reference
+          */
+          var expected = 0.2 / (0.1 + 0.2 + 0.3);  // 0.3333333333;
+          almostEqual(actual, expected, maxDiff);
+
+          /*
+          root node not observed, but branch between (OTU3, OTU4) and root
+          is considered shared
+          */
+          biomTable = setupBiomTable([0,0,1,1],[0,0,1,0], this.sids1, this.oids2);
+          actual = SummaryHelper.unifrac(biomTable, this.t2Obj, Array(this.sids1[0]),Array(this.sids1[1]));
+
+          /*
+          for clarity of what I'm testing, compute expected as it would
+          based on the branch lengths. the values that compose shared was
+          a point of confusion for me here, so leaving these in for
+          future reference
+          */
+          expected = 0.7 / (1.1 + 0.5 + 0.7);  // 0.3043478261
+          almostEqual(actual, expected, maxDiff);
+        });
+
+
+        test('Test unifrac identity', function() {
+            for(var i = 0; i < this.b1.length; i++){
+              var obs = {};
+              obs[this.sids1[i]] = BiomTable.convertToObs(this.b1[i], this.oids1);
+              var biomTable = new BiomTable(obs, this.samp);
+              var actual = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[i]),Array(this.sids1[i]));
+              var expected = 0.0;
+              equal(actual, expected);
+            }
+        });
+
+        test('Test unifrac symmetry', function() {
+            for (var i = 0; i < this.b1.length; ++i){
+                for (var j = 0; j < this.b1.length; ++j){
+                    var biomTable =  setupBiomTable(this.b1[i], this.b1[j], this.sids1, this.oids1, i, j);
+                    var actual = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[i]),Array(this.sids1[j]));
+                    var biomTableSym =  setupBiomTable(this.b1[i], this.b1[j], this.sids1, this.oids1, j, i);
+                    var expected = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[i]),Array(this.sids1[j]));
+                    equal(actual, expected);
+                }
+            }
+        });
+
+        // these communities only share the root node
+        test('Test unifrac non overlapping', function() {
+          var biomTable = setupBiomTable(this.b1[4], this.b1[5], this.sids1, this.oids1, 4, 5);
+          var actual = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[4]),Array(this.sids1[5]));
+          var expected = 1.0;
+          equal(actual, expected);
+
+          biomTable = setupBiomTable([1, 1, 1, 0, 0], [0, 0, 0, 1, 1], this.sids1, this.oids1);
+          actual = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[0]),Array(this.sids1[1]));
+          equal(actual, expected);
+        });
+
+        test('Test unifrac zero counts', function() {
+          var biomTable = setupBiomTable([1, 1, 1, 0, 0], [0, 0, 0, 0, 0], this.sids1, this.oids1);
+          var actual = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[0]),Array(this.sids1[1]));
+          var expected = 1.0;
+          equal(actual, expected);
+
+          biomTable = setupBiomTable([0, 0, 0, 0, 0], [0, 0, 0, 0, 0], this.sids1, this.oids1);
+          actual = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[0]),Array(this.sids1[1]));
+          expected = 0.0;
+          equal(actual, expected);
+
+          biomTable = setupBiomTable([], [], this.sids1, this.oids1)
+          actual = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[0]),Array(this.sids1[1]));
+          expected = 0.0;
+          equal(actual, expected);
+        });
+
+        test('Test unifrac', function() {
+          /*
+          expected results derived from QIIME 1.9.1, which
+          is a completely different implementation skbio's initial
+          unweighted unifrac implementation
+          sample A versus all
+          */
+          // maxDiff we allow when comparing floats
+          var maxDiff = 0.0000001;
+          var expected  = [
+            [0,0.238095238095,0.52,0.52, 0.545454545455, 0.619047619048],
+            [0,0,0.347826086957, 0.347826086957, 0.68, 0.421052631579],
+            [0,0,0, 0, 0.68, 0.421052631579],
+            [0,0,0,0, 0.68, 0.421052631579 ],
+            [0,0,0,0,0,1],
+          ]
+          for (var i = 0; i < this.b1.length-1; i++){
+            for(var j = i+1; j < this.b1.length; j++){
+              var biomTable = setupBiomTable(this.b1[i], this.b1[j], this.sids1, this.oids1);
+              var actual = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[0]), Array(this.sids1[1]));
+              almostEqual(actual, expected[i][j], maxDiff);
+            }
+          }
+        });
+
+        test('Test unifrac pycogent', function() {
+
+          // adapted from PyCogent unit tests
+          var m = [
+            [1,1,0,0,0,0,1,0,1],
+            [0,1,1,0,1,1,1,1,1],
+            [1,0,0,1,0,1,1,1,1]
+          ];
+
+          // lengths from ((a:1,b:2):4,(c:3,(d:1,e:1):2):3)
+          var bl = [1, 2, 1, 1, 3, 2, 4, 3, 0];
+          var lengths = [0, 4.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0];
+          var names = ['EmpressNode3', 'EmpressNode0', 'a', 'b', 'EmpressNode2', 'c', 'EmpressNode1', 'd', 'e'];
+          var t = new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0]);
+          var tObj = new BPTree(t, names, lengths);
+          var oids = ['a', 'b', 'd', 'e', 'c', 'EmpressNode1', 'EmpressNode0', 'EmpressNode2', 'EmpressNode3'];
+
+          var biomTable = setupBiomTable(m[0], m[1], this.sids1, oids);
+          var actual = SummaryHelper.unifrac(biomTable, tObj, Array(this.sids1[0]), Array(this.sids1[1]));
+          var expected = 10/16.0;
+          equal(actual, expected);
+
+          biomTable = setupBiomTable(m[0], m[2], this.sids1, oids);
+          actual = SummaryHelper.unifrac(biomTable, tObj, Array(this.sids1[0]), Array(this.sids1[1]));
+          var expected = 8/13.0;
+          equal(actual, expected);
+
+          biomTable = setupBiomTable(m[1], m[2], this.sids1, oids);
+          actual = SummaryHelper.unifrac(biomTable, tObj, Array(this.sids1[0]), Array(this.sids1[1]));
+          var expected = 8/17.0;
+          equal(actual, expected);
+        });
+        
         // test unifrac large, from file crawford.tre and crawford.biom
         test('Test unifrac pairwise', function() {
 
@@ -88,10 +342,7 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
                 for (var i = 0; i < sIds.length; ++i){
                     for (var j = 0; j < sIds.length; ++j){
                         var actual = SummaryHelper.unifrac(biomTable, bpObj, Array(sIds[i]), Array(sIds[j]));
-                        // Compare actual with expected and allow difference of maxDiff
-                        var message = "actual: " + actual + " expected: "+ exp[i][j] + " maxDifference allowed is: " + maxDiff;
-                        var result = Math.abs(actual - exp[i][j]) <= maxDiff;
-                        ok(result, message);
+                        almostEqual(actual, exp[i][j], maxDiff);
                     }
                 }
 
