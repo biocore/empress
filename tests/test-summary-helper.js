@@ -81,7 +81,7 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
         }
 
         // tests unifrac small
-        test('Test unweighted unifrac small, multiple samples', function() {
+        test('Test unweighted unifrac small tree, multiple samples', function() {
             var bpArray = new Uint8Array([1, 1, 1, 0, 1, 0, 1, 1 ,0, 0, 0,
                   1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]);
 
@@ -99,7 +99,7 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
 
         // UniFrac API does not assert the observations are in tip order of the
         // input tree
-        test('Test unweighted unifrac otus_out_of_order', function() {
+        test('Test unweighted unifrac otus out of order', function() {
           shuffled_ids = this.oids1;
           shuffled_b1 = [...this.b1];
 
@@ -156,7 +156,6 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
         // root node not observed, but branch between (OTU1, OTU2) and root
         // is considered shared
         test('Test unweighted unifrac unweighted root not observed', function() {
-          var maxDiff = 0.0000001;
           var biomTable = setupBiomTable([1,1,0,0],[1,0,0,0], this.sids1, this.oids2);
           var actual = SummaryHelper.unifrac(biomTable, this.t2Obj, Array(this.sids1[0]),Array(this.sids1[1]));
           /*
@@ -166,7 +165,7 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
           future reference
           */
           var expected = 0.2 / (0.1 + 0.2 + 0.3);  // 0.3333333333;
-          almostEqual(actual, expected, maxDiff);
+          almostEqual(actual, expected);
 
           /*
           root node not observed, but branch between (OTU3, OTU4) and root
@@ -182,7 +181,7 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
           future reference
           */
           expected = 0.7 / (1.1 + 0.5 + 0.7);  // 0.3043478261
-          almostEqual(actual, expected, maxDiff);
+          almostEqual(actual, expected);
         });
 
 
@@ -238,15 +237,14 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
           equal(actual, expected);
         });
 
-        test('Test unweighted unifrac', function() {
+        test('Test unweighted unifrac small tree, pairwise samples', function() {
           /*
           expected results derived from QIIME 1.9.1, which
           is a completely different implementation skbio's initial
           unweighted unifrac implementation
           sample A versus all
           */
-          // maxDiff we allow when comparing floats
-          var maxDiff = 0.0000001;
+          // Only testing upper right triangle of this matrix
           var expected  = [
             [0,0.238095238095,0.52,0.52, 0.545454545455, 0.619047619048],
             [0,0,0.347826086957, 0.347826086957, 0.68, 0.421052631579],
@@ -258,7 +256,7 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
             for(var j = i+1; j < this.b1.length; j++){
               var biomTable = setupBiomTable(this.b1[i], this.b1[j], this.sids1, this.oids1);
               var actual = SummaryHelper.unifrac(biomTable, this.t1Obj, Array(this.sids1[0]), Array(this.sids1[1]));
-              almostEqual(actual, expected[i][j], maxDiff);
+              almostEqual(actual, expected[i][j]);
             }
           }
         });
@@ -297,7 +295,7 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
         });
 
         // test unifrac large, from file crawford.tre and crawford.biom
-        test('Test unweighted unifrac pairwise', function() {
+        test('Test unweighted unifrac large tree, pairwise samples', function() {
 
             var bpArray =  new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
@@ -337,12 +335,10 @@ require(['jquery', 'ByteArray', 'BPTree', 'BiomTable', 'SummaryHelper'], functio
                 0.68972056, 0.71514083, 0.        ]
             ];
 
-            // maxDiff we allow when comparing floats
-            var maxDiff = 0.0000001;
                 for (var i = 0; i < sIds.length; ++i){
                     for (var j = 0; j < sIds.length; ++j){
                         var actual = SummaryHelper.unifrac(biomTable, bpObj, Array(sIds[i]), Array(sIds[j]));
-                        almostEqual(actual, exp[i][j], maxDiff);
+                        almostEqual(actual, exp[i][j]);
                     }
                 }
 
