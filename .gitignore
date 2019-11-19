@@ -3,6 +3,7 @@ data/
 *.qza
 *.qzv
 *.tsv
+empress-biom.py
 
 # NodeJS file used for chrome headless QUnit tests
 node_modules/

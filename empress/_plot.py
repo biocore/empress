@@ -51,9 +51,9 @@ def plot(output_dir: str,
     empress_tree.coords(4020, 4020)
 
     tree_data = {}
-    pre_to_name = {}
-    for i, node in enumerate(empress_tree.preorder(include_self=True)):
-        tree_data[i+1] = {
+    names_to_keys = {}
+    for i, node in enumerate(empress_tree.postorder(include_self=True), 1):
+        tree_data[i] = {
             'name': node.name,
             'x': node.x2,
             'y': node.y2,
@@ -61,11 +61,14 @@ def plot(output_dir: str,
             'sampVal': 1,
             'visible': True,
             'single_samp': False}
-        pre_to_name[node.name] = i
+        if node.name in names_to_keys:
+            names_to_keys[node.name].append(i)
+        else:
+            names_to_keys[node.name] = [i]
 
     names = []
-    for i, node in enumerate(empress_tree.preorder(include_self=True)):
-        names.append(i+1)
+    for node in empress_tree.preorder(include_self=True):
+        names.append(node.name)
 
     env = Environment(loader=FileSystemLoader(TEMPLATES))
     temp = env.get_template('empress-template.html')
@@ -86,10 +89,10 @@ def plot(output_dir: str,
         'base_url': './support_files',
         'tree': bp_tree,
         'tree_data': tree_data,
+        'names_to_keys': names_to_keys,
         'sample_data': sample_data,
         'obs_data': obs_data,
         'names': names,
-        'p_to_n': pre_to_name
         })
 
     copytree(SUPPORT_FILES, os.path.join(output_dir, 'support_files'))

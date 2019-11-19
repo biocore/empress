@@ -36,22 +36,26 @@
           'BPTree' : './support_files/js/bp-tree',
           'Camera' : './support_files/js/camera',
           'Colorer' : './support_files/js/colorer',
+          'BiomTable': './support_files/js/biom-table',
+          'SummaryHelper': './support_files/js/summary-helper',
 
           /* test paths */
           'testBPTree' : './../tests/test-bp-tree',
           'testByteTree' : './../tests/test-byte-array',
-          'testCamera' : './../tests/test-camera'
+          'testCamera' : './../tests/test-camera',
+          'testSummaryHelper': './../tests/test-summary-helper'
         }
     });
 
     // load tests
     require(
-        ['jquery', 'glMatrix', 'ByteArray', 'BPTree', 'Camera', 'testBPTree',
-         'testByteTree', 'testCamera'],
+        ['jquery', 'glMatrix', 'ByteArray', 'BPTree', 'Camera',
+         'BiomTable', 'SummaryHelper', 'testBPTree', 'testByteTree', 'testCamera',
+         'testSummaryHelper'],
 
         // start tests
-        function ($, gl, ByteArray, BPTree, Camera,testBPTree, testByteTree,
-                  testCamera) {
+        function ($, gl, ByteArray, BPTree, Camera, BiomTable, SummaryHelper,
+          testBPTree, testByteTree, testCamera, testSummaryHelper) {
             $(document).ready(function() {
                 QUnit.start();
             });
