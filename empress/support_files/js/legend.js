@@ -1,11 +1,10 @@
 define([], function() {
-
     function Legend(tip, node, clade) {
         this.__tipLeg = tip;
         this.__nodeLeg = node;
         this.__cladeLeg = clade;
-        this.__legends = ['tip', 'node', 'clade'];
-    };
+        this.__legends = ["tip", "node", "clade"];
+    }
 
     /**
      * Display a color key in the legend box.
@@ -14,20 +13,19 @@ define([], function() {
      * @param {Object} container - container DOM
      * @param {boolean} gradient - gradient or discrete
      */
-    Legend.prototype.addColorKey = function(name, info, leg, gradient) {
-        var container =  this.__getLegend(leg);
+    Legend.prototype.addColorKey = function(name, info, container, gradient) {
+        var legendContainer = this.__getLegend(container);
         if (name) {
             let div = document.createElement("div");
             div.classList.add("legend-title");
             div.innerHTML = name;
-            container.appendChild(div);
-            container.classList.remove("hidden");
-
+            legendContainer.appendChild(div);
+            legendContainer.classList.remove("hidden");
         }
         if (gradient) {
-            this.__addContinuousKey(info, container);
+            this.__addContinuousKey(info, legendContainer);
         } else {
-            this.__addCategoricalKey(info, container);
+            this.__addCategoricalKey(info, legendContainer);
         }
     };
 
@@ -36,7 +34,7 @@ define([], function() {
      * @param {Object} info - key information
      * @param {Object} container - container DOM
      */
-    Legend.prototype.__addContinuousKey =  function(info, container) {
+    Legend.prototype.__addContinuousKey = function(info, container) {
         // create key container
         let div = document.createElement("div");
         div.classList.add("gradient-bar");
@@ -50,8 +48,14 @@ define([], function() {
         // color gradient
         component = document.createElement("div");
         component.classList.add("gradient-color");
-        component.setAttribute("style", "background: linear-gradient(to right, "
-            + info.min[1] + " 0%, " + info.max[1] + " 100%);");
+        component.setAttribute(
+            "style",
+            "background: linear-gradient(to right, " +
+                info.min[1] +
+                " 0%, " +
+                info.max[1] +
+                " 100%);"
+        );
         div.appendChild(component);
 
         // max label
@@ -68,7 +72,7 @@ define([], function() {
      * @param {Object} info - key information
      * @param {Object} container - container DOM
      */
-    Legend.prototype.__addCategoricalKey =  function(info, container) {
+    Legend.prototype.__addCategoricalKey = function(info, container) {
         let key;
         let category = container.innerText;
         let i = 0;
@@ -80,8 +84,10 @@ define([], function() {
             // color gradient
             let component = document.createElement("div");
             component.classList.add("category-color");
-            component.setAttribute("style", "background: " + info[key].color
-                + ";");
+            component.setAttribute(
+                "style",
+                "background: " + info[key].color + ";"
+            );
             div.appendChild(component);
 
             // label
@@ -91,22 +97,21 @@ define([], function() {
             component.title = key;
             div.appendChild(component);
 
-            // // total percentage of leafs
-            // component = document.createElement("label");
-            // component.classList.add("gradient-label");
-            // component.innerHTML = this.__formatNumLabel(info[key].tPercent);
-            // div.appendChild(component);
-            //     container.appendChild(div);
+            // total percentage of leafs
+            component = document.createElement("label");
+            component.classList.add("gradient-label");
+            component.innerHTML = this.__formatNumLabel(info[key].tPercent);
+            div.appendChild(component);
+            container.appendChild(div);
 
-            // // relative percentage of leafs
-            // component = document.createElement("label");
-            // component.classList.add("gradient-label");
-            // component.innerHTML = this.__formatNumLabel(info[key].rPercent);
-            // div.appendChild(component);
+            // relative percentage of leafs
+            component = document.createElement("label");
+            component.classList.add("gradient-label");
+            component.innerHTML = this.__formatNumLabel(info[key].rPercent);
+            div.appendChild(component);
             container.appendChild(div);
         }
     };
-
 
     /**
      * Format a number that is to be displayed in a label.
@@ -114,7 +119,7 @@ define([], function() {
      * @param {number} num - number to be formatted
      * @returns {string} formatted number
      */
-    Legend.prototype.__formatNumLabel =  function(num) {
+    Legend.prototype.__formatNumLabel = function(num) {
         return num.toPrecision(4).replace(/\.?0+$/, "");
     };
 
@@ -127,13 +132,16 @@ define([], function() {
      */
     Legend.prototype.__getLegend = function(leg) {
         var container;
-        switch(leg) {
+        switch (leg) {
             case "tip":
                 container = this.__tipLeg;
+                break;
             case "node":
                 container = this.__nodeLeg;
+                break;
             case "clade":
                 container = this.__cladeLeg;
+                break;
         }
 
         return container;
@@ -154,10 +162,9 @@ define([], function() {
      */
     Legend.prototype.clearLegend = function(leg) {
         var legend = this.__getLegend(leg);
-        legend.innerHTML = '';
-        legend.classList.add('hidden');
+        legend.innerHTML = "";
+        legend.classList.add("hidden");
     };
-
 
     return Legend;
 });

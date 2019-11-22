@@ -1,0 +1,25 @@
+language: node_js
+node_js:
+  - "10"
+dist: trusty
+# Note: if you switch to sudo: false, you'll need to launch Chrome with --no-sandbox.
+# See https://github.com/travis-ci/travis-ci/issues/8836
+sudo: required
+addons:
+  chrome: stable # have Travis install Chrome stable
+before_install:
+  - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh && chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda2/bin:$PATH
+  # Update conda itself
+  - conda update --yes conda
+install:
+  - npm install -g qunit-puppeteer jshint prettier
+  # install requests using conda to avoid a distutils error in certifi
+  - conda create --yes -n travis python=3.6 pip numpy scipy matplotlib pandas flake8 pep8  cython nose
+  - source activate travis
+  - conda install -c bioconda scikit-bio biom-format --yes
+  - pip install -e . --verbose
+script:
+  - make test
+  - make stylecheck

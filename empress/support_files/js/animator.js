@@ -35,8 +35,8 @@ define([], function() {
         return keyInfo;
     }
 
-    Animator.prototype.getSampleCats = function() {
-        return this.empress.getSampleCats();
+    Animator.prototype.getSampleCategories = function() {
+        return this.empress.getSampleCategories();
     }
 
     Animator.prototype.nextFrame = function() {
@@ -62,7 +62,6 @@ define([], function() {
     //     var curTime = [];
     //     var nextTime = timeSeries[0];
     //     for (var i = 0; i < timeSeries.length; i++) {
-            
     //     }
     // };
     return Animator;

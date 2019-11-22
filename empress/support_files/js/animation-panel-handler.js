@@ -6,33 +6,26 @@ define(['Colorer'], function(Colorer) {
      * Creates table for the animation panel and handles their events events.
      */
     // function AnimatePanel(animator, timeframe) {
-    function AnimatePanel(timeframePanel, animator, legend) {
+    function AnimatePanel(animator, legend) {
         // used to event triggers
-        this.timeframePanel = timeframePanel;
         this.animator = animator;
         this.legend = legend;
 
         // animation GUI components
-        this.uploadBtn = document.getElementById('animate-upload-btn');
-        this.animateAdd = document.getElementById('animate-add');
         this.colorSelect = document.getElementById('animate-color-select');
-        this.catSelect = document.getElementById('animate-options');
+        this.gradient = document.getElementById('animate-gradient');
+        this.trajectory = document.getElementById('animate-trajectory');
         this.hideChk = document.getElementById('animate-hide-non-feature');
         this.lWidth = document.getElementById('animate-line-width');
-        this.showAnimationBtn = document.getElementById('animate-show-btn');
-        this.tableBtn = document.getElementById('animate-table-btn');
-        this.clearBtn = document.getElementById('animate-clear-btn');
-        this.timeFramePanel = document.getElementById('timeframe-panel');
-        this.currentTimeframe = document.getElementById('current-timeframe');
-        this.prevBtn = document.getElementById('animate-backward-btn');
-        this.nextBtn = document.getElementById('animate-forward-btn');
+        this.rewindBtn = document.getElementById('animate-rewind-btn');
+        this.playBtn = document.getElementById('animate-play-btn');
+        this.pauseBtn = document.getElementById('animate-pause-btn');
     };
 
     /**
      * Initializes sample components
      */
     AnimatePanel.prototype.addAnimationTab = function() {
-        this.currentTimeframe.innerHTML = "Day 1"
         // for use in closers
         var ap = this;
 
@@ -49,58 +42,28 @@ define(['Colorer'], function(Colorer) {
             this.colorSelect.appendChild(opt);
         }
 
-        // sample categories
-        var selOpts = this.animator.getSampleCats();
-         for (var i = 0; i < selOpts.length; i++) {
+        // gradient/trajectory categories
+        var categories = this.animator.getSampleCategories();
+         for (var i = 0; i < categories.length; i++) {
             var opt = document.createElement('option');
-            opt.value = selOpts[i];
-            opt.innerHTML = selOpts[i];
-            this.catSelect.appendChild(opt);
+            opt.value = categories[i];
+            opt.innerHTML = categories[i];
+            this.gradient.appendChild(opt);
+            this.trajectory.appendChild(opt);
         }
 
-        this.uploadBtn.onchange = function(e) {
-            ap.animateAdd.classList.remove('hidden');
-
-            var reader = new FileReader();
-
-            reader.onload = function(e) {
-                ap.__readAnimationFile(e.target.result);
-            }
-            reader.readAsText(e.target.files[0]);
-        }
-        this.showAnimationBtn.onclick = function() {
+        this.playBtn.onclick = function() {
             ap.__showAnimation();
         }
 
-        this.tableBtn.onclick = function() {
-            ap.__showTable();
-        }
 
-        this.clearBtn.onclick = function() {
+        this.rewindBtn.onclick = function() {
             ap.__clearAnimation();
-        }
-
-        this.prevBtn.onclick = function() {
-            ap.__prevTimeframe();
-        }
-
-        this.nextBtn.onclick = function() {
-            ap.__nextTimeframe();
         }
     };
 
-    AnimatePanel.prototype.__readAnimationFile = function(data) {
-        var timeframes = data.split('\n');
-        for(var i = 0; i < timeframes.length; i++) {
-            timeframes[i] = timeframes[i].split(',');
-        }
-        this.animator.loadTimeframes(timeframes);
-        console.log(this.animator);
-    }
-
     AnimatePanel.prototype.__showAnimation = function() {
         this.timeFramePanel.classList.remove('hidden');
-        this.currentTimeframe.innerHTML = this.animator.curFrameName();
 
         var colBy = this.catSelect.value;
         var col = this.colorSelect.value;
@@ -110,16 +73,9 @@ define(['Colorer'], function(Colorer) {
         this.legend.addColorKey(colBy, keyInfo, 'node', false);
     }
 
-    AnimatePanel.prototype.__showTable = function() {
-        console.log("animation table");
-    }
-
     AnimatePanel.prototype.__clearAnimation = function() {
         // clear animation class
-
-        this.uploadBtn.value = null;
-        this.animateAdd.classList.add('hidden');
-        this.timeFramePanel.classList.add('hidden');
+        console.log('clear')
     }
 
     AnimatePanel.prototype.__prevTimeframe = function() {

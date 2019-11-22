@@ -1,5 +1,5 @@
 from jinja2 import Environment, FileSystemLoader
-from bp import parse_newick
+from bp import parse_newick, to_skbio_treenode
 import numpy as np
 import webbrowser
 import os
@@ -14,86 +14,79 @@ from statistics import mean
 from tree import Tree
 
 # create/parse tree
-# tree_file = 'data/97_sites.nwk'
-tree_file = 'data/97_otus_no_none.tree'
+tree_file = 'data/97_sites.nwk'
+# tree_file = 'data/97_otus_no_none.tree'
+
+# create/parse tree
 with open(tree_file) as file:
-    nwk = file.readline();
-t = parse_newick(nwk)
+        t = parse_newick(file.readline())
 print('read tree')
-tree = list(t.B)
-empress_tree = tools.read(tree_file)
-empress_tree = Tree.from_tree(empress_tree)
+
+# extract balance parenthesis
+bp_tree = list(t.B)
+
+# calculate tree coordinates
+empress_tree = Tree.from_tree(to_skbio_treenode(t))
 tools.name_internal_nodes(empress_tree)
 print('cacluate coords')
 empress_tree.coords(4020, 4020)
+
+
 tree_data = {}
-pre_to_name = {}
-for i, node in enumerate(empress_tree.preorder(include_self=True)):
-        tree_data[i+1] = {
-            'name' : node.name,
-            'x' : node.x2,
-            'y' : node.y2,
-            'color' : [0.75, 0.75, 0.75],
-            'sampVal': 1,
-            'visible': True,
-            'single_samp': False}
-        pre_to_name[node.name] = i;
+names_to_keys = {}
+for i, node in enumerate(empress_tree.postorder(include_self=True), 1):
+    tree_data[i] = {
+        'name': node.name,
+        'x': node.x2,
+        'y': node.y2,
+        'color': [0.75, 0.75, 0.75],
+        'sampVal': 1,
+        'visible': True,
+        'single_samp': False}
+    if node.name in names_to_keys:
+        names_to_keys[node.name].append(i)
+    else:
+        names_to_keys[node.name] = [i]
+
 names = []
-for i,node in enumerate(empress_tree.preorder(include_self=True)):
-    names.append(i+1)
+for node in empress_tree.preorder(include_self=True):
+    names.append(node.name)
 
 # create template
 loader = FileSystemLoader('support_files/templates')
 env = Environment(loader=loader)
 temp = env.get_template('empress-template.html')
 
-
 # biom table
 with biom_open('data/76695_hmp_only_rare1250.biom') as f:
 # with biom_open('data/17638_feature-table_merged_age1_7_and_hmp_rare1250.biom') as f:
-    table = Table.from_hdf5(f)
+    feature_table = Table.from_hdf5(f).to_dataframe(dense=True).T
 
-data = pd.read_csv('data/17638_metadata_merged_age1_7_and_hmp.txt', sep='\t')
-data = data[['#SampleID', 'env_package', 'age', 'host_age']]
-sampMeta = data.values.tolist()
-sampMeta = {samp[0]: {'env_package': samp[1], 'age': samp[3]}
-              for samp in sampMeta if table.exists(samp[0])}
+sample_metadata = pd.read_csv('data/metadata.tsv', sep='\t', index_col=0)
 
-sampleIDs = [id for id in sampMeta.keys()]
-with open('test-animation.txt', 'w') as file:
-    file.write('Day 1')
-    for sample, data in sampMeta.items():
-        print(data)
-        if data['age'] == '1':
-            file.write(',')
-            file.write(sample)
-    file.write('\n')
+# sample metadata
+sample_data = sample_metadata \
+    .filter(feature_table.index, axis=0) \
+    .to_dict(orient='index')
 
-    file.write('Day 2')
-    for sample, data in sampMeta.items():
-        if data['age'] == '7':
-            file.write(',')
-            file.write(sample)
-    file.write('\n')
+# create a mapping of observation ids and the samples that contain them
+obs_data = {}
+feature_table = (feature_table > 0).T
+for _, series in feature_table.iteritems():
+    sample_ids = series[series].index.tolist()
+    obs_data[series.name] = sample_ids
 
-
-obsID = table.ids(axis='observation')
-
-obsMeta = {id : table.data(id, axis='sample') for id in sampleIDs}
-for sample in obsMeta.keys():
-    obsMeta[sample] = [obsID[i] for i, val in enumerate(obsMeta[sample]) \
-                        if val > 0]
-
-
+# print(sample_data)
 dev_temp_str = temp.render({
-    'base_url' : './support_files',
-    'tree' : tree,
-    'tree_data' : tree_data,
-    'sample_data': sampMeta,
-    'obs_data' : obsMeta,
-    'names' : names,
-    'p_to_n' : pre_to_name
+    'base_url': './support_files',
+    'tree': bp_tree,
+    'tree_data': tree_data,
+    'names_to_keys': names_to_keys,
+    'sample_data': sample_data,
+    'obs_data': obs_data,
+    'names': names,
     })
+
 with open('test_init.html', 'w') as file:
     file.write(dev_temp_str)
 webbrowser.open('file://' + os.path.realpath('test_init.html'))

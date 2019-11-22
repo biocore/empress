@@ -529,6 +529,18 @@ p.side-header button {
     margin-right: auto;
 }
 
+.control div.animate-btns {
+    margin-left: 10%;
+    margin-right: 10%;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    justify-items: center;
+}
+
+/*.control div.animate-btns button {
+    background-color: #00ff00;
+}*/
+
 .control hr {
     border-top: 1px solid darkgray;
     border-bottom: none;
@@ -683,31 +695,6 @@ div.legend {
 }
 
 div.legend:hover {
-    border: 1px solid dimgray;
-    background-color: white;
-    overflow: auto;
-}
-
-/* Timeframe*/
-#timeframe-panel {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    padding: 20px;
-    z-index: 1;
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-}
-
-div.timeframe {
-    margin: 20px;
-    padding: 5px;
-    border: 1px solid darkgray;
-    background-color: rgba(255, 255, 255, 0.5);
-}
-
-div.timeframe:hover {
     border: 1px solid dimgray;
     background-color: white;
     overflow: auto;

@@ -2,37 +2,40 @@
 <button class="side-header collapsible">Animation</button>
 <div class="side-content control hidden">
   <p>
-    <label for="animate-btn">Load animate file...</label>
-    <!-- <button id="animate-upload-btn">Upload</button> -->
-    <input type="file" id="animate-upload-btn">
+    <label for="animate-color-select">Choose Color Map</label>
+    <label class="select-container">
+      <select id="animate-color-select"></select>
+    </label>
   </p>
-  <p class="hidden">
-    <div id="animate-add" class="hidden">
-      <p>
-        <label for="animate-color">Choose Color Map</label>
-        <label class="select-container">
-          <select id="animate-color-select"></select>
-        </label>
-      </p>
-      <p>
-        <label for="animate-options">Color by...</label>
-        <label class="select-container">
-          <select id="animate-options"></select>
-        </label>
-      </p>
-      <p>
-        <label for="animate-hide-non-feature">Hide Non-Sample Features</label>
-        <input id="animate-hide-non-feature" type="checkbox" checked="true">
-      </p>
-      <p>
-        <label for="animate-line-width">Line Width</label>
-        <input id="animate-line-width" type="number" value="1">
-      </p>
-      <p>
-        <button id="animate-show-btn">Show Animation</button>
-        <button id="animate-table-btn">Show Sample Table</button>
-        <button id="animate-clear-btn">Clear Animation</button>
-      </p>
-    </div>
+  <p>
+    <label for="animate-gradient">Gradient</label>
+    <label class="select-container">
+      <select id="animate-gradient"></select>
+    </label>
   </p>
+  <p>
+    <label for="animate-trajectory">Trajectory</label>
+    <label class="select-container">
+      <select id="animate-trajectory"></select>
+    </label>
+  </p>
+  <p>
+    <label for="animate-hide-non-feature">Hide Non-Sample Features</label>
+    <input id="animate-hide-non-feature" type="checkbox" checked="true">
+  </p>
+  <p>
+    <label for="animate-line-width">Line Width</label>
+    <input id="animate-line-width" type="number" value="1">
+  </p>
+  <div class="animate-btns">
+    <p>
+      <button id="animate-rewind-btn">&#x25c0;</button>
+    </p>
+    <p>
+      <button id="animate-play-btn">&#9654;</button>
+    </p>
+    <p>
+      <button id="animate-pause-btn">&#9612;</button>
+    </p>
+  </div>
 </div>

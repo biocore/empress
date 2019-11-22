@@ -1,18 +1,18 @@
-define(['ByteArray'], function(ByteArray) {
+define(["ByteArray"], function(ByteArray) {
     /**
-    *
-    * @class BPTree
-    *
-    * Initialzes a new BP tree.
-    *
-    * @param {Uint8Array} b The array that represents the tree structure
-    * @param {Array} names The names of each node stored in preorder
-    * @param {Array} lengths The lengths of each node stored in preorder
-    *
-    * @return {BPTree}
-    * @constructs BPTree
-    */
-    function BPTree(b, names=null, lengths=null) {
+     *
+     * @class BPTree
+     *
+     * Initialzes a new BP tree.
+     *
+     * @param {Uint8Array} b The array that represents the tree structure
+     * @param {Array} names The names of each node stored in preorder
+     * @param {Array} lengths The lengths of each node stored in preorder
+     *
+     * @return {BPTree}
+     * @constructs BPTree
+     */
+    function BPTree(b, names = null, lengths = null) {
         /**
          * @type {Uint8Array}
          * Used to store the structure of the tree
@@ -52,7 +52,7 @@ define(['ByteArray'], function(ByteArray) {
          * Note: rank(0,i) = number of 0's between indices [0,i] in this.b
          * TODO: implement a rmM tree and calculate this on the fly
          */
-        this.r0Cache_ = ByteArray.sumVal(this.b_, Uint32Array,  0);
+        this.r0Cache_ = ByteArray.sumVal(this.b_, Uint32Array, 0);
 
         /**
          * @type {Uint32Array}
@@ -87,7 +87,7 @@ define(['ByteArray'], function(ByteArray) {
          */
         var eCache = [];
         for (var i = 0; i < this.b_.length; i++) {
-            eCache.push((2 * this.r1Cache_[i]) - i - 1);
+            eCache.push(2 * this.r1Cache_[i] - i - 1);
         }
         this.eCache_ = new Uint32Array(eCache);
 
@@ -98,10 +98,11 @@ define(['ByteArray'], function(ByteArray) {
          * open/close cache to boost performance but at cost of memory. This can
          * be optimized with use of rrm-tre
          */
-         this.ocCache_ = new Uint32Array(this.b_.length);
-         var openInx = 0;
-         var oc = [];
-         for (var i = 0; i < this.b_.length; i++) {
+        this.ocCache_ = new Uint32Array(this.b_.length);
+        var openInx = 0;
+        var oc = [];
+        // We don't declare "var i" since it was already declared above
+        for (i = 0; i < this.b_.length; i++) {
             if (this.b_[i]) {
                 oc.push(i);
             } else {
@@ -109,8 +110,8 @@ define(['ByteArray'], function(ByteArray) {
                 this.ocCache_[openInx] = i;
                 this.ocCache_[i] = openInx;
             }
-         }
-    };
+        }
+    }
 
     /**
      *
@@ -123,7 +124,7 @@ define(['ByteArray'], function(ByteArray) {
      * @return{Number}
      */
     BPTree.prototype.rank = function(t, i) {
-        var rCache = (t) ? this.r1Cache_ : this.r0Cache_;
+        var rCache = t ? this.r1Cache_ : this.r0Cache_;
         return rCache[i];
     };
 
@@ -138,7 +139,7 @@ define(['ByteArray'], function(ByteArray) {
      * @return{Number}
      */
     BPTree.prototype.select = function(t, k) {
-        var sCache = (t) ? this.s1Cache_ : this.s0Cache_;
+        var sCache = t ? this.s1Cache_ : this.s0Cache_;
         return sCache[k - 1];
     };
 
@@ -155,7 +156,7 @@ define(['ByteArray'], function(ByteArray) {
     BPTree.prototype.excess_ = function(i) {
         // need to subtract 1 since i starts at 0
         // Note: rank(1,i) - rank(0,i) = (2*(rank(1,i)) - i
-        return (2 * this.r1Cache_[i]) - i - 1;
+        return 2 * this.r1Cache_[i] - i - 1;
     };
 
     /**
@@ -173,15 +174,14 @@ define(['ByteArray'], function(ByteArray) {
 
     /**
      *
-     * The name of node ith node in preorder
+     * The name of the ith node in bp tree
      *
-     * @param{Number} i Node i in preorder
-     *                Note: i starts at 1
+     * @param{Number} i Node i in bp tree
      *
      * @return{String}
      */
     BPTree.prototype.name = function(i) {
-        return this.names_[i - 1];
+        return this.names_[this.preorder(i) - 1];
     };
 
     /**
@@ -200,15 +200,14 @@ define(['ByteArray'], function(ByteArray) {
 
     /**
      *
-     * The length of the ith node in preorder
+     * The length of the ith node in bp tree
      *
-     * @param{Number} i Node i in preorder
-     *                Note i starts at 1
+     * @param{Number} i Node i in bp tree
      *
      * @return{Number}
      */
     BPTree.prototype.length = function(i) {
-        return this.lengths_[i - 1];
+        return this.lengths_[this.preorder(i) - 1];
     };
 
     /**
@@ -267,7 +266,7 @@ define(['ByteArray'], function(ByteArray) {
      */
     BPTree.prototype.bwdsearch = function(i, d) {
         return this.bwdsearchNaive(i, d);
-    }
+    };
 
     /**
      * Finds the position of the opening parenthesis that matches b[i]
@@ -344,7 +343,7 @@ define(['ByteArray'], function(ByteArray) {
      * @return {boolean}
      */
     BPTree.prototype.isleaf = function(i) {
-        return (this.b_[i] && !this.b_[i + 1]);
+        return this.b_[i] && !this.b_[i + 1];
     };
 
     /**
@@ -360,7 +359,7 @@ define(['ByteArray'], function(ByteArray) {
             return 0;
         }
 
-        if(this.b_[i]) {
+        if (this.b_[i]) {
             return i + 1;
         } else {
             return this.fchild(this.open(i));
@@ -395,7 +394,6 @@ define(['ByteArray'], function(ByteArray) {
      * @return {Number}
      */
     BPTree.prototype.nsibling = function(i) {
-
         // i is a close parenthesis
         if (!this.b_[i]) {
             return this.nsibling(this.open(i));
@@ -405,14 +403,12 @@ define(['ByteArray'], function(ByteArray) {
         if (pos >= this.b_.length) {
             // i is the root node
             return 0;
-        } else if (this.b_[pos]){
+        } else if (this.b_[pos]) {
             return pos;
         }
 
         // i does not have a next sibling
         return 0;
-
-
     };
 
     /**
@@ -439,11 +435,11 @@ define(['ByteArray'], function(ByteArray) {
         // check to see if i open paren
         if (this.b_[i]) {
             // i is fchild
-            if(this.b_[i-1]) {
+            if (this.b_[i - 1]) {
                 return 0;
             }
 
-            pos = this.open(i-1);
+            pos = this.open(i - 1);
         }
 
         if (pos < 0) {

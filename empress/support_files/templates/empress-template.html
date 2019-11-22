@@ -22,7 +22,6 @@
       <!-- Side panel -->
       <div id="side-panel">
         {% include 'side-panel.html'%}
-
         {% include 'animate-panel.html' %}
       </div>
 
@@ -41,19 +40,6 @@
       <div id="tip-color-key" class="legend hidden" disabled="true"></div>
       <div id="node-color-key" class="legend hidden" disabled="true"></div>
       <div id="clade-color-key" class="legend hidden" disabled="true"></div>
-    </div>
-
-    <!-- Timeframe Panel -->
-    <div id="timeframe-panel" class="hidden">
-      <div class="timeframe">
-        <p align="center">
-          <div id="current-timeframe" align="center"></div>
-        </p>
-        <p align="center">
-          <button id="animate-backward-btn">&#9666;</button>
-          <button id="animate-forward-btn">&#9656;</button>
-        </p>
-      </div>
     </div>
 
     <!-- toast -->
@@ -76,6 +62,7 @@
             'jquery' : './vendor/jquery-2.2.4.min',
             'glMatrix' : './vendor/gl-matrix.min',
             'chroma' : './vendor/chroma.min',
+            'underscore' : './vendor/underscore-min',
 
             'ByteArray' : './js/byte-array',
             'BPTree' : './js/bp-tree',
@@ -84,7 +71,7 @@
             'SidePanel' : './js/side-panel-handler',
             'AnimatePanel' : './js/animation-panel-handler',
             'Animator' : './js/animator',
-            'BiomTable' : './js/biom-table',
+            'BIOMTable' : './js/biom-table',
             'Empress' : './js/empress',
             'Legend' : './js/legend',
             'Colorer' : './js/colorer',
@@ -92,21 +79,21 @@
         }
     });
 
-    empressRequire(['jquery', 'glMatrix', 'chroma', 'BPTree', 'ByteArray',
-                    'SidePanel', 'Camera', 'Drawer', 'BiomTable', 'Empress',
-                    'Legend', 'Colorer', 'VectorOps', 'AnimatePanel',
-                    'Animator'],
-        function($, gl, chroma, BPTree, ByteArray, SidePanel, Camera, Drawer,
-                 BiomTable, Empress, Legend, Colorer, VectorOps, AnimatePanel,
-                 Animator) {
+    empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray',
+                    'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimatePanel',
+                    'Animator', 'BIOMTable', 'Empress', 'Legend', 'Colorer',
+                    'VectorOps'],
+        function($, gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
+                 SidePanel, AnimatePanel, Animator, BIOMTable, Empress, Legend,
+                 Colorer, VectorOps) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr, {{ names }});
 
         var canvas = document.getElementById('tree-surface')
-        var biom = new BiomTable({{ obs_data }}, {{ sample_data }});
-        var empress = new Empress(tree, {{ tree_data | tojson }}, biom, 
-            {{ p_to_n }}, canvas);
+        var biom = new BIOMTable({{ obs_data | tojson }}, {{ sample_data | tojson }});
+        var empress = new Empress(tree, {{ tree_data | tojson }},
+                                  {{ names_to_keys | tojson }}, biom, canvas);
         empress.initialize();
 
         var legend = new Legend(document.getElementById('tip-color-key'),
@@ -121,9 +108,7 @@
 
         // animate tab
         var animator = new Animator(empress, biom);
-        var animatePanel = new AnimatePanel(
-                                    document.getElementById('timeframe-panel'),
-                                    animator, legend);
+        var animatePanel = new AnimatePanel(animator, legend);
         animatePanel.addAnimationTab();
         document.querySelectorAll(".collapsible").forEach(function(btn) {
             btn.addEventListener("click", function() {

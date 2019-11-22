@@ -1,11 +1,6 @@
 from skbio import TreeNode
-import pandas as pd
 import numpy as np
-import time
-from operator import attrgetter
-import tools as tools
 
-DEFAULT_COLOR = [0.7,0.7,0.7]
 
 class Tree(TreeNode):
     """
@@ -42,22 +37,23 @@ class Tree(TreeNode):
 
     @classmethod
     def from_tree(cls, tree, use_lengths=True):
-        """ Creates an UnrootedDendrogram object from a skbio tree.
+        """ Creates an Tree object from a skbio tree.
 
         Parameters
         ----------
         tree : skbio.TreeNode
             Input skbio tree
-
+        use_lengths: Boolean
+            Specify if the branch length should be incorporated into
+            the geometry calculations for visualization.
         Returns
         -------
-        UnrootedDendrogram
+        Tree
 
         """
         for n in tree.postorder():
             n.__class__ = Tree
             n.tip_count = 0
-
 
         tree.update_geometry(use_lengths)
         return tree
@@ -68,11 +64,11 @@ class Tree(TreeNode):
         Parameters
         ----------
         use_lengths: bool
-           Specify if the branch length should be incorporated into
-           the geometry calculations for visualization.
+            Specify if the branch length should be incorporated into
+            the geometry calculations for visualization.
         depth: int
-           The number of nodes in the longest path from root to leaf.
-        This is agnostic to scale and orientation.
+            The number of nodes in the longest path from root to leaf.
+            This is agnostic to scale and orientation.
 
         """
         # i = 0
@@ -109,33 +105,10 @@ class Tree(TreeNode):
         width : int
             The width of the canvas.
 
-        Returns
-        -------
-        edgeMeta : pd.DataFrame (Edge metadata)
-            index : str
-                Name of node.
-            Node id: str
-                Name of node
-            x : float
-                x-coordinate of node.
-            y : float
-                y-coordinate of node.
-            Parent id:
-                Name of parent
-            px : float
-                x-coorinate of parent
-            py: float
-                y-coordinate of parent
-        centerX : float
-            x coordinate of root node
-        centerY : float
-            y coordinate of root
-        scale : float
-            largest scaling factor in which the tree can fit in the canvas.
         """
 
         # calculates coordinates of all nodes and the shortest/longest branches
-        scale = self.rescale(width, height)
+        self.rescale(width, height)
         centerX = self.x2
         centerY = self.y2
 

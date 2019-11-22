@@ -1,32 +1,32 @@
-define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
+define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
     //  Shaders used in Drawer
     var vertShaderTxt = [
-        'precision mediump float;',
-        '',
-        'attribute vec2 vertPosition;',
-        'uniform mat4 mvpMat;',
-        'attribute vec3 color;',
-        'varying vec3 c;',
-        '',
-        'void main()',
-        '{',
-        '  c = color;',
-        '  gl_Position = mvpMat * vec4(vertPosition, 0.0, 1.0);',
-        '  gl_PointSize = 4.0;',
-        '}'
-    ].join('\n');
+        "precision mediump float;",
+        "",
+        "attribute vec2 vertPosition;",
+        "uniform mat4 mvpMat;",
+        "attribute vec3 color;",
+        "varying vec3 c;",
+        "",
+        "void main()",
+        "{",
+        "  c = color;",
+        "  gl_Position = mvpMat * vec4(vertPosition, 0.0, 1.0);",
+        "  gl_PointSize = 4.0;",
+        "}"
+    ].join("\n");
     var fragShaderTxt = [
-        'precision mediump float;',
-        'varying vec3 c;',
-        '',
-        'void main()',
-        '{',
-        '  float r = 0.0;',
-        '  vec2 cxy = 2.0 * gl_PointCoord - 1.0;',
-        '  r = dot(cxy, cxy);',
-        '  gl_FragColor = vec4(c,1);',
-        '}'
-    ].join('\n');
+        "precision mediump float;",
+        "varying vec3 c;",
+        "",
+        "void main()",
+        "{",
+        "  float r = 0.0;",
+        "  vec2 cxy = 2.0 * gl_PointCoord - 1.0;",
+        "  r = dot(cxy, cxy);",
+        "  gl_FragColor = vec4(c,1);",
+        "}"
+    ].join("\n");
 
     /**
      * @class Drawer
@@ -41,11 +41,11 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
      * constructs Drawer
      */
     function Drawer(canvas, cam) {
-        this.contex_ = canvas.getContext('webgl');
+        this.contex_ = canvas.getContext("webgl");
         this.CLR_COL = 1;
         this.cam = cam;
-        this._test = false;
-    };
+        this.VERTEX_SIZE = 5;
+    }
 
     /**
      * Compliles the shaders and sets up the necessary array buffers.
@@ -72,24 +72,24 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
 
         // again shorten var name
         var s = this.sProg_;
-        c.useProgram(s)
+        c.useProgram(s);
 
         // store references to the vertex and color attributes in the shaders
-        s.vertPosition = c.getAttribLocation(s, 'vertPosition');
+        s.vertPosition = c.getAttribLocation(s, "vertPosition");
         c.enableVertexAttribArray(s.vertPosition);
-        s.color = c.getAttribLocation(s, 'color');
+        s.color = c.getAttribLocation(s, "color");
         c.enableVertexAttribArray(s.color);
 
         // store references to the matrix uniforms
-        s.mvpMat = c.getUniformLocation(s, 'mvpMat');
+        s.mvpMat = c.getUniformLocation(s, "mvpMat");
 
         // buffer object for tree
         s.treeVertBuff = c.createBuffer();
         this.treeVertSize = 0;
 
         // buffer object used to thicken sampleLines
-        s.sampleThinkBuff = c.createBuffer();
-        this.sampleThinkSize = 0;
+        s.sampleThickBuff = c.createBuffer();
+        this.sampleThickSize = 0;
 
         // buffer object for tree nodes
         s.nodeVertBuff = c.createBuffer();
@@ -110,7 +110,11 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         this.scaleBy = 1.2;
 
         // place camera
-        this.cam.placeCamera([0,0,$(window).width() / 2], [0, 0, 0], [0, 1, 0]);
+        this.cam.placeCamera(
+            [0, 0, $(window).width() / 2],
+            [0, 0, 0],
+            [0, 1, 0]
+        );
 
         // create mouse events to handle moving/zooming the tree
         this.setMouseEvents();
@@ -148,13 +152,17 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         // complile shaders
         c.compileShader(vertShader);
         if (!c.getShaderParameter(vertShader, c.COMPILE_STATUS)) {
-            console.error("ERROR compiling vertex shader!",
-                          c.getShaderInfoLog(vertShader));
+            console.error(
+                "ERROR compiling vertex shader!",
+                c.getShaderInfoLog(vertShader)
+            );
         }
         c.compileShader(fragShader);
         if (!c.getShaderParameter(fragShader, c.COMPILE_STATUS)) {
-            console.error("error compiling fragment shader!",
-                          c.getShaderInfoLog(fragShader));
+            console.error(
+                "error compiling fragment shader!",
+                c.getShaderInfoLog(fragShader)
+            );
         }
 
         // create program
@@ -186,7 +194,6 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
      */
     Drawer.prototype.bindBuffer = function(buffer) {
         // defines constants for a vertex. A vertex is the form [x, y, r, g, b]
-        const VERTEX_SIZE = 5;
         const COORD_SIZE = 2;
         const COORD_OFFSET = 0;
         const COLOR_SIZE = 3;
@@ -203,17 +210,18 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
             COORD_SIZE,
             c.FLOAT,
             c.FALSE,
-            VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
-            COORD_OFFSET);
+            this.VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
+            COORD_OFFSET
+        );
 
         c.vertexAttribPointer(
             s.color,
             COLOR_SIZE,
             c.FLOAT,
             c.FALSE,
-            VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
+            this.VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
             COLOR_OFFEST * Float32Array.BYTES_PER_ELEMENT
-            );
+        );
     };
 
     /**
@@ -234,8 +242,8 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
      */
     Drawer.prototype.loadSampleThickBuf = function(data) {
         data = new Float32Array(data);
-        this.sampleThinkSize = data.length / 5;
-        this.fillBufferData_(this.sProg_.sampleThinkBuff, data);
+        this.sampleThickSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.sampleThickBuff, data);
     };
 
     /**
@@ -261,9 +269,8 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         this.bindBuffer(s.treeVertBuff);
         c.drawArrays(c.LINES, 0, this.treeVertSize);
 
-        this.bindBuffer(s.sampleThinkBuff);
-        c.drawArrays(c.TRIANGLES, 0, this.sampleThinkSize);
-
+        this.bindBuffer(s.sampleThickBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.sampleThickSize);
     };
 
     /**
@@ -276,7 +283,10 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         // need for use in closures
         var canvas = this.contex_.canvas;
         var drawer = this;
-        var curX = 0, curY = 0, newX = 0, newY = 0;
+        var curX = 0,
+            curY = 0,
+            newX = 0,
+            newY = 0;
 
         // moves tree as long as mouse is pressed down
         var moveTree = function(e) {
@@ -290,7 +300,6 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
             var newTreeCoords = gl.vec4.fromValues(newX, newY, 0, 1);
             var transVec = gl.vec4.create();
             gl.vec4.sub(transVec, newTreeCoords, curTreeCoords);
-
 
             // create translation matrix
             var transMat = gl.mat4.create();
@@ -309,7 +318,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         var stopMove = function(e) {
             document.onmouseup = null;
             document.onmousemove = null;
-            canvas.style.cursor = 'default';
+            canvas.style.cursor = "default";
         };
 
         // adds the listenrs to the document to move tree
@@ -319,7 +328,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
             curY = center - e.clientY;
             document.onmouseup = stopMove;
             document.onmousemove = moveTree;
-            canvas.style.cursor = 'none';
+            canvas.style.cursor = "none";
         };
 
         // zooms the tree in/out
@@ -339,7 +348,7 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
             gl.mat4.multiply(drawer.worldMat, transMat, drawer.worldMat);
 
             // zoom tree
-            var zoomBy = (e.deltaY < 0) ? drawer.scaleBy : 1/drawer.scaleBy;
+            var zoomBy = e.deltaY < 0 ? drawer.scaleBy : 1 / drawer.scaleBy;
             var zoomVec = gl.vec3.fromValues(zoomBy, zoomBy, zoomBy);
             var zoomMat = gl.mat4.create();
             gl.mat4.fromScaling(zoomMat, zoomVec);
@@ -371,8 +380,8 @@ define(['jquery', 'glMatrix', 'Camera'], function($, gl, Camera) {
         var center = $(window).width() / 2;
 
         // center (x,y) in screen space
-        x = (x - center);
-        y = (center - y);
+        x = x - center;
+        y = center - y;
 
         // calculate (x,y) in tree space
         var treeSpace = gl.vec4.fromValues(x, y, 0, 1);
