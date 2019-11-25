@@ -184,18 +184,8 @@ define(["Colorer"], function(Colorer) {
             this.sSel.appendChild(opt);
         }
 
-        // // The color map selector
-        for (i = 0; i < Colorer.__Colormaps.length; i++) {
-            var map = Colorer.__Colormaps[i];
-            opt = document.createElement("option");
-            opt.innerHTML = map.name;
-            opt.value = map.id;
-
-            if (map.type == "Header") {
-                opt.disabled = true;
-            }
-            this.sColor.appendChild(opt);
-        }
+        // The color map selector
+        Colorer.addColorsToSelect(this.sColor);
 
         // toggle the sample/color map selectors
         this.sChk.onclick = function() {

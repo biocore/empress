@@ -9,7 +9,7 @@ empress-biom.py
 node_modules/
 
 # Templated filed created when running empress-tree.py
-test_init.html
+*.html
 
 # # Python Byte code folder
 # empress/__pycache__/

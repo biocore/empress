@@ -265,12 +265,12 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @param {Array} names Array of tree node names
      *
-     * @return {Array} A list of keys cooresponding to entries in _treeData
+     * @return {Set} A set of keys cooresponding to entries in _treeData
      */
     Empress.prototype._namesToKeys = function(names) {
-        var keys = [];
+        var keys = new Set();
         for (var i = 0; i < names.length; i++) {
-            keys.push(...this._nameToKeys[names[i]]);
+            this._nameToKeys[names[i]].forEach(key => keys.add(key));
         }
         return keys;
     };
@@ -284,7 +284,10 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      */
     Empress.prototype._keepUniqueKeys = function(keys) {
         // get unique keys
-        var uniqueKeys = _.chain(keys)
+        var items = Object.keys(keys);
+        var i;
+
+        var uniqueKeysArray = _.chain(keys)
             .values()
             .map(function(item) {
                 return [...item];
@@ -298,13 +301,14 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
             })
             .flatten()
             .value();
+        var uniqueKeys = new Set(uniqueKeysArray);
 
         // get the unique keys in each item
         var result = {};
         var items = Object.keys(keys);
         for (var i = 0; i < items.length; i++) {
             var itemKeys = [...keys[items[i]]];
-            result[items[i]] = _.intersection(itemKeys, uniqueKeys);
+            result[items[i]] = _.filter(itemKeys, key => uniqueKeys.has(key));
         }
 
         return result;
@@ -357,7 +361,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
         // convert observation IDs to _treeData keys
         for (i = 0; i < categories.length; i++) {
             category = categories[i];
-            obs[category] = new Set([...this._namesToKeys(obs[category])]);
+            obs[category] = this._namesToKeys(obs[category]);
         }
 
         // assign colors to categories
@@ -367,8 +371,32 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
         var keyInfo = this._assignColor(categories, color, false);
 
         // assign internal nodes to approperiate category based on its children
+        obs = this._projectObservations(obs);
+
+        // color tree
+        this._colorTree(obs, cm);
+
+        // get percent of branches belonging to unique category (i.e. just gut)
+        this.percentColoredBySample(obs, keyInfo);
+
+        return keyInfo;
+    };
+
+    /**
+     * Finds the branches that are unique to each category in obs
+     *
+     * @param {Object} observations grouped by categories
+     *
+     * @return {Object} the branches of the tree that are uniqe to category in
+                        obs
+    */
+    Empress.prototype._projectObservations = function(obs) {
+        var tree = this._tree;
+        var categories = Object.keys(obs);
+
+        // assign internal nodes to approperiate category based on its children
         // iterate using postorder
-        for (i = 1; i < tree.size; i++) {
+        for (var i = 1; i < tree.size; i++) {
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
 
@@ -381,24 +409,23 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
             }
         }
         obs = this._keepUniqueKeys(obs);
+        return obs;
+    }
 
+    Empress.prototype._colorTree = function(obs, cm) {
+        var categories = Object.keys(obs);
         // color tree
-        for (i = 0; i < categories.length; i++) {
+        for (var i = 0; i < categories.length; i++) {
             category = categories[i];
             var keys = [...obs[category]];
 
-            for (j = 0; j < keys.length; j++) {
+            for (var j = 0; j < keys.length; j++) {
                 var key = keys[j];
                 this._treeData[key].color = cm[category].color;
                 this._treeData[key].sampleColored = true;
             }
         }
-
-        // get percent of branches belonging to unique category (i.e. just gut)
-        this.percentColoredBySample(obs, keyInfo);
-
-        return keyInfo;
-    };
+    }
 
     /**
      * Cacluates the total and relative pertange of the tree that was colored by

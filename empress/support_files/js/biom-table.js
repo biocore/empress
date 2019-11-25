@@ -36,6 +36,25 @@ define([], function() {
     }
 
     /**
+     * Returns a list of observations in the sample
+     * Example: countArray is [1,0], obsIDs is ['OTU1', 'OTU2'] => returns ['OTU1']
+     *
+     * @param {Array} countArray - Array of counts for different tips
+     * @param {Array} obsIDs - Array of observation IDs for each index of the countArray
+     *
+     * @return {Array}
+     */
+    BIOMTable.convertToObs = function(countArray, obsIDs) {
+        var obs = [];
+        for (var i = 0; i < countArray.length; i++) {
+            if (countArray[i] != 0) {
+                obs.push(obsIDs[i]);
+            }
+        }
+        return obs;
+    };
+
+    /**
      * Returns a list of observations in the samples
      *
      * @param {Array} sIds - Array of sample Ids
@@ -51,16 +70,16 @@ define([], function() {
             var obs = this._obs[sIds[i]];
             obs.forEach(addToResult);
         }
-        return Array(result);
+        return Array.from(result);
     };
 
     /**
-     * Returns a dictionary of observation ids whose keys are the values of a sample
+     * Returns a object of observation ids whose keys are the values of a sample
      * category.
      *
      * @param {String} cat The category to return observation
      *
-     * @return {Dictionary}
+     * @return {Object}
      */
     BIOMTable.prototype.getObsBy = function(cat) {
         var result = {};
@@ -83,9 +102,9 @@ define([], function() {
     };
 
     /**
-     * Returns number of unique observations in samples.
+     * Returns the set of unique observations in samples.
      *
-     * @return {Number}
+     * @return {Set}
      */
     BIOMTable.prototype.getObservations = function() {
         var obs = new Set();
@@ -106,6 +125,38 @@ define([], function() {
      */
     BIOMTable.prototype.getSampleCategories = function() {
         return Object.keys(Object.values(this._samp)[0]).sort();
+    };
+
+    BIOMTable.prototype.getUniqueSampleValues = function(category) {
+        var values = new Set();
+        for (var sample in this._samp) {
+            var cVal = this._samp[sample][category];
+            if (!values.has(cVal)) {
+                values.add(cVal);
+            }
+        }
+        return [...values].sort();
+    };
+
+    BIOMTable.prototype.getTrajectoryObs = function(cat, traj, grad) {
+        var obs = {};
+        var samples = Object.keys(this._samp);
+        for(var i = 0; i < samples.length; i++) {
+            var sID = samples[i];
+            var sample = this._samp[sID];
+            if(traj === sample[cat]) {
+                if(!(sample[grad] in obs)) {
+                    obs[sample[grad]] = new Set();
+                }
+                this._obs[sID].forEach(x => obs[sample[grad]].add(x))
+            }
+        }
+
+        for (var key in obs) {
+            obs[key] = Array.from(obs[key]);
+        }
+
+        return obs;
     };
 
     return BIOMTable;

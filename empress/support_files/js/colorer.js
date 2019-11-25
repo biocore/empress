@@ -27,6 +27,22 @@ define(["chroma"], function(chroma) {
         return this.__colorer(color).hex();
     };
 
+    Colorer.addColorsToSelect = function(sel) {
+        // The color map selector
+        for (var i = 0; i < Colorer.__Colormaps.length; i++) {
+            var map = Colorer.__Colormaps[i];
+            var opt = document.createElement('option');
+            opt.innerHTML = map.name;
+            opt.value = map.id;
+
+            if (map.type == 'Header') {
+                opt.disabled = true;
+            }
+            sel.appendChild(opt);
+        }
+        // return sel;
+    };
+
     Colorer.__QIIME_COLOR = "discrete-coloring-qiime";
 
     // taken from the qiime/colors.py module; a total of 24 colors

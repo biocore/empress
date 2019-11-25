@@ -14,8 +14,8 @@ from statistics import mean
 from tree import Tree
 
 # create/parse tree
-tree_file = 'data/97_sites.nwk'
-# tree_file = 'data/97_otus_no_none.tree'
+# tree_file = 'data/97_sites.nwk'
+tree_file = 'data/97_otus_no_none.tree'
 
 # create/parse tree
 with open(tree_file) as file:
@@ -57,10 +57,14 @@ loader = FileSystemLoader('support_files/templates')
 env = Environment(loader=loader)
 temp = env.get_template('empress-template.html')
 
-# biom table
-with biom_open('data/76695_hmp_only_rare1250.biom') as f:
+# biom table (OLD CODE)
+# with biom_open('data/76695_hmp_only_rare1250.biom') as f:
 # with biom_open('data/17638_feature-table_merged_age1_7_and_hmp_rare1250.biom') as f:
-    feature_table = Table.from_hdf5(f).to_dataframe(dense=True).T
+#     feature_table = Table.from_hdf5(f).to_dataframe().T
+
+# biom table (NEW CODE)
+# feature_table = pd.read_csv("data/biom-pd.csv", index_col=0).T
+feature_table = pd.read_csv("data/all-biom-pd.csv", index_col=0)
 
 sample_metadata = pd.read_csv('data/metadata.tsv', sep='\t', index_col=0)
 
@@ -87,6 +91,6 @@ dev_temp_str = temp.render({
     'names': names,
     })
 
-with open('test_init.html', 'w') as file:
+with open('test_init_large.html', 'w') as file:
     file.write(dev_temp_str)
-webbrowser.open('file://' + os.path.realpath('test_init.html'))
+webbrowser.open('file://' + os.path.realpath('test_init_large.html'))

@@ -30,17 +30,7 @@ define(['Colorer'], function(Colorer) {
         var ap = this;
 
         // The color map selector
-        for (var i = 0; i < Colorer.__Colormaps.length; i++) {
-            var map = Colorer.__Colormaps[i];
-            var opt = document.createElement('option');
-            opt.innerHTML = map.name;
-            opt.value = map.id;
-
-            if (map.type == 'Header') {
-                opt.disabled = true;
-            }
-            this.colorSelect.appendChild(opt);
-        }
+        Colorer.addColorsToSelect(this.colorSelect);
 
         // gradient/trajectory categories
         var categories = this.animator.getSampleCategories();
@@ -49,44 +39,63 @@ define(['Colorer'], function(Colorer) {
             opt.value = categories[i];
             opt.innerHTML = categories[i];
             this.gradient.appendChild(opt);
-            this.trajectory.appendChild(opt);
         }
+        var options = this.gradient.innerHTML;
+        this.trajectory.innerHTML = options;
 
         this.playBtn.onclick = function() {
-            ap.__showAnimation();
+            // ap.__showAnimation();
+            var gradient = ap.gradient.value;
+            var trajectory = ap.trajectory.value;
+            var cm = ap.colorSelect.value;
+            var hide = ap.hideChk;
+            var lWidth = ap.lWidth.value;
+            ap.animator.setAnimationParameters(trajectory, gradient, cm, hide,
+                                               lWidth);
+            ap.__showAnimation()
         }
 
 
         this.rewindBtn.onclick = function() {
-            ap.__clearAnimation();
+            // ap.__clearAnimation();
+            ap.__nextTimeframe();
         }
     };
 
+    // TODO: make this play automatically
     AnimatePanel.prototype.__showAnimation = function() {
-        this.timeFramePanel.classList.remove('hidden');
+        console.log("Play animations!")
 
-        var colBy = this.catSelect.value;
-        var col = this.colorSelect.value;
-        var hide = this.hideChk.checked;
-        var lWidth = this.lWidth.value;
-        var keyInfo = this.animator.colorCurFrame(colBy, col, hide, lWidth);
-        this.legend.addColorKey(colBy, keyInfo, 'node', false);
+        // var colBy = this.catSelect.value;
+        // var col = this.colorSelect.value;
+        // var hide = this.hideChk.checked;
+        // var lWidth = this.lWidth.value;
+
+        // startAnimation() *************************
+        // Folowing code is temp while creating animations
+        this.legend.clearAllLegends();
+        var result = this.animator.showCurFrame();
+        this.legend.addColorKey(result.name, result.keyInfo, "node", false);
+        // ******************************************
+
+        // var keyInfo = this.animator.colorCurFrame(colBy, col, hide, lWidth);
+        // this.legend.addColorKey(colBy, keyInfo, 'node', false);
     }
 
     AnimatePanel.prototype.__clearAnimation = function() {
         // clear animation class
-        console.log('clear')
     }
 
     AnimatePanel.prototype.__prevTimeframe = function() {
-        this.legend.clearAllLegends();
-        this.animator.prevFrame();
-        this.__showAnimation();
+        // this.legend.clearAllLegends();
+        // this.animator.prevFrame();
+        // this.__showAnimation();
     }
 
     AnimatePanel.prototype.__nextTimeframe = function() {
-        this.legend.clearAllLegends();
-        this.animator.nextFrame();
+        // this.legend.clearAllLegends();
+        // this.animator.nextFrame();
+        // this.__showAnimation();
         this.__showAnimation();
     }
 
