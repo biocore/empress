@@ -23,3 +23,9 @@ Please see the `tests/README.md` file for instructions on how to run Empress' te
 
 This work is supported by IBM Research AI through the AI Horizons Network. For
 more information visit the [IBM AI Horizons Network website](https://www.research.ibm.com/artificial-intelligence/horizons-network/).
+
+Empress' JavaScript code is distributed with the source code of various
+third-party dependencies (in the `empress/support_files/vendor/` directory).
+Please see
+[DEPENDENCY_LICENSES.md](https://github.com/biocore/empress/blob/master/DEPENDENCY_LICENSES.md)
+for copies of these dependencies' licenses.
