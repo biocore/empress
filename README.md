@@ -5,6 +5,8 @@ Empress is a fast and scalable phylogenetic tree viewer.
 
 ## Installation
 
+### Installing Empress "Standalone"
+
 To install the current development version, we recommend creating a new conda
 environment:
 
@@ -12,12 +14,10 @@ environment:
 conda create -n empress python=3.6 numpy scipy pandas cython
 conda activate empress
 conda install -c bioconda scikit-bio biom-format
-pip install .
+pip install git+https://github.com/biocore/empress.git
 ```
 
-## Installing and using Empress through QIIME 2
-
-### Installing into a QIIME 2 environment
+### Installing Empress through QIIME 2
 
 Before following these instructions, make sure your QIIME 2 conda environment
 is activated (a version of at least 2019.1 is required). Then, run the
@@ -32,7 +32,7 @@ qiime empress
 If you see information about Empress' QIIME 2 plugin, the installation was
 successful!
 
-### Example: running Empress through QIIME 2
+## Example: Using Empress in QIIME 2
 
 Empress can visualize `Phylogeny[Rooted]` QIIME 2 artifacts.
 We're going to use data from the QIIME 2 [Moving Pictures Tutorial](https://docs.qiime2.org/2019.10/tutorials/moving-pictures/):
@@ -63,11 +63,11 @@ qiime empress plot \
 This QIIME 2 visualization can be viewed either using `qiime tools view` or by
 uploading it to [`view.qiime2.org`](https://view.qiime2.org).
 
-#### Screenshot
+### Screenshot
 
 ![Empress screenshot in q2view](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/screenshot.png)
 
-#### Empress' tests
+## Running Empress' Tests
 
 Please see the `tests/README.md` file for instructions on how to run Empress' tests.
 
