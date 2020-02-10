@@ -1,4 +1,5 @@
 from skbio import TreeNode
+import igraph
 import numpy as np
 
 
@@ -95,7 +96,7 @@ class Tree(TreeNode):
                 node.height = node.length
                 node.leafcount = 1
 
-    def coords(self, height, width):
+    def coords(self, height, width, layout):
         """ Returns coordinates of nodes to be rendered in plot.
 
         Parameters
@@ -104,11 +105,19 @@ class Tree(TreeNode):
             The height of the canvas.
         width : int
             The width of the canvas.
-
+        layout : str
+            One of "unrooted", "rectangular", "circular".
+            This is a temporary parameter -- I expect that the best thing here
+            will be precomputing all layouts so we can rapidly switch in the JS
         """
 
         # calculates coordinates of all nodes and the shortest/longest branches
-        self.rescale(width, height)
+        if layout == "unrooted":
+            self.rescale_unrooted(width, height)
+        elif layout == "rectangular":
+            self.rescale_rectangular(width, height)
+        else:
+            self.rescale_circular(width, height)
         centerX = self.x2
         centerY = self.y2
 
@@ -116,7 +125,98 @@ class Tree(TreeNode):
             node.x2 = node.x2 - centerX
             node.y2 = node.y2 - centerY
 
-    def rescale(self, width, height):
+    def rescale_circular(self, width, height):
+        """ Circular layout.
+
+        Parameters
+        ----------
+        width : float
+            width of the canvas
+        height : float
+            height of the canvas
+        """
+        self.x2 = width / 2
+        self.y2 = height / 2
+        i = 0
+        # TODO fan out circularly by angles, and use sin/cos to set positions
+        # accordingly. Right now this kinda just UHHH draws a diagonal line :|
+        # TODO 2: just use js circ layout code as base
+        # TODO 3: or use igraph R-T layout with the circular option; may be
+        # easy. For drawing the 'lines' between sibling nodes, we can just draw
+        # bezier curves using a single control point at the midpoint above the
+        # straight-line, i think.
+        for node in self.preorder(include_self=False):
+            node.x2 = node.parent.x2 + (node.length * 100)
+            node.y2 = node.parent.y2 + (node.length * 100)
+
+    def rescale_rectangular(self, width, height):
+        """ Diagonal layout.
+
+        Parameters
+        ----------
+        width : float
+            width of the canvas
+        height : float
+            height of the canvas
+        """
+        # 1. Convert TreeNode to igraph
+        nodename_to_igtree_name = {}
+        igtree = igraph.Graph(directed=True)
+
+        # 1.1. Add nodes to the igraph object, labelled by their names.
+        # NOTE: this assumes that all of the node names in this Tree are
+        # unique. That should always be the case, since name_internal_nodes()
+        # should've been called on this Tree already.
+        # (TODO: add in validation code that this is in fact the case?)
+        igtree.add_vertices([n.name for n in self.preorder()])
+
+        # 1.2. Add edges from each non-leaf node to its children nodes
+        for n in self.preorder():
+            if n.has_children():
+                for c in n.children:
+                    # Done using add_edges() to save on memory
+                    # There is def a faster way to do this but this should at
+                    # least work for now
+                    igtree.add_edges([(n.name, c.name)])
+
+        # 2. Now that we have an accurate representation of the tree as an
+        #    igraph, use igtree.layout_reingold_tilford() with root=the
+        #    root node's igraph ID to do the hard work of layout.
+        rtlayout = igtree.layout_reingold_tilford(root=[self.name])
+
+        # 3. By default, igraph's Reingold-Tilford layout draws trees starting
+        #    at the "bottom" and going up (if you interepret the points as in a
+        #    Cartesian grid). We need to rotate the tree to make it go from
+        #    left to right. (I tried -90 and 90 and -90 does what I want, so I
+        #    assume the angles are counterclockwise)
+        rtlayout.rotate(-90)
+
+        # 4. At this point we have a feasible layout that ignores edge lengths.
+        #    How can we account for those while maintaining the pretty layout
+        #    we just had?
+        #    So, if we're gonna use this for a rect layout, we can "push down"
+        #    all descendants of each node by just moving their coordinates away
+        #    from the root by a distance proportional to the edge length. This
+        #    is doable recursively from the root (probs able to do it in linear
+        #    time but that's a task for later). So do that, adjusting nodes'
+        #    x-coords accordingly (since we're drawing the tree from L -> R).
+        # TODO: how to access layout coordinates by node names? might need to
+        # just use the 0-indexing shit and then define mapping explicitly
+        self.x2 = rtlayout[0][0]
+        self.y2 = rtlayout[0][1]
+        for n in self.preorder(include_self=False):
+            # "Push" a node to the right based on its parent
+            n.x2 = n.parent.x2 + n.length
+            n.y2 = rtlayout[n.name][1]
+        # 5. Now we have the layout! In the JS we'll need to draw each node as
+        #    a vertical line, and then draw horizontal lines at the end of each
+        #    node's line between the leftmost and rightmost child node. Will
+        #    need to finagle the WebGL code to get this working. (For each
+        #    non-leaf node, we'll need one horizontal (ok, vertical since we're
+        #    drawing from L to R) line.)
+        # TODO: do scaling stuff by width/height
+
+    def rescale_unrooted(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
         This method will find the best orientation and scaling possible to
         fit the tree within the dimensions specified by width and height.
@@ -137,6 +237,9 @@ class Tree(TreeNode):
         -----
 
         """
+        # Recall that 360 degrees is equal to (2 * pi) radians.
+        # You can think of this variable as "the maximum angle we can 'give' to
+        # each leaf of the tree".
         angle = (2 * np.pi) / self.leafcount
 
         best_scale = 0

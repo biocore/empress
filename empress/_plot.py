@@ -48,7 +48,9 @@ def plot(output_dir: str,
     tools.name_internal_nodes(empress_tree)
 
     # TODO: figure out implications of screen size
-    empress_tree.coords(4020, 4020)
+    empress_tree.coords(4020, 4020, "rectangular")
+    #for i in empress_tree.postorder():
+    #    print("{} ({}, {})".format(i.name, i.x2, i.y2))
 
     tree_data = {}
     names_to_keys = {}
