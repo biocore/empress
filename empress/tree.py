@@ -137,7 +137,6 @@ class Tree(TreeNode):
         """
         self.x2 = width / 2
         self.y2 = height / 2
-        i = 0
         # TODO fan out circularly by angles, and use sin/cos to set positions
         # accordingly. Right now this kinda just UHHH draws a diagonal line :|
         # TODO 2: just use js circ layout code as base
@@ -160,7 +159,7 @@ class Tree(TreeNode):
             height of the canvas
         """
         # 1. Convert TreeNode to igraph
-        nodename_to_igtree_name = {}
+        # nodename_to_igtree_name = {}
         igtree = igraph.Graph(directed=True)
 
         # 1.1. Add nodes to the igraph object, labelled by their names.
