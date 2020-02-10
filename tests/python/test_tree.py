@@ -48,7 +48,7 @@ class TestTree(unittest.TestCase):
 
     def test_to_igraph(self):
         t = Tree.from_tree(self.tree)
-        ig, n2i = self.tree.to_igraph()
+        ig, n2i = t.to_igraph()
         # Check that node name -> integer ID mapping is valid
         self.assertEqual(
             set(n2i.keys()), set(["a", "b", "c", "d", "e", "f", "g", "h", "i"])
@@ -73,6 +73,7 @@ class TestTree(unittest.TestCase):
             set(ig.neighbors(n2i["h"], mode="OUT")),
             set([n2i["c"], n2i["d"]])
         )
+
 
 if __name__ == "__main__":
     unittest.main()
