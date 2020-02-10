@@ -96,7 +96,7 @@ class Tree(TreeNode):
                 node.height = node.length
                 node.leafcount = 1
 
-    def coords(self, height, width, layout):
+    def coords(self, height, width, layout="unrooted"):
         """ Returns coordinates of nodes to be rendered in plot.
 
         Parameters
@@ -148,6 +148,45 @@ class Tree(TreeNode):
             node.x2 = node.parent.x2 + (node.length * 100)
             node.y2 = node.parent.y2 + (node.length * 100)
 
+    def to_igraph(self):
+        """Returns this Tree represented as an igraph.Graph object.
+
+            Returns
+            -------
+            igtree : igraph.Graph
+                Representation of this tree's topology.
+            nodename_to_int : dict
+                Mapping of node names to int node IDs in igtree.
+        """
+        igtree = igraph.Graph(directed=True)
+
+        # Add nodes to the igraph
+        num_nodes = self.count()
+        igtree.add_vertices(num_nodes)
+        # Construct a dict mapping node names to integer IDs in the igraph
+        # Importantly, we use a pre-order traversal: so the first node name on
+        # this list should be from the root node
+        names = [n.name for n in self.preorder()]
+        # Sanity check 1: all the names in this tree are unique, right?
+        if len(set(names)) < len(names):
+            raise ValueError("Node names aren't unique in the Tree!")
+        # Sanity check 2: root's name comes first on the list of names, right?
+        if names[0] != self.name:
+            raise ValueError("Root node name hasn't been ordered correctly")
+        nodename_to_int = dict(zip(names, range(num_nodes)))
+
+        # Add edges to the igraph
+        # This could probably be optimized
+        for n in self.preorder():
+            if n.has_children():
+                ni = nodename_to_int[n.name]
+                edges = []
+                for c in n.children:
+                    edges.append((ni, nodename_to_int[c.name]))
+                igtree.add_edges(edges)
+
+        return igtree, nodename_to_int
+
     def rescale_rectangular(self, width, height):
         """ Diagonal layout.
 
@@ -158,61 +197,40 @@ class Tree(TreeNode):
         height : float
             height of the canvas
         """
-        # 1. Convert TreeNode to igraph
-        # nodename_to_igtree_name = {}
-        igtree = igraph.Graph(directed=True)
+        igtree, nodename_to_int = self.to_igraph()
+        # Root the layout at the root node of the tree
+        rtlayout = igtree.layout_reingold_tilford(root=0)
 
-        # 1.1. Add nodes to the igraph object, labelled by their names.
-        # NOTE: this assumes that all of the node names in this Tree are
-        # unique. That should always be the case, since name_internal_nodes()
-        # should've been called on this Tree already.
-        # (TODO: add in validation code that this is in fact the case?)
-        igtree.add_vertices([n.name for n in self.preorder()])
-
-        # 1.2. Add edges from each non-leaf node to its children nodes
-        for n in self.preorder():
-            if n.has_children():
-                for c in n.children:
-                    # Done using add_edges() to save on memory
-                    # There is def a faster way to do this but this should at
-                    # least work for now
-                    igtree.add_edges([(n.name, c.name)])
-
-        # 2. Now that we have an accurate representation of the tree as an
-        #    igraph, use igtree.layout_reingold_tilford() with root=the
-        #    root node's igraph ID to do the hard work of layout.
-        rtlayout = igtree.layout_reingold_tilford(root=[self.name])
-
-        # 3. By default, igraph's Reingold-Tilford layout draws trees starting
-        #    at the "bottom" and going up (if you interepret the points as in a
-        #    Cartesian grid). We need to rotate the tree to make it go from
-        #    left to right. (I tried -90 and 90 and -90 does what I want, so I
-        #    assume the angles are counterclockwise)
+        # By default, igraph's Reingold-Tilford layout draws trees starting
+        # at the "bottom" and going up (if you interepret the points as in a
+        # Cartesian grid). We need to rotate the tree to make it go from
+        # left to right. (I tried -90 and 90 and -90 does what I want, so I
+        # assume the angles are counterclockwise)
         rtlayout.rotate(-90)
 
-        # 4. At this point we have a feasible layout that ignores edge lengths.
-        #    How can we account for those while maintaining the pretty layout
-        #    we just had?
-        #    So, if we're gonna use this for a rect layout, we can "push down"
-        #    all descendants of each node by just moving their coordinates away
-        #    from the root by a distance proportional to the edge length. This
-        #    is doable recursively from the root (probs able to do it in linear
-        #    time but that's a task for later). So do that, adjusting nodes'
-        #    x-coords accordingly (since we're drawing the tree from L -> R).
-        # TODO: how to access layout coordinates by node names? might need to
-        # just use the 0-indexing shit and then define mapping explicitly
+        # At this point we have a feasible layout that ignores edge lengths.
+        # How can we account for those while maintaining the pretty layout
+        # we just had?
+        # So, if we're gonna use this for a rect layout, we can "push down"
+        # all descendants of each node by just moving their coordinates away
+        # from the root by a distance proportional to the edge length. This
+        # is doable recursively from the root (probs able to do it in linear
+        # time but that's a task for later). So do that, adjusting nodes'
+        # x-coords accordingly (since we're drawing the tree from L -> R).
         self.x2 = rtlayout[0][0]
         self.y2 = rtlayout[0][1]
         for n in self.preorder(include_self=False):
+            ni = nodename_to_int[n.name]
             # "Push" a node to the right based on its parent
             n.x2 = n.parent.x2 + n.length
-            n.y2 = rtlayout[n.name][1]
-        # 5. Now we have the layout! In the JS we'll need to draw each node as
-        #    a vertical line, and then draw horizontal lines at the end of each
-        #    node's line between the leftmost and rightmost child node. Will
-        #    need to finagle the WebGL code to get this working. (For each
-        #    non-leaf node, we'll need one horizontal (ok, vertical since we're
-        #    drawing from L to R) line.)
+            n.y2 = rtlayout[ni][1]
+
+        # Now we have the layout! In the JS we'll need to draw each node as
+        # a vertical line, and then draw horizontal lines at the end of each
+        # node's line between the leftmost and rightmost child node. Will
+        # need to finagle the WebGL code to get this working. (For each
+        # non-leaf node, we'll need one horizontal (ok, vertical since we're
+        # drawing from L to R) line.)
         # TODO: do scaling stuff by width/height
 
     def rescale_unrooted(self, width, height):

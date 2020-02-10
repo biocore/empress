@@ -41,11 +41,14 @@ class TestTree(unittest.TestCase):
             self.assertAlmostEqual(x_test, x, places=5)
             self.assertAlmostEqual(y_test, y, places=5)
 
-    def test_rescale(self):
+    def test_rescale_unrooted(self):
         t = Tree.from_tree(self.tree)
         self.assertAlmostEqual(
-            t.rescale(500, 500), 74.609165340334656, places=5)
+            t.rescale_unrooted(500, 500), 74.609165340334656, places=5)
 
+    def test_to_igraph(self):
+        t = Tree.from_tree(self.tree)
+        igtree, n2i = self.tree.to_igraph()
 
 if __name__ == "__main__":
     unittest.main()
