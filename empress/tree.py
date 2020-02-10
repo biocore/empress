@@ -196,6 +196,13 @@ class Tree(TreeNode):
             width of the canvas
         height : float
             height of the canvas
+
+        References
+        ----------
+        https://rachel53461.wordpress.com/2014/04/20/algorithm-for-drawing-trees/
+            clear explanation of Reingold-Tilford
+        https://reddit.com/r/Python/comments/bqia6/-/c0o2k9l/
+            pointed me to igraph
         """
         igtree, nodename_to_int = self.to_igraph()
         # Root the layout at the root node of the tree
@@ -208,21 +215,20 @@ class Tree(TreeNode):
         # assume the angles are counterclockwise)
         rtlayout.rotate(-90)
 
-        # At this point we have a feasible layout that ignores edge lengths.
-        # How can we account for those while maintaining the pretty layout
-        # we just had?
-        # So, if we're gonna use this for a rect layout, we can "push down"
-        # all descendants of each node by just moving their coordinates away
-        # from the root by a distance proportional to the edge length. This
-        # is doable recursively from the root (probs able to do it in linear
-        # time but that's a task for later). So do that, adjusting nodes'
-        # x-coords accordingly (since we're drawing the tree from L -> R).
+        # This layout didn't take into account edge lengths, but this is easy
+        # in a rectangular layout setting: we can "push down" all descendants
+        # of each node by just moving their coordinates away from the root by
+        # a distance proportional to the edge length.
         self.x2 = rtlayout[0][0]
         self.y2 = rtlayout[0][1]
         for n in self.preorder(include_self=False):
             ni = nodename_to_int[n.name]
             # "Push" a node to the right based on its parent
             n.x2 = n.parent.x2 + n.length
+            # The node's position compared to the other nodes on its "layer"
+            # (well, it might not be oriented with them due to length stuff
+            # now) remains the same. These positions are the hard part of tree
+            # layout, and "pushing" nodes down shouldn't impact them.
             n.y2 = rtlayout[ni][1]
 
         # Now we have the layout! In the JS we'll need to draw each node as
