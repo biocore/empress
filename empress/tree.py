@@ -155,37 +155,30 @@ class Tree(TreeNode):
             -------
             igtree : igraph.Graph
                 Representation of this tree's topology.
-            nodename_to_int : dict
-                Mapping of node names to int node IDs in igtree.
+            node_to_int_id : dict
+                Mapping of nodes to int node IDs in igtree.
         """
         igtree = igraph.Graph(directed=True)
 
         # Add nodes to the igraph
         num_nodes = self.count()
         igtree.add_vertices(num_nodes)
-        # Construct a dict mapping node names to integer IDs in the igraph
+        # Construct a dict mapping nodes to integer IDs in the igraph
         # Importantly, we use a pre-order traversal: so the first node name on
         # this list should be from the root node
-        names = [n.name for n in self.preorder()]
-        # Sanity check 1: all the names in this tree are unique, right?
-        if len(set(names)) < len(names):
-            raise ValueError("Node names aren't unique in the Tree!")
-        # Sanity check 2: root's name comes first on the list of names, right?
-        if names[0] != self.name:
-            raise ValueError("Root node name hasn't been ordered correctly")
-        nodename_to_int = dict(zip(names, range(num_nodes)))
+        node_to_int_id = dict(zip(self.preorder(), range(num_nodes)))
 
         # Add edges to the igraph
         # This could probably be optimized
         for n in self.preorder():
             if n.has_children():
-                ni = nodename_to_int[n.name]
+                ni = node_to_int_id[n]
                 edges = []
                 for c in n.children:
-                    edges.append((ni, nodename_to_int[c.name]))
+                    edges.append((ni, node_to_int_id[c]))
                 igtree.add_edges(edges)
 
-        return igtree, nodename_to_int
+        return igtree, node_to_int_id
 
     def rescale_rectangular(self, width, height):
         """ Diagonal layout.
@@ -204,7 +197,7 @@ class Tree(TreeNode):
         https://reddit.com/r/Python/comments/bqia6/-/c0o2k9l/
             pointed me to igraph
         """
-        igtree, nodename_to_int = self.to_igraph()
+        igtree, node_to_int_id = self.to_igraph()
         # Root the layout at the root node of the tree
         rtlayout = igtree.layout_reingold_tilford(root=0)
 
@@ -222,7 +215,7 @@ class Tree(TreeNode):
         self.x2 = rtlayout[0][0]
         self.y2 = rtlayout[0][1]
         for n in self.preorder(include_self=False):
-            ni = nodename_to_int[n.name]
+            ni = node_to_int_id[n]
             # "Push" a node to the right based on its parent
             n.x2 = n.parent.x2 + n.length
             # The node's position compared to the other nodes on its "layer"
@@ -237,7 +230,9 @@ class Tree(TreeNode):
         # need to finagle the WebGL code to get this working. (For each
         # non-leaf node, we'll need one horizontal (ok, vertical since we're
         # drawing from L to R) line.)
-        # TODO: do scaling stuff by width/height
+        # TODO: do scaling stuff by width/height (find min and max y2 values, I
+        # guess, and the min and max x2 values (min'll be 0 for root at least)
+        # -- and then using those minima/maxima interpolate accordingly).
 
     def rescale_unrooted(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.

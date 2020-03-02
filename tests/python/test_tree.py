@@ -49,30 +49,22 @@ class TestTree(unittest.TestCase):
     def test_to_igraph(self):
         t = Tree.from_tree(self.tree)
         ig, n2i = t.to_igraph()
-        # Check that node name -> integer ID mapping is valid
+        # Check that node -> integer ID mapping is valid
         self.assertEqual(
-            set(n2i.keys()), set(["a", "b", "c", "d", "e", "f", "g", "h", "i"])
+            set([n.name for n in n2i.keys()]),
+            set(["a", "b", "c", "d", "e", "f", "g", "h", "i"])
         )
-        self.assertEqual(n2i["i"], 0)
+        self.assertEqual(n2i[t.root()], 0)
         self.assertEqual(set(n2i.values()), set(range(9)))
-        # Check that graph topology is correct
-        # preorder traversal is *probably* the same everywhere, but just to be
-        # flexible we assume that the only int ID we know for sure is the root,
-        # and everything else we look up in the mapping (which at this point
-        # in the test we've already validated)
-        self.assertEqual(set(ig.neighbors(0)), set([n2i["g"], n2i["h"]]))
-        self.assertEqual(
-            set(ig.neighbors(n2i["g"], mode="OUT")),
-            set([n2i["f"], n2i["b"]])
-        )
-        self.assertEqual(
-            set(ig.neighbors(n2i["f"], mode="OUT")),
-            set([n2i["a"], n2i["e"]])
-        )
-        self.assertEqual(
-            set(ig.neighbors(n2i["h"], mode="OUT")),
-            set([n2i["c"], n2i["d"]])
-        )
+
+        # Check that the topology of the igraph matches the tree topology
+        for n in t.preorder():
+            if n.has_children():
+                child_ids = [n2i[c] for c in n.children]
+                self.assertEqual(
+                    set(ig.neighbors(n2i[n], mode="OUT")),
+                    set(child_ids)
+                )
 
 
 if __name__ == "__main__":
