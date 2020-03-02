@@ -1,5 +1,5 @@
 from skbio import TreeNode
-import pygraphviz
+import igraph
 import numpy as np
 
 
@@ -148,35 +148,37 @@ class Tree(TreeNode):
             node.x2 = node.parent.x2 + (node.length * 100)
             node.y2 = node.parent.y2 + (node.length * 100)
 
-    def to_gv(self):
-        """Returns this Tree represented as a pygraphviz.AGraph object.
+    def to_igraph(self):
+        """Returns this Tree represented as an igraph.Graph object.
 
             Returns
             -------
-            pgtree : pygraphviz.AGraph
+            igtree : igraph.Graph
                 Representation of this tree's topology.
             node_to_int_id : dict
-                Mapping of nodes to int node IDs in pgtree.
+                Mapping of nodes to int node IDs in igtree.
         """
-        pgtree = pygraphviz.AGraph(directed=True)
+        igtree = igraph.Graph(directed=True)
 
-        # Add nodes to the graph
+        # Add nodes to the igraph
         num_nodes = self.count()
-        for i in num_nodes:
-            pgtree.add_node(i)
+        igtree.add_vertices(num_nodes)
         # Construct a dict mapping nodes to integer IDs in the igraph
         # Importantly, we use a pre-order traversal: so the first node name on
         # this list should be from the root node
         node_to_int_id = dict(zip(self.preorder(), range(num_nodes)))
 
-        # Add edges to the graph
+        # Add edges to the igraph
+        # This could probably be optimized
         for n in self.preorder():
             if n.has_children():
                 ni = node_to_int_id[n]
+                edges = []
                 for c in n.children:
-                    pgtree.add_edge(ni, node_to_int_id[c])
+                    edges.append((ni, node_to_int_id[c]))
+                igtree.add_edges(edges)
 
-        return pgtree, node_to_int_id
+        return igtree, node_to_int_id
 
     def rescale_rectangular(self, width, height):
         """ Diagonal layout.
@@ -195,15 +197,23 @@ class Tree(TreeNode):
         https://reddit.com/r/Python/comments/bqia6/-/c0o2k9l/
             pointed me to igraph
         """
-        pgtree, node_to_int_id = self.to_igraph()
-        pgtree.layout(prog="dot")
+        igtree, node_to_int_id = self.to_igraph()
+        # Root the layout at the root node of the tree
+        rtlayout = igtree.layout_reingold_tilford(root=0)
+
+        # By default, igraph's Reingold-Tilford layout draws trees starting
+        # at the "bottom" and going up (if you interepret the points as in a
+        # Cartesian grid). We need to rotate the tree to make it go from
+        # left to right. (I tried -90 and 90 and -90 does what I want, so I
+        # assume the angles are counterclockwise)
+        rtlayout.rotate(-90)
 
         # This layout didn't take into account edge lengths, but this is easy
         # in a rectangular layout setting: we can "push down" all descendants
         # of each node by just moving their coordinates away from the root by
         # a distance proportional to the edge length.
-        self.x2 = pgtree.get_node(0).pos[0]
-        self.y2 = pgtree.get_node(0).pos[1]
+        self.x2 = rtlayout[0][0]
+        self.y2 = rtlayout[0][1]
         min_height = self.y2
         max_height = self.y2
         max_width = 0
@@ -217,7 +227,7 @@ class Tree(TreeNode):
             # (well, it might not be oriented with them due to length stuff
             # now) remains the same. These positions are the hard part of tree
             # layout, and "pushing" nodes down shouldn't impact them.
-            n.y2 = pgtree.get_node(ni).pos[1]
+            n.y2 = rtlayout[ni][1]
 
             if n.y2 > max_height:
                 max_height = n.y2
