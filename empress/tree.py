@@ -214,15 +214,32 @@ class Tree(TreeNode):
         # a distance proportional to the edge length.
         self.x2 = rtlayout[0][0]
         self.y2 = rtlayout[0][1]
+        min_height = self.y2
+        max_height = self.y2
+        max_width = 0
         for n in self.preorder(include_self=False):
             ni = node_to_int_id[n]
             # "Push" a node to the right based on its parent
             n.x2 = n.parent.x2 + n.length
+            if n.x2 > max_width:
+                max_width = n.x2
             # The node's position compared to the other nodes on its "layer"
             # (well, it might not be oriented with them due to length stuff
             # now) remains the same. These positions are the hard part of tree
             # layout, and "pushing" nodes down shouldn't impact them.
             n.y2 = rtlayout[ni][1]
+
+            if n.y2 > max_height:
+                max_height = n.y2
+            if n.y2 < min_height:
+                min_height = n.y2
+
+        x_scaling_factor = width / max_width
+        for n in self.preorder(include_self=False):
+            n.x2 *= x_scaling_factor
+        y_scaling_factor = height / (max_height - min_height)
+        for n in self.preorder(include_self=False):
+            n.y2 *= y_scaling_factor
 
         # Now we have the layout! In the JS we'll need to draw each node as
         # a vertical line, and then draw horizontal lines at the end of each
