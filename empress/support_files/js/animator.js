@@ -1,4 +1,4 @@
-define(['Colorer'], function(Colorer) {
+define(['Colorer', 'SummaryHelper'], function(Colorer, SummaryHelper) {
 
     /**
      * @class Animator
@@ -8,10 +8,12 @@ define(['Colorer'], function(Colorer) {
         this.biom = biom;
         this.trajectory = null;
         this.gradient = null;
+        this.gradientCategories = null;
         this.cm = null
         this.legendCM = {};
         this.timeframes = null;
         this.curFrame = null;
+        this.prevFrameObs = null;
         this.colorer = null;
         this.hide = null;
         this.lWidth = null;
@@ -34,13 +36,17 @@ define(['Colorer'], function(Colorer) {
             animator.cm[x] = { color: animator.colorer.getColorRGB(i) };
             animator.legendCM[x] = { color: animator.colorer.getColorHex(i) };
         });
+        this.gradientCategories = gradients;
     };
 
-    Animator.prototype.showCurFrame = function(color, hide, lWidth) {
+    // Animator.prototype.showCurFrame = function(color, hide, lWidth) {
+    Animator.prototype.showCurFrame = function(hide) {
         var name = this.trajectory + ": " + this.timeframes[this.curFrame];
-        var obs = this.biom.getTrajectoryObs(this.trajectory,
+        var trajectories = this.biom.getTrajectory(this.trajectory,
                                              this.timeframes[this.curFrame],
                                              this.gradient);
+        var obs = trajectories.obs;
+        var sIds = trajectories.sIds;
         this.empress.resetTree();
 
         // convert observation IDs to _treeData keys
@@ -55,16 +61,32 @@ define(['Colorer'], function(Colorer) {
         if (this.lWidth !== 1) {
             this.empress.thickenSameSampleLines(this.lWidth - 1);
         }
-        this.empress.setNonSampleBranchVisibility(this.hide);
+        // this.empress.setNonSampleBranchVisibility(this.hide);
+        this.empress.setNonSampleBranchVisibility(hide);
         this.empress.drawTree();
-        this._nextFrame();
+        this._nextFrame(sIds);
+
+        // if(this.prevFrameObs !== null) {
+        //     var prevSIds = this.prevFramesIds;
+        //     console.log("Unifrac from " + this.timeframes[this.curFrame - 1]
+        //                 + " to " + this.timeframes[this.curFrame]);
+        //     for(var i = 0; i < this.gradientCategories.length; i++) {
+        //         var cat = this.gradientCategories[i];
+        //         var unifrac = SummaryHelper.unifrac(this.biom,
+        //                                             this.empress._tree,
+        //                                             prevSIds[cat],
+        //                                             sIds[cat]);
+        //         console.log(cat + ": " + unifrac);
+        //     }
+        // }
         return {"name": name, "keyInfo":this.legendCM};
     };
 
 
-    Animator.prototype._nextFrame = function() {
+    Animator.prototype._nextFrame = function(obs) {
         if (this.curFrame < this.timeframes.length - 1) {
             this.curFrame++;
+            this.prevFrameObs = obs;
         }
     };
 

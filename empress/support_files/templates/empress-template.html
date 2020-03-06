@@ -75,23 +75,25 @@
             'Empress' : './js/empress',
             'Legend' : './js/legend',
             'Colorer' : './js/colorer',
-            'VectorOps' : './js/vector-ops'
+            'VectorOps' : './js/vector-ops',
+            'SummaryHelper' : './js/summary-helper'
         }
     });
 
     empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray',
                     'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimatePanel',
                     'Animator', 'BIOMTable', 'Empress', 'Legend', 'Colorer',
-                    'VectorOps'],
+                    'VectorOps', 'SummaryHelper'],
         function($, gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
                  SidePanel, AnimatePanel, Animator, BIOMTable, Empress, Legend,
-                 Colorer, VectorOps) {
+                 Colorer, VectorOps, SummaryHelper) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr, {{ names }});
 
         var canvas = document.getElementById('tree-surface')
-        var biom = new BIOMTable({{ obs_data }}, {{ sample_data | tojson }});
+        var biom = new BIOMTable({{ obs_data }}, {{ sample_data | tojson }},
+                                 {{ sample_data_type | tojson }});
         var empress = new Empress(tree, {{ tree_data | tojson }},
                                   {{ names_to_keys | tojson }}, biom, canvas);
         empress.initialize();
@@ -101,12 +103,10 @@
                                 document.getElementById('clade-color-key'));
 
         // The side menu
-        // TODO: rename class to SamplePanel
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress, legend);
         sPanel.addSampleTab();
 
-        // animate tab
         var animator = new Animator(empress, biom);
         var animatePanel = new AnimatePanel(animator, legend);
         animatePanel.addAnimationTab();

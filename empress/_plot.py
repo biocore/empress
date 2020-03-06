@@ -73,14 +73,18 @@ def plot(output_dir: str,
     env = Environment(loader=FileSystemLoader(TEMPLATES))
     temp = env.get_template('empress-template.html')
 
-    with open('wtf.txt', 'w') as f:
-        f.write(str(feature_table.index))
-
-
     # sample metadata
     sample_data = sample_metadata \
         .to_dataframe().filter(feature_table.index, axis=0) \
         .to_dict(orient='index')
+
+
+    sample_data_type = sample_metadata \
+        .to_dataframe().filter(feature_table.index, axis=0) \
+        .dtypes \
+        .to_dict()
+    sample_data_type = {key:'n' if pd.api.types.is_numeric_dtype(val) else 'o' \
+        for key, val in sample_data_type.items()}
 
     # create a mapping of observation ids and the samples that contain them
     obs_data = {}
@@ -95,6 +99,7 @@ def plot(output_dir: str,
         'tree_data': tree_data,
         'names_to_keys': names_to_keys,
         'sample_data': sample_data,
+        'sample_data_type': sample_data_type,
         'obs_data': obs_data,
         'names': names,
         })

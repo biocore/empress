@@ -13,7 +13,7 @@ define([], function() {
      * @return {BIOMTable}
      * constructs BIOMTable
      */
-    function BIOMTable(obs, samp) {
+    function BIOMTable(obs, samp, types) {
         /**
          * @type {Object}
          * The observation table format:
@@ -33,6 +33,15 @@ define([], function() {
          * @private
          */
         this._samp = samp;
+
+        /**
+         * @type {Object}
+         * The datatypes of sample metadata
+         * 'n' => numeric
+         * 'o' => object/string
+         * {category1: 'n' or 'o'}
+         */
+        this._types = types;
     }
 
     /**
@@ -129,26 +138,39 @@ define([], function() {
 
     BIOMTable.prototype.getUniqueSampleValues = function(category) {
         var values = new Set();
+        var isNumeric = this._types[category] === 'n';
         for (var sample in this._samp) {
             var cVal = this._samp[sample][category];
-            if (!values.has(cVal)) {
-                values.add(cVal);
+            if(cVal === "unknown" || (isNumeric &&isNaN(cVal))) {
+                continue;
             }
+            values.add(cVal);
         }
-        return [...values].sort();
+        values = [...values];
+        return isNumeric ? values.sort((a,b) => a-b) : values.sort();
     };
 
-    BIOMTable.prototype.getTrajectoryObs = function(cat, traj, grad) {
+    BIOMTable.prototype.getTrajectory = function(cat, traj, grad) {
         var obs = {};
+        var sIds = {};
         var samples = Object.keys(this._samp);
-        for(var i = 0; i < samples.length; i++) {
-            var sID = samples[i];
-            var sample = this._samp[sID];
-            if(traj === sample[cat]) {
-                if(!(sample[grad] in obs)) {
+        var isNumeric = this._types[grad] === 'n';
+        for (var i = 0; i < samples.length; i++) {
+            var sId = samples[i];
+            var sample = this._samp[sId];
+            if (traj === sample[cat]) {
+                var cVal = sample[grad];
+                if (cVal === "unknown" || (isNumeric &&isNaN(cVal))) {
+                    continue;
+                }
+                if (!(sample[grad] in obs)) {
                     obs[sample[grad]] = new Set();
                 }
-                this._obs[sID].forEach(x => obs[sample[grad]].add(x))
+                if (!(sample[grad] in sIds)) {
+                    sIds[sample[grad]] = new Set();
+                }
+                this._obs[sId].forEach(x => obs[sample[grad]].add(x))
+                sIds[sample[grad]].add(sId);
             }
         }
 
@@ -156,7 +178,7 @@ define([], function() {
             obs[key] = Array.from(obs[key]);
         }
 
-        return obs;
+        return {obs:obs, sIds: sIds};
     };
 
     return BIOMTable;

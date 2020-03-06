@@ -48,7 +48,7 @@ define(['Colorer'], function(Colorer) {
             var gradient = ap.gradient.value;
             var trajectory = ap.trajectory.value;
             var cm = ap.colorSelect.value;
-            var hide = ap.hideChk;
+            var hide = ap.hideChk.value;
             var lWidth = ap.lWidth.value;
             ap.animator.setAnimationParameters(trajectory, gradient, cm, hide,
                                                lWidth);
@@ -74,7 +74,7 @@ define(['Colorer'], function(Colorer) {
         // startAnimation() *************************
         // Folowing code is temp while creating animations
         this.legend.clearAllLegends();
-        var result = this.animator.showCurFrame();
+        var result = this.animator.showCurFrame(this.hide);
         this.legend.addColorKey(result.name, result.keyInfo, "node", false);
         // ******************************************
 

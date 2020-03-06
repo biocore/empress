@@ -413,6 +413,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
     }
 
     Empress.prototype._colorTree = function(obs, cm) {
+        console.log({obs: obs, cm})
         var categories = Object.keys(obs);
         // color tree
         for (var i = 0; i < categories.length; i++) {

@@ -49,8 +49,10 @@ for i, node in enumerate(empress_tree.postorder(include_self=True), 1):
         names_to_keys[node.name] = [i]
 
 names = []
+lengths = []
 for node in empress_tree.preorder(include_self=True):
     names.append(node.name)
+    lengths.append(node.length)
 
 # create template
 loader = FileSystemLoader('support_files/templates')
@@ -66,7 +68,11 @@ temp = env.get_template('empress-template.html')
 # feature_table = pd.read_csv("data/biom-pd.csv", index_col=0).T
 feature_table = pd.read_csv("data/all-biom-pd.csv", index_col=0)
 
-sample_metadata = pd.read_csv('data/metadata.tsv', sep='\t', index_col=0)
+sample_metadata = pd.read_csv('data/meta_unknown_to_NaN.csv', sep='\t',
+                              index_col=0)
+
+types = sample_metadata.dtypes.to_dict()
+sample_data_type = {k:'n' if v.kind in 'iufc' else 'o' for k,v in types.items()}
 
 # sample metadata
 sample_data = sample_metadata \
@@ -87,8 +93,10 @@ dev_temp_str = temp.render({
     'tree_data': tree_data,
     'names_to_keys': names_to_keys,
     'sample_data': sample_data,
+    'sample_data_type': sample_data_type,
     'obs_data': obs_data,
     'names': names,
+    'lengths': lengths
     })
 
 with open('test_init_large.html', 'w') as file:
