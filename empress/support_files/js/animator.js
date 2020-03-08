@@ -22,6 +22,7 @@ define(['Colorer', 'SummaryHelper'], function(Colorer, SummaryHelper) {
     Animator.prototype.setAnimationParameters = function(trajectory, gradient,
                                                          cm, hide, lWidth) {
         var animator = this;
+        // TODO: reverse trajectory and gradient
         this.trajectory = trajectory;
         this.gradient = gradient;
         this.timeframes = this.biom.getUniqueSampleValues(trajectory);
