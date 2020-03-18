@@ -201,11 +201,9 @@ class Tree(TreeNode):
                 max_width = n.x2
 
         x_scaling_factor = width / max_width
-        for n in self.preorder(include_self=False):
-            n.x2 *= x_scaling_factor
-
         y_scaling_factor = height / max_height
-        for n in self.preorder(include_self=False):
+        for n in self.preorder():
+            n.x2 *= x_scaling_factor
             n.y2 *= y_scaling_factor
 
         # Now we have the layout! In the JS we'll need to draw each node as
