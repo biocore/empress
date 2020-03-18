@@ -1,5 +1,4 @@
 from skbio import TreeNode
-import igraph
 import numpy as np
 
 
@@ -150,7 +149,7 @@ class Tree(TreeNode):
 
     def rescale_rectangular(self, width, height):
         """ Rectangular layout.
-        
+
         In this sort of layout, each tip has a distinct y-position, and parent
         y-positions are centered over their descendant tips' positions.
         x-positions are computed based on nodes' branch lengths.

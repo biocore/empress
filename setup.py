@@ -35,7 +35,7 @@ with open('README.md') as f:
     long_description = f.read()
 
 base = ["numpy", "scipy", "pandas",
-        "jinja2", "scikit-bio", "biom-format", "iow", "python-igraph"]
+        "jinja2", "scikit-bio", "biom-format", "iow"]
 test = ["pep8", "flake8", "nose"]
 all_deps = base + test
 

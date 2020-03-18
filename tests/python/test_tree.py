@@ -46,26 +46,6 @@ class TestTree(unittest.TestCase):
         self.assertAlmostEqual(
             t.rescale_unrooted(500, 500), 74.609165340334656, places=5)
 
-    def test_to_igraph(self):
-        t = Tree.from_tree(self.tree)
-        ig, n2i = t.to_igraph()
-        # Check that node -> integer ID mapping is valid
-        self.assertEqual(
-            set([n.name for n in n2i.keys()]),
-            set(["a", "b", "c", "d", "e", "f", "g", "h", "i"])
-        )
-        self.assertEqual(n2i[t.root()], 0)
-        self.assertEqual(set(n2i.values()), set(range(9)))
-
-        # Check that the topology of the igraph matches the tree topology
-        for n in t.preorder():
-            if n.has_children():
-                child_ids = [n2i[c] for c in n.children]
-                self.assertEqual(
-                    set(ig.neighbors(n2i[n], mode="OUT")),
-                    set(child_ids)
-                )
-
 
 if __name__ == "__main__":
     unittest.main()
