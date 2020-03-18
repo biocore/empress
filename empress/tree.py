@@ -187,8 +187,8 @@ class Tree(TreeNode):
         prev_y = 0
         for n in self.postorder():
             if n.is_tip():
-                n.y2 = prev_y + 5
-                prev_y += 5
+                n.y2 = prev_y + 1
+                prev_y += 1
                 if n.y2 > max_height:
                     max_height = n.y2
             else:
