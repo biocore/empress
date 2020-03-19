@@ -125,7 +125,13 @@ class Tree(TreeNode):
             node.y2 = node.y2 - centerY
 
     def rescale_circular(self, width, height):
-        """ Circular layout.
+        """ Circular layout version of the rectangular layout.
+
+        Currently incomplete, but in theory this should work analogously to the
+        rectangular layout: start at the root (with available angle ranges [0,
+        2pi], and go down through the tree's nodes in a preorder(?) traversal,
+        dividing the angles as needed based on the number of leaves of a child
+        node.
 
         Parameters
         ----------
@@ -133,19 +139,14 @@ class Tree(TreeNode):
             width of the canvas
         height : float
             height of the canvas
+
+        References
+        ----------
+        https://github.com/qiime/Topiary-Explorer/blob/master/src/topiaryexplorer/TreeVis.java
+            Description above + the implementation of this algorithm
+            derived from the Polar/Radial layout algorithm code.
         """
-        self.x2 = width / 2
-        self.y2 = height / 2
-        # TODO fan out circularly by angles, and use sin/cos to set positions
-        # accordingly. Right now this kinda just UHHH draws a diagonal line :|
-        # TODO 2: just use js circ layout code as base
-        # TODO 3: or use igraph R-T layout with the circular option; may be
-        # easy. For drawing the 'lines' between sibling nodes, we can just draw
-        # bezier curves using a single control point at the midpoint above the
-        # straight-line, i think.
-        for node in self.preorder(include_self=False):
-            node.x2 = node.parent.x2 + (node.length * 100)
-            node.y2 = node.parent.y2 + (node.length * 100)
+        pass
 
     def rescale_rectangular(self, width, height):
         """ Rectangular layout.
@@ -173,10 +174,9 @@ class Tree(TreeNode):
         References
         ----------
         https://rachel53461.wordpress.com/2014/04/20/algorithm-for-drawing-trees/
-            clear explanation of Reingold-Tilford that I used a lot
+            Clear explanation of Reingold-Tilford that I used a lot
         https://github.com/qiime/Topiary-Explorer/blob/master/src/topiaryexplorer/TreeVis.java
-            in particular, the setYOffsets() function, which made a lot of
-            things click
+            Derived from the "Rectangular" layout algorithm code.
         """
         # NOTE: This doesn't draw a horizontal line leading to the root "node"
         # of the graph. This decision *seems* to match up with iTOL's behavior?
@@ -192,7 +192,8 @@ class Tree(TreeNode):
                 if n.y2 > max_height:
                     max_height = n.y2
             else:
-                n.y2 = sum([t.y2 for t in n.tips()]) / n.count(tips=True)
+                # Center internal nodes above their descendant tips
+                n.y2 = sum([t.y2 for t in n.tips()]) / n.leafcount
 
         self.x2 = 0
         for n in self.preorder(include_self=False):
