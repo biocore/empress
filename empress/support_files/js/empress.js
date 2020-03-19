@@ -508,10 +508,19 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      */
     Empress.prototype.updateLayout = function(newLayout) {
         if (this._current_layout !== newLayout) {
+            // TODO 1: extra-thick lines aren't removed here when we change
+            // layouts, causing a graphical glitch!
+            // This could be resolvable by checking if thick lines already
+            // exist, and if so redrawing them (would need to save the
+            // previously used line width/"amount"; or just completely
+            // resetting the tree and all sample metadata stuff between layout
+            // states. Dependent upon developer effort / user demand, I guess.
+            //
             // TODO throw error if newLayout not a key in
             // this._layoutToCoordSuffix
             this._current_layout = newLayout;
             this.drawTree();
+            // this.thickenSameSampleLines(5);
         }
     };
 
