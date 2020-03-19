@@ -246,14 +246,12 @@ class Tree(TreeNode):
             n.xr *= x_scaling_factor
             n.yr *= y_scaling_factor
 
+        # Now we have the layout! In the JS we'll need to draw each internal
+        # node as a vertical line ranging from its lowest child y-position to
+        # its highest child y-position, and then draw horizontal lines from
+        # this line to all of its child nodes (where the length of the
+        # horizontal line is proportional to the node length in question).
         return "Rectangular", "r"
-
-        # Now we have the layout! In the JS we'll need to draw each node as
-        # a vertical line, and then draw horizontal lines at the end of each
-        # node's line between the leftmost and rightmost child node. Will
-        # need to finagle the WebGL code to get this working. (For each
-        # non-leaf node, we'll need one horizontal (ok, vertical since we're
-        # drawing from L to R) line.)
 
     def rescale_unrooted(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
