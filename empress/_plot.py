@@ -48,7 +48,7 @@ def plot(output_dir: str,
     tools.name_internal_nodes(empress_tree)
 
     # TODO: figure out implications of screen size
-    empress_tree.coords(4020, 4020, "rectangular")
+    empress_tree.coords(4020, 4020)
     # for i in empress_tree.postorder():
     #     print("{} ({}, {})".format(i.name, i.x2, i.y2))
 
@@ -57,8 +57,10 @@ def plot(output_dir: str,
     for i, node in enumerate(empress_tree.postorder(include_self=True), 1):
         tree_data[i] = {
             'name': node.name,
-            'x': node.x2,
-            'y': node.y2,
+            'x2': node.x2,
+            'y2': node.y2,
+            'xr': node.xr,
+            'yr': node.yr,
             'color': [0.75, 0.75, 0.75],
             'sampVal': 1,
             'visible': True,
@@ -95,6 +97,8 @@ def plot(output_dir: str,
         'sample_data': sample_data,
         'obs_data': obs_data,
         'names': names,
+        'layout_to_coordsuffix': {'Unrooted': '2', 'Rectangular': 'r'},
+        'default_layout': 'Unrooted',
         })
 
     copytree(SUPPORT_FILES, os.path.join(output_dir, 'support_files'))

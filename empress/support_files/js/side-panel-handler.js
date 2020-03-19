@@ -42,6 +42,9 @@ define(["Colorer"], function(Colorer) {
         this.sLineWidth = document.getElementById("sample-line-width");
         this.sUpdateBtn = document.getElementById("sample-update");
 
+        // layout GUI components
+        this.layoutDiv = document.getElementById("layout-div");
+
         // used in event closers
         var panel = this;
 
@@ -166,6 +169,68 @@ define(["Colorer"], function(Colorer) {
         this.empress.setNonSampleBranchVisibility(hide);
         this.legend.addColorKey(colBy, keyInfo, "node", false);
     };
+
+    /**
+     * Redraws the tree with a different layout.
+     */
+    SidePanel.prototype._updateLayout = function() {
+        this.empress.resetTree();
+        this.empress.drawTree();
+    };
+
+    /**
+     * Initializes layout options.
+     * (These are pretty simple compared to the sample metadata options.)
+     */
+    SidePanel.prototype.addLayoutTab = function() {
+        var sp = this;
+        var LAYOUT_RADIO_BUTTON_NAME = "layoutoptions";
+        // Get layout info from the Empress instance
+        var layouts = this.empress.getAvailableLayouts();
+        var default_layout = this.empress.getDefaultLayout();
+        // Placeholder variables to be used when creating elements
+        var pele, lele, iele;
+
+        for (var i = 0; i < layouts.length; i++) {
+            // Each layout option is represented by three tags:
+            // <p><label></label><input></input></p>
+            // The <p> breaks lines in a way that looks nice, and the
+            // label/input just define the radio buttons as is normal in HTML:
+            // see https://www.w3schools.com/tags/att_input_type_radio.asp.
+            pele = document.createElement("p");
+            lele = document.createElement("label");
+            iele = document.createElement("input");
+            // https://stackoverflow.com/a/15750291
+            lele.htmlFor = LAYOUT_RADIO_BUTTON_NAME;
+            lele.innerHTML = layouts[i];
+            iele.value = layouts[i];
+            iele.type = "radio";
+            iele.name = LAYOUT_RADIO_BUTTON_NAME;
+            if (layouts[i] === default_layout) {
+                iele.checked = true;
+            }
+            // Use of onclick based on
+            // https://www.dyn-web.com/tutorials/forms/radio/onclick-onchange.php.
+            // Long story short, either onchange or onclick works for most
+            // browsers, but IE 9 is inconsistent with onchange -- hence our
+            // use of onclick here. (That being said, you probably shouldn't
+            // use IE 9 with Empress anyway...)
+            // Anyway, if the same layout button is clicked a bunch of times,
+            // nothing will change -- Empress.updateLayout() stores the current
+            // layout name.
+            iele.onclick = function() {
+                sp.empress.updateLayout(this.value);
+            };
+            // Now that we've created these three elements, add them!
+            // <p>
+            //    <label></label>
+            //    <input></input>
+            // </p>
+            pele.appendChild(lele);
+            pele.appendChild(iele);
+            this.layoutDiv.appendChild(pele);
+        }
+    }
 
     /**
      * Initializes sample components

@@ -95,8 +95,12 @@ class Tree(TreeNode):
                 node.height = node.length
                 node.leafcount = 1
 
-    def coords(self, height, width, layout="unrooted"):
-        """ Returns coordinates of nodes to be rendered in plot.
+    def coords(self, height, width):
+        """ Computes the coordinates of nodes to be rendered in plot.
+
+        This runs multiple layout algorithms and saves all of the resulting
+        coordinates for each node, so that layout algorithms can be rapidly
+        toggled between in the JS interface.
 
         Parameters
         ----------
@@ -104,25 +108,39 @@ class Tree(TreeNode):
             The height of the canvas.
         width : int
             The width of the canvas.
-        layout : str
-            One of "unrooted", "rectangular", "circular".
-            This is a temporary parameter -- I expect that the best thing here
-            will be precomputing all layouts so we can rapidly switch in the JS
         """
 
-        # calculates coordinates of all nodes and the shortest/longest branches
-        if layout == "unrooted":
-            self.rescale_unrooted(width, height)
-        elif layout == "rectangular":
-            self.rescale_rectangular(width, height)
-        else:
-            self.rescale_circular(width, height)
-        centerX = self.x2
-        centerY = self.y2
+        self.rescale_unrooted(width, height)
+        self.rescale_rectangular(width, height)
+        # self.rescale_circular(width, height)
+
+    def alter_coordinates_relative_to_root(self, xname, yname):
+        """ Subtracts the root node's x- and y- coords from all nodes' coords.
+
+        This was previously done within coords(), but I moved it here so that
+        this logic can be used after arbitrary layout computations.
+
+        Parameters
+        ----------
+        xname : str
+            The attribute of the x-coordinates to adjust. For example, this is
+            "x2" for the unrooted layout, and "xr" for the rectangular layout.
+        xname : str
+            The attribute of the y-coordinates to adjust. For example, this is
+            "y2" for the unrooted layout, and "yr" for the rectangular layout.
+        """
+
+        centerX = getattr(self, xname)
+        centerY = getattr(self, yname)
 
         for node in self.postorder():
-            node.x2 = node.x2 - centerX
-            node.y2 = node.y2 - centerY
+            # This code might look sort of intimidating, but it's really just
+            # another way to write out:
+            #     node.x2 = node.x2 - centerX
+            #     node.y2 = node.y2 - centerY
+            # ...when we don't know what "x2" or "y2" will be named beforehand.
+            setattr(node, xname, getattr(node, xname) - centerX)
+            setattr(node, yname, getattr(node, yname) - centerY)
 
     def rescale_circular(self, width, height):
         """ Circular layout version of the rectangular layout.
@@ -154,6 +172,9 @@ class Tree(TreeNode):
         In this sort of layout, each tip has a distinct y-position, and parent
         y-positions are centered over their descendant tips' positions.
         x-positions are computed based on nodes' branch lengths.
+
+        Following this algorithm, nodes' unrooted layout coordinates are
+        accessible at [node].xr and [node].yr.
 
         For a simple tree, this layout should look something like:
                  __
@@ -187,25 +208,27 @@ class Tree(TreeNode):
         prev_y = 0
         for n in self.postorder():
             if n.is_tip():
-                n.y2 = prev_y
+                n.yr = prev_y
                 prev_y += 1
-                if n.y2 > max_height:
-                    max_height = n.y2
+                if n.yr > max_height:
+                    max_height = n.yr
             else:
                 # Center internal nodes above their descendant tips
-                n.y2 = sum([t.y2 for t in n.tips()]) / n.leafcount
+                n.yr = sum([t.yr for t in n.tips()]) / n.leafcount
 
-        self.x2 = 0
+        self.xr = 0
         for n in self.preorder(include_self=False):
-            n.x2 = n.parent.x2 + n.length
-            if n.x2 > max_width:
-                max_width = n.x2
+            n.xr = n.parent.xr + n.length
+            if n.xr > max_width:
+                max_width = n.xr
 
         x_scaling_factor = width / max_width
         y_scaling_factor = height / max_height
         for n in self.preorder():
-            n.x2 *= x_scaling_factor
-            n.y2 *= y_scaling_factor
+            n.xr *= x_scaling_factor
+            n.yr *= y_scaling_factor
+
+        self.alter_coordinates_relative_to_root("xr", "yr")
 
         # Now we have the layout! In the JS we'll need to draw each node as
         # a vertical line, and then draw horizontal lines at the end of each
@@ -218,6 +241,9 @@ class Tree(TreeNode):
         """ Find best scaling factor for fitting the tree in the figure.
         This method will find the best orientation and scaling possible to
         fit the tree within the dimensions specified by width and height.
+
+        Following this algorithm, nodes' unrooted layout coordinates are
+        accessible at [node].x2 and [node].y2.
 
         Parameters
         ----------
@@ -264,6 +290,7 @@ class Tree(TreeNode):
                 best_args = (scale, mid_x, mid_y, direction, angle)
 
         self.update_coordinates(*best_args)
+        self.alter_coordinates_relative_to_root("x2", "y2")
         return best_scale
 
     def update_coordinates(self, s, x1, y1, a, da):

@@ -20,10 +20,16 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *                       a bit of space but it be better if it used the
      *                       actual name of the name in tree.
      * @param {Object} nameToKeys Converts tree node names to an array of keys.
+     * @param {Object} layoutToCoordSuffix Maps layout names to coord. suffix.
+     *                 Note: An example is the "Unrooted" layout, which as of
+     *                       writing should map to "2" since it's represented
+     *                       by a node's x2 and y2 coordinates in the data.
+     * @param {String} default_layout The default layout to draw the tree with
      * @param {BIOMTable} biom The BIOM table used to color the tree
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
-    function Empress(tree, treeData, nameToKeys, biom, canvas) {
+    function Empress(tree, treeData, nameToKeys, layoutToCoordSuffix,
+                     default_layout, biom, canvas) {
         /**
          * @type {Camera}
          * The camera used to look at the tree
@@ -83,6 +89,22 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
          * @private
          */
         this._biom = biom;
+
+        /**
+         * @type{Object}
+         * As described above, maps layout names to node coordinate suffixes
+         * in the tree data.
+         * @private
+         */
+        this._layoutToCoordSuffix = layoutToCoordSuffix;
+
+        /**
+         * @type {String}
+         * The default / current layouts used in the tree visualization.
+         * @private
+         */
+        this._default_layout = default_layout;
+        this._current_layout = default_layout;
     }
 
     /**
@@ -99,6 +121,16 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
     Empress.prototype.drawTree = function() {
         this._drawer.loadTreeBuf(this.getCoords());
         this._drawer.draw();
+    };
+
+    Empress.prototype.getX = function(nodeObj) {
+        var xname = "x" + this._layoutToCoordSuffix[this._current_layout];
+        return nodeObj[xname];
+    };
+
+    Empress.prototype.getY = function(nodeObj) {
+        var yname = "y" + this._layoutToCoordSuffix[this._current_layout];
+        return nodeObj[yname];
     };
 
     /**
@@ -131,14 +163,14 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
             var color = this._treeData[node].color;
 
             // coordinate info for parent
-            coords[coords_index++] = this._treeData[parent].x;
-            coords[coords_index++] = this._treeData[parent].y;
+            coords[coords_index++] = this.getX(this._treeData[parent]);
+            coords[coords_index++] = this.getY(this._treeData[parent]);
             coords.set(color, coords_index);
             coords_index += 3;
 
             // coordinate info for current nodeN
-            coords[coords_index++] = this._treeData[node].x;
-            coords[coords_index++] = this._treeData[node].y;
+            coords[coords_index++] = this.getX(this._treeData[node]);
+            coords[coords_index++] = this.getY(this._treeData[node]);
             coords.set(color, coords_index);
             coords_index += 3;
         }
@@ -189,10 +221,10 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
             var color = this._treeData[node].color;
 
             // center branch such that parent node is at (0,0)
-            var x1 = this._treeData[parent].x;
-            var y1 = this._treeData[parent].y;
-            var x2 = this._treeData[node].x;
-            var y2 = this._treeData[node].y;
+            var x1 = this.getX(this._treeData[parent]);
+            var y1 = this.getY(this._treeData[parent]);
+            var x2 = this.getX(this._treeData[node]);
+            var y2 = this.getY(this._treeData[node]);
             var point = VectorOps.translate([x1, y1], -1 * x2, -1 * y2);
 
             // find angle/length of branch
@@ -454,6 +486,37 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
     Empress.prototype.getSampleCategories = function() {
         return this._biom.getSampleCategories();
     };
+
+    /**
+     * Returns a list of all available layouts.
+     *
+     * @return {Array}
+     */
+    Empress.prototype.getAvailableLayouts = function() {
+        return Object.keys(this._layoutToCoordSuffix);
+    };
+
+    /**
+     * Redraws the tree with a new layout (if different from current layout).
+     */
+    Empress.prototype.updateLayout = function(newLayout) {
+        if (this._current_layout !== newLayout) {
+            // TODO throw error if newLayout not a key in
+            // this._layoutToCoordSuffix
+            this._current_layout = newLayout;
+            this.resetTree();
+            this.drawTree();
+        }
+    }
+
+    /**
+     * Returns the default layout name.
+     *
+     * @return {String}
+     */
+    Empress.prototype.getDefaultLayout = function() {
+        return this._default_layout;
+    }
 
     return Empress;
 });
