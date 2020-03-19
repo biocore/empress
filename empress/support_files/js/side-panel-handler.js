@@ -191,6 +191,10 @@ define(["Colorer"], function(Colorer) {
         // Placeholder variables to be used when creating elements
         var pele, lele, iele;
 
+        var radioBtnOnClickFunc = function() {
+            sp.empress.updateLayout(this.value);
+        };
+
         for (var i = 0; i < layouts.length; i++) {
             // Each layout option is represented by three tags:
             // <p><label></label><input></input></p>
@@ -218,9 +222,7 @@ define(["Colorer"], function(Colorer) {
             // Anyway, if the same layout button is clicked a bunch of times,
             // nothing will change -- Empress.updateLayout() stores the current
             // layout name.
-            iele.onclick = function() {
-                sp.empress.updateLayout(this.value);
-            };
+            iele.onclick = radioBtnOnClickFunc;
             // Now that we've created these three elements, add them!
             // <p>
             //    <label></label>
@@ -230,7 +232,7 @@ define(["Colorer"], function(Colorer) {
             pele.appendChild(iele);
             this.layoutDiv.appendChild(pele);
         }
-    }
+    };
 
     /**
      * Initializes sample components

@@ -28,8 +28,15 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      * @param {BIOMTable} biom The BIOM table used to color the tree
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
-    function Empress(tree, treeData, nameToKeys, layoutToCoordSuffix,
-                     default_layout, biom, canvas) {
+    function Empress(
+        tree,
+        treeData,
+        nameToKeys,
+        layoutToCoordSuffix,
+        default_layout,
+        biom,
+        canvas
+    ) {
         /**
          * @type {Camera}
          * The camera used to look at the tree
@@ -507,7 +514,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
             this.resetTree();
             this.drawTree();
         }
-    }
+    };
 
     /**
      * Returns the default layout name.
@@ -516,7 +523,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      */
     Empress.prototype.getDefaultLayout = function() {
         return this._default_layout;
-    }
+    };
 
     return Empress;
 });
