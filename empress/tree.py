@@ -108,13 +108,27 @@ class Tree(TreeNode):
             The height of the canvas.
         width : int
             The width of the canvas.
+
+        Returns
+        -------
+        layout_to_coordsuffix : dict
+        default_layout : str
         """
 
-        self.rescale_unrooted(width, height)
-        self.rescale_rectangular(width, height)
-        # self.rescale_circular(width, height)
+        layout_to_coordsuffix = {}
+        layout_algs = (self.rescale_unrooted, self.rescale_rectangular)
+        # We set the default layout to whatever the first layout in
+        # layout_algs is, but this behavior is of course modifiable
+        default_layout = None
+        for alg in layout_algs:
+            name, suffix = alg(width, height)
+            layout_to_coordsuffix[name] = suffix
+            self.alter_coordinates_relative_to_root(suffix)
+            if default_layout is None:
+                default_layout = name
+        return layout_to_coordsuffix, default_layout
 
-    def alter_coordinates_relative_to_root(self, xname, yname):
+    def alter_coordinates_relative_to_root(self, suffix):
         """ Subtracts the root node's x- and y- coords from all nodes' coords.
 
         This was previously done within coords(), but I moved it here so that
@@ -122,13 +136,17 @@ class Tree(TreeNode):
 
         Parameters
         ----------
-        xname : str
-            The attribute of the x-coordinates to adjust. For example, this is
-            "x2" for the unrooted layout, and "xr" for the rectangular layout.
-        xname : str
-            The attribute of the y-coordinates to adjust. For example, this is
-            "y2" for the unrooted layout, and "yr" for the rectangular layout.
+        suffix : str
+            The suffix of the x- and y-coordinates to adjust.
+
+            For example, this is "2" for the unrooted layout since coordinates
+            are stored in the x2 and y2 attributes for every node; and it's "r"
+            for the rectangular layout since the coordinate attributes are now
+            xr and yr.
         """
+
+        xname = "x" + suffix
+        yname = "y" + suffix
 
         centerX = getattr(self, xname)
         centerY = getattr(self, yname)
@@ -228,7 +246,7 @@ class Tree(TreeNode):
             n.xr *= x_scaling_factor
             n.yr *= y_scaling_factor
 
-        self.alter_coordinates_relative_to_root("xr", "yr")
+        return "Rectangular", "r"
 
         # Now we have the layout! In the JS we'll need to draw each node as
         # a vertical line, and then draw horizontal lines at the end of each
@@ -290,8 +308,8 @@ class Tree(TreeNode):
                 best_args = (scale, mid_x, mid_y, direction, angle)
 
         self.update_coordinates(*best_args)
-        self.alter_coordinates_relative_to_root("x2", "y2")
-        return best_scale
+        # return best_scale
+        return "Unrooted", "2"
 
     def update_coordinates(self, s, x1, y1, a, da):
         """ Update x, y coordinates of tree nodes in canvas.

@@ -48,21 +48,25 @@ def plot(output_dir: str,
     tools.name_internal_nodes(empress_tree)
 
     # TODO: figure out implications of screen size
-    empress_tree.coords(4020, 4020)
+    layout_to_coordsuffix, default_layout = empress_tree.coords(4020, 4020)
 
     tree_data = {}
     names_to_keys = {}
     for i, node in enumerate(empress_tree.postorder(include_self=True), 1):
         tree_data[i] = {
             'name': node.name,
-            'x2': node.x2,
-            'y2': node.y2,
-            'xr': node.xr,
-            'yr': node.yr,
             'color': [0.75, 0.75, 0.75],
             'sampVal': 1,
             'visible': True,
-            'single_samp': False}
+            'single_samp': False
+        }
+        # Add coordinate data from all layouts for this node
+        for layoutsuffix in layout_to_coordsuffix.values():
+            xcoord = "x" + layoutsuffix
+            ycoord = "y" + layoutsuffix
+            tree_data[i][xcoord] = getattr(node, xcoord)
+            tree_data[i][ycoord] = getattr(node, ycoord)
+
         if node.name in names_to_keys:
             names_to_keys[node.name].append(i)
         else:
@@ -95,8 +99,8 @@ def plot(output_dir: str,
         'sample_data': sample_data,
         'obs_data': obs_data,
         'names': names,
-        'layout_to_coordsuffix': {'Unrooted': '2', 'Rectangular': 'r'},
-        'default_layout': 'Unrooted',
+        'layout_to_coordsuffix': layout_to_coordsuffix,
+        'default_layout': default_layout,
         })
 
     copytree(SUPPORT_FILES, os.path.join(output_dir, 'support_files'))
