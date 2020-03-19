@@ -197,7 +197,10 @@ define(["Colorer"], function(Colorer) {
 
         for (var i = 0; i < layouts.length; i++) {
             // Each layout option is represented by three tags:
-            // <p><label></label><input></input></p>
+            // <p>
+            //    <label></label>
+            //    <input></input>
+            // </p>
             // The <p> breaks lines in a way that looks nice, and the
             // label/input just define the radio buttons as is normal in HTML:
             // see https://www.w3schools.com/tags/att_input_type_radio.asp.
@@ -224,10 +227,6 @@ define(["Colorer"], function(Colorer) {
             // layout name.
             iele.onclick = radioBtnOnClickFunc;
             // Now that we've created these three elements, add them!
-            // <p>
-            //    <label></label>
-            //    <input></input>
-            // </p>
             pele.appendChild(lele);
             pele.appendChild(iele);
             this.layoutDiv.appendChild(pele);
