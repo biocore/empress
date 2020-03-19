@@ -116,7 +116,11 @@ class Tree(TreeNode):
         """
 
         layout_to_coordsuffix = {}
-        layout_algs = (self.rescale_unrooted, self.rescale_rectangular, self.rescale_rectangular_full_length)
+        layout_algs = (
+            self.rescale_unrooted,
+            self.rescale_rectangular,
+            self.rescale_rectangular_full_length
+        )
         # We set the default layout to whatever the first layout in
         # layout_algs is, but this behavior is of course modifiable
         default_layout = None

@@ -42,10 +42,11 @@ class TestTree(unittest.TestCase):
             self.assertAlmostEqual(y_test, y, places=5)
 
     def test_rescale_unrooted(self):
-        t = Tree.from_tree(self.tree)
+        # t = Tree.from_tree(self.tree)
         # TODO: refactor to get best_scale or something
-        #self.assertAlmostEqual(
+        # self.assertAlmostEqual(
         #    t.rescale_unrooted(500, 500), 74.609165340334656, places=5)
+        pass
 
 
 if __name__ == "__main__":
