@@ -511,7 +511,6 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
             // TODO throw error if newLayout not a key in
             // this._layoutToCoordSuffix
             this._current_layout = newLayout;
-            this.resetTree();
             this.drawTree();
         }
     };
