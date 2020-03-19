@@ -39,3 +39,26 @@
     </div>
   </p>
 </div>
+
+<!-- Layout options; shamelessly copied from above -->
+<button class="side-header collapsible">Layout</button>
+<div class="side-content control hidden">
+  <p>
+    <!-- Loosely based on
+         https://www.w3schools.com/tags/att_input_type_radio.asp (I forgot how
+         radio buttons in HTML work ._.)
+    -->
+    <label for="unrooted">Unrooted</label>
+    <input name="layoutoptions" id="unrooted" type="radio" checked="true">
+  </p>
+  <p>
+    <label for="rectangular">Rectangular</label>
+    <input name="layoutoptions" id="rectangular" type="radio">
+  </p>
+  <!-- (TODO: uncomment when circular layout is done)
+  <p>
+    <label for="circular">Circular</label>
+    <input name="layoutoptions" id="circular" type="radio">
+  </p>
+  -->
+</div>
