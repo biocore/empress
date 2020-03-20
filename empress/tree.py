@@ -102,6 +102,10 @@ class Tree(TreeNode):
         coordinates for each node, so that layout algorithms can be rapidly
         toggled between in the JS interface.
 
+        Also adds on .highestchildyr and .lowestchildyr attributes to internal
+        nodes so that vertical bars for these nodes can be drawn in the
+        rectangular layout.
+
         Parameters
         ----------
         height : int
@@ -130,6 +134,16 @@ class Tree(TreeNode):
             self.alter_coordinates_relative_to_root(suffix)
             if default_layout is None:
                 default_layout = name
+
+        # HACK: determine highest and lowest child y-position for internal
+        # nodes in the rectangular layout; used to draw vertical lines for
+        # these nodes
+        for n in self.preorder():
+            if not n.is_tip():
+                child_y_coords = [c.yr for c in n.children]
+                n.highestchildyr = max(child_y_coords)
+                n.lowestchildyr = min(child_y_coords)
+
         return layout_to_coordsuffix, default_layout
 
     def alter_coordinates_relative_to_root(self, suffix):
@@ -277,8 +291,10 @@ class Tree(TreeNode):
                 if n.yr > max_height:
                     max_height = n.yr
             else:
-                # Center internal nodes above their descendant tips
-                n.yr = sum([t.yr for t in n.tips()]) / n.leafcount
+                # Center internal nodes above their children
+                # We could also center them above their tips, but (IMO) this
+                # looks better ;)
+                n.yr = sum([c.yr for c in n.children]) / len(n.children)
 
         self.xr = 0
         for n in self.preorder(include_self=False):
