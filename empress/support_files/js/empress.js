@@ -171,10 +171,6 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
         // that it's correct (I think this is correct as is, but should check)
         var coords_index = 0;
         if (this._current_layout === "Rectangular") {
-            console.log("lowesty = " + this._treeData[tree.size].lowestchildyr);
-            console.log(
-                "highsty = " + this._treeData[tree.size].highestchildyr
-            );
             color = this._treeData[tree.size].color;
             coords[coords_index++] = this.getX(this._treeData[tree.size]);
             coords[coords_index++] = this._treeData[tree.size].lowestchildyr;
@@ -200,13 +196,6 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
 
             if (this._current_layout === "Rectangular") {
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
-                    console.log(
-                        "lowest  y = " + this._treeData[node].lowestchildyr
-                    );
-                    console.log(
-                        "highest y = " + this._treeData[node].highestchildyr
-                    );
-                    console.log("this nd y = " + this._treeData[node].yr);
                     coords[coords_index++] = this.getX(this._treeData[node]);
                     coords[coords_index++] = this._treeData[
                         node
