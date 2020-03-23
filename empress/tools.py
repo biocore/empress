@@ -1,6 +1,7 @@
 import skbio
 from skbio import TreeNode
 
+
 class DataMatchingError(Exception):
     pass
 
@@ -38,6 +39,7 @@ def read(file_name, file_format='newick'):
         tree = skbio.read(file_name, file_format, into=TreeNode)
         return tree
     return None
+
 
 def print_if_dropped(
     df_old, df_new, axis_num, item_name, df_name, filter_basis_name
@@ -96,6 +98,7 @@ def print_if_dropped(
             "These {}(s) have been removed from the "
             "visualization.".format(item_name)
         )
+
 
 def match_inputs(tree, table, sample_metadata, feature_metadata=None):
     """Matches various input sources.
