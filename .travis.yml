@@ -23,3 +23,7 @@ install:
 script:
   - make test
   - make stylecheck
+after_success:
+    - wget -O codecov.sh https://codecov.io/bash
+    # Upload coverage information to codecov
+    - bash codecov.sh -c
