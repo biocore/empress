@@ -165,14 +165,7 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
     ff_table = table.loc[tree_and_table_features]
 
     # Report to user about any dropped samples from table
-    print_if_dropped(
-        table,
-        ff_table,
-        0,
-        "feature",
-        "table",
-        "tree",
-    )
+    print_if_dropped(table, ff_table, 0, "feature", "table", "tree")
 
     # Match table and sample metadata
     sample_metadata_t = sample_metadata.T

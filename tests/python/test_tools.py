@@ -72,6 +72,19 @@ class TestTools(unittest.TestCase):
         # "a", "b", "e", and "d" are the only features present in both the
         # table and tree.
         self.assertCountEqual(filtered_tbl.index, ["a", "b", "e", "d"])
+        # TODO: ensure that dropped-feature message is printed
+
+    def test_match_inputs_no_shared_samples(self):
+        t = Tree.from_tree(self.tree)
+        tools.name_internal_nodes(t)
+        bad_sample_metadata = self.sample_metadata.copy()
+        bad_sample_metadata.index = ["lol", "nothing", "here", "matches"]
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "No samples are shared between the sample metadata file and the "
+            "feature table."
+        ):
+            tools.match_inputs(t, self.table, bad_sample_metadata)
 
 
 if __name__ == "__main__":
