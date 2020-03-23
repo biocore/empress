@@ -1,4 +1,4 @@
-define([], function() {
+define([], function () {
     /**
      * @class BIOM-table
      *
@@ -44,7 +44,7 @@ define([], function() {
      *
      * @return {Array}
      */
-    BIOMTable.convertToObs = function(countArray, obsIDs) {
+    BIOMTable.convertToObs = function (countArray, obsIDs) {
         var obs = [];
         for (var i = 0; i < countArray.length; i++) {
             if (countArray[i] != 0) {
@@ -61,9 +61,9 @@ define([], function() {
      *
      * @return {Array}
      */
-    BIOMTable.prototype.getObjservationUnionForSamples = function(sIds) {
+    BIOMTable.prototype.getObjservationUnionForSamples = function (sIds) {
         var result = new Set();
-        var addToResult = function(ob) {
+        var addToResult = function (ob) {
             result.add(ob);
         };
         for (var i = 0; i < sIds.length; i++) {
@@ -81,7 +81,7 @@ define([], function() {
      *
      * @return {Dictionary}
      */
-    BIOMTable.prototype.getObsBy = function(cat) {
+    BIOMTable.prototype.getObsBy = function (cat) {
         var result = {};
         var cVal;
         for (var sample in this._samp) {
@@ -106,7 +106,7 @@ define([], function() {
      *
      * @return {Number}
      */
-    BIOMTable.prototype.getObservations = function() {
+    BIOMTable.prototype.getObservations = function () {
         var obs = new Set();
 
         for (var sample in this._samp) {
@@ -123,7 +123,7 @@ define([], function() {
      *
      * @return{Array}
      */
-    BIOMTable.prototype.getSampleCategories = function() {
+    BIOMTable.prototype.getSampleCategories = function () {
         return Object.keys(Object.values(this._samp)[0]).sort();
     };
 

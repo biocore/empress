@@ -1,4 +1,4 @@
-define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
+define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     _,
     Camera,
     Drawer,
@@ -117,7 +117,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
     /**
      * Initializes WebGL and then draws the tree
      */
-    Empress.prototype.initialize = function() {
+    Empress.prototype.initialize = function () {
         this._drawer.initialize();
         this.drawTree();
     };
@@ -125,17 +125,17 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
     /**
      * Draws the tree
      */
-    Empress.prototype.drawTree = function() {
+    Empress.prototype.drawTree = function () {
         this._drawer.loadTreeBuf(this.getCoords());
         this._drawer.draw();
     };
 
-    Empress.prototype.getX = function(nodeObj) {
+    Empress.prototype.getX = function (nodeObj) {
         var xname = "x" + this._layoutToCoordSuffix[this._current_layout];
         return nodeObj[xname];
     };
 
-    Empress.prototype.getY = function(nodeObj) {
+    Empress.prototype.getY = function (nodeObj) {
         var yname = "y" + this._layoutToCoordSuffix[this._current_layout];
         return nodeObj[yname];
     };
@@ -146,7 +146,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @return {Array}
      */
-    Empress.prototype.getCoords = function() {
+    Empress.prototype.getCoords = function () {
         var tree = this._tree;
 
         // size of branch coordinates. 2 coordinates represent a single branch
@@ -238,7 +238,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      * @param {Boolean} hide If true then hide uncolored tips
      *                       if false then show uncolored tips
      */
-    Empress.prototype.setNonSampleBranchVisibility = function(hide) {
+    Empress.prototype.setNonSampleBranchVisibility = function (hide) {
         var visible = !hide;
 
         // check sample Value for all branches
@@ -255,7 +255,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @param {Number} amount - How thick to make branch
      */
-    Empress.prototype.thickenSameSampleLines = function(amount) {
+    Empress.prototype.thickenSameSampleLines = function (amount) {
         var tree = this._tree;
 
         // the coordinate of the tree.
@@ -338,7 +338,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      * @param {Array} sID - The sample IDs
      * @param {Array} rgb - The rgb array which defines the color
      */
-    Empress.prototype.colorSampleIDs = function(sIds, rgb) {
+    Empress.prototype.colorSampleIDs = function (sIds, rgb) {
         var tree = this._tree;
         var obs = this._biom.getSampleObs(sIds);
         for (var i = 0; i < obs.length; i++) {
@@ -353,7 +353,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @return {Array} A list of keys cooresponding to entries in _treeData
      */
-    Empress.prototype._namesToKeys = function(names) {
+    Empress.prototype._namesToKeys = function (names) {
         var keys = [];
         for (var i = 0; i < names.length; i++) {
             keys.push(...this._nameToKeys[names[i]]);
@@ -368,18 +368,18 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @return {Object} A new object with the non unique keys removed
      */
-    Empress.prototype._keepUniqueKeys = function(keys) {
+    Empress.prototype._keepUniqueKeys = function (keys) {
         // get unique keys
         var uniqueKeys = _.chain(keys)
             .values()
-            .map(function(item) {
+            .map(function (item) {
                 return [...item];
             })
             .flatten()
-            .groupBy(function(key) {
+            .groupBy(function (key) {
                 return key;
             })
-            .filter(function(key) {
+            .filter(function (key) {
                 return key.length === 1;
             })
             .flatten()
@@ -406,7 +406,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @return {Object} A color map that uses the categories in items as keys
      */
-    Empress.prototype._assignColor = function(items, color, forWebGl) {
+    Empress.prototype._assignColor = function (items, color, forWebGl) {
         // create color brewer
         var colorer = new Colorer(color, 0, Math.pow(2, items.length));
         var colorFunction = forWebGl ? "getColorRGB" : "getColorHex";
@@ -416,7 +416,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
             cm[item] = {
-                color: colorer[colorFunction](i * colorBlockSize)
+                color: colorer[colorFunction](i * colorBlockSize),
             };
         }
 
@@ -431,7 +431,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @return {Object} Maps keys to colors
      */
-    Empress.prototype.colorBySampleCat = function(cat, color) {
+    Empress.prototype.colorBySampleCat = function (cat, color) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
@@ -495,7 +495,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      * @param {Object} keyInfo The object containing the information to be
      *                 displayed in the sample legend
      */
-    Empress.prototype.percentColoredBySample = function(sampleObs, keyInfo) {
+    Empress.prototype.percentColoredBySample = function (sampleObs, keyInfo) {
         // calculate relative tree size i.e. the subtree spanned by the samples
         // iterate over tree using postorder
 
@@ -520,7 +520,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
     /**
      * Sets the color of the tree back to default
      */
-    Empress.prototype.resetTree = function() {
+    Empress.prototype.resetTree = function () {
         var keys = Object.keys(this._treeData);
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
@@ -537,7 +537,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @return {Array}
      */
-    Empress.prototype.getSampleCategories = function() {
+    Empress.prototype.getSampleCategories = function () {
         return this._biom.getSampleCategories();
     };
 
@@ -546,14 +546,14 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @return {Array}
      */
-    Empress.prototype.getAvailableLayouts = function() {
+    Empress.prototype.getAvailableLayouts = function () {
         return Object.keys(this._layoutToCoordSuffix);
     };
 
     /**
      * Redraws the tree with a new layout (if different from current layout).
      */
-    Empress.prototype.updateLayout = function(newLayout) {
+    Empress.prototype.updateLayout = function (newLayout) {
         if (this._current_layout !== newLayout) {
             // TODO 1: extra-thick lines aren't removed here when we change
             // layouts, causing a graphical glitch!
@@ -576,7 +576,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      *
      * @return {String}
      */
-    Empress.prototype.getDefaultLayout = function() {
+    Empress.prototype.getDefaultLayout = function () {
         return this._default_layout;
     };
 

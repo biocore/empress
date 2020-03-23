@@ -1,4 +1,4 @@
-define(["glMatrix"], function(gl) {
+define(["glMatrix"], function (gl) {
     /**
      *
      * @class Camera
@@ -24,7 +24,7 @@ define(["glMatrix"], function(gl) {
             upDegrees: 45,
             downDegrees: 45,
             leftDegrees: 45,
-            rightDegrees: 45
+            rightDegrees: 45,
         };
 
         // create perspective matrix
@@ -38,7 +38,7 @@ define(["glMatrix"], function(gl) {
      *
      * @return {mat4}
      */
-    Camera.prototype.getViewMat = function() {
+    Camera.prototype.getViewMat = function () {
         var viewMat = gl.mat4.create();
         gl.mat4.lookAt(viewMat, this.pos_, this.lookDir_, this.upDir_);
         return viewMat;
@@ -51,7 +51,7 @@ define(["glMatrix"], function(gl) {
      *    along the x and y axis. This will modify pos and lookDir.
      *    Note: translation[2] be set to zero.
      */
-    Camera.prototype.moveCam = function(translation) {
+    Camera.prototype.moveCam = function (translation) {
         // set z-axis to 0
         translation[2] = 0;
 
@@ -90,7 +90,7 @@ define(["glMatrix"], function(gl) {
      *                would cause the cameras z coordinate to be negative will
      *                be ignored.
      */
-    Camera.prototype.zoom = function(x) {
+    Camera.prototype.zoom = function (x) {
         // multiply by -1 so that a positive x will zoom the camera in
         x = -1 * x;
 
@@ -106,7 +106,7 @@ define(["glMatrix"], function(gl) {
      * @param {vec3} lookDir Where the camera will be looking
      * @param {vec3} upDir What direction the camera considers up
      */
-    Camera.prototype.placeCamera = function(pos, lookDir, upDir) {
+    Camera.prototype.placeCamera = function (pos, lookDir, upDir) {
         this.pos_ = pos;
         this.lookDir_ = lookDir;
         this.upDir_ = upDir;
@@ -118,7 +118,7 @@ define(["glMatrix"], function(gl) {
      *
      * @return {Number} The virtical position of the camera
      */
-    Camera.prototype.getVirticalPos = function() {
+    Camera.prototype.getVirticalPos = function () {
         return this.pos_[2];
     };
 

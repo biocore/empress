@@ -1,4 +1,4 @@
-define([], function() {
+define([], function () {
     function Legend(tip, node, clade) {
         this.__tipLeg = tip;
         this.__nodeLeg = node;
@@ -13,7 +13,7 @@ define([], function() {
      * @param {Object} container - container DOM
      * @param {boolean} gradient - gradient or discrete
      */
-    Legend.prototype.addColorKey = function(name, info, container, gradient) {
+    Legend.prototype.addColorKey = function (name, info, container, gradient) {
         var legendContainer = this.__getLegend(container);
         if (name) {
             let div = document.createElement("div");
@@ -34,7 +34,7 @@ define([], function() {
      * @param {Object} info - key information
      * @param {Object} container - container DOM
      */
-    Legend.prototype.__addContinuousKey = function(info, container) {
+    Legend.prototype.__addContinuousKey = function (info, container) {
         // create key container
         let div = document.createElement("div");
         div.classList.add("gradient-bar");
@@ -72,7 +72,7 @@ define([], function() {
      * @param {Object} info - key information
      * @param {Object} container - container DOM
      */
-    Legend.prototype.__addCategoricalKey = function(info, container) {
+    Legend.prototype.__addCategoricalKey = function (info, container) {
         let key;
         let category = container.innerText;
         let i = 0;
@@ -119,7 +119,7 @@ define([], function() {
      * @param {number} num - number to be formatted
      * @returns {string} formatted number
      */
-    Legend.prototype.__formatNumLabel = function(num) {
+    Legend.prototype.__formatNumLabel = function (num) {
         return num.toPrecision(4).replace(/\.?0+$/, "");
     };
 
@@ -130,7 +130,7 @@ define([], function() {
      *
      * @return {div}
      */
-    Legend.prototype.__getLegend = function(leg) {
+    Legend.prototype.__getLegend = function (leg) {
         var container;
         switch (leg) {
             case "tip":
@@ -150,7 +150,7 @@ define([], function() {
     /**
      * Remove all lengends
      */
-    Legend.prototype.clearAllLegends = function() {
+    Legend.prototype.clearAllLegends = function () {
         for (var i = 0; i < this.__legends.length; i++) {
             this.clearLegend(this.__legends[i]);
         }
@@ -160,7 +160,7 @@ define([], function() {
      * Removes a legend
      * @param {string} leg - The legend to remove
      */
-    Legend.prototype.clearLegend = function(leg) {
+    Legend.prototype.clearLegend = function (leg) {
         var legend = this.__getLegend(leg);
         legend.innerHTML = "";
         legend.classList.add("hidden");

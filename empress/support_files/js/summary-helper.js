@@ -1,4 +1,4 @@
-define([], function() {
+define([], function () {
     /**
      * @class SummaryHelper
      * Class functions for generating summary used in empress
@@ -14,7 +14,7 @@ define([], function() {
      *
      * @return{Number}
      */
-    SummaryHelper.unifrac = function(biomTable, tree, sIds1, sIds2) {
+    SummaryHelper.unifrac = function (biomTable, tree, sIds1, sIds2) {
         var uniq = 0;
         var total = 0;
         var uniqObs1 = biomTable.getObjservationUnionForSamples(sIds1);
