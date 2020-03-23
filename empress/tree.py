@@ -123,7 +123,6 @@ class Tree(TreeNode):
         layout_algs = (
             self.rescale_unrooted,
             self.rescale_rectangular,
-            self.rescale_rectangular_full_length
         )
         # We set the default layout to whatever the first layout in
         # layout_algs is, but this behavior is of course modifiable
@@ -201,48 +200,6 @@ class Tree(TreeNode):
             derived from the Polar/Radial layout algorithm code.
         """
         pass
-
-    def rescale_rectangular_full_length(self, width, height):
-        """Full-length test layout."""
-        # NOTE: This doesn't draw a horizontal line leading to the root "node"
-        # of the graph. This decision *seems* to match up with iTOL's behavior?
-        # If desired that could be achievable by just adding a simple webGL
-        # operation in the JS side of things.
-        max_width = 0
-        max_height = 0
-        prev_y = 0
-        for n in self.postorder():
-            if n.is_tip():
-                n.yf = prev_y
-                prev_y += 1
-                if n.yf > max_height:
-                    max_height = n.yf
-            else:
-                # Center internal nodes above their descendant tips
-                n.yf = sum([t.yf for t in n.tips()]) / n.leafcount
-
-        self.xf = 0
-        for n in self.preorder(include_self=False):
-            n.xf = n.parent.xf + 1
-            if n.xf > max_width:
-                max_width = n.xf
-
-        for n in self.preorder(include_self=False):
-            if n.is_tip():
-                n.xf = max_width
-
-        x_scaling_factor = width / max_width
-        y_scaling_factor = height / max_height
-        for n in self.preorder():
-            n.xf *= x_scaling_factor
-            n.yf *= y_scaling_factor
-
-        # Now we have the layout! In the JS we'll need to draw each internal
-        # node as a vertical line ranging from its lowest child y-position to
-        # its highest child y-position, and then draw horizontal lines from
-        # this line to all of its child nodes (where the length of the
-        # horizontal line is proportional to the node length in question).
-        return "Full-Length Rect", "f"
 
     def rescale_rectangular(self, width, height):
         """ Rectangular layout.
