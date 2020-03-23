@@ -102,6 +102,10 @@ class Tree(TreeNode):
         coordinates for each node, so that layout algorithms can be rapidly
         toggled between in the JS interface.
 
+        Also adds on .highestchildyr and .lowestchildyr attributes to internal
+        nodes so that vertical bars for these nodes can be drawn in the
+        rectangular layout.
+
         Parameters
         ----------
         height : int
@@ -116,7 +120,11 @@ class Tree(TreeNode):
         """
 
         layout_to_coordsuffix = {}
-        layout_algs = (self.rescale_unrooted, self.rescale_rectangular)
+        layout_algs = (
+            self.rescale_unrooted,
+            self.rescale_rectangular,
+            self.rescale_rectangular_full_length
+        )
         # We set the default layout to whatever the first layout in
         # layout_algs is, but this behavior is of course modifiable
         default_layout = None
@@ -126,6 +134,16 @@ class Tree(TreeNode):
             self.alter_coordinates_relative_to_root(suffix)
             if default_layout is None:
                 default_layout = name
+
+        # HACK: determine highest and lowest child y-position for internal
+        # nodes in the rectangular layout; used to draw vertical lines for
+        # these nodes
+        for n in self.preorder():
+            if not n.is_tip():
+                child_y_coords = [c.yr for c in n.children]
+                n.highestchildyr = max(child_y_coords)
+                n.lowestchildyr = min(child_y_coords)
+
         return layout_to_coordsuffix, default_layout
 
     def alter_coordinates_relative_to_root(self, suffix):
@@ -184,6 +202,48 @@ class Tree(TreeNode):
         """
         pass
 
+    def rescale_rectangular_full_length(self, width, height):
+        """Full-length test layout."""
+        # NOTE: This doesn't draw a horizontal line leading to the root "node"
+        # of the graph. This decision *seems* to match up with iTOL's behavior?
+        # If desired that could be achievable by just adding a simple webGL
+        # operation in the JS side of things.
+        max_width = 0
+        max_height = 0
+        prev_y = 0
+        for n in self.postorder():
+            if n.is_tip():
+                n.yf = prev_y
+                prev_y += 1
+                if n.yf > max_height:
+                    max_height = n.yf
+            else:
+                # Center internal nodes above their descendant tips
+                n.yf = sum([t.yf for t in n.tips()]) / n.leafcount
+
+        self.xf = 0
+        for n in self.preorder(include_self=False):
+            n.xf = n.parent.xf + 1
+            if n.xf > max_width:
+                max_width = n.xf
+
+        for n in self.preorder(include_self=False):
+            if n.is_tip():
+                n.xf = max_width
+
+        x_scaling_factor = width / max_width
+        y_scaling_factor = height / max_height
+        for n in self.preorder():
+            n.xf *= x_scaling_factor
+            n.yf *= y_scaling_factor
+
+        # Now we have the layout! In the JS we'll need to draw each internal
+        # node as a vertical line ranging from its lowest child y-position to
+        # its highest child y-position, and then draw horizontal lines from
+        # this line to all of its child nodes (where the length of the
+        # horizontal line is proportional to the node length in question).
+        return "Full-Length Rect", "f"
+
     def rescale_rectangular(self, width, height):
         """ Rectangular layout.
 
@@ -231,8 +291,10 @@ class Tree(TreeNode):
                 if n.yr > max_height:
                     max_height = n.yr
             else:
-                # Center internal nodes above their descendant tips
-                n.yr = sum([t.yr for t in n.tips()]) / n.leafcount
+                # Center internal nodes above their children
+                # We could also center them above their tips, but (IMO) this
+                # looks better ;)
+                n.yr = sum([c.yr for c in n.children]) / len(n.children)
 
         self.xr = 0
         for n in self.preorder(include_self=False):

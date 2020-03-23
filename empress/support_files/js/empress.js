@@ -150,13 +150,38 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
         var tree = this._tree;
 
         // size of branch coordinates. 2 coordinates represent a single branch
-        var coords_size = (tree.size - 1) * this._drawer.VERTEX_SIZE * 2;
+        var numSegmentsPerNode;
+        if (this._current_layout === "Rectangular") {
+            // TODO this is an overestimate, it's only 4??? for every internal
+            // node and 2 for every leaf node -- compute proportions in python
+            numSegmentsPerNode = 4;
+        } else {
+            numSegmentsPerNode = 2;
+        }
+        var coords_size =
+            (tree.size - 1) * this._drawer.VERTEX_SIZE * numSegmentsPerNode;
 
         // the coordinate of the tree.
         var coords = new Float32Array(coords_size);
 
-        // iterate throught the tree in postorder, skip root
+        // branch color
+        var color;
+
+        // TODO pay attention to the color we're using for vertical lines, and
+        // that it's correct (I think this is correct as is, but should check)
         var coords_index = 0;
+        if (this._current_layout === "Rectangular") {
+            color = this._treeData[tree.size].color;
+            coords[coords_index++] = this.getX(this._treeData[tree.size]);
+            coords[coords_index++] = this._treeData[tree.size].lowestchildyr;
+            coords.set(color, coords_index);
+            coords_index += 3;
+            coords[coords_index++] = this.getX(this._treeData[tree.size]);
+            coords[coords_index++] = this._treeData[tree.size].highestchildyr;
+            coords.set(color, coords_index);
+            coords_index += 3;
+        }
+        // iterate throught the tree in postorder, skip root
         for (var i = 1; i < tree.size; i++) {
             // name of current node
             var node = i;
@@ -167,19 +192,41 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
             }
 
             // branch color
-            var color = this._treeData[node].color;
+            color = this._treeData[node].color;
 
-            // coordinate info for parent
-            coords[coords_index++] = this.getX(this._treeData[parent]);
-            coords[coords_index++] = this.getY(this._treeData[parent]);
-            coords.set(color, coords_index);
-            coords_index += 3;
-
-            // coordinate info for current nodeN
-            coords[coords_index++] = this.getX(this._treeData[node]);
-            coords[coords_index++] = this.getY(this._treeData[node]);
-            coords.set(color, coords_index);
-            coords_index += 3;
+            if (this._current_layout === "Rectangular") {
+                if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
+                    coords[coords_index++] = this.getX(this._treeData[node]);
+                    coords[coords_index++] = this._treeData[
+                        node
+                    ].highestchildyr;
+                    coords.set(color, coords_index);
+                    coords_index += 3;
+                    coords[coords_index++] = this.getX(this._treeData[node]);
+                    coords[coords_index++] = this._treeData[node].lowestchildyr;
+                    coords.set(color, coords_index);
+                    coords_index += 3;
+                }
+                coords[coords_index++] = this.getX(this._treeData[parent]);
+                coords[coords_index++] = this.getY(this._treeData[node]);
+                coords.set(color, coords_index);
+                coords_index += 3;
+                coords[coords_index++] = this.getX(this._treeData[node]);
+                coords[coords_index++] = this.getY(this._treeData[node]);
+                coords.set(color, coords_index);
+                coords_index += 3;
+            } else {
+                // coordinate info for parent
+                coords[coords_index++] = this.getX(this._treeData[parent]);
+                coords[coords_index++] = this.getY(this._treeData[parent]);
+                coords.set(color, coords_index);
+                coords_index += 3;
+                // coordinate info for current nodeN
+                coords[coords_index++] = this.getX(this._treeData[node]);
+                coords[coords_index++] = this.getY(this._treeData[node]);
+                coords.set(color, coords_index);
+                coords_index += 3;
+            }
         }
 
         return coords;

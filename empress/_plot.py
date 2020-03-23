@@ -66,6 +66,10 @@ def plot(output_dir: str,
             ycoord = "y" + layoutsuffix
             tree_data[i][xcoord] = getattr(node, xcoord)
             tree_data[i][ycoord] = getattr(node, ycoord)
+        # Also add vertical bar coordinate info for the rectangular layout
+        if not node.is_tip():
+            tree_data[i]["highestchildyr"] = node.highestchildyr
+            tree_data[i]["lowestchildyr"] = node.lowestchildyr
 
         if node.name in names_to_keys:
             names_to_keys[node.name].append(i)
