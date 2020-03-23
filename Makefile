@@ -13,7 +13,7 @@ JSLOCS = empress/support_files/js/*.js
 test: pytest jstest
 
 pytest:
-	nosetests tests/python
+	nosetests --with-coverage tests/python --cover-package=empress
 
 jstest:
 	@# Note: this assumes you're running this on a Linux/macOS system
