@@ -235,9 +235,8 @@ class Tree(TreeNode):
             Derived from the "Rectangular" layout algorithm code.
         """
         # NOTE: This doesn't draw a horizontal line leading to the root "node"
-        # of the graph. This decision *seems* to match up with iTOL's behavior?
-        # If desired that could be achievable by just adding a simple webGL
-        # operation in the JS side of things.
+        # of the graph. See https://github.com/biocore/empress/issues/141 for
+        # context.
         max_width = 0
         max_height = 0
         prev_y = 0
