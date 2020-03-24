@@ -121,8 +121,8 @@ class Tree(TreeNode):
 
         layout_to_coordsuffix = {}
         layout_algs = (
-            self.rescale_unrooted,
-            self.rescale_rectangular,
+            self.layout_unrooted,
+            self.layout_rectangular,
         )
         # We set the default layout to whatever the first layout in
         # layout_algs is, but this behavior is of course modifiable
@@ -177,7 +177,7 @@ class Tree(TreeNode):
             setattr(node, xname, getattr(node, xname) - centerX)
             setattr(node, yname, getattr(node, yname) - centerY)
 
-    def rescale_circular(self, width, height):
+    def layout_circular(self, width, height):
         """ Circular layout version of the rectangular layout.
 
         Currently incomplete, but in theory this should work analogously to the
@@ -201,7 +201,7 @@ class Tree(TreeNode):
         """
         pass
 
-    def rescale_rectangular(self, width, height):
+    def layout_rectangular(self, width, height):
         """ Rectangular layout.
 
         In this sort of layout, each tip has a distinct y-position, and parent
@@ -272,7 +272,7 @@ class Tree(TreeNode):
         # horizontal line is proportional to the node length in question).
         return "Rectangular", "r"
 
-    def rescale_unrooted(self, width, height):
+    def layout_unrooted(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
         This method will find the best orientation and scaling possible to
         fit the tree within the dimensions specified by width and height, using
