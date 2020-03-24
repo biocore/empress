@@ -325,7 +325,6 @@ class Tree(TreeNode):
                 best_args = (scale, mid_x, mid_y, direction, angle)
 
         self.update_coordinates(*best_args)
-        # return best_scale
         return "Unrooted", "2"
 
     def update_coordinates(self, s, x1, y1, a, da):

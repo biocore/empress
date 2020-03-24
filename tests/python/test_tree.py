@@ -21,7 +21,7 @@ class TestTree(unittest.TestCase):
         t = Tree.from_tree(self.tree)
         self.assertEqual(t.__class__, Tree)
 
-    def test_coords(self):
+    def test_unrooted_layout(self):
         t = Tree.from_tree(self.tree)
         t.coords(500, 500)
 
@@ -41,12 +41,10 @@ class TestTree(unittest.TestCase):
             self.assertAlmostEqual(x_test, x, places=5)
             self.assertAlmostEqual(y_test, y, places=5)
 
-    def test_rescale_unrooted(self):
-        # t = Tree.from_tree(self.tree)
-        # TODO: refactor to get best_scale or something
-        # self.assertAlmostEqual(
-        #    t.rescale_unrooted(500, 500), 74.609165340334656, places=5)
-        pass
+    def test_rectangular_layout(self):
+        t = Tree.from_tree(self.tree)
+        t.coords(500, 500)
+        # TODO test actual coordinates
 
 
 if __name__ == "__main__":
