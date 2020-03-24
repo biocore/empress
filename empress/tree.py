@@ -275,7 +275,8 @@ class Tree(TreeNode):
     def rescale_unrooted(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
         This method will find the best orientation and scaling possible to
-        fit the tree within the dimensions specified by width and height.
+        fit the tree within the dimensions specified by width and height, using
+        an unrooted layout algorithm.
 
         Following this algorithm, nodes' unrooted layout coordinates are
         accessible at [node].x2 and [node].y2.
@@ -305,7 +306,7 @@ class Tree(TreeNode):
         for i in range(60):
             direction = i / 60.0 * np.pi
 
-            (max_x, min_x, max_y, min_y) = self.update_coordinates(
+            (max_x, min_x, max_y, min_y) = self.update_unrooted_coords(
                 1.0, 0, 0, direction, angle)
 
             x_diff = max_x - min_x
@@ -324,12 +325,12 @@ class Tree(TreeNode):
                 mid_y = height / 2 - ((max_y + min_y) / 2) * scale
                 best_args = (scale, mid_x, mid_y, direction, angle)
 
-        self.update_coordinates(*best_args)
+        self.update_unrooted_coords(*best_args)
         return "Unrooted", "2"
 
-    def update_coordinates(self, s, x1, y1, a, da):
+    def update_unrooted_coords(self, s, x1, y1, a, da):
         """ Update x, y coordinates of tree nodes in canvas.
-        `update_coordinates` will updating the plotting parameters for
+        `update_unrooted_coords` will updating the plotting parameters for
         all of the nodes within the tree.
         This can be applied when the tree becomes modified (i.e. pruning
         or collapsing) and the resulting coordinates need to be modified
