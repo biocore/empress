@@ -13,7 +13,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     /**
      * @class EmpressTree
      *
-     * @param {BPTree} tree The phylogentic tree
+     * @param {BPTree} tree The phylogenetic tree
      * @param {Object} treeData The metadata associated with the tree
      *                 Note: currently treeData uses the preorder position of
      *                       each node as a key. Originally this was to save a
@@ -62,7 +62,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
 
         /**
          * @type {BPTree}
-         * The phylogentic balance parenthesis tree
+         * The phylogenetic balance parenthesis tree
          * @private
          */
         this._tree = tree;
