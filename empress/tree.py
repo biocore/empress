@@ -330,11 +330,17 @@ class Tree(TreeNode):
 
     def update_unrooted_coords(self, s, x1, y1, a, da):
         """ Update x, y coordinates of tree nodes in canvas.
-        `update_unrooted_coords` will updating the plotting parameters for
-        all of the nodes within the tree.
-        This can be applied when the tree becomes modified (i.e. pruning
-        or collapsing) and the resulting coordinates need to be modified
-        to reflect the changes to the tree structure.
+
+        This function will update the x1, y1, x2, y2, and angle attributes
+        for all of the nodes within the tree. Note that (once the unrooted
+        layout has finished) all that is really used are the x2 and y2
+        attributes.
+
+        In a server-based version of Empress, this could be applied when
+        the tree becomes modified (i.e. pruning or collapsing) and the
+        resulting coordinates would be modified to reflect the changes
+        to the tree structure. (In practice, we just run this once on the
+        Python side of things in order to precompute the layout.)
 
         Parameters
         ----------
@@ -353,10 +359,6 @@ class Tree(TreeNode):
         -------
         points : list of tuple
             2D coordinates of all of the nodes.
-
-        Notes
-        -----
-
         """
 
         max_x = float('-inf')
