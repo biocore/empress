@@ -170,7 +170,11 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         // TODO pay attention to the color we're using for vertical lines, and
         // that it's correct (I think this is correct as is, but should check)
         var coords_index = 0;
-        if (this._current_layout === "Rectangular") {
+        // NOTE: the tree.size > 1 check ensures that we don't attempt to draw
+        // a vertical line for the root node if the root node is also the
+        // *only* node in the tree.
+        if (this._current_layout === "Rectangular" && tree.size > 1) {
+            // Draw a vertical line for the root node.
             color = this._treeData[tree.size].color;
             coords[coords_index++] = this.getX(this._treeData[tree.size]);
             coords[coords_index++] = this._treeData[tree.size].lowestchildyr;
