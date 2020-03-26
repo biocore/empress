@@ -267,6 +267,8 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         this._drawer.loadSampleThickBuf([]);
 
         // iterate throught the tree in postorder, skip root
+        // (TODO: don't skip root in rectangular layout mode? In case it's
+        // unique to a certain type of sample, i.e. the whole tree is unique)
         for (var i = 1; i < this._tree.size; i++) {
             // name of current node
             var node = i;
@@ -278,59 +280,137 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
 
             var color = this._treeData[node].color;
 
-            // center branch such that parent node is at (0,0)
-            var x1 = this.getX(this._treeData[parent]);
-            var y1 = this.getY(this._treeData[parent]);
-            var x2 = this.getX(this._treeData[node]);
-            var y2 = this.getY(this._treeData[node]);
-            var point = VectorOps.translate([x1, y1], -1 * x2, -1 * y2);
+            if (this._current_layout === "Rectangular") {
+                // draw a thick vertical line for this node, if it isn't a tip
+                if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
+                    /* The drawing pattern looks as follows. We basically do
+                     * two triangles: one from tl->bl->br->tl, then another
+                     * from tl->tr->br
+                     *
+                     * tl |-tr---
+                     * ---|
+                     * bl |-br---
+                     */
+                    // tl
+                    coords.push(this.getX(this._treeData[node]) - amount,
+                                this._treeData[node].highestchildyr);
+                    coords.push(...color);
 
-            // find angle/length of branch
-            var angle = VectorOps.getAngle(point);
-            var length = VectorOps.magnitude(point);
-            var over = point[1] < 0;
+                    // bl
+                    coords.push(this.getX(this._treeData[node]) - amount,
+                                this._treeData[node].lowestchildyr);
+                    coords.push(...color);
 
-            //find top left of box of think line
-            var tL = [0, amount];
-            tL = VectorOps.rotate(tL, angle, over);
-            tL = VectorOps.translate(tL, x2, y2);
+                    // br
+                    coords.push(this.getX(this._treeData[node]) + amount,
+                                this._treeData[node].lowestchildyr);
+                    coords.push(...color);
 
-            var tR = [length, amount];
-            tR = VectorOps.rotate(tR, angle, over);
-            tR = VectorOps.translate(tR, x2, y2);
+                    // tl
+                    coords.push(this.getX(this._treeData[node]) - amount,
+                                this._treeData[node].highestchildyr);
+                    coords.push(...color);
 
-            // find bottom point of think line
-            var bL = [0, -1 * amount];
-            bL = VectorOps.rotate(bL, angle, over);
-            bL = VectorOps.translate(bL, x2, y2);
+                    // tr
+                    coords.push(this.getX(this._treeData[node]) + amount,
+                                this._treeData[node].highestchildyr);
+                    coords.push(...color);
 
-            var bR = [length, -1 * amount];
-            bR = VectorOps.rotate(bR, angle, over);
-            bR = VectorOps.translate(bR, x2, y2);
+                    // br
+                    coords.push(this.getX(this._treeData[node]) + amount,
+                                this._treeData[node].lowestchildyr);
+                    coords.push(...color);
+                }
+                // draw a horizontal line for this node -- we can safely do
+                // this for all nodes since this ignores the root
+                /* tl   tr---
+                 * -----|
+                 * bl   br---
+                 */
+                // tl
+                coords.push(this.getX(this._treeData[parent]),
+                            this.getY(this._treeData[node]) + amount);
+                coords.push(...color);
 
-            // t1 v1
-            coords.push(...tL);
-            coords.push(...color);
+                // bl
+                coords.push(this.getX(this._treeData[parent]),
+                            this.getY(this._treeData[node]) - amount);
+                coords.push(...color);
 
-            // t1 v2
-            coords.push(...bL);
-            coords.push(...color);
+                // br
+                coords.push(this.getX(this._treeData[node]),
+                            this.getY(this._treeData[node]) - amount);
+                coords.push(...color);
 
-            // t1 v3
-            coords.push(...bR);
-            coords.push(...color);
+                // tl
+                coords.push(this.getX(this._treeData[parent]),
+                            this.getY(this._treeData[node]) + amount);
+                coords.push(...color);
 
-            // t2 v1
-            coords.push(...tL);
-            coords.push(...color);
+                // tr
+                coords.push(this.getX(this._treeData[node]),
+                            this.getY(this._treeData[node]) + amount);
+                coords.push(...color);
 
-            // t2 v2
-            coords.push(...tR);
-            coords.push(...color);
+                // br
+                coords.push(this.getX(this._treeData[node]),
+                            this.getY(this._treeData[node]) - amount);
+                coords.push(...color);
+            } else {
+                // center branch such that parent node is at (0,0)
+                var x1 = this.getX(this._treeData[parent]);
+                var y1 = this.getY(this._treeData[parent]);
+                var x2 = this.getX(this._treeData[node]);
+                var y2 = this.getY(this._treeData[node]);
+                var point = VectorOps.translate([x1, y1], -1 * x2, -1 * y2);
 
-            // t2 v3
-            coords.push(...bR);
-            coords.push(...color);
+                // find angle/length of branch
+                var angle = VectorOps.getAngle(point);
+                var length = VectorOps.magnitude(point);
+                var over = point[1] < 0;
+
+                //find top left of box of think line
+                var tL = [0, amount];
+                tL = VectorOps.rotate(tL, angle, over);
+                tL = VectorOps.translate(tL, x2, y2);
+
+                var tR = [length, amount];
+                tR = VectorOps.rotate(tR, angle, over);
+                tR = VectorOps.translate(tR, x2, y2);
+
+                // find bottom point of think line
+                var bL = [0, -1 * amount];
+                bL = VectorOps.rotate(bL, angle, over);
+                bL = VectorOps.translate(bL, x2, y2);
+
+                var bR = [length, -1 * amount];
+                bR = VectorOps.rotate(bR, angle, over);
+                bR = VectorOps.translate(bR, x2, y2);
+
+                // t1 v1
+                coords.push(...tL);
+                coords.push(...color);
+
+                // t1 v2
+                coords.push(...bL);
+                coords.push(...color);
+
+                // t1 v3
+                coords.push(...bR);
+                coords.push(...color);
+
+                // t2 v1
+                coords.push(...tL);
+                coords.push(...color);
+
+                // t2 v2
+                coords.push(...tR);
+                coords.push(...color);
+
+                // t2 v3
+                coords.push(...bR);
+                coords.push(...color);
+            }
         }
 
         this._drawer.loadSampleThickBuf(coords);
