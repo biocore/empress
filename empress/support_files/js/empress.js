@@ -112,6 +112,12 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
          */
         this._default_layout = default_layout;
         this._current_layout = default_layout;
+
+        /**
+         * @type{Number}
+         * The line width used for drawing "thick" lines.
+         */
+        this._currentLineWidth = 1;
     }
 
     /**
@@ -260,6 +266,10 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      * @param {Number} amount - How thick to make branch
      */
     Empress.prototype.thickenSameSampleLines = function (amount) {
+        // we do this because SidePanel._updateSample() calls this function
+        // with lWidth - 1, so in order to make sure we're setting this
+        // properly we add 1 to this value.
+        this._currentLineWidth = amount + 1;
         var tree = this._tree;
 
         // the coordinate of the tree.
@@ -644,19 +654,15 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      */
     Empress.prototype.updateLayout = function (newLayout) {
         if (this._current_layout !== newLayout) {
-            // TODO 1: extra-thick lines aren't removed here when we change
-            // layouts, causing a graphical glitch!
-            // This could be resolvable by checking if thick lines already
-            // exist, and if so redrawing them (would need to save the
-            // previously used line width/"amount"; or just completely
-            // resetting the tree and all sample metadata stuff between layout
-            // states. Dependent upon developer effort / user demand, I guess.
-            //
+            this._drawer.loadSampleThickBuf([]);
             // TODO throw error if newLayout not a key in
             // this._layoutToCoordSuffix
             this._current_layout = newLayout;
             this.drawTree();
-            // this.thickenSameSampleLines(5);
+            if (this._currentLineWidth !== 1) {
+                // The "- 1" mimics the behavior of SidePanel._updateSample()
+                this.thickenSameSampleLines(this._currentLineWidth - 1);
+            }
         }
     };
 
