@@ -108,6 +108,29 @@ class TestTree(unittest.TestCase):
                            (0.0, 0.0)]       # i (root)
         self.check_coords(t, "xr", "yr", expected_coords)
 
+        # Check that lowestchildyr and highestchildyr attributes were set
+        # properly. We do this by iterating over tree.non_tips(), which (like
+        # check_coords()) also uses a post-order traversal.
+        # (Note that the "coordinates" in this list of 2-tuples are ordered as
+        # (lowest child y-coordinate, highest child y-coordinate). Computing
+        # these from the list above should be pretty simple.)
+        expected_lowesthighestchildyr = [(-296.875, -171.875),  # f
+                                         (-234.375,  -46.875),  # g
+                                         (78.125,    203.125),  # h
+                                         (-140.625,  140.625)]  # i
+        for i, node in enumerate(t.non_tips()):
+            l, h = expected_lowesthighestchildyr[i]
+            self.assertTrue(hasattr(node, "lowestchildyr"))
+            self.assertTrue(hasattr(node, "highestchildyr"))
+            self.assertAlmostEqual(node.lowestchildyr, l, places=5)
+            self.assertAlmostEqual(node.highestchildyr, h, places=5)
+
+        # ... And also check that tip nodes *don't* have these attributes,
+        # since tips don't have children.
+        for node in t.tips():
+            self.assertFalse(hasattr(node, "lowestchildyr"))
+            self.assertFalse(hasattr(node, "highestchildyr"))
+
 
 if __name__ == "__main__":
     unittest.main()
