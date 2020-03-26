@@ -279,82 +279,87 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             }
 
             var color = this._treeData[node].color;
-
+            var tL, tR, bL, bR;
             if (this._current_layout === "Rectangular") {
-                // draw a thick vertical line for this node, if it isn't a tip
+                // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
                     /* The drawing pattern looks as follows. We basically do
-                     * two triangles: one from tl->bl->br->tl, then another
-                     * from tl->tr->br
+                     * two triangles: one from tL->bL->bR->tL, then another
+                     * from tL->tR->bR
                      *
-                     * tl |-tr---
+                     * tL |-tR---
                      * ---|
-                     * bl |-br---
+                     * bL |-bR---
                      */
-                    // tl
-                    coords.push(this.getX(this._treeData[node]) - amount,
-                                this._treeData[node].highestchildyr);
+                    tL = [
+                        this.getX(this._treeData[node]) - amount,
+                        this._treeData[node].highestchildyr,
+                    ];
+                    tR = [
+                        this.getX(this._treeData[node]) + amount,
+                        this._treeData[node].highestchildyr,
+                    ];
+                    bL = [
+                        this.getX(this._treeData[node]) - amount,
+                        this._treeData[node].lowestchildyr,
+                    ];
+                    bR = [
+                        this.getX(this._treeData[node]) + amount,
+                        this._treeData[node].lowestchildyr,
+                    ];
+                    // Triangle 1
+                    coords.push(...tL);
                     coords.push(...color);
-
-                    // bl
-                    coords.push(this.getX(this._treeData[node]) - amount,
-                                this._treeData[node].lowestchildyr);
+                    coords.push(...bL);
                     coords.push(...color);
-
-                    // br
-                    coords.push(this.getX(this._treeData[node]) + amount,
-                                this._treeData[node].lowestchildyr);
+                    coords.push(...bR);
                     coords.push(...color);
-
-                    // tl
-                    coords.push(this.getX(this._treeData[node]) - amount,
-                                this._treeData[node].highestchildyr);
+                    // Triangle 2
+                    coords.push(...tL);
                     coords.push(...color);
-
-                    // tr
-                    coords.push(this.getX(this._treeData[node]) + amount,
-                                this._treeData[node].highestchildyr);
+                    coords.push(...tR);
                     coords.push(...color);
-
-                    // br
-                    coords.push(this.getX(this._treeData[node]) + amount,
-                                this._treeData[node].lowestchildyr);
+                    coords.push(...bR);
                     coords.push(...color);
                 }
-                // draw a horizontal line for this node -- we can safely do
-                // this for all nodes since this ignores the root
-                /* tl   tr---
+                // Draw a horizontal line for this node -- we can safely do
+                // this for all nodes since this ignores the root.
+                // Once we set the four vertices of the rectangle to be drawn,
+                // this is basically the same as the above "|"
+                // coordinate-setting code.
+                /* tL   tR---
                  * -----|
-                 * bl   br---
+                 * bL   bR---
                  */
-                // tl
-                coords.push(this.getX(this._treeData[parent]),
-                            this.getY(this._treeData[node]) + amount);
+                tL = [
+                    this.getX(this._treeData[parent]),
+                    this.getY(this._treeData[node]) + amount,
+                ];
+                tR = [
+                    this.getX(this._treeData[node]),
+                    this.getY(this._treeData[node]) + amount,
+                ];
+                bL = [
+                    this.getX(this._treeData[parent]),
+                    this.getY(this._treeData[node]) - amount,
+                ];
+                bR = [
+                    this.getX(this._treeData[node]),
+                    this.getY(this._treeData[node]) - amount,
+                ];
+                // Triangle 1
+                coords.push(...tL);
                 coords.push(...color);
-
-                // bl
-                coords.push(this.getX(this._treeData[parent]),
-                            this.getY(this._treeData[node]) - amount);
+                coords.push(...bL);
                 coords.push(...color);
-
-                // br
-                coords.push(this.getX(this._treeData[node]),
-                            this.getY(this._treeData[node]) - amount);
+                coords.push(...bR);
                 coords.push(...color);
-
-                // tl
-                coords.push(this.getX(this._treeData[parent]),
-                            this.getY(this._treeData[node]) + amount);
+                // Triangle 2
+                coords.push(...tL);
                 coords.push(...color);
-
-                // tr
-                coords.push(this.getX(this._treeData[node]),
-                            this.getY(this._treeData[node]) + amount);
+                coords.push(...tR);
                 coords.push(...color);
-
-                // br
-                coords.push(this.getX(this._treeData[node]),
-                            this.getY(this._treeData[node]) - amount);
+                coords.push(...bR);
                 coords.push(...color);
             } else {
                 // center branch such that parent node is at (0,0)
@@ -370,20 +375,20 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
                 var over = point[1] < 0;
 
                 //find top left of box of think line
-                var tL = [0, amount];
+                tL = [0, amount];
                 tL = VectorOps.rotate(tL, angle, over);
                 tL = VectorOps.translate(tL, x2, y2);
 
-                var tR = [length, amount];
+                tR = [length, amount];
                 tR = VectorOps.rotate(tR, angle, over);
                 tR = VectorOps.translate(tR, x2, y2);
 
                 // find bottom point of think line
-                var bL = [0, -1 * amount];
+                bL = [0, -1 * amount];
                 bL = VectorOps.rotate(bL, angle, over);
                 bL = VectorOps.translate(bL, x2, y2);
 
-                var bR = [length, -1 * amount];
+                bR = [length, -1 * amount];
                 bR = VectorOps.rotate(bR, angle, over);
                 bR = VectorOps.translate(bR, x2, y2);
 
