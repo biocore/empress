@@ -260,6 +260,61 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     };
 
     /**
+     * Adds to an array of coordinates / colors the data needed to draw two
+     * triangles.
+     *
+     * The two triangles drawn should look as follows:
+     *
+     * tL--tR
+     * | \  |
+     * |  \ |
+     * bL--bR
+     *
+     * ...where all of the area is filled in, giving the impression of just
+     * a rectangle (or generic quadrilateral, if e.g. tL isn't directly above
+     * bL) being drawn.
+     *
+     * Note that this doesn't do any validation on the relative positions of
+     * the tL / tR / bL / bR coordinates, so if those are messed up (e.g.
+     * you're trying to draw the rectangle shown above but you accidentally
+     * swap bL and tL) then this will just draw something weird.
+     *
+     * (Also note that we can modify coords because JS uses "Call by sharing"
+     * for Arrays/Objects; see http://jasonjl.me/blog/2014/10/15/javascript.)
+     *
+     * @param {Array} coords Array containing coordinate + color data, to be
+     *                       passed to Drawer.loadSampleThickBuf().
+     * @param {Array} tL     top-left position, represented as [x, y]
+     * @param {Array} tR     top-right position, represented as [x, y]
+     * @param {Array} bL     bottom-left position, represented as [x, y]
+     * @param {Array} bR     bottom-right position, represented as [x, y]
+     * @param {Array} color  the color to draw / fill both triangles with
+     */
+    Empress.prototype._addTriangleCoords = function (
+        coords,
+        tL,
+        tR,
+        bL,
+        bR,
+        color
+    ) {
+        // Triangle 1
+        coords.push(...tL);
+        coords.push(...color);
+        coords.push(...bL);
+        coords.push(...color);
+        coords.push(...bR);
+        coords.push(...color);
+        // Triangle 2
+        coords.push(...tL);
+        coords.push(...color);
+        coords.push(...tR);
+        coords.push(...color);
+        coords.push(...bR);
+        coords.push(...color);
+    };
+
+    /**
      * Thickens the branches that belong to unique sample categories
      * (i.e. features that are only in gut)
      *
@@ -293,9 +348,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             if (this._current_layout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
-                    /* The drawing pattern looks as follows. We basically do
-                     * two triangles: one from tL->bL->bR->tL, then another
-                     * from tL->tR->bR
+                    /* The drawing pattern looks as follows.
                      *
                      * tL |-tR---
                      * ---|
@@ -317,27 +370,13 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
                         this.getX(this._treeData[node]) + amount,
                         this._treeData[node].lowestchildyr,
                     ];
-                    // Triangle 1
-                    coords.push(...tL);
-                    coords.push(...color);
-                    coords.push(...bL);
-                    coords.push(...color);
-                    coords.push(...bR);
-                    coords.push(...color);
-                    // Triangle 2
-                    coords.push(...tL);
-                    coords.push(...color);
-                    coords.push(...tR);
-                    coords.push(...color);
-                    coords.push(...bR);
-                    coords.push(...color);
+                    this._addTriangleCoords(coords, tL, tR, bL, bR, color);
                 }
-                // Draw a horizontal line for this node -- we can safely do
-                // this for all nodes since this ignores the root.
-                // Once we set the four vertices of the rectangle to be drawn,
-                // this is basically the same as the above "|"
-                // coordinate-setting code.
-                /* tL   tR---
+                /* Draw a horizontal thick line for this node -- we can safely
+                 * do this for all nodes since this ignores the root, and all
+                 * nodes except for the root (at least as of writing) have a
+                 * horizontal line portion in the rectangular layout.
+                 * tL   tR---
                  * -----|
                  * bL   bR---
                  */
@@ -357,20 +396,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
                     this.getX(this._treeData[node]),
                     this.getY(this._treeData[node]) - amount,
                 ];
-                // Triangle 1
-                coords.push(...tL);
-                coords.push(...color);
-                coords.push(...bL);
-                coords.push(...color);
-                coords.push(...bR);
-                coords.push(...color);
-                // Triangle 2
-                coords.push(...tL);
-                coords.push(...color);
-                coords.push(...tR);
-                coords.push(...color);
-                coords.push(...bR);
-                coords.push(...color);
+                this._addTriangleCoords(coords, tL, tR, bL, bR, color);
             } else {
                 // center branch such that parent node is at (0,0)
                 var x1 = this.getX(this._treeData[parent]);
@@ -402,29 +428,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
                 bR = VectorOps.rotate(bR, angle, over);
                 bR = VectorOps.translate(bR, x2, y2);
 
-                // t1 v1
-                coords.push(...tL);
-                coords.push(...color);
-
-                // t1 v2
-                coords.push(...bL);
-                coords.push(...color);
-
-                // t1 v3
-                coords.push(...bR);
-                coords.push(...color);
-
-                // t2 v1
-                coords.push(...tL);
-                coords.push(...color);
-
-                // t2 v2
-                coords.push(...tR);
-                coords.push(...color);
-
-                // t2 v3
-                coords.push(...bR);
-                coords.push(...color);
+                this._addTriangleCoords(coords, tL, tR, bL, bR, color);
             }
         }
 
