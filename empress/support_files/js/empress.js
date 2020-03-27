@@ -163,7 +163,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             // (horizontal), and internal nodes have 2 lines (both vertical and
             // horizontal).
             var leafCt = tree.numleafs();
-            numLines = (leafCt + 1) + (2 * (tree.size - leafCt - 1));
+            numLines = leafCt + 1 + 2 * (tree.size - leafCt - 1);
         } else {
             numLines = tree.size - 1;
         }
@@ -406,11 +406,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             this._current_layout === "Rectangular" &&
             this._treeData[tree.size].sampleColored
         ) {
-            this._addThickVerticalLineCoords(
-                coords,
-                tree.size,
-                amount
-            );
+            this._addThickVerticalLineCoords(coords, tree.size, amount);
         }
         // iterate throught the tree in postorder, skip root
         for (var i = 1; i < this._tree.size; i++) {
@@ -427,11 +423,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             if (this._current_layout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
-                    this._addThickVerticalLineCoords(
-                        coords,
-                        node,
-                        amount
-                    );
+                    this._addThickVerticalLineCoords(coords, node, amount);
                 }
                 /* Draw a horizontal thick line for this node -- we can safely
                  * do this for all nodes since this ignores the root, and all
