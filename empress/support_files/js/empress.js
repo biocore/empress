@@ -336,6 +336,47 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         coords.push(...color);
     };
 
+    /* Adds coordinate/color info for a vertical line for a given node in the
+     * rectangular layout. The vertices of the rectangle to be drawn look like:
+     *
+     * tL |-tR---
+     * ---|
+     * bL |-bR---
+     *
+     * @param {Array} coords  Array containing coordinate + color data, to be
+     *                        passed to Drawer.loadSampleThickBuf().
+     * @param {Number} node   Node index in this._treeData, from which we'll
+     *                        retrieve coordinate information.
+     * @param {Number} amount Desired line thickness (note that this will be
+     *                        applied on both sides of the line -- so if
+     *                        amount = 1 here then the drawn thick line will
+     *                        have a width of 1 + 1 = 2).
+     */
+    Empress.prototype._addThickVerticalLineCoords = function (
+        coords,
+        node,
+        amount
+    ) {
+        var tL = [
+            this.getX(this._treeData[node]) - amount,
+            this._treeData[node].highestchildyr,
+        ];
+        var tR = [
+            this.getX(this._treeData[node]) + amount,
+            this._treeData[node].highestchildyr,
+        ];
+        var bL = [
+            this.getX(this._treeData[node]) - amount,
+            this._treeData[node].lowestchildyr,
+        ];
+        var bR = [
+            this.getX(this._treeData[node]) + amount,
+            this._treeData[node].lowestchildyr,
+        ];
+        var color = this._treeData[node].color;
+        this._addTriangleCoords(coords, tL, tR, bL, bR, color);
+    };
+
     /**
      * Thickens the branches that belong to unique sample categories
      * (i.e. features that are only in gut)
@@ -353,6 +394,18 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         var coords = [];
         this._drawer.loadSampleThickBuf([]);
 
+        // In the corner case where the root node (located at index tree.size)
+        // has an assigned color, thicken the root's drawn vertical line
+        if (
+            this._current_layout === "Rectangular" &&
+            this._tree.Data[tree.size].sampleColored
+        ) {
+            Empress.prototype._addThickVerticalLineCoords(
+                coords,
+                tree.size,
+                amount
+            );
+        }
         // iterate throught the tree in postorder, skip root
         // (TODO: don't skip root in rectangular layout mode? In case it's
         // unique to a certain type of sample, i.e. the whole tree is unique)
@@ -370,29 +423,11 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             if (this._current_layout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
-                    /* The drawing pattern looks as follows.
-                     *
-                     * tL |-tR---
-                     * ---|
-                     * bL |-bR---
-                     */
-                    tL = [
-                        this.getX(this._treeData[node]) - amount,
-                        this._treeData[node].highestchildyr,
-                    ];
-                    tR = [
-                        this.getX(this._treeData[node]) + amount,
-                        this._treeData[node].highestchildyr,
-                    ];
-                    bL = [
-                        this.getX(this._treeData[node]) - amount,
-                        this._treeData[node].lowestchildyr,
-                    ];
-                    bR = [
-                        this.getX(this._treeData[node]) + amount,
-                        this._treeData[node].lowestchildyr,
-                    ];
-                    this._addTriangleCoords(coords, tL, tR, bL, bR, color);
+                    Empress.prototype._addThickVerticalLineCoords(
+                        coords,
+                        node,
+                        amount
+                    );
                 }
                 /* Draw a horizontal thick line for this node -- we can safely
                  * do this for all nodes since this ignores the root, and all
