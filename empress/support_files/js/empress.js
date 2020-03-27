@@ -173,14 +173,18 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         // branch color
         var color;
 
-        // TODO pay attention to the color we're using for vertical lines, and
-        // that it's correct (I think this is correct as is, but should check)
         var coords_index = 0;
-        // NOTE: the tree.size > 1 check ensures that we don't attempt to draw
-        // a vertical line for the root node if the root node is also the
-        // *only* node in the tree.
-        if (this._current_layout === "Rectangular" && tree.size > 1) {
-            // Draw a vertical line for the root node.
+
+        /* Draw a vertical line for the root node, if we're in rectangular
+         * layout mode. Note that we *don't* draw a horizontal line for the
+         * root node, even if it has a nonzero branch length; this could be
+         * modified in the future if desired. See #141 on GitHub.
+         *
+         * (The python code explicitly disallows trees with <= 1 nodes, so
+         * we're never going to be in the unforuntate situation of having the
+         * root be the ONLY node in the tree. So this behavior is ok.)
+         */
+        if (this._current_layout === "Rectangular") {
             color = this._treeData[tree.size].color;
             coords[coords_index++] = this.getX(this._treeData[tree.size]);
             coords[coords_index++] = this._treeData[tree.size].lowestchildyr;
@@ -205,6 +209,31 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             color = this._treeData[node].color;
 
             if (this._current_layout === "Rectangular") {
+                /* Nodes in the rectangular layout can have up to two "parts":
+                 * a horizontal line, and a vertical line at the end of this
+                 * line. These parts are indicated below as AAA... and BBB...,
+                 * respectively. (Child nodes are indicated by CCC...)
+                 *
+                 *        BCCCCCCCCCCCC
+                 *        B
+                 * AAAAAAAB
+                 *        B
+                 *        BCCCCCCCCCCCC
+                 *
+                 * All nodes except for the root are drawn with a horizontal
+                 * line, and all nodes except for tips are drawn with a
+                 * vertical line.
+                 */
+                // 1. Draw horizontal line (we're already skipping the root)
+                coords[coords_index++] = this.getX(this._treeData[parent]);
+                coords[coords_index++] = this.getY(this._treeData[node]);
+                coords.set(color, coords_index);
+                coords_index += 3;
+                coords[coords_index++] = this.getX(this._treeData[node]);
+                coords[coords_index++] = this.getY(this._treeData[node]);
+                coords.set(color, coords_index);
+                coords_index += 3;
+                // 2. Draw vertical line, if this is an internal node
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
                     coords[coords_index++] = this.getX(this._treeData[node]);
                     coords[coords_index++] = this._treeData[
@@ -217,15 +246,8 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
                     coords.set(color, coords_index);
                     coords_index += 3;
                 }
-                coords[coords_index++] = this.getX(this._treeData[parent]);
-                coords[coords_index++] = this.getY(this._treeData[node]);
-                coords.set(color, coords_index);
-                coords_index += 3;
-                coords[coords_index++] = this.getX(this._treeData[node]);
-                coords[coords_index++] = this.getY(this._treeData[node]);
-                coords.set(color, coords_index);
-                coords_index += 3;
             } else {
+                // Draw nodes for the unrooted layout.
                 // coordinate info for parent
                 coords[coords_index++] = this.getX(this._treeData[parent]);
                 coords[coords_index++] = this.getY(this._treeData[parent]);
