@@ -155,17 +155,22 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     Empress.prototype.getCoords = function () {
         var tree = this._tree;
 
-        // size of branch coordinates. 2 coordinates represent a single branch
-        var numSegmentsPerNode;
+        // Used to compute the size of coords, which describes the coordinates
+        // to be drawn.
+        var numLines;
         if (this._current_layout === "Rectangular") {
-            // TODO this is an overestimate, it's only 4??? for every internal
-            // node and 2 for every leaf node -- compute proportions in python
-            numSegmentsPerNode = 4;
+            // Leaves have 1 line (vertical), the root also has 1 line
+            // (horizontal), and internal nodes have 2 lines (both vertical and
+            // horizontal).
+            var leafCt = tree.numleafs();
+            numLines = (leafCt + 1) + (2 * (tree.size - leafCt - 1));
         } else {
-            numSegmentsPerNode = 2;
+            numLines = tree.size - 1;
         }
-        var coords_size =
-            (tree.size - 1) * this._drawer.VERTEX_SIZE * numSegmentsPerNode;
+
+        // Every line takes up two coordinates, and every coordinate takes up
+        // VERTEX_SIZE spaces in coords.
+        var coords_size = 2 * numLines * this._drawer.VERTEX_SIZE;
 
         // the coordinate of the tree.
         var coords = new Float32Array(coords_size);
@@ -399,9 +404,9 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         // drawing the tree in Rectangular layout mode
         if (
             this._current_layout === "Rectangular" &&
-            this._tree.Data[tree.size].sampleColored
+            this._treeData[tree.size].sampleColored
         ) {
-            Empress.prototype._addThickVerticalLineCoords(
+            this._addThickVerticalLineCoords(
                 coords,
                 tree.size,
                 amount
@@ -422,7 +427,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             if (this._current_layout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
-                    Empress.prototype._addThickVerticalLineCoords(
+                    this._addThickVerticalLineCoords(
                         coords,
                         node,
                         amount
