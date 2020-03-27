@@ -107,9 +107,14 @@
                                    empress, legend);
         sPanel.addSampleTab();
 
-        var animator = new Animator(empress, biom);
-        var animatePanel = new AnimatePanel(animator, legend);
+        // create animator state machine
+        var animator = new Animator(empress, biom, legend);
+
+        // add animator gui components
+        var animatePanel = new AnimatePanel(animator);
         animatePanel.addAnimationTab();
+
+        // make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {
             btn.addEventListener("click", function() {
             this.classList.toggle("active");

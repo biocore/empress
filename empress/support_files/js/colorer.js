@@ -31,11 +31,11 @@ define(["chroma"], function(chroma) {
         // The color map selector
         for (var i = 0; i < Colorer.__Colormaps.length; i++) {
             var map = Colorer.__Colormaps[i];
-            var opt = document.createElement('option');
+            var opt = document.createElement("option");
             opt.innerHTML = map.name;
             opt.value = map.id;
 
-            if (map.type == 'Header') {
+            if (map.type == "Header") {
                 opt.disabled = true;
             }
             sel.appendChild(opt);

@@ -1,103 +1,257 @@
-define(['Colorer'], function(Colorer) {
+define(["Colorer"], function(Colorer) {
     /**
      *
      * @class AnimationPanel
      *
-     * Creates table for the animation panel and handles their events events.
+     * Creates tab for the animation panel and handles their events events.
+     *
+     * @param{Object} animator The object that creates the animations
+     *
+     * @return {AnimatePanel}
+     * construct AnimatePanel
      */
-    // function AnimatePanel(animator, timeframe) {
-    function AnimatePanel(animator, legend) {
-        // used to event triggers
+    function AnimatePanel(animator) {
+        // used in event triggers
         this.animator = animator;
-        this.legend = legend;
 
         // animation GUI components
-        this.colorSelect = document.getElementById('animate-color-select');
-        this.gradient = document.getElementById('animate-gradient');
-        this.trajectory = document.getElementById('animate-trajectory');
-        this.hideChk = document.getElementById('animate-hide-non-feature');
-        this.lWidth = document.getElementById('animate-line-width');
-        this.rewindBtn = document.getElementById('animate-rewind-btn');
-        this.playBtn = document.getElementById('animate-play-btn');
-        this.pauseBtn = document.getElementById('animate-pause-btn');
+        this.colorSelect = document.getElementById("animate-color-select");
+        this.gradient = document.getElementById("animate-gradient");
+        this.trajectory = document.getElementById("animate-trajectory");
+        this.hideChk = document.getElementById("animate-hide-non-feature");
+        this.lWidth = document.getElementById("animate-line-width");
+        this.startBtn = document.getElementById("animate-start-btn");
+        this.stopBtn = document.getElementById("animate-stop-btn");
+        this.pauseBtn = document.getElementById("animate-pause-btn");
+        this.resumeBtn = document.getElementById("animate-resume-btn");
+        this.prevFrameBtn = document.getElementById("animate-prev-btn");
+        this.nextFrameBtn = document.getElementById("animate-next-btn");
+    }
+
+    /**
+     * Makes the play button visible. This is the menu shown before user has
+     * started the animation.
+     *
+     * @return {null}
+     * @private
+     */
+    AnimatePanel.prototype.__startOptions = function() {
+        // hide the following buttons
+        this.stopBtn.classList.add("hidden");
+        this.pauseBtn.classList.add("hidden");
+        this.resumeBtn.classList.add("hidden");
+        this.prevFrameBtn.classList.add("hidden");
+        this.nextFrameBtn.classList.add("hidden");
+
+        // show the following buttons
+        this.startBtn.classList.remove("hidden");
     };
 
     /**
-     * Initializes sample components
+     * Makes the stop/pause buttons visible. This is the menu shown during the
+     * animation.
+     *
+     * @return {null}
+     * @private
+     */
+    AnimatePanel.prototype.__pauseOptions = function() {
+        // hide the following buttons
+        this.startBtn.classList.add("hidden");
+        this.resumeBtn.classList.add("hidden");
+        this.prevFrameBtn.classList.add("hidden");
+        this.nextFrameBtn.classList.add("hidden");
+
+        // show the following buttons
+        this.stopBtn.classList.remove("hidden");
+        this.pauseBtn.classList.remove("hidden");
+    };
+
+    /**
+     * Makes the prev/next/stop/resume buttons visible. This is the menu shown
+     * when user pauses the animation.
+     *
+     * @return {null}
+     * @private
+     */
+    AnimatePanel.prototype.__resumeOptions = function() {
+        // hide the following buttons
+        this.pauseBtn.classList.add("hidden");
+        this.startBtn.classList.add("hidden");
+
+        // show the following buttons
+        this.stopBtn.classList.remove("hidden");
+        this.resumeBtn.classList.remove("hidden");
+        this.prevFrameBtn.classList.remove("hidden");
+        this.nextFrameBtn.classList.remove("hidden");
+
+        // dont show previous button on frame 1
+        if (this.animator.onFirstFrame()) {
+            this.prevFrameBtn.classList.add("hidden");
+        }
+
+        // dont show next button on last frame
+        if (this.animator.onLastFrame()) {
+            this.nextFrameBtn.classList.add("hidden");
+        }
+    };
+
+    /**
+     * enables/disable the drop down menus. When the animation is playing,
+     * the drop down menus are disable in order to prevent user from changing
+     * the gradient/trajectory during an animation.
+     *
+     * @return {null}
+     * @private
+     */
+    AnimatePanel.prototype.__toogleSelects = function(disableStatus) {
+        this.colorSelect.disabled = disableStatus;
+        this.gradient.disabled = disableStatus;
+        this.trajectory.disabled = disableStatus;
+    };
+
+    /**
+     * Initializes GUI components/set up callback events
+     * @return {null}
      */
     AnimatePanel.prototype.addAnimationTab = function() {
-        // for use in closers
+        // used in closers
         var ap = this;
+
+        // hide play/pause/next/previous/stop buttons
+        this.__startOptions();
 
         // The color map selector
         Colorer.addColorsToSelect(this.colorSelect);
 
-        // gradient/trajectory categories
+        // retrive gradient/trajectory categories
         var categories = this.animator.getSampleCategories();
-         for (var i = 0; i < categories.length; i++) {
-            var opt = document.createElement('option');
+
+        // add categories options to gradient drop down menu
+        for (var i = 0; i < categories.length; i++) {
+            var opt = document.createElement("option");
             opt.value = categories[i];
             opt.innerHTML = categories[i];
             this.gradient.appendChild(opt);
         }
+
+        // copy options and add them to trajectory drop down menu
         var options = this.gradient.innerHTML;
         this.trajectory.innerHTML = options;
 
-        this.playBtn.onclick = function() {
-            // ap.__showAnimation();
+        /**
+         * Event: triggers when user clicks on the hide branch checkbox.
+         * Sets hide parameter in animation state machine.
+         *
+         * @return {null}
+         */
+        this.hideChk.onchange = function() {
+            ap.animator.setHide(ap.hideChk.checked);
+        };
+
+        /**
+         * Event: triggers when user changes value of line width.
+         * Sets line width parameter in animation state machine.
+         */
+        this.lWidth.onchange = function() {
+            var val = ap.lWidth.value;
+
+            // make sure line width is positve
+            if (val < 1) {
+                val = 1;
+                ap.lWidth = val;
+            }
+
+            // pass line width to state machine
+            ap.animator.setLineWidth(val);
+        };
+
+        /**
+         * Event: triggers when user clicks on the start button.
+         * Starts the animation.
+         *
+         * @return {null}
+         */
+        this.startBtn.onclick = function() {
+            // change GUI components
+            ap.__toogleSelects(true);
+            ap.__pauseOptions();
+
+            // collect starting conditions for the animation
             var gradient = ap.gradient.value;
             var trajectory = ap.trajectory.value;
             var cm = ap.colorSelect.value;
-            var hide = ap.hideChk.value;
+            var hide = ap.hideChk.checked;
             var lWidth = ap.lWidth.value;
-            ap.animator.setAnimationParameters(trajectory, gradient, cm, hide,
-                                               lWidth);
-            ap.__showAnimation()
-        }
 
+            // pass parameters to state machine
+            ap.animator.setAnimationParameters(
+                trajectory,
+                gradient,
+                cm,
+                hide,
+                lWidth
+            );
 
-        this.rewindBtn.onclick = function() {
-            // ap.__clearAnimation();
-            ap.__nextTimeframe();
-        }
+            // start animation
+            ap.animator.startAnimation();
+        };
+
+        /**
+         * Event: triggers when user clicks on pause button.
+         * Pauses the animation.
+         *
+         * @return {null}
+         */
+        this.pauseBtn.onclick = function() {
+            ap.__resumeOptions();
+            ap.animator.pauseAnimation();
+        };
+
+        /**
+         * Event: triggers when user clicks on resume button.
+         * Resumes the animation.
+         *
+         * @return {null}
+         */
+        this.resumeBtn.onclick = function() {
+            ap.__pauseOptions();
+            ap.animator.resumeAnimation();
+        };
+
+        /**
+         * Event: triggers when user clicks on stop button.
+         * Stops the animation and clears the state machine
+         *
+         * @return {null}
+         */
+        this.stopBtn.onclick = function() {
+            ap.__toogleSelects(false);
+            ap.__startOptions();
+            ap.animator.stopAnimation();
+        };
+
+        /**
+         * Event: triggers when user clicks on previous button.
+         * Shows the previous frame in the animation
+         *
+         * @return {null}
+         */
+        this.prevFrameBtn.onclick = function() {
+            ap.animator.prevFrame();
+            ap.__resumeOptions();
+        };
+
+        /**
+         * Event: triggers when user clicks on next button.
+         * Shows the next frame in the animation.
+         *
+         * @return {null}
+         */
+        this.nextFrameBtn.onclick = function() {
+            ap.animator.nextFrame();
+            ap.__resumeOptions();
+        };
     };
 
-    // TODO: make this play automatically
-    AnimatePanel.prototype.__showAnimation = function() {
-        console.log("Play animations!")
-
-        // var colBy = this.catSelect.value;
-        // var col = this.colorSelect.value;
-        // var hide = this.hideChk.checked;
-        // var lWidth = this.lWidth.value;
-
-        // startAnimation() *************************
-        // Folowing code is temp while creating animations
-        this.legend.clearAllLegends();
-        var result = this.animator.showCurFrame(this.hide);
-        this.legend.addColorKey(result.name, result.keyInfo, "node", false);
-        // ******************************************
-
-        // var keyInfo = this.animator.colorCurFrame(colBy, col, hide, lWidth);
-        // this.legend.addColorKey(colBy, keyInfo, 'node', false);
-    }
-
-    AnimatePanel.prototype.__clearAnimation = function() {
-        // clear animation class
-    }
-
-    AnimatePanel.prototype.__prevTimeframe = function() {
-        // this.legend.clearAllLegends();
-        // this.animator.prevFrame();
-        // this.__showAnimation();
-    }
-
-    AnimatePanel.prototype.__nextTimeframe = function() {
-        // this.legend.clearAllLegends();
-        // this.animator.nextFrame();
-        // this.__showAnimation();
-        this.__showAnimation();
-    }
-
-     return AnimatePanel;
+    return AnimatePanel;
 });

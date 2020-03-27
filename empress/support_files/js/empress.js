@@ -269,8 +269,11 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      */
     Empress.prototype._namesToKeys = function(names) {
         var keys = new Set();
+        var addKey = function(key) {
+            keys.add(key);
+        };
         for (var i = 0; i < names.length; i++) {
-            this._nameToKeys[names[i]].forEach(key => keys.add(key));
+            this._nameToKeys[names[i]].forEach(addKey);
         }
         return keys;
     };
@@ -302,13 +305,16 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
             .flatten()
             .value();
         var uniqueKeys = new Set(uniqueKeysArray);
+        var hasKey = function(key) {
+            return uniqueKeys.has(key);
+        };
 
         // get the unique keys in each item
         var result = {};
-        var items = Object.keys(keys);
-        for (var i = 0; i < items.length; i++) {
+        items = Object.keys(keys);
+        for (i = 0; i < items.length; i++) {
             var itemKeys = [...keys[items[i]]];
-            result[items[i]] = _.filter(itemKeys, key => uniqueKeys.has(key));
+            result[items[i]] = _.filter(itemKeys, hasKey);
         }
 
         return result;
@@ -410,10 +416,9 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
         }
         obs = this._keepUniqueKeys(obs);
         return obs;
-    }
+    };
 
     Empress.prototype._colorTree = function(obs, cm) {
-        console.log({obs: obs, cm})
         var categories = Object.keys(obs);
         // color tree
         for (var i = 0; i < categories.length; i++) {
@@ -426,7 +431,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
                 this._treeData[key].sampleColored = true;
             }
         }
-    }
+    };
 
     /**
      * Cacluates the total and relative pertange of the tree that was colored by

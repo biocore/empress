@@ -42,10 +42,13 @@ define(["Colorer"], function(Colorer) {
         this.sLineWidth = document.getElementById("sample-line-width");
         this.sUpdateBtn = document.getElementById("sample-update");
 
+        // uncheck button
+        this.sHideChk.checked = false;
+
         // used in event closers
         var panel = this;
 
-        // // triggers search when enter key is pressed in search menu
+        // triggers search when enter key is pressed in search menu
         var search = document.getElementById(this.SEARCH_ID);
         search.keyup = function(e) {
             e.preventDefault();
@@ -98,7 +101,7 @@ define(["Colorer"], function(Colorer) {
         this.sColor.value = "discrete-coloring-qiime";
 
         // uncheck button
-        this.sHideChk.checked = true;
+        this.sHideChk.checked = false;
 
         // set default branch length back to 1
         var thickenBranch = document.getElementById("sample-line-width");

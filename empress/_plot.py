@@ -78,13 +78,12 @@ def plot(output_dir: str,
         .to_dataframe().filter(feature_table.index, axis=0) \
         .to_dict(orient='index')
 
-
     sample_data_type = sample_metadata \
         .to_dataframe().filter(feature_table.index, axis=0) \
         .dtypes \
         .to_dict()
-    sample_data_type = {key:'n' if pd.api.types.is_numeric_dtype(val) else 'o' \
-        for key, val in sample_data_type.items()}
+    sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
+                        for k, v in sample_data_type.items()}
 
     # create a mapping of observation ids and the samples that contain them
     obs_data = {}

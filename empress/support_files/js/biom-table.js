@@ -138,39 +138,49 @@ define([], function() {
 
     BIOMTable.prototype.getUniqueSampleValues = function(category) {
         var values = new Set();
-        var isNumeric = this._types[category] === 'n';
+        var isNumeric = this._types[category] === "n";
         for (var sample in this._samp) {
             var cVal = this._samp[sample][category];
-            if(cVal === "unknown" || (isNumeric &&isNaN(cVal))) {
+            if (cVal === "unknown" || (isNumeric && isNaN(cVal))) {
                 continue;
             }
             values.add(cVal);
         }
         values = [...values];
-        return isNumeric ? values.sort((a,b) => a-b) : values.sort();
+        return isNumeric ? values.sort((a, b) => a - b) : values.sort();
     };
 
-    BIOMTable.prototype.getTrajectory = function(cat, traj, grad) {
+    /**
+     * Returns a set of observations and sample ids
+     *
+     * Used by animator to retrive observations and samples seen during the
+     * current gradient step (timeframe).
+     */
+    BIOMTable.prototype.getGradientStep = function(cat, grad, traj) {
         var obs = {};
         var sIds = {};
         var samples = Object.keys(this._samp);
-        var isNumeric = this._types[grad] === 'n';
+        var isNumeric = this._types[traj] === "n";
+
+        var addItems = function(items, container) {
+            items.forEach(x => container.add(x));
+        };
         for (var i = 0; i < samples.length; i++) {
             var sId = samples[i];
             var sample = this._samp[sId];
-            if (traj === sample[cat]) {
-                var cVal = sample[grad];
-                if (cVal === "unknown" || (isNumeric &&isNaN(cVal))) {
+            if (grad === sample[cat]) {
+                var cVal = sample[traj];
+                if (cVal === "unknown" || (isNumeric && isNaN(cVal))) {
                     continue;
                 }
-                if (!(sample[grad] in obs)) {
-                    obs[sample[grad]] = new Set();
+                if (!(sample[traj] in obs)) {
+                    obs[sample[traj]] = new Set();
                 }
-                if (!(sample[grad] in sIds)) {
-                    sIds[sample[grad]] = new Set();
+                if (!(sample[traj] in sIds)) {
+                    sIds[sample[traj]] = new Set();
                 }
-                this._obs[sId].forEach(x => obs[sample[grad]].add(x))
-                sIds[sample[grad]].add(sId);
+                addItems(this._obs[sId], obs[sample[traj]]);
+                sIds[sample[traj]].add(sId);
             }
         }
 
@@ -178,7 +188,7 @@ define([], function() {
             obs[key] = Array.from(obs[key]);
         }
 
-        return {obs:obs, sIds: sIds};
+        return { obs: obs, sIds: sIds };
     };
 
     return BIOMTable;
