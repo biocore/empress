@@ -137,9 +137,15 @@ class Tree(TreeNode):
             if default_layout is None:
                 default_layout = name
 
-        # HACK: determine highest and lowest child y-position for internal
-        # nodes in the rectangular layout; used to draw vertical lines for
-        # these nodes
+        # Determine highest and lowest child y-position for internal nodes in
+        # the rectangular layout; used to draw vertical lines for these nodes.
+        #
+        # NOTE / TODO: This will have the effect of drawing vertical lines even
+        # for nodes with only 1 child -- in this case lowestchildyr ==
+        # highestchildyr for this node, so all of the stuff drawn in WebGL for
+        # this vertical line shouldn't show up. I don't think this should cause
+        # any problems, but it may be worth detecting these cases and not
+        # drawing vertical lines for them in the future.
         for n in self.preorder():
             if not n.is_tip():
                 child_y_coords = [c.yr for c in n.children]
