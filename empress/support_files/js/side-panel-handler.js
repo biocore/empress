@@ -207,15 +207,21 @@ define(["Colorer"], function (Colorer) {
             pele = document.createElement("p");
             lele = document.createElement("label");
             iele = document.createElement("input");
-            // https://stackoverflow.com/a/15750291
-            lele.htmlFor = LAYOUT_RADIO_BUTTON_NAME;
-            lele.innerHTML = layouts[i];
+
+            // Initialize the radio button for this layout
             iele.value = layouts[i];
             iele.type = "radio";
             iele.name = LAYOUT_RADIO_BUTTON_NAME;
+            iele.id = "layoutRadioBtn" + layouts[i];
             if (layouts[i] === default_layout) {
                 iele.checked = true;
             }
+
+            // Initialize the label pointing to that radio button
+            // https://stackoverflow.com/a/15750291
+            lele.htmlFor = iele.id;
+            lele.innerHTML = layouts[i];
+
             // Use of onclick based on
             // https://www.dyn-web.com/tutorials/forms/radio/onclick-onchange.php.
             // Long story short, either onchange or onclick works for most
