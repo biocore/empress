@@ -23,8 +23,15 @@ class TestTree(unittest.TestCase):
         # Check that trees match by iterating over original and Empress trees
         # simultaneously: see https://stackoverflow.com/a/20910242/10730311
         for n1, n2 in zip(t.preorder(), self.tree.preorder()):
-            assert n1.name == n2.name
-            assert n1.length == n2.length
+            self.assertEqual(n1.name, n2.name)
+            self.assertEqual(n1.length, n2.length)
+
+    def test_from_tree_singlenode(self):
+        st = TreeNode.read(['i:1;'])
+        with self.assertRaisesRegex(
+            ValueError, "must contain at least 2 nodes"
+        ):
+            Tree.from_tree(st)
 
     def check_coords(self, tree, xattr, yattr, expected_coords):
         """Checks that the coordinates in a tree match a list of "expected" ones.

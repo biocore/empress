@@ -51,6 +51,9 @@ class Tree(TreeNode):
         Tree
 
         """
+        if tree.count() <= 1:
+            raise ValueError("Tree must contain at least 2 nodes.")
+
         for n in tree.postorder():
             n.__class__ = Tree
             n.tip_count = 0
