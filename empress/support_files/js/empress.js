@@ -658,14 +658,19 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      */
     Empress.prototype.updateLayout = function (newLayout) {
         if (this._current_layout !== newLayout) {
-            this._drawer.loadSampleThickBuf([]);
-            // TODO throw error if newLayout not a key in
-            // this._layoutToCoordSuffix
-            this._current_layout = newLayout;
-            this.drawTree();
-            if (this._currentLineWidth !== 1) {
-                // The "- 1" mimics the behavior of SidePanel._updateSample()
-                this.thickenSameSampleLines(this._currentLineWidth - 1);
+            if (this._layoutToCoordSuffix.hasOwnProperty(newLayout)) {
+                this._drawer.loadSampleThickBuf([]);
+                this._current_layout = newLayout;
+                this.drawTree();
+                if (this._currentLineWidth !== 1) {
+                    // The - 1 mimics the behavior of SidePanel._updateSample()
+                    this.thickenSameSampleLines(this._currentLineWidth - 1);
+                }
+            } else {
+                // This should never happen under normal circumstances (the
+                // input to this function should always be an existing layout
+                // name), but we might as well account for it anyway.
+                throw "Layout " + newLayout + " doesn't have coordinate data.";
             }
         }
     };
