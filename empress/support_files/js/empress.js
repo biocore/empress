@@ -395,7 +395,8 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         this._drawer.loadSampleThickBuf([]);
 
         // In the corner case where the root node (located at index tree.size)
-        // has an assigned color, thicken the root's drawn vertical line
+        // has an assigned color, thicken the root's drawn vertical line when
+        // drawing the tree in Rectangular layout mode
         if (
             this._current_layout === "Rectangular" &&
             this._tree.Data[tree.size].sampleColored
@@ -407,8 +408,6 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             );
         }
         // iterate throught the tree in postorder, skip root
-        // (TODO: don't skip root in rectangular layout mode? In case it's
-        // unique to a certain type of sample, i.e. the whole tree is unique)
         for (var i = 1; i < this._tree.size; i++) {
             // name of current node
             var node = i;
