@@ -712,13 +712,17 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     Empress.prototype.updateLayout = function (newLayout) {
         if (this._current_layout !== newLayout) {
             if (this._layoutToCoordSuffix.hasOwnProperty(newLayout)) {
-                this._drawer.loadSampleThickBuf([]);
                 this._current_layout = newLayout;
-                this.drawTree();
+                // Adjust the thick-line stuff before calling drawTree() --
+                // this will get the buffer set up before it's actually drawn
+                // in drawTree(). Doing these calls out of order (draw tree,
+                // then call thickenSameSampleLines()) causes the thick-line
+                // stuff to only change whenever the tree is redrawn.
                 if (this._currentLineWidth !== 1) {
                     // The - 1 mimics the behavior of SidePanel._updateSample()
                     this.thickenSameSampleLines(this._currentLineWidth - 1);
                 }
+                this.drawTree();
             } else {
                 // This should never happen under normal circumstances (the
                 // input to this function should always be an existing layout
