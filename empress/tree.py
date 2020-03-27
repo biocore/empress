@@ -261,8 +261,33 @@ class Tree(TreeNode):
             if n.xr > max_width:
                 max_width = n.xr
 
+        if max_width == 0:
+            # The only case in which this should happen is if all nodes in the
+            # tree have a branch length of 0.
+            #
+            # We could theoretically allow this case (especially if/when we add
+            # in functionality to ignore branch lengths and just draw every
+            # node with length of "1" or something), but to me this seems like
+            # the sort of thing we should flag since that isn't currently
+            # implemented.
+            raise ValueError(
+                "All nodes in the tree have branch lengths of 0."
+            )
         x_scaling_factor = width / max_width
-        y_scaling_factor = height / max_height
+
+        if max_height > 0:
+            # Having a max_height of 0 could actually happen, in the funky case
+            # where the entire tree is a straight line (e.g. A -> B -> C). In
+            # this case our "rectangular layout" drawing places all nodes on
+            # the same y-coordinate (0), resulting in max_height = 0.
+            # ... So, that's why we only do y-scaling if this *isn't* the case.
+            y_scaling_factor = height / max_height
+        else:
+            # Since this will be multiplied by 0 for every node, we can set
+            # this to any real number and get the intended "effect" of keeping
+            # every node's y-coordinate at 0.
+            y_scaling_factor = 1
+
         for n in self.preorder():
             n.xr *= x_scaling_factor
             n.yr *= y_scaling_factor
