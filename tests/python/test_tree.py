@@ -138,6 +138,24 @@ class TestTree(unittest.TestCase):
             self.assertFalse(hasattr(node, "lowestchildyr"))
             self.assertFalse(hasattr(node, "highestchildyr"))
 
+    def test_straightline_tree_rect_layout(self):
+        """Checks that all nodes are drawn as expected even when there aren't
+           any "branches" in the tree.
+        """
+        # Setting root length to 100 to demonstrate/verify that root length is
+        # not taken into account (if this behavior changes we'll need to modify
+        # this test, rightfully so)
+        st = TreeNode.read(['((b:2)a:1)root:100;'])
+        t = Tree.from_tree(st)
+        t.coords(100, 100)
+        expected_coords = [(100, 0.0),
+                           (100 / 3.0, 0.0),
+                           (0.0, 0.0)]
+        self.check_coords(t, "xr", "yr", expected_coords)
+        for node in t.non_tips():
+            self.assertEqual(node.lowestchildyr, 0)
+            self.assertEqual(node.highestchildyr, 0)
+
 
 if __name__ == "__main__":
     unittest.main()
