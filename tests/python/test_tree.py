@@ -183,6 +183,9 @@ class TestTree(unittest.TestCase):
             self.assertFalse(hasattr(node, "highestchildyr"))
 
     def check_basic_tree_rect_layout(self, t):
+        """Checks that the Empress tree for "((b:2)a:1)root:100;" has a correct
+           rectangular layout.
+        """
         t.coords(100, 100)
         expected_coords = [(100, 0.0), (100 / 3.0, 0.0), (0.0, 0.0)]
         self.check_coords(t, "xr", "yr", expected_coords)
