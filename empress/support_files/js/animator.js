@@ -28,7 +28,7 @@ define(["Colorer"], function(Colorer) {
          */
         this.legend = legend;
 
-         /**
+        /**
          * @type {Object}
          * Stores the legend info for each timeframe
          */
@@ -165,7 +165,7 @@ define(["Colorer"], function(Colorer) {
             animator.legendInfo[x] = { color: colorer.getColorHex(i) };
         });
 
-        this.hide =hide;
+        this.hide = hide;
         this.lWidth = lWidth;
     };
 

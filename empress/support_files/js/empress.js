@@ -529,11 +529,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      * @return{Object} return a mapping of trajectory values to observations.
      */
     Empress.prototype.getGradientStep = function(cat, grad, traj) {
-        return this._biom.getGradientStep(
-            cat,
-            grad,
-            traj
-        );
+        return this._biom.getGradientStep(cat, grad, traj);
     };
 
     return Empress;

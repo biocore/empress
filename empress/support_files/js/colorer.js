@@ -74,7 +74,6 @@ define(["chroma"], function(chroma) {
         }
     };
 
-
     // taken from the qiime/colors.py module; a total of 24 colors
     /** @private */
     Colorer.__QIIME_COLOR = "discrete-coloring-qiime";
