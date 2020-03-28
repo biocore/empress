@@ -33,6 +33,29 @@ class TestTree(unittest.TestCase):
         ):
             Tree.from_tree(st)
 
+    def test_negative_branchlengths(self):
+        newicks = [
+            '((b:-1)a:1)root:1;', '((b:100)a:-100)root:0;',
+            '((b:1)a:1)root:-1;', '(b:1,c:-1)a:2;'
+        ]
+        for nwk in newicks:
+            st = TreeNode.read([nwk])
+            with self.assertRaisesRegex(
+                ValueError,
+                "cannot contain any negative-length branches"
+            ):
+                Tree.from_tree(st)
+
+    def test_all_nonroot_branchlengths_0(self):
+        newicks = ['((b:0)a:0)root:0;', '((b:0)a:0)root:1;']
+        for nwk in newicks:
+            st = TreeNode.read([nwk])
+            with self.assertRaisesRegex(
+                ValueError,
+                "must contain at least one non-root branch with length > 0"
+            ):
+                Tree.from_tree(st)
+
     def check_coords(self, tree, xattr, yattr, expected_coords):
         """Checks that the coordinates in a tree match a list of "expected" ones.
 

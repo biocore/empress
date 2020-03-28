@@ -54,6 +54,21 @@ class Tree(TreeNode):
         if tree.count() <= 1:
             raise ValueError("Tree must contain at least 2 nodes.")
 
+        max_branch_length = 0
+        for n in tree.postorder():
+            if n.length < 0:
+                raise ValueError(
+                    "Tree cannot contain any negative-length branches."
+                )
+            if not n.is_root():
+                max_branch_length = max(n.length, max_branch_length)
+
+        if max_branch_length == 0:
+            raise ValueError(
+                "Tree must contain at least one non-root branch with "
+                "length > 0."
+            )
+
         for n in tree.postorder():
             n.__class__ = Tree
             n.tip_count = 0
@@ -267,18 +282,10 @@ class Tree(TreeNode):
             if n.xr > max_width:
                 max_width = n.xr
 
-        if max_width == 0:
-            # The only case in which this should happen is if all nodes in the
-            # tree have a branch length of 0.
-            #
-            # We could theoretically allow this case (especially if/when we add
-            # in functionality to ignore branch lengths and just draw every
-            # node with length of "1" or something), but to me this seems like
-            # the sort of thing we should flag since that isn't currently
-            # implemented.
-            raise ValueError(
-                "All nodes in the tree have branch lengths of 0."
-            )
+        # We don't check if max_width == 0 here, because we check when
+        # constructing an Empress tree that it has at least one positive
+        # branch length and no negative branch lengths. (And if this is the
+        # case, then max_width must be > 0.)
         x_scaling_factor = width / max_width
 
         if max_height > 0:
