@@ -78,6 +78,15 @@ def plot(output_dir: str,
         .to_dataframe().filter(feature_table.index, axis=0) \
         .to_dict(orient='index')
 
+    # TODO: Empress is currently sorting all metadata as strings. This is
+    # memory intensive an wont scale well. We should convert all numberic
+    # data/compress metadata.
+
+    # This is used in biom-table. Currently this is only used to ignore null
+    # data (i.e. NaN and "unknown") and also determines sorting order.
+    # The original intent is to signal what
+    # columns are discrete/continous.
+    # type of sample metedata (n - number, o - object)
     sample_data_type = sample_metadata \
         .to_dataframe().filter(feature_table.index, axis=0) \
         .dtypes \

@@ -269,10 +269,16 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      */
     Empress.prototype._namesToKeys = function(names) {
         var keys = new Set();
+
+        // adds a key to the keys set.
         var addKey = function(key) {
             keys.add(key);
         };
+
         for (var i = 0; i < names.length; i++) {
+            // most names have a one-to-one correspondence but during testing
+            // a tree came up that had a one-to-many correspondance.
+            // _nameToKeys map a node name all nodes with that name
             this._nameToKeys[names[i]].forEach(addKey);
         }
         return keys;
@@ -290,6 +296,9 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
         var items = Object.keys(keys);
         var i;
 
+        // TODO: This method current method to get the unique observations
+        // belonging to each sample category is slow. Refactoring it will lead
+        // to a nice speed boost.
         var uniqueKeysArray = _.chain(keys)
             .values()
             .map(function(item) {
@@ -418,6 +427,12 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
         return obs;
     };
 
+    /**
+     * Updates the tree based on obs and cm but does not draw a new tree.
+     *
+     * @param{Object} obs The mapping from sample category to unique features.
+     * @param{Object} cm The mapping from sample category to color.
+     */
     Empress.prototype._colorTree = function(obs, cm) {
         var categories = Object.keys(obs);
         // color tree
@@ -438,7 +453,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      * each category in sampleObs
      *
      * @param {Object} sampleObs The object containing which tree branches are
-     *                colored by which sample category
+     *                 colored by which sample category
      * @param {Object} keyInfo The object containing the information to be
      *                 displayed in the sample legend
      */
@@ -486,6 +501,39 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
      */
     Empress.prototype.getSampleCategories = function() {
         return this._biom.getSampleCategories();
+    };
+
+    /**
+     * Returns an array of unique values in a metadata column. If column is
+     * numberic then the array is sorted in ascending order.
+     *
+     * @param{Object} category The column of data
+     *
+     * @return{Object}
+     */
+    Empress.prototype.getUniqueSampleValues = function(category) {
+        return this._biom.getUniqueSampleValues(category);
+    };
+
+    /**
+     * Returns a mapping of trajectory values to observations given a gradient
+     * and trajectory. Ignores trajectories which represent missing data. (i.e.
+     * 'unknown' for non-numberic and NaN for numeric)
+     *
+     * @param{Object} col The column in metadata the gradient belongs to.
+     * @param{Object} grad The value for the gradient. observations that have
+     *                this value will only be returned.
+     * @param{Object} traj The column for the trajectory. All observations with
+     *                missing data in this column will be ignored.
+     *
+     * @return{Object} return a mapping of trajectory values to observations.
+     */
+    Empress.prototype.getGradientStep = function(cat, grad, traj) {
+        return this._biom.getGradientStep(
+            cat,
+            grad,
+            traj
+        );
     };
 
     return Empress;
