@@ -34,9 +34,14 @@ class TestTree(unittest.TestCase):
             Tree.from_tree(st)
 
     def test_negative_branchlengths(self):
+        # Note that this error takes "precedence" over the error about non-root
+        # branches all having positive lengths, as the final test case in this
+        # list checks. (Not that "precedence" really matters, anyway: either of
+        # these errors is an indication that something is probably seriously
+        # wrong with the input tree.)
         newicks = [
             '((b:-1)a:1)root:1;', '((b:100)a:-100)root:0;',
-            '((b:1)a:1)root:-1;', '(b:1,c:-1)a:2;'
+            '((b:1)a:1)root:-1;', '(b:1,c:-1)a:2;', '((b:0)a:0)root:-1;'
         ]
         for nwk in newicks:
             st = TreeNode.read([nwk])
