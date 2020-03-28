@@ -2,6 +2,7 @@
 data/
 *.qza
 *.qzv
+!docs/*/*.qzv
 *.tsv
 empress-biom.py
 

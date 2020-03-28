@@ -145,7 +145,7 @@ define(["chroma"], function(chroma) {
         { id: "PuBuGn", name: "Purple-Blue-Green", type: SEQUENTIAL },
         { id: "Greys", name: "Greys", type: SEQUENTIAL },
 
-        { name: "-- Divergin --", type: HEADER },
+        { name: "-- Diverging --", type: HEADER },
         { id: "Spectral", name: "Spectral", type: DIVERGING },
         { id: "RdBu", name: "Red-Blue", type: DIVERGING },
         { id: "RdYlGn", name: "Red-Yellow-Green", type: DIVERGING },
