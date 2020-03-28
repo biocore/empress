@@ -33,21 +33,37 @@ class TestTree(unittest.TestCase):
         ):
             Tree.from_tree(st)
 
-    def test_negative_branchlengths(self):
-        # Note that this error takes "precedence" over the error about non-root
-        # branches all having positive lengths, as the final test case in this
-        # list checks. (Not that "precedence" really matters, anyway: either of
-        # these errors is an indication that something is probably seriously
-        # wrong with the input tree.)
+    def test_nonroot_missing_branchlengths(self):
+        # Note about the fourth test tree here: the reason this triggers a
+        # missing-branch-length error before a negative-branch-length error is
+        # because the tree is checked in postorder. This sort of "precedence"
+        # can be changed in the future if desired.
+        bad_newicks = [
+            '((b)a:1)root:1;', '((b:1)a)root:0;', '(b,c)a;',
+            '((b)a:-1)root:3;', '((b:0,c)a:0)root:0;'
+        ]
+        for nwk in bad_newicks:
+            st = TreeNode.read([nwk])
+            with self.assertRaisesRegex(ValueError, "must have lengths"):
+                Tree.from_tree(st)
+
+        # Check that roots *with* missing branch lengths don't trigger an error
+        # on tree creation
+        ok_newicks = ['((b:0,c:1)a:0)root;']
+        for nwk in ok_newicks:
+            st = TreeNode.read([nwk])
+            Tree.from_tree(st)
+
+    def test_nonroot_negative_branchlengths(self):
         newicks = [
             '((b:-1)a:1)root:1;', '((b:100)a:-100)root:0;',
-            '((b:1)a:1)root:-1;', '(b:1,c:-1)a:2;', '((b:0)a:0)root:-1;'
+            '(b:1,c:-1)a:2;', '((b:-1)a:0)root;'
         ]
         for nwk in newicks:
             st = TreeNode.read([nwk])
             with self.assertRaisesRegex(
                 ValueError,
-                "cannot contain any negative-length branches"
+                "must have nonnegative lengths"
             ):
                 Tree.from_tree(st)
 
@@ -57,7 +73,7 @@ class TestTree(unittest.TestCase):
             st = TreeNode.read([nwk])
             with self.assertRaisesRegex(
                 ValueError,
-                "must contain at least one non-root branch with length > 0"
+                "must have a positive length"
             ):
                 Tree.from_tree(st)
 
@@ -166,6 +182,14 @@ class TestTree(unittest.TestCase):
             self.assertFalse(hasattr(node, "lowestchildyr"))
             self.assertFalse(hasattr(node, "highestchildyr"))
 
+    def check_basic_tree_rect_layout(self, t):
+        t.coords(100, 100)
+        expected_coords = [(100, 0.0), (100 / 3.0, 0.0), (0.0, 0.0)]
+        self.check_coords(t, "xr", "yr", expected_coords)
+        for node in t.non_tips():
+            self.assertEqual(node.lowestchildyr, 0)
+            self.assertEqual(node.highestchildyr, 0)
+
     def test_straightline_tree_rect_layout(self):
         """Checks that all nodes are drawn as expected even when there aren't
            any "branches" in the tree.
@@ -176,13 +200,26 @@ class TestTree(unittest.TestCase):
         st = TreeNode.read(['((b:2)a:1)root:100;'])
         t = Tree.from_tree(st)
         t.coords(100, 100)
-        expected_coords = [(100, 0.0),
-                           (100 / 3.0, 0.0),
-                           (0.0, 0.0)]
+        expected_coords = [(100, 0.0), (100 / 3.0, 0.0), (0.0, 0.0)]
         self.check_coords(t, "xr", "yr", expected_coords)
         for node in t.non_tips():
             self.assertEqual(node.lowestchildyr, 0)
             self.assertEqual(node.highestchildyr, 0)
+        self.check_basic_tree_rect_layout(t)
+
+    def test_missing_root_length_tree_rect_layout(self):
+        """Like the above test, but checks that things still work ok when the
+           root node has no assigned branch length.
+        """
+        st = TreeNode.read(['((b:2)a:1)root;'])
+        t = Tree.from_tree(st)
+        t.coords(100, 100)
+        expected_coords = [(100, 0.0), (100 / 3.0, 0.0), (0.0, 0.0)]
+        self.check_coords(t, "xr", "yr", expected_coords)
+        for node in t.non_tips():
+            self.assertEqual(node.lowestchildyr, 0)
+            self.assertEqual(node.highestchildyr, 0)
+        self.check_basic_tree_rect_layout(t)
 
 
 if __name__ == "__main__":

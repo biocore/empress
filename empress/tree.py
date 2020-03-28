@@ -55,18 +55,23 @@ class Tree(TreeNode):
             raise ValueError("Tree must contain at least 2 nodes.")
 
         max_branch_length = 0
-        for n in tree.postorder():
+        for n in tree.postorder(include_self=False):
+            if n.length is None:
+                raise ValueError(
+                    "Non-root branches of the tree must have lengths."
+                )
+
             if n.length < 0:
                 raise ValueError(
-                    "Tree cannot contain any negative-length branches."
+                    "Non-root branches of the tree must have nonnegative "
+                    "lengths."
                 )
-            if not n.is_root():
-                max_branch_length = max(n.length, max_branch_length)
+            max_branch_length = max(n.length, max_branch_length)
 
         if max_branch_length == 0:
             raise ValueError(
-                "Tree must contain at least one non-root branch with "
-                "length > 0."
+                "At least one non-root branch of the tree must have a "
+                "positive length."
             )
 
         for n in tree.postorder():
