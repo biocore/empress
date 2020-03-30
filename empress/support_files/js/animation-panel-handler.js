@@ -97,7 +97,6 @@ define(["Colorer"], function(Colorer) {
      * the drop down menus are disabled in order to prevent user from changing
      * the gradient/trajectory during an animation.
      *
-     * @return {null}
      * @private
      */
     AnimatePanel.prototype.__toogleSelects = function(disableStatus) {
