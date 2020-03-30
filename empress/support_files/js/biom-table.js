@@ -170,7 +170,7 @@ define([], function() {
      * and trajectory. Ignores trajectories which represent missing data. (i.e.
      * 'unknown' for non-numberic and NaN for numeric)
      *
-     * @param{Object} col The column in metadata the gradient belongs to.
+     * @param{String} cat The column in metadata the gradient belongs to.
      * @param{Object} grad The value for the gradient. observations that have
      *                this value will only be returned.
      * @param{Object} traj The column for the trajectory. All observations with
