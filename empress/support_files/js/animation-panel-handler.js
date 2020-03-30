@@ -51,7 +51,6 @@ define(["Colorer"], function(Colorer) {
      * Makes the stop/pause buttons visible. This is the menu shown during the
      * animation.
      *
-     * @return {null}
      * @private
      */
     AnimatePanel.prototype.__pauseOptions = function() {
