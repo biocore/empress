@@ -220,8 +220,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on previous button.
          * Shows the previous frame in the animation
-         *
-         * @return {null}
          */
         this.prevFrameBtn.onclick = function() {
             ap.animator.prevFrame();
@@ -231,8 +229,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on next button.
          * Shows the next frame in the animation.
-         *
-         * @return {null}
          */
         this.nextFrameBtn.onclick = function() {
             ap.animator.nextFrame();

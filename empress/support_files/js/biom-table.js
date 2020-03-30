@@ -201,7 +201,7 @@ define([], function() {
                     continue;
                 }
 
-                // add sample observations to the approperiate mapping
+                // add sample observations to the appropriate mapping
                 if (!(sample[traj] in obs)) {
                     obs[sample[traj]] = new Set();
                 }

@@ -81,7 +81,7 @@ define(["Colorer"], function(Colorer) {
 
         /**
          * @type {number}
-         * The total duration of the animation
+         * The total duration of the animation in milliseconds.
          */
         this.TOTAL_TIME = 30000;
 
@@ -127,7 +127,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @param {String} trajectory Metadata column to use for trajectory
      * @param {String} gradient Metadata column to user for gradient
-     * @param {}String} cm The color map to use for the animation
+     * @param {String} cm The color map to use for the animation
      * @param {Boolean} hide Tells animator to hide uncolored branches
      * @param {Number} lWidth Tells animator how think to make colored tree
      *                 branches
@@ -239,14 +239,14 @@ define(["Colorer"], function(Colorer) {
         this.empress._colorTree(obs, this.cm);
         this.empress.thickenSameSampleLines(this.lWidth);
 
-        // // TODO: hide should be taken care of in empress state machine
+        // TODO: hide should be taken care of in empress state machine
         this.empress.setNonSampleBranchVisibility(this.hide);
         this.empress.drawTree();
         this.curFrame += 1;
     };
 
     /**
-     * The asynchronous animation loop. This method will continous create
+     * The asynchronous animation loop. This method will continously create
      * timeout events until animation is done or user pauses animation. If a
      * frame is reached before it is ready, then a new timeout event will be
      * created.

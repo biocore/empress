@@ -78,7 +78,7 @@ def plot(output_dir: str,
         .to_dataframe().filter(feature_table.index, axis=0) \
         .to_dict(orient='index')
 
-    # TODO: Empress is currently sorting all metadata as strings. This is
+    # TODO: Empress is currently storing all metadata as strings. This is
     # memory intensive and wont scale well. We should convert all numeric
     # data/compress metadata.
 
@@ -86,7 +86,7 @@ def plot(output_dir: str,
     # data (i.e. NaN and "unknown") and also determines sorting order.
     # The original intent is to signal what
     # columns are discrete/continous.
-    # type of sample metedata (n - number, o - object)
+    # type of sample metadata (n - number, o - object)
     sample_data_type = sample_metadata \
         .to_dataframe().filter(feature_table.index, axis=0) \
         .dtypes \
