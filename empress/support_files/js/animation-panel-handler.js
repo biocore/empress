@@ -93,8 +93,8 @@ define(["Colorer"], function(Colorer) {
     };
 
     /**
-     * enables/disable the drop down menus. When the animation is playing,
-     * the drop down menus are disable in order to prevent user from changing
+     * Enables/disable the drop down menus. When the animation is playing,
+     * the drop down menus are disabled in order to prevent user from changing
      * the gradient/trajectory during an animation.
      *
      * @return {null}
