@@ -79,7 +79,7 @@ def plot(output_dir: str,
         .to_dict(orient='index')
 
     # TODO: Empress is currently sorting all metadata as strings. This is
-    # memory intensive an wont scale well. We should convert all numberic
+    # memory intensive and wont scale well. We should convert all numeric
     # data/compress metadata.
 
     # This is used in biom-table. Currently this is only used to ignore null
