@@ -24,7 +24,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      *                 Note: An example is the "Unrooted" layout, which as of
      *                       writing should map to "2" since it's represented
      *                       by a node's x2 and y2 coordinates in the data.
-     * @param {String} default_layout The default layout to draw the tree with
+     * @param {String} defaultLayout The default layout to draw the tree with
      * @param {BIOMTable} biom The BIOM table used to color the tree
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
@@ -33,7 +33,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         treeData,
         nameToKeys,
         layoutToCoordSuffix,
-        default_layout,
+        defaultLayout,
         biom,
         canvas
     ) {
@@ -110,8 +110,8 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
          * The default / current layouts used in the tree visualization.
          * @private
          */
-        this._default_layout = default_layout;
-        this._current_layout = default_layout;
+        this._defaultLayout = defaultLayout;
+        this._currentLayout = defaultLayout;
 
         /**
          * @type{Number}
@@ -137,12 +137,12 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     };
 
     Empress.prototype.getX = function (nodeObj) {
-        var xname = "x" + this._layoutToCoordSuffix[this._current_layout];
+        var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
         return nodeObj[xname];
     };
 
     Empress.prototype.getY = function (nodeObj) {
-        var yname = "y" + this._layoutToCoordSuffix[this._current_layout];
+        var yname = "y" + this._layoutToCoordSuffix[this._currentLayout];
         return nodeObj[yname];
     };
 
@@ -158,7 +158,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         // Used to compute the size of coords, which describes the coordinates
         // to be drawn.
         var numLines;
-        if (this._current_layout === "Rectangular") {
+        if (this._currentLayout === "Rectangular") {
             // Leaves have 1 line (vertical), the root also has 1 line
             // (horizontal), and internal nodes have 2 lines (both vertical and
             // horizontal).
@@ -189,7 +189,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
          * we're never going to be in the unforuntate situation of having the
          * root be the ONLY node in the tree. So this behavior is ok.)
          */
-        if (this._current_layout === "Rectangular") {
+        if (this._currentLayout === "Rectangular") {
             color = this._treeData[tree.size].color;
             coords[coords_index++] = this.getX(this._treeData[tree.size]);
             coords[coords_index++] = this._treeData[tree.size].lowestchildyr;
@@ -213,7 +213,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             // branch color
             color = this._treeData[node].color;
 
-            if (this._current_layout === "Rectangular") {
+            if (this._currentLayout === "Rectangular") {
                 /* Nodes in the rectangular layout can have up to two "parts":
                  * a horizontal line, and a vertical line at the end of this
                  * line. These parts are indicated below as AAA... and BBB...,
@@ -403,7 +403,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         // has an assigned color, thicken the root's drawn vertical line when
         // drawing the tree in Rectangular layout mode
         if (
-            this._current_layout === "Rectangular" &&
+            this._currentLayout === "Rectangular" &&
             this._treeData[tree.size].sampleColored
         ) {
             this._addThickVerticalLineCoords(coords, tree.size, amount);
@@ -420,7 +420,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
 
             var color = this._treeData[node].color;
             var tL, tR, bL, bR;
-            if (this._current_layout === "Rectangular") {
+            if (this._currentLayout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
                     this._addThickVerticalLineCoords(coords, node, amount);
@@ -710,9 +710,9 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      * Redraws the tree with a new layout (if different from current layout).
      */
     Empress.prototype.updateLayout = function (newLayout) {
-        if (this._current_layout !== newLayout) {
+        if (this._currentLayout !== newLayout) {
             if (this._layoutToCoordSuffix.hasOwnProperty(newLayout)) {
-                this._current_layout = newLayout;
+                this._currentLayout = newLayout;
                 // Adjust the thick-line stuff before calling drawTree() --
                 // this will get the buffer set up before it's actually drawn
                 // in drawTree(). Doing these calls out of order (draw tree,
@@ -738,7 +738,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      * @return {String}
      */
     Empress.prototype.getDefaultLayout = function () {
-        return this._default_layout;
+        return this._defaultLayout;
     };
 
     return Empress;
