@@ -463,7 +463,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
                 var length = VectorOps.magnitude(point);
                 var over = point[1] < 0;
 
-                //find top left of box of think line
+                // find top left of box of thick line
                 tL = [0, amount];
                 tL = VectorOps.rotate(tL, angle, over);
                 tL = VectorOps.translate(tL, x2, y2);
@@ -472,7 +472,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
                 tR = VectorOps.rotate(tR, angle, over);
                 tR = VectorOps.translate(tR, x2, y2);
 
-                // find bottom point of think line
+                // find bottom point of thick line
                 bL = [0, -1 * amount];
                 bL = VectorOps.rotate(bL, angle, over);
                 bL = VectorOps.translate(bL, x2, y2);
