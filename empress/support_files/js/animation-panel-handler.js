@@ -32,7 +32,6 @@ define(["Colorer"], function(Colorer) {
      * Makes the play button visible. This is the menu shown before user has
      * started the animation.
      *
-     * @return {null}
      * @private
      */
     AnimatePanel.prototype.__startOptions = function() {
