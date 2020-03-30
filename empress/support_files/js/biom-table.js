@@ -140,7 +140,7 @@ define([], function() {
 
     /**
      * Returns an array of unique values in a metadata column. If column is
-     * numberic then the array is sorted in ascending order.
+     * numeric then the array is sorted in ascending order.
      *
      * @param{Object} category The column of data
      *
