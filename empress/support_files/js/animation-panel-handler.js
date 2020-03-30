@@ -136,8 +136,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on the hide branch checkbox.
          * Sets hide parameter in animation state machine.
-         *
-         * @return {null}
          */
         this.hideChk.onchange = function() {
             ap.animator.setHide(ap.hideChk.checked);
