@@ -138,8 +138,10 @@ class Tree(TreeNode):
 
         Returns
         -------
-        layout_to_coordsuffix : dict
-        default_layout : str
+        dict:
+            Mapping between layout and the coordinate suffix.
+        str:
+            Name of the default layout.
         """
 
         layout_to_coordsuffix = {}
