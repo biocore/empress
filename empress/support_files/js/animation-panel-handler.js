@@ -70,7 +70,6 @@ define(["Colorer"], function(Colorer) {
      * Makes the prev/next/stop/resume buttons visible. This is the menu shown
      * when user pauses the animation.
      *
-     * @return {null}
      * @private
      */
     AnimatePanel.prototype.__resumeOptions = function() {
