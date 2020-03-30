@@ -210,8 +210,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on stop button.
          * Stops the animation and clears the state machine
-         *
-         * @return {null}
          */
         this.stopBtn.onclick = function() {
             ap.__toogleSelects(false);
