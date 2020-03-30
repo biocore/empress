@@ -201,8 +201,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on resume button.
          * Resumes the animation.
-         *
-         * @return {null}
          */
         this.resumeBtn.onclick = function() {
             ap.__pauseOptions();
