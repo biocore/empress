@@ -107,7 +107,6 @@ define(["Colorer"], function(Colorer) {
 
     /**
      * Initializes GUI components/set up callback events
-     * @return {null}
      */
     AnimatePanel.prototype.addAnimationTab = function() {
         // used in closers
