@@ -208,30 +208,6 @@ class Tree(TreeNode):
             setattr(node, xname, getattr(node, xname) - centerX)
             setattr(node, yname, getattr(node, yname) - centerY)
 
-    def layout_circular(self, width, height):
-        """ Circular layout version of the rectangular layout.
-
-        Currently incomplete, but in theory this should work analogously to the
-        rectangular layout: start at the root (with available angle ranges [0,
-        2pi], and go down through the tree's nodes in a preorder(?) traversal,
-        dividing the angles as needed based on the number of leaves of a child
-        node.
-
-        Parameters
-        ----------
-        width : float
-            width of the canvas
-        height : float
-            height of the canvas
-
-        References
-        ----------
-        https://github.com/qiime/Topiary-Explorer/blob/master/src/topiaryexplorer/TreeVis.java
-            Description above + the implementation of this algorithm
-            derived from the Polar/Radial layout algorithm code.
-        """
-        pass
-
     def layout_rectangular(self, width, height):
         """ Rectangular layout.
 
