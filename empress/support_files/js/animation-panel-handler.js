@@ -7,10 +7,10 @@ define(["Colorer"], function(Colorer) {
      *
      * @param{Object} animator The object that creates the animations
      *
-     * @return {AnimatePanel}
-     * construct AnimatePanel
+     * @return {AnimationPanel}
+     * construct AnimationPanel
      */
-    function AnimatePanel(animator) {
+    function AnimationPanel(animator) {
         // used in event triggers
         this.animator = animator;
 
@@ -35,7 +35,7 @@ define(["Colorer"], function(Colorer) {
      * @return {null}
      * @private
      */
-    AnimatePanel.prototype.__startOptions = function() {
+    AnimationPanel.prototype.__startOptions = function() {
         // hide the following buttons
         this.stopBtn.classList.add("hidden");
         this.pauseBtn.classList.add("hidden");
@@ -54,7 +54,7 @@ define(["Colorer"], function(Colorer) {
      * @return {null}
      * @private
      */
-    AnimatePanel.prototype.__pauseOptions = function() {
+    AnimationPanel.prototype.__pauseOptions = function() {
         // hide the following buttons
         this.startBtn.classList.add("hidden");
         this.resumeBtn.classList.add("hidden");
@@ -73,7 +73,7 @@ define(["Colorer"], function(Colorer) {
      * @return {null}
      * @private
      */
-    AnimatePanel.prototype.__resumeOptions = function() {
+    AnimationPanel.prototype.__resumeOptions = function() {
         // hide the following buttons
         this.pauseBtn.classList.add("hidden");
         this.startBtn.classList.add("hidden");
@@ -85,14 +85,10 @@ define(["Colorer"], function(Colorer) {
         this.nextFrameBtn.classList.remove("hidden");
 
         // dont show previous button on frame 1
-        if (this.animator.onFirstFrame()) {
-            this.prevFrameBtn.classList.add("hidden");
-        }
+        this.prevFrameBtn.disabled = this.animator.onFirstFrame();
 
         // dont show next button on last frame
-        if (this.animator.onLastFrame()) {
-            this.nextFrameBtn.classList.add("hidden");
-        }
+        this.nextFrameBtn.disabled = this.animator.onLastFrame();
     };
 
     /**
@@ -103,7 +99,7 @@ define(["Colorer"], function(Colorer) {
      * @return {null}
      * @private
      */
-    AnimatePanel.prototype.__toogleSelects = function(disableStatus) {
+    AnimationPanel.prototype.__toogleSelects = function(disableStatus) {
         this.colorSelect.disabled = disableStatus;
         this.gradient.disabled = disableStatus;
         this.trajectory.disabled = disableStatus;
@@ -113,7 +109,7 @@ define(["Colorer"], function(Colorer) {
      * Initializes GUI components/set up callback events
      * @return {null}
      */
-    AnimatePanel.prototype.addAnimationTab = function() {
+    AnimationPanel.prototype.addAnimationTab = function() {
         // used in closers
         var ap = this;
 
@@ -253,5 +249,5 @@ define(["Colorer"], function(Colorer) {
         };
     };
 
-    return AnimatePanel;
+    return AnimationPanel;
 });

@@ -69,7 +69,7 @@
             'Camera' : './js/camera',
             'Drawer' : './js/drawer',
             'SidePanel' : './js/side-panel-handler',
-            'AnimatePanel' : './js/animation-panel-handler',
+            'AnimationPanel' : './js/animation-panel-handler',
             'Animator' : './js/animator',
             'BIOMTable' : './js/biom-table',
             'Empress' : './js/empress',
@@ -81,11 +81,11 @@
     });
 
     empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray',
-                    'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimatePanel',
+                    'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimationPanel',
                     'Animator', 'BIOMTable', 'Empress', 'Legend', 'Colorer',
                     'VectorOps', 'SummaryHelper'],
         function($, gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
-                 SidePanel, AnimatePanel, Animator, BIOMTable, Empress, Legend,
+                 SidePanel, AnimationPanel, Animator, BIOMTable, Empress, Legend,
                  Colorer, VectorOps, SummaryHelper) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
@@ -111,8 +111,8 @@
         var animator = new Animator(empress, legend);
 
         // add animator gui components
-        var animatePanel = new AnimatePanel(animator);
-        animatePanel.addAnimationTab();
+        var animationPanel = new AnimationPanel(animator);
+        animationPanel.addAnimationTab();
 
         // make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {

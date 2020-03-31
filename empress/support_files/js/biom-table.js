@@ -154,9 +154,6 @@ define([], function() {
             var cVal = this._samp[sample][category];
 
             // ignore missing data
-            if (cVal === "unknown" || (isNumeric && isNaN(cVal))) {
-                continue;
-            }
             values.add(cVal);
         }
 
@@ -197,9 +194,6 @@ define([], function() {
                 var cVal = sample[traj];
 
                 // checking if trajectory value is missing
-                if (cVal === "unknown" || (isNumeric && isNaN(cVal))) {
-                    continue;
-                }
 
                 // add sample observations to the approperiate mapping
                 if (!(sample[traj] in obs)) {

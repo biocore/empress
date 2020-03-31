@@ -278,7 +278,8 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
         for (var i = 0; i < names.length; i++) {
             // most names have a one-to-one correspondence but during testing
             // a tree came up that had a one-to-many correspondance.
-            // _nameToKeys map a node name all nodes with that name
+            // _nameToKeys map node names (the names that appear in the newick
+            // string) to all nodes (in bp-tree) with that name.
             this._nameToKeys[names[i]].forEach(addKey);
         }
         return keys;

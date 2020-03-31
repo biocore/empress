@@ -226,7 +226,7 @@ define(["Colorer"], function(Colorer) {
      */
     Animator.prototype.drawFrame = function() {
         var frame = this.queuedFrames[this.curFrame];
-        var name = frame.name;
+        var name = `${frame.name} (${this.curFrame + 1} / ${this.totalFrames})`;
         var keyInfo = frame.keyInfo;
         var obs = frame.obs;
 
@@ -239,7 +239,7 @@ define(["Colorer"], function(Colorer) {
         this.empress._colorTree(obs, this.cm);
         this.empress.thickenSameSampleLines(this.lWidth);
 
-        // // TODO: hide should be taken care of in empress state machine
+        // TODO: hide should be taken care of in empress state machine
         this.empress.setNonSampleBranchVisibility(this.hide);
         this.empress.drawTree();
         this.curFrame += 1;
