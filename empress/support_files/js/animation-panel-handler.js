@@ -32,7 +32,6 @@ define(["Colorer"], function(Colorer) {
      * Makes the play button visible. This is the menu shown before user has
      * started the animation.
      *
-     * @return {null}
      * @private
      */
     AnimationPanel.prototype.__startOptions = function() {
@@ -51,7 +50,6 @@ define(["Colorer"], function(Colorer) {
      * Makes the stop/pause buttons visible. This is the menu shown during the
      * animation.
      *
-     * @return {null}
      * @private
      */
     AnimationPanel.prototype.__pauseOptions = function() {
@@ -70,7 +68,6 @@ define(["Colorer"], function(Colorer) {
      * Makes the prev/next/stop/resume buttons visible. This is the menu shown
      * when user pauses the animation.
      *
-     * @return {null}
      * @private
      */
     AnimationPanel.prototype.__resumeOptions = function() {
@@ -92,11 +89,10 @@ define(["Colorer"], function(Colorer) {
     };
 
     /**
-     * enables/disable the drop down menus. When the animation is playing,
-     * the drop down menus are disable in order to prevent user from changing
+     * Enables/disable the drop down menus. When the animation is playing,
+     * the drop down menus are disabled in order to prevent user from changing
      * the gradient/trajectory during an animation.
      *
-     * @return {null}
      * @private
      */
     AnimationPanel.prototype.__toogleSelects = function(disableStatus) {
@@ -107,7 +103,6 @@ define(["Colorer"], function(Colorer) {
 
     /**
      * Initializes GUI components/set up callback events
-     * @return {null}
      */
     AnimationPanel.prototype.addAnimationTab = function() {
         // used in closers
@@ -137,8 +132,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on the hide branch checkbox.
          * Sets hide parameter in animation state machine.
-         *
-         * @return {null}
          */
         this.hideChk.onchange = function() {
             ap.animator.setHide(ap.hideChk.checked);
@@ -195,8 +188,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on pause button.
          * Pauses the animation.
-         *
-         * @return {null}
          */
         this.pauseBtn.onclick = function() {
             ap.__resumeOptions();
@@ -206,8 +197,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on resume button.
          * Resumes the animation.
-         *
-         * @return {null}
          */
         this.resumeBtn.onclick = function() {
             ap.__pauseOptions();
@@ -217,8 +206,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on stop button.
          * Stops the animation and clears the state machine
-         *
-         * @return {null}
          */
         this.stopBtn.onclick = function() {
             ap.__toogleSelects(false);
@@ -229,8 +216,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on previous button.
          * Shows the previous frame in the animation
-         *
-         * @return {null}
          */
         this.prevFrameBtn.onclick = function() {
             ap.animator.prevFrame();
@@ -240,8 +225,6 @@ define(["Colorer"], function(Colorer) {
         /**
          * Event: triggers when user clicks on next button.
          * Shows the next frame in the animation.
-         *
-         * @return {null}
          */
         this.nextFrameBtn.onclick = function() {
             ap.animator.nextFrame();

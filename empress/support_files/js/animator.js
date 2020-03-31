@@ -81,7 +81,7 @@ define(["Colorer"], function(Colorer) {
 
         /**
          * @type {number}
-         * The total duration of the animation
+         * The total duration of the animation in milliseconds.
          */
         this.TOTAL_TIME = 30000;
 
@@ -127,7 +127,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @param {String} trajectory Metadata column to use for trajectory
      * @param {String} gradient Metadata column to user for gradient
-     * @param {}String} cm The color map to use for the animation
+     * @param {String} cm The color map to use for the animation
      * @param {Boolean} hide Tells animator to hide uncolored branches
      * @param {Number} lWidth Tells animator how think to make colored tree
      *                 branches
@@ -246,7 +246,7 @@ define(["Colorer"], function(Colorer) {
     };
 
     /**
-     * The asynchronous animation loop. This method will continous create
+     * The asynchronous animation loop. This method will continously create
      * timeout events until animation is done or user pauses animation. If a
      * frame is reached before it is ready, then a new timeout event will be
      * created.
@@ -256,7 +256,7 @@ define(["Colorer"], function(Colorer) {
         var animator = this;
 
         // Animation loop
-        var animationID = setTimeout(function loop() {
+        setTimeout(function loop() {
             if (!animator.pause && animator.curFrame != animator.totalFrames) {
                 if (animator.framesRdy[animator.curFrame]) {
                     animator.drawFrame();

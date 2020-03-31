@@ -140,7 +140,7 @@ define([], function() {
 
     /**
      * Returns an array of unique values in a metadata column. If column is
-     * numberic then the array is sorted in ascending order.
+     * numeric then the array is sorted in ascending order.
      *
      * @param{Object} category The column of data
      *
@@ -167,8 +167,8 @@ define([], function() {
      * and trajectory. Ignores trajectories which represent missing data. (i.e.
      * 'unknown' for non-numberic and NaN for numeric)
      *
-     * @param{Object} col The column in metadata the gradient belongs to.
-     * @param{Object} grad The value for the gradient. observations that have
+     * @param{String} cat The column in metadata the gradient belongs to.
+     * @param{String} grad The value for the gradient. observations that have
      *                this value will only be returned.
      * @param{Object} traj The column for the trajectory. All observations with
      *                missing data in this column will be ignored.
@@ -195,7 +195,7 @@ define([], function() {
 
                 // checking if trajectory value is missing
 
-                // add sample observations to the approperiate mapping
+                // add sample observations to the appropriate mapping
                 if (!(sample[traj] in obs)) {
                     obs[sample[traj]] = new Set();
                 }

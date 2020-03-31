@@ -297,9 +297,10 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function(
         var items = Object.keys(keys);
         var i;
 
-        // TODO: This method current method to get the unique observations
+        // TODO: The current method to get the unique observations
         // belonging to each sample category is slow. Refactoring it will lead
         // to a nice speed boost.
+        // https://github.com/biocore/empress/issues/147
         var uniqueKeysArray = _.chain(keys)
             .values()
             .map(function(item) {
