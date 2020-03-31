@@ -84,15 +84,12 @@ class TestTree(unittest.TestCase):
         ----------
         tree : empress.Tree
             A tree whose nodes contain xattr and yattr attributes.
-
         xattr : str
             An attribute of nodes indicating the x-coordinates to check.
             e.g. "x2" for the unrooted layout, "xr" for the rectangular layout
-
         yattr : str
             An attribute of nodes indicating the y-coordinates to check.
             e.g. "y2" for the unrooted layout, "yr" for the rectangular layout
-
         expected_coords : list of 2-tuple of float
             A list of expected coordinates for each node, sorted in post-order.
             We check equality using self.assertAlmostEqual() with places=5, so
