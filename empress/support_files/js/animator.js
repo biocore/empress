@@ -256,7 +256,7 @@ define(["Colorer"], function(Colorer) {
         var animator = this;
 
         // Animation loop
-        var animationID = setTimeout(function loop() {
+        setTimeout(function loop() {
             if (!animator.pause && animator.curFrame != animator.totalFrames) {
                 if (animator.framesRdy[animator.curFrame]) {
                     animator.drawFrame();
