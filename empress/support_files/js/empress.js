@@ -147,6 +147,34 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     };
 
     /**
+     * Computes the number of entries in an array needed to store all of the
+     * coordinate and color information for drawing the tree.
+     *
+     * Critically, this number is dependent on the current layout, since (for
+     * example) the rectangular layout requires more drawing than the unrooted
+     * layout (since we also have to draw vertical lines for internal nodes).
+     *
+     * @return {Number}
+     */
+    Empress.prototype.computeNecessaryCoordsSize = function () {
+        var numLines;
+        if (this._currentLayout === "Rectangular") {
+            // Leaves have 1 line (vertical), the root also has 1 line
+            // (horizontal), and internal nodes have 2 lines (both vertical and
+            // horizontal).
+            var leafAndRootCt = this._tree.numleafs() + 1;
+            numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
+        } else {
+            numLines = this._tree.size - 1;
+        }
+
+        // Every line takes up two coordinates, and every coordinate takes up
+        // VERTEX_SIZE (as of writing this is set to 5, for x, y, r, g, b)
+        // spaces in coords.
+        return 2 * numLines * this._drawer.VERTEX_SIZE;
+    };
+
+    /**
      * Retrives the coordinate info of the tree.
      *  format of coordinate info: [x, y, red, green, blue, ...]
      *
@@ -155,25 +183,8 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     Empress.prototype.getCoords = function () {
         var tree = this._tree;
 
-        // Used to compute the size of coords, which describes the coordinates
-        // to be drawn.
-        var numLines;
-        if (this._currentLayout === "Rectangular") {
-            // Leaves have 1 line (vertical), the root also has 1 line
-            // (horizontal), and internal nodes have 2 lines (both vertical and
-            // horizontal).
-            var leafCt = tree.numleafs();
-            numLines = leafCt + 1 + 2 * (tree.size - leafCt - 1);
-        } else {
-            numLines = tree.size - 1;
-        }
-
-        // Every line takes up two coordinates, and every coordinate takes up
-        // VERTEX_SIZE spaces in coords.
-        var coords_size = 2 * numLines * this._drawer.VERTEX_SIZE;
-
-        // the coordinate of the tree.
-        var coords = new Float32Array(coords_size);
+        // The coordinates (and colors) of the tree's nodes.
+        var coords = new Float32Array(this.computeNecessaryCoordsSize());
 
         // branch color
         var color;
