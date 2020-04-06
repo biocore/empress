@@ -59,7 +59,7 @@ define(["chroma"], function (chroma) {
      * @param{Object} sel The select object to add color map options to.
      * @classmethod
      */
-    Colorer.addColorsToSelect = function(sel) {
+    Colorer.addColorsToSelect = function (sel) {
         // The color map selector
         for (var i = 0; i < Colorer.__Colormaps.length; i++) {
             var map = Colorer.__Colormaps[i];

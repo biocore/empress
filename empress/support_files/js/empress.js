@@ -524,7 +524,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
         var keys = new Set();
 
         // adds a key to the keys set.
-        var addKey = function(key) {
+        var addKey = function (key) {
             keys.add(key);
         };
 
@@ -569,7 +569,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
             .flatten()
             .value();
         var uniqueKeys = new Set(uniqueKeysArray);
-        var hasKey = function(key) {
+        var hasKey = function (key) {
             return uniqueKeys.has(key);
         };
 
@@ -660,7 +660,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      * @return {Object} the branches of the tree that are uniqe to category in
                         obs
     */
-    Empress.prototype._projectObservations = function(obs) {
+    Empress.prototype._projectObservations = function (obs) {
         var tree = this._tree;
         var categories = Object.keys(obs);
 
@@ -688,7 +688,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      * @param{Object} obs The mapping from sample category to unique features.
      * @param{Object} cm The mapping from sample category to color.
      */
-    Empress.prototype._colorTree = function(obs, cm) {
+    Empress.prototype._colorTree = function (obs, cm) {
         var categories = Object.keys(obs);
         // color tree
         for (var i = 0; i < categories.length; i++) {
@@ -801,7 +801,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     Empress.prototype.getDefaultLayout = function () {
         return this._defaultLayout;
     };
-      
+
     /**
      * Returns an array of unique values in a metadata column. If column is
      * numberic then the array is sorted in ascending order.
@@ -810,7 +810,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      *
      * @return{Object}
      */
-    Empress.prototype.getUniqueSampleValues = function(category) {
+    Empress.prototype.getUniqueSampleValues = function (category) {
         return this._biom.getUniqueSampleValues(category);
     };
 
@@ -827,7 +827,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      *
      * @return{Object} return a mapping of trajectory values to observations.
      */
-    Empress.prototype.getGradientStep = function(cat, grad, traj) {
+    Empress.prototype.getGradientStep = function (cat, grad, traj) {
         return this._biom.getGradientStep(cat, grad, traj);
     };
 

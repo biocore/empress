@@ -146,7 +146,7 @@ define([], function () {
      *
      * @return{Object}
      */
-    BIOMTable.prototype.getUniqueSampleValues = function(category) {
+    BIOMTable.prototype.getUniqueSampleValues = function (category) {
         var values = new Set();
         var isNumeric = this._types[category] === "n";
         for (var sample in this._samp) {
@@ -175,14 +175,14 @@ define([], function () {
      *
      * @return{Object} return a mapping of trajectory values to observations.
      */
-    BIOMTable.prototype.getGradientStep = function(cat, grad, traj) {
+    BIOMTable.prototype.getGradientStep = function (cat, grad, traj) {
         var obs = {};
         var samples = Object.keys(this._samp);
         var isNumeric = this._types[traj] === "n";
 
         // add observations to mapping object
-        var addItems = function(items, container) {
-            items.forEach(x => container.add(x));
+        var addItems = function (items, container) {
+            items.forEach((x) => container.add(x));
         };
 
         // for all sample's whose gradient is the same as grad

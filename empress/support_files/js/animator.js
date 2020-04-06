@@ -1,4 +1,4 @@
-define(["Colorer"], function(Colorer) {
+define(["Colorer"], function (Colorer) {
     /**
      * @class Animator
      *
@@ -132,7 +132,7 @@ define(["Colorer"], function(Colorer) {
      * @param {Number} lWidth Tells animator how think to make colored tree
      *                 branches
      */
-    Animator.prototype.setAnimationParameters = function(
+    Animator.prototype.setAnimationParameters = function (
         trajectory,
         gradient,
         cm,
@@ -160,7 +160,7 @@ define(["Colorer"], function(Colorer) {
         var colorer = new Colorer(cm, 0, trajectories.length);
 
         // assign each trajectory a color and store it in this.cm
-        trajectories.forEach(function(x, i) {
+        trajectories.forEach(function (x, i) {
             animator.cm[x] = { color: colorer.getColorRGB(i) };
             animator.legendInfo[x] = { color: colorer.getColorHex(i) };
         });
@@ -172,7 +172,7 @@ define(["Colorer"], function(Colorer) {
     /**
      * Clears state parameters
      */
-    Animator.prototype.__resetParams = function() {
+    Animator.prototype.__resetParams = function () {
         this.gradientCol = null;
         this.trajectoryCol = null;
         this.cm = null;
@@ -193,7 +193,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @param {Number} lWidth How thick to make branches
      */
-    Animator.prototype.setLineWidth = function(lWidth) {
+    Animator.prototype.setLineWidth = function (lWidth) {
         this.lWidth = lWidth;
     };
 
@@ -203,7 +203,7 @@ define(["Colorer"], function(Colorer) {
      * @param {Boolean} hide If true, then Animator will hide all uncolored
      *                  branches
      */
-    Animator.prototype.setHide = function(hide) {
+    Animator.prototype.setHide = function (hide) {
         this.hide = hide;
     };
 
@@ -214,7 +214,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @private
      */
-    Animator.prototype.__collectFrames = async function() {
+    Animator.prototype.__collectFrames = async function () {
         for (var i = 0; i < this.totalFrames; i++) {
             this.queuedFrames[i] = this.retriveFrame(i);
             this.framesRdy[i] = true;
@@ -224,7 +224,7 @@ define(["Colorer"], function(Colorer) {
     /**
      * Draws the current frame and updates the legend.
      */
-    Animator.prototype.drawFrame = function() {
+    Animator.prototype.drawFrame = function () {
         var frame = this.queuedFrames[this.curFrame];
         var name = `${frame.name} (${this.curFrame + 1} / ${this.totalFrames})`;
         var keyInfo = frame.keyInfo;
@@ -251,7 +251,7 @@ define(["Colorer"], function(Colorer) {
      * frame is reached before it is ready, then a new timeout event will be
      * created.
      */
-    Animator.prototype.playAnimation = async function() {
+    Animator.prototype.playAnimation = async function () {
         // used in closure
         var animator = this;
 
@@ -270,7 +270,7 @@ define(["Colorer"], function(Colorer) {
      * This method is the entry point for the animation. This method will
      * start the animation loop and collect the timeframes.
      */
-    Animator.prototype.startAnimation = function() {
+    Animator.prototype.startAnimation = function () {
         this.curFrame = 0;
         this.pause = false;
         this.framesRdy = new Array(this.totalFrames).fill(false);
@@ -288,7 +288,7 @@ define(["Colorer"], function(Colorer) {
     /**
      * Sets the pause parameter of the state machine to true.
      */
-    Animator.prototype.pauseAnimation = function() {
+    Animator.prototype.pauseAnimation = function () {
         this.pause = true;
     };
 
@@ -296,7 +296,7 @@ define(["Colorer"], function(Colorer) {
      * Sets the pause parameter of the state machine to false and resumes the
      * animation.
      */
-    Animator.prototype.resumeAnimation = function() {
+    Animator.prototype.resumeAnimation = function () {
         this.pause = false;
         this.playAnimation();
     };
@@ -304,7 +304,7 @@ define(["Colorer"], function(Colorer) {
     /**
      * Stops the animation and clears state machine parameters
      */
-    Animator.prototype.stopAnimation = function() {
+    Animator.prototype.stopAnimation = function () {
         this.__resetParams();
         this.legend.clearAllLegends();
         this.empress.resetTree();
@@ -319,7 +319,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @return {Object} The timeframe.
      */
-    Animator.prototype.retriveFrame = function(frame) {
+    Animator.prototype.retriveFrame = function (frame) {
         // The name (or value) of current timeframe
         var name = this.gradientCol + ": " + this.gradientSteps[frame];
 
@@ -343,7 +343,7 @@ define(["Colorer"], function(Colorer) {
     /**
      * Retrives the sample metedata columns.
      */
-    Animator.prototype.getSampleCategories = function() {
+    Animator.prototype.getSampleCategories = function () {
         return this.empress.getSampleCategories();
     };
 
@@ -351,7 +351,7 @@ define(["Colorer"], function(Colorer) {
      * Show the previous timeframe. This method is only called when animation
      * is paused and user presses the previous button.
      */
-    Animator.prototype.prevFrame = function() {
+    Animator.prototype.prevFrame = function () {
         // subtract two curFrame is the next frame.
         this.curFrame -= 2;
         this.curFrame = this.curFrame >= 0 ? this.curFrame : 0;
@@ -362,7 +362,7 @@ define(["Colorer"], function(Colorer) {
      * Show the next timeframe. This method is only called when animation is
      * paused and user presses the next button.
      */
-    Animator.prototype.nextFrame = function() {
+    Animator.prototype.nextFrame = function () {
         // curFrame is the next frame to draw
         // make sure curFrame is not passed last frame
         if (this.curFrame >= this.totalFrames) {
@@ -376,7 +376,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @return {Boolean} true if animatior is on first frame
      */
-    Animator.prototype.onFirstFrame = function() {
+    Animator.prototype.onFirstFrame = function () {
         // curFrame is always the next frame to draw so if curFrame is 1 then
         // the first frame was just drawn
         return this.curFrame == 1;
@@ -387,7 +387,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @return {Boolean} true if animator is on last frame
      */
-    Animator.prototype.onLastFrame = function() {
+    Animator.prototype.onLastFrame = function () {
         // curFrame is always the next frame to draw so if curFrame is
         // equal to totalFrames, the last frame was just drawn
         return this.curFrame == this.totalFrames;

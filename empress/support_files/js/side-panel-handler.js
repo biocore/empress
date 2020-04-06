@@ -44,7 +44,7 @@ define(["Colorer"], function (Colorer) {
 
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
-      
+
         // uncheck button
         this.sHideChk.checked = false;
 
