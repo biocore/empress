@@ -88,6 +88,22 @@ def plot(output_dir: str,
         .to_dataframe().filter(feature_table.index, axis=0) \
         .to_dict(orient='index')
 
+    # TODO: Empress is currently storing all metadata as strings. This is
+    # memory intensive and wont scale well. We should convert all numeric
+    # data/compress metadata.
+
+    # This is used in biom-table. Currently this is only used to ignore null
+    # data (i.e. NaN and "unknown") and also determines sorting order.
+    # The original intent is to signal what
+    # columns are discrete/continous.
+    # type of sample metadata (n - number, o - object)
+    sample_data_type = sample_metadata \
+        .to_dataframe().filter(feature_table.index, axis=0) \
+        .dtypes \
+        .to_dict()
+    sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
+                        for k, v in sample_data_type.items()}
+
     # create a mapping of observation ids and the samples that contain them
     obs_data = {}
     feature_table = (feature_table > 0).T
@@ -101,6 +117,7 @@ def plot(output_dir: str,
         'tree_data': tree_data,
         'names_to_keys': names_to_keys,
         'sample_data': sample_data,
+        'sample_data_type': sample_data_type,
         'obs_data': obs_data,
         'names': names,
         'layout_to_coordsuffix': layout_to_coordsuffix,

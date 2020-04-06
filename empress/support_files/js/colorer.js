@@ -7,6 +7,18 @@ define(["chroma"], function (chroma) {
 
     /**
      * @class Colorer
+     *
+     * Creates a color object that will map values to colors from a pre-defined
+     * color map. The color object uses draws from a range of values defined by
+     * [min, max] and assigns a color based on where the value falls within the
+     * range.
+     *
+     * @param{Object} color The color map to draw colors from.
+     * @param{Object} min The minimum value.
+     * @param{Object} max The maximum value.
+     *
+     * @return{Colorer}
+     * constructs Colorer
      */
     function Colorer(color, min, max) {
         if (color === Colorer.__QIIME_COLOR) {
@@ -17,20 +29,54 @@ define(["chroma"], function (chroma) {
         this.__colorer.domain([min, max]);
     }
 
+    /**
+     * Returns an rgb array with values in the range of [0,1].
+     *
+     * @param{Number} color A number in the range [min,max]
+     *
+     * @return{Object} An rgb array
+     */
     Colorer.prototype.getColorRGB = function (color) {
         return this.__colorer(color)
             .rgb()
             .map((x) => x / 256);
     };
 
+    /**
+     * Returns an rgb hex string.
+     *
+     * @param{Number} color A number in the range [min,max]
+     *
+     * @return{Object} An rgb hex string
+     */
     Colorer.prototype.getColorHex = function (color) {
         return this.__colorer(color).hex();
     };
 
-    Colorer.__QIIME_COLOR = "discrete-coloring-qiime";
+    /**
+     * Adds all available color maps to the select object.
+     *
+     * @param{Object} sel The select object to add color map options to.
+     * @classmethod
+     */
+    Colorer.addColorsToSelect = function(sel) {
+        // The color map selector
+        for (var i = 0; i < Colorer.__Colormaps.length; i++) {
+            var map = Colorer.__Colormaps[i];
+            var opt = document.createElement("option");
+            opt.innerHTML = map.name;
+            opt.value = map.id;
+
+            if (map.type == "Header") {
+                opt.disabled = true;
+            }
+            sel.appendChild(opt);
+        }
+    };
 
     // taken from the qiime/colors.py module; a total of 24 colors
     /** @private */
+    Colorer.__QIIME_COLOR = "discrete-coloring-qiime";
     Colorer.__qiimeDiscrete = [
         "#ff0000",
         "#0000ff",

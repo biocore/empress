@@ -56,10 +56,6 @@ define([], function () {
             }
         }
 
-        // console.log(count1);
-        // console.log(count2);
-        // console.log(uniq);
-        // console.log(total);
         return total == 0 ? 0 : uniq / total;
     };
 

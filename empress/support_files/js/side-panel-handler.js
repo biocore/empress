@@ -44,11 +44,14 @@ define(["Colorer"], function (Colorer) {
 
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
+      
+        // uncheck button
+        this.sHideChk.checked = false;
 
         // used in event closers
         var panel = this;
 
-        // // triggers search when enter key is pressed in search menu
+        // triggers search when enter key is pressed in search menu
         var search = document.getElementById(this.SEARCH_ID);
         search.keyup = function (e) {
             e.preventDefault();
@@ -101,7 +104,7 @@ define(["Colorer"], function (Colorer) {
         this.sColor.value = "discrete-coloring-qiime";
 
         // uncheck button
-        this.sHideChk.checked = true;
+        this.sHideChk.checked = false;
 
         // set default branch length back to 1
         var thickenBranch = document.getElementById("sample-line-width");
@@ -256,18 +259,8 @@ define(["Colorer"], function (Colorer) {
             this.sSel.appendChild(opt);
         }
 
-        // // The color map selector
-        for (i = 0; i < Colorer.__Colormaps.length; i++) {
-            var map = Colorer.__Colormaps[i];
-            opt = document.createElement("option");
-            opt.innerHTML = map.name;
-            opt.value = map.id;
-
-            if (map.type == "Header") {
-                opt.disabled = true;
-            }
-            this.sColor.appendChild(opt);
-        }
+        // The color map selector
+        Colorer.addColorsToSelect(this.sColor);
 
         // toggle the sample/color map selectors
         this.sChk.onclick = function () {

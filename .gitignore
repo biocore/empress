@@ -10,7 +10,7 @@ empress-biom.py
 node_modules/
 
 # Templated filed created when running empress-tree.py
-test_init.html
+*.html
 
 # # Python Byte code folder
 # empress/__pycache__/
@@ -142,3 +142,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# dev scripts/data
+inf/
+create-plt.bash
