@@ -51,6 +51,29 @@ class Tree(TreeNode):
         Tree
 
         """
+        if tree.count() <= 1:
+            raise ValueError("Tree must contain at least 2 nodes.")
+
+        max_branch_length = 0
+        for n in tree.postorder(include_self=False):
+            if n.length is None:
+                raise ValueError(
+                    "Non-root branches of the tree must have lengths."
+                )
+
+            if n.length < 0:
+                raise ValueError(
+                    "Non-root branches of the tree must have nonnegative "
+                    "lengths."
+                )
+            max_branch_length = max(n.length, max_branch_length)
+
+        if max_branch_length == 0:
+            raise ValueError(
+                "At least one non-root branch of the tree must have a "
+                "positive length."
+            )
+
         for n in tree.postorder():
             n.__class__ = Tree
             n.tip_count = 0
@@ -96,7 +119,15 @@ class Tree(TreeNode):
                 node.leafcount = 1
 
     def coords(self, height, width):
-        """ Returns coordinates of nodes to be rendered in plot.
+        """ Computes the coordinates of nodes to be rendered in plot.
+
+        This runs multiple layout algorithms and saves all of the resulting
+        coordinates for each node, so that layout algorithms can be rapidly
+        toggled between in the JS interface.
+
+        Also adds on .highestchildyr and .lowestchildyr attributes to internal
+        nodes so that vertical bars for these nodes can be drawn in the
+        rectangular layout.
 
         Parameters
         ----------
@@ -105,21 +136,173 @@ class Tree(TreeNode):
         width : int
             The width of the canvas.
 
+        Returns
+        -------
+        dict:
+            Mapping between layout and the coordinate suffix.
+        str:
+            Name of the default layout.
         """
 
-        # calculates coordinates of all nodes and the shortest/longest branches
-        self.rescale(width, height)
-        centerX = self.x2
-        centerY = self.y2
+        layout_to_coordsuffix = {}
+        layout_algs = (
+            self.layout_unrooted,
+            self.layout_rectangular,
+        )
+        # We set the default layout to whatever the first layout in
+        # layout_algs is, but this behavior is of course modifiable
+        default_layout = None
+        for alg in layout_algs:
+            name, suffix = alg(width, height)
+            layout_to_coordsuffix[name] = suffix
+            self.alter_coordinates_relative_to_root(suffix)
+            if default_layout is None:
+                default_layout = name
+
+        # Determine highest and lowest child y-position for internal nodes in
+        # the rectangular layout; used to draw vertical lines for these nodes.
+        #
+        # NOTE / TODO: This will have the effect of drawing vertical lines even
+        # for nodes with only 1 child -- in this case lowestchildyr ==
+        # highestchildyr for this node, so all of the stuff drawn in WebGL for
+        # this vertical line shouldn't show up. I don't think this should cause
+        # any problems, but it may be worth detecting these cases and not
+        # drawing vertical lines for them in the future.
+        for n in self.preorder():
+            if not n.is_tip():
+                child_y_coords = [c.yr for c in n.children]
+                n.highestchildyr = max(child_y_coords)
+                n.lowestchildyr = min(child_y_coords)
+
+        return layout_to_coordsuffix, default_layout
+
+    def alter_coordinates_relative_to_root(self, suffix):
+        """ Subtracts the root node's x- and y- coords from all nodes' coords.
+
+        This was previously done within coords(), but I moved it here so that
+        this logic can be used after arbitrary layout computations.
+
+        Parameters
+        ----------
+        suffix : str
+            The suffix of the x- and y-coordinates to adjust.
+
+            For example, this is "2" for the unrooted layout since coordinates
+            are stored in the x2 and y2 attributes for every node; and it's "r"
+            for the rectangular layout since the coordinate attributes are now
+            xr and yr.
+        """
+
+        xname = "x" + suffix
+        yname = "y" + suffix
+
+        centerX = getattr(self, xname)
+        centerY = getattr(self, yname)
 
         for node in self.postorder():
-            node.x2 = node.x2 - centerX
-            node.y2 = node.y2 - centerY
+            # This code might look sort of intimidating, but it's really just
+            # another way to write out:
+            #     node.x2 = node.x2 - centerX
+            #     node.y2 = node.y2 - centerY
+            # ...when we don't know what "x2" or "y2" will be named beforehand.
+            setattr(node, xname, getattr(node, xname) - centerX)
+            setattr(node, yname, getattr(node, yname) - centerY)
 
-    def rescale(self, width, height):
+    def layout_rectangular(self, width, height):
+        """ Rectangular layout.
+
+        In this sort of layout, each tip has a distinct y-position, and parent
+        y-positions are centered over their descendant tips' positions.
+        x-positions are computed based on nodes' branch lengths.
+
+        Following this algorithm, nodes' unrooted layout coordinates are
+        accessible at [node].xr and [node].yr.
+
+        For a simple tree, this layout should look something like:
+                 __
+             ___|
+         ___|   |__
+        |   |___
+        |    ___
+        |___|
+            |___
+
+        Parameters
+        ----------
+        width : float
+            width of the canvas
+        height : float
+            height of the canvas
+
+        References
+        ----------
+        https://rachel53461.wordpress.com/2014/04/20/algorithm-for-drawing-trees/
+            Clear explanation of Reingold-Tilford that I used a lot
+        https://github.com/qiime/Topiary-Explorer/blob/master/src/topiaryexplorer/TreeVis.java
+            Derived from the "Rectangular" layout algorithm code.
+        """
+        # NOTE: This doesn't draw a horizontal line leading to the root "node"
+        # of the graph. See https://github.com/biocore/empress/issues/141 for
+        # context.
+        max_width = 0
+        max_height = 0
+        prev_y = 0
+        for n in self.postorder():
+            if n.is_tip():
+                n.yr = prev_y
+                prev_y += 1
+                if n.yr > max_height:
+                    max_height = n.yr
+            else:
+                # Center internal nodes above their children
+                # We could also center them above their tips, but (IMO) this
+                # looks better ;)
+                n.yr = sum([c.yr for c in n.children]) / len(n.children)
+
+        self.xr = 0
+        for n in self.preorder(include_self=False):
+            n.xr = n.parent.xr + n.length
+            if n.xr > max_width:
+                max_width = n.xr
+
+        # We don't check if max_width == 0 here, because we check when
+        # constructing an Empress tree that it has at least one positive
+        # branch length and no negative branch lengths. (And if this is the
+        # case, then max_width must be > 0.)
+        x_scaling_factor = width / max_width
+
+        if max_height > 0:
+            # Having a max_height of 0 could actually happen, in the funky case
+            # where the entire tree is a straight line (e.g. A -> B -> C). In
+            # this case our "rectangular layout" drawing places all nodes on
+            # the same y-coordinate (0), resulting in max_height = 0.
+            # ... So, that's why we only do y-scaling if this *isn't* the case.
+            y_scaling_factor = height / max_height
+        else:
+            # Since this will be multiplied by 0 for every node, we can set
+            # this to any real number and get the intended "effect" of keeping
+            # every node's y-coordinate at 0.
+            y_scaling_factor = 1
+
+        for n in self.preorder():
+            n.xr *= x_scaling_factor
+            n.yr *= y_scaling_factor
+
+        # Now we have the layout! In the JS we'll need to draw each internal
+        # node as a vertical line ranging from its lowest child y-position to
+        # its highest child y-position, and then draw horizontal lines from
+        # this line to all of its child nodes (where the length of the
+        # horizontal line is proportional to the node length in question).
+        return "Rectangular", "r"
+
+    def layout_unrooted(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
         This method will find the best orientation and scaling possible to
-        fit the tree within the dimensions specified by width and height.
+        fit the tree within the dimensions specified by width and height, using
+        an unrooted layout algorithm.
+
+        Following this algorithm, nodes' unrooted layout coordinates are
+        accessible at [node].x2 and [node].y2.
 
         Parameters
         ----------
@@ -137,13 +320,16 @@ class Tree(TreeNode):
         -----
 
         """
+        # Recall that 360 degrees is equal to (2 * pi) radians.
+        # You can think of this variable as "the maximum angle we can 'give' to
+        # each leaf of the tree".
         angle = (2 * np.pi) / self.leafcount
 
         best_scale = 0
         for i in range(60):
             direction = i / 60.0 * np.pi
 
-            (max_x, min_x, max_y, min_y) = self.update_coordinates(
+            (max_x, min_x, max_y, min_y) = self.update_unrooted_coords(
                 1.0, 0, 0, direction, angle)
 
             x_diff = max_x - min_x
@@ -162,16 +348,22 @@ class Tree(TreeNode):
                 mid_y = height / 2 - ((max_y + min_y) / 2) * scale
                 best_args = (scale, mid_x, mid_y, direction, angle)
 
-        self.update_coordinates(*best_args)
-        return best_scale
+        self.update_unrooted_coords(*best_args)
+        return "Unrooted", "2"
 
-    def update_coordinates(self, s, x1, y1, a, da):
+    def update_unrooted_coords(self, s, x1, y1, a, da):
         """ Update x, y coordinates of tree nodes in canvas.
-        `update_coordinates` will updating the plotting parameters for
-        all of the nodes within the tree.
-        This can be applied when the tree becomes modified (i.e. pruning
-        or collapsing) and the resulting coordinates need to be modified
-        to reflect the changes to the tree structure.
+
+        This function will update the x1, y1, x2, y2, and angle attributes
+        for all of the nodes within the tree. Note that (once the unrooted
+        layout has finished) all that is really used are the x2 and y2
+        attributes.
+
+        In a server-based version of Empress, this could be applied when
+        the tree becomes modified (i.e. pruning or collapsing) and the
+        resulting coordinates would be modified to reflect the changes
+        to the tree structure. (In practice, we just run this once on the
+        Python side of things in order to precompute the layout.)
 
         Parameters
         ----------
@@ -190,10 +382,6 @@ class Tree(TreeNode):
         -------
         points : list of tuple
             2D coordinates of all of the nodes.
-
-        Notes
-        -----
-
         """
 
         max_x = float('-inf')

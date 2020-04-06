@@ -16,11 +16,6 @@ from q2_types.feature_table import FeatureTable, Frequency
 import pkg_resources
 __version__ = pkg_resources.get_distribution('empress').version  # noqa
 
-PARAMETERS = {'metadata': Metadata}
-PARAMETERS_DESC = {
-    'metadata': 'The sample metadata.'
-}
-
 plugin = Plugin(
     name='empress',
     version=__version__,
@@ -28,7 +23,7 @@ plugin = Plugin(
     package='empress',
     citations=Citations.load('citations.bib', package='empress'),
     description=('This QIIME 2 plugin wraps Empress and '
-                 'supports interactive visualization of phylogentic '
+                 'supports interactive visualization of phylogenetic '
                  'trees.'),
     short_description='Plugin for visualizing phylogenies with Empress.'
 )
@@ -44,14 +39,26 @@ plugin.visualizers.register_function(
         'feature_metadata': Metadata
     },
     input_descriptions={
-        'tree': 'The phylogentic tree to visualize.',
-        'feature_table': 'The feature table to decorate the phylogeny.'
+        'tree': 'The phylogenetic tree to visualize.',
+        'feature_table': (
+            'The feature table relating samples to features in the tree. '
+            'This information allows us to decorate the phylogeny by '
+            'sample metadata.'
+        )
     },
     parameter_descriptions={
-        'sample_metadata': 'The sample metadata',
-        'feature_metadata': 'The feature metadata',
+        'sample_metadata': (
+            'Sample metadata. Can be used to color tips in the tree by '
+            'the samples they are unique to.'
+        ),
+        'feature_metadata': (
+            'Feature metadata. Not currently used for anything, but will '
+            'be soon.'
+        )
     },
     name='Visualize and Explore Phylogenies with Empress',
-    description='Generates an interactive phylgentic tree where the user '
-                'can visually integrate sample and feature metadata. '
+    description=(
+        'Generates an interactive phylogenetic tree visualization '
+        'supporting interaction with sample and feature metadata.'
+    )
 )
