@@ -46,7 +46,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
         this.VERTEX_SIZE = 5;
 
         // sets empress to night mode
-        this.CLR_COL = 0;
+        this.CLR_COL = 1;
     }
 
     /**
