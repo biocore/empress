@@ -529,6 +529,14 @@ p.side-header button {
     margin-right: auto;
 }
 
+.control div.animate-btns {
+    margin-left: 10%;
+    margin-right: 10%;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    justify-items: center;
+}
+
 .control hr {
     border-top: 1px solid darkgray;
     border-bottom: none;
