@@ -45,7 +45,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
         this.cam = cam;
         this.VERTEX_SIZE = 5;
 
-        // sets empress to night mode
+        // sets empress to light mode
         this.CLR_COL = 1;
     }
 
