@@ -110,8 +110,8 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
         The tree to be visualized.
 
     table: pd.DataFrame
-        Representation of the feature table (containing features' abundances in
-        samples).
+        Representation of the feature table. The index should describe feature
+        IDs; the columns should describe sample IDs.
 
     sample_metadata: pd.DataFrame
         Sample metadata. The index should describe sample IDs; the columns

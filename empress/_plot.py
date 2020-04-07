@@ -30,6 +30,7 @@ def plot(output_dir: str,
          sample_metadata: qiime2.Metadata,
          feature_metadata: qiime2.Metadata = None) -> None:
 
+
     # 1. Convert inputs to the formats we want
 
     # TODO: do not ignore the feature metadata when specified by the user
@@ -49,9 +50,11 @@ def plot(output_dir: str,
     # 2. Now that we've converted/read/etc. all of the four input sources,
     # ensure that the samples and features they describe "match up" sanely.
 
-    feature_table, sample_metadata = tools.match_inputs(
-        empress_tree, feature_table, sample_metadata, feature_metadata
+    feature_table_transposed, sample_metadata = tools.match_inputs(
+        empress_tree, feature_table.T, sample_metadata, feature_metadata
     )
+
+    feature_table = feature_table_transposed.T
 
     # 3. Go forward with creating the Empress visualization!
 
