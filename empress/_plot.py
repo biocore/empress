@@ -30,7 +30,6 @@ def plot(output_dir: str,
          sample_metadata: qiime2.Metadata,
          feature_metadata: qiime2.Metadata = None) -> None:
 
-
     # 1. Convert inputs to the formats we want
 
     # TODO: do not ignore the feature metadata when specified by the user
