@@ -103,7 +103,7 @@ def plot(output_dir: str,
     # data/compress metadata.
 
     # This is used in biom-table. Currently this is only used to ignore null
-    # data (i.e. NaN and "unknown" and also determines sorting order. The
+    # data (i.e. NaN and "unknown") and also determines sorting order. The
     # original intent is to signal what columns are discrete/continuous.
     # type of sample metadata (n - number, o - object)
     sample_data_type = sample_metadata.dtypes.to_dict()
