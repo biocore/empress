@@ -110,7 +110,6 @@ def plot(output_dir: str,
     sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
                         for k, v in sample_data_type.items()}
 
-
     # create a mapping of observation ids and the samples that contain them
     obs_data = {}
     feature_table = (feature_table > 0).T
