@@ -49,7 +49,7 @@ class TestTools(unittest.TestCase):
         for i, node in enumerate(t.postorder()):
             self.assertEqual(node.name, names[i])
 
-    def test_match_inputs_basic(self):
+    def test_match_inputs_some_features_dropped(self):
         """Tests the basic case where no samples are dropped, but some features
            are present in the table but not the tree.
         """
@@ -74,6 +74,12 @@ class TestTools(unittest.TestCase):
         self.assertCountEqual(filtered_tbl.index, ["a", "b", "e", "d"])
         # TODO: ensure that dropped-feature message is printed
 
+    def test_match_inputs_no_shared_features(self):
+        pass
+
+    def test_match_inputs_some_samples_dropped(self):
+        pass
+
     def test_match_inputs_no_shared_samples(self):
         t = Tree.from_tree(self.tree)
         tools.name_internal_nodes(t)
@@ -86,6 +92,8 @@ class TestTools(unittest.TestCase):
         ):
             tools.match_inputs(t, self.table, bad_sample_metadata)
 
+    def test_match_inputs_both_some_samples_and_features_dropped(self):
+        pass
 
 if __name__ == "__main__":
     unittest.main()
