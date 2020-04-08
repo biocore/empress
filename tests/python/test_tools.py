@@ -5,7 +5,9 @@
 #
 # ----------------------------------------------------------------------------
 import unittest
+from unittest.mock import patch
 import pandas as pd
+from io import StringIO
 from skbio import TreeNode
 from empress import Tree
 import empress.tools as tools
@@ -49,30 +51,47 @@ class TestTools(unittest.TestCase):
         for i, node in enumerate(t.postorder()):
             self.assertEqual(node.name, names[i])
 
-    def test_match_inputs_some_features_dropped(self):
-        """Tests the basic case where no samples are dropped, but some features
-           are present in the table but not the tree.
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_match_inputs_some_features_dropped(self, mock_stdout):
+        """Tests case where some features are in the table but not the tree.
+
+        References
+        ----------
+
+        Use of mocking stdout with a StringIO was inspired by
+        https://stackoverflow.com/a/46307456/10730311 and adapted from the
+        docs at https://docs.python.org/3/library/unittest.mock.html#patch.
         """
         t = Tree.from_tree(self.tree)
         tools.name_internal_nodes(t)
+        # Run the command we're testing, tools.match_inputs().
         filtered_tbl, filtered_sample_metadata = tools.match_inputs(
             t, self.table, self.sample_metadata
         )
+
         # No samples should've been dropped with this example data.
         self.assertCountEqual(filtered_tbl.columns, self.table.columns)
         self.assertCountEqual(
             filtered_sample_metadata.index, self.sample_metadata.index
         )
+
         # Just for the sake of sanity, make sure we didn't accidentally drop
         # any sample metadata columns
         self.assertCountEqual(
             filtered_sample_metadata.columns, self.sample_metadata.columns
         )
+
         # Some features should've been dropped from the table:
         # "a", "b", "e", and "d" are the only features present in both the
         # table and tree.
         self.assertCountEqual(filtered_tbl.index, ["a", "b", "e", "d"])
-        # TODO: ensure that dropped-feature message is printed
+
+        # Ensure that a warning message about dropped features was printed!
+        self.assertIn(
+            "4 feature(s) in the table were not present in the tree.\n"
+            "These feature(s) have been removed from the visualization.",
+            mock_stdout.getvalue()
+        )
 
     def test_match_inputs_no_shared_features(self):
         t = Tree.from_tree(self.tree)
