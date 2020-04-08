@@ -105,8 +105,53 @@ class TestTools(unittest.TestCase):
         ):
             tools.match_inputs(t, bad_table, self.sample_metadata)
 
-    def test_match_inputs_some_samples_dropped(self):
-        pass
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_match_inputs_some_samples_dropped(self, mock_stdout):
+        t = Tree.from_tree(self.tree)
+        tools.name_internal_nodes(t)
+
+        # for convenience, subset the table to just those of its features that
+        # are also in the tree -- this'll prevent warnings about features being
+        # dropped from the table
+        diff_table = self.table.copy()
+        diff_table = diff_table.loc[["a", "b", "e", "d"]]
+
+        # test case where some samples from metadata dropped
+        # (Sample2 and Sample4 are replaced with Sample20 and Sample40)
+        diff_metadata = self.sample_metadata.copy()
+        diff_metadata.index = ["Sample1", "Sample20", "Sample3", "Sample40"]
+
+        filtered_tbl, filtered_sample_metadata = tools.match_inputs(
+            t, diff_table, diff_metadata
+        )
+
+        # No features should've been dropped with this example data.
+        self.assertCountEqual(filtered_tbl.index, diff_table.index)
+
+        # Check that Sample2 and Sample4 aren't in the metadata or table now
+        remaining_samples = ["Sample1", "Sample3"]
+        self.assertCountEqual(
+            filtered_sample_metadata.index, remaining_samples
+        )
+        self.assertCountEqual(filtered_tbl.columns, remaining_samples)
+
+        # Ensure that warning messages about dropped samples were printed
+        # This message is printed because Sample20 and Sample40 aren't in the
+        # table.
+        self.assertIn(
+            "2 sample(s) in the sample metadata file were not present in "
+            "the table.\n"
+            "These sample(s) have been removed from the visualization.",
+            mock_stdout.getvalue()
+        )
+        # This message is printed because Sample2 and Sample4 aren't in the
+        # sample metadata.
+        self.assertIn(
+            "2 sample(s) in the table were not present in the sample "
+            "metadata file.\n"
+            "These sample(s) have been removed from the visualization.",
+            mock_stdout.getvalue()
+        )
 
     def test_match_inputs_no_shared_samples(self):
         t = Tree.from_tree(self.tree)
@@ -119,9 +164,6 @@ class TestTools(unittest.TestCase):
             "feature table."
         ):
             tools.match_inputs(t, self.table, bad_sample_metadata)
-
-    def test_match_inputs_both_some_samples_and_features_dropped(self):
-        pass
 
 
 if __name__ == "__main__":
