@@ -120,7 +120,8 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
     feature_metadata: pd.DataFrame or None
         Feature metadata. If this is passed, the index should describe feature
         IDs and the columns should describe different feature metadata fields'
-        names.
+        names. NOTE: THIS CURRENTLY IS NOT CHECKED, BUT IT SHOULD BE IN THE
+        FUTURE WHEN #130 IS ADDRESSED.
 
     Returns
     -------
