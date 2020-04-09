@@ -24,6 +24,4 @@ install:
 script:
   - qiime dev refresh-cache
   - make test
-  # TODO: replace with artifact api command
-  - make docs
   - make stylecheck
