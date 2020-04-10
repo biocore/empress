@@ -1,8 +1,13 @@
+import warnings
 import skbio
 from skbio import TreeNode
 
 
 class DataMatchingError(Exception):
+    pass
+
+
+class DataMatchingWarning(Warning):
     pass
 
 
@@ -41,7 +46,7 @@ def read(file_name, file_format='newick'):
     return None
 
 
-def print_if_dropped(
+def warn_if_dropped(
     df_old, df_new, axis_num, item_name, df_name, filter_basis_name
 ):
     """Prints a message if a given DataFrame has been filtered.
@@ -89,14 +94,16 @@ def print_if_dropped(
 
     dropped_item_ct = df_old.shape[axis_num] - df_new.shape[axis_num]
     if dropped_item_ct > 0:
-        print(
-            "{} {}(s) in the {} were not present in the {}.".format(
-                dropped_item_ct, item_name, df_name, filter_basis_name
-            )
+        msg = (
+            "{} {}(s) in the {} were not present in the {}.\n"
+            "These {}(s) have been removed from the visualization."
         )
-        print(
-            "These {}(s) have been removed from the "
-            "visualization.".format(item_name)
+        warnings.warn(
+            msg.format(
+                dropped_item_ct, item_name, df_name, filter_basis_name,
+                item_name
+            ),
+            DataMatchingWarning
         )
 
 
@@ -166,7 +173,7 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
     ff_table = table.loc[tree_and_table_features]
 
     # Report to user about any dropped samples from table
-    print_if_dropped(table, ff_table, 0, "feature", "table", "tree")
+    warn_if_dropped(table, ff_table, 0, "feature", "table", "tree")
 
     # Match table and sample metadata
     sample_metadata_t = sample_metadata.T
@@ -184,7 +191,7 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
             "feature table."
         )
     # Report to user about any dropped samples from s. metadata and/or table
-    print_if_dropped(
+    warn_if_dropped(
         sample_metadata,
         sf_sample_metadata,
         0,
@@ -192,7 +199,7 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
         "sample metadata file",
         "table",
     )
-    print_if_dropped(
+    warn_if_dropped(
         table,
         sf_ff_table,
         1,
