@@ -7,6 +7,7 @@
 import os
 import unittest
 from qiime2 import Artifact, Metadata
+from qiime2.sdk import Results, Visualization
 from qiime2.plugin.testing import TestPluginBase
 
 
@@ -51,8 +52,10 @@ class TestIntegration(TestPluginBase):
     def test_execution(self):
         """Just checks that the visualizer at least runs without errors."""
         self.result = self.plot(self.tree, self.table, self.md, self.fmd)
-        # TODO check details of viz -- likely by digging into the index HTML of
-        # self.result.visualization, etc.
+        self.assertIsInstance(self.result, Results)
+        self.assertIsInstance(self.result.visualization, Visualization)
+        # TODO check details of viz more carefully (likely by digging into the
+        # index HTML of self.result.visualization, etc.)
 
     def tearDown(self):
         super().tearDown()
