@@ -122,7 +122,6 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
 
     Returns
     -------
-
     (table, sample_metadata): (pd.DataFrame, pd.DataFrame)
         Versions of the input table and sample metadata filtered such that:
             -The table only contains samples also present in the sample
@@ -133,7 +132,6 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
 
     Raises
     ------
-
     DataMatchingError
         If any of the following conditions are met:
             -No features are shared between the tree and table.
@@ -141,7 +139,6 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
 
     References
     ----------
-
     This function was based on match_table_and_data() in Qurro's code:
     https://github.com/biocore/qurro/blob/b9613534b2125c2e7ee22e79fdff311812f4fefe/qurro/_df_utils.py#L255
     """
