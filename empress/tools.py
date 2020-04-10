@@ -59,25 +59,19 @@ def warn_if_dropped(
 
     Parameters
     ----------
-
     df_old: pd.DataFrame (or pd.SparseDataFrame)
          "Unfiltered" DataFrame -- used as the reference when trying to
          determine if df_new has been filtered.
-
     df_new: pd.DataFrame (or pd.SparseDataFrame)
          A potentially-filtered DataFrame.
-
     axis_num: int
          The axis in the DataFrames' .shapes to check. This should be either
          0 or 1, but we don't explicitly check for that.
-
     item_name: str
          The name of the "thing" described by the given axis in these
          DataFrames. In practice, this is either "sample" or "feature".
-
     df_name: str
          The name of the DataFrame represented by df_old and df_new.
-
     filter_basis_name: str
          The name of the other DataFrame which caused these items to be
          dropped. For example, if we're checking to see if samples were
@@ -87,7 +81,6 @@ def warn_if_dropped(
 
     References
     ----------
-
     This function was adapted from Qurro's source code:
     https://github.com/biocore/qurro/blob/b9613534b2125c2e7ee22e79fdff311812f4fefe/qurro/_df_utils.py#L203
     """
@@ -115,15 +108,12 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
 
     tree: empress.tree.Tree
         The tree to be visualized.
-
     table: pd.DataFrame
         Representation of the feature table. The index should describe feature
         IDs; the columns should describe sample IDs.
-
     sample_metadata: pd.DataFrame
         Sample metadata. The index should describe sample IDs; the columns
         should describe different sample metadata fields' names.
-
     feature_metadata: pd.DataFrame or None
         Feature metadata. If this is passed, the index should describe feature
         IDs and the columns should describe different feature metadata fields'
@@ -132,7 +122,6 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
 
     Returns
     -------
-
     (table, sample_metadata): (pd.DataFrame, pd.DataFrame)
         Versions of the input table and sample metadata filtered such that:
             -The table only contains samples also present in the sample
@@ -143,7 +132,6 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
 
     Raises
     ------
-
     DataMatchingError
         If any of the following conditions are met:
             -No features are shared between the tree and table.
@@ -151,7 +139,6 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
 
     References
     ----------
-
     This function was based on match_table_and_data() in Qurro's code:
     https://github.com/biocore/qurro/blob/b9613534b2125c2e7ee22e79fdff311812f4fefe/qurro/_df_utils.py#L255
     """
