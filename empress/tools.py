@@ -108,15 +108,12 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
 
     tree: empress.tree.Tree
         The tree to be visualized.
-
     table: pd.DataFrame
         Representation of the feature table. The index should describe feature
         IDs; the columns should describe sample IDs.
-
     sample_metadata: pd.DataFrame
         Sample metadata. The index should describe sample IDs; the columns
         should describe different sample metadata fields' names.
-
     feature_metadata: pd.DataFrame or None
         Feature metadata. If this is passed, the index should describe feature
         IDs and the columns should describe different feature metadata fields'
