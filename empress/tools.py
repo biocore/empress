@@ -54,25 +54,19 @@ def print_if_dropped(
 
     Parameters
     ----------
-
     df_old: pd.DataFrame (or pd.SparseDataFrame)
          "Unfiltered" DataFrame -- used as the reference when trying to
          determine if df_new has been filtered.
-
     df_new: pd.DataFrame (or pd.SparseDataFrame)
          A potentially-filtered DataFrame.
-
     axis_num: int
          The axis in the DataFrames' .shapes to check. This should be either
          0 or 1, but we don't explicitly check for that.
-
     item_name: str
          The name of the "thing" described by the given axis in these
          DataFrames. In practice, this is either "sample" or "feature".
-
     df_name: str
          The name of the DataFrame represented by df_old and df_new.
-
     filter_basis_name: str
          The name of the other DataFrame which caused these items to be
          dropped. For example, if we're checking to see if samples were
@@ -82,7 +76,6 @@ def print_if_dropped(
 
     References
     ----------
-
     This function was adapted from Qurro's source code:
     https://github.com/biocore/qurro/blob/b9613534b2125c2e7ee22e79fdff311812f4fefe/qurro/_df_utils.py#L203
     """
