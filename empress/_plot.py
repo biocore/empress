@@ -28,7 +28,9 @@ def plot(output_dir: str,
          tree: NewickFormat,
          feature_table: pd.DataFrame,
          sample_metadata: qiime2.Metadata,
-         feature_metadata: qiime2.Metadata = None) -> None:
+         feature_metadata: qiime2.Metadata = None,
+         filter_missing_features: bool = False,
+         ignore_missing_samples: bool = False) -> None:
 
     # 1. Convert inputs to the formats we want
 
