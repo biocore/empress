@@ -57,6 +57,8 @@ plugin.visualizers.register_function(
             'Feature metadata. Not currently used for anything, but will '
             'be soon.'
         ),
+        # Parameter descriptions adapted from q2-emperor's
+        # --p-ignore-missing-samples flag.
         'filter_missing_features': (
             'This will suppress the error raised when the feature table '
             'contains features that are not present as tips in the tree. '
