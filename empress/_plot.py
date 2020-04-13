@@ -24,13 +24,15 @@ SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
 
 
-def plot(output_dir: str,
-         tree: NewickFormat,
-         feature_table: pd.DataFrame,
-         sample_metadata: qiime2.Metadata,
-         feature_metadata: qiime2.Metadata = None,
-         filter_missing_features: bool = False,
-         ignore_missing_samples: bool = False) -> None:
+def plot(
+    output_dir: str,
+    tree: NewickFormat,
+    feature_table: pd.DataFrame,
+    sample_metadata: qiime2.Metadata,
+    feature_metadata: qiime2.Metadata = None,
+    filter_missing_features: bool = False,
+    ignore_missing_samples: bool = False
+) -> None:
 
     # 1. Convert inputs to the formats we want
 
