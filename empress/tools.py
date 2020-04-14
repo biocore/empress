@@ -1,4 +1,5 @@
 import warnings
+import pandas as pd
 import skbio
 from skbio import TreeNode
 
@@ -46,60 +47,6 @@ def read(file_name, file_format='newick'):
     return None
 
 
-def warn_if_dropped(
-    df_old, df_new, axis_num, item_name, df_name, filter_basis_name
-):
-    """Prints a message if a given DataFrame has been filtered.
-
-       Essentially, this function just checks if
-       df_old.shape[axis_num] - df_new.shape[axis_num] > 0.
-
-       If so, this prints a message with a bunch of details (which the _name
-       parameters all describe).
-
-    Parameters
-    ----------
-    df_old: pd.DataFrame (or pd.SparseDataFrame)
-         "Unfiltered" DataFrame -- used as the reference when trying to
-         determine if df_new has been filtered.
-    df_new: pd.DataFrame (or pd.SparseDataFrame)
-         A potentially-filtered DataFrame.
-    axis_num: int
-         The axis in the DataFrames' .shapes to check. This should be either
-         0 or 1, but we don't explicitly check for that.
-    item_name: str
-         The name of the "thing" described by the given axis in these
-         DataFrames. In practice, this is either "sample" or "feature".
-    df_name: str
-         The name of the DataFrame represented by df_old and df_new.
-    filter_basis_name: str
-         The name of the other DataFrame which caused these items to be
-         dropped. For example, if we're checking to see if samples were
-         dropped from the sample metadata file due to to samples not being
-         in the table, df_name could be "sample metadata file" and
-         filter_basis_name could be "table".
-
-    References
-    ----------
-    This function was adapted from Qurro's source code:
-    https://github.com/biocore/qurro/blob/b9613534b2125c2e7ee22e79fdff311812f4fefe/qurro/_df_utils.py#L203
-    """
-
-    dropped_item_ct = df_old.shape[axis_num] - df_new.shape[axis_num]
-    if dropped_item_ct > 0:
-        msg = (
-            "{} {}(s) in the {} were not present in the {}.\n"
-            "These {}(s) have been removed from the visualization."
-        )
-        warnings.warn(
-            msg.format(
-                dropped_item_ct, item_name, df_name, filter_basis_name,
-                item_name
-            ),
-            DataMatchingWarning
-        )
-
-
 def match_inputs(
     tree,
     table,
@@ -144,78 +91,131 @@ def match_inputs(
     -------
     (table, sample_metadata): (pd.DataFrame, pd.DataFrame)
         Versions of the input table and sample metadata filtered such that:
-            -The table only contains samples also present in the sample
-             metadata.
-            -The table only contains features also present in the tree.
+            -The table only contains features also present as tips in the tree.
             -The sample metadata only contains samples also present in the
              table.
+            -Samples present in the table but not in the sample metadata will
+             have all of their sample metadata values set to "This sample has
+             no metadata". (This will only be done if ignore_missing_samples is
+             True; otherwise, this situation will trigger an error. See below.)
 
     Raises
     ------
     DataMatchingError
         If any of the following conditions are met:
-            -No features are shared between the tree's tips and table.
-            -No samples are shared between the sample metadata and table.
-            -There are samples present in the table but not in the sample
-             metadata, AND ignore_missing_samples is False.
-            -There are features present in the table but not as tips in the
-             tree, AND filter_missing_features is False.
+            1. No features are shared between the tree's tips and table.
+            2. There are features present in the table but not as tips in the
+               tree, AND filter_missing_features is False.
+            3. No samples are shared between the sample metadata and table.
+            4. There are samples present in the table but not in the sample
+               metadata, AND ignore_missing_samples is False.
 
     References
     ----------
     This function was based on match_table_and_data() in Qurro's code:
     https://github.com/biocore/qurro/blob/b9613534b2125c2e7ee22e79fdff311812f4fefe/qurro/_df_utils.py#L255
     """
-    # Match table and tree
-    # NOTE: This may be slow for huge trees / tables, could likely be optimized
-    tree_node_names = [n.name for n in tree.preorder()]
-    tree_and_table_features = set(tree_node_names) & set(table.index)
+    # Match table and tree.
+    tip_names = [n.name for n in tree.tips()]
+    tree_and_table_features = set(tip_names) & set(table.index)
 
     if len(tree_and_table_features) == 0:
+        # Error condition 1
         raise DataMatchingError(
-            "No features are shared between the tree's nodes and the feature "
-            "table."
+            "No features in the feature table are present as tips in the tree."
         )
 
-    # Filter table to just features that are also present in the tree
-    # Note that we *don't* filter the tree analogously, because we want to draw
-    # the whole tree (that being said the Empress UI supports just showing
-    # features in the table, anyway)
-    ff_table = table.loc[tree_and_table_features]
+    ff_table = table.copy()
+    if len(tree_and_table_features) < len(table.index):
+        if filter_missing_features:
+            # Filter table to just features that are also present in the tree.
+            #
+            # Note that we *don't* filter the tree analogously, because it's ok
+            # for the tree's nodes to be a superset of the table's features
+            # (and this is going to be the case in most datasets where the
+            # features correspond to tips, since internal nodes aren't
+            # explicitly described in the feature table).
+            ff_table = table.loc[tree_and_table_features]
 
-    # Report to user about any dropped samples from table
-    warn_if_dropped(table, ff_table, 0, "feature", "table", "tree")
+            # Report to user about any dropped features from table.
+            dropped_feature_ct = table.shape[0] - ff_table.shape[0]
+            warnings.warn(
+                (
+                    "{} feature(s) in the table were not present as tips in "
+                    "the tree. These features have been removed from the "
+                    "visualization."
+                ).format(
+                    dropped_feature_ct
+                ),
+                DataMatchingWarning
+            )
+        else:
+            # Error condition 2
+            raise DataMatchingError(
+                "The feature table contains features that aren't present as "
+                "tips in the tree. You can override this error by using the "
+                "--p-filter-missing-features flag."
+            )
 
-    # Match table and sample metadata
-    sample_metadata_t = sample_metadata.T
-    sf_ff_table, sf_sample_metadata_t = ff_table.align(
-        sample_metadata_t, axis="columns", join="inner"
-    )
-    # At this point, the columns of f_table and f_sample_metadata_t should be
-    # filtered to just the shared samples.
-    sf_sample_metadata = sf_sample_metadata_t.T
+    # Match table (post-feature-filtering, if done) and sample metadata.
+    table_samples = set(ff_table.columns)
+    sm_samples = set(sample_metadata.index)
+    sm_and_table_samples = sm_samples & table_samples
 
-    # Check that at least 1 sample is shared between the s. metadata and table
-    if sf_sample_metadata.shape[0] < 1:
+    if len(sm_and_table_samples) == 0:
+        # Error condition 3
         raise DataMatchingError(
-            "No samples are shared between the sample metadata file and the "
-            "feature table."
+            "No samples in the feature table are present in the sample "
+            "metadata."
         )
-    # Report to user about any dropped samples from s. metadata and/or table
-    warn_if_dropped(
-        sample_metadata,
-        sf_sample_metadata,
-        0,
-        "sample",
-        "sample metadata file",
-        "table",
+
+    padded_metadata = sample_metadata.copy()
+    if len(sm_and_table_samples) < len(ff_table.columns):
+        if ignore_missing_samples:
+            # Works similarly to how Emperor does this: see
+            # https://github.com/biocore/emperor/blob/659b62a9f02a6423b6258c814d0e83dbfd05220e/emperor/core.py#L350
+            samples_without_metadata = table_samples - sm_samples
+            padded_metadata = pd.DataFrame(
+                index=samples_without_metadata, columns=sample_metadata.columns
+            )
+            padded_metadata.fillna("This sample has no metadata")
+            sample_metadata = pd.concat([sample_metadata, padded_metadata])
+            # Report to user about samples we needed to "pad."
+            warnings.warn(
+                (
+                    "{} sample(s) in the table were not present in the "
+                    "sample metadata. These samples have been assigned "
+                    "placeholder metadata."
+                ).format(
+                    len(samples_without_metadata)
+                ),
+                DataMatchingWarning
+            )
+        else:
+            # Error condition 4
+            raise DataMatchingError(
+                "The feature table contains samples that aren't present in "
+                "the sample metadata. You can override this error by using "
+                "the --p-ignore-missing-samples flag."
+            )
+
+    # If we've made it this far, then there must be at least *one* sample
+    # present in both the sample metadata and the table: and by this point the
+    # metadata's samples should be a superset of the table's samples (since we
+    # padded the metadata above if there were any samples that *weren't* in the
+    # table).
+    #
+    # All that's left to do is to filter the sample metadata to just the
+    # samples that are also present in the table.
+    sf_padded_metadata = padded_metadata.loc[ff_table.columns]
+
+    # Report to user about any dropped samples from the metadata.
+    dropped_sample_ct = padded_metadata.shape[0] - sf_padded_metadata.shape[0]
+    warnings.warn(
+        (
+            "{} sample(s) in the sample metadata were not present in the "
+            "table. These samples have been removed from the visualization."
+        ).format(dropped_sample_ct),
+        DataMatchingWarning
     )
-    warn_if_dropped(
-        table,
-        sf_ff_table,
-        1,
-        "sample",
-        "table",
-        "sample metadata file",
-    )
-    return sf_ff_table, sf_sample_metadata
+    return ff_table, sf_padded_metadata
