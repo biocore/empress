@@ -100,7 +100,14 @@ def warn_if_dropped(
         )
 
 
-def match_inputs(tree, table, sample_metadata, feature_metadata=None):
+def match_inputs(
+    tree,
+    table,
+    sample_metadata,
+    feature_metadata=None,
+    ignore_missing_samples=False,
+    filter_missing_features=False
+):
     """Matches various input sources.
 
     Parameters
@@ -119,6 +126,19 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
         IDs and the columns should describe different feature metadata fields'
         names. NOTE: THIS CURRENTLY IS NOT CHECKED, BUT IT SHOULD BE IN THE
         FUTURE WHEN #130 IS ADDRESSED.
+    ignore_missing_samples: bool
+        If True, pads missing samples (i.e. samples in the table but not the
+        metadata) with placeholder metadata. If False, raises a
+        DataMatchingError if any such samples exist. (Note that in either case,
+        samples in the metadata but not in the table are filtered out; and if
+        no samples are shared between the table and metadata, a
+        DataMatchingError is raised regardless.) This is analogous to the
+        ignore_missing_samples flag in Emperor.
+    filter_missing_features: bool
+        If True, filters features from the table that aren't present as tips in
+        the tree. If False, raises a DataMatchingError if any such features
+        exist. (Note that in either case, features in the tree but not in the
+        table are preserved.)
 
     Returns
     -------
@@ -134,8 +154,12 @@ def match_inputs(tree, table, sample_metadata, feature_metadata=None):
     ------
     DataMatchingError
         If any of the following conditions are met:
-            -No features are shared between the tree and table.
+            -No features are shared between the tree's tips and table.
             -No samples are shared between the sample metadata and table.
+            -There are samples present in the table but not in the sample
+             metadata, AND ignore_missing_samples is False.
+            -There are features present in the table but not as tips in the
+             tree, AND filter_missing_features is False.
 
     References
     ----------

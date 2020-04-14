@@ -30,8 +30,8 @@ def plot(
     feature_table: pd.DataFrame,
     sample_metadata: qiime2.Metadata,
     feature_metadata: qiime2.Metadata = None,
-    filter_missing_features: bool = False,
-    ignore_missing_samples: bool = False
+    ignore_missing_samples: bool = False,
+    filter_missing_features: bool = False
 ) -> None:
 
     # 1. Convert inputs to the formats we want
@@ -54,7 +54,8 @@ def plot(
     # ensure that the samples and features they describe "match up" sanely.
 
     feature_table_transposed, sample_metadata = tools.match_inputs(
-        empress_tree, feature_table.T, sample_metadata, feature_metadata
+        empress_tree, feature_table.T, sample_metadata, feature_metadata,
+        ignore_missing_samples, filter_missing_features
     )
 
     feature_table = feature_table_transposed.T
