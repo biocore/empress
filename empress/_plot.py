@@ -53,12 +53,16 @@ def plot(
     # 2. Now that we've converted/read/etc. all of the four input sources,
     # ensure that the samples and features they describe "match up" sanely.
 
-    feature_table_transposed, sample_metadata = tools.match_inputs(
+    # Note that the feature_table we get from QIIME 2 (as an argument to this
+    # function) is set up such that the index describes sample IDs and the
+    # columns describe feature IDs. We transpose this table before sending it
+    # to tools.match_inputs() and keep using the transposed table for the rest
+    # of this visualizer.
+
+    feature_table, sample_metadata = tools.match_inputs(
         empress_tree, feature_table.T, sample_metadata, feature_metadata,
         ignore_missing_samples, filter_missing_features
     )
-
-    feature_table = feature_table_transposed.T
 
     # 3. Go forward with creating the Empress visualization!
 
@@ -119,7 +123,7 @@ def plot(
 
     # create a mapping of observation ids and the samples that contain them
     obs_data = {}
-    feature_table = (feature_table > 0).T
+    feature_table = (feature_table > 0)
     for _, series in feature_table.iteritems():
         sample_ids = series[series].index.tolist()
         obs_data[series.name] = sample_ids
