@@ -142,7 +142,7 @@ def match_inputs(
             warnings.warn(
                 (
                     "{} feature(s) in the table were not present as tips in "
-                    "the tree. These features have been removed from the "
+                    "the tree. These feature(s) have been removed from the "
                     "visualization."
                 ).format(
                     dropped_feature_ct
@@ -184,7 +184,7 @@ def match_inputs(
             warnings.warn(
                 (
                     "{} sample(s) in the table were not present in the "
-                    "sample metadata. These samples have been assigned "
+                    "sample metadata. These sample(s) have been assigned "
                     "placeholder metadata."
                 ).format(
                     len(samples_without_metadata)
@@ -215,7 +215,7 @@ def match_inputs(
         warnings.warn(
             (
                 "{} sample(s) in the sample metadata were not present in the "
-                "table. These samples have been removed from the "
+                "table. These sample(s) have been removed from the "
                 "visualization."
             ).format(dropped_sample_ct),
             DataMatchingWarning

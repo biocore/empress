@@ -69,6 +69,16 @@ class TestTools(unittest.TestCase):
             "No features in the feature table are present as tips in the tree."
         ):
             tools.match_inputs(t, bad_table, self.sample_metadata)
+        # Check that --p-filter-missing-features still doesn't work to override
+        # this, since there are NO matching features at all
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "No features in the feature table are present as tips in the tree."
+        ):
+            tools.match_inputs(
+                t, bad_table, self.sample_metadata,
+                filter_missing_features=True
+            )
 
     def test_match_inputs_no_shared_samples(self):
         t = Tree.from_tree(self.tree)
@@ -81,6 +91,59 @@ class TestTools(unittest.TestCase):
             "metadata."
         ):
             tools.match_inputs(t, self.table, bad_sample_metadata)
+        # Check that --p-ignore-missing-samples still doesn't work to override
+        # this, since there are NO matching samples at all
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "No samples in the feature table are present in the sample "
+            "metadata."
+        ):
+            tools.match_inputs(
+                t, self.table, bad_sample_metadata, ignore_missing_samples=True
+            )
+
+    def test_match_inputs_filter_missing_features_error(self):
+        t = Tree.from_tree(self.tree)
+        tools.name_internal_nodes(t)
+        bad_table = self.table.copy()
+        # Replace one of the tip IDs in the table with an internal node ID,
+        # instead. This isn't ok.
+        bad_table.index = ["a", "b", "e", "g"]
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "The feature table contains features that aren't present as tips "
+            "in the tree."
+        ):
+            tools.match_inputs(t, bad_table, self.sample_metadata)
+
+    def test_match_inputs_filter_missing_features_override(self):
+        """Checks that --p-filter-missing-features works as expected."""
+        # The inputs are the same as with the above test
+        t = Tree.from_tree(self.tree)
+        tools.name_internal_nodes(t)
+        bad_table = self.table.copy()
+        bad_table.index = ["a", "b", "e", "g"]
+        out_table = None
+        out_sm = None
+        with self.assertWarnsRegex(
+            tools.DataMatchingWarning,
+            # The parentheses mess up the regex, hence the necessity for using
+            # raw strings ._.
+            (
+                r"1 feature\(s\) in the table were not present as tips in "
+                r"the tree. These feature\(s\) have been removed from the "
+                "visualization."
+            )
+        ):
+            out_table, out_sm = tools.match_inputs(
+                t, bad_table, self.sample_metadata,
+                filter_missing_features=True
+            )
+        self.assertCountEqual(out_table.index, ["a", "b", "e"])
+        # Just to check, make sure the rest of the table is ok
+        assert_frame_equal(
+            out_table, self.table.loc[["a", "b", "e"]], check_like=True
+        )
 
 
 if __name__ == "__main__":
