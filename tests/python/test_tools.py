@@ -59,6 +59,29 @@ class TestTools(unittest.TestCase):
         assert_frame_equal(filtered_table, self.table)
         assert_frame_equal(filtered_sample_metadata, self.sample_metadata)
 
+    def test_match_inputs_no_tips_in_table(self):
+        t = Tree.from_tree(self.tree)
+        tools.name_internal_nodes(t)
+        bad_table = self.table.copy()
+        bad_table.index = range(len(self.table.index))
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "No features in the feature table are present as tips in the tree."
+        ):
+            tools.match_inputs(t, bad_table, self.sample_metadata)
+
+    def test_match_inputs_no_shared_samples(self):
+        t = Tree.from_tree(self.tree)
+        tools.name_internal_nodes(t)
+        bad_sample_metadata = self.sample_metadata.copy()
+        bad_sample_metadata.index = ["lol", "nothing", "here", "matches"]
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "No samples in the feature table are present in the sample "
+            "metadata."
+        ):
+            tools.match_inputs(t, self.table, bad_sample_metadata)
+
 
 if __name__ == "__main__":
     unittest.main()
