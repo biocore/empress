@@ -211,11 +211,13 @@ def match_inputs(
 
     # Report to user about any dropped samples from the metadata.
     dropped_sample_ct = padded_metadata.shape[0] - sf_padded_metadata.shape[0]
-    warnings.warn(
-        (
-            "{} sample(s) in the sample metadata were not present in the "
-            "table. These samples have been removed from the visualization."
-        ).format(dropped_sample_ct),
-        DataMatchingWarning
-    )
+    if dropped_sample_ct > 0:
+        warnings.warn(
+            (
+                "{} sample(s) in the sample metadata were not present in the "
+                "table. These samples have been removed from the "
+                "visualization."
+            ).format(dropped_sample_ct),
+            DataMatchingWarning
+        )
     return ff_table, sf_padded_metadata
