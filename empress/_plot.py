@@ -64,6 +64,10 @@ def plot(
         ignore_missing_samples, filter_missing_features
     )
 
+    # TODO: Add a check for empty samples/features in the table? Filtering this
+    # sorta stuff out would help speed things up (and would be good to report
+    # to the user on via warnings).
+
     # 3. Go forward with creating the Empress visualization!
 
     # extract balance parenthesis
