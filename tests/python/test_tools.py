@@ -67,7 +67,7 @@ class TestTools(unittest.TestCase):
         filtered_tiny_table, filtered_sample_metadata = tools.match_inputs(
             t, tiny_table, self.sample_metadata
         )
-        assert_frame_equal(tiny_table, self.table.loc[["a"]])
+        assert_frame_equal(filtered_tiny_table, tiny_table)
         assert_frame_equal(filtered_sample_metadata, self.sample_metadata)
 
     def test_match_inputs_no_tips_in_table(self):
@@ -185,8 +185,6 @@ class TestTools(unittest.TestCase):
         out_sm = None
         with self.assertWarnsRegex(
             tools.DataMatchingWarning,
-            # The parentheses mess up the regex, hence the necessity for using
-            # raw strings ._.
             (
                 r"1 sample\(s\) in the table were not present in the sample "
                 r"metadata. These sample\(s\) have been assigned placeholder "
@@ -222,6 +220,30 @@ class TestTools(unittest.TestCase):
             out_sm.loc[["Sample1", "Sample2", "Sample4"]],
             self.sample_metadata.loc[["Sample1", "Sample2", "Sample4"]],
             check_dtype=False
+        )
+
+    def test_match_inputs_sample_metadata_as_table_superset(self):
+        # This is always allowed, but does trigger a warning
+        t = Tree.from_tree(self.tree)
+        tools.name_internal_nodes(t)
+        subset_table = self.table.filter(
+            items=["Sample1", "Sample4"], axis="columns"
+        )
+        with self.assertWarnsRegex(
+            tools.DataMatchingWarning,
+            (
+                r"2 sample\(s\) in the sample metadata were not present in "
+                r"the table. These sample\(s\) have been removed from the "
+                "visualization."
+            )
+        ):
+            filtered_subset_table, filtered_sm = tools.match_inputs(
+                t, subset_table, self.sample_metadata
+            )
+        assert_frame_equal(filtered_subset_table, subset_table)
+        assert_frame_equal(
+            filtered_sm,
+            self.sample_metadata.loc[["Sample1", "Sample4"]]
         )
 
 
