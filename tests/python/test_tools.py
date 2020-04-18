@@ -59,6 +59,17 @@ class TestTools(unittest.TestCase):
         assert_frame_equal(filtered_table, self.table)
         assert_frame_equal(filtered_sample_metadata, self.sample_metadata)
 
+    def test_match_inputs_only_1_feature_in_table(self):
+        # This is technically allowed (so long as this 1 feature is a tree tip)
+        t = Tree.from_tree(self.tree)
+        tools.name_internal_nodes(t)
+        tiny_table = self.table.loc[["a"]]
+        filtered_tiny_table, filtered_sample_metadata = tools.match_inputs(
+            t, tiny_table, self.sample_metadata
+        )
+        assert_frame_equal(tiny_table, self.table.loc[["a"]])
+        assert_frame_equal(filtered_sample_metadata, self.sample_metadata)
+
     def test_match_inputs_no_tips_in_table(self):
         t = Tree.from_tree(self.tree)
         tools.name_internal_nodes(t)
