@@ -191,10 +191,23 @@ class TestTools(unittest.TestCase):
                 "metadata."
             )
         ):
-            out_table, out_sm = tools.match_inputs(
-                t, bad_table, self.sample_metadata,
-                ignore_missing_samples=True
+            tools.match_inputs(
+                t, bad_table, self.sample_metadata, ignore_missing_samples=True
             )
+        # Inelegant, but we run the function again to verify that we also got a
+        # warning due to Sample3 in the metadata needing to be dropped
+        with self.assertWarnsRegex(
+            tools.DataMatchingWarning,
+            (
+                r"1 sample\(s\) in the sample metadata were not present in "
+                r"the table. These sample\(s\) have been removed from the "
+                "visualization."
+            )
+        ):
+            out_table, out_sm = tools.match_inputs(
+                t, bad_table, self.sample_metadata, ignore_missing_samples=True
+            )
+
         self.assertCountEqual(
             out_table.columns,
             ["Sample1", "Sample2", "Whatever", "Sample4"]
@@ -222,7 +235,7 @@ class TestTools(unittest.TestCase):
             check_dtype=False
         )
 
-    def test_match_inputs_sample_metadata_as_table_superset(self):
+    def test_match_inputs_sample_metadata_has_extra_samples(self):
         # This is always allowed, but does trigger a warning
         t = Tree.from_tree(self.tree)
         tools.name_internal_nodes(t)
