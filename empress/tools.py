@@ -176,9 +176,11 @@ def match_inputs(
             # https://github.com/biocore/emperor/blob/659b62a9f02a6423b6258c814d0e83dbfd05220e/emperor/core.py#L350
             samples_without_metadata = table_samples - sm_samples
             padded_metadata = pd.DataFrame(
-                index=samples_without_metadata, columns=sample_metadata.columns
+                index=samples_without_metadata,
+                columns=sample_metadata.columns,
+                dtype=str
             )
-            padded_metadata.fillna("This sample has no metadata")
+            padded_metadata.fillna("This sample has no metadata", inplace=True)
             sample_metadata = pd.concat([sample_metadata, padded_metadata])
             # Report to user about samples we needed to "pad."
             warnings.warn(
@@ -207,10 +209,15 @@ def match_inputs(
     #
     # All that's left to do is to filter the sample metadata to just the
     # samples that are also present in the table.
-    sf_padded_metadata = padded_metadata.loc[ff_table.columns]
+    sf_sample_metadata = sample_metadata.loc[ff_table.columns]
 
     # Report to user about any dropped samples from the metadata.
-    dropped_sample_ct = padded_metadata.shape[0] - sf_padded_metadata.shape[0]
+    # Note that both sample_metadata and sf_sample_metadata contain
+    # "placeholder metadata," if --p-ignore-missing-samples was given. This
+    # won't impact the dropped_sample_ct displayed to the user since the
+    # samples with placeholder metadata will be in both DFs in the subtraction
+    # below, so they'll cancel out. (I hope that makes sense?)
+    dropped_sample_ct = sample_metadata.shape[0] - sf_sample_metadata.shape[0]
     if dropped_sample_ct > 0:
         warnings.warn(
             (
@@ -220,4 +227,4 @@ def match_inputs(
             ).format(dropped_sample_ct),
             DataMatchingWarning
         )
-    return ff_table, sf_padded_metadata
+    return ff_table, sf_sample_metadata

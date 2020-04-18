@@ -144,6 +144,74 @@ class TestTools(unittest.TestCase):
         assert_frame_equal(
             out_table, self.table.loc[["a", "b", "e"]], check_like=True
         )
+        # ... and that the sample metadata is ok
+        assert_frame_equal(
+            out_sm, self.sample_metadata
+        )
+
+    def test_match_inputs_ignore_missing_samples_error(self):
+        t = Tree.from_tree(self.tree)
+        tools.name_internal_nodes(t)
+        bad_table = self.table.copy()
+        # Replace one of the sample IDs in the table with some junk
+        bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "The feature table contains samples that aren't present in the "
+            "sample metadata."
+        ):
+            tools.match_inputs(t, bad_table, self.sample_metadata)
+
+    def test_match_inputs_ignore_missing_samples_override(self):
+        """Checks that --p-ignore-missing-samples works as expected."""
+        # These inputs are the same as with the above test
+        t = Tree.from_tree(self.tree)
+        tools.name_internal_nodes(t)
+        bad_table = self.table.copy()
+        # Replace one of the sample IDs in the table with some junk
+        bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
+        out_table = None
+        out_sm = None
+        with self.assertWarnsRegex(
+            tools.DataMatchingWarning,
+            # The parentheses mess up the regex, hence the necessity for using
+            # raw strings ._.
+            (
+                r"1 sample\(s\) in the table were not present in the sample "
+                r"metadata. These sample\(s\) have been assigned placeholder "
+                "metadata."
+            )
+        ):
+            out_table, out_sm = tools.match_inputs(
+                t, bad_table, self.sample_metadata,
+                ignore_missing_samples=True
+            )
+        self.assertCountEqual(
+            out_table.columns,
+            ["Sample1", "Sample2", "Whatever", "Sample4"]
+        )
+        self.assertCountEqual(
+            out_sm.index,
+            ["Sample1", "Sample2", "Whatever", "Sample4"]
+        )
+        # Make sure the table stays consistent
+        assert_frame_equal(out_table, bad_table)
+        # ...And that the placeholder metadata was added in for the "Whatever"
+        # sample correctly
+        self.assertTrue(
+            (out_sm.loc["Whatever"] == "This sample has no metadata").all()
+        )
+        # ... And that, with the exception of the newly added placeholder
+        # metadata, the sample metadata is also consistent. (The dtypes of
+        # individual columns can change if placeholder metadata was added,
+        # since the "This sample has no metadata" thing is just a string.)
+        # (...And *that* shouldn't impact Empress since Empress stores all
+        # sample metadata as strings. At least as of writing this.)
+        assert_frame_equal(
+            out_sm.loc[["Sample1", "Sample2", "Sample4"]],
+            self.sample_metadata.loc[["Sample1", "Sample2", "Sample4"]],
+            check_dtype=False
+        )
 
 
 if __name__ == "__main__":
