@@ -211,20 +211,9 @@ def match_inputs(
     # samples that are also present in the table.
     sf_sample_metadata = sample_metadata.loc[ff_table.columns]
 
-    # Report to user about any dropped samples from the metadata.
-    # Note that both sample_metadata and sf_sample_metadata contain
-    # "placeholder metadata," if --p-ignore-missing-samples was given. This
-    # won't impact the dropped_sample_ct displayed to the user since the
-    # samples with placeholder metadata will be in both DFs in the subtraction
-    # below, so they'll cancel out. (I hope that makes sense?)
-    dropped_sample_ct = sample_metadata.shape[0] - sf_sample_metadata.shape[0]
-    if dropped_sample_ct > 0:
-        warnings.warn(
-            (
-                "{} sample(s) in the sample metadata were not present in the "
-                "table. These sample(s) have been removed from the "
-                "visualization."
-            ).format(dropped_sample_ct),
-            DataMatchingWarning
-        )
+    # If desired, we could report here to the user about any dropped samples
+    # from the metadata by looking at the difference between
+    # sample_metadata.shape[0] and sf_sample_metadata.shape[0]. However, the
+    # presence of such "dropped samples" is a common occurrence in 16S studies,
+    # so we currently don't do that for the sake of avoiding alarm fatigue.
     return ff_table, sf_sample_metadata
