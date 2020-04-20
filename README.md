@@ -5,20 +5,6 @@ Empress is a fast and scalable phylogenetic tree viewer.
 
 ## Installation
 
-### Installing Empress "Standalone"
-
-To install the current development version, we recommend creating a new conda
-environment:
-
-```bash
-conda create -n empress python=3.6 numpy scipy pandas cython
-conda activate empress
-conda install -c bioconda scikit-bio biom-format
-pip install git+https://github.com/biocore/empress.git
-```
-
-### Installing Empress through QIIME 2
-
 Before following these instructions, make sure your QIIME 2 conda environment
 is activated (a version of at least 2019.1 is required). Then, run the
 following commands:

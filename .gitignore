@@ -1,9 +1,4 @@
-# trees/metadata used for development
 data/
-*.qza
-*.qzv
-!docs/*/*.qzv
-*.tsv
 empress-biom.py
 
 # NodeJS file used for chrome headless QUnit tests

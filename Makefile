@@ -6,7 +6,7 @@
 # Requires that a few command-line utilities are installed; see the Travis-CI
 # config file (.travis.yml) for examples of installing these utilities.
 
-.PHONY: test pytest jstest stylecheck jsstyle githook
+.PHONY: test pytest jstest stylecheck jsstyle githook docs
 
 JSLOCS = empress/support_files/js/*.js
 
@@ -38,3 +38,13 @@ githook:
 	@# https://www.viget.com/articles/two-ways-to-share-git-hooks-with-your-team/
 	echo "#!/bin/bash\nmake stylecheck" > .git/hooks/pre-commit
 	chmod +x .git/hooks/pre-commit
+
+docs:
+	@# For now, this just regenerates the moving pictures QZV
+	@# Assumes you're in a QIIME 2 conda environment
+	qiime empress plot \
+		--i-tree docs/moving-pictures/rooted-tree.qza \
+		--i-feature-table docs/moving-pictures/table.qza \
+		--m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
+		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
+		--o-visualization docs/moving-pictures/empress-tree.qzv
