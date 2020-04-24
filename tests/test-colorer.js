@@ -1,4 +1,4 @@
-require(['jquery', 'Colorer'], function($, Colorer) {
+require(['jquery', 'chroma', 'Colorer'], function($, chroma, Colorer) {
     $(document).ready(function() {
         // Setup test variables
         module('Colorer' , {
@@ -22,6 +22,24 @@ require(['jquery', 'Colorer'], function($, Colorer) {
             for (var i = 0; i < exp_qiime_colors.length; i++) {
                 equal(Colorer.__qiimeDiscrete[i], exp_qiime_colors[i]);
             }
+        });
+        test('Test construction with all discrete color maps', function() {
+            var discreteColorCount = 0;
+            for (var i = 0; i < Colorer.__Colormaps.length; i++) {
+                if (Colorer.__Colormaps[i].type === Colorer.DISCRETE) {
+                    cid = Colorer.__Colormaps[i].id;
+                    colorer = new Colorer(cid);
+                    if (cid === Colorer.__QIIME_COLOR) {
+                        equal(colorer.__colorArray, Colorer.__qiimeDiscrete);
+                    } else {
+                        equal(colorer.__colorArray, chroma.brewer[cid]);
+                    }
+                    discreteColorCount++;
+                }
+            }
+            // Sanity check: make sure we actually tested the expected number
+            // of discrete color maps (if not, we have a problem)
+            equal(discreteColorCount, 9);
         });
     });
 });

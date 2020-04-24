@@ -1,10 +1,4 @@
 define(["chroma"], function (chroma) {
-    // class globals closure variables
-    var DISCRETE = "Discrete";
-    var SEQUENTIAL = "Sequential";
-    var DIVERGING = "Diverging";
-    var HEADER = "Header";
-
     /**
      * @class Colorer
      *
@@ -76,6 +70,11 @@ define(["chroma"], function (chroma) {
         }
     };
 
+    Colorer.DISCRETE = "Discrete";
+    Colorer.SEQUENTIAL = "Sequential";
+    Colorer.DIVERGING = "Diverging";
+    Colorer.HEADER = "Header";
+
     // taken from the qiime/colors.py module; a total of 24 colors
     /** @private */
     Colorer.__QIIME_COLOR = "discrete-coloring-qiime";
@@ -112,51 +111,51 @@ define(["chroma"], function (chroma) {
     //     027aa16f1dcf9536cd2dd9c9800ece5fc359ecbc/emperor/
     //     support_files/js/color-view-controller.js#L573-L613
     Colorer.__Colormaps = [
-        { name: "-- Discrete --", type: HEADER },
+        { name: "-- Discrete --", type: Colorer.HEADER },
         {
             id: "discrete-coloring-qiime",
             name: "Classic QIIME Colors",
-            type: DISCRETE,
+            type: Colorer.DISCRETE,
         },
-        { id: "Paired", name: "Paired", type: DISCRETE },
-        { id: "Accent", name: "Accent", type: DISCRETE },
-        { id: "Dark2", name: "Dark", type: DISCRETE },
-        { id: "Set1", name: "Set1", type: DISCRETE },
-        { id: "Set2", name: "Set2", type: DISCRETE },
-        { id: "Set3", name: "Set3", type: DISCRETE },
-        { id: "Pastel1", name: "Pastel1", type: DISCRETE },
-        { id: "Pastel2", name: "Pastel2", type: DISCRETE },
+        { id: "Paired", name: "Paired", type: Colorer.DISCRETE },
+        { id: "Accent", name: "Accent", type: Colorer.DISCRETE },
+        { id: "Dark2", name: "Dark", type: Colorer.DISCRETE },
+        { id: "Set1", name: "Set1", type: Colorer.DISCRETE },
+        { id: "Set2", name: "Set2", type: Colorer.DISCRETE },
+        { id: "Set3", name: "Set3", type: Colorer.DISCRETE },
+        { id: "Pastel1", name: "Pastel1", type: Colorer.DISCRETE },
+        { id: "Pastel2", name: "Pastel2", type: Colorer.DISCRETE },
 
-        { name: "-- Sequential --", type: HEADER },
-        { id: "Viridis", name: "Viridis", type: SEQUENTIAL },
-        { id: "Reds", name: "Reds", type: SEQUENTIAL },
-        { id: "RdPu", name: "Red-Purple", type: SEQUENTIAL },
-        { id: "Oranges", name: "Oranges", type: SEQUENTIAL },
-        { id: "OrRd", name: "Orange-Red", type: SEQUENTIAL },
-        { id: "YlOrBr", name: "Yellow-Orange-Brown", type: SEQUENTIAL },
-        { id: "YlOrRd", name: "Yellow-Orange-Red", type: SEQUENTIAL },
-        { id: "YlGn", name: "Yellow-Green", type: SEQUENTIAL },
-        { id: "YlGnBu", name: "Yellow-Green-Blue", type: SEQUENTIAL },
-        { id: "Greens", name: "Greens", type: SEQUENTIAL },
-        { id: "GnBu", name: "Green-Blue", type: SEQUENTIAL },
-        { id: "Blues", name: "Blues", type: SEQUENTIAL },
-        { id: "BuGn", name: "Blue-Green", type: SEQUENTIAL },
-        { id: "BuPu", name: "Blue-Purple", type: SEQUENTIAL },
-        { id: "Purples", name: "Purples", type: SEQUENTIAL },
-        { id: "PuRd", name: "Purple-Red", type: SEQUENTIAL },
-        { id: "PuBuGn", name: "Purple-Blue-Green", type: SEQUENTIAL },
-        { id: "Greys", name: "Greys", type: SEQUENTIAL },
+        { name: "-- Sequential --", type: Colorer.HEADER },
+        { id: "Viridis", name: "Viridis", type: Colorer.SEQUENTIAL },
+        { id: "Reds", name: "Reds", type: Colorer.SEQUENTIAL },
+        { id: "RdPu", name: "Red-Purple", type: Colorer.SEQUENTIAL },
+        { id: "Oranges", name: "Oranges", type: Colorer.SEQUENTIAL },
+        { id: "OrRd", name: "Orange-Red", type: Colorer.SEQUENTIAL },
+        { id: "YlOrBr", name: "Yellow-Orange-Brown", type: Colorer.SEQUENTIAL },
+        { id: "YlOrRd", name: "Yellow-Orange-Red", type: Colorer.SEQUENTIAL },
+        { id: "YlGn", name: "Yellow-Green", type: Colorer.SEQUENTIAL },
+        { id: "YlGnBu", name: "Yellow-Green-Blue", type: Colorer.SEQUENTIAL },
+        { id: "Greens", name: "Greens", type: Colorer.SEQUENTIAL },
+        { id: "GnBu", name: "Green-Blue", type: Colorer.SEQUENTIAL },
+        { id: "Blues", name: "Blues", type: Colorer.SEQUENTIAL },
+        { id: "BuGn", name: "Blue-Green", type: Colorer.SEQUENTIAL },
+        { id: "BuPu", name: "Blue-Purple", type: Colorer.SEQUENTIAL },
+        { id: "Purples", name: "Purples", type: Colorer.SEQUENTIAL },
+        { id: "PuRd", name: "Purple-Red", type: Colorer.SEQUENTIAL },
+        { id: "PuBuGn", name: "Purple-Blue-Green", type: Colorer.SEQUENTIAL },
+        { id: "Greys", name: "Greys", type: Colorer.SEQUENTIAL },
 
-        { name: "-- Diverging --", type: HEADER },
-        { id: "Spectral", name: "Spectral", type: DIVERGING },
-        { id: "RdBu", name: "Red-Blue", type: DIVERGING },
-        { id: "RdYlGn", name: "Red-Yellow-Green", type: DIVERGING },
-        { id: "RdYlBu", name: "Red-Yellow-Blue", type: DIVERGING },
-        { id: "RdGy", name: "Red-Grey", type: DIVERGING },
-        { id: "PiYG", name: "Pink-Yellow-Green", type: DIVERGING },
-        { id: "BrBG", name: "Brown-Blue-Green", type: DIVERGING },
-        { id: "PuOr", name: "Purple-Orange", type: DIVERGING },
-        { id: "PRGn", name: "Purple-Green", type: DIVERGING },
+        { name: "-- Diverging --", type: Colorer.HEADER },
+        { id: "Spectral", name: "Spectral", type: Colorer.DIVERGING },
+        { id: "RdBu", name: "Red-Blue", type: Colorer.DIVERGING },
+        { id: "RdYlGn", name: "Red-Yellow-Green", type: Colorer.DIVERGING },
+        { id: "RdYlBu", name: "Red-Yellow-Blue", type: Colorer.DIVERGING },
+        { id: "RdGy", name: "Red-Grey", type: Colorer.DIVERGING },
+        { id: "PiYG", name: "Pink-Yellow-Green", type: Colorer.DIVERGING },
+        { id: "BrBG", name: "Brown-Blue-Green", type: Colorer.DIVERGING },
+        { id: "PuOr", name: "Purple-Orange", type: Colorer.DIVERGING },
+        { id: "PRGn", name: "Purple-Green", type: Colorer.DIVERGING },
     ];
     return Colorer;
 });
