@@ -1,5 +1,6 @@
 require(["jquery", "chroma", "Colorer"], function ($, chroma, Colorer) {
     $(document).ready(function () {
+        module('Colorer');
         test("Test that default QIIME colors are correct", function () {
             // I copied this in from https://github.com/biocore/emperor/blob/659b62a9f02a6423b6258c814d0e83dbfd05220e/emperor/support_files/js/color-view-controller.js#L624,
             // so this lets us guarantee that (at least in terms of the default
