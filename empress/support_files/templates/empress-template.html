@@ -77,17 +77,17 @@
             'Colorer' : './js/colorer',
             'VectorOps' : './js/vector-ops',
             'SummaryHelper' : './js/summary-helper',
-            'utils' : './js/utils'
+            'util' : './js/util'
         }
     });
 
     empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray',
                     'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimationPanel',
                     'Animator', 'BIOMTable', 'Empress', 'Legend', 'Colorer',
-                    'VectorOps', 'SummaryHelper', 'utils'],
+                    'VectorOps', 'SummaryHelper', 'util'],
         function($, gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
                  SidePanel, AnimationPanel, Animator, BIOMTable, Empress, Legend,
-                 Colorer, VectorOps, SummaryHelper, utils) {
+                 Colorer, VectorOps, SummaryHelper, util) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr, {{ names }});
