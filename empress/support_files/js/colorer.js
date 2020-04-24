@@ -22,7 +22,7 @@ define(["chroma"], function (chroma) {
     }
 
     /**
-     * Returns an rgb array with values in the range of [0,1].
+     * Returns an rgb array with values in the range of [0, 1].
      *
      * @param{Number} index A 0-indexed "category number" -- 0 for the first
      *                category, 1 for the second, etc.
@@ -31,9 +31,11 @@ define(["chroma"], function (chroma) {
      */
     Colorer.prototype.getColorRGB = function (index) {
         var moduloIndexInPalette = index % this.__colorArray.length;
+        // We divide by 255 instead of 256 because the R/G/B components of
+        // chroma(some color).rgb() are in the range [0, 255].
         return chroma(this.__colorArray[moduloIndexInPalette])
             .rgb()
-            .map((x) => x / 256);
+            .map((x) => x / 255);
     };
 
     /**
