@@ -103,9 +103,9 @@ require(["jquery", "chroma", "Colorer"], function ($, chroma, Colorer) {
             ];
             c = new Colorer("Dark2");
             for (var i = 0; i < 3 * dark2palette.length; i++) {
-                var expHex = chroma(dark2palette[i % dark2palette.length]);
-                var obsHex = c.getColorHex(i);
-                equal(obsHex, expHex);
+                var exp = chroma(dark2palette[i % dark2palette.length]).hex();
+                var obs = c.getColorHex(i);
+                equal(obs, exp);
             }
         });
     });
