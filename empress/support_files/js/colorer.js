@@ -9,35 +9,35 @@ define(["chroma"], function (chroma) {
      * @class Colorer
      *
      * Creates a color object that will map values to colors from a pre-defined
-     * color map. The color object uses draws from a range of values defined by
-     * [min, max] and assigns a color based on where the value falls within the
-     * range.
+     * color map.
      *
      * @param{Object} color The color map to draw colors from.
-     * @param{Object} min The minimum value.
-     * @param{Object} max The maximum value.
+     *                It's expected that this is an id in Colorer.__Colormaps
+     *                (although this isn't explicitly validated right now).
+     * @param{Number} numItems The number of categories to provide colors for.
      *
      * @return{Colorer}
      * constructs Colorer
      */
-    function Colorer(color, min, max) {
+    function Colorer(color) {
         if (color === Colorer.__QIIME_COLOR) {
-            this.__colorer = chroma.scale(Colorer.__qiimeDiscrete);
+            this.__colorArray = Colorer.__qiimeDiscrete;
         } else {
-            this.__colorer = chroma.scale(color);
+            this.__colorArray = chroma.brewer[color];
         }
-        this.__colorer.domain([min, max]);
     }
 
     /**
      * Returns an rgb array with values in the range of [0,1].
      *
-     * @param{Number} color A number in the range [min,max]
+     * @param{Number} index A 0-indexed "category number" -- 0 for the first
+     *                category, 1 for the second, etc.
      *
      * @return{Object} An rgb array
      */
-    Colorer.prototype.getColorRGB = function (color) {
-        return this.__colorer(color)
+    Colorer.prototype.getColorRGB = function (index) {
+        var moduloIndexInPalette = index % this.__colorArray.length;
+        return chroma(this.__colorArray[moduloIndexInPalette])
             .rgb()
             .map((x) => x / 256);
     };
@@ -45,12 +45,14 @@ define(["chroma"], function (chroma) {
     /**
      * Returns an rgb hex string.
      *
-     * @param{Number} color A number in the range [min,max]
+     * @param{Number} index A 0-indexed "category number" -- 0 for the first
+     *                category, 1 for the second, etc.
      *
      * @return{Object} An rgb hex string
      */
-    Colorer.prototype.getColorHex = function (color) {
-        return this.__colorer(color).hex();
+    Colorer.prototype.getColorHex = function (index) {
+        var moduloIndexInPalette = index % this.__colorArray.length;
+        return this.__colorArray[moduloIndexInPalette];
     };
 
     /**

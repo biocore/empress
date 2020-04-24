@@ -585,7 +585,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     };
 
     /**
-     * Creates a color map for each categoy in items
+     * Creates a color map for each category in items
      *
      * @param {Array} items List of categories
      * @param {String} color The chroma color map to use
@@ -596,16 +596,17 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      */
     Empress.prototype._assignColor = function (items, color, forWebGl) {
         // create color brewer
-        var colorer = new Colorer(color, 0, Math.pow(2, items.length));
+        var colorer = new Colorer(color);
         var colorFunction = forWebGl ? "getColorRGB" : "getColorHex";
-        var colorBlockSize = Math.pow(2, items.length) / items.length;
 
+        // For datasets with lots of items (where # items is much larger than #
+        // of colors in a palette), this will result in a lot of repeated work
+        // for discrete colorschemes (since the colors used will start to
+        // "loop"). May be worth optimizing if performance becomes an issue.
         var cm = {};
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
-            cm[item] = {
-                color: colorer[colorFunction](i * colorBlockSize),
-            };
+            cm[item] = { color: colorer[colorFunction](i) };
         }
 
         return cm;
