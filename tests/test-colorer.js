@@ -89,5 +89,24 @@ require(["jquery", "chroma", "Colorer"], function ($, chroma, Colorer) {
                 }
             }
         });
+        test("Test Colorer.getColorHex()", function () {
+            // Analogous to the getColorRGB() test above but simpler
+            var dark2palette = [
+                "#1b9e77",
+                "#d95f02",
+                "#7570b3",
+                "#e7298a",
+                "#66a61e",
+                "#e6ab02",
+                "#a6761d",
+                "#666666",
+            ];
+            c = new Colorer("Dark2");
+            for (var i = 0; i < 3 * dark2palette.length; i++) {
+                var expHex = chroma(dark2palette[i % dark2palette.length]);
+                var obsHex = c.getColorHex(i);
+                equal(obsHex, expHex);
+            }
+        });
     });
 });
