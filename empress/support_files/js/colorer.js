@@ -31,8 +31,8 @@ define(["chroma"], function (chroma) {
      */
     Colorer.prototype.getColorRGB = function (index) {
         var moduloIndexInPalette = index % this.__colorArray.length;
-        // the slice() strips off the opacity element, which causes problems if
-        // passed to WebGL
+        // the slice() strips off the opacity element, which causes problems
+        // with Empress' drawing code
         return chroma(this.__colorArray[moduloIndexInPalette]).gl().slice(0, 3);
     };
 

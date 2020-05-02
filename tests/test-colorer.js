@@ -85,10 +85,9 @@ require(["jquery", "chroma", "Colorer"], function ($, chroma, Colorer) {
 
                 // Ensure that the RGB color array has exactly 3 entries.
                 // chroma.color.gl() produces an array with 4 entries (where
-                // the 4th entry is opacity), and for some reason when these
-                // colors get passed to WebGL in Empress.colorTree() this
-                // causes the display to look really funky. (See #159 for a
-                // screenshot.)
+                // the 4th entry is opacity), and having extra entries breaks
+                // Empress' drawing functionality (which assumes colors will
+                // only have 3 components, not 4).
                 equal(obsRGB.length, 3, "RGB array should have exactly 3 items");
 
                 // Check that the R/G/B components are all equal
