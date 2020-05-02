@@ -1,10 +1,11 @@
-define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
-    _,
-    Camera,
-    Drawer,
-    Colorer,
-    VectorOps
-) {
+define([
+    "underscore",
+    "Camera",
+    "Drawer",
+    "Colorer",
+    "VectorOps",
+    "util",
+], function (_, Camera, Drawer, Colorer, VectorOps, util) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -623,8 +624,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
     Empress.prototype.colorBySampleCat = function (cat, color) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
-        var categories = Object.keys(obs);
-        categories.sort();
+        var categories = util.naturalSort(Object.keys(obs));
 
         // shared by the following for loops
         var i, j, category;
@@ -690,7 +690,7 @@ define(["underscore", "Camera", "Drawer", "Colorer", "VectorOps"], function (
      * @param{Object} cm The mapping from sample category to color.
      */
     Empress.prototype._colorTree = function (obs, cm) {
-        var categories = Object.keys(obs);
+        var categories = util.naturalSort(Object.keys(obs));
         // color tree
         for (var i = 0; i < categories.length; i++) {
             category = categories[i];
