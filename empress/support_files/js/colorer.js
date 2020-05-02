@@ -31,7 +31,9 @@ define(["chroma"], function (chroma) {
      */
     Colorer.prototype.getColorRGB = function (index) {
         var moduloIndexInPalette = index % this.__colorArray.length;
-        return chroma(this.__colorArray[moduloIndexInPalette]).gl();
+        // the slice() strips off the opacity element, which causes problems if
+        // passed to WebGL
+        return chroma(this.__colorArray[moduloIndexInPalette]).gl().slice(0, 3);
     };
 
     /**
