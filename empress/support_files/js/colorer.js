@@ -1,4 +1,4 @@
-define(["chroma"], function (chroma) {
+define(["chroma"], function(chroma) {
     // class globals closure variables
     var DISCRETE = "Discrete";
     var SEQUENTIAL = "Sequential";
@@ -36,10 +36,10 @@ define(["chroma"], function (chroma) {
      *
      * @return{Object} An rgb array
      */
-    Colorer.prototype.getColorRGB = function (color) {
+    Colorer.prototype.getColorRGB = function(color) {
         return this.__colorer(color)
             .rgb()
-            .map((x) => x / 256);
+            .map(x => x / 256);
     };
 
     /**
@@ -49,7 +49,7 @@ define(["chroma"], function (chroma) {
      *
      * @return{Object} An rgb hex string
      */
-    Colorer.prototype.getColorHex = function (color) {
+    Colorer.prototype.getColorHex = function(color) {
         return this.__colorer(color).hex();
     };
 
@@ -59,7 +59,7 @@ define(["chroma"], function (chroma) {
      * @param{Object} sel The select object to add color map options to.
      * @classmethod
      */
-    Colorer.addColorsToSelect = function (sel) {
+    Colorer.addColorsToSelect = function(sel) {
         // The color map selector
         for (var i = 0; i < Colorer.__Colormaps.length; i++) {
             var map = Colorer.__Colormaps[i];
@@ -101,7 +101,7 @@ define(["chroma"], function (chroma) {
         "#00b6ff",
         "#a54700",
         "#808000",
-        "#008080",
+        "#008080"
     ];
 
     // Used to create color select option and chroma.brewer
@@ -114,7 +114,7 @@ define(["chroma"], function (chroma) {
         {
             id: "discrete-coloring-qiime",
             name: "Classic QIIME Colors",
-            type: DISCRETE,
+            type: DISCRETE
         },
         { id: "Paired", name: "Paired", type: DISCRETE },
         { id: "Accent", name: "Accent", type: DISCRETE },
@@ -154,7 +154,7 @@ define(["chroma"], function (chroma) {
         { id: "PiYG", name: "Pink-Yellow-Green", type: DIVERGING },
         { id: "BrBG", name: "Brown-Blue-Green", type: DIVERGING },
         { id: "PuOr", name: "Purple-Orange", type: DIVERGING },
-        { id: "PRGn", name: "Purple-Green", type: DIVERGING },
+        { id: "PRGn", name: "Purple-Green", type: DIVERGING }
     ];
     return Colorer;
 });
