@@ -24,43 +24,80 @@ SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
 
 
-def plot(output_dir: str,
-         tree: NewickFormat,
-         feature_table: pd.DataFrame,
-         sample_metadata: qiime2.Metadata,
-         feature_metadata: qiime2.Metadata = None) -> None:
+def plot(
+    output_dir: str,
+    tree: NewickFormat,
+    feature_table: pd.DataFrame,
+    sample_metadata: qiime2.Metadata,
+    feature_metadata: qiime2.Metadata = None,
+    ignore_missing_samples: bool = False,
+    filter_missing_features: bool = False
+) -> None:
+
+    # 1. Convert inputs to the formats we want
 
     # TODO: do not ignore the feature metadata when specified by the user
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()
+
+    sample_metadata = sample_metadata.to_dataframe()
 
     # create/parse tree
     tree_file = str(tree)
     # path to the actual newick file
     with open(tree_file) as file:
         t = parse_newick(file.readline())
+    empress_tree = Tree.from_tree(to_skbio_treenode(t))
+    tools.name_internal_nodes(empress_tree)
+
+    # 2. Now that we've converted/read/etc. all of the four input sources,
+    # ensure that the samples and features they describe "match up" sanely.
+
+    # Note that the feature_table we get from QIIME 2 (as an argument to this
+    # function) is set up such that the index describes sample IDs and the
+    # columns describe feature IDs. We transpose this table before sending it
+    # to tools.match_inputs() and keep using the transposed table for the rest
+    # of this visualizer.
+
+    feature_table, sample_metadata = tools.match_inputs(
+        empress_tree, feature_table.T, sample_metadata, feature_metadata,
+        ignore_missing_samples, filter_missing_features
+    )
+
+    # TODO: Add a check for empty samples/features in the table? Filtering this
+    # sorta stuff out would help speed things up (and would be good to report
+    # to the user on via warnings).
+
+    # 3. Go forward with creating the Empress visualization!
 
     # extract balance parenthesis
     bp_tree = list(t.B)
 
-    # calculate tree coordinates
-    empress_tree = Tree.from_tree(to_skbio_treenode(t))
-    tools.name_internal_nodes(empress_tree)
-
+    # Compute coordinates resulting from layout algorithm(s)
     # TODO: figure out implications of screen size
-    empress_tree.coords(4020, 4020)
+    layout_to_coordsuffix, default_layout = empress_tree.coords(4020, 4020)
 
     tree_data = {}
     names_to_keys = {}
     for i, node in enumerate(empress_tree.postorder(include_self=True), 1):
         tree_data[i] = {
             'name': node.name,
-            'x': node.x2,
-            'y': node.y2,
             'color': [0.75, 0.75, 0.75],
             'sampVal': 1,
             'visible': True,
-            'single_samp': False}
+            'single_samp': False
+        }
+        # Add coordinate data from all layouts for this node
+        for layoutsuffix in layout_to_coordsuffix.values():
+            xcoord = "x" + layoutsuffix
+            ycoord = "y" + layoutsuffix
+            tree_data[i][xcoord] = getattr(node, xcoord)
+            tree_data[i][ycoord] = getattr(node, ycoord)
+        # Also add vertical bar coordinate info for the rectangular layout
+        if not node.is_tip():
+            tree_data[i]["highestchildyr"] = node.highestchildyr
+            tree_data[i]["lowestchildyr"] = node.lowestchildyr
+
         if node.name in names_to_keys:
             names_to_keys[node.name].append(i)
         else:
@@ -73,30 +110,24 @@ def plot(output_dir: str,
     env = Environment(loader=FileSystemLoader(TEMPLATES))
     temp = env.get_template('empress-template.html')
 
-    # sample metadata
-    sample_data = sample_metadata \
-        .to_dataframe().filter(feature_table.index, axis=0) \
-        .to_dict(orient='index')
+    # Convert sample metadata to a JSON-esque format
+    sample_data = sample_metadata.to_dict(orient='index')
 
     # TODO: Empress is currently storing all metadata as strings. This is
-    # memory intensive and wont scale well. We should convert all numeric
+    # memory intensive and won't scale well. We should convert all numeric
     # data/compress metadata.
 
     # This is used in biom-table. Currently this is only used to ignore null
-    # data (i.e. NaN and "unknown") and also determines sorting order.
-    # The original intent is to signal what
-    # columns are discrete/continous.
+    # data (i.e. NaN and "unknown") and also determines sorting order. The
+    # original intent is to signal what columns are discrete/continuous.
     # type of sample metadata (n - number, o - object)
-    sample_data_type = sample_metadata \
-        .to_dataframe().filter(feature_table.index, axis=0) \
-        .dtypes \
-        .to_dict()
+    sample_data_type = sample_metadata.dtypes.to_dict()
     sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
                         for k, v in sample_data_type.items()}
 
     # create a mapping of observation ids and the samples that contain them
     obs_data = {}
-    feature_table = (feature_table > 0).T
+    feature_table = (feature_table > 0)
     for _, series in feature_table.iteritems():
         sample_ids = series[series].index.tolist()
         obs_data[series.name] = sample_ids
@@ -110,6 +141,8 @@ def plot(output_dir: str,
         'sample_data_type': sample_data_type,
         'obs_data': obs_data,
         'names': names,
+        'layout_to_coordsuffix': layout_to_coordsuffix,
+        'default_layout': default_layout,
         })
 
     copytree(SUPPORT_FILES, os.path.join(output_dir, 'support_files'))

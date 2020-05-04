@@ -92,10 +92,21 @@
         var tree = new BPTree(tArr, {{ names }});
 
         var canvas = document.getElementById('tree-surface')
-        var biom = new BIOMTable({{ obs_data }}, {{ sample_data | tojson }},
-                                 {{ sample_data_type | tojson }});
-        var empress = new Empress(tree, {{ tree_data | tojson }},
-                                  {{ names_to_keys | tojson }}, biom, canvas);
+
+        var biom = new BIOMTable(
+          {{ obs_data }},
+          {{ sample_data | tojson }},
+          {{ sample_data_type | tojson }}
+        );
+        var empress = new Empress(
+            tree,
+            {{ tree_data | tojson }},
+            {{ names_to_keys | tojson }},
+            {{ layout_to_coordsuffix | tojson }},
+            '{{ default_layout }}',
+            biom,
+            canvas
+        );
         empress.initialize();
 
         var legend = new Legend(document.getElementById('tip-color-key'),
@@ -106,6 +117,7 @@
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress, legend);
         sPanel.addSampleTab();
+        sPanel.addLayoutTab();
 
         // create animator state machine
         var animator = new Animator(empress, legend);

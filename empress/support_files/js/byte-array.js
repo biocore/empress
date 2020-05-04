@@ -1,4 +1,4 @@
-define([], function() {
+define([], function () {
     /**
      * This file adds aditional functionality on top of javascripts
      * ArrayBuffer objects.
@@ -17,7 +17,7 @@ define([], function() {
      *
      * @return {ArrayBuffer}
      */
-    ByteArray.sumVal = function(arr, ArrayType, val) {
+    ByteArray.sumVal = function (arr, ArrayType, val) {
         var l = arr.length;
         var sumArr = new ArrayType(arr);
         var total = 0;
@@ -38,7 +38,7 @@ define([], function() {
      *
      * @return {ArrayBuffer}
      */
-    ByteArray.seqUniqueIndx = function(arr, ArrayType, startVal = 1) {
+    ByteArray.seqUniqueIndx = function (arr, ArrayType, startVal = 1) {
         var l = arr.length;
         var unqArr = [];
         var currentVal = startVal;

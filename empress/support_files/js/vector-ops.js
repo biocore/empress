@@ -1,5 +1,5 @@
 /** @module vector utility-functions */
-define([], function() {
+define([], function () {
     /**
      * Finds the angle of vector w.r.t the x-axis
      *
@@ -15,7 +15,7 @@ define([], function() {
 
         return {
             cos: cos,
-            sin: sin
+            sin: sin,
         };
     }
 
@@ -80,6 +80,6 @@ define([], function() {
         getAngle: getAngle,
         magnitude: magnitude,
         rotate: rotate,
-        translate: translate
+        translate: translate,
     };
 });

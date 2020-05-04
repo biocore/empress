@@ -1,4 +1,4 @@
-define(["Colorer"], function(Colorer) {
+define(["Colorer"], function (Colorer) {
     /**
      *
      * @class AnimationPanel
@@ -34,7 +34,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @private
      */
-    AnimationPanel.prototype.__startOptions = function() {
+    AnimationPanel.prototype.__startOptions = function () {
         // hide the following buttons
         this.stopBtn.classList.add("hidden");
         this.pauseBtn.classList.add("hidden");
@@ -52,7 +52,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @private
      */
-    AnimationPanel.prototype.__pauseOptions = function() {
+    AnimationPanel.prototype.__pauseOptions = function () {
         // hide the following buttons
         this.startBtn.classList.add("hidden");
         this.resumeBtn.classList.add("hidden");
@@ -70,7 +70,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @private
      */
-    AnimationPanel.prototype.__resumeOptions = function() {
+    AnimationPanel.prototype.__resumeOptions = function () {
         // hide the following buttons
         this.pauseBtn.classList.add("hidden");
         this.startBtn.classList.add("hidden");
@@ -95,7 +95,7 @@ define(["Colorer"], function(Colorer) {
      *
      * @private
      */
-    AnimationPanel.prototype.__toogleSelects = function(disableStatus) {
+    AnimationPanel.prototype.__toogleSelects = function (disableStatus) {
         this.colorSelect.disabled = disableStatus;
         this.gradient.disabled = disableStatus;
         this.trajectory.disabled = disableStatus;
@@ -104,7 +104,7 @@ define(["Colorer"], function(Colorer) {
     /**
      * Initializes GUI components/set up callback events
      */
-    AnimationPanel.prototype.addAnimationTab = function() {
+    AnimationPanel.prototype.addAnimationTab = function () {
         // used in closers
         var ap = this;
 
@@ -133,7 +133,7 @@ define(["Colorer"], function(Colorer) {
          * Event: triggers when user clicks on the hide branch checkbox.
          * Sets hide parameter in animation state machine.
          */
-        this.hideChk.onchange = function() {
+        this.hideChk.onchange = function () {
             ap.animator.setHide(ap.hideChk.checked);
         };
 
@@ -141,7 +141,7 @@ define(["Colorer"], function(Colorer) {
          * Event: triggers when user changes value of line width.
          * Sets line width parameter in animation state machine.
          */
-        this.lWidth.onchange = function() {
+        this.lWidth.onchange = function () {
             var val = ap.lWidth.value;
 
             // make sure line width is positve
@@ -160,7 +160,7 @@ define(["Colorer"], function(Colorer) {
          *
          * @return {null}
          */
-        this.startBtn.onclick = function() {
+        this.startBtn.onclick = function () {
             // change GUI components
             ap.__toogleSelects(true);
             ap.__pauseOptions();
@@ -189,7 +189,7 @@ define(["Colorer"], function(Colorer) {
          * Event: triggers when user clicks on pause button.
          * Pauses the animation.
          */
-        this.pauseBtn.onclick = function() {
+        this.pauseBtn.onclick = function () {
             ap.__resumeOptions();
             ap.animator.pauseAnimation();
         };
@@ -198,7 +198,7 @@ define(["Colorer"], function(Colorer) {
          * Event: triggers when user clicks on resume button.
          * Resumes the animation.
          */
-        this.resumeBtn.onclick = function() {
+        this.resumeBtn.onclick = function () {
             ap.__pauseOptions();
             ap.animator.resumeAnimation();
         };
@@ -207,7 +207,7 @@ define(["Colorer"], function(Colorer) {
          * Event: triggers when user clicks on stop button.
          * Stops the animation and clears the state machine
          */
-        this.stopBtn.onclick = function() {
+        this.stopBtn.onclick = function () {
             ap.__toogleSelects(false);
             ap.__startOptions();
             ap.animator.stopAnimation();
@@ -217,7 +217,7 @@ define(["Colorer"], function(Colorer) {
          * Event: triggers when user clicks on previous button.
          * Shows the previous frame in the animation
          */
-        this.prevFrameBtn.onclick = function() {
+        this.prevFrameBtn.onclick = function () {
             ap.animator.prevFrame();
             ap.__resumeOptions();
         };
@@ -226,7 +226,7 @@ define(["Colorer"], function(Colorer) {
          * Event: triggers when user clicks on next button.
          * Shows the next frame in the animation.
          */
-        this.nextFrameBtn.onclick = function() {
+        this.nextFrameBtn.onclick = function () {
             ap.animator.nextFrame();
             ap.__resumeOptions();
         };

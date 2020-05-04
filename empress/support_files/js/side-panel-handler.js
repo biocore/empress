@@ -1,4 +1,4 @@
-define(["Colorer"], function(Colorer) {
+define(["Colorer"], function (Colorer) {
     // class name for css tags
     var COLLAPSE_CLASS = "collapsible";
     /**
@@ -42,6 +42,9 @@ define(["Colorer"], function(Colorer) {
         this.sLineWidth = document.getElementById("sample-line-width");
         this.sUpdateBtn = document.getElementById("sample-update");
 
+        // layout GUI components
+        this.layoutDiv = document.getElementById("layout-div");
+
         // uncheck button
         this.sHideChk.checked = false;
 
@@ -50,7 +53,7 @@ define(["Colorer"], function(Colorer) {
 
         // triggers search when enter key is pressed in search menu
         var search = document.getElementById(this.SEARCH_ID);
-        search.keyup = function(e) {
+        search.keyup = function (e) {
             e.preventDefault();
             if (e.keyCode === 13) {
                 // TODO: model search function goes here
@@ -58,14 +61,14 @@ define(["Colorer"], function(Colorer) {
         };
 
         // triggers the 'active' look when user enters the search bar
-        search.focus = function() {
+        search.focus = function () {
             document
                 .getElementById(panel.SIDE_PANEL_ID)
                 .classList.add("panel-active");
         };
 
         // triggers the 'unactive' look when user leaves search bar
-        search.blur = function() {
+        search.blur = function () {
             document
                 .getElementById(panel.SIDE_PANEL_ID)
                 .classList.toggle(
@@ -76,7 +79,7 @@ define(["Colorer"], function(Colorer) {
 
         // // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
-        collapse.onclick = function() {
+        collapse.onclick = function () {
             document
                 .getElementById(panel.SIDE_PANEL_ID)
                 .classList.add("hidden");
@@ -85,7 +88,7 @@ define(["Colorer"], function(Colorer) {
 
         // // shows the side menu
         var show = document.getElementById(this.SHOW_ID);
-        show.onclick = function() {
+        show.onclick = function () {
             document.getElementById(panel.SHOW_ID).classList.add("hidden");
             document
                 .getElementById(panel.SIDE_PANEL_ID)
@@ -96,7 +99,7 @@ define(["Colorer"], function(Colorer) {
     /**
      * Sets the components of the samples panel back to there default value
      */
-    SidePanel.prototype.__samplePanelReset = function() {
+    SidePanel.prototype.__samplePanelReset = function () {
         // set color map back to default
         this.sColor.value = "discrete-coloring-qiime";
 
@@ -115,7 +118,7 @@ define(["Colorer"], function(Colorer) {
      * Sets the components of the samples panel back to there default value
      * and hides the additional options
      */
-    SidePanel.prototype.__samplePanelClose = function() {
+    SidePanel.prototype.__samplePanelClose = function () {
         // disable sample check box
         this.sChk.checked = false;
 
@@ -139,7 +142,7 @@ define(["Colorer"], function(Colorer) {
     /**
      * Updates/redraws the tree
      */
-    SidePanel.prototype._updateSample = function() {
+    SidePanel.prototype._updateSample = function () {
         this.empress.resetTree();
 
         // clear legends
@@ -161,7 +164,7 @@ define(["Colorer"], function(Colorer) {
     /**
      * Colors the tree
      */
-    SidePanel.prototype._colorSampleTree = function() {
+    SidePanel.prototype._colorSampleTree = function () {
         var colBy = this.sSel.value;
         var col = this.sColor.value;
         var hide = this.sHideChk.checked;
@@ -171,9 +174,78 @@ define(["Colorer"], function(Colorer) {
     };
 
     /**
+     * Redraws the tree with a different layout.
+     */
+    SidePanel.prototype._updateLayout = function () {
+        this.empress.resetTree();
+        this.empress.drawTree();
+    };
+
+    /**
+     * Initializes layout options.
+     * (These are pretty simple compared to the sample metadata options.)
+     */
+    SidePanel.prototype.addLayoutTab = function () {
+        var sp = this;
+        var LAYOUT_RADIO_BUTTON_NAME = "layoutoptions";
+        // Get layout info from the Empress instance
+        var layouts = this.empress.getAvailableLayouts();
+        var default_layout = this.empress.getDefaultLayout();
+        // Placeholder variables to be used when creating elements
+        var pele, lele, iele;
+
+        var radioBtnOnClickFunc = function () {
+            sp.empress.updateLayout(this.value);
+        };
+
+        for (var i = 0; i < layouts.length; i++) {
+            // Each layout option is represented by three tags:
+            // <p>
+            //    <label></label>
+            //    <input></input>
+            // </p>
+            // The <p> breaks lines in a way that looks nice, and the
+            // label/input just define the radio buttons as is normal in HTML:
+            // see https://www.w3schools.com/tags/att_input_type_radio.asp.
+            pele = document.createElement("p");
+            lele = document.createElement("label");
+            iele = document.createElement("input");
+
+            // Initialize the radio button for this layout
+            iele.value = layouts[i];
+            iele.type = "radio";
+            iele.name = LAYOUT_RADIO_BUTTON_NAME;
+            iele.id = "layoutRadioBtn" + layouts[i];
+            if (layouts[i] === default_layout) {
+                iele.checked = true;
+            }
+
+            // Initialize the label pointing to that radio button
+            // https://stackoverflow.com/a/15750291
+            lele.htmlFor = iele.id;
+            lele.innerHTML = layouts[i];
+
+            // Use of onclick based on
+            // https://www.dyn-web.com/tutorials/forms/radio/onclick-onchange.php.
+            // Long story short, either onchange or onclick works for most
+            // browsers, but IE 9 is inconsistent with onchange -- hence our
+            // use of onclick here. (That being said, you probably shouldn't
+            // use IE 9 with Empress anyway...)
+            // Anyway, if the same layout button is clicked a bunch of times,
+            // nothing will change -- Empress.updateLayout() stores the current
+            // layout name.
+            iele.onclick = radioBtnOnClickFunc;
+            // Now that we've created these three elements, add them!
+            pele.appendChild(lele);
+            pele.appendChild(iele);
+            this.layoutDiv.appendChild(pele);
+        }
+    };
+
+    /**
      * Initializes sample components
      */
-    SidePanel.prototype.addSampleTab = function() {
+    SidePanel.prototype.addSampleTab = function () {
         // for use in closers
         var sp = this;
 
@@ -191,7 +263,7 @@ define(["Colorer"], function(Colorer) {
         Colorer.addColorsToSelect(this.sColor);
 
         // toggle the sample/color map selectors
-        this.sChk.onclick = function() {
+        this.sChk.onclick = function () {
             if (sp.sChk.checked) {
                 sp.sSel.disabled = false;
                 sp.sAddOpts.classList.remove("hidden");
@@ -201,25 +273,25 @@ define(["Colorer"], function(Colorer) {
             }
         };
 
-        this.sSel.onchange = function() {
+        this.sSel.onchange = function () {
             sp.sUpdateBtn.classList.remove("hidden");
         };
 
-        this.sColor.onchange = function() {
+        this.sColor.onchange = function () {
             sp.sUpdateBtn.classList.remove("hidden");
         };
 
-        this.sLineWidth.onchange = function() {
+        this.sLineWidth.onchange = function () {
             sp.sUpdateBtn.classList.remove("hidden");
         };
 
         // deterines whether to show features not in samples
-        this.sHideChk.onclick = function() {
+        this.sHideChk.onclick = function () {
             sp.empress.setNonSampleBranchVisibility(this.checked);
             sp.empress.drawTree();
         };
 
-        this.sUpdateBtn.onclick = function() {
+        this.sUpdateBtn.onclick = function () {
             sp._updateSample();
         };
     };
