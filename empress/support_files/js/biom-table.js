@@ -1,4 +1,4 @@
-define([], function () {
+define([], function() {
     /**
      * @class BIOM-table
      *
@@ -55,7 +55,7 @@ define([], function () {
      *
      * @return {Array}
      */
-    BIOMTable.convertToObs = function (countArray, obsIDs) {
+    BIOMTable.convertToObs = function(countArray, obsIDs) {
         var obs = [];
         for (var i = 0; i < countArray.length; i++) {
             if (countArray[i] != 0) {
@@ -72,9 +72,9 @@ define([], function () {
      *
      * @return {Array}
      */
-    BIOMTable.prototype.getObjservationUnionForSamples = function (sIds) {
+    BIOMTable.prototype.getObjservationUnionForSamples = function(sIds) {
         var result = new Set();
-        var addToResult = function (ob) {
+        var addToResult = function(ob) {
             result.add(ob);
         };
         for (var i = 0; i < sIds.length; i++) {
@@ -92,7 +92,7 @@ define([], function () {
      *
      * @return {Object}
      */
-    BIOMTable.prototype.getObsBy = function (cat) {
+    BIOMTable.prototype.getObsBy = function(cat) {
         var result = {};
         var cVal;
         for (var sample in this._samp) {
@@ -113,11 +113,38 @@ define([], function () {
     };
 
     /**
+     * Returns a object of counts whose keys are the values of a sample
+     * category.
+     *
+     * @param {String} cat The category to return observation
+     * @param {String} obID The observation to count
+     *
+     * @return {Object}
+     */
+    BIOMTable.prototype.getObsCountsBy = function(cat, obID) {
+        var result = {};
+        var cVal;
+        for (var sample in this._samp) {
+            cVal = this._samp[sample][cat];
+            if (!(cVal in result)) {
+                result[cVal] = 0;
+            }
+            for (var i = 0; i < this._obs[sample].length; i++) {
+                if (this._obs[sample][i] === obID) {
+                    result[cVal] += 1;
+                }
+            }
+        }
+
+        return result;
+    };
+
+    /**
      * Returns the set of unique observations in samples.
      *
      * @return {Set}
      */
-    BIOMTable.prototype.getObservations = function () {
+    BIOMTable.prototype.getObservations = function() {
         var obs = new Set();
 
         for (var sample in this._samp) {
@@ -134,7 +161,7 @@ define([], function () {
      *
      * @return{Array}
      */
-    BIOMTable.prototype.getSampleCategories = function () {
+    BIOMTable.prototype.getSampleCategories = function() {
         return Object.keys(Object.values(this._samp)[0]).sort();
     };
 
@@ -146,7 +173,7 @@ define([], function () {
      *
      * @return{Object}
      */
-    BIOMTable.prototype.getUniqueSampleValues = function (category) {
+    BIOMTable.prototype.getUniqueSampleValues = function(category) {
         var values = new Set();
         var isNumeric = this._types[category] === "n";
         for (var sample in this._samp) {
@@ -175,14 +202,14 @@ define([], function () {
      *
      * @return{Object} return a mapping of trajectory values to observations.
      */
-    BIOMTable.prototype.getGradientStep = function (cat, grad, traj) {
+    BIOMTable.prototype.getGradientStep = function(cat, grad, traj) {
         var obs = {};
         var samples = Object.keys(this._samp);
         var isNumeric = this._types[traj] === "n";
 
         // add observations to mapping object
-        var addItems = function (items, container) {
-            items.forEach((x) => container.add(x));
+        var addItems = function(items, container) {
+            items.forEach(x => container.add(x));
         };
 
         // for all sample's whose gradient is the same as grad
@@ -208,6 +235,56 @@ define([], function () {
             obs[key] = Array.from(obs[key]);
         }
         return obs;
+    };
+
+    /**
+     * Returns a list of samples that contain an oberservation in obIDs
+     *
+     * @param{Array} obIDs A list of observationIds (i.e. tip names)
+     *
+     * @return{Array} a list of samples
+     */
+    BIOMTable.prototype.getSamplesByObservations = function(obIDs) {
+        var samples = Object.keys(this._obs);
+        var result = [];
+
+        var checkSampleForObservations = function(sample, obs) {
+            return obs.some(id => sample.includes(id));
+        };
+        // find all samples that contain at least one obersvation in obIDs
+        for (var i = 0; i < samples.length; i++) {
+            var sample = samples[i];
+            if (checkSampleForObservations(this._obs[sample], obIDs)) {
+                result.push(sample);
+            }
+        }
+
+        return result;
+    };
+
+    /**
+     * Returns maps sample cateogry value to number of samples with that value.
+       For example if cat == 'body_site' then this function will return an
+       an obect that maps body sites (oral, gut,...) to number of samples in
+       'samples' with that value.
+     *
+     * @param{Array} samples A list of sample ids
+     * @param{String} cat The category to count
+     *
+     * @return{Object}
+     */
+    BIOMTable.prototype.getSampleValuesCount = function(samples, cat) {
+        var result = {};
+        for (var i = 0; i < samples.length; i++) {
+            var sVal = this._samp[samples[i]][cat];
+            if (sVal in result) {
+                result[sVal] += 1;
+            } else {
+                result[sVal] = 0;
+            }
+        }
+
+        return result;
     };
 
     return BIOMTable;

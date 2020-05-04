@@ -250,6 +250,8 @@ label:hover .tooltip {
     background-color: white;
     opacity: 0.75;
     padding: 20px;
+    max-width: 500px;
+    overflow: auto;
 }
 
 #hover-box:hover {
@@ -278,17 +280,15 @@ label:hover .tooltip {
     border-color: transparent lightgray transparent transparent;
 }
 
+#hover-table tr {
+    padding: 0px 15px;
+}
 #hover-table tr td {
     vertical-align: top;
 }
 
-#hover-table tr td:nth-last-child(2) {
-    width: 60px;
-    font-weight: bold;
-}
-
-#hover-table tr td:nth-last-child(2):first-letter {
-    text-transform: capitalize;
+#hover-table tr td p{
+    text-align: right;
 }
 
 #hover-table tr td:nth-last-child(1) {
@@ -310,6 +310,21 @@ label:hover .tooltip {
 
 #hover-table tr td button:only-child:hover {
     background-color: darkgray;
+}
+
+.hover-select-container {
+    position: relative;
+}
+
+.hover-select-container:after {
+    position: absolute;
+    content: "\203A";
+    transform: rotate(90deg);
+    color: gray;
+    font-size: 13.5pt;
+    right: 12px;
+    top: 1px;
+    pointer-events: none;
 }
 
 .switch-button-container {

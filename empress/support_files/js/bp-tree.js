@@ -1,4 +1,4 @@
-define(["ByteArray"], function (ByteArray) {
+define(["ByteArray"], function(ByteArray) {
     /**
      *
      * @class BPTree
@@ -123,7 +123,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return{Number}
      */
-    BPTree.prototype.rank = function (t, i) {
+    BPTree.prototype.rank = function(t, i) {
         var rCache = t ? this.r1Cache_ : this.r0Cache_;
         return rCache[i];
     };
@@ -138,7 +138,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return{Number}
      */
-    BPTree.prototype.select = function (t, k) {
+    BPTree.prototype.select = function(t, k) {
         var sCache = t ? this.s1Cache_ : this.s0Cache_;
         return sCache[k - 1];
     };
@@ -153,7 +153,7 @@ define(["ByteArray"], function (ByteArray) {
      * @return{Number} The excess at position i
      * @private
      */
-    BPTree.prototype.excess_ = function (i) {
+    BPTree.prototype.excess_ = function(i) {
         // need to subtract 1 since i starts at 0
         // Note: rank(1,i) - rank(0,i) = (2*(rank(1,i)) - i
         return 2 * this.r1Cache_[i] - i - 1;
@@ -167,7 +167,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return{Number} Depth of node i
      */
-    BPTree.prototype.depth = function (i) {
+    BPTree.prototype.depth = function(i) {
         //depth is same as excess
         return this.eCache_[i];
     };
@@ -180,7 +180,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return{String}
      */
-    BPTree.prototype.name = function (i) {
+    BPTree.prototype.name = function(i) {
         return this.names_[this.preorder(i) - 1];
     };
 
@@ -190,7 +190,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number}
      */
-    BPTree.prototype.numleafs = function () {
+    BPTree.prototype.numleafs = function() {
         var total = 0;
         for (var i = 0; i < this.b_.length - 1; i++) {
             total = this.isleaf(i) ? total + 1 : total;
@@ -206,7 +206,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return{Number}
      */
-    BPTree.prototype.length = function (i) {
+    BPTree.prototype.length = function(i) {
         return this.lengths_[this.preorder(i) - 1];
     };
 
@@ -220,7 +220,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number}
      */
-    BPTree.prototype.fwdsearchNaive = function (i, d) {
+    BPTree.prototype.fwdsearchNaive = function(i, d) {
         var b = this.eCache_[i] + d;
         for (var j = i + 1; i < this.b_.length; j++) {
             if (this.eCache_[j] === b) {
@@ -235,7 +235,7 @@ define(["ByteArray"], function (ByteArray) {
     /**
      * Currently this is just place holder
      */
-    BPTree.prototype.fwdsearch = function (i, d) {
+    BPTree.prototype.fwdsearch = function(i, d) {
         return this.fwdsearchNaive(i, d);
     };
 
@@ -249,7 +249,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number}
      */
-    BPTree.prototype.bwdsearchNaive = function (i, d) {
+    BPTree.prototype.bwdsearchNaive = function(i, d) {
         var b = this.eCache_[i] + d;
         for (var j = i - 1; j >= 0; j--) {
             if (this.eCache_[j] === b) {
@@ -264,7 +264,7 @@ define(["ByteArray"], function (ByteArray) {
     /**
      * Currently this is just a place holder
      */
-    BPTree.prototype.bwdsearch = function (i, d) {
+    BPTree.prototype.bwdsearch = function(i, d) {
         return this.bwdsearchNaive(i, d);
     };
 
@@ -276,7 +276,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number}
      */
-    BPTree.prototype.open = function (i) {
+    BPTree.prototype.open = function(i) {
         return this.b_[i] ? i : this.ocCache_[i];
     };
 
@@ -288,7 +288,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number}
      */
-    BPTree.prototype.close = function (i) {
+    BPTree.prototype.close = function(i) {
         return this.b_[i] ? this.ocCache_[i] : i;
     };
 
@@ -300,7 +300,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number}
      */
-    BPTree.prototype.enclose = function (i) {
+    BPTree.prototype.enclose = function(i) {
         // i is an open paren
         if (this.b_[i]) {
             return this.bwdsearch(i, -2) + 1;
@@ -319,7 +319,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number}
      */
-    BPTree.prototype.parent = function (i) {
+    BPTree.prototype.parent = function(i) {
         // i represents the root node
         if (i === this.root() || i === this.b_.length - 1) {
             return -1;
@@ -333,7 +333,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number}
      */
-    BPTree.prototype.root = function () {
+    BPTree.prototype.root = function() {
         return 0;
     };
 
@@ -342,7 +342,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {boolean}
      */
-    BPTree.prototype.isleaf = function (i) {
+    BPTree.prototype.isleaf = function(i) {
         return this.b_[i] && !this.b_[i + 1];
     };
 
@@ -354,7 +354,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number} return 0 if i is a leaf node
      */
-    BPTree.prototype.fchild = function (i) {
+    BPTree.prototype.fchild = function(i) {
         if (this.isleaf(i)) {
             return 0;
         }
@@ -373,7 +373,7 @@ define(["ByteArray"], function (ByteArray) {
      *                 i can be either an open or close parenthesis
      * @return {Number} return 0 if i is a leaf node
      */
-    BPTree.prototype.lchild = function (i) {
+    BPTree.prototype.lchild = function(i) {
         if (this.isleaf(i)) {
             return 0;
         }
@@ -393,7 +393,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number}
      */
-    BPTree.prototype.nsibling = function (i) {
+    BPTree.prototype.nsibling = function(i) {
         // i is a close parenthesis
         if (!this.b_[i]) {
             return this.nsibling(this.open(i));
@@ -419,7 +419,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number} returns 0 if no previous sibling
      */
-    BPTree.prototype.psibling = function (i) {
+    BPTree.prototype.psibling = function(i) {
         var pos = 0;
 
         // check to see if i is root
@@ -459,7 +459,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number} The postorder rank of node i
      */
-    BPTree.prototype.postorder = function (i) {
+    BPTree.prototype.postorder = function(i) {
         if (this.b_[i]) {
             return this.rank(0, this.close(i));
         } else {
@@ -475,7 +475,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number} The index position of the node in the tree
      */
-    BPTree.prototype.postorderselect = function (k) {
+    BPTree.prototype.postorderselect = function(k) {
         return this.open(this.select(0, k));
     };
 
@@ -486,7 +486,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number} The preorder rank of node i
      */
-    BPTree.prototype.preorder = function (i) {
+    BPTree.prototype.preorder = function(i) {
         if (this.b_[i]) {
             return this.rank(1, i);
         } else {
@@ -502,7 +502,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * @return {Number} The index position of the node in the tree
      */
-    BPTree.prototype.preorderselect = function (k) {
+    BPTree.prototype.preorderselect = function(k) {
         return this.select(1, k);
     };
 
