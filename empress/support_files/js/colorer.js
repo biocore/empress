@@ -93,9 +93,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             alert(
                 "The selected color map (" +
                     this.selectedColorMap.name +
-                    ") cannot be used " +
-                    "with this field. Continuous coloration requires at " +
-                    "least 2 numeric values in the field."
+                    ") cannot be used with this field. Continuous " +
+                    "coloration requires at least 2 numeric values in " +
+                    "the field."
             );
         } else {
             // We can do scaling! Nice.
@@ -110,7 +110,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
             // Color all the numeric values
             _.each(split.numeric, function (element) {
-                thisColorer.__valueToColor[element] = interpolator(+element);
+                thisColorer.__valueToColor[element] = interpolator(+element).hex();
             });
             // Gray out non-numeric values
             _.each(split.nonNumeric, function (element) {

@@ -77,6 +77,33 @@ require([
             // of discrete color maps (if not, we have a problem)
             equal(discreteColorCount, 9);
         });
+        test("Test construction with a sequential color map", function() {
+            var eles = [
+                "1", "2", "3", "10", "4", "5", "invalidlol", "nan", "NaN",
+                "Infinity", "-Infinity", " "
+            ];
+            var colorer = new Colorer("Viridis", eles);
+            // Test that extreme numeric values are properly set
+            // (... and also that the values are being sorted correctly)
+            equal(colorer.__valueToColor["1"], "#440154");
+            equal(colorer.__valueToColor["10"], "#fee825");
+            // Test that intermediate numeric values are properly set.
+            // The expected values were obtained by manual testing using
+            // Chroma.js' interactive docs at https://gka.github.io/chroma.js,
+            // e.g. chroma.scale(chroma.brewer.Viridis).domain([1, 10])(2);
+            console.log(colorer.__valueToColor);
+            equal(colorer.__valueToColor["2"], "#482373");
+            equal(colorer.__valueToColor["3"], "#414286");
+            equal(colorer.__valueToColor["4"], "#365d8d");
+            equal(colorer.__valueToColor["5"], "#2b778f");
+            // Test that non-numeric values were assigned a gray "NANCOLOR"
+            equal(colorer.__valueToColor["invalidlol"], "#64655d");
+            equal(colorer.__valueToColor["nan"], "#64655d");
+            equal(colorer.__valueToColor["NaN"], "#64655d");
+            equal(colorer.__valueToColor["Infinity"], "#64655d");
+            equal(colorer.__valueToColor["-Infinity"], "#64655d");
+            equal(colorer.__valueToColor[" "], "#64655d");
+        });
         test("Test Colorer.getColorRGB()", function () {
             // This was taken from the chroma.js website, but the Dark2 palette
             // is of course c/o colorbrewer2.org
