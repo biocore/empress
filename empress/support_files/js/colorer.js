@@ -5,7 +5,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * Creates a color object that will map values to colors from a pre-defined
      * color map.
      *
-     * @param{Object} color The color map to draw colors from.
+     * @param{String} color The color map to draw colors from.
      *                      This should be an id in Colorer.__Colormaps.
      * @param{Array} values The values in a metadata field for which colors
      *                      will be generated.
@@ -15,77 +15,109 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      */
     function Colorer(color, values) {
         // Remove duplicate values and sort the values sanely
-        var sortedValues = util.naturalSort(_.uniq(values));
+        this.sortedUniqueValues = util.naturalSort(_.uniq(values));
 
+        this.color = color;
+
+        // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
 
-        // Figure out what "type" of color map has been selected (discrete vs.
-        // sequential / diverging). Will inform how we assign values to colors.
-        var selectedColorMap = _.find(Colorer.__Colormaps, function (cm) {
+        // Figure out what "type" of color map has been selected (should be one
+        // of discrete, sequential, or diverging)
+        this.selectedColorMap = _.find(Colorer.__Colormaps, function (cm) {
             return cm.id === color;
         });
-        if (selectedColorMap.type === Colorer.DISCRETE) {
-            var palette;
-            if (color === Colorer.__QIIME_COLOR) {
-                palette = Colorer.__qiimeDiscrete;
-            } else {
-                palette = chroma.brewer[color];
-            }
-            for (var i = 0; i < sortedValues.length; i++) {
-                var modIndex = i % palette.length;
-                this.__valueToColor[sortedValues[i]] = palette[modIndex];
-            }
+
+        // Based on the determined color map type, assign colors accordingly
+        if (this.selectedColorMap.type === Colorer.DISCRETE) {
+            this.assignDiscreteColors();
         } else if (
-            selectedColorMap.type === Colorer.SEQUENTIAL ||
-            selectedColorMap.type === Colorer.DIVERGING
+            this.selectedColorMap.type === Colorer.SEQUENTIAL ||
+            this.selectedColorMap.type === Colorer.DIVERGING
         ) {
-            var map = chroma.brewer[color];
-
-            // set up a closure so we can update this.__valueToColor within the
-            // functions below
-            var thisColorer = this;
-
-            // Get list of only numeric values, and see if it's possible for us
-            // to do scaling with these values or not
-            var split = util.splitNumericValues(sortedValues);
-
-            if (split.numeric.length < 2) {
-                // We don't have enough numeric values to do any sort of
-                // "scaling," so instead we just color everything gray
-                _.each(values, function (val) {
-                    thisColorer.__valueToColor[val] = Colorer.NANCOLOR;
-                });
-                alert(
-                    "The selected color map (" +
-                        selectedColorMap.name +
-                        ") cannot be used " +
-                        "with this field. Continuous coloration requires at " +
-                        "least 2 numeric values in the field."
-                );
-            } else {
-                // We can do scaling! Nice.
-                // convert objects to numbers so we can map them to a color
-                numbers = _.map(split.numeric, parseFloat);
-                min = _.min(numbers);
-                max = _.max(numbers);
-
-                var interpolator = chroma.scale(map).domain([min, max]);
-
-                // Color all the numeric values
-                _.each(split.numeric, function (element) {
-                    thisColorer.__valueToColor[element] = interpolator(
-                        +element
-                    );
-                });
-                // Gray out non-numeric values
-                _.each(split.nonNumeric, function (element) {
-                    thisColorer.__valueToColor[element] = Colorer.NANCOLOR;
-                });
-            }
+            this.assignScaledColors();
         } else {
-            throw new Error("Invalid color " + color + " specified");
+            throw new Error("Invalid color map " + this.color + " specified");
         }
     }
+
+    /**
+     * Assigns colors from a discrete color palette (specified by this.color)
+     * for every value in this.sortedUniqueValues. This will populate
+     * this.__valueToColor with this information.
+     *
+     * This will "loop around" as needed in order to generate colors; for
+     * example, if the color palette has 10 colors and there are 15 elements in
+     * this.sortedUniqueValues, the last 5 of those 15 elements will be
+     * assigned the first 5 colors from the color palette.
+     */
+    Colorer.prototype.assignDiscreteColors = function () {
+        var palette;
+        if (this.color === Colorer.__QIIME_COLOR) {
+            palette = Colorer.__qiimeDiscrete;
+        } else {
+            palette = chroma.brewer[this.color];
+        }
+        for (var i = 0; i < this.sortedUniqueValues.length; i++) {
+            var modIndex = i % palette.length;
+            this.__valueToColor[this.sortedUniqueValues[i]] = palette[modIndex];
+        }
+    };
+
+    /**
+     * Assigns colors from a sequential or diverging color palette (specified
+     * by this.color) for every value in this.sortedUniqueValues. This will
+     * populate this.__valueToColor with this information.
+     *
+     * If there aren't at least two numeric values in this.sortedUniqueValues,
+     * this will set every value with Colorer.NANCOLOR and alert the user with
+     * a warning message. Otherwise, this will properly scale numeric values
+     * according to the color map (while setting non-numeric values to
+     * Colorer.NANCOLOR).
+     */
+    Colorer.prototype.assignScaledColors = function () {
+        // set up a closure so we can update this.__valueToColor within the
+        // functions below
+        var thisColorer = this;
+
+        // Get list of only numeric values, and see if it's possible for us
+        // to do scaling with these values or not
+        var split = util.splitNumericValues(this.sortedUniqueValues);
+
+        if (split.numeric.length < 2) {
+            // We don't have enough numeric values to do any sort of
+            // "scaling," so instead we just color everything gray
+            _.each(this.sortedUniqueValues, function (val) {
+                thisColorer.__valueToColor[val] = Colorer.NANCOLOR;
+            });
+            alert(
+                "The selected color map (" +
+                    this.selectedColorMap.name +
+                    ") cannot be used " +
+                    "with this field. Continuous coloration requires at " +
+                    "least 2 numeric values in the field."
+            );
+        } else {
+            // We can do scaling! Nice.
+            // convert objects to numbers so we can map them to a color
+            var numbers = _.map(split.numeric, parseFloat);
+            var min = _.min(numbers);
+            var max = _.max(numbers);
+
+            var interpolator = chroma
+                .scale(chroma.brewer[this.color])
+                .domain([min, max]);
+
+            // Color all the numeric values
+            _.each(split.numeric, function (element) {
+                thisColorer.__valueToColor[element] = interpolator(+element);
+            });
+            // Gray out non-numeric values
+            _.each(split.nonNumeric, function (element) {
+                thisColorer.__valueToColor[element] = Colorer.NANCOLOR;
+            });
+        }
+    };
 
     Colorer.prototype.getMapRGB = function () {
         return _.mapObject(this.__valueToColor, function (color) {
