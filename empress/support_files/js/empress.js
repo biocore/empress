@@ -539,33 +539,6 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
     };
 
     /**
-     * Creates a color map for each category in items
-     *
-     * @param {Array} items List of categories
-     * @param {String} color The chroma color map to use
-     * @param {Boolean} rbg if true then a webGL color map will be created
-     *                      if false then a javascript color map will be created
-     *
-     * @return {Object} A color map that uses the categories in items as keys
-     */
-    Empress.prototype._assignColor = function (items, color, forWebGl) {
-        var colorer = new Colorer(color, items);
-        var colorFunction = forWebGl ? "getColorRGB" : "getColorHex";
-
-        // For datasets with lots of items (where # items is much larger than #
-        // of colors in a palette), this will result in a lot of repeated work
-        // for discrete colorschemes (since the colors used will start to
-        // "loop"). May be worth optimizing if performance becomes an issue.
-        var cm = {};
-        for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            cm[item] = { color: colorer[colorFunction](item) };
-        }
-
-        return cm;
-    };
-
-    /**
      * Color the tree using sample data
      *
      * @param {String} cat The sample category to use
@@ -588,10 +561,11 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
         }
 
         // assign colors to categories
-        var cm = this._assignColor(categories, color, true);
-
-        // legend key
-        var keyInfo = this._assignColor(categories, color, false);
+        var colorer = new Colorer(color, categories);
+        // colors for drawing the tree
+        var cm = colorer.getMapRGB();
+        // colors for the legend
+        var keyInfo = colorer.getMapHex();
 
         // assign internal nodes to approperiate category based on its children
         obs = this._projectObservations(obs);
@@ -650,7 +624,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
 
             for (var j = 0; j < keys.length; j++) {
                 var key = keys[j];
-                this._treeData[key].color = cm[category].color;
+                this._treeData[key].color = cm[category];
                 this._treeData[key].sampleColored = true;
             }
         }

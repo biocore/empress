@@ -84,10 +84,7 @@ define([], function () {
             // color gradient
             let component = document.createElement("div");
             component.classList.add("category-color");
-            component.setAttribute(
-                "style",
-                "background: " + info[key].color + ";"
-            );
+            component.setAttribute("style", "background: " + info[key] + ";");
             div.appendChild(component);
 
             // label

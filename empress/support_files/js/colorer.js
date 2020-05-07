@@ -19,20 +19,12 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
         this.__valueToColor = {};
 
-        // Figure out what "type" of color map has been requested (discrete vs.
+        // Figure out what "type" of color map has been selected (discrete vs.
         // sequential / diverging). Will inform how we assign values to colors.
-        var type;
-        var name;
-        var colormap;
-        for (var c = 0; c < Colorer.__Colormaps.length; c++) {
-            colormap = Colorer.__Colormaps[c];
-            if (colormap.id === color) {
-                type = colormap.type;
-                name = colormap.name;
-                break;
-            }
-        }
-        if (type === Colorer.DISCRETE) {
+        var selectedColorMap = _.find(Colorer.__Colormaps, function (cm) {
+            return cm.id === color;
+        });
+        if (selectedColorMap.type === Colorer.DISCRETE) {
             var palette;
             if (color === Colorer.__QIIME_COLOR) {
                 palette = Colorer.__qiimeDiscrete;
@@ -43,7 +35,10 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
                 var modIndex = i % palette.length;
                 this.__valueToColor[sortedValues[i]] = palette[modIndex];
             }
-        } else if (type === Colorer.SEQUENTIAL || type === Colorer.DIVERGING) {
+        } else if (
+            selectedColorMap.type === Colorer.SEQUENTIAL ||
+            selectedColorMap.type === Colorer.DIVERGING
+        ) {
             var map = chroma.brewer[color];
 
             // set up a closure so we can update this.__valueToColor within the
@@ -62,7 +57,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
                 });
                 alert(
                     "The selected color map (" +
-                        name +
+                        selectedColorMap.name +
                         ") cannot be used " +
                         "with this field. Continuous coloration requires at " +
                         "least 2 numeric values in the field."
@@ -92,30 +87,18 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         }
     }
 
-    /**
-     * Returns an rgb array with values in the range of [0, 1].
-     *
-     * @param{String} value A value that was present in the values used to
-     *                      construct this Colorer object.
-     *
-     * @return{Object} An rgb array
-     */
-    Colorer.prototype.getColorRGB = function (value) {
-        // the slice() strips off the opacity element, which causes problems
-        // with Empress' drawing code
-        return chroma(this.__valueToColor[value]).gl().slice(0, 3);
+    Colorer.prototype.getMapRGB = function () {
+        return _.mapObject(this.__valueToColor, function (color) {
+            // chroma(color).gl() returns an array with four components (RGBA
+            // instead of RGB). The slice() here strips off the final
+            // (transparency) element, which causes problems with Empress'
+            // drawing code
+            return chroma(color).gl().slice(0, 3);
+        });
     };
 
-    /**
-     * Returns an rgb hex string.
-     *
-     * @param{String} value A value that was present in the values used to
-     *                      construct this Colorer object.
-     *
-     * @return{Object} An rgb hex string
-     */
-    Colorer.prototype.getColorHex = function (value) {
-        return this.__valueToColor[value];
+    Colorer.prototype.getMapHex = function () {
+        return this.__valueToColor;
     };
 
     /**
