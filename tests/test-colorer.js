@@ -1,4 +1,14 @@
-require(["jquery", "chroma", "Colorer"], function ($, chroma, Colorer) {
+require([
+    "jquery",
+    "chroma",
+    "underscore",
+    "Colorer"
+], function (
+    $,
+    chroma,
+    _,
+    Colorer
+) {
     $(document).ready(function () {
         module('Colorer');
         test("Test that default QIIME colors are correct", function () {
@@ -36,15 +46,29 @@ require(["jquery", "chroma", "Colorer"], function ($, chroma, Colorer) {
             }
         });
         test("Test construction with all discrete color maps", function () {
+            // Generate an array with 100 unique elements
+            var hundredEles = [];
+            _.times(100, function(n) { hundredEles.push(String(n)); });
             var discreteColorCount = 0;
+            var colorer;
+            var palette;
+            var c;
             for (var i = 0; i < Colorer.__Colormaps.length; i++) {
                 if (Colorer.__Colormaps[i].type === Colorer.DISCRETE) {
                     cid = Colorer.__Colormaps[i].id;
-                    colorer = new Colorer(cid);
+                    var colorer = new Colorer(cid, hundredEles);
+                    var palette;
                     if (cid === Colorer.__QIIME_COLOR) {
-                        equal(colorer.__colorArray, Colorer.__qiimeDiscrete);
+                        palette = Colorer.__qiimeDiscrete;
                     } else {
-                        equal(colorer.__colorArray, chroma.brewer[cid]);
+                        palette = chroma.brewer[cid];
+                    }
+                    for (c = 0; c < 100; c++) {
+                        // Check that the "looping" is done properly
+                        equal(
+                            colorer.__valueToColor[hundredEles[c]],
+                            palette[c % palette.length]
+                        );
                     }
                     discreteColorCount++;
                 }
