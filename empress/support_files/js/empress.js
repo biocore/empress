@@ -549,8 +549,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
      * @return {Object} A color map that uses the categories in items as keys
      */
     Empress.prototype._assignColor = function (items, color, forWebGl) {
-        // create color brewer
-        var colorer = new Colorer(color);
+        var colorer = new Colorer(color, items);
         var colorFunction = forWebGl ? "getColorRGB" : "getColorHex";
 
         // For datasets with lots of items (where # items is much larger than #
@@ -560,7 +559,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
         var cm = {};
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
-            cm[item] = { color: colorer[colorFunction](i) };
+            cm[item] = { color: colorer[colorFunction](item) };
         }
 
         return cm;

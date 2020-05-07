@@ -1,4 +1,4 @@
-define(["chroma"], function (chroma) {
+define(["chroma", "underscore", "util"], function (chroma, _, util) {
     /**
      * @class Colorer
      *
@@ -6,47 +6,116 @@ define(["chroma"], function (chroma) {
      * color map.
      *
      * @param{Object} color The color map to draw colors from.
-     *                It's expected that this is an id in Colorer.__Colormaps
-     *                (although this isn't explicitly validated right now).
-     * @param{Number} numItems The number of categories to provide colors for.
+     *                      This should be an id in Colorer.__Colormaps.
+     * @param{Array} values The values in a metadata field for which colors
+     *                      will be generated.
      *
      * @return{Colorer}
      * constructs Colorer
      */
-    function Colorer(color) {
-        if (color === Colorer.__QIIME_COLOR) {
-            this.__colorArray = Colorer.__qiimeDiscrete;
+    function Colorer(color, values) {
+        // Remove duplicate values and sort the values sanely
+        var sortedValues = util.naturalSort(_.uniq(values));
+
+        this.__valueToColor = {};
+
+        // Figure out what "type" of color map has been requested (discrete vs.
+        // sequential / diverging). Will inform how we assign values to colors.
+        var type;
+        var name;
+        var colormap;
+        for (var c = 0; c < Colorer.__Colormaps.length; c++) {
+            colormap = Colorer.__Colormaps[c];
+            if (colormap.id === color) {
+                type = colormap.type;
+                name = colormap.name;
+                break;
+            }
+        }
+        if (type === Colorer.DISCRETE) {
+            var palette;
+            if (color === Colorer.__QIIME_COLOR) {
+                palette = Colorer.__qiimeDiscrete;
+            } else {
+                palette = chroma.brewer[color];
+            }
+            for (var i = 0; i < sortedValues.length; i++) {
+                var modIndex = i % palette.length;
+                this.__valueToColor[sortedValues[i]] = palette[modIndex];
+            }
+        } else if (type === Colorer.SEQUENTIAL || type === Colorer.DIVERGING) {
+            var map = chroma.brewer[color];
+
+            // set up a closure so we can update this.__valueToColor within the
+            // functions below
+            var thisColorer = this;
+
+            // Get list of only numeric values, and see if it's possible for us
+            // to do scaling with these values or not
+            var split = util.splitNumericValues(sortedValues);
+
+            if (split.numeric.length < 2) {
+                // We don't have enough numeric values to do any sort of
+                // "scaling," so instead we just color everything gray
+                _.each(values, function (val) {
+                    thisColorer.__valueToColor[val] = Colorer.NANCOLOR;
+                });
+                alert(
+                    "The selected color map (" +
+                        name +
+                        ") cannot be used " +
+                        "with this field. Continuous coloration requires at " +
+                        "least 2 numeric values in the field."
+                );
+            } else {
+                // We can do scaling! Nice.
+                // convert objects to numbers so we can map them to a color
+                numbers = _.map(split.numeric, parseFloat);
+                min = _.min(numbers);
+                max = _.max(numbers);
+
+                var interpolator = chroma.scale(map).domain([min, max]);
+
+                // Color all the numeric values
+                _.each(split.numeric, function (element) {
+                    thisColorer.__valueToColor[element] = interpolator(
+                        +element
+                    );
+                });
+                // Gray out non-numeric values
+                _.each(split.nonNumeric, function (element) {
+                    thisColorer.__valueToColor[element] = Colorer.NANCOLOR;
+                });
+            }
         } else {
-            this.__colorArray = chroma.brewer[color];
+            throw new Error("Invalid color " + color + " specified");
         }
     }
 
     /**
      * Returns an rgb array with values in the range of [0, 1].
      *
-     * @param{Number} index A 0-indexed "category number" -- 0 for the first
-     *                category, 1 for the second, etc.
+     * @param{String} value A value that was present in the values used to
+     *                      construct this Colorer object.
      *
      * @return{Object} An rgb array
      */
-    Colorer.prototype.getColorRGB = function (index) {
-        var moduloIndexInPalette = index % this.__colorArray.length;
+    Colorer.prototype.getColorRGB = function (value) {
         // the slice() strips off the opacity element, which causes problems
         // with Empress' drawing code
-        return chroma(this.__colorArray[moduloIndexInPalette]).gl().slice(0, 3);
+        return chroma(this.__valueToColor[value]).gl().slice(0, 3);
     };
 
     /**
      * Returns an rgb hex string.
      *
-     * @param{Number} index A 0-indexed "category number" -- 0 for the first
-     *                category, 1 for the second, etc.
+     * @param{String} value A value that was present in the values used to
+     *                      construct this Colorer object.
      *
      * @return{Object} An rgb hex string
      */
-    Colorer.prototype.getColorHex = function (index) {
-        var moduloIndexInPalette = index % this.__colorArray.length;
-        return this.__colorArray[moduloIndexInPalette];
+    Colorer.prototype.getColorHex = function (value) {
+        return this.__valueToColor[value];
     };
 
     /**
@@ -104,6 +173,10 @@ define(["chroma"], function (chroma) {
         "#808000",
         "#008080",
     ];
+
+    // This is also the default "nanColor" for Emperor. (We could make this
+    // configurable if desired.)
+    Colorer.NANCOLOR = "#64655d";
 
     // Used to create color select option and chroma.brewer
     //Modified from:
