@@ -1,11 +1,10 @@
-define([
-    "underscore",
-    "Camera",
-    "Drawer",
-    "Colorer",
-    "VectorOps",
-    "util",
-], function (_, Camera, Drawer, Colorer, VectorOps, util) {
+define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
+    Camera,
+    Drawer,
+    Colorer,
+    VectorOps,
+    util
+) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -540,52 +539,6 @@ define([
     };
 
     /**
-     * Remove all non unique keys
-     *
-     * @param {Object} keys An object containing multiple lists of keys
-     *
-     * @return {Object} A new object with the non unique keys removed
-     */
-    Empress.prototype._keepUniqueKeys = function (keys) {
-        // get unique keys
-        var items = Object.keys(keys);
-        var i;
-
-        // TODO: The current method to get the unique observations
-        // belonging to each sample category is slow. Refactoring it will lead
-        // to a nice speed boost.
-        // https://github.com/biocore/empress/issues/147
-        var uniqueKeysArray = _.chain(keys)
-            .values()
-            .map(function (item) {
-                return [...item];
-            })
-            .flatten()
-            .groupBy(function (key) {
-                return key;
-            })
-            .filter(function (key) {
-                return key.length === 1;
-            })
-            .flatten()
-            .value();
-        var uniqueKeys = new Set(uniqueKeysArray);
-        var hasKey = function (key) {
-            return uniqueKeys.has(key);
-        };
-
-        // get the unique keys in each item
-        var result = {};
-        items = Object.keys(keys);
-        for (i = 0; i < items.length; i++) {
-            var itemKeys = [...keys[items[i]]];
-            result[items[i]] = _.filter(itemKeys, hasKey);
-        }
-
-        return result;
-    };
-
-    /**
      * Creates a color map for each category in items
      *
      * @param {Array} items List of categories
@@ -679,7 +632,7 @@ define([
                 }
             }
         }
-        obs = this._keepUniqueKeys(obs);
+        obs = util.keepUniqueKeys(obs);
         return obs;
     };
 
