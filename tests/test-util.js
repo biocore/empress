@@ -105,5 +105,67 @@ require(["jquery", "util"], function ($, util) {
                 "Array is sorted correctly"
             );
         });
+
+        /**
+         * Tests the splitNumericValues() utility function.
+         *
+         * This test was taken from Emperor:
+         * https://github.com/biocore/emperor/blob/659b62a9f02a6423b6258c814d0e83dbfd05220e/tests/javascript_tests/test_util.js
+         * */
+        test("Test splitNumericValues", function () {
+            var values = [
+                "1.112",
+                "stringvalue",
+                "",
+                "Other String Value",
+                "-2.2",
+                "4",
+                null,
+                undefined,
+                NaN,
+                Infinity,
+                -Infinity,
+                0,
+                [],
+                ["string", 1.0],
+                [1.0, "string"],
+                {},
+                { key: "val" },
+            ];
+            var numeric = ["1.112", "-2.2", "4", 0];
+            var nonNumeric = [
+                "stringvalue",
+                "",
+                "Other String Value",
+                null,
+                undefined,
+                NaN,
+                Infinity,
+                -Infinity,
+                [],
+                ["string", 1.0],
+                [1.0, "string"],
+                {},
+                { key: "val" },
+            ];
+
+            var split = util.splitNumericValues(values);
+            deepEqual(split.numeric, numeric);
+            deepEqual(split.nonNumeric, nonNumeric);
+
+            split = util.splitNumericValues(["+1", "0", "foo", "-1", "boaty"]);
+            deepEqual(split.numeric, ["+1", "0", "-1"]);
+            deepEqual(split.nonNumeric, ["foo", "boaty"]);
+
+            split = util.splitNumericValues([
+                "1.0",
+                "0.0.0",
+                "0.0",
+                "-3.0",
+                "boaty",
+            ]);
+            deepEqual(split.numeric, ["1.0", "0.0", "-3.0"]);
+            deepEqual(split.nonNumeric, ["0.0.0", "boaty"]);
+        });
     });
 });

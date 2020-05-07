@@ -31,6 +31,7 @@
           'jquery' : './support_files/vendor/jquery-2.2.4.min',
           'glMatrix' : './support_files/vendor/gl-matrix.min',
           'chroma' : './support_files/vendor/chroma.min',
+          'underscore' : './support_files/vendor/underscore-min',
 
           /* succinct tree paths */
           'ByteArray': './support_files/js/byte-array',
@@ -53,15 +54,15 @@
 
     // load tests
     require(
-        ['jquery', 'glMatrix', 'chroma', 'ByteArray', 'BPTree', 'Camera',
-         'Colorer', 'BiomTable', 'SummaryHelper', 'util', 'testBPTree',
-         'testByteTree', 'testCamera', 'testColorer', 'testSummaryHelper',
-         'testUtil'],
+        ['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray', 'BPTree',
+         'Camera', 'Colorer', 'BiomTable', 'SummaryHelper', 'util',
+         'testBPTree', 'testByteTree', 'testCamera', 'testColorer',
+         'testSummaryHelper', 'testUtil'],
 
         // start tests
-        function ($, gl, chroma, ByteArray, BPTree, Camera, Colorer, BiomTable,
-          SummaryHelper, util, testBPTree, testByteTree, testCamera,
-          testColorer, testSummaryHelper, testUtil) {
+        function ($, gl, chroma, underscore, ByteArray, BPTree, Camera,
+          Colorer, BiomTable, SummaryHelper, util, testBPTree, testByteTree,
+          testCamera, testColorer, testSummaryHelper, testUtil) {
             $(document).ready(function() {
                 QUnit.start();
             });
