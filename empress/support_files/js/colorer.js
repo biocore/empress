@@ -121,6 +121,15 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         }
     };
 
+    /**
+     * Returns a mapping of unique field values to their corresponding colors,
+     * where each color is in RGB array format.
+     *
+     * @return{Object} rgbMap An object mapping each item in
+     *                 this.sortedUniqueValues to its assigned color. Each
+     *                 color is represented by an array of [R, G, B], where R,
+     *                 G, B are all floats scaled to within the range [0, 1].
+     */
     Colorer.prototype.getMapRGB = function () {
         return _.mapObject(this.__valueToColor, function (color) {
             // chroma(color).gl() returns an array with four components (RGBA
@@ -131,8 +140,23 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         });
     };
 
+    /**
+     * Returns a mapping of unique field values to their corresponding colors,
+     * where each color is in hex format.
+     *
+     * @return{Object} hexMap An object mapping each item in
+     *                 this.sortedUniqueValues to its assigned color. Each
+     *                 color is represented by a hex string like "#ff0000".
+     */
     Colorer.prototype.getMapHex = function () {
-        return this.__valueToColor;
+        // Technically we already store colors in hex format, so we could just
+        // return this.__valueToColor directly. However, JS is "call by
+        // sharing," so this would allow a user to overwrite the values in the
+        // returned object and thus mess with the Colorer internals. Hence why
+        // we return a shallow copy of this.__valueToColor instead (the object
+        // doesn't include other objects / arrays within it, so this should be
+        // safe). See https://stackoverflow.com/a/5314911/10730311 for details.
+        return _.clone(this.__valueToColor);
     };
 
     /**
