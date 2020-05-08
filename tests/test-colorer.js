@@ -77,7 +77,19 @@ require([
             // of discrete color maps (if not, we have a problem)
             equal(discreteColorCount, 9);
         });
-        test("Test construction with a sequential color map", function() {
+        test("Test construction with a seq. color map and all numeric values", function () {
+            var eles = ["5", "2", "3", "1", "4", "-5"];
+            var colorer = new Colorer("Reds", eles);
+            // Test extreme numeric values
+            equal(colorer.__valueToColor["-5"], "#fff5f0");
+            equal(colorer.__valueToColor["5"], "#67000d");
+            // Test intermediate numeric values
+            equal(colorer.__valueToColor["1"], "#f14432");
+            equal(colorer.__valueToColor["2"], "#d92623");
+            equal(colorer.__valueToColor["3"], "#bc141a");
+            equal(colorer.__valueToColor["4"], "#990c13");
+        });
+        test("Test construction with a seq. color map and numeric + non-numeric values", function() {
             var eles = [
                 "1", "2", "3", "10", "4", "5", "invalidlol", "nan", "NaN",
                 "Infinity", "-Infinity", " "
@@ -91,12 +103,12 @@ require([
             // The expected values were obtained by manual testing using
             // Chroma.js' interactive docs at https://gka.github.io/chroma.js,
             // e.g. chroma.scale(chroma.brewer.Viridis).domain([1, 10])(2);
-            console.log(colorer.__valueToColor);
             equal(colorer.__valueToColor["2"], "#482373");
             equal(colorer.__valueToColor["3"], "#414286");
             equal(colorer.__valueToColor["4"], "#365d8d");
             equal(colorer.__valueToColor["5"], "#2b778f");
             // Test that non-numeric values were assigned a gray "NANCOLOR"
+            // ... which is, by default, #64655d
             equal(colorer.__valueToColor["invalidlol"], "#64655d");
             equal(colorer.__valueToColor["nan"], "#64655d");
             equal(colorer.__valueToColor["NaN"], "#64655d");
@@ -104,48 +116,34 @@ require([
             equal(colorer.__valueToColor["-Infinity"], "#64655d");
             equal(colorer.__valueToColor[" "], "#64655d");
         });
-        test("Test Colorer.getColorRGB()", function () {
-            // This was taken from the chroma.js website, but the Dark2 palette
-            // is of course c/o colorbrewer2.org
-            var dark2palette = [
-                "#1b9e77",
-                "#d95f02",
-                "#7570b3",
-                "#e7298a",
-                "#66a61e",
-                "#e6ab02",
-                "#a6761d",
-                "#666666",
-            ];
-            c = new Colorer("Dark2");
-            // Test that "looping" works correctly -- for the example of Dark2,
-            // which has 8 colors, once we get to index = 8 things loop around
-            // back to the first color
-            for (var i = 0; i < 3 * dark2palette.length; i++) {
-                var expRGB = chroma(
-                    dark2palette[i % dark2palette.length]
-                ).rgb();
-                // Convert expRGB from an array of 3 numbers in the range
-                // [0, 255] to an array of 3 numbers in the range [0, 1] scaled
-                // proportionally.
-                var scaledExpRGB = expRGB.map(function (x) {
-                    return x / 255;
-                });
-
-                var obsRGB = c.getColorRGB(i);
-
-                // Ensure that the RGB color array has exactly 3 entries.
-                // chroma.color.gl() produces an array with 4 entries (where
-                // the 4th entry is opacity), and having extra entries breaks
-                // Empress' drawing functionality (which assumes colors will
-                // only have 3 components, not 4).
-                equal(obsRGB.length, 3, "RGB array should have exactly 3 items");
-
-                // Check that the R/G/B components are all equal
-                for (var v = 0; v < 3; v++) {
-                    equal(obsRGB[v], scaledExpRGB[v]);
-                }
-            }
+        test("Test construction with a seq. color map and < 2 numeric values", function () {
+            // Try one number
+            var eles = ["asdf", "lol", "1", "yeah just one number here folks"];
+            var colorer = new Colorer("Viridis", eles);
+            _.each(eles, function(ele) {
+                equal(colorer.__valueToColor[ele], "#64655d");
+            });
+            // Now try with 0 numeric values completely
+            var eles2 = ["asdf", "lol", "yeah zero numbers here folks"];
+            var colorer2 = new Colorer("Viridis", eles2);
+            _.each(eles2, function(ele2) {
+                equal(colorer2.__valueToColor[ele2], "#64655d");
+            });
+        });
+        test("Test construction with a div. color map and all numeric values", function () {
+            // Mostly same as the sequential + all numeric values test above,
+            // but just with a Colorer.DIVERGING color map. Verifies that both
+            // "types" of color maps are treated analogously.
+            var eles = ["5", "2", "3", "1", "4", "-5"];
+            var colorer = new Colorer("PiYG", eles);
+            // Test extreme numeric values
+            equal(colorer.__valueToColor["-5"], "#8e0152");
+            equal(colorer.__valueToColor["5"], "#276419");
+            // Test intermediate numeric values
+            equal(colorer.__valueToColor["1"], "#e6f5d0");
+            equal(colorer.__valueToColor["2"], "#b8e186");
+            equal(colorer.__valueToColor["3"], "#7fbc41");
+            equal(colorer.__valueToColor["4"], "#4d9221");
         });
         test("Test Colorer.getColorHex()", function () {
             // Analogous to the getColorRGB() test above but simpler
