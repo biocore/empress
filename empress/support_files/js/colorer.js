@@ -110,7 +110,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
             // Color all the numeric values
             _.each(split.numeric, function (element) {
-                thisColorer.__valueToColor[element] = interpolator(+element).hex();
+                thisColorer.__valueToColor[element] = interpolator(
+                    +element
+                ).hex();
             });
             // Gray out non-numeric values
             _.each(split.nonNumeric, function (element) {

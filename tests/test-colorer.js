@@ -145,7 +145,39 @@ require([
             equal(colorer.__valueToColor["3"], "#7fbc41");
             equal(colorer.__valueToColor["4"], "#4d9221");
         });
-        test("Test Colorer.getColorHex()", function () {
+        test("Test Colorer.getMapRGB()", function () {
+            var eles = ["abc", "def", "ghi"];
+            var dark2palette = [
+                "#1b9e77",
+                "#d95f02",
+                "#7570b3",
+                "#e7298a",
+                "#66a61e",
+                "#e6ab02",
+                "#a6761d",
+                "#666666",
+            ];
+            c = new Colorer("Dark2", eles);
+            var rgbMap = c.getMapRGB();
+            for (var i = 0; i < 3; i++) {
+                var expRGB = chroma(
+                    dark2palette[i % dark2palette.length]
+                ).rgb();
+                // Convert expRGB from an array of 3 numbers in the range
+                // [0, 255] to an array of 3 numbers in the range [0, 1] scaled
+                // proportionally.
+                var scaledExpRGB = expRGB.map(function (x) {
+                    return x / 255;
+                });
+                var obsRGB = rgbMap[eles[i]];
+                // Check that individual R/G/B components are correct
+                for (var v = 0; v < 3; v++) {
+                    equal(obsRGB[v], scaledExpRGB[v]);
+                }
+            }
+        });
+        test("Test Colorer.getMapHex()", function () {
+            var eles = ["abc", "def", "ghi"];
             // Analogous to the getColorRGB() test above but simpler
             var dark2palette = [
                 "#1b9e77",
@@ -157,12 +189,11 @@ require([
                 "#a6761d",
                 "#666666",
             ];
-            c = new Colorer("Dark2");
-            for (var i = 0; i < 3 * dark2palette.length; i++) {
-                var exp = chroma(dark2palette[i % dark2palette.length]).hex();
-                var obs = c.getColorHex(i);
-                equal(obs, exp);
-            }
+            c = new Colorer("Dark2", eles);
+            var hexMap = c.getMapHex();
+            equal(hexMap["abc"], dark2palette[0]);
+            equal(hexMap["def"], dark2palette[1]);
+            equal(hexMap["ghi"], dark2palette[2]);
         });
     });
 });
