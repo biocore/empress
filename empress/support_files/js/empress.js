@@ -567,6 +567,15 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
         // colors for the legend
         var keyInfo = colorer.getMapHex();
 
+        // see if we should alert the user about scaling failing
+        if (colorer.notEnoughNumericValues) {
+            alert(
+                "The selected color map cannot be used with the selected " +
+                    "field. Continuous coloration requires at least 2 " +
+                    "numeric values in the field."
+            );
+        }
+
         // assign internal nodes to approperiate category based on its children
         obs = this._projectObservations(obs);
 

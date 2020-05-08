@@ -22,6 +22,16 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
 
+        // By default, this is false (indicating that a discrete color map was
+        // selected, or that a sequential/diverging color map was selected and
+        // there were enough numeric values to perform scaling).
+        //
+        // If this.assignScaledColors() sets this value to true, this indicates
+        // that there weren't enough numeric values to perform scaling. This
+        // is an indication to the owner of this Colorer object to alert the
+        // user.
+        this.notEnoughNumericValues = false;
+
         // Figure out what "type" of color map has been selected (should be one
         // of discrete, sequential, or diverging)
         this.selectedColorMap = _.find(Colorer.__Colormaps, function (cm) {
@@ -70,10 +80,10 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * populate this.__valueToColor with this information.
      *
      * If there aren't at least two numeric values in this.sortedUniqueValues,
-     * this will set every value with Colorer.NANCOLOR and alert the user with
-     * a warning message. Otherwise, this will properly scale numeric values
-     * according to the color map (while setting non-numeric values to
-     * Colorer.NANCOLOR).
+     * this will set every value with Colorer.NANCOLOR and set
+     * this.notEnoughNumericValues to true. Otherwise, this will properly
+     * scale numeric values according to the color map (while setting any
+     * non-numeric values to Colorer.NANCOLOR).
      */
     Colorer.prototype.assignScaledColors = function () {
         // set up a closure so we can update this.__valueToColor within the
@@ -90,13 +100,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             _.each(this.sortedUniqueValues, function (val) {
                 thisColorer.__valueToColor[val] = Colorer.NANCOLOR;
             });
-            alert(
-                "The selected color map (" +
-                    this.selectedColorMap.name +
-                    ") cannot be used with this field. Continuous " +
-                    "coloration requires at least 2 numeric values in " +
-                    "the field."
-            );
+            this.notEnoughNumericValues = true;
         } else {
             // We can do scaling! Nice.
             // convert objects to numbers so we can map them to a color
