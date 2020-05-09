@@ -2,12 +2,14 @@ require([
     "jquery",
     "chroma",
     "underscore",
-    "Colorer"
+    "Colorer",
+    "util"
 ], function (
     $,
     chroma,
     _,
-    Colorer
+    Colorer,
+    util
 ) {
     $(document).ready(function () {
         module('Colorer');
@@ -80,14 +82,14 @@ require([
         test("Test construction with a seq. color map and all numeric values", function () {
             var eles = ["5", "2", "3", "1", "4", "-5"];
             var colorer = new Colorer("Reds", eles);
-            // Test extreme numeric values
+            // Test extreme values
             equal(colorer.__valueToColor["-5"], "#fff5f0");
             equal(colorer.__valueToColor["5"], "#67000d");
-            // Test intermediate numeric values
-            equal(colorer.__valueToColor["1"], "#f14432");
-            equal(colorer.__valueToColor["2"], "#d92623");
-            equal(colorer.__valueToColor["3"], "#bc141a");
-            equal(colorer.__valueToColor["4"], "#990c13");
+            // Test intermediate values
+            equal(colorer.__valueToColor["1"], "#fdcab5");
+            equal(colorer.__valueToColor["2"], "#fc8a6a");
+            equal(colorer.__valueToColor["3"], "#f14432");
+            equal(colorer.__valueToColor["4"], "#bc141a");
         });
         test("Test construction with a seq. color map and numeric + non-numeric values", function() {
             var eles = [
@@ -95,40 +97,14 @@ require([
                 "Infinity", "-Infinity", " "
             ];
             var colorer = new Colorer("Viridis", eles);
-            // Test that extreme numeric values are properly set
-            // (... and also that the values are being sorted correctly)
-            equal(colorer.__valueToColor["1"], "#440154");
-            equal(colorer.__valueToColor["10"], "#fee825");
-            // Test that intermediate numeric values are properly set.
-            // The expected values were obtained by manual testing using
-            // Chroma.js' interactive docs at https://gka.github.io/chroma.js,
-            // e.g. chroma.scale(chroma.brewer.Viridis).domain([1, 10])(2);
-            equal(colorer.__valueToColor["2"], "#482373");
-            equal(colorer.__valueToColor["3"], "#414286");
-            equal(colorer.__valueToColor["4"], "#365d8d");
-            equal(colorer.__valueToColor["5"], "#2b778f");
-            // Test that non-numeric values were assigned a gray "NANCOLOR"
-            // ... which is, by default, #64655d
-            equal(colorer.__valueToColor["invalidlol"], "#64655d");
-            equal(colorer.__valueToColor["nan"], "#64655d");
-            equal(colorer.__valueToColor["NaN"], "#64655d");
-            equal(colorer.__valueToColor["Infinity"], "#64655d");
-            equal(colorer.__valueToColor["-Infinity"], "#64655d");
-            equal(colorer.__valueToColor[" "], "#64655d");
-        });
-        test("Test construction with a seq. color map and < 2 numeric values", function () {
-            // Try one number
-            var eles = ["asdf", "lol", "1", "yeah just one number here folks"];
-            var colorer = new Colorer("Viridis", eles);
-            _.each(eles, function(ele) {
-                equal(colorer.__valueToColor[ele], "#64655d");
-            });
-            // Now try with 0 numeric values completely
-            var eles2 = ["asdf", "lol", "yeah zero numbers here folks"];
-            var colorer2 = new Colorer("Viridis", eles2);
-            _.each(eles2, function(ele2) {
-                equal(colorer2.__valueToColor[ele2], "#64655d");
-            });
+            var sortedEles = util.naturalSort(eles);
+            var interpolator = chroma
+                .scale(chroma.brewer.Viridis)
+                .domain([0, sortedEles.length - 1]);
+            for (var i = 0; i < sortedEles.length; i++) {
+                var val = sortedEles[i];
+                equal(colorer.__valueToColor[val].hex(), interpolator(i).hex());
+            }
         });
         test("Test construction with a div. color map and all numeric values", function () {
             // Mostly same as the sequential + all numeric values test above,
@@ -140,10 +116,10 @@ require([
             equal(colorer.__valueToColor["-5"], "#8e0152");
             equal(colorer.__valueToColor["5"], "#276419");
             // Test intermediate numeric values
-            equal(colorer.__valueToColor["1"], "#e6f5d0");
-            equal(colorer.__valueToColor["2"], "#b8e186");
-            equal(colorer.__valueToColor["3"], "#7fbc41");
-            equal(colorer.__valueToColor["4"], "#4d9221");
+            equal(colorer.__valueToColor["1"], "#de77ae");
+            equal(colorer.__valueToColor["2"], "#fde0ef");
+            equal(colorer.__valueToColor["3"], "#e6f5d0");
+            equal(colorer.__valueToColor["4"], "#7fbc41");
         });
         test("Test Colorer.getMapRGB()", function () {
             var eles = ["abc", "def", "ghi"];
