@@ -77,13 +77,24 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * the same colors as [1, 2, 3, 4] or [a, b, 1, 2] or [a, b, c, d].
      */
     Colorer.prototype.assignOrdinalScaledColors = function () {
-        var interpolator = chroma
-            .scale(chroma.brewer[this.color])
-            .domain([0, this.sortedUniqueValues.length - 1]);
+        if (this.sortedUniqueValues.length === 1) {
+            // If there's only 1 unique value, set its color as the first in
+            // the color map. This matches the behavior of Emperor.
+            var onlyVal = this.sortedUniqueValues[0];
+            this.__valueToColor[onlyVal] = chroma.brewer[this.color][0];
+        } else {
+            // ... Otherwise, do normal interpolation -- the first value gets
+            // the "first" color in the colormap, the last value gets the
+            // "last" color in the colormap, and things in between are
+            // interpolated. Chroma takes care of all of the hard work.
+            var interpolator = chroma
+                .scale(chroma.brewer[this.color])
+                .domain([0, this.sortedUniqueValues.length - 1]);
 
-        for (var i = 0; i < this.sortedUniqueValues.length; i++) {
-            var val = this.sortedUniqueValues[i];
-            this.__valueToColor[val] = interpolator(i);
+            for (var i = 0; i < this.sortedUniqueValues.length; i++) {
+                var val = this.sortedUniqueValues[i];
+                this.__valueToColor[val] = interpolator(i);
+            }
         }
     };
 
