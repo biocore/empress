@@ -22,16 +22,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
 
-        // By default, this is false (indicating that a discrete color map was
-        // selected, or that a sequential/diverging color map was selected and
-        // there were enough numeric values to perform scaling).
-        //
-        // If this.assignScaledColors() sets this value to true, this indicates
-        // that there weren't enough numeric values to perform scaling. This
-        // is an indication to the owner of this Colorer object to alert the
-        // user.
-        this.notEnoughNumericValues = false;
-
         // Figure out what "type" of color map has been selected (should be one
         // of discrete, sequential, or diverging)
         this.selectedColorMap = _.find(Colorer.__Colormaps, function (cm) {
@@ -45,7 +35,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             this.selectedColorMap.type === Colorer.SEQUENTIAL ||
             this.selectedColorMap.type === Colorer.DIVERGING
         ) {
-            this.assignScaledColors();
+            this.assignOrdinalScaledColors();
         } else {
             throw new Error("Invalid color map " + this.color + " specified");
         }
@@ -79,49 +69,21 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * by this.color) for every value in this.sortedUniqueValues. This will
      * populate this.__valueToColor with this information.
      *
-     * If there aren't at least two numeric values in this.sortedUniqueValues,
-     * this will set every value with Colorer.NANCOLOR and set
-     * this.notEnoughNumericValues to true. Otherwise, this will properly
-     * scale numeric values according to the color map (while setting any
-     * non-numeric values to Colorer.NANCOLOR).
+     * Note the "ordinal" in the function name. This does not take into account
+     * the actual magnitudes of numbers in the data -- all that matters is the
+     * order of the values (and thanks to our use of util.naturalSort() we know
+     * that values interpretable as numbers will get sorted correctly).
+     * So, as an example of that, the values [1, 2, 3, 100] will get assigned
+     * the same colors as [1, 2, 3, 4] or [a, b, 1, 2] or [a, b, c, d].
      */
-    Colorer.prototype.assignScaledColors = function () {
-        // set up a closure so we can update this.__valueToColor within the
-        // functions below
-        var thisColorer = this;
+    Colorer.prototype.assignOrdinalScaledColors = function () {
+        var interpolator = chroma
+            .scale(chroma.brewer[this.color])
+            .domain([0, this.sortedUniqueValues.length - 1]);
 
-        // Get list of only numeric values, and see if it's possible for us
-        // to do scaling with these values or not
-        var split = util.splitNumericValues(this.sortedUniqueValues);
-
-        if (split.numeric.length < 2) {
-            // We don't have enough numeric values to do any sort of
-            // "scaling," so instead we just color everything gray
-            _.each(this.sortedUniqueValues, function (val) {
-                thisColorer.__valueToColor[val] = Colorer.NANCOLOR;
-            });
-            this.notEnoughNumericValues = true;
-        } else {
-            // We can do scaling! Nice.
-            // convert objects to numbers so we can map them to a color
-            var numbers = _.map(split.numeric, parseFloat);
-            var min = _.min(numbers);
-            var max = _.max(numbers);
-
-            var interpolator = chroma
-                .scale(chroma.brewer[this.color])
-                .domain([min, max]);
-
-            // Color all the numeric values
-            _.each(split.numeric, function (element) {
-                thisColorer.__valueToColor[element] = interpolator(
-                    +element
-                ).hex();
-            });
-            // Gray out non-numeric values
-            _.each(split.nonNumeric, function (element) {
-                thisColorer.__valueToColor[element] = Colorer.NANCOLOR;
-            });
+        for (var i = 0; i < this.sortedUniqueValues.length; i++) {
+            var val = this.sortedUniqueValues[i];
+            this.__valueToColor[val] = interpolator(i);
         }
     };
 
