@@ -30,6 +30,8 @@
           /* vendor paths */
           'jquery' : './support_files/vendor/jquery-2.2.4.min',
           'glMatrix' : './support_files/vendor/gl-matrix.min',
+          'chroma' : './support_files/vendor/chroma.min',
+          'underscore' : './support_files/vendor/underscore-min',
 
           /* succinct tree paths */
           'ByteArray': './support_files/js/byte-array',
@@ -38,24 +40,29 @@
           'Colorer' : './support_files/js/colorer',
           'BiomTable': './support_files/js/biom-table',
           'SummaryHelper': './support_files/js/summary-helper',
+          'util': './support_files/js/util',
 
           /* test paths */
           'testBPTree' : './../tests/test-bp-tree',
           'testByteTree' : './../tests/test-byte-array',
           'testCamera' : './../tests/test-camera',
-          'testSummaryHelper': './../tests/test-summary-helper'
+          'testColorer' : './../tests/test-colorer',
+          'testSummaryHelper': './../tests/test-summary-helper',
+          'testUtil': './../tests/test-util'
         }
     });
 
     // load tests
     require(
-        ['jquery', 'glMatrix', 'ByteArray', 'BPTree', 'Camera',
-         'BiomTable', 'SummaryHelper', 'testBPTree', 'testByteTree', 'testCamera',
-         'testSummaryHelper'],
+        ['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray', 'BPTree',
+         'Camera', 'Colorer', 'BiomTable', 'SummaryHelper', 'util',
+         'testBPTree', 'testByteTree', 'testCamera', 'testColorer',
+         'testSummaryHelper', 'testUtil'],
 
         // start tests
-        function ($, gl, ByteArray, BPTree, Camera, BiomTable, SummaryHelper,
-          testBPTree, testByteTree, testCamera, testSummaryHelper) {
+        function ($, gl, chroma, underscore, ByteArray, BPTree, Camera,
+          Colorer, BiomTable, SummaryHelper, util, testBPTree, testByteTree,
+          testCamera, testColorer, testSummaryHelper, testUtil) {
             $(document).ready(function() {
                 QUnit.start();
             });

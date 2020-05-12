@@ -139,9 +139,6 @@ define(["Colorer"], function (Colorer) {
         hide,
         lWidth
     ) {
-        // used in closure
-        var animator = this;
-
         this.gradientCol = gradient;
         this.gradientSteps = this.empress.getUniqueSampleValues(gradient);
         this.totalFrames = Object.keys(this.gradientSteps).length;
@@ -155,15 +152,9 @@ define(["Colorer"], function (Colorer) {
         var trajectories = this.empress.getUniqueSampleValues(trajectory);
 
         // Assign a color to each unique category
-        this.cm = {};
-        this.legendInfo = {};
-        var colorer = new Colorer(cm, 0, trajectories.length);
-
-        // assign each trajectory a color and store it in this.cm
-        trajectories.forEach(function (x, i) {
-            animator.cm[x] = { color: colorer.getColorRGB(i) };
-            animator.legendInfo[x] = { color: colorer.getColorHex(i) };
-        });
+        var colorer = new Colorer(cm, trajectories);
+        this.cm = colorer.getMapRGB();
+        this.legendInfo = colorer.getMapHex();
 
         this.hide = hide;
         this.lWidth = lWidth;
