@@ -247,11 +247,12 @@ label:hover .tooltip {
 #hover-box {
     position: fixed;
     border: 1px solid transparent;
-    background-color: white;
+    background-color: lightgray;
     opacity: 0.75;
     padding: 20px;
-    max-width: 500px;
-    overflow: auto;
+    /*max-width: 500px;
+    max-height: 300px;
+    overflow: auto;*/
 }
 
 #hover-box:hover {
@@ -279,6 +280,19 @@ label:hover .tooltip {
     border-width: 11px;
     border-color: transparent lightgray transparent transparent;
 }
+
+#hover-table {
+    background-color: white;
+}
+
+#hover-table thead, #hover-table tbody{
+    display: block;
+    max-width: 500px;
+    max-height: 300px;
+    overflow: auto;
+}
+
+#hover-table
 
 #hover-table tr {
     padding: 0px 15px;
@@ -308,8 +322,29 @@ label:hover .tooltip {
     font-size: 8pt;
 }
 
+#hover-table tbody tr td:nth-child(1) {
+    position: relative;
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    left: 0;
+}
+
+/*#hover-table tbody tr:nth-child(1) td{
+    position: relative;
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+}
+*/
 #hover-table tr td button:only-child:hover {
     background-color: darkgray;
+}
+
+#hover-select {
+    background-color: white;
 }
 
 .hover-select-container {
@@ -320,7 +355,6 @@ label:hover .tooltip {
     position: absolute;
     content: "\203A";
     transform: rotate(90deg);
-    color: gray;
     font-size: 13.5pt;
     right: 12px;
     top: 1px;
@@ -475,33 +509,27 @@ p.side-header button {
     background-color: #555;
 }
 
-
 /* quick search */
 
 #quick-search {
-    color: white;
+    color: black;
     height: 36px;
     margin-left: 2px;
     margin-right: 2px;
     padding-left: 18px;
     padding-right: 18px;
-    border-radius: 0;
-    background-color: transparent;
+    border-color: grey;
+    background-color: white;
     font-size: 10.5pt;
 }
 
-#quick-search:hover {
-    background-color: lightgray;
-}
-
 #quick-search::placeholder {
-    color: lightgray;
+    color: black;
 }
 
 #quick-search:hover::placeholder {
     color: dimgray;
 }
-
 
 /* controls */
 

@@ -43,7 +43,8 @@
           'testBPTree' : './../tests/test-bp-tree',
           'testByteTree' : './../tests/test-byte-array',
           'testCamera' : './../tests/test-camera',
-          'testSummaryHelper': './../tests/test-summary-helper'
+          'testSummaryHelper': './../tests/test-summary-helper',
+          'testBIOMTable' : './../tests/test-biom-table'
         }
     });
 
@@ -51,11 +52,12 @@
     require(
         ['jquery', 'glMatrix', 'ByteArray', 'BPTree', 'Camera',
          'BiomTable', 'SummaryHelper', 'testBPTree', 'testByteTree', 'testCamera',
-         'testSummaryHelper'],
+         'testSummaryHelper', 'testBIOMTable'],
 
         // start tests
         function ($, gl, ByteArray, BPTree, Camera, BiomTable, SummaryHelper,
-          testBPTree, testByteTree, testCamera, testSummaryHelper) {
+          testBPTree, testByteTree, testCamera, testSummaryHelper,
+          testBIOMTable) {
             $(document).ready(function() {
                 QUnit.start();
             });

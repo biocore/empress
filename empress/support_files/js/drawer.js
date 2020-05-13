@@ -1,4 +1,4 @@
-define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
+define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
     //  Shaders used in Drawer
     var vertShaderTxt = [
         "precision mediump float;",
@@ -13,7 +13,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
         "  c = color;",
         "  gl_Position = mvpMat * vec4(vertPosition, 0.0, 1.0);",
         "  gl_PointSize = 4.0;",
-        "}"
+        "}",
     ].join("\n");
     var fragShaderTxt = [
         "precision mediump float;",
@@ -25,7 +25,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
         "  vec2 cxy = 2.0 * gl_PointCoord - 1.0;",
         "  r = dot(cxy, cxy);",
         "  gl_FragColor = vec4(c,1);",
-        "}"
+        "}",
     ].join("\n");
 
     /**
@@ -53,7 +53,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
     /**
      * Compliles the shaders and sets up the necessary array buffers.
      */
-    Drawer.prototype.initialize = function() {
+    Drawer.prototype.initialize = function () {
         // shorten name, will be using this frequently
         var c = this.contex_;
 
@@ -124,7 +124,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
      * Sets the canvas size to be a square whose side length is equal to browser
      * window width.
      */
-    Drawer.prototype.setCanvasSize = function() {
+    Drawer.prototype.setCanvasSize = function () {
         const WIDTH = $(window).width();
 
         // make canvas a square whose side is equal to window width
@@ -141,7 +141,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
      *
      * @return {WebGLProgram}
      */
-    Drawer.prototype.createShaderProgram = function(vShadTxt, fShadTxt) {
+    Drawer.prototype.createShaderProgram = function (vShadTxt, fShadTxt) {
         // create shaders
         var c = this.contex_;
         var vertShader = c.createShader(c.VERTEX_SHADER);
@@ -181,7 +181,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
      * @param {WebGLBuffer} buff The WebGLBuffer
      * @param {Array} data The coordinate and color data to fill the buffer
      */
-    Drawer.prototype.fillBufferData_ = function(buff, data) {
+    Drawer.prototype.fillBufferData_ = function (buff, data) {
         var c = this.contex_;
         c.bindBuffer(c.ARRAY_BUFFER, buff);
         c.bufferData(c.ARRAY_BUFFER, data, c.DYNAMIC_DRAW);
@@ -192,7 +192,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
      *
      * @param {WebGLBuffer} buffer The Buffer to bind
      */
-    Drawer.prototype.bindBuffer = function(buffer) {
+    Drawer.prototype.bindBuffer = function (buffer) {
         // defines constants for a vertex. A vertex is the form [x, y, r, g, b]
         const COORD_SIZE = 2;
         const COORD_OFFSET = 0;
@@ -229,7 +229,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
      *
      * @param {Array} data The coordinate and color data to fill tree buffer
      */
-    Drawer.prototype.loadTreeBuf = function(data) {
+    Drawer.prototype.loadTreeBuf = function (data) {
         data = new Float32Array(data);
         this.treeVertSize = data.length / 5;
         this.fillBufferData_(this.sProg_.treeVertBuff, data);
@@ -240,7 +240,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
      *
      * @param {Array} data The coordinate and color data to fill sampleThink
      */
-    Drawer.prototype.loadSampleThickBuf = function(data) {
+    Drawer.prototype.loadSampleThickBuf = function (data) {
         data = new Float32Array(data);
         this.sampleThickSize = data.length / 5;
         this.fillBufferData_(this.sProg_.sampleThickBuff, data);
@@ -251,7 +251,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
      *
      * @param {Array} data The coordinate and color of selected node
      */
-    Drawer.prototype.loadSelectedNodeBuff = function(data) {
+    Drawer.prototype.loadSelectedNodeBuff = function (data) {
         data = new Float32Array(data);
         this.selectedNodeSize = data.length / 5;
         this.fillBufferData_(this.sProg_.selectedNodeBuff, data);
@@ -262,7 +262,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
      *
      * @param{Array} data The coordinate and color to fill node buffer
      */
-    Drawer.prototype.loadNodeBuff = function(data) {
+    Drawer.prototype.loadNodeBuff = function (data) {
         data = new Float32Array(data);
         this.nodeSize = data.length / 5;
         this.fillBufferData_(this.sProg_.nodeVertBuff, data);
@@ -271,7 +271,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
     /**
      * Draws tree and other metadata
      */
-    Drawer.prototype.draw = function() {
+    Drawer.prototype.draw = function () {
         var c = this.contex_;
         var s = this.sProg_;
         c.viewport(0, 0, c.canvas.width, c.canvas.height);
@@ -309,7 +309,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
      *
      * @return {gl.vec4} The tree coordinates
      */
-    Drawer.prototype.toTreeCoords = function(x, y) {
+    Drawer.prototype.toTreeCoords = function (x, y) {
         // get value of center of canvas in screen coorindates
         var center = $(window).width() / 2;
 
@@ -326,7 +326,7 @@ define(["jquery", "glMatrix", "Camera"], function($, gl, Camera) {
         return { x: treeSpace[0], y: treeSpace[1] };
     };
 
-    Drawer.prototype.toScreeSpace = function(x, y) {
+    Drawer.prototype.toScreeSpace = function (x, y) {
         // create MVP matrix
         var mvp = gl.mat4.create();
         gl.mat4.multiply(mvp, this.cam.projMat, this.cam.getViewMat());

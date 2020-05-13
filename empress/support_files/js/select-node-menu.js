@@ -1,21 +1,22 @@
-define([], function() {
+define([], function () {
     function SelectedNodeMenu(empress, drawer) {
         this.empress = empress;
         this.drawer = drawer;
-        this.cols = [];
+        this.fields = [];
         this.TYPES = {
             TREE_DATA: "t",
             SAMPLE_DATA: "s",
-            FEATRUE_DATA: "f"
+            FEATRUE_DATA: "f",
         };
         this.table = document.getElementById("hover-table");
         this.box = document.getElementById("hover-box");
         this.sel = document.getElementById("hover-select");
         this.addBtn = document.getElementById("hover-add-btn");
+        this.nodeIdLabel = document.getElementById("hover-table-node-id");
         this.node = null;
     }
 
-    SelectedNodeMenu.prototype.initialize = function() {
+    SelectedNodeMenu.prototype.initialize = function () {
         // add items to select
         var selOpts = this.empress.getSampleCategories();
         for (var i = 0; i < selOpts.length; i++) {
@@ -27,69 +28,61 @@ define([], function() {
 
         // add event to add button
         var selectMenu = this;
-        var click = function() {
+        var click = function () {
             var val = selectMenu.sel.value;
+            selectMenu.sel.options[selectMenu.sel.selectedIndex].remove();
             selectMenu.addMenuColumn(val, "s");
             selectMenu.showNodeMenu();
         };
         this.addBtn.onclick = click;
     };
 
-    SelectedNodeMenu.prototype.addMenuColumn = function(colName, type) {
-        this.cols.push({ col: colName, type: type });
+    SelectedNodeMenu.prototype.addMenuColumn = function (colName, type) {
+        this.fields.push({ field: colName, type: type });
     };
 
-    SelectedNodeMenu.prototype.showNodeMenu = function() {
+    SelectedNodeMenu.prototype.showNodeMenu = function () {
         var node = this.node;
         this.table.innerHTML = "";
 
         // add id row
-        var row = this.table.insertRow(-1);
-        var cell = row.insertCell(-1);
-        cell.innerHTML = "<b>ID</b>";
-        cell = row.insertCell(-1);
-        cell.innerHTML = node.name;
+        this.nodeIdLabel.innerHTML = "<strong>ID</strong>" + " " + node.name;
+
 
         // show either leaf or internal node
         var emp = this.empress;
         var t = emp._tree;
+        var row = this.table.insertRow(-1);
         if (t.isleaf(t.postorderselect(emp._nameToKeys[node.name][0]))) {
             this.showLeafNode(row);
         } else {
             this.showInternalNode(row);
         }
 
-        // get table coords
-        var x = this.empress.getX(node);
-        var y = this.empress.getY(node);
-        var tableLoc = this.drawer.toScreeSpace(x, y);
-
-        // set table location. add slight offset to location so menu appears
-        // next to node instead of on top of it.
-        this.box.style.left = Math.floor(tableLoc.x + 23) + "px";
-        this.box.style.top = Math.floor(tableLoc.y - 43) + "px";
+        // // get table coords
+        this.updateMenuPosition();
 
         // show table
         this.box.classList.remove("hidden");
     };
 
-    SelectedNodeMenu.prototype.showLeafNode = function(row) {
-        for (var i = 0; i < this.cols.length; i++) {
+    SelectedNodeMenu.prototype.showLeafNode = function (row) {
+        for (var i = 0; i < this.fields.length; i++) {
             // add row
-            var col = this.cols[i].col;
+            var field = this.fields[i].field;
 
             /*
              * Once feature metadata is available, this will be used to flag
-             * if col is from the sample or feature metadata
+             * if field is from the sample or feature metadata
              *
-             *  var type = this.cols[i].type; // tree, sample, or feature
+             *  var type = this.fields[i].type; // tree, sample, or feature
              */
             row = this.table.insertRow(-1);
             cell = row.insertCell(-1);
-            cell.innerHTML = "<b>" + col + "</b>";
+            cell.innerHTML = "<strong>" + field + "</strong>";
 
             // add row values
-            var obs = this.empress._biom.getObsCountsBy(col, this.node.name);
+            var obs = this.empress._biom.getObsCountsBy(field, this.node.name);
             var categories = Object.keys(obs);
             categories.sort();
             for (var j = 0; j < categories.length; j++) {
@@ -104,7 +97,7 @@ define([], function() {
         }
     };
 
-    SelectedNodeMenu.prototype.showInternalNode = function(row) {
+    SelectedNodeMenu.prototype.showInternalNode = function (row) {
         // find first and last preorder positions of the subtree spanned by node
         var emp = this.empress;
         var t = emp._tree;
@@ -124,16 +117,16 @@ define([], function() {
         }
         var samples = emp._biom.getSamplesByObservations(tips);
 
-        for (i = 0; i < this.cols.length; i++) {
+        for (i = 0; i < this.fields.length; i++) {
             // add row
-            var col = this.cols[i].col;
-            var type = this.cols[i].type; // tree, sample, or feature
+            var field = this.fields[i].field;
+            var type = this.fields[i].type; // tree, sample, or feature
             row = this.table.insertRow(-1);
             cell = row.insertCell(-1);
-            cell.innerHTML = "<b>" + col + "<b>";
+            cell.innerHTML = "<strong>" + field + "</strong>";
 
-            var result = emp._biom.getSampleValuesCount(samples, col);
-            categories = emp._biom.getUniqueSampleValues(col);
+            var result = emp._biom.getSampleValuesCount(samples, field);
+            categories = emp._biom.getUniqueSampleValues(field);
             categories.sort();
             for (var j = 0; j < categories.length; j++) {
                 var category = categories[j];
@@ -147,19 +140,35 @@ define([], function() {
         }
     };
 
-    SelectedNodeMenu.prototype.clearSelectedNode = function() {
+    SelectedNodeMenu.prototype.clearSelectedNode = function () {
         this.table.innerHTML = "";
         this.node = null;
         this.box.classList.add("hidden");
         this.drawer.loadSelectedNodeBuff([]);
     };
 
-    SelectedNodeMenu.prototype.setSelectedNode = function(node) {
+    SelectedNodeMenu.prototype.setSelectedNode = function (node) {
         var x = this.empress.getX(node);
         var y = this.empress.getY(node);
         this.drawer.loadSelectedNodeBuff([x, y, 0, 1, 0]);
         this.node = node;
         this.showNodeMenu(node);
+    };
+
+    SelectedNodeMenu.prototype.updateMenuPosition = function () {
+        var node = this.node;
+
+        if (node !== null) {
+            // get table coords
+            var x = this.empress.getX(node);
+            var y = this.empress.getY(node);
+            var tableLoc = this.drawer.toScreeSpace(x, y);
+
+            // set table location. add slight offset to location so menu appears
+            // next to node instead of on top of it.
+            this.box.style.left = Math.floor(tableLoc.x + 23) + "px";
+            this.box.style.top = Math.floor(tableLoc.y - 43) + "px";
+        }
     };
 
     return SelectedNodeMenu;
