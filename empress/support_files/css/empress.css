@@ -250,9 +250,6 @@ label:hover .tooltip {
     background-color: lightgray;
     opacity: 0.75;
     padding: 20px;
-    /*max-width: 500px;
-    max-height: 300px;
-    overflow: auto;*/
 }
 
 #hover-box:hover {
@@ -329,16 +326,6 @@ label:hover .tooltip {
     left: 0;
 }
 
-/*#hover-table tbody tr:nth-child(1) td{
-    position: relative;
-    position: -webkit-sticky; /* Safari */
-    position: sticky;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 3;
-}
-*/
 #hover-table tr td button:only-child:hover {
     background-color: darkgray;
 }
@@ -373,8 +360,6 @@ label:hover .tooltip {
 }
 
 canvas {
-    /*width: 66vw;
-    height: 75vh;*/
     width: 100vw;
     height: 100vh;
 }
