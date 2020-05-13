@@ -1,11 +1,21 @@
+// <<<<<<< HEAD
+// define([
+//     "underscore",
+//     "Camera",
+//     "Drawer",
+//     "Colorer",
+//     "VectorOps",
+//     "CanvasEvents",
+// ], function (_, Camera, Drawer, Colorer, VectorOps, CanvasEvents) {
+// =======
 define([
-    "underscore",
     "Camera",
     "Drawer",
     "Colorer",
     "VectorOps",
-    "CanvasEvents"
-], function(_, Camera, Drawer, Colorer, VectorOps, CanvasEvents) {
+    "CanvasEvents",
+    "util",
+], function (Camera, Drawer, Colorer, VectorOps, CanvasEvents, util) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -131,7 +141,7 @@ define([
     /**
      * Initializes WebGL and then draws the tree
      */
-    Empress.prototype.initialize = function() {
+    Empress.prototype.initialize = function () {
         this._drawer.initialize();
         this._drawer.loadNodeBuff(this.getNodeCoords());
         this.drawTree();
@@ -141,17 +151,17 @@ define([
     /**
      * Draws the tree
      */
-    Empress.prototype.drawTree = function() {
+    Empress.prototype.drawTree = function () {
         this._drawer.loadTreeBuf(this.getCoords());
         this._drawer.draw();
     };
 
-    Empress.prototype.getX = function(nodeObj) {
+    Empress.prototype.getX = function (nodeObj) {
         var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
         return nodeObj[xname];
     };
 
-    Empress.prototype.getY = function(nodeObj) {
+    Empress.prototype.getY = function (nodeObj) {
         var yname = "y" + this._layoutToCoordSuffix[this._currentLayout];
         return nodeObj[yname];
     };
@@ -166,7 +176,7 @@ define([
      *
      * @return {Number}
      */
-    Empress.prototype.computeNecessaryCoordsSize = function() {
+    Empress.prototype.computeNecessaryCoordsSize = function () {
         var numLines;
         if (this._currentLayout === "Rectangular") {
             // Leaves have 1 line (vertical), the root also has 1 line
@@ -190,7 +200,7 @@ define([
      *
      * @return {Array}
      */
-    Empress.prototype.getNodeCoords = function() {
+    Empress.prototype.getNodeCoords = function () {
         var tree = this._tree;
         var coords = new Float32Array(tree.size * 5);
         var coords_index = 0;
@@ -214,7 +224,7 @@ define([
      *
      * @return {Array}
      */
-    Empress.prototype.getCoords = function() {
+    Empress.prototype.getCoords = function () {
         var tree = this._tree;
 
         // The coordinates (and colors) of the tree's nodes.
@@ -320,7 +330,7 @@ define([
      * @param {Boolean} hide If true then hide uncolored tips
      *                       if false then show uncolored tips
      */
-    Empress.prototype.setNonSampleBranchVisibility = function(hide) {
+    Empress.prototype.setNonSampleBranchVisibility = function (hide) {
         var visible = !hide;
 
         // check sample Value for all branches
@@ -362,7 +372,7 @@ define([
      * @param {Array} bR     bottom-right position, represented as [x, y]
      * @param {Array} color  the color to draw / fill both triangles with
      */
-    Empress.prototype._addTriangleCoords = function(
+    Empress.prototype._addTriangleCoords = function (
         coords,
         tL,
         tR,
@@ -402,26 +412,26 @@ define([
      *                        amount = 1 here then the drawn thick line will
      *                        have a width of 1 + 1 = 2).
      */
-    Empress.prototype._addThickVerticalLineCoords = function(
+    Empress.prototype._addThickVerticalLineCoords = function (
         coords,
         node,
         amount
     ) {
         var tL = [
             this.getX(this._treeData[node]) - amount,
-            this._treeData[node].highestchildyr
+            this._treeData[node].highestchildyr,
         ];
         var tR = [
             this.getX(this._treeData[node]) + amount,
-            this._treeData[node].highestchildyr
+            this._treeData[node].highestchildyr,
         ];
         var bL = [
             this.getX(this._treeData[node]) - amount,
-            this._treeData[node].lowestchildyr
+            this._treeData[node].lowestchildyr,
         ];
         var bR = [
             this.getX(this._treeData[node]) + amount,
-            this._treeData[node].lowestchildyr
+            this._treeData[node].lowestchildyr,
         ];
         var color = this._treeData[node].color;
         this._addTriangleCoords(coords, tL, tR, bL, bR, color);
@@ -433,7 +443,7 @@ define([
      *
      * @param {Number} amount - How thick to make branch
      */
-    Empress.prototype.thickenSameSampleLines = function(amount) {
+    Empress.prototype.thickenSameSampleLines = function (amount) {
         // we do this because SidePanel._updateSample() calls this function
         // with lWidth - 1, so in order to make sure we're setting this
         // properly we add 1 to this value.
@@ -480,19 +490,19 @@ define([
                  */
                 tL = [
                     this.getX(this._treeData[parent]),
-                    this.getY(this._treeData[node]) + amount
+                    this.getY(this._treeData[node]) + amount,
                 ];
                 tR = [
                     this.getX(this._treeData[node]),
-                    this.getY(this._treeData[node]) + amount
+                    this.getY(this._treeData[node]) + amount,
                 ];
                 bL = [
                     this.getX(this._treeData[parent]),
-                    this.getY(this._treeData[node]) - amount
+                    this.getY(this._treeData[node]) - amount,
                 ];
                 bR = [
                     this.getX(this._treeData[node]),
-                    this.getY(this._treeData[node]) - amount
+                    this.getY(this._treeData[node]) - amount,
                 ];
                 this._addTriangleCoords(coords, tL, tR, bL, bR, color);
             } else {
@@ -539,7 +549,7 @@ define([
      * @param {Array} sID - The sample IDs
      * @param {Array} rgb - The rgb array which defines the color
      */
-    Empress.prototype.colorSampleIDs = function(sIds, rgb) {
+    Empress.prototype.colorSampleIDs = function (sIds, rgb) {
         var tree = this._tree;
         var obs = this._biom.getSampleObs(sIds);
         for (var i = 0; i < obs.length; i++) {
@@ -554,11 +564,11 @@ define([
      *
      * @return {Set} A set of keys cooresponding to entries in _treeData
      */
-    Empress.prototype._namesToKeys = function(names) {
+    Empress.prototype._namesToKeys = function (names) {
         var keys = new Set();
 
         // adds a key to the keys set.
-        var addKey = function(key) {
+        var addKey = function (key) {
             keys.add(key);
         };
 
@@ -573,79 +583,6 @@ define([
     };
 
     /**
-     * Remove all non unique keys
-     *
-     * @param {Object} keys An object containing multiple lists of keys
-     *
-     * @return {Object} A new object with the non unique keys removed
-     */
-    Empress.prototype._keepUniqueKeys = function(keys) {
-        // get unique keys
-        var items = Object.keys(keys);
-        var i;
-
-        // TODO: The current method to get the unique observations
-        // belonging to each sample category is slow. Refactoring it will lead
-        // to a nice speed boost.
-        // https://github.com/biocore/empress/issues/147
-        var uniqueKeysArray = _.chain(keys)
-            .values()
-            .map(function(item) {
-                return [...item];
-            })
-            .flatten()
-            .groupBy(function(key) {
-                return key;
-            })
-            .filter(function(key) {
-                return key.length === 1;
-            })
-            .flatten()
-            .value();
-        var uniqueKeys = new Set(uniqueKeysArray);
-        var hasKey = function(key) {
-            return uniqueKeys.has(key);
-        };
-
-        // get the unique keys in each item
-        var result = {};
-        items = Object.keys(keys);
-        for (i = 0; i < items.length; i++) {
-            var itemKeys = [...keys[items[i]]];
-            result[items[i]] = _.filter(itemKeys, hasKey);
-        }
-
-        return result;
-    };
-
-    /**
-     * Creates a color map for each categoy in items
-     *
-     * @param {Array} items List of categories
-     * @param {String} color The chroma color map to use
-     * @param {Boolean} rbg if true then a webGL color map will be created
-     *                      if false then a javascript color map will be created
-     *
-     * @return {Object} A color map that uses the categories in items as keys
-     */
-    Empress.prototype._assignColor = function(items, color, forWebGl) {
-        // create color brewer
-        var colorer = new Colorer(color, 0, Math.pow(2, items.length));
-        var colorFunction = forWebGl ? "getColorRGB" : "getColorHex";
-        var colorBlockSize = Math.pow(2, items.length) / items.length;
-
-        var cm = {};
-        for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            cm[item] = {
-                color: colorer[colorFunction](i * colorBlockSize)
-            };
-        }
-
-        return cm;
-    };
-
-    /**
      * Color the tree using sample data
      *
      * @param {String} cat The sample category to use
@@ -653,11 +590,10 @@ define([
      *
      * @return {Object} Maps keys to colors
      */
-    Empress.prototype.colorBySampleCat = function(cat, color) {
+    Empress.prototype.colorBySampleCat = function (cat, color) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
-        var categories = Object.keys(obs);
-        categories.sort();
+        var categories = util.naturalSort(Object.keys(obs));
 
         // shared by the following for loops
         var i, j, category;
@@ -669,10 +605,11 @@ define([
         }
 
         // assign colors to categories
-        var cm = this._assignColor(categories, color, true);
-
-        // legend key
-        var keyInfo = this._assignColor(categories, color, false);
+        var colorer = new Colorer(color, categories);
+        // colors for drawing the tree
+        var cm = colorer.getMapRGB();
+        // colors for the legend
+        var keyInfo = colorer.getMapHex();
 
         // assign internal nodes to approperiate category based on its children
         obs = this._projectObservations(obs);
@@ -694,7 +631,7 @@ define([
      * @return {Object} the branches of the tree that are uniqe to category in
                         obs
     */
-    Empress.prototype._projectObservations = function(obs) {
+    Empress.prototype._projectObservations = function (obs) {
         var tree = this._tree;
         var categories = Object.keys(obs);
 
@@ -712,7 +649,7 @@ define([
                 }
             }
         }
-        obs = this._keepUniqueKeys(obs);
+        obs = util.keepUniqueKeys(obs);
         return obs;
     };
 
@@ -722,8 +659,8 @@ define([
      * @param{Object} obs The mapping from sample category to unique features.
      * @param{Object} cm The mapping from sample category to color.
      */
-    Empress.prototype._colorTree = function(obs, cm) {
-        var categories = Object.keys(obs);
+    Empress.prototype._colorTree = function (obs, cm) {
+        var categories = util.naturalSort(Object.keys(obs));
         // color tree
         for (var i = 0; i < categories.length; i++) {
             category = categories[i];
@@ -731,7 +668,7 @@ define([
 
             for (var j = 0; j < keys.length; j++) {
                 var key = keys[j];
-                this._treeData[key].color = cm[category].color;
+                this._treeData[key].color = cm[category];
                 this._treeData[key].sampleColored = true;
             }
         }
@@ -746,7 +683,7 @@ define([
      * @param {Object} keyInfo The object containing the information to be
      *                 displayed in the sample legend
      */
-    Empress.prototype.percentColoredBySample = function(sampleObs, keyInfo) {
+    Empress.prototype.percentColoredBySample = function (sampleObs, keyInfo) {
         // calculate relative tree size i.e. the subtree spanned by the samples
         // iterate over tree using postorder
 
@@ -771,7 +708,7 @@ define([
     /**
      * Sets the color of the tree back to default
      */
-    Empress.prototype.resetTree = function() {
+    Empress.prototype.resetTree = function () {
         var keys = Object.keys(this._treeData);
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
@@ -788,7 +725,7 @@ define([
      *
      * @return {Array}
      */
-    Empress.prototype.getSampleCategories = function() {
+    Empress.prototype.getSampleCategories = function () {
         return this._biom.getSampleCategories();
     };
 
@@ -797,14 +734,14 @@ define([
      *
      * @return {Array}
      */
-    Empress.prototype.getAvailableLayouts = function() {
+    Empress.prototype.getAvailableLayouts = function () {
         return Object.keys(this._layoutToCoordSuffix);
     };
 
     /**
      * Redraws the tree with a new layout (if different from current layout).
      */
-    Empress.prototype.updateLayout = function(newLayout) {
+    Empress.prototype.updateLayout = function (newLayout) {
         if (this._currentLayout !== newLayout) {
             if (this._layoutToCoordSuffix.hasOwnProperty(newLayout)) {
                 this._currentLayout = newLayout;
@@ -833,7 +770,7 @@ define([
      *
      * @return {String}
      */
-    Empress.prototype.getDefaultLayout = function() {
+    Empress.prototype.getDefaultLayout = function () {
         return this._defaultLayout;
     };
 
@@ -845,7 +782,7 @@ define([
      *
      * @return{Object}
      */
-    Empress.prototype.getUniqueSampleValues = function(category) {
+    Empress.prototype.getUniqueSampleValues = function (category) {
         return this._biom.getUniqueSampleValues(category);
     };
 
@@ -862,7 +799,7 @@ define([
      *
      * @return{Object} return a mapping of trajectory values to observations.
      */
-    Empress.prototype.getGradientStep = function(cat, grad, traj) {
+    Empress.prototype.getGradientStep = function (cat, grad, traj) {
         return this._biom.getGradientStep(cat, grad, traj);
     };
 

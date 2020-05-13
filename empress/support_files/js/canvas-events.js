@@ -1,4 +1,4 @@
-define(["glMatrix", "SelectedNodeMenu"], function(gl, SelectedNodeMenu) {
+define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
     function CanvasEvents(empress, drawer, canvas) {
         this.empress = empress;
         this.drawer = drawer;
@@ -9,8 +9,11 @@ define(["glMatrix", "SelectedNodeMenu"], function(gl, SelectedNodeMenu) {
         this.mouseY = null;
         this.mouseMove = false;
 
-        this.selectedNode = new SelectedNodeMenu(this.empress, this.drawer);
-        this.selectedNode.initialize();
+        // the search bar
+        this.SEARCH_ID = "quick-search";
+
+        this.selectedNodeMenu = new SelectedNodeMenu(this.empress, this.drawer);
+        this.selectedNodeMenu.initialize();
     }
 
     /**
@@ -19,18 +22,18 @@ define(["glMatrix", "SelectedNodeMenu"], function(gl, SelectedNodeMenu) {
      * modified from
      * https://www.w3schools.com/howto/howto_js_draggable.asp
      */
-    CanvasEvents.prototype.setMouseEvents = function() {
+    CanvasEvents.prototype.setMouseEvents = function () {
         // need for use in closures
         var events = this;
         var canvas = this.canvas;
         var drawer = this.drawer;
         var empress = this.empress;
-        var selectedNode = this.selectedNode;
+        var selectedNodeMenu = this.selectedNodeMenu;
         var newX = 0,
             newY = 0;
 
         // moves tree as long as mouse is pressed down
-        var moveTree = function(e) {
+        var moveTree = function (e) {
             // set move flag
             events.mouseMove = true;
 
@@ -61,10 +64,13 @@ define(["glMatrix", "SelectedNodeMenu"], function(gl, SelectedNodeMenu) {
 
             // draw tree
             drawer.draw();
+
+            // update the hover node menu
+            selectedNodeMenu.updateMenuPosition();
         };
 
         // stops moving tree when mouse is released
-        var stopMove = function(e) {
+        var stopMove = function (e) {
             document.onmouseup = null;
             document.onmousemove = null;
             events.mouseX = null;
@@ -73,10 +79,8 @@ define(["glMatrix", "SelectedNodeMenu"], function(gl, SelectedNodeMenu) {
         };
 
         // adds the listenrs to the document to move tree
-        var mouseDown = function(e) {
+        var mouseDown = function (e) {
             events.mouseMove = false;
-            // drawer.loadSelectedNodeBuff([]);
-            selectedNode.clearSelectedNode();
             var center = $(window).width() / 2;
             events.mouseX = e.clientX - center;
             events.mouseY = center - e.clientY;
@@ -86,7 +90,7 @@ define(["glMatrix", "SelectedNodeMenu"], function(gl, SelectedNodeMenu) {
         };
 
         // zooms the tree in/out
-        var zoomTree = function(e) {
+        var zoomTree = function (e) {
             // find position of cursor before zoom. This allows the zoom to
             // occur at cursor rather than at origin
             var center = $(window).width() / 2;
@@ -116,10 +120,16 @@ define(["glMatrix", "SelectedNodeMenu"], function(gl, SelectedNodeMenu) {
 
             // draw tree
             drawer.draw();
+
+            // update the hover node menu
+            selectedNodeMenu.updateMenuPosition();
         };
 
-        var mouseClick = function(e) {
+        var mouseClick = function (e) {
             if (!events.mouseMove) {
+                // clear old select menu
+                selectedNodeMenu.clearSelectedNode();
+
                 var treeSpace = drawer.toTreeCoords(e.clientX, e.clientY);
                 var x = treeSpace.x;
                 var y = treeSpace.y;
@@ -153,7 +163,7 @@ define(["glMatrix", "SelectedNodeMenu"], function(gl, SelectedNodeMenu) {
                 yDist = e.clientY - nY;
                 var screenDist = Math.sqrt(xDist * xDist + yDist * yDist);
                 if (screenDist < epsilon) {
-                    selectedNode.setSelectedNode(closeNode);
+                    selectedNodeMenu.setSelectedNode(closeNode);
                     empress.drawTree();
                 }
             }
@@ -162,6 +172,42 @@ define(["glMatrix", "SelectedNodeMenu"], function(gl, SelectedNodeMenu) {
         canvas.onmousedown = mouseDown;
         canvas.onclick = mouseClick;
         canvas.onwheel = zoomTree;
+
+        // triggers search when enter key is pressed in search menu
+        var search = document.getElementById(this.SEARCH_ID);
+        search.onkeyup = function (e) {
+            e.preventDefault();
+            if (e.keyCode === 13) {
+                // multiple nodes can have the same name
+                var idList = empress._nameToKeys[this.value];
+
+                if (idList !== null) {
+                    // get first node
+                    var node = empress._treeData[idList[0]];
+
+                    // show menu
+                    selectedNodeMenu.setSelectedNode(node);
+                    empress.drawTree();
+                }
+            }
+        };
+
+        // triggers the 'active' look when user enters the search bar
+        search.focus = function () {
+            document
+                .getElementById(panel.SIDE_PANEL_ID)
+                .classList.add("panel-active");
+        };
+
+        // triggers the 'unactive' look when user leaves search bar
+        search.blur = function () {
+            document
+                .getElementById(panel.SIDE_PANEL_ID)
+                .classList.toggle(
+                    "panel-active",
+                    document.querySelector(".side-content:not(.hidden)")
+                );
+        };
     };
 
     return CanvasEvents;
