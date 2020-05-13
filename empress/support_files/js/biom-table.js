@@ -252,7 +252,7 @@ define([], function () {
         var checkSampleForObservations = function (sample, obs) {
             return obs.some((id) => sample.includes(id));
         };
-        // find all samples that contain at least one obersvation in obIDs
+        // find all samples that contain at least one observation in obIDs
         for (var i = 0; i < samples.length; i++) {
             var sample = samples[i];
             if (checkSampleForObservations(this._obs[sample], obIDs)) {
