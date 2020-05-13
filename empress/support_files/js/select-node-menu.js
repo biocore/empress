@@ -48,7 +48,6 @@ define([], function () {
         // add id row
         this.nodeIdLabel.innerHTML = "<strong>ID</strong>" + " " + node.name;
 
-
         // show either leaf or internal node
         var emp = this.empress;
         var t = emp._tree;

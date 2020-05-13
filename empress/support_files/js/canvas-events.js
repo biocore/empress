@@ -173,12 +173,11 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
         canvas.onclick = mouseClick;
         canvas.onwheel = zoomTree;
 
-         // triggers search when enter key is pressed in search menu
+        // triggers search when enter key is pressed in search menu
         var search = document.getElementById(this.SEARCH_ID);
         search.onkeyup = function (e) {
             e.preventDefault();
             if (e.keyCode === 13) {
-
                 // multiple nodes can have the same name
                 var idList = empress._nameToKeys[this.value];
 

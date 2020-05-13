@@ -1,11 +1,21 @@
+// <<<<<<< HEAD
+// define([
+//     "underscore",
+//     "Camera",
+//     "Drawer",
+//     "Colorer",
+//     "VectorOps",
+//     "CanvasEvents",
+// ], function (_, Camera, Drawer, Colorer, VectorOps, CanvasEvents) {
+// =======
 define([
-    "underscore",
     "Camera",
     "Drawer",
     "Colorer",
     "VectorOps",
     "CanvasEvents",
-], function (_, Camera, Drawer, Colorer, VectorOps, CanvasEvents) {
+    "util",
+], function (Camera, Drawer, Colorer, VectorOps, CanvasEvents, util) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -573,79 +583,6 @@ define([
     };
 
     /**
-     * Remove all non unique keys
-     *
-     * @param {Object} keys An object containing multiple lists of keys
-     *
-     * @return {Object} A new object with the non unique keys removed
-     */
-    Empress.prototype._keepUniqueKeys = function (keys) {
-        // get unique keys
-        var items = Object.keys(keys);
-        var i;
-
-        // TODO: The current method to get the unique observations
-        // belonging to each sample category is slow. Refactoring it will lead
-        // to a nice speed boost.
-        // https://github.com/biocore/empress/issues/147
-        var uniqueKeysArray = _.chain(keys)
-            .values()
-            .map(function (item) {
-                return [...item];
-            })
-            .flatten()
-            .groupBy(function (key) {
-                return key;
-            })
-            .filter(function (key) {
-                return key.length === 1;
-            })
-            .flatten()
-            .value();
-        var uniqueKeys = new Set(uniqueKeysArray);
-        var hasKey = function (key) {
-            return uniqueKeys.has(key);
-        };
-
-        // get the unique keys in each item
-        var result = {};
-        items = Object.keys(keys);
-        for (i = 0; i < items.length; i++) {
-            var itemKeys = [...keys[items[i]]];
-            result[items[i]] = _.filter(itemKeys, hasKey);
-        }
-
-        return result;
-    };
-
-    /**
-     * Creates a color map for each categoy in items
-     *
-     * @param {Array} items List of categories
-     * @param {String} color The chroma color map to use
-     * @param {Boolean} rbg if true then a webGL color map will be created
-     *                      if false then a javascript color map will be created
-     *
-     * @return {Object} A color map that uses the categories in items as keys
-     */
-    Empress.prototype._assignColor = function (items, color, forWebGl) {
-        // create color brewer
-        var colorer = new Colorer(color, 0, Math.pow(2, items.length));
-        var colorFunction = forWebGl ? "getColorRGB" : "getColorHex";
-        var colorBlockSize = Math.pow(2, items.length) / items.length;
-
-        var cm = {};
-        for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            cm[item] = {
-                color: colorer[colorFunction](i * colorBlockSize),
-            };
-        }
-
-        return cm;
-    };
-
-    /**
      * Color the tree using sample data
      *
      * @param {String} cat The sample category to use
@@ -656,8 +593,7 @@ define([
     Empress.prototype.colorBySampleCat = function (cat, color) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
-        var categories = Object.keys(obs);
-        categories.sort();
+        var categories = util.naturalSort(Object.keys(obs));
 
         // shared by the following for loops
         var i, j, category;
@@ -669,10 +605,11 @@ define([
         }
 
         // assign colors to categories
-        var cm = this._assignColor(categories, color, true);
-
-        // legend key
-        var keyInfo = this._assignColor(categories, color, false);
+        var colorer = new Colorer(color, categories);
+        // colors for drawing the tree
+        var cm = colorer.getMapRGB();
+        // colors for the legend
+        var keyInfo = colorer.getMapHex();
 
         // assign internal nodes to approperiate category based on its children
         obs = this._projectObservations(obs);
@@ -712,7 +649,7 @@ define([
                 }
             }
         }
-        obs = this._keepUniqueKeys(obs);
+        obs = util.keepUniqueKeys(obs);
         return obs;
     };
 
@@ -723,7 +660,7 @@ define([
      * @param{Object} cm The mapping from sample category to color.
      */
     Empress.prototype._colorTree = function (obs, cm) {
-        var categories = Object.keys(obs);
+        var categories = util.naturalSort(Object.keys(obs));
         // color tree
         for (var i = 0; i < categories.length; i++) {
             category = categories[i];
@@ -731,7 +668,7 @@ define([
 
             for (var j = 0; j < keys.length; j++) {
                 var key = keys[j];
-                this._treeData[key].color = cm[category].color;
+                this._treeData[key].color = cm[category];
                 this._treeData[key].sampleColored = true;
             }
         }

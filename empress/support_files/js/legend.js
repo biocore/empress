@@ -1,4 +1,4 @@
-define([], function () {
+define(["underscore", "util"], function (_, util) {
     function Legend(tip, node, clade) {
         this.__tipLeg = tip;
         this.__nodeLeg = node;
@@ -76,7 +76,8 @@ define([], function () {
         let key;
         let category = container.innerText;
         let i = 0;
-        for (key in info) {
+        let sortedCategories = util.naturalSort(Object.keys(info));
+        _.each(sortedCategories, function (key) {
             // create key container
             let div = document.createElement("div");
             div.classList.add("gradient-bar");
@@ -84,10 +85,7 @@ define([], function () {
             // color gradient
             let component = document.createElement("div");
             component.classList.add("category-color");
-            component.setAttribute(
-                "style",
-                "background: " + info[key].color + ";"
-            );
+            component.setAttribute("style", "background: " + info[key] + ";");
             div.appendChild(component);
 
             // label
@@ -101,7 +99,7 @@ define([], function () {
             //       old method was not correct.
 
             container.appendChild(div);
-        }
+        });
     };
 
     /**
