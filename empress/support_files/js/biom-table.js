@@ -239,7 +239,7 @@ define([], function () {
     };
 
     /**
-     * Returns a list of samples that contain an oberservation in obIDs
+     * Returns a list of samples that contain an observation in obIDs
      *
      * @param{Array} obIDs A list of observationIds (i.e. tip names)
      *
