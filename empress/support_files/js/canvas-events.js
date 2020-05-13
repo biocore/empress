@@ -153,7 +153,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                     }
                 }
 
-                // check if node is within epsilo pixels away from mouse click
+                // check if node is within epsilon pixels away from mouse click
                 var nX = empress.getX(closeNode);
                 var nY = empress.getY(closeNode);
                 var screenSpace = drawer.toScreeSpace(nX, nY);
