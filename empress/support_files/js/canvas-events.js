@@ -137,8 +137,8 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 // margin of error for mouse click to still register a node sel
                 var epsilon = 10;
 
-                var closeDist = Infinity;
-                var closeNode = null;
+                var closestDist = Infinity;
+                var closestNode = null;
                 var xDist, yDist;
                 for (var i = 1; i < empress._tree.size; i++) {
                     var node = empress._treeData[i];
