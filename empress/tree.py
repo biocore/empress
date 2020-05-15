@@ -148,6 +148,7 @@ class Tree(TreeNode):
         layout_algs = (
             self.layout_unrooted,
             self.layout_rectangular,
+            self.layout_circular,
         )
         # We set the default layout to whatever the first layout in
         # layout_algs is, but this behavior is of course modifiable
@@ -215,7 +216,7 @@ class Tree(TreeNode):
         y-positions are centered over their descendant tips' positions.
         x-positions are computed based on nodes' branch lengths.
 
-        Following this algorithm, nodes' unrooted layout coordinates are
+        Following this algorithm, nodes' rectangular layout coordinates are
         accessible at [node].xr and [node].yr.
 
         For a simple tree, this layout should look something like:
@@ -294,6 +295,75 @@ class Tree(TreeNode):
         # this line to all of its child nodes (where the length of the
         # horizontal line is proportional to the node length in question).
         return "Rectangular", "r"
+
+    def layout_circular(self, width, height):
+        """ Circular layout version of the rectangular layout.
+
+        Works analogously to the rectangular layout: starts at the root
+        (with available angle ranges [0, 2pi], and goes down through
+        the tree's nodes in a preorder(?) traversal, dividing the angles
+        as needed based on the number of leaves of a child node.
+
+        Following this algorithm, nodes' circular layout coordinates are
+        accessible at [node].xc and [node].yc.
+
+        Parameters
+        ----------
+        width : float
+            width of the canvas
+        height : float
+            height of the canvas
+
+        References
+        ----------
+        https://github.com/qiime/Topiary-Explorer/blob/master/src/topiaryexplorer/TreeVis.java
+            Description above + the implementation of this algorithm
+            derived from the Polar layout algorithm code.
+        """
+        anglepernode = (2 * np.pi) / self.leafcount
+        prev_angle = 0
+        for n in self.postorder():
+            if n.is_tip():
+                n.angle = prev_angle
+                prev_angle += anglepernode
+            else:
+                # Center internal nodes at an angle above their children
+                n.angle = sum([c.angle for c in n.children]) / len(n.children)
+
+        max_distfromcenter = 0
+        self.distfromcenter = 0
+        for n in self.preorder(include_self=False):
+            n.distfromcenter = n.parent.distfromcenter + n.length
+            if n.distfromcenter > max_distfromcenter:
+                max_distfromcenter = n.distfromcenter
+
+        # Now that we have the polar coordinates of the nodes, convert these
+        # coordinates to normal x/y coordinates
+        max_x = max_y = float("-inf")
+        min_x = min_y = float("inf")
+        for n in self.postorder():
+            n.xc = n.distfromcenter * np.cos(n.angle)
+            n.yc = n.distfromcenter * np.sin(n.angle)
+            if n.xc > max_x:
+                max_x = n.xc
+            if n.yc > max_y:
+                max_y = n.yc
+            if n.xc < min_x:
+                min_x = n.xc
+            if n.yc < min_y:
+                min_y = n.yc
+
+        # TODO: raise error if the maximum and minimum are same for x or y.
+        # may happen if the tree is a straight line.
+
+        # set scaling factors
+        x_scaling_factor = width / (max_x - min_x)
+        y_scaling_factor = height / (max_y - min_y)
+        for n in self.preorder():
+            n.xc *= x_scaling_factor
+            n.yc *= y_scaling_factor
+
+        return "Circular", "c"
 
     def layout_unrooted(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
