@@ -125,9 +125,9 @@ class Tree(TreeNode):
         coordinates for each node, so that layout algorithms can be rapidly
         toggled between in the JS interface.
 
-        Also adds on .highestchildyr and .lowestchildyr attributes to internal
-        nodes so that vertical bars for these nodes can be drawn in the
-        rectangular layout.
+        Also adds on .highest_child_yr and .lowest_child_yr attributes to
+        internal nodes so that vertical bars for these nodes can be drawn in
+        the rectangular layout.
 
         Parameters
         ----------
@@ -157,6 +157,8 @@ class Tree(TreeNode):
             name, suffix = alg(width, height)
             layout_to_coordsuffix[name] = suffix
             self.alter_coordinates_relative_to_root(suffix)
+            if name == "Circular":
+                self.alter_coordinates_relative_to_root("c0")
             if default_layout is None:
                 default_layout = name
 
@@ -164,16 +166,21 @@ class Tree(TreeNode):
         # the rectangular layout; used to draw vertical lines for these nodes.
         #
         # NOTE / TODO: This will have the effect of drawing vertical lines even
-        # for nodes with only 1 child -- in this case lowestchildyr ==
-        # highestchildyr for this node, so all of the stuff drawn in WebGL for
-        # this vertical line shouldn't show up. I don't think this should cause
-        # any problems, but it may be worth detecting these cases and not
+        # for nodes with only 1 child -- in this case lowest_childyr ==
+        # highest_child_yr for this node, so all of the stuff drawn in WebGL
+        # for this vertical line shouldn't show up. I don't think this should
+        # cause any problems, but it may be worth detecting these cases and not
         # drawing vertical lines for them in the future.
         for n in self.preorder():
             if not n.is_tip():
-                child_y_coords = [c.yr for c in n.children]
-                n.highestchildyr = max(child_y_coords)
-                n.lowestchildyr = min(child_y_coords)
+                # wow, child does not look like a word any more
+                n.highest_child_yr = float("-inf")
+                n.lowest_child_yr = float("inf")
+                for c in n.children:
+                    if c.yr > n.highest_child_yr:
+                        n.highest_child_yr = c.yr
+                    if c.yr < n.lowest_child_yr:
+                        n.lowest_child_yr = c.yr
 
         return layout_to_coordsuffix, default_layout
 
@@ -320,7 +327,8 @@ class Tree(TreeNode):
              node.)
 
         Following this algorithm, nodes' circular layout coordinates are
-        accessible at [node].xc and [node].yc.
+        accessible at [node].xc and [node].yc. (Angles will also be available
+        at [node].clangle, and radii will be available at [node].clradius.)
 
         Parameters
         ----------
@@ -336,37 +344,54 @@ class Tree(TreeNode):
             derived from the Polar layout algorithm code.
         """
         anglepernode = (2 * np.pi) / self.leafcount
-        prev_angle = 0
+        prev_clangle = 0
         for n in self.postorder():
             if n.is_tip():
-                n.angle = prev_angle
-                prev_angle += anglepernode
+                n.clangle = prev_clangle
+                prev_clangle += anglepernode
             else:
                 # Center internal nodes at an angle above their children
-                n.angle = sum([c.angle for c in n.children]) / len(n.children)
+                n.clangle = sum([c.clangle for c in n.children]) / len(n.children)
 
-        max_distfromcenter = 0
-        self.distfromcenter = 0
+        max_clradius = 0
+        self.clradius = 0
         for n in self.preorder(include_self=False):
-            n.distfromcenter = n.parent.distfromcenter + n.length
-            if n.distfromcenter > max_distfromcenter:
-                max_distfromcenter = n.distfromcenter
+            n.clradius = n.parent.clradius + n.length
+            if n.clradius > max_clradius:
+                max_clradius = n.clradius
 
         # Now that we have the polar coordinates of the nodes, convert these
-        # coordinates to normal x/y coordinates
+        # coordinates to normal x/y coordinates.
+        # NOTE that non-root nodes will actually have two x/y coordinates we
+        # need to keep track of: one for the "end" of the node's line, and
+        # another for the "start" of the node's line. The latter of these is
+        # needed because the node's line begins at the parent node's radius but
+        # the child node's angle, if that makes sense -- and since converting
+        # from polar to x/y and back is annoying, it's easiest to just compute
+        # this in python.
         max_x = max_y = float("-inf")
         min_x = min_y = float("inf")
         for n in self.postorder():
-            n.xc = n.distfromcenter * np.cos(n.angle)
-            n.yc = n.distfromcenter * np.sin(n.angle)
-            if n.xc > max_x:
-                max_x = n.xc
-            if n.yc > max_y:
-                max_y = n.yc
-            if n.xc < min_x:
-                min_x = n.xc
-            if n.yc < min_y:
-                min_y = n.yc
+            n.xc1 = n.clradius * np.cos(n.clangle)
+            n.yc1 = n.clradius * np.sin(n.clangle)
+            if n.parent is not None:
+                n.xc0 = n.parent.clradius * np.cos(n.clangle)
+                n.yc0 = n.parent.clradius * np.sin(n.clangle)
+            else:
+                # hack hack hack pls fix
+                n.xc0 = n.xc1
+                n.yc0 = n.yc1
+            # NOTE: i don't think we need to test the xc0/yc0 points as
+            # "extrema" but i'm not confident enough to guarantee that.
+            # TODO, verify that the "tree is a line" case doesn't mess this up
+            if n.xc1 > max_x:
+                max_x = n.xc1
+            if n.yc1 > max_y:
+                max_y = n.yc1
+            if n.xc1 < min_x:
+                min_x = n.xc1
+            if n.yc1 < min_y:
+                min_y = n.yc1
 
         # TODO: raise error if the maximum and minimum are same for x or y.
         # may happen if the tree is a straight line.
@@ -375,10 +400,29 @@ class Tree(TreeNode):
         x_scaling_factor = width / (max_x - min_x)
         y_scaling_factor = height / (max_y - min_y)
         for n in self.preorder():
-            n.xc *= x_scaling_factor
-            n.yc *= y_scaling_factor
+            n.xc0 *= x_scaling_factor
+            n.yc0 *= y_scaling_factor
+            n.xc1 *= x_scaling_factor
+            n.yc1 *= y_scaling_factor
+            if not n.is_tip():
+                n.highest_child_clangle = float("-inf")
+                n.lowest_child_clangle = float("inf")
+                for c in n.children:
+                    if c.clangle > n.highest_child_clangle:
+                        n.highest_child_clangle = c.clangle
+                    if c.clangle < n.lowest_child_clangle:
+                        n.lowest_child_clangle = c.clangle
+                # Figure out "arc" endpoints for the circular layout
+                n.arcx0 = n.clradius * np.cos(n.highest_child_clangle)
+                n.arcy0 = n.clradius * np.sin(n.highest_child_clangle)
+                n.arcx1 = n.clradius * np.cos(n.lowest_child_clangle)
+                n.arcy1 = n.clradius * np.sin(n.lowest_child_clangle)
+                n.arcx0 *= x_scaling_factor
+                n.arcy0 *= y_scaling_factor
+                n.arcx1 *= x_scaling_factor
+                n.arcy1 *= y_scaling_factor
 
-        return "Circular", "c"
+        return "Circular", "c1"
 
     def layout_unrooted(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.

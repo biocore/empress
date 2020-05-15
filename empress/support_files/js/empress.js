@@ -164,6 +164,13 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
             // horizontal).
             var leafAndRootCt = this._tree.numleafs() + 1;
             numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
+        } else if (this._currentLayout === "Circular") {
+            // Leaves have 1 line, and internal nodes INCL ROOT FOR NOW BUT
+            // THAT MIGHT CHANGE TODO FIGURE THAT OUT ONE WAY OR ANOTHER
+            // YOSHIKI PLEASE DON'T LET ME MERGE THIS IN WITHOUT FIGURING THIS
+            // OUT THX
+            var leafCt = this._tree.numleafs();
+            numLines = leafCt + 2 * (this._tree.size - leafCt);
         } else {
             numLines = this._tree.size - 1;
         }
@@ -259,6 +266,31 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
                     coords_index += 3;
                     coords[coords_index++] = this.getX(this._treeData[node]);
                     coords[coords_index++] = this._treeData[node].lowestchildyr;
+                    coords.set(color, coords_index);
+                    coords_index += 3;
+                }
+            } else if (this._currentLayout === "Circular") {
+                /* Same deal as above, except instead of a "vertical line" this
+                 * time we draw an "arc".
+                 */
+                // 1. Draw horizontal line (we're already skipping the root)
+                // TODO: Improve by starting at parent radius and child angle
+                coords[coords_index++] = this._treeData[node].xc0;
+                coords[coords_index++] = this._treeData[node].yc0;
+                coords.set(color, coords_index);
+                coords_index += 3;
+                coords[coords_index++] = this.getX(this._treeData[node]);
+                coords[coords_index++] = this.getY(this._treeData[node]);
+                coords.set(color, coords_index);
+                coords_index += 3;
+                // 2. Draw arc, if this is an internal node
+                if (this._treeData[node].hasOwnProperty("arcx0")) {
+                    coords[coords_index++] = this._treeData[node].arcx0;
+                    coords[coords_index++] = this._treeData[node].arcy0;
+                    coords.set(color, coords_index);
+                    coords_index += 3;
+                    coords[coords_index++] = this._treeData[node].arcx1;
+                    coords[coords_index++] = this._treeData[node].arcy1;
                     coords.set(color, coords_index);
                     coords_index += 3;
                 }
