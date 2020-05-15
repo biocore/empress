@@ -299,10 +299,25 @@ class Tree(TreeNode):
     def layout_circular(self, width, height):
         """ Circular layout version of the rectangular layout.
 
-        Works analogously to the rectangular layout: starts at the root
-        (with available angle ranges [0, 2pi], and goes down through
-        the tree's nodes in a preorder(?) traversal, dividing the angles
-        as needed based on the number of leaves of a child node.
+        Works analogously to the rectangular layout:
+
+            -Each tip is assigned a unique angle from the "center"/root of
+             the tree (out of the range [0, 2pi] in radians), and internal
+             nodes are set to an angle equal to the average of their
+             children's. This mirrors the assignment of y-coordinates for
+             the rectangular layout.
+
+            -All nodes are then assigned a radius equal to the sum of their
+             branch lengths descending from the root (but not including
+             the root's branch length, if provided -- the root is represented
+             as just a single point in the center of the layout). This mirrors
+             the assignment of x-coordinates for the rectangular layout.
+
+            -Lastly, we'll draw arcs for every internal node (except for the
+             root) connecting the "start points" of the child nodes of that
+             node with the minimum and maximum angle. (These points should
+             occur at the radius equal to the "end" of the given internal
+             node.)
 
         Following this algorithm, nodes' circular layout coordinates are
         accessible at [node].xc and [node].yc.
