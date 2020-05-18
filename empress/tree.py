@@ -320,11 +320,10 @@ class Tree(TreeNode):
              as just a single point in the center of the layout). This mirrors
              the assignment of x-coordinates for the rectangular layout.
 
-            -Lastly, we'll draw arcs for every internal node (except for the
-             root) connecting the "start points" of the child nodes of that
-             node with the minimum and maximum angle. (These points should
-             occur at the radius equal to the "end" of the given internal
-             node.)
+            -Lastly, we'll draw arcs for every internal node connecting the
+            "start points" of the child nodes of that node with the minimum
+            and maximum angle. (These points should occur at the radius equal
+            to the "end" of the given internal node.)
 
         Following this algorithm, nodes' circular layout coordinates are
         accessible at [node].xc and [node].yc. (Angles will also be available
@@ -399,7 +398,7 @@ class Tree(TreeNode):
         # set scaling factors
         x_scaling_factor = width / (max_x - min_x)
         y_scaling_factor = height / (max_y - min_y)
-        for n in self.preorder(include_self=False):
+        for n in self.preorder():
             n.xc0 *= x_scaling_factor
             n.yc0 *= y_scaling_factor
             n.xc1 *= x_scaling_factor

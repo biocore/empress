@@ -159,9 +159,19 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
     Empress.prototype.computeNecessaryCoordsSize = function () {
         var numLines;
         if (this._currentLayout === "Rectangular" || this._currentLayout === "Circular") {
-            // Leaves have 1 line (vertical), the root also has 1 line
-            // (horizontal), and internal nodes have 2 lines (both vertical and
-            // horizontal).
+            // Leaves have 1 line (horizontal), the root also has 1 line
+            // (vertical), and internal nodes have 2 lines (both vertical and
+            // horizontal). As an example, the below tiny tree shown in
+            // rectangular layout contains 5 nodes total (including the root)
+            // and 3 leaves. So numLines = 3 + 1 + 2*(5 - (3 + 1)) = 3+1+2 = 6.
+            //
+            //     +--
+            // +---|
+            // |   +-
+            // |
+            // +--------
+            //
+            // (The number of lines is the same for circular layouts.)
             var leafAndRootCt = this._tree.numleafs() + 1;
             numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
         } else {
@@ -191,13 +201,14 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
 
         var coords_index = 0;
 
-        /* Draw a vertical line for the root node, if we're in rectangular
-         * layout mode. Note that we *don't* draw a horizontal line for the
+        /* Draw a vertical line / arc for the root node, if we're in
+         * rectangular or circular layout mode. Note that we *don't* draw
+         * a horizontal line (with the branch length of the root) for the
          * root node, even if it has a nonzero branch length; this could be
          * modified in the future if desired. See #141 on GitHub.
          *
          * (The python code explicitly disallows trees with <= 1 nodes, so
-         * we're never going to be in the unforuntate situation of having the
+         * we're never going to be in the unfortunate situation of having the
          * root be the ONLY node in the tree. So this behavior is ok.)
          */
         if (this._currentLayout === "Rectangular") {
@@ -208,6 +219,16 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
             coords_index += 3;
             coords[coords_index++] = this.getX(this._treeData[tree.size]);
             coords[coords_index++] = this._treeData[tree.size].highestchildyr;
+            coords.set(color, coords_index);
+            coords_index += 3;
+        } else if (this._currentLayout === "Circular") {
+            color = this._treeData[tree.size].color;
+            coords[coords_index++] = this._treeData[tree.size].arcx0;
+            coords[coords_index++] = this._treeData[tree.size].arcy0;
+            coords.set(color, coords_index);
+            coords_index += 3;
+            coords[coords_index++] = this._treeData[tree.size].arcx1;
+            coords[coords_index++] = this._treeData[tree.size].arcy1;
             coords.set(color, coords_index);
             coords_index += 3;
         }
