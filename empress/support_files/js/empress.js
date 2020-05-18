@@ -287,8 +287,14 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
                 /* Same deal as above, except instead of a "vertical line" this
                  * time we draw an "arc".
                  */
-                // 1. Draw horizontal line (we're already skipping the root)
-                // TODO: Improve by starting at parent radius and child angle
+                // 1. Draw line protruding from parent (we're already skipping
+                // the root so this is ok)
+                //
+                // Note that position info for this is stored as two sets of
+                // coordinates: (xc0, yc0) for start point, (xc1, yc1) for end
+                // point. The *c1 coordinates are explicitly associated with
+                // the circular layout so we can just use this.getX() /
+                // this.getY() for these coordinates.
                 coords[coords_index++] = this._treeData[node].xc0;
                 coords[coords_index++] = this._treeData[node].yc0;
                 coords.set(color, coords_index);
