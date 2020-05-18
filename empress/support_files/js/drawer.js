@@ -326,7 +326,16 @@ define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
         return { x: treeSpace[0], y: treeSpace[1] };
     };
 
-    Drawer.prototype.toScreeSpace = function (x, y) {
+    /**
+     *
+     * Convert world coordinates to screen coordinates.
+     *
+     * @param {Float} x The x coordinate.
+     * @param {Float} y The y coordinate.
+     * @returns {Object} Object with an x and y attribute corresponding to the
+     * screen coordinates.
+     */
+    Drawer.prototype.toScreenSpace = function (x, y) {
         // create MVP matrix
         var mvp = gl.mat4.create();
         gl.mat4.multiply(mvp, this.cam.projMat, this.cam.getViewMat());
