@@ -158,19 +158,12 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
      */
     Empress.prototype.computeNecessaryCoordsSize = function () {
         var numLines;
-        if (this._currentLayout === "Rectangular") {
+        if (this._currentLayout === "Rectangular" || this._currentLayout === "Circular") {
             // Leaves have 1 line (vertical), the root also has 1 line
             // (horizontal), and internal nodes have 2 lines (both vertical and
             // horizontal).
             var leafAndRootCt = this._tree.numleafs() + 1;
             numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
-        } else if (this._currentLayout === "Circular") {
-            // Leaves have 1 line, and internal nodes INCL ROOT FOR NOW BUT
-            // THAT MIGHT CHANGE TODO FIGURE THAT OUT ONE WAY OR ANOTHER
-            // YOSHIKI PLEASE DON'T LET ME MERGE THIS IN WITHOUT FIGURING THIS
-            // OUT THX
-            var leafCt = this._tree.numleafs();
-            numLines = leafCt + 2 * (this._tree.size - leafCt);
         } else {
             numLines = this._tree.size - 1;
         }

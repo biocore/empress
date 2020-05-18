@@ -399,7 +399,7 @@ class Tree(TreeNode):
         # set scaling factors
         x_scaling_factor = width / (max_x - min_x)
         y_scaling_factor = height / (max_y - min_y)
-        for n in self.preorder():
+        for n in self.preorder(include_self=False):
             n.xc0 *= x_scaling_factor
             n.yc0 *= y_scaling_factor
             n.xc1 *= x_scaling_factor
