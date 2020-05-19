@@ -320,14 +320,23 @@ class Tree(TreeNode):
              as just a single point in the center of the layout). This mirrors
              the assignment of x-coordinates for the rectangular layout.
 
-            -Lastly, we'll draw arcs for every internal node connecting the
-            "start points" of the child nodes of that node with the minimum
-            and maximum angle. (These points should occur at the radius equal
-            to the "end" of the given internal node.)
+            -Lastly, we'll draw arcs for every internal node (except for the
+             root) connecting the "start points" of the child nodes of that
+             node with the minimum and maximum angle. (These points should
+             occur at the radius equal to the "end" of the given internal
+             node.)
+                We don't draw this arc for the root node because we don't draw
+                the root the same way we do the other nodes in the tree:
+                the root is represented as just a single point at the center
+                of the layout. Due to this, there isn't a way to draw an arc
+                from the root, since the root's "end" is at the same point as
+                its beginning (so the arc wouldn't be visible).
 
         Following this algorithm, nodes' circular layout coordinates are
-        accessible at [node].xc and [node].yc. (Angles will also be available
-        at [node].clangle, and radii will be available at [node].clradius.)
+        accessible at [node].xc and [node].yc. Angles will also be available
+        at [node].clangle, and radii will be available at [node].clradius; and
+        for non-root internal nodes, arc start and end coordinates will be
+        available at [node].arcx0, [node].arcy0, [node].arcx1, & [node].arcy1.
 
         Parameters
         ----------
@@ -373,13 +382,18 @@ class Tree(TreeNode):
         for n in self.postorder():
             n.xc1 = n.clradius * np.cos(n.clangle)
             n.yc1 = n.clradius * np.sin(n.clangle)
-            if n.parent is not None:
+            if n.is_root():
+                # NOTE that the root has a clradius of 0 (since it's just
+                # represented as a point at the center of the layout). We don't
+                # even bother drawing the root in the Empress JS code, so the
+                # xc0/yc0/xc1/yc1 values for the root don't actually control
+                # anything. However, we still assign them because not doing so
+                # causes problems.
+                n.xc0 = 0
+                n.yc0 = 0
+            else:
                 n.xc0 = n.parent.clradius * np.cos(n.clangle)
                 n.yc0 = n.parent.clradius * np.sin(n.clangle)
-            else:
-                # hack hack hack pls fix
-                n.xc0 = n.xc1
-                n.yc0 = n.yc1
             # NOTE: i don't think we need to test the xc0/yc0 points as
             # "extrema" but i'm not confident enough to guarantee that.
             # TODO, verify that the "tree is a line" case doesn't mess this up
@@ -403,7 +417,7 @@ class Tree(TreeNode):
             n.yc0 *= y_scaling_factor
             n.xc1 *= x_scaling_factor
             n.yc1 *= y_scaling_factor
-            if not n.is_tip():
+            if not n.is_tip() and not n.is_root():
                 n.highest_child_clangle = float("-inf")
                 n.lowest_child_clangle = float("inf")
                 for c in n.children:

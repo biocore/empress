@@ -158,7 +158,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
      */
     Empress.prototype.computeNecessaryCoordsSize = function () {
         var numLines;
-        if (this._currentLayout === "Rectangular" || this._currentLayout === "Circular") {
+        if (this._currentLayout === "Rectangular") {
             // Leaves have 1 line (horizontal), the root also has 1 line
             // (vertical), and internal nodes have 2 lines (both vertical and
             // horizontal). As an example, the below tiny tree shown in
@@ -170,10 +170,13 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
             // |   +-
             // |
             // +--------
-            //
-            // (The number of lines is the same for circular layouts.)
             var leafAndRootCt = this._tree.numleafs() + 1;
             numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
+        } else if(this._currentLayout === "Circular") {
+            // The same as rectangular layout, but we don't draw anything for
+            // the root.
+            var leafCt = this._tree.numleafs();
+            numLines = leafCt + 3 * (this._tree.size - leafCt - 1);
         } else {
             numLines = this._tree.size - 1;
         }
@@ -219,16 +222,6 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
             coords_index += 3;
             coords[coords_index++] = this.getX(this._treeData[tree.size]);
             coords[coords_index++] = this._treeData[tree.size].highestchildyr;
-            coords.set(color, coords_index);
-            coords_index += 3;
-        } else if (this._currentLayout === "Circular") {
-            color = this._treeData[tree.size].color;
-            coords[coords_index++] = this._treeData[tree.size].arcx0;
-            coords[coords_index++] = this._treeData[tree.size].arcy0;
-            coords.set(color, coords_index);
-            coords_index += 3;
-            coords[coords_index++] = this._treeData[tree.size].arcx1;
-            coords[coords_index++] = this._treeData[tree.size].arcy1;
             coords.set(color, coords_index);
             coords_index += 3;
         }
@@ -303,10 +296,19 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
                 coords[coords_index++] = this.getY(this._treeData[node]);
                 coords.set(color, coords_index);
                 coords_index += 3;
-                // 2. Draw arc, if this is an internal node
+                // 2. Draw arc, if this is an internal node (note again that
+                // we're skipping the root)
                 if (this._treeData[node].hasOwnProperty("arcx0")) {
                     coords[coords_index++] = this._treeData[node].arcx0;
                     coords[coords_index++] = this._treeData[node].arcy0;
+                    coords.set(color, coords_index);
+                    coords_index += 3;
+                    coords[coords_index++] = this._treeData[node].xc1;
+                    coords[coords_index++] = this._treeData[node].yc1;
+                    coords.set(color, coords_index);
+                    coords_index += 3;
+                    coords[coords_index++] = this._treeData[node].xc1;
+                    coords[coords_index++] = this._treeData[node].yc1;
                     coords.set(color, coords_index);
                     coords_index += 3;
                     coords[coords_index++] = this._treeData[node].arcx1;

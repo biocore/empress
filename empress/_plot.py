@@ -102,10 +102,11 @@ def plot(
         if not node.is_tip():
             tree_data[i]["highestchildyr"] = node.highest_child_yr
             tree_data[i]["lowestchildyr"] = node.lowest_child_yr
-            tree_data[i]["arcx0"] = node.arcx0
-            tree_data[i]["arcy0"] = node.arcy0
-            tree_data[i]["arcx1"] = node.arcx1
-            tree_data[i]["arcy1"] = node.arcy1
+            if not node.is_root():
+                tree_data[i]["arcx0"] = node.arcx0
+                tree_data[i]["arcy0"] = node.arcy0
+                tree_data[i]["arcx1"] = node.arcx1
+                tree_data[i]["arcy1"] = node.arcy1
 
         if node.name in names_to_keys:
             names_to_keys[node.name].append(i)
