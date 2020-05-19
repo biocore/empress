@@ -426,6 +426,13 @@ class Tree(TreeNode):
                     if c.clangle < n.lowest_child_clangle:
                         n.lowest_child_clangle = c.clangle
                 # Figure out "arc" endpoints for the circular layout
+                # NOTE: As with the "vertical lines" for internal nodes in the
+                # rectangular layout, these arcs will be drawn for nodes with
+                # only one child. Here, this case would mean that the
+                # highest_child_clangle would equal the lowest_child_clangle,
+                # so arcx0 would equal arcx1 and arcy0 would equal arcy1. So
+                # nothing should show up (but it may be worth addressing this
+                # in the future).
                 n.arcx0 = n.clradius * np.cos(n.highest_child_clangle)
                 n.arcy0 = n.clradius * np.sin(n.highest_child_clangle)
                 n.arcx1 = n.clradius * np.cos(n.lowest_child_clangle)
