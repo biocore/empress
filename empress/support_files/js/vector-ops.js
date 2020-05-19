@@ -81,8 +81,8 @@ define([], function () {
      * bottom-right coordinates of a "thick line" box connecting two points
      * specified by (x1, y1) and (x2, y2).
      *
-     * The outputs of this function can be passed into
-     * Empress._addTriangleCoords(), for reference.
+     * The output object from this function is directly passable into
+     * Empress._addTriangleCoords() as the corners parameter, for reference.
      *
      * @param {Number} x1
      * @param {Number} y1
@@ -119,7 +119,7 @@ define([], function () {
         bR = translate(bR, x2, y2);
         // Idea of returning this as an object instead of a 2-D array based on
         // https://stackoverflow.com/questions/2917175/return-multiple-values-in-javascript#comment2969172_2917186
-        return {tL: tL, tR: tR, bL: bL, bR: bR};
+        return { tL: tL, tR: tR, bL: bL, bR: bR };
     }
 
     return {

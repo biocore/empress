@@ -172,7 +172,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
             // +--------
             var leafAndRootCt = this._tree.numleafs() + 1;
             numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
-        } else if(this._currentLayout === "Circular") {
+        } else if (this._currentLayout === "Circular") {
             // The same as rectangular layout, but we don't draw anything for
             // the root.
             var leafCt = this._tree.numleafs();
@@ -367,42 +367,34 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
      * bL) being drawn.
      *
      * Note that this doesn't do any validation on the relative positions of
-     * the tL / tR / bL / bR coordinates, so if those are messed up (e.g.
-     * you're trying to draw the rectangle shown above but you accidentally
-     * swap bL and tL) then this will just draw something weird.
+     * the corners coordinates, so if those are messed up (e.g. you're trying
+     * to draw the rectangle shown above but you accidentally swap bL and tL)
+     * then this will just draw something weird.
      *
      * (Also note that we can modify coords because JS uses "Call by sharing"
      * for Arrays/Objects; see http://jasonjl.me/blog/2014/10/15/javascript.)
      *
      * @param {Array} coords Array containing coordinate + color data, to be
      *                       passed to Drawer.loadSampleThickBuf().
-     * @param {Array} tL     top-left position, represented as [x, y]
-     * @param {Array} tR     top-right position, represented as [x, y]
-     * @param {Array} bL     bottom-left position, represented as [x, y]
-     * @param {Array} bR     bottom-right position, represented as [x, y]
+     * @param {Object} corners Object with tL, tR, bL, and bR entries (each
+     *                         mapping to an array of the format [x, y]
+     *                         indicating this position).
      * @param {Array} color  the color to draw / fill both triangles with
      */
-    Empress.prototype._addTriangleCoords = function (
-        coords,
-        tL,
-        tR,
-        bL,
-        bR,
-        color
-    ) {
+    Empress.prototype._addTriangleCoords = function (coords, corners, color) {
         // Triangle 1
-        coords.push(...tL);
+        coords.push(...corners.tL);
         coords.push(...color);
-        coords.push(...bL);
+        coords.push(...corners.bL);
         coords.push(...color);
-        coords.push(...bR);
+        coords.push(...corners.bR);
         coords.push(...color);
         // Triangle 2
-        coords.push(...tL);
+        coords.push(...corners.tL);
         coords.push(...color);
-        coords.push(...tR);
+        coords.push(...corners.tR);
         coords.push(...color);
-        coords.push(...bR);
+        coords.push(...corners.bR);
         coords.push(...color);
     };
 
@@ -427,24 +419,28 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
         node,
         amount
     ) {
-        var tL = [
-            this.getX(this._treeData[node]) - amount,
-            this._treeData[node].highestchildyr,
-        ];
-        var tR = [
-            this.getX(this._treeData[node]) + amount,
-            this._treeData[node].highestchildyr,
-        ];
-        var bL = [
-            this.getX(this._treeData[node]) - amount,
-            this._treeData[node].lowestchildyr,
-        ];
-        var bR = [
-            this.getX(this._treeData[node]) + amount,
-            this._treeData[node].lowestchildyr,
-        ];
+        var corners = {
+            tL: [
+                this.getX(this._treeData[node]) - amount,
+                this._treeData[node].highestchildyr,
+            ],
+            tR: [
+                this.getX(this._treeData[node]) + amount,
+                this._treeData[node].highestchildyr,
+            ],
+
+            bL: [
+                this.getX(this._treeData[node]) - amount,
+                this._treeData[node].lowestchildyr,
+            ],
+
+            bR: [
+                this.getX(this._treeData[node]) + amount,
+                this._treeData[node].lowestchildyr,
+            ],
+        };
         var color = this._treeData[node].color;
-        this._addTriangleCoords(coords, tL, tR, bL, bR, color);
+        this._addTriangleCoords(coords, corners, color);
     };
 
     /**
@@ -484,7 +480,6 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
             }
 
             var color = this._treeData[node].color;
-            var tL, tR, bL, bR;
             if (this._currentLayout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
@@ -498,23 +493,25 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
                  * -----|
                  * bL   bR---
                  */
-                tL = [
-                    this.getX(this._treeData[parent]),
-                    this.getY(this._treeData[node]) + amount,
-                ];
-                tR = [
-                    this.getX(this._treeData[node]),
-                    this.getY(this._treeData[node]) + amount,
-                ];
-                bL = [
-                    this.getX(this._treeData[parent]),
-                    this.getY(this._treeData[node]) - amount,
-                ];
-                bR = [
-                    this.getX(this._treeData[node]),
-                    this.getY(this._treeData[node]) - amount,
-                ];
-                this._addTriangleCoords(coords, tL, tR, bL, bR, color);
+                var corners = {
+                    tL: [
+                        this.getX(this._treeData[parent]),
+                        this.getY(this._treeData[node]) + amount,
+                    ],
+                    tR: [
+                        this.getX(this._treeData[node]),
+                        this.getY(this._treeData[node]) + amount,
+                    ],
+                    bL: [
+                        this.getX(this._treeData[parent]),
+                        this.getY(this._treeData[node]) - amount,
+                    ],
+                    bR: [
+                        this.getX(this._treeData[node]),
+                        this.getY(this._treeData[node]) - amount,
+                    ],
+                };
+                this._addTriangleCoords(coords, corners, color);
             } else if (this._currentLayout === "Circular") {
                 // Thicken the "arc" if this is non-root internal node
                 // (TODO: this will need to be adapted when the arc is changed
@@ -534,14 +531,8 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
                         this._treeData[node].arcy1,
                         amount
                     );
-                    this._addTriangleCoords(
-                        coords, arc0corners.tL, arc0corners.tR, arc0corners.bL,
-                        arc0corners.bR, color
-                    );
-                    this._addTriangleCoords(
-                        coords, arc1corners.tL, arc1corners.tR, arc1corners.bL,
-                        arc1corners.bR, color
-                    );
+                    this._addTriangleCoords(coords, arc0corners, color);
+                    this._addTriangleCoords(coords, arc1corners, color);
                 }
                 // Thicken the actual "node" portion, extending from the center
                 // of the layout
@@ -549,21 +540,27 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
                 var y1 = this._treeData[node].yc0;
                 var x2 = this.getX(this._treeData[node]);
                 var y2 = this.getY(this._treeData[node]);
-                var corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, amount);
-                this._addTriangleCoords(
-                    coords, corners.tL, corners.tR, corners.bL, corners.bR,
-                    color
+                var corners = VectorOps.computeBoxCorners(
+                    x1,
+                    y1,
+                    x2,
+                    y2,
+                    amount
                 );
+                this._addTriangleCoords(coords, corners, color);
             } else {
                 var x1 = this.getX(this._treeData[parent]);
                 var y1 = this.getY(this._treeData[parent]);
                 var x2 = this.getX(this._treeData[node]);
                 var y2 = this.getY(this._treeData[node]);
-                var corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, amount);
-                this._addTriangleCoords(
-                    coords, corners.tL, corners.tR, corners.bL, corners.bR,
-                    color
+                var corners = VectorOps.computeBoxCorners(
+                    x1,
+                    y1,
+                    x2,
+                    y2,
+                    amount
                 );
+                this._addTriangleCoords(coords, corners, color);
             }
         }
 
