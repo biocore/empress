@@ -385,18 +385,18 @@ class Tree(TreeNode):
             if n.is_root():
                 # NOTE that the root has a clradius of 0 (since it's just
                 # represented as a point at the center of the layout). We don't
-                # even bother drawing the root in the Empress JS code, so the
-                # xc0/yc0/xc1/yc1 values for the root don't actually control
-                # anything. However, we still assign them because not doing so
-                # causes problems.
+                # even bother drawing the root in the Empress JS code, but for
+                # the purposes of alter_coordinates_relative_to_root() we need
+                # to explicitly position the root at (0, 0).
                 n.xc0 = 0
                 n.yc0 = 0
             else:
                 n.xc0 = n.parent.clradius * np.cos(n.clangle)
                 n.yc0 = n.parent.clradius * np.sin(n.clangle)
-            # NOTE: i don't think we need to test the xc0/yc0 points as
-            # "extrema" but i'm not confident enough to guarantee that.
-            # TODO, verify that the "tree is a line" case doesn't mess this up
+            # NOTE: We don't bother testing the xc0 / yc0 coordinates as
+            # "extrema" because they should always be further "within" the
+            # tree than the xc1 / yc1 coordinates.
+            # TODO: verify that the "tree is a line" case doesn't mess this up.
             if n.xc1 > max_x:
                 max_x = n.xc1
             if n.yc1 > max_y:
