@@ -473,7 +473,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
         ) {
             this._addThickVerticalLineCoords(coords, tree.size, amount);
         }
-        // iterate throught the tree in postorder, skip root
+        // iterate through the tree in postorder, skip root
         for (var i = 1; i < this._tree.size; i++) {
             // name of current node
             var node = i;
@@ -515,38 +515,55 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
                     this.getY(this._treeData[node]) - amount,
                 ];
                 this._addTriangleCoords(coords, tL, tR, bL, bR, color);
+            } else if (this._currentLayout === "Circular") {
+                // Thicken the "arc" if this is non-root internal node
+                // (TODO: this will need to be adapted when the arc is changed
+                // to be a bezier curve)
+                if (this._treeData[node].hasOwnProperty("arcx0")) {
+                    var arc0corners = VectorOps.computeBoxCorners(
+                        this._treeData[node].arcx0,
+                        this._treeData[node].arcy0,
+                        this._treeData[node].xc1,
+                        this._treeData[node].yc1,
+                        amount
+                    );
+                    var arc1corners = VectorOps.computeBoxCorners(
+                        this._treeData[node].xc1,
+                        this._treeData[node].yc1,
+                        this._treeData[node].arcx1,
+                        this._treeData[node].arcy1,
+                        amount
+                    );
+                    this._addTriangleCoords(
+                        coords, arc0corners.tL, arc0corners.tR, arc0corners.bL,
+                        arc0corners.bR, color
+                    );
+                    this._addTriangleCoords(
+                        coords, arc1corners.tL, arc1corners.tR, arc1corners.bL,
+                        arc1corners.bR, color
+                    );
+                }
+                // Thicken the actual "node" portion, extending from the center
+                // of the layout
+                var x1 = this._treeData[node].xc0;
+                var y1 = this._treeData[node].yc0;
+                var x2 = this.getX(this._treeData[node]);
+                var y2 = this.getY(this._treeData[node]);
+                var corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, amount);
+                this._addTriangleCoords(
+                    coords, corners.tL, corners.tR, corners.bL, corners.bR,
+                    color
+                );
             } else {
-                // center branch such that parent node is at (0,0)
                 var x1 = this.getX(this._treeData[parent]);
                 var y1 = this.getY(this._treeData[parent]);
                 var x2 = this.getX(this._treeData[node]);
                 var y2 = this.getY(this._treeData[node]);
-                var point = VectorOps.translate([x1, y1], -1 * x2, -1 * y2);
-
-                // find angle/length of branch
-                var angle = VectorOps.getAngle(point);
-                var length = VectorOps.magnitude(point);
-                var over = point[1] < 0;
-
-                // find top left of box of thick line
-                tL = [0, amount];
-                tL = VectorOps.rotate(tL, angle, over);
-                tL = VectorOps.translate(tL, x2, y2);
-
-                tR = [length, amount];
-                tR = VectorOps.rotate(tR, angle, over);
-                tR = VectorOps.translate(tR, x2, y2);
-
-                // find bottom point of thick line
-                bL = [0, -1 * amount];
-                bL = VectorOps.rotate(bL, angle, over);
-                bL = VectorOps.translate(bL, x2, y2);
-
-                bR = [length, -1 * amount];
-                bR = VectorOps.rotate(bR, angle, over);
-                bR = VectorOps.translate(bR, x2, y2);
-
-                this._addTriangleCoords(coords, tL, tR, bL, bR, color);
+                var corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, amount);
+                this._addTriangleCoords(
+                    coords, corners.tL, corners.tR, corners.bL, corners.bR,
+                    color
+                );
             }
         }
 
