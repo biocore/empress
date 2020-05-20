@@ -13,6 +13,7 @@ define([], function () {
         this.sel = document.getElementById("hover-select");
         this.addBtn = document.getElementById("hover-add-btn");
         this.nodeIdLabel = document.getElementById("hover-table-node-id");
+        this.notes = document.getElementById("hover-table-notes");
         this.nodeKeys = null;
     }
 
@@ -60,17 +61,16 @@ define([], function () {
         // reset node-hover menu
         this.table.innerHTML = "";
 
+        this.nodeIdLabel.innerHTML = 'ID:' + node.name;
+
         // add id row
-        this.nodeIdLabel.innerHTML =
+        this.notes.innerHTML =
             "For tip nodes: values represent number of unique samples that " +
             "contain the tip node." +
             "<br>" +
             "For internal nodes: values represent the number of unique " +
             "samples that contain any of its descendants." +
-            "<br><br>" +
-            "<strong>ID</strong>" +
-            " " +
-            node.name;
+            "<br>";
 
         // show either leaf or internal node
         var t = emp._tree;
@@ -151,7 +151,7 @@ define([], function () {
         }
 
         if (this.nodeKeys.length > 1) {
-            this.nodeIdLabel.innerHTML +=
+            this.notes.innerHTML +=
                 "<br>" +
                 "Warning: " +
                 this.nodeKeys.length +
@@ -320,7 +320,7 @@ define([], function () {
         // get table coords
         var x = this.empress.getX(node);
         var y = this.empress.getY(node);
-        var tableLoc = this.drawer.toScreeSpace(x, y);
+        var tableLoc = this.drawer.toScreenSpace(x, y);
 
         // set table location. add slight offset to location so menu appears
         // next to node instead of on top of it.
