@@ -61,7 +61,7 @@ define([], function () {
         // reset node-hover menu
         this.table.innerHTML = "";
 
-        this.nodeIdLabel.innerHTML = 'ID:' + node.name;
+        this.nodeIdLabel.innerHTML = "ID:" + node.name;
 
         // add id row
         this.notes.innerHTML =
