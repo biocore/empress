@@ -106,10 +106,14 @@ define(["glMatrix"], function (gl) {
      * @param {vec3} lookDir Where the camera will be looking
      * @param {vec3} upDir What direction the camera considers up
      */
-    Camera.prototype.placeCamera = function (pos, lookDir, upDir) {
+    Camera.prototype.placeCamera = function (
+        pos,
+        lookDir = null,
+        upDir = null
+    ) {
         this.pos_ = pos;
-        this.lookDir_ = lookDir;
-        this.upDir_ = upDir;
+        if (lookDir !== null) this.lookDir_ = lookDir;
+        if (upDir !== null) this.upDir_ = upDir;
     };
 
     /**

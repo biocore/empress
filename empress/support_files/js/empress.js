@@ -1,10 +1,11 @@
-define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
-    Camera,
-    Drawer,
-    Colorer,
-    VectorOps,
-    util
-) {
+define([
+    "Camera",
+    "Drawer",
+    "Colorer",
+    "VectorOps",
+    "CanvasEvents",
+    "util",
+], function (Camera, Drawer, Colorer, VectorOps, CanvasEvents, util) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -50,6 +51,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
          * @private
          */
         this._drawer = new Drawer(canvas, this._cam);
+        this._canvas = canvas;
 
         /**
          * @type {Array}
@@ -118,6 +120,12 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
          * The line width used for drawing "thick" lines.
          */
         this._currentLineWidth = 1;
+
+        /**
+         * @type{CanvasEvents}
+         * Handles user events
+         */
+        this._events = new CanvasEvents(this, this._drawer, canvas);
     }
 
     /**
@@ -125,7 +133,13 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
      */
     Empress.prototype.initialize = function () {
         this._drawer.initialize();
+        this._drawer.loadNodeBuff(this.getNodeCoords());
         this.drawTree();
+        this._events.setMouseEvents();
+        var nodeNames = Object.keys(this._nameToKeys);
+        nodeNames = nodeNames.filter((n) => !n.includes("EmpressNode"));
+        nodeNames.sort();
+        this._events.autocomplete(nodeNames);
     };
 
     /**
@@ -133,6 +147,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
      */
     Empress.prototype.drawTree = function () {
         this._drawer.loadTreeBuf(this.getCoords());
+        this._drawer.loadNodeBuff(this.getNodeCoords());
         this._drawer.draw();
     };
 
@@ -185,6 +200,30 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
         // VERTEX_SIZE (as of writing this is set to 5, for x, y, r, g, b)
         // spaces in coords.
         return 2 * numLines * this._drawer.VERTEX_SIZE;
+    };
+
+    /**
+     * Retrives the node coordinate info
+     * format of node coordinate info: [x, y, red, green, blue, ...]
+     *
+     * @return {Array}
+     */
+    Empress.prototype.getNodeCoords = function () {
+        var tree = this._tree;
+        var coords = new Float32Array(tree.size * 5);
+        var coords_index = 0;
+
+        for (var i = 1; i <= tree.size; i++) {
+            var node = this._treeData[i];
+            if (!node.name.includes("EmpressNode")) {
+                coords[coords_index++] = this.getX(node);
+                coords[coords_index++] = this.getY(node);
+                coords.set(node.color, coords_index);
+                coords_index += 3;
+            }
+        }
+
+        return coords;
     };
 
     /**
@@ -778,6 +817,7 @@ define(["Camera", "Drawer", "Colorer", "VectorOps", "util"], function (
                     // The - 1 mimics the behavior of SidePanel._updateSample()
                     this.thickenSameSampleLines(this._currentLineWidth - 1);
                 }
+                this._drawer.loadNodeBuff(this.getNodeCoords());
                 this.drawTree();
             } else {
                 // This should never happen under normal circumstances (the

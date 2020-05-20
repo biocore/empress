@@ -24,7 +24,6 @@ define(["Colorer"], function (Colorer) {
 
         // names of header components
         this.HEADER_CLASS = "side-header";
-        this.SEARCH_ID = "quick-search";
         this.COLLAPSE_ID = "hide-ctrl";
         this.SHOW_ID = "show-ctrl";
 
@@ -51,33 +50,7 @@ define(["Colorer"], function (Colorer) {
         // used in event closers
         var panel = this;
 
-        // triggers search when enter key is pressed in search menu
-        var search = document.getElementById(this.SEARCH_ID);
-        search.keyup = function (e) {
-            e.preventDefault();
-            if (e.keyCode === 13) {
-                // TODO: model search function goes here
-            }
-        };
-
-        // triggers the 'active' look when user enters the search bar
-        search.focus = function () {
-            document
-                .getElementById(panel.SIDE_PANEL_ID)
-                .classList.add("panel-active");
-        };
-
-        // triggers the 'unactive' look when user leaves search bar
-        search.blur = function () {
-            document
-                .getElementById(panel.SIDE_PANEL_ID)
-                .classList.toggle(
-                    "panel-active",
-                    document.querySelector(".side-content:not(.hidden)")
-                );
-        };
-
-        // // hides the side menu
+        // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
         collapse.onclick = function () {
             document
