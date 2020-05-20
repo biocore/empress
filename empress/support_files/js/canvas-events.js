@@ -165,8 +165,8 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 // margin of error for mouse click to still register a node sel
                 var epsilon = 10;
 
-                var closeDist = Infinity;
-                var closeNode = null;
+                var closestDist = Infinity;
+                var closestNode = null;
                 var xDist, yDist;
                 for (var i = 1; i < empress._tree.size; i++) {
                     var node = empress._treeData[i];
@@ -181,7 +181,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                     }
                 }
 
-                // check if node is within epsilo pixels away from mouse click
+                // check if node is within epsilon pixels away from mouse click
                 var nX = empress.getX(closeNode);
                 var nY = empress.getY(closeNode);
                 var screenSpace = drawer.toScreeSpace(nX, nY);

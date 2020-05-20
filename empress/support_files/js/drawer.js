@@ -357,7 +357,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @returns {Object} Object with an x and y attribute corresponding to the
      * screen coordinates.
      */
-    Drawer.prototype.toScreeSpace = function (x, y) {
+    Drawer.prototype.toScreenSpace = function (x, y) {
         // create MVP matrix
         var mvp = gl.mat4.create();
         gl.mat4.multiply(mvp, this.cam.projMat, this.cam.getViewMat());

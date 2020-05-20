@@ -66,7 +66,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
             }
         });
 
-        test('Test getObjservationUnionForSamples', function() {
+        test('Test getObservationUnionForSamples', function() {
             // converting result to Set makes validation eaiser since
             // getObjservationUnionForSamples uses a Set and then converts the
             // Set to an array. The convertion does not keep order so converting
