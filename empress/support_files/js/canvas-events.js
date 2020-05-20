@@ -218,7 +218,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
         var searchBtn = this.quickSearchBtn;
 
         var createClickEvent = function (e) {
-            var nodeId = this.getElementsByTagName("input")[0].value;
+            var nodeId = this.id;
 
             // set text of quick-search to match suggested word
             quickSearchBar.value = nodeId;
@@ -275,11 +275,11 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                     // create a container to hold the text/click event for the
                     // suggested id
                     var suggestId = document.createElement("DIV");
+                    suggestId.id = word;
+
                     suggestId.innerHTML =
                         "<strong>" + word.substr(0, query.length) + "</strong>";
                     suggestId.innerHTML += word.substr(query.length);
-                    suggestId.innerHTML +=
-                        "<input type='hidden' value='" + word + "'>";
 
                     // add click event so user can select id from menu
                     suggestId.addEventListener("mousedown", createClickEvent);
