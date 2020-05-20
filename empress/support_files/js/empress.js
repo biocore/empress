@@ -1,13 +1,3 @@
-// <<<<<<< HEAD
-// define([
-//     "underscore",
-//     "Camera",
-//     "Drawer",
-//     "Colorer",
-//     "VectorOps",
-//     "CanvasEvents",
-// ], function (_, Camera, Drawer, Colorer, VectorOps, CanvasEvents) {
-// =======
 define([
     "Camera",
     "Drawer",
@@ -146,6 +136,10 @@ define([
         this._drawer.loadNodeBuff(this.getNodeCoords());
         this.drawTree();
         this._events.setMouseEvents();
+        var nodeNames = Object.keys(this._nameToKeys);
+        nodeNames = nodeNames.filter((n) => !n.includes("EmpressNode"));
+        nodeNames.sort();
+        this._events.autocomplete(nodeNames);
     };
 
     /**
@@ -153,6 +147,7 @@ define([
      */
     Empress.prototype.drawTree = function () {
         this._drawer.loadTreeBuf(this.getCoords());
+        this._drawer.loadNodeBuff(this.getNodeCoords());
         this._drawer.draw();
     };
 
