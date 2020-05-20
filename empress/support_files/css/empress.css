@@ -895,3 +895,7 @@ button.close {
 button.close:hover {
     background-color: gray;
 }
+
+#hover-table-notes {
+  font-size: xx-small;
+}
