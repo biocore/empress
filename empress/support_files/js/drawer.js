@@ -1,4 +1,4 @@
-define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
+define(["glMatrix", "Camera"], function (gl, Camera) {
     //  Shaders used in Drawer
     var vertShaderTxt = [
         "precision mediump float;",
@@ -7,23 +7,28 @@ define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
         "uniform mat4 mvpMat;",
         "attribute vec3 color;",
         "varying vec3 c;",
+        "uniform float pointSize;",
         "",
         "void main()",
         "{",
         "  c = color;",
         "  gl_Position = mvpMat * vec4(vertPosition, 0.0, 1.0);",
-        "  gl_PointSize = 4.0;",
+        "  gl_PointSize = pointSize;",
         "}",
     ].join("\n");
     var fragShaderTxt = [
         "precision mediump float;",
         "varying vec3 c;",
+        "uniform int isSingle;",
         "",
         "void main()",
         "{",
-        "  float r = 0.0;",
-        "  vec2 cxy = 2.0 * gl_PointCoord - 1.0;",
-        "  r = dot(cxy, cxy);",
+        "float r = 0.0;",
+        "vec2 cxy = 2.0 * gl_PointCoord - 1.0;",
+        "r = dot(cxy, cxy);",
+        "if (r > 1.0 && isSingle == 1) {",
+        "   discard;",
+        "}",
         "  gl_FragColor = vec4(c,1);",
         "}",
     ].join("\n");
@@ -42,12 +47,20 @@ define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
      */
     function Drawer(canvas, cam) {
         this.canvas = canvas;
+        this.treeContainer = document.getElementById("tree-container");
         this.contex_ = canvas.getContext("webgl");
         this.cam = cam;
         this.VERTEX_SIZE = 5;
 
         // sets empress to light mode
         this.CLR_COL = 1;
+
+        // the center of the viewing window in tree coordinates
+        this.treeSpaceCenterX = null;
+        this.treeSpaceCenterY = null;
+
+        // the dimension of the canvas
+        this.dim = null;
     }
 
     /**
@@ -85,6 +98,8 @@ define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
 
         // store references to the matrix uniforms
         s.mvpMat = c.getUniformLocation(s, "mvpMat");
+        s.isSingle = c.getUniformLocation(s, "isSingle");
+        s.pointSize = c.getUniformLocation(s, "pointSize");
 
         // buffer object for tree
         s.treeVertBuff = c.createBuffer();
@@ -113,11 +128,9 @@ define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
         this.scaleBy = 1.2;
 
         // place camera
-        this.cam.placeCamera(
-            [0, 0, $(window).width() / 2],
-            [0, 0, 0],
-            [0, 1, 0]
-        );
+        this.cam.placeCamera([0, 0, this.dim / 2], [0, 0, 0], [0, 1, 0]);
+
+        this._findViewingCenter();
     };
 
     /**
@@ -125,12 +138,17 @@ define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
      * window width.
      */
     Drawer.prototype.setCanvasSize = function () {
-        const WIDTH = $(window).width();
+        var width = this.treeContainer.offsetWidth;
+        var height = this.treeContainer.offsetHeight;
 
-        // make canvas a square whose side is equal to window width
+        // canvas needs to be a square in order simplify various calculations
+        // such as zoom/moving tree
+        // set size of canvas to be the larger of the two inorder to fill the
+        // the available space
+        this.dim = width > height ? width : height;
         var can = this.contex_.canvas;
-        can.width = WIDTH;
-        can.height = WIDTH;
+        can.width = this.dim;
+        can.height = this.dim;
     };
 
     /**
@@ -288,13 +306,17 @@ define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
         c.uniformMatrix4fv(s.mvpMat, false, mvp);
 
         // draw tree nodes
+        c.uniform1i(s.isSingle, 1);
+        c.uniform1f(s.pointSize, 4.0);
         this.bindBuffer(s.nodeVertBuff);
         c.drawArrays(c.POINTS, 0, this.nodeSize);
 
         // draw selected node
+        c.uniform1f(s.pointSize, 9.0);
         this.bindBuffer(s.selectedNodeBuff);
         c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 
+        c.uniform1i(s.isSingle, 0);
         this.bindBuffer(s.treeVertBuff);
         c.drawArrays(c.LINES, 0, this.treeVertSize);
 
@@ -311,7 +333,7 @@ define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
      */
     Drawer.prototype.toTreeCoords = function (x, y) {
         // get value of center of canvas in screen coorindates
-        var center = $(window).width() / 2;
+        var center = this.dim / 2;
 
         // center (x,y) in screen space
         x = x - center;
@@ -326,6 +348,15 @@ define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
         return { x: treeSpace[0], y: treeSpace[1] };
     };
 
+    /**
+     *
+     * Convert world coordinates to screen coordinates.
+     *
+     * @param {Float} x The x coordinate.
+     * @param {Float} y The y coordinate.
+     * @returns {Object} Object with an x and y attribute corresponding to the
+     * screen coordinates.
+     */
     Drawer.prototype.toScreeSpace = function (x, y) {
         // create MVP matrix
         var mvp = gl.mat4.create();
@@ -340,6 +371,20 @@ define(["jquery", "glMatrix", "Camera"], function ($, gl, Camera) {
         y = (screenSpace[1] * -0.5 + 0.5) * this.canvas.offsetHeight;
 
         return { x: x, y: y };
+    };
+
+    /**
+     * Find the coordinate of the center of the viewing window in tree
+     * coordinates
+     *
+     * @private
+     */
+    Drawer.prototype._findViewingCenter = function () {
+        var width = this.treeContainer.offsetWidth;
+        var height = this.treeContainer.offsetHeight;
+        var center = this.toTreeCoords(width / 2, height / 2);
+        this.treeSpaceCenterX = center.x;
+        this.treeSpaceCenterY = center.y;
     };
 
     return Drawer;

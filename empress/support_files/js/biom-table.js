@@ -133,6 +133,7 @@ define([], function () {
             for (var i = 0; i < this._obs[sample].length; i++) {
                 if (this._obs[sample][i] === obID) {
                     result[cVal] += 1;
+                    break;
                 }
             }
         }
@@ -170,16 +171,16 @@ define([], function () {
      * Returns an array of unique values in a metadata column. If column is
      * numeric then the array is sorted in ascending order.
      *
-     * @param{Object} category The column of data
+     * @param{Object} field The column of data
      *
      * @return{Object}
      */
-    BIOMTable.prototype.getUniqueSampleValues = function (category) {
+    BIOMTable.prototype.getUniqueSampleValues = function (field) {
         var values = new Set();
-        var isNumeric = this._types[category] === "n";
+        var isNumeric = this._types[field] === "n";
         for (var sample in this._samp) {
             // grab next value in column
-            var cVal = this._samp[sample][category];
+            var cVal = this._samp[sample][field];
 
             // ignore missing data
             values.add(cVal);
@@ -264,22 +265,22 @@ define([], function () {
     };
 
     /**
-     * Returns an Object mapping sample cateogry values to the number of samples
+     * Returns an Object mapping sample field values to the number of samples
      * with that value.
      *
-     * For example if cat == 'body_site' then this function will return an
+     * For example if field == 'body_site' then this function will return an
      * an object that maps each body site (oral, gut,...) to the number of
      * samples in 'samples' labelled as being from that body site.
      *
      * @param{Array} samples A list of sample ids
-     * @param{String} cat The category to count
+     * @param{String} field The category to count
      *
      * @return{Object}
      */
-    BIOMTable.prototype.getSampleValuesCount = function (samples, cat) {
+    BIOMTable.prototype.getSampleValuesCount = function (samples, field) {
         var result = {};
         for (var i = 0; i < samples.length; i++) {
-            var fVal = this._samp[samples[i]][cat];
+            var fVal = this._samp[samples[i]][field];
             if (fVal in result) {
                 result[fVal] += 1;
             } else {

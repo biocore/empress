@@ -133,7 +133,6 @@ input[type=checkbox]:checked::before {
     top: 1px;
 }
 
-
 /* slide checkbox */
 
 .switch {
@@ -289,8 +288,6 @@ label:hover .tooltip {
     overflow: auto;
 }
 
-#hover-table
-
 #hover-table tr {
     padding: 0px 15px;
 }
@@ -382,6 +379,12 @@ canvas {
     height: 100vh;
 }
 
+#tree-container {
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
 #dvicontainer {
     position: fixed;
     top: 0vh;
@@ -390,6 +393,8 @@ canvas {
     height: 100%;
     z-index: 10;
     overflow: hidden;
+    margin: none;
+    padding: none;
 }
 
 
@@ -432,7 +437,6 @@ canvas {
     left: 100vw;
     transform: translateX(-100%);
     width: 450px;
-    opacity: 0.5;
 }
 
 #show-ctrl {
@@ -465,11 +469,24 @@ button.side-header {
     font-size: 11pt;
 }
 
+#side-header-search-btn {
+    color: white;
+    background-color: #BEBEBE;
+    height: 34px;
+    border: 0;
+    cursor: pointer;
+    outline: none;
+    padding: 0px 15px;
+    border-radius: 3px;
+    font-size: 10pt;
+}
+
 p.side-header {
     margin: 0;
+    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
 }
 
 p.side-header input[type=text]:hover {
@@ -490,6 +507,36 @@ p.side-header button {
     background-color: transparent;
 }
 
+#autocomplete-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.autocomplete-items {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    /*position the autocomplete items to be the same width as the container:*/
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 500px;
+    overflow: auto;
+}
+.autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-bottom: 1px solid #d4d4d4;
+}
+.autocomplete-items div:hover {
+    /*when hovering an item:*/
+    background-color: #e9e9e9;
+}
+
 .active, button.side-header:hover, p.side-header button:hover, #show-ctrl:hover {
     background-color: #555;
 }
@@ -506,6 +553,10 @@ p.side-header button {
     border-color: grey;
     background-color: white;
     font-size: 10.5pt;
+}
+
+.invalid-search {
+    background-color: #F08080 !important;
 }
 
 #quick-search::placeholder {
