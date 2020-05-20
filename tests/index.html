@@ -46,6 +46,7 @@
           'testBPTree' : './../tests/test-bp-tree',
           'testByteTree' : './../tests/test-byte-array',
           'testCamera' : './../tests/test-camera',
+          'testBIOMTable' : './../tests/test-biom-table',
           'testColorer' : './../tests/test-colorer',
           'testSummaryHelper': './../tests/test-summary-helper',
           'testUtil': './../tests/test-util'
@@ -56,13 +57,13 @@
     require(
         ['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray', 'BPTree',
          'Camera', 'Colorer', 'BiomTable', 'SummaryHelper', 'util',
-         'testBPTree', 'testByteTree', 'testCamera', 'testColorer',
-         'testSummaryHelper', 'testUtil'],
+         'testBPTree', 'testByteTree', 'testBIOMTable', 'testCamera',
+         'testColorer', 'testSummaryHelper', 'testUtil'],
 
         // start tests
         function ($, gl, chroma, underscore, ByteArray, BPTree, Camera,
-          Colorer, BiomTable, SummaryHelper, util, testBPTree, testByteTree,
-          testCamera, testColorer, testSummaryHelper, testUtil) {
+          testBIOMTable, Colorer, BiomTable, SummaryHelper, util, testBPTree,
+          testByteTree, testCamera, testColorer, testSummaryHelper, testUtil) {
             $(document).ready(function() {
                 QUnit.start();
             });

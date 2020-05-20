@@ -9,7 +9,7 @@
   <body>
 
     <!-- The tree -->
-    <div class="tree-container">
+    <div id="tree-container">
       <div class="container">
         <canvas class="tree-surface" id="tree-surface">
             Your browser does not support HTML5
@@ -32,7 +32,14 @@
 
     <!-- hover box -->
     <div class="hidden" id="hover-box">
+      <h1 id="hover-table-node-id"></h1>
       <table id="hover-table"></table>
+      <br><strong>Select a metadata column to summarize</strong>
+      <label class="hover-select-container">
+        <select id="hover-select"></select>
+      </label>
+      <button id="hover-add-btn">Add</button>
+      <div id="hover-table-notes"></div>
     </div>
 
     <!-- color keys -->
@@ -77,6 +84,8 @@
             'Colorer' : './js/colorer',
             'VectorOps' : './js/vector-ops',
             'SummaryHelper' : './js/summary-helper',
+            'CanvasEvents' : './js/canvas-events',
+            'SelectedNodeMenu' : './js/select-node-menu',
             'util' : './js/util'
         }
     });
@@ -84,10 +93,12 @@
     empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray',
                     'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimationPanel',
                     'Animator', 'BIOMTable', 'Empress', 'Legend', 'Colorer',
-                    'VectorOps', 'SummaryHelper', 'util'],
+                    'VectorOps', 'SummaryHelper', 'CanvasEvents',
+                    'SelectedNodeMenu', 'util'],
         function($, gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
                  SidePanel, AnimationPanel, Animator, BIOMTable, Empress, Legend,
-                 Colorer, VectorOps, SummaryHelper, util) {
+                 Colorer, VectorOps, SummaryHelper, CanvasEvents,
+                 SelectedNodeMenu, util) {
         // initialze the tree and model
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr, {{ names }});
@@ -136,6 +147,7 @@
               document.querySelector(".side-content:not(.hidden)"));
           });
         });
+
         document.getElementById("loading-screen").classList.add("hidden");
     });
   </script>
