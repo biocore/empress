@@ -64,8 +64,9 @@ def match_inputs(
         The tree to be visualized.
     table: pd.DataFrame
         Representation of the feature table. The index should describe feature
-        IDs; the columns should describe sample IDs. (It's expected that feature
-        IDs in the table only describe tips in the tree, not internal nodes.)
+        IDs; the columns should describe sample IDs. (It's expected that
+        feature IDs in the table only describe tips in the tree, not internal
+        nodes.)
     sample_metadata: pd.DataFrame
         Sample metadata. The index should describe sample IDs; the columns
         should describe different sample metadata fields' names.
