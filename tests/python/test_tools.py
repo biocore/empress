@@ -39,7 +39,6 @@ class TestTools(unittest.TestCase):
             },
             index=list(self.table.columns)[:]
         )
-        # TODO Also test matching feature metadata, when that's supported
         self.feature_metadata = None
 
     def test_name_internal_nodes(self):
@@ -53,22 +52,25 @@ class TestTools(unittest.TestCase):
     def test_match_inputs_nothing_dropped(self):
         t = Tree.from_tree(self.tree)
         tools.name_internal_nodes(t)
-        filtered_table, filtered_sample_metadata = tools.match_inputs(
+        filtered_table, filtered_sample_metadata, feat_md = tools.match_inputs(
             t, self.table, self.sample_metadata
         )
         assert_frame_equal(filtered_table, self.table)
         assert_frame_equal(filtered_sample_metadata, self.sample_metadata)
+        # We didn't pass in any feature metadata, so we shouldn't get any out
+        self.assertIsNone(feat_md)
 
     def test_match_inputs_only_1_feature_in_table(self):
         # This is technically allowed (so long as this 1 feature is a tree tip)
         t = Tree.from_tree(self.tree)
         tools.name_internal_nodes(t)
         tiny_table = self.table.loc[["a"]]
-        filtered_tiny_table, filtered_sample_metadata = tools.match_inputs(
+        filtered_tiny_table, filtered_sample_metadata, fm = tools.match_inputs(
             t, tiny_table, self.sample_metadata
         )
         assert_frame_equal(filtered_tiny_table, tiny_table)
         assert_frame_equal(filtered_sample_metadata, self.sample_metadata)
+        self.assertIsNone(fm)
 
     def test_match_inputs_no_tips_in_table(self):
         t = Tree.from_tree(self.tree)
@@ -146,7 +148,7 @@ class TestTools(unittest.TestCase):
                 "visualization."
             )
         ):
-            out_table, out_sm = tools.match_inputs(
+            out_table, out_sm, fm = tools.match_inputs(
                 t, bad_table, self.sample_metadata,
                 filter_missing_features=True
             )
@@ -194,7 +196,7 @@ class TestTools(unittest.TestCase):
             tools.match_inputs(
                 t, bad_table, self.sample_metadata, ignore_missing_samples=True
             )
-            out_table, out_sm = tools.match_inputs(
+            out_table, out_sm, fm = tools.match_inputs(
                 t, bad_table, self.sample_metadata, ignore_missing_samples=True
             )
 
