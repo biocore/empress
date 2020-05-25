@@ -288,3 +288,49 @@ def split_taxonomy_if_present(feature_metadata):
                then this will raise an error, since the taxonomic ranks shared
                by the two features are not (easily) comparable.
     """
+    # The entries in this tuple should only be lowercase
+    VALID_TAXONOMY_COLUMN_NAMES = ("taxon", "taxonomy")
+    lowercase_col_names = [str(c).lower() for c in feature_metadata.columns]
+
+    # See if there is a "taxonomy column", and do some related validation on
+    # column names
+    invalid_level_columns_present = False
+    tax_col_index = None
+    for col, i in zip(lowercase_col_names, range(len(lowercase_col_names))):
+        if col in VALID_TAXONOMY_COLUMN_NAMES:
+            if tax_col_index is None:
+                tax_col_index = i
+            else:
+                # Error condition 1 -- multiple possible "taxonomy columns" :(
+                raise FeatureMetadataError(
+                    (
+                        "Multiple columns in the feature metadata have one of "
+                        "the following names (case insensitive): {}. At most "
+                        "one feature metadata column can have a name from "
+                        "that list."
+                    ).format(VALID_TAXONOMY_COLUMN_NAMES)
+                )
+        if col.startswith("Level"):
+            # This will be a problem *if* there's a taxonomy column, but if
+            # there isn't it's not a problem. (So we wait until after we've
+            # seen all of the feature metadata columns to raise an error about
+            # this.)
+            invalid_level_columns_present = True
+
+    if tax_col_index is not None:
+        if invalid_level_columns_present:
+            # Error condition 2 -- there is at least one "Level" column already
+            # in the feature metadata, which will make distinguishing these
+            # column(s) from the columns we were going to add from feature
+            # metadata difficult.
+            raise FeatureMetadataError(
+                "The feature metadata contains a taxonomy column, but also "
+                "already contains column(s) starting with the text 'Level'."
+            )
+        # TODO: Check that the number of semicolons in each feature's tax col
+        # is identical. If not, raise Error condition 3.
+        # TODO for after that: Actually do splitting. Use apply() to do this --
+        # shouldn't be too bad.
+    else:
+        # No taxonomy column found, so no need to modify the DataFrame
+        return feature_metadata
