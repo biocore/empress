@@ -36,7 +36,6 @@ def plot(
 
     # 1. Convert inputs to the formats we want
 
-    # TODO: do not ignore the feature metadata when specified by the user
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()
 
@@ -48,7 +47,6 @@ def plot(
     with open(tree_file) as file:
         t = parse_newick(file.readline())
     empress_tree = Tree.from_tree(to_skbio_treenode(t))
-    tools.name_internal_nodes(empress_tree)
 
     # 2. Now that we've converted/read/etc. all of the four input sources,
     # ensure that the samples and features they describe "match up" sanely.
@@ -59,10 +57,14 @@ def plot(
     # to tools.match_inputs() and keep using the transposed table for the rest
     # of this visualizer.
 
-    feature_table, sample_metadata = tools.match_inputs(
+    feature_table, sample_metadata, feature_metadata = tools.match_inputs(
         empress_tree, feature_table.T, sample_metadata, feature_metadata,
         ignore_missing_samples, filter_missing_features
     )
+
+    # Name internal nodes *after* doing input matching, so that we don't get
+    # things mixed up
+    tools.name_internal_nodes(empress_tree)
 
     # TODO: Add a check for empty samples/features in the table? Filtering this
     # sorta stuff out would help speed things up (and would be good to report
