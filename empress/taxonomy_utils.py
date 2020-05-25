@@ -66,7 +66,7 @@ def split_taxonomy(feature_metadata):
                         "that list."
                     ).format(VALID_TAXONOMY_COLUMN_NAMES)
                 )
-        if col.startswith("Level"):
+        if col.startswith("level"):
             # This will be a problem *if* there's a taxonomy column, but if
             # there isn't it's not a problem. (So we wait until after we've
             # seen all of the feature metadata columns to raise an error about
@@ -81,7 +81,8 @@ def split_taxonomy(feature_metadata):
             # metadata difficult.
             raise TaxonomyError(
                 "The feature metadata contains a taxonomy column, but also "
-                "already contains column(s) starting with the text 'Level'."
+                "already contains column(s) starting with the text 'Level' "
+                "(case insensitive)."
             )
 
         max_sc_count = 0

@@ -58,6 +58,25 @@ class TestTaxonomyUtils(unittest.TestCase):
         ):
             tax_utils.split_taxonomy(bad_fm)
 
+    def test_split_taxonomy_invalid_level_column(self):
+        bad_fm = self.feature_metadata.copy()
+        bad_fm.columns = ["Taxonomy", "Level 20"]
+        with self.assertRaisesRegex(
+            tax_utils.TaxonomyError,
+            (
+                "The feature metadata contains a taxonomy column, but also "
+                r"already contains column\(s\) starting with the text 'Level' "
+                r"\(case insensitive\)."
+            )
+        ):
+            tax_utils.split_taxonomy(bad_fm)
+
+    def test_split_taxonomy_level_column_but_no_taxonomy_column(self):
+        meh_fm = self.feature_metadata.copy()
+        meh_fm.columns = ["I'm ambivalent!", "Level 20"]
+        meh_fm2 = tax_utils.split_taxonomy(meh_fm)
+        assert_frame_equal(meh_fm, meh_fm2)
+
 
 if __name__ == "__main__":
     unittest.main()
