@@ -11,8 +11,10 @@ class DataMatchingError(Exception):
 class DataMatchingWarning(Warning):
     pass
 
+
 class FeatureMetadataError(Exception):
     pass
+
 
 def name_internal_nodes(tree):
     """ Name internal nodes that don't have a name
