@@ -365,8 +365,8 @@ canvas {
     position: fixed;
     top: 0vh;
     left: 0vw;
-    width: inherit;
-    height: 100vw;
+    width: 50vw;
+    height: 50vw;
 }
 
 /* referenced from  https://webglfundamentals.org/webgl/lessons/webgl-text-html.html*/
@@ -375,14 +375,14 @@ canvas {
     top: 0vh;
     left: 0vw;
     overflow: hidden;
-    width: inherit;
-    height: 100vh;
+    width: 50vw;
+    height: 50vw;
 }
 
 #tree-container {
     overflow: hidden;
-    width: 50%;
-    height: 100vh;
+    width: 50vw;
+    height: 50vw;
 }
 
 #dvicontainer {
