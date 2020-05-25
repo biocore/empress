@@ -244,8 +244,19 @@ class TestTools(unittest.TestCase):
         )
 
     def test_match_inputs_feature_metadata_nothing_dropped(self):
-        pass
-
+        t = Tree.from_tree(self.tree)
+        f_table, f_sample_metadata, f_feature_metadata = tools.match_inputs(
+            t, self.table, self.sample_metadata, self.feature_metadata
+        )
+        assert_frame_equal(f_table, self.table)
+        assert_frame_equal(f_sample_metadata, self.sample_metadata)
+        # Check that no filtering had to be done (the feature metadata might be
+        # out of order compared to the original since we called .loc[] on it,
+        # hence our use of check_like=True, but the actual data should be the
+        # same)
+        assert_frame_equal(
+            f_feature_metadata, self.feature_metadata, check_like=True
+        )
 
 
 if __name__ == "__main__":
