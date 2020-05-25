@@ -15,7 +15,7 @@ from q2_types.tree import NewickFormat
 
 from jinja2 import Environment, FileSystemLoader
 from bp import parse_newick, to_skbio_treenode
-from empress import tools
+from empress import tools, taxonomy_utils
 import pandas as pd
 from empress.tree import Tree
 from shutil import copytree
@@ -63,7 +63,7 @@ def plot(
     )
 
     if feature_metadata is not None:
-        feature_metadata = tools.split_taxonomy_if_present(feature_metadata)
+        feature_metadata = taxonomy_utils.split_taxonomy(feature_metadata)
 
     # TODO: Add a check for empty samples/features in the table? Filtering this
     # sorta stuff out would help speed things up (and would be good to report
