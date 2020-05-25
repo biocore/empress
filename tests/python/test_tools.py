@@ -258,6 +258,19 @@ class TestTools(unittest.TestCase):
             f_feature_metadata, self.feature_metadata, check_like=True
         )
 
+    def test_match_inputs_feature_metadata_no_features_in_tree(self):
+        t = Tree.from_tree(self.tree)
+        bad_fm = self.feature_metadata.copy()
+        bad_fm.index = range(len(self.feature_metadata.index))
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            (
+                "No features in the feature metadata are present in the tree, "
+                "either as tips or as internal nodes."
+            )
+        ):
+            tools.match_inputs(t, self.table, self.sample_metadata, bad_fm)
+
 
 if __name__ == "__main__":
     unittest.main()
