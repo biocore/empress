@@ -62,15 +62,18 @@ def plot(
         ignore_missing_samples, filter_missing_features
     )
 
-    # Name internal nodes *after* doing input matching, so that we don't get
-    # things mixed up
-    tools.name_internal_nodes(empress_tree)
+    if feature_metadata is not None:
+        feature_metadata = tools.split_taxonomy_if_present(feature_metadata)
 
     # TODO: Add a check for empty samples/features in the table? Filtering this
     # sorta stuff out would help speed things up (and would be good to report
     # to the user on via warnings).
 
     # 3. Go forward with creating the Empress visualization!
+
+    # Name internal nodes *after* doing input matching, so that we don't get
+    # things mixed up
+    tools.name_internal_nodes(empress_tree)
 
     # extract balance parenthesis
     bp_tree = list(t.B)

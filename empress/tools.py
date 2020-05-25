@@ -11,6 +11,8 @@ class DataMatchingError(Exception):
 class DataMatchingWarning(Warning):
     pass
 
+class FeatureMetadataError(Exception):
+    pass
 
 def name_internal_nodes(tree):
     """ Name internal nodes that don't have a name
@@ -241,3 +243,48 @@ def match_inputs(
             )
 
     return ff_table, sf_sample_metadata, feature_metadata
+
+
+def split_taxonomy_if_present(feature_metadata):
+    """ Attempts to find a taxonomy column and split it into taxonomic levels.
+
+    If one of the columns in the feature metadata DataFrame (ignoring case)
+    is named "Taxon" or "Taxonomy", this will return a new DataFrame where
+    the column in question is removed and replaced with S + 1 new columns,
+    where S is the number of semicolons present in each feature's taxonomy.
+
+    Basically, this lets us convert taxonomy annotations to an easier-to-work-
+    with format; instead of having a single column for taxonomy, we'll have one
+    column per taxonomy level. This will make life easier.
+
+    Parameters
+    ----------
+    feature_metadata : pd.DataFrame
+       DataFrame describing feature metadata.
+
+    Returns
+    -------
+    taxsplit_feature_metadata : pd.DataFrame
+        A version of the input feature metadata split as described above. (If
+        none of the columns in the feature metadata were identified as being
+        taxonomy columns, this DataFrame is identical to the input DataFrame.)
+
+    Raises
+    ------
+    FeatureMetadataError
+        If any of the following conditions are met:
+            1. Multiple possible "taxonomy columns" are present in the input
+               DataFrame: for example, both a "Taxon" and "Taxonomy" column are
+               present, or both a "taxon" and "Taxon" column are present.
+            2. A taxonomy column is present in the input DataFrame, and there
+               is already at least one column in the DataFrame that starts with
+               "Level".
+            3. A taxonomy column is present in the input DataFrame, but not all
+               features' taxonomies have the same number of semicolons. For
+               example, if one feature has the annotation
+                    "k__;p__;c__;o__;f__;g__;s__"
+               ... and another feature has the annotation
+                    "k__;p__;c__;o__;f__"
+               then this will raise an error, since the taxonomic ranks shared
+               by the two features are not (easily) comparable.
+    """
