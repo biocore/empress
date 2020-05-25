@@ -499,6 +499,8 @@ define([
         var coords = [];
         this._drawer.loadSampleThickBuf([]);
 
+        var corners;
+
         // In the corner case where the root node (located at index tree.size)
         // has an assigned color, thicken the root's drawn vertical line when
         // drawing the tree in Rectangular layout mode
@@ -532,7 +534,7 @@ define([
                  * -----|
                  * bL   bR---
                  */
-                var corners = {
+                corners = {
                     tL: [
                         this.getX(this._treeData[parent]),
                         this.getY(this._treeData[node]) + amount,
@@ -575,28 +577,20 @@ define([
                 }
                 // Thicken the actual "node" portion, extending from the center
                 // of the layout
-                var x1 = this._treeData[node].xc0;
-                var y1 = this._treeData[node].yc0;
-                var x2 = this.getX(this._treeData[node]);
-                var y2 = this.getY(this._treeData[node]);
-                var corners = VectorOps.computeBoxCorners(
-                    x1,
-                    y1,
-                    x2,
-                    y2,
+                corners = VectorOps.computeBoxCorners(
+                    this._treeData[node].xc0,
+                    this._treeData[node].yc0,
+                    this.getX(this._treeData[node]),
+                    this.getY(this._treeData[node]),
                     amount
                 );
                 this._addTriangleCoords(coords, corners, color);
             } else {
-                var x1 = this.getX(this._treeData[parent]);
-                var y1 = this.getY(this._treeData[parent]);
-                var x2 = this.getX(this._treeData[node]);
-                var y2 = this.getY(this._treeData[node]);
-                var corners = VectorOps.computeBoxCorners(
-                    x1,
-                    y1,
-                    x2,
-                    y2,
+                corners = VectorOps.computeBoxCorners(
+                    this.getX(this._treeData[parent]),
+                    this.getY(this._treeData[parent]),
+                    this.getX(this._treeData[node]),
+                    this.getY(this._treeData[node]),
                     amount
                 );
                 this._addTriangleCoords(coords, corners, color);
