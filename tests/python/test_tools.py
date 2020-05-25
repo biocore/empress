@@ -284,6 +284,29 @@ class TestTools(unittest.TestCase):
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
         assert_frame_equal(self.feature_metadata.loc[["e"]], f_bad_fm)
 
+    def test_split_taxonomy_if_present_no_tax_column(self):
+        # It's designed to work on *feature metadata*, but no reason we can't
+        # just use the sample metadata -- this function doesn't know the
+        # difference
+        sm2 = self.sample_metadata.copy()
+        sm3 = tools.split_taxonomy_if_present(self.sample_metadata)
+        assert_frame_equal(sm2, sm3)
+
+    def test_split_taxonomy_if_present_multiple_tax_columns(self):
+        bad_fm = self.feature_metadata.copy()
+        bad_fm.columns = ["Taxonomy", "taxon"]
+        # As with above, parentheses mess up regexes -- raw strings fix that
+        with self.assertRaisesRegex(
+            tools.FeatureMetadataError,
+            (
+                "Multiple columns in the feature metadata have one of the "
+                r"following names \(case insensitive\): "
+                r"\('taxon', 'taxonomy'\). At most one feature metadata "
+                "column can have a name from that list."
+            )
+        ):
+            tools.split_taxonomy_if_present(bad_fm)
+
 
 if __name__ == "__main__":
     unittest.main()
