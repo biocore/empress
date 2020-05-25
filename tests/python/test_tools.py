@@ -271,6 +271,19 @@ class TestTools(unittest.TestCase):
         ):
             tools.match_inputs(t, self.table, self.sample_metadata, bad_fm)
 
+    def test_match_inputs_feature_metadata_some_features_dropped(self):
+        t = Tree.from_tree(self.tree)
+        # Manipulate bad_fm so that only the "e" feature should get preserved
+        # (since it's actually in the tree, while "asdf" and "hjkl" aren't)
+        bad_fm = self.feature_metadata.copy()
+        bad_fm.index = ["e", "asdf", "hjkl"]
+        f_table, f_sample_metadata, f_bad_fm = tools.match_inputs(
+            t, self.table, self.sample_metadata, bad_fm
+        )
+        assert_frame_equal(f_table, self.table)
+        assert_frame_equal(f_sample_metadata, self.sample_metadata)
+        assert_frame_equal(self.feature_metadata.loc[["e"]], f_bad_fm)
+
 
 if __name__ == "__main__":
     unittest.main()
