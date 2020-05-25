@@ -298,10 +298,13 @@ def split_taxonomy_if_present(feature_metadata):
     # column names
     invalid_level_columns_present = False
     tax_col_index = None
+    tax_col_name = None
     for col, i in zip(lowercase_col_names, range(len(lowercase_col_names))):
         if col in VALID_TAXONOMY_COLUMN_NAMES:
             if tax_col_index is None:
                 tax_col_index = i
+                # ("col" has already been set to lowercase)
+                tax_col_name = feature_metadata.columns[i]
             else:
                 # Error condition 1 -- multiple possible "taxonomy columns" :(
                 raise FeatureMetadataError(
@@ -329,10 +332,51 @@ def split_taxonomy_if_present(feature_metadata):
                 "The feature metadata contains a taxonomy column, but also "
                 "already contains column(s) starting with the text 'Level'."
             )
-        # TODO: Check that the number of semicolons in each feature's tax col
-        # is identical. If not, raise Error condition 3.
-        # TODO for after that: Actually do splitting. Use apply() to do this --
-        # shouldn't be too bad.
+
+        # NOTE / TODO: It should be possible to combine validation and
+        # splitting into a single use of apply(). However, not doing this makes
+        # the code simpler (and lets us defer actually creating a new feature
+        # metadata object until we know we need to do so).
+        sc_count = None
+
+        def validate_semicolon_count(fm_row):
+            # We need to be able to update sc_count as we go through each row,
+            # and Python gets angry if we don't explicitly declare sc_count as
+            # "nonlocal" before referencing it here. See
+            # https://stackoverflow.com/a/46018922/10730311
+            nonlocal sc_count
+            row_num_semicolons = fm_row.loc[tax_col_name].count(";")
+            if sc_count is None:
+                sc_count = row_num_semicolons
+            elif sc_count != row_num_semicolons:
+                # Error condition 3 -- inconsistent semicolon counts
+                raise FeatureMetadataError(
+                    "The number of semicolons in the feature metadata's "
+                    "taxonomy column is not consistent for every feature."
+                )
+        # Validate semicolons (this works on a per-row basis even though axis
+        # is "columns", it's because each call to validate_semicolon_count()
+        # gets a Series of columns which is technically a row I guess)
+        feature_metadata.apply(validate_semicolon_count, axis="columns")
+
+        # OK, now we know the taxonomy information is well-formed. We can
+        # actually do splitting now.
+        def split_taxonomy_col(fm_row):
+            return [r.strip() for r in fm_row.loc[tax_col_name].split(";")]
+
+        # Our use of result_type="expand" means that tax_levels will be a
+        # DataFrame with the same index as feature_metadata but with one column
+        # for each taxonomic level (in order -- Kingdom, Phylum, etc.)
+        tax_levels = feature_metadata.apply(
+            split_taxonomy_col, axis="columns", result_type="expand"
+        )
+        # Assign human-friendly column names: Level 1, Level 2, ...
+        tax_levels.columns = [
+            "Level {}".format(i) for i in range(1, len(tax_levels.columns) + 1)
+        ]
+        fm_no_tax = feature_metadata.drop(columns=tax_col_name)
+        # Finally, join the f.m. with the tax. levels DF by the index.
+        return pd.concat([fm_no_tax, tax_levels], axis="columns")
     else:
         # No taxonomy column found, so no need to modify the DataFrame
         return feature_metadata
