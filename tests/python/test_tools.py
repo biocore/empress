@@ -39,7 +39,31 @@ class TestTools(unittest.TestCase):
             },
             index=list(self.table.columns)[:]
         )
-        self.feature_metadata = None
+        # (These are some Greengenes taxonomy annotations I took from the
+        # moving pictures taxonomy.qza file. I made up the confidences.)
+        self.feature_metadata = pd.DataFrame(
+            {
+                "Taxonomy": [
+                    (
+                        "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                        "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; "
+                        "s__"
+                    ),
+                    (
+                        "k__Bacteria; p__Proteobacteria; "
+                        "c__Gammaproteobacteria; o__Pasteurellales; "
+                        "f__Pasteurellaceae; g__; s__"
+                    ),
+                    (
+                        "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                        "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; "
+                        "s__uniformis"
+                    )
+                ],
+                "Confidence": [0.95, 0.8, 0]
+            },
+            index=["e", "h", "a"]
+        )
 
     def test_name_internal_nodes(self):
         t = Tree.from_tree(self.tree)
@@ -51,7 +75,6 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_nothing_dropped(self):
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         filtered_table, filtered_sample_metadata, feat_md = tools.match_inputs(
             t, self.table, self.sample_metadata
         )
@@ -63,7 +86,6 @@ class TestTools(unittest.TestCase):
     def test_match_inputs_only_1_feature_in_table(self):
         # This is technically allowed (so long as this 1 feature is a tree tip)
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         tiny_table = self.table.loc[["a"]]
         filtered_tiny_table, filtered_sample_metadata, fm = tools.match_inputs(
             t, tiny_table, self.sample_metadata
@@ -74,7 +96,6 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_no_tips_in_table(self):
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_table = self.table.copy()
         bad_table.index = range(len(self.table.index))
         with self.assertRaisesRegex(
@@ -95,7 +116,6 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_no_shared_samples(self):
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_sample_metadata = self.sample_metadata.copy()
         bad_sample_metadata.index = ["lol", "nothing", "here", "matches"]
         with self.assertRaisesRegex(
@@ -117,7 +137,6 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_filter_missing_features_error(self):
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_table = self.table.copy()
         # Replace one of the tip IDs in the table with an internal node ID,
         # instead. This isn't ok.
@@ -133,7 +152,6 @@ class TestTools(unittest.TestCase):
         """Checks that --p-filter-missing-features works as expected."""
         # The inputs are the same as with the above test
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_table = self.table.copy()
         bad_table.index = ["a", "b", "e", "g"]
         out_table = None
@@ -164,7 +182,6 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_ignore_missing_samples_error(self):
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_table = self.table.copy()
         # Replace one of the sample IDs in the table with some junk
         bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
@@ -179,7 +196,6 @@ class TestTools(unittest.TestCase):
         """Checks that --p-ignore-missing-samples works as expected."""
         # These inputs are the same as with the above test
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_table = self.table.copy()
         # Replace one of the sample IDs in the table with some junk
         bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
@@ -226,6 +242,10 @@ class TestTools(unittest.TestCase):
             self.sample_metadata.loc[["Sample1", "Sample2", "Sample4"]],
             check_dtype=False
         )
+
+    def test_match_inputs_feature_metadata_nothing_dropped(self):
+        pass
+
 
 
 if __name__ == "__main__":
