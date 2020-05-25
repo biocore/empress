@@ -17,17 +17,18 @@
         <div id="tip-label-container"></div>
         <div id="node-label-container"></div>
         <div class="square"></div>
+
+        <!-- Side panel -->
+        <div id="side-panel">
+          {% include 'side-panel.html'%}
+          {% include 'animate-panel.html' %}
+        </div>
+
+        <!-- show control panel button -->
+        <button id="show-ctrl" title="Show control panel" style="font-size: 10pt; padding: 0 0 3px 3px;" class="hidden">&#9699;</button>
+
       </div>
 
-      <!-- Side panel -->
-      <div id="side-panel">
-        {% include 'side-panel.html'%}
-        {% include 'animate-panel.html' %}
-      </div>
-
-      <!-- show control panel button -->
-      <button id="show-ctrl" title="Show control panel" style="font-size: 10pt;
-                padding: 0 0 3px 3px;" class="hidden">&#9699;</button>
     </div>
 
     <!-- hover box -->
