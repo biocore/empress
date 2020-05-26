@@ -29,6 +29,8 @@ def split_taxonomy(feature_metadata):
         A version of the input feature metadata split as described above. (If
         none of the columns in the feature metadata were identified as being
         taxonomy columns, this DataFrame is identical to the input DataFrame.)
+        The new "Level" columns will be placed at the start of the returned
+        DataFrame's columns.
 
     Raises
     ------
@@ -124,7 +126,7 @@ def split_taxonomy(feature_metadata):
         ]
         fm_no_tax = feature_metadata.drop(columns=tax_col_name)
         # Finally, join the f.m. with the tax. levels DF by the index.
-        return pd.concat([fm_no_tax, tax_levels], axis="columns")
+        return pd.concat([tax_levels, fm_no_tax], axis="columns")
     else:
         # No taxonomy column found, so no need to modify the DataFrame
         return feature_metadata
