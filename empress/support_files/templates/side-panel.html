@@ -10,7 +10,7 @@
 </div>
 
 <!-- Sample Coloring Options -->
-<button class="side-header collapsible">Sample Coloring</button>
+<button class="side-header collapsible">Sample Metadata Coloring</button>
 <div class="side-content control hidden">
   <p>
     <label for="sample-chk">Color by...</label>
@@ -37,6 +37,35 @@
       </p>
       <p>
         <button id="sample-update" class="hidden">Update</button>
+      </p>
+    </div>
+  </p>
+</div>
+
+<!-- Feature Metadata Coloring Options -->
+<button class="side-header collapsible">Feature Metadata Coloring</button>
+<div class="side-content control hidden">
+  <p>
+    <label for="feature-chk">Color by...</label>
+    <input id="feature-chk" type="checkbox">
+    <label class="select-container">
+      <select id="feature-options"  disabled="true"></select>
+    </label>
+  </p>
+  <p class="hidden">
+    <div id="feature-add" class="hidden">
+      <p>
+        <label for="feature-color">Choose Color Map</label>
+        <label class="select-container">
+          <select id="feature-color"></select>
+        </label>
+      </p>
+      <p>
+        <label for="feature-line-width">Line Width</label>
+        <input id="feature-line-width" type="number" value="1">
+      </p>
+      <p>
+        <button id="feature-update" class="hidden">Update</button>
       </p>
     </div>
   </p>

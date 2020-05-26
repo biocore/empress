@@ -269,5 +269,53 @@ define(["Colorer"], function (Colorer) {
         };
     };
 
+    /**
+     * Initializes feature metadata coloring components
+     */
+    SidePanel.prototype.addFeatureTab = function () {
+        var sp = this;
+
+        // TODO replace with feature UI elements
+        var i, opt;
+        // add feature metadata categories / "columns"
+        // var selOpts = this.empress.getFeatureMetadataCategories();
+        // for (i = 0; i < selOpts.length; i++) {
+        //     opt = document.createElement("option");
+        //     opt.value = selOpts[i];
+        //     opt.innerHTML = selOpts[i];
+        //     this.sSel.appendChild(opt);
+        // }
+
+        // // The color map selector
+        // Colorer.addColorsToSelect(this.sColor);
+
+        // // toggle the sample/color map selectors
+        // this.sChk.onclick = function () {
+        //     if (sp.sChk.checked) {
+        //         sp.sSel.disabled = false;
+        //         sp.sAddOpts.classList.remove("hidden");
+        //         sp.sUpdateBtn.classList.remove("hidden");
+        //     } else {
+        //         sp.__samplePanelClose();
+        //     }
+        // };
+
+        // this.sSel.onchange = function () {
+        //     sp.sUpdateBtn.classList.remove("hidden");
+        // };
+
+        // this.sColor.onchange = function () {
+        //     sp.sUpdateBtn.classList.remove("hidden");
+        // };
+
+        // this.sLineWidth.onchange = function () {
+        //     sp.sUpdateBtn.classList.remove("hidden");
+        // };
+
+        // this.sUpdateBtn.onclick = function () {
+        //     sp._updateSample();
+        // };
+    };
+
     return SidePanel;
 });
