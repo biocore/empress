@@ -41,6 +41,14 @@ define(["Colorer"], function (Colorer) {
         this.sLineWidth = document.getElementById("sample-line-width");
         this.sUpdateBtn = document.getElementById("sample-update");
 
+        // feature metadata GUI components
+        this.fChk = document.getElementById("feature-chk");
+        this.fSel = document.getElementById("feature-options");
+        this.fAddOpts = document.getElementById("feature-add");
+        this.fColor = document.getElementById("feature-color");
+        this.fLineWidth = document.getElementById("feature-line-width");
+        this.fUpdateBtn = document.getElementById("feature-update");
+
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
 
@@ -278,43 +286,46 @@ define(["Colorer"], function (Colorer) {
         // TODO replace with feature UI elements
         var i, opt;
         // add feature metadata categories / "columns"
-        // var selOpts = this.empress.getFeatureMetadataCategories();
-        // for (i = 0; i < selOpts.length; i++) {
-        //     opt = document.createElement("option");
-        //     opt.value = selOpts[i];
-        //     opt.innerHTML = selOpts[i];
-        //     this.sSel.appendChild(opt);
-        // }
+        var selOpts = this.empress.getFeatureMetadataCategories();
+        for (i = 0; i < selOpts.length; i++) {
+            opt = document.createElement("option");
+            opt.value = selOpts[i];
+            opt.innerHTML = selOpts[i];
+            this.fSel.appendChild(opt);
+        }
 
-        // // The color map selector
-        // Colorer.addColorsToSelect(this.sColor);
+        // The color map selector
+        Colorer.addColorsToSelect(this.fColor);
 
-        // // toggle the sample/color map selectors
-        // this.sChk.onclick = function () {
-        //     if (sp.sChk.checked) {
-        //         sp.sSel.disabled = false;
-        //         sp.sAddOpts.classList.remove("hidden");
-        //         sp.sUpdateBtn.classList.remove("hidden");
-        //     } else {
-        //         sp.__samplePanelClose();
-        //     }
-        // };
+        // toggle the sample/color map selectors
+        this.fChk.onclick = function () {
+            if (sp.fChk.checked) {
+                sp.fSel.disabled = false;
+                sp.fAddOpts.classList.remove("hidden");
+                sp.fUpdateBtn.classList.remove("hidden");
+            } else {
+                // TODO analogue of this for feature metadata!!!
+                //sp.__samplePanelClose();
+            }
+        };
 
-        // this.sSel.onchange = function () {
-        //     sp.sUpdateBtn.classList.remove("hidden");
-        // };
+        this.fSel.onchange = function () {
+            sp.fUpdateBtn.classList.remove("hidden");
+        };
 
-        // this.sColor.onchange = function () {
-        //     sp.sUpdateBtn.classList.remove("hidden");
-        // };
+        this.fColor.onchange = function () {
+            sp.fUpdateBtn.classList.remove("hidden");
+        };
 
-        // this.sLineWidth.onchange = function () {
-        //     sp.sUpdateBtn.classList.remove("hidden");
-        // };
+        this.fLineWidth.onchange = function () {
+            sp.fUpdateBtn.classList.remove("hidden");
+        };
 
-        // this.sUpdateBtn.onclick = function () {
-        //     sp._updateSample();
-        // };
+        this.fUpdateBtn.onclick = function () {
+            // TODO analogue of this for features!!! (this will actually like
+            // DO the drawing lol)
+            sp._updateSample();
+        };
     };
 
     return SidePanel;

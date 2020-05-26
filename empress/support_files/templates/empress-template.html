@@ -110,6 +110,10 @@
           {{ sample_data | tojson }},
           {{ sample_data_type | tojson }}
         );
+        var fm = [
+            {{ feature_data_type | tojson }},
+            {{ feature_data | tojson }}
+        ];
         var empress = new Empress(
             tree,
             {{ tree_data | tojson }},
@@ -117,6 +121,7 @@
             {{ layout_to_coordsuffix | tojson }},
             '{{ default_layout }}',
             biom,
+            fm,
             canvas
         );
         empress.initialize();

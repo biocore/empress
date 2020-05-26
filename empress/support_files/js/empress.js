@@ -36,6 +36,7 @@ define([
         layoutToCoordSuffix,
         defaultLayout,
         biom,
+        fm,
         canvas
     ) {
         /**
@@ -98,6 +99,22 @@ define([
          * @private
          */
         this._biom = biom;
+
+        /**
+         * @type{Object}
+         * Feature metadata column names.
+         * @private
+         */
+        this._featureMetadataTypes = fm[0];
+
+        /**
+         * @type{Object}
+         * Feature metadata: keys are tree node IDs, and values are objects
+         * mapping feature metadata column names to the metadata value for that
+         * feature.
+         * @private
+         */
+        this._featureMetadata = fm[1];
 
         /**
          * @type{Object}
@@ -858,6 +875,15 @@ define([
      */
     Empress.prototype.getGradientStep = function (cat, grad, traj) {
         return this._biom.getGradientStep(cat, grad, traj);
+    };
+
+    /**
+     * Returns an array of feature metadata column names.
+     *
+     * @return {Array}
+     */
+    Empress.prototype.getFeatureMetadataCategories = function () {
+        return Object.keys(this._featureMetadataTypes);
     };
 
     return Empress;
