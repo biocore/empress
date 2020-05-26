@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------
 import unittest
 import pandas as pd
-from pandas.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal, assert_series_equal
 import empress.taxonomy_utils as tax_utils
 
 
@@ -30,11 +30,12 @@ class TestTaxonomyUtils(unittest.TestCase):
                         "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
                         "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; "
                         "s__uniformis"
-                    )
+                    ),
+                    "k__Bacteria; p__Firmicutes; c__Bacilli"
                 ],
-                "Confidence": [0.95, 0.8, 0]
+                "Confidence": [0.95, 0.8, 0, 1]
             },
-            index=["e", "h", "a"]
+            index=["f1", "f2", "f3", "f4"]
         )
 
     def test_split_taxonomy_no_tax_column(self):
@@ -76,6 +77,60 @@ class TestTaxonomyUtils(unittest.TestCase):
         meh_fm.columns = ["I'm ambivalent!", "Level 20"]
         meh_fm2 = tax_utils.split_taxonomy(meh_fm)
         assert_frame_equal(meh_fm, meh_fm2)
+
+    def test_split_taxonomy_basic_case(self):
+        initial_fm = self.feature_metadata.copy()
+        split_fm = tax_utils.split_taxonomy(initial_fm)
+
+        # First off, check that initial_fm was NOT modified: the input DF
+        # should remain untouched
+        assert_frame_equal(self.feature_metadata, initial_fm)
+
+        # Next, let's verify that split_fm looks how we expect it to look.
+        # ...First, by checking the columns -- should indicate that the
+        # correct number of taxonomic levels were identified
+        self.assertCountEqual(split_fm.columns, [
+            "Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Level 6",
+            "Level 7", "Confidence"
+        ])
+        # ...Next, check the index -- no features should've been dropped (that
+        # isn't even a thing that this function does, but let's be safe :P)
+        self.assertCountEqual(split_fm.index, ["f1", "f2", "f3", "f4"])
+
+        # Now, let's check each row individually. This is going to have to be
+        # a bit inelegant.
+        assert_series_equal(
+            split_fm.loc["f1"],
+            pd.Series({
+                "Level 1": "k__Bacteria",
+                "Level 2": "p__Bacteroidetes",
+                "Level 3": "c__Bacteroidia",
+                "Level 4": "o__Bacteroidales",
+                "Level 5": "f__Bacteroidaceae",
+                "Level 6": "g__Bacteroides",
+                "Level 7": "s__",
+                "Confidence": 0.95
+            }, name="f1")
+        )
+
+        #         "Taxonomy": [
+        #             (
+        #                 "k__Bacteria; p__Proteobacteria; "
+        #                 "c__Gammaproteobacteria; o__Pasteurellales; "
+        #                 "f__Pasteurellaceae; g__; s__"
+        #             ),
+        #             (
+        #                 "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+        #                 "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; "
+        #                 "s__uniformis"
+        #             ),
+        #             "k__Bacteria; p__Firmicutes; c__Bacilli"
+        #         ],
+        #         "Confidence": [0.95, 0.8, 0, 1]
+        #     },
+        #     index=["f1", "f2", "f3", "f4"]
+        # )
+
 
 
 if __name__ == "__main__":
