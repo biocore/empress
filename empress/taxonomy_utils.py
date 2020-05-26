@@ -1,7 +1,12 @@
+import warnings
 import pandas as pd
 
 
 class TaxonomyError(Exception):
+    pass
+
+
+class TaxonomyWarning(Warning):
     pass
 
 
@@ -103,6 +108,20 @@ def split_taxonomy(feature_metadata):
         # to validate_semicolon_count() gets a Series of columns which is
         # technically a row I guess)
         feature_metadata.apply(find_max_semicolon_count, axis="columns")
+
+        if max_sc_count == 0:
+            # We allow this in the case of single-rank taxonomies (e.g. just
+            # kingdoms, for some reason). Can change this to an error if
+            # desired.
+            warnings.warn(
+                (
+                    "None of the taxonomy values in the feature metadata "
+                    "contain a semicolon (;). Please make sure your taxonomy "
+                    'is formatted so that "levels" are separated by '
+                    "semicolons."
+                ),
+                TaxonomyWarning
+            )
 
         # OK, actually do splitting now (taking into account max_sc_count)
         def split_taxonomy_col(fm_row):

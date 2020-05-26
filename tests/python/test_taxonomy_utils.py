@@ -151,7 +151,7 @@ class TestTaxonomyUtils(unittest.TestCase):
             }, name="f4")
         )
 
-    def test_split_taxonomy_no_semicolons(self):
+    def test_split_taxonomy_rows_with_no_semicolons(self):
         funky_fm = self.feature_metadata.copy()
         funky_fm.loc["f1", "Taxonomy"] = "birds aren't real"
         funky_fm.loc["f2", "Taxonomy"] = "theyve been drones"
@@ -201,6 +201,41 @@ class TestTaxonomyUtils(unittest.TestCase):
                 "Confidence": 1
             }, name="f4")
         )
+
+    def test_split_taxonomy_all_rows_no_semicolons(self):
+        funky_fm = self.feature_metadata.copy()
+        funky_fm.loc["f1", "Taxonomy"] = "Bacteria"
+        funky_fm.loc["f2", "Taxonomy"] = "Archaea"
+        funky_fm.loc["f3", "Taxonomy"] = "Bacteria"
+        funky_fm.loc["f4", "Taxonomy"] = "Viruses"
+        with self.assertWarnsRegex(
+            tax_utils.TaxonomyWarning,
+            (
+                "None of the taxonomy values in the feature metadata "
+                r"contain a semicolon \(;\). Please make sure your taxonomy "
+                'is formatted so that "levels" are separated by semicolons.'
+            )
+        ):
+            split_fm = tax_utils.split_taxonomy(funky_fm)
+
+        self.assertCountEqual(split_fm.columns, ["Level 1", "Confidence"])
+        assert_series_equal(
+            split_fm.loc["f1"],
+            pd.Series({"Level 1": "Bacteria", "Confidence": 0.95}, name="f1")
+        )
+        assert_series_equal(
+            split_fm.loc["f2"],
+            pd.Series({"Level 1": "Archaea", "Confidence": 0.8}, name="f2")
+        )
+        assert_series_equal(
+            split_fm.loc["f3"],
+            pd.Series({"Level 1": "Bacteria", "Confidence": 0}, name="f3")
+        )
+        assert_series_equal(
+            split_fm.loc["f4"],
+            pd.Series({"Level 1": "Viruses", "Confidence": 1}, name="f4")
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
