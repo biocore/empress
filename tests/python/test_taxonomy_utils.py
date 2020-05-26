@@ -151,6 +151,56 @@ class TestTaxonomyUtils(unittest.TestCase):
             }, name="f4")
         )
 
+    def test_split_taxonomy_no_semicolons(self):
+        funky_fm = self.feature_metadata.copy()
+        funky_fm.loc["f1", "Taxonomy"] = "birds aren't real"
+        funky_fm.loc["f2", "Taxonomy"] = "theyve been drones"
+        funky_fm.loc["f3", "Taxonomy"] = "all along :O"
+        split_fm = tax_utils.split_taxonomy(funky_fm)
+
+        # Notice that f4's taxonomy is still there -- so each feature will have
+        # 3 levels
+        self.assertCountEqual(split_fm.columns, [
+            "Level 1", "Level 2", "Level 3", "Confidence"
+        ])
+
+        # Check each row individually
+        assert_series_equal(
+            split_fm.loc["f1"],
+            pd.Series({
+                "Level 1": "birds aren't real",
+                "Level 2": "Unspecified",
+                "Level 3": "Unspecified",
+                "Confidence": 0.95
+            }, name="f1")
+        )
+        assert_series_equal(
+            split_fm.loc["f2"],
+            pd.Series({
+                "Level 1": "theyve been drones",
+                "Level 2": "Unspecified",
+                "Level 3": "Unspecified",
+                "Confidence": 0.8
+            }, name="f2")
+        )
+        assert_series_equal(
+            split_fm.loc["f3"],
+            pd.Series({
+                "Level 1": "all along :O",
+                "Level 2": "Unspecified",
+                "Level 3": "Unspecified",
+                "Confidence": 0
+            }, name="f3")
+        )
+        assert_series_equal(
+            split_fm.loc["f4"],
+            pd.Series({
+                "Level 1": "k__Bacteria",
+                "Level 2": "p__Firmicutes",
+                "Level 3": "c__Bacilli",
+                "Confidence": 1
+            }, name="f4")
+        )
 
 if __name__ == "__main__":
     unittest.main()
