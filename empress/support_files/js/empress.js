@@ -36,7 +36,8 @@ define([
         layoutToCoordSuffix,
         defaultLayout,
         biom,
-        fm,
+        featureMetadataColumns,
+        featureMetadata,
         canvas
     ) {
         /**
@@ -101,11 +102,11 @@ define([
         this._biom = biom;
 
         /**
-         * @type{Object}
+         * @type{Array}
          * Feature metadata column names.
          * @private
          */
-        this._featureMetadataTypes = fm[0];
+        this._featureMetadataColumns = featureMetadataColumns;
 
         /**
          * @type{Object}
@@ -114,7 +115,7 @@ define([
          * feature.
          * @private
          */
-        this._featureMetadata = fm[1];
+        this._featureMetadata = featureMetadata;
 
         /**
          * @type{Object}
@@ -883,7 +884,7 @@ define([
      * @return {Array}
      */
     Empress.prototype.getFeatureMetadataCategories = function () {
-        return Object.keys(this._featureMetadataTypes);
+        return this._featureMetadataColumns;
     };
 
     return Empress;

@@ -140,11 +140,8 @@ def plot(
     sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
                         for k, v in sample_data_type.items()}
 
-    # Convert feature metadata, same thing as with sample metadata
-    feature_data = feature_metadata.to_dict(orient='index')
-    feature_data_type = feature_metadata.dtypes.to_dict()
-    feature_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
-                         for k, v in feature_data_type.items()}
+    # Convert feature metadata, similarly to how we handle sample metadata
+    feature_metadata_json = feature_metadata.to_dict(orient='index')
 
     # create a mapping of observation ids and the samples that contain them
     obs_data = {}
@@ -160,8 +157,8 @@ def plot(
         'names_to_keys': names_to_keys,
         'sample_data': sample_data,
         'sample_data_type': sample_data_type,
-        'feature_data': feature_data,
-        'feature_data_type': feature_data_type,
+        'feature_metadata': feature_metadata_json,
+        'feature_metadata_columns': list(feature_metadata.columns),
         'obs_data': obs_data,
         'names': names,
         'layout_to_coordsuffix': layout_to_coordsuffix,
