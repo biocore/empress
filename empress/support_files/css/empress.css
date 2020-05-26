@@ -356,18 +356,7 @@ label:hover .tooltip {
     left: 0vw;
 }
 
-canvas {
-    width: 100vw;
-    height: 100vh;
-}
 
-.tree-surface {
-    position: fixed;
-    top: 0vh;
-    left: 0vw;
-    width: 50vw;
-    height: 50vw;
-}
 
 /* referenced from  https://webglfundamentals.org/webgl/lessons/webgl-text-html.html*/
 .container {
@@ -376,13 +365,13 @@ canvas {
     left: 0vw;
     overflow: hidden;
     width: 50vw;
-    height: 50vw;
+    height: 100vh;
 }
 
 #tree-container {
     overflow: hidden;
     width: 50vw;
-    height: 50vw;
+    height: 100vh;
 }
 
 #dvicontainer {
