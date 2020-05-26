@@ -899,3 +899,12 @@ button.close:hover {
 #hover-table-notes {
   font-size: xx-small;
 }
+
+/* Somewhere else in the CSS adjusts line height and justify-content,
+ * so we reset these here.
+ */
+.side-panel-notes {
+  font-size: small;
+  line-height: normal !important;
+  justify-content: start !important;
+}
