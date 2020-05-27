@@ -39,8 +39,31 @@ class TestTools(unittest.TestCase):
             },
             index=list(self.table.columns)[:]
         )
-        # TODO Also test matching feature metadata, when that's supported
-        self.feature_metadata = None
+        # (These are some Greengenes taxonomy annotations I took from the
+        # moving pictures taxonomy.qza file. I made up the confidences.)
+        self.feature_metadata = pd.DataFrame(
+            {
+                "Taxonomy": [
+                    (
+                        "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                        "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; "
+                        "s__"
+                    ),
+                    (
+                        "k__Bacteria; p__Proteobacteria; "
+                        "c__Gammaproteobacteria; o__Pasteurellales; "
+                        "f__Pasteurellaceae; g__; s__"
+                    ),
+                    (
+                        "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                        "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; "
+                        "s__uniformis"
+                    )
+                ],
+                "Confidence": [0.95, 0.8, 0]
+            },
+            index=["e", "h", "a"]
+        )
 
     def test_name_internal_nodes(self):
         t = Tree.from_tree(self.tree)
@@ -52,27 +75,27 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_nothing_dropped(self):
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
-        filtered_table, filtered_sample_metadata = tools.match_inputs(
+        filtered_table, filtered_sample_metadata, feat_md = tools.match_inputs(
             t, self.table, self.sample_metadata
         )
         assert_frame_equal(filtered_table, self.table)
         assert_frame_equal(filtered_sample_metadata, self.sample_metadata)
+        # We didn't pass in any feature metadata, so we shouldn't get any out
+        self.assertIsNone(feat_md)
 
     def test_match_inputs_only_1_feature_in_table(self):
         # This is technically allowed (so long as this 1 feature is a tree tip)
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         tiny_table = self.table.loc[["a"]]
-        filtered_tiny_table, filtered_sample_metadata = tools.match_inputs(
+        filtered_tiny_table, filtered_sample_metadata, fm = tools.match_inputs(
             t, tiny_table, self.sample_metadata
         )
         assert_frame_equal(filtered_tiny_table, tiny_table)
         assert_frame_equal(filtered_sample_metadata, self.sample_metadata)
+        self.assertIsNone(fm)
 
     def test_match_inputs_no_tips_in_table(self):
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_table = self.table.copy()
         bad_table.index = range(len(self.table.index))
         with self.assertRaisesRegex(
@@ -93,7 +116,6 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_no_shared_samples(self):
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_sample_metadata = self.sample_metadata.copy()
         bad_sample_metadata.index = ["lol", "nothing", "here", "matches"]
         with self.assertRaisesRegex(
@@ -115,7 +137,6 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_filter_missing_features_error(self):
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_table = self.table.copy()
         # Replace one of the tip IDs in the table with an internal node ID,
         # instead. This isn't ok.
@@ -131,7 +152,6 @@ class TestTools(unittest.TestCase):
         """Checks that --p-filter-missing-features works as expected."""
         # The inputs are the same as with the above test
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_table = self.table.copy()
         bad_table.index = ["a", "b", "e", "g"]
         out_table = None
@@ -146,7 +166,7 @@ class TestTools(unittest.TestCase):
                 "visualization."
             )
         ):
-            out_table, out_sm = tools.match_inputs(
+            out_table, out_sm, fm = tools.match_inputs(
                 t, bad_table, self.sample_metadata,
                 filter_missing_features=True
             )
@@ -162,7 +182,6 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_ignore_missing_samples_error(self):
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_table = self.table.copy()
         # Replace one of the sample IDs in the table with some junk
         bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
@@ -177,7 +196,6 @@ class TestTools(unittest.TestCase):
         """Checks that --p-ignore-missing-samples works as expected."""
         # These inputs are the same as with the above test
         t = Tree.from_tree(self.tree)
-        tools.name_internal_nodes(t)
         bad_table = self.table.copy()
         # Replace one of the sample IDs in the table with some junk
         bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
@@ -194,7 +212,7 @@ class TestTools(unittest.TestCase):
             tools.match_inputs(
                 t, bad_table, self.sample_metadata, ignore_missing_samples=True
             )
-            out_table, out_sm = tools.match_inputs(
+            out_table, out_sm, fm = tools.match_inputs(
                 t, bad_table, self.sample_metadata, ignore_missing_samples=True
             )
 
@@ -224,6 +242,47 @@ class TestTools(unittest.TestCase):
             self.sample_metadata.loc[["Sample1", "Sample2", "Sample4"]],
             check_dtype=False
         )
+
+    def test_match_inputs_feature_metadata_nothing_dropped(self):
+        t = Tree.from_tree(self.tree)
+        f_table, f_sample_metadata, f_feature_metadata = tools.match_inputs(
+            t, self.table, self.sample_metadata, self.feature_metadata
+        )
+        assert_frame_equal(f_table, self.table)
+        assert_frame_equal(f_sample_metadata, self.sample_metadata)
+        # Check that no filtering had to be done (the feature metadata might be
+        # out of order compared to the original since we called .loc[] on it,
+        # hence our use of check_like=True, but the actual data should be the
+        # same)
+        assert_frame_equal(
+            f_feature_metadata, self.feature_metadata, check_like=True
+        )
+
+    def test_match_inputs_feature_metadata_no_features_in_tree(self):
+        t = Tree.from_tree(self.tree)
+        bad_fm = self.feature_metadata.copy()
+        bad_fm.index = range(len(self.feature_metadata.index))
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            (
+                "No features in the feature metadata are present in the tree, "
+                "either as tips or as internal nodes."
+            )
+        ):
+            tools.match_inputs(t, self.table, self.sample_metadata, bad_fm)
+
+    def test_match_inputs_feature_metadata_some_features_dropped(self):
+        t = Tree.from_tree(self.tree)
+        # Manipulate bad_fm so that only the "e" feature should get preserved
+        # (since it's actually in the tree, while "asdf" and "hjkl" aren't)
+        bad_fm = self.feature_metadata.copy()
+        bad_fm.index = ["e", "asdf", "hjkl"]
+        f_table, f_sample_metadata, f_bad_fm = tools.match_inputs(
+            t, self.table, self.sample_metadata, bad_fm
+        )
+        assert_frame_equal(f_table, self.table)
+        assert_frame_equal(f_sample_metadata, self.sample_metadata)
+        assert_frame_equal(self.feature_metadata.loc[["e"]], f_bad_fm)
 
 
 if __name__ == "__main__":

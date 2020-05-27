@@ -156,28 +156,28 @@ class TestTree(unittest.TestCase):
                            (0.0, 0.0)]       # i (root)
         self.check_coords(t, "xr", "yr", expected_coords)
 
-        # Check that lowestchildyr and highestchildyr attributes were set
+        # Check that lowest_child_yr and highest_child_yr attributes were set
         # properly. We do this by iterating over tree.non_tips(), which (like
         # check_coords()) also uses a post-order traversal.
         # (Note that the "coordinates" in this list of 2-tuples are ordered as
         # (lowest child y-coordinate, highest child y-coordinate). Computing
         # these from the list above should be pretty simple.)
-        expected_lowesthighestchildyr = [(-296.875, -171.875),  # f
-                                         (-234.375,  -46.875),  # g
-                                         (78.125,    203.125),  # h
-                                         (-140.625,  140.625)]  # i
+        expected_lowesthighest_child_yr = [(-296.875, -171.875),  # f
+                                           (-234.375,  -46.875),  # g
+                                           (78.125,    203.125),  # h
+                                           (-140.625,  140.625)]  # i
         for i, node in enumerate(t.non_tips()):
-            l, h = expected_lowesthighestchildyr[i]
-            self.assertTrue(hasattr(node, "lowestchildyr"))
-            self.assertTrue(hasattr(node, "highestchildyr"))
-            self.assertAlmostEqual(node.lowestchildyr, l, places=5)
-            self.assertAlmostEqual(node.highestchildyr, h, places=5)
+            l, h = expected_lowesthighest_child_yr[i]
+            self.assertTrue(hasattr(node, "lowest_child_yr"))
+            self.assertTrue(hasattr(node, "highest_child_yr"))
+            self.assertAlmostEqual(node.lowest_child_yr, l, places=5)
+            self.assertAlmostEqual(node.highest_child_yr, h, places=5)
 
         # ... And also check that tip nodes *don't* have these attributes,
         # since tips don't have children.
         for node in t.tips():
-            self.assertFalse(hasattr(node, "lowestchildyr"))
-            self.assertFalse(hasattr(node, "highestchildyr"))
+            self.assertFalse(hasattr(node, "lowest_child_yr"))
+            self.assertFalse(hasattr(node, "highest_child_yr"))
 
     def check_basic_tree_rect_layout(self, t):
         """Checks that the Empress tree for "((b:2)a:1)root:100;" has a correct
@@ -187,8 +187,8 @@ class TestTree(unittest.TestCase):
         expected_coords = [(100, 0.0), (100 / 3.0, 0.0), (0.0, 0.0)]
         self.check_coords(t, "xr", "yr", expected_coords)
         for node in t.non_tips():
-            self.assertEqual(node.lowestchildyr, 0)
-            self.assertEqual(node.highestchildyr, 0)
+            self.assertEqual(node.lowest_child_yr, 0)
+            self.assertEqual(node.highest_child_yr, 0)
 
     def test_straightline_tree_rect_layout(self):
         """Checks that all nodes are drawn as expected even when there aren't
@@ -203,8 +203,8 @@ class TestTree(unittest.TestCase):
         expected_coords = [(100, 0.0), (100 / 3.0, 0.0), (0.0, 0.0)]
         self.check_coords(t, "xr", "yr", expected_coords)
         for node in t.non_tips():
-            self.assertEqual(node.lowestchildyr, 0)
-            self.assertEqual(node.highestchildyr, 0)
+            self.assertEqual(node.lowest_child_yr, 0)
+            self.assertEqual(node.highest_child_yr, 0)
         self.check_basic_tree_rect_layout(t)
 
     def test_missing_root_length_tree_rect_layout(self):
@@ -217,8 +217,8 @@ class TestTree(unittest.TestCase):
         expected_coords = [(100, 0.0), (100 / 3.0, 0.0), (0.0, 0.0)]
         self.check_coords(t, "xr", "yr", expected_coords)
         for node in t.non_tips():
-            self.assertEqual(node.lowestchildyr, 0)
-            self.assertEqual(node.highestchildyr, 0)
+            self.assertEqual(node.lowest_child_yr, 0)
+            self.assertEqual(node.highest_child_yr, 0)
         self.check_basic_tree_rect_layout(t)
 
 

@@ -64,15 +64,17 @@ def match_inputs(
         The tree to be visualized.
     table: pd.DataFrame
         Representation of the feature table. The index should describe feature
-        IDs; the columns should describe sample IDs.
+        IDs; the columns should describe sample IDs. (It's expected that
+        feature IDs in the table only describe tips in the tree, not internal
+        nodes.)
     sample_metadata: pd.DataFrame
         Sample metadata. The index should describe sample IDs; the columns
         should describe different sample metadata fields' names.
     feature_metadata: pd.DataFrame or None
         Feature metadata. If this is passed, the index should describe feature
         IDs and the columns should describe different feature metadata fields'
-        names. NOTE: THIS CURRENTLY IS NOT CHECKED, BUT IT SHOULD BE IN THE
-        FUTURE WHEN #130 IS ADDRESSED.
+        names. (Feature IDs here can describe tips or internal nodes in the
+        tree.)
     ignore_missing_samples: bool
         If True, pads missing samples (i.e. samples in the table but not the
         metadata) with placeholder metadata. If False, raises a
@@ -89,8 +91,10 @@ def match_inputs(
 
     Returns
     -------
-    (table, sample_metadata): (pd.DataFrame, pd.DataFrame)
-        Versions of the input table and sample metadata filtered such that:
+    (table, sample_metadata, feature_metadata): (pd.DataFrame, pd.DataFrame,
+                                                 pd.DataFrame or None)
+        Versions of the input table, sample metadata, and feature metadata
+        filtered such that:
             -The table only contains features also present as tips in the tree.
             -The sample metadata only contains samples also present in the
              table.
@@ -98,6 +102,9 @@ def match_inputs(
              have all of their sample metadata values set to "This sample has
              no metadata". (This will only be done if ignore_missing_samples is
              True; otherwise, this situation will trigger an error. See below.)
+            -The feature metadata, if it was passed, only contains features
+             also present as tips or internal nodes in the tree. (If the
+             feature metadata wasn't passed, this will just return None.)
 
     Raises
     ------
@@ -109,6 +116,8 @@ def match_inputs(
             3. No samples are shared between the sample metadata and table.
             4. There are samples present in the table but not in the sample
                metadata, AND ignore_missing_samples is False.
+            5. The feature metadata was passed, but no features present in it
+               are also present as tips or internal nodes in the tree.
 
     References
     ----------
@@ -216,4 +225,19 @@ def match_inputs(
     # sample_metadata.shape[0] and sf_sample_metadata.shape[0]. However, the
     # presence of such "dropped samples" is a common occurrence in 16S studies,
     # so we currently don't do that for the sake of avoiding alarm fatigue.
-    return ff_table, sf_sample_metadata
+
+    # If the feature metadata was passed, filter it so that it only contains
+    # features present as tips / internal nodes in the tree
+    if feature_metadata is not None:
+        all_tree_node_names = set([n.name for n in tree.postorder()])
+        fm_ids = set(feature_metadata.index)
+        fm_and_tree_features = fm_ids & all_tree_node_names
+        feature_metadata = feature_metadata.loc[fm_and_tree_features]
+        if len(feature_metadata.index) == 0:
+            # Error condition 5
+            raise DataMatchingError(
+                "No features in the feature metadata are present in the tree, "
+                "either as tips or as internal nodes."
+            )
+
+    return ff_table, sf_sample_metadata, feature_metadata

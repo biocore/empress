@@ -359,8 +359,8 @@ class Tree(TreeNode):
                 prev_clangle += anglepernode
             else:
                 # Center internal nodes at an angle above their children
-                n.clangle = sum([c.clangle for c in n.children])\
-                    / len(n.children)
+                n.clangle = \
+                    sum([c.clangle for c in n.children]) / len(n.children)
 
         max_clradius = 0
         self.clradius = 0

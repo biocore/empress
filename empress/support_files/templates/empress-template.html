@@ -117,6 +117,8 @@
             {{ layout_to_coordsuffix | tojson }},
             '{{ default_layout }}',
             biom,
+            {{ feature_metadata_columns }},
+            {{ feature_metadata | tojson }},
             canvas
         );
         empress.initialize();
@@ -129,6 +131,10 @@
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress, legend);
         sPanel.addSampleTab();
+        if ({{ feature_metadata_columns }}.length > 0) {
+            sPanel.addFeatureTab();
+            document.getElementById("fmOpenButton").classList.remove("hidden");
+        }
         sPanel.addLayoutTab();
 
         // create animator state machine

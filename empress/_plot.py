@@ -15,7 +15,7 @@ from q2_types.tree import NewickFormat
 
 from jinja2 import Environment, FileSystemLoader
 from bp import parse_newick, to_skbio_treenode
-from empress import tools
+from empress import tools, taxonomy_utils
 import pandas as pd
 from empress.tree import Tree
 from shutil import copytree
@@ -36,7 +36,6 @@ def plot(
 
     # 1. Convert inputs to the formats we want
 
-    # TODO: do not ignore the feature metadata when specified by the user
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()
 
@@ -48,7 +47,6 @@ def plot(
     with open(tree_file) as file:
         t = parse_newick(file.readline())
     empress_tree = Tree.from_tree(to_skbio_treenode(t))
-    tools.name_internal_nodes(empress_tree)
 
     # 2. Now that we've converted/read/etc. all of the four input sources,
     # ensure that the samples and features they describe "match up" sanely.
@@ -59,16 +57,23 @@ def plot(
     # to tools.match_inputs() and keep using the transposed table for the rest
     # of this visualizer.
 
-    feature_table, sample_metadata = tools.match_inputs(
+    feature_table, sample_metadata, feature_metadata = tools.match_inputs(
         empress_tree, feature_table.T, sample_metadata, feature_metadata,
         ignore_missing_samples, filter_missing_features
     )
+
+    if feature_metadata is not None:
+        feature_metadata = taxonomy_utils.split_taxonomy(feature_metadata)
 
     # TODO: Add a check for empty samples/features in the table? Filtering this
     # sorta stuff out would help speed things up (and would be good to report
     # to the user on via warnings).
 
     # 3. Go forward with creating the Empress visualization!
+
+    # Name internal nodes *after* doing input matching, so that we don't get
+    # things mixed up
+    tools.name_internal_nodes(empress_tree)
 
     # extract balance parenthesis
     bp_tree = list(t.B)
@@ -137,6 +142,14 @@ def plot(
     sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
                         for k, v in sample_data_type.items()}
 
+    # Convert feature metadata, similarly to how we handle sample metadata
+    if feature_metadata is not None:
+        feature_metadata_json = feature_metadata.to_dict(orient='index')
+        feature_metadata_columns = list(feature_metadata.columns)
+    else:
+        feature_metadata_json = {}
+        feature_metadata_columns = []
+
     # create a mapping of observation ids and the samples that contain them
     obs_data = {}
     feature_table = (feature_table > 0)
@@ -151,6 +164,8 @@ def plot(
         'names_to_keys': names_to_keys,
         'sample_data': sample_data,
         'sample_data_type': sample_data_type,
+        'feature_metadata': feature_metadata_json,
+        'feature_metadata_columns': feature_metadata_columns,
         'obs_data': obs_data,
         'names': names,
         'layout_to_coordsuffix': layout_to_coordsuffix,

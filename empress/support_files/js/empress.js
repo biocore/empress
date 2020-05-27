@@ -1,11 +1,12 @@
 define([
+    "underscore",
     "Camera",
     "Drawer",
     "Colorer",
     "VectorOps",
     "CanvasEvents",
     "util",
-], function (Camera, Drawer, Colorer, VectorOps, CanvasEvents, util) {
+], function (_, Camera, Drawer, Colorer, VectorOps, CanvasEvents, util) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -36,6 +37,8 @@ define([
         layoutToCoordSuffix,
         defaultLayout,
         biom,
+        featureMetadataColumns,
+        featureMetadata,
         canvas
     ) {
         /**
@@ -98,6 +101,22 @@ define([
          * @private
          */
         this._biom = biom;
+
+        /**
+         * @type{Array}
+         * Feature metadata column names.
+         * @private
+         */
+        this._featureMetadataColumns = featureMetadataColumns;
+
+        /**
+         * @type{Object}
+         * Feature metadata: keys are tree node IDs, and values are objects
+         * mapping feature metadata column names to the metadata value for that
+         * feature.
+         * @private
+         */
+        this._featureMetadata = featureMetadata;
 
         /**
          * @type{Object}
@@ -515,8 +534,7 @@ define([
         var coords = [];
         this._drawer.loadSampleThickBuf([]);
 
-        // define theses variables so jslint does not complain
-        var x1, y1, x2, y2, corners;
+        var corners;
 
         // In the corner case where the root node (located at index tree.size)
         // has an assigned color, thicken the root's drawn vertical line when
@@ -617,18 +635,22 @@ define([
                 }
                 // Thicken the actual "node" portion, extending from the center
                 // of the layout
-                x1 = this._treeData[node].xc0;
-                y1 = this._treeData[node].yc0;
-                x2 = this.getX(this._treeData[node]);
-                y2 = this.getY(this._treeData[node]);
-                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, amount);
+                corners = VectorOps.computeBoxCorners(
+                    this._treeData[node].xc0,
+                    this._treeData[node].yc0,
+                    this.getX(this._treeData[node]),
+                    this.getY(this._treeData[node]),
+                    amount
+                );
                 this._addTriangleCoords(coords, corners, color);
             } else {
-                x1 = this.getX(this._treeData[parent]);
-                y1 = this.getY(this._treeData[parent]);
-                x2 = this.getX(this._treeData[node]);
-                y2 = this.getY(this._treeData[node]);
-                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, amount);
+                corners = VectorOps.computeBoxCorners(
+                    this.getX(this._treeData[parent]),
+                    this.getY(this._treeData[parent]),
+                    this.getX(this._treeData[node]),
+                    this.getY(this._treeData[node]),
+                    amount
+                );
                 this._addTriangleCoords(coords, corners, color);
             }
         }
@@ -717,6 +739,71 @@ define([
     };
 
     /**
+     * Color the tree based on a feature metadata column
+     *
+     * @param {String} cat The feature metadata column to color nodes by
+     * @param {String} color - the color map to use
+     *
+     * @return {Object} Maps unique values in this f. metadata column to colors
+     */
+    Empress.prototype.colorByFeatureMetadata = function (cat, color) {
+        var tree = this._tree;
+        // 1. produce a mapping of unique values in this feature metadata
+        //    column to an array of the feature(s) with each value
+        var uniqueValueToFeatures = {};
+        _.mapObject(this._featureMetadata, function (fmRow, featureID) {
+            // This is loosely based on how BIOMTable.getObsBy() works.
+            var fmVal = fmRow[cat];
+            if (_.has(uniqueValueToFeatures, fmVal)) {
+                uniqueValueToFeatures[fmVal].push(featureID);
+            } else {
+                uniqueValueToFeatures[fmVal] = [featureID];
+            }
+        });
+
+        var sortedUniqueValues = util.naturalSort(
+            Object.keys(uniqueValueToFeatures)
+        );
+        console.log(uniqueValueToFeatures);
+        // shared by the following for loop
+        var i, j, uniqueVal;
+
+        // convert observation IDs to _treeData keys
+        for (i = 0; i < sortedUniqueValues.length; i++) {
+            uniqueVal = sortedUniqueValues[i];
+            uniqueValueToFeatures[uniqueVal] = this._namesToKeys(
+                uniqueValueToFeatures[uniqueVal]
+            );
+        }
+
+        // assign colors to unique values
+        var colorer = new Colorer(color, sortedUniqueValues);
+        // colors for drawing the tree
+        var cm = colorer.getMapRGB();
+        // colors for the legend
+        var keyInfo = colorer.getMapHex();
+
+        // color internal nodes if their children all have same fm val
+        // this is adapted from _projectObservations() below
+        for (var ii = 1; ii < this._tree.size; ii++) {
+            var parent = tree.postorder(tree.parent(tree.postorderselect(ii)));
+
+            for (var jj = 0; jj < sortedUniqueValues.length; jj++) {
+                uniqueVal = sortedUniqueValues[jj];
+                if (uniqueValueToFeatures[uniqueVal].has(ii)) {
+                    uniqueValueToFeatures[uniqueVal].add(parent);
+                }
+            }
+        }
+        var obs = util.keepUniqueKeys(uniqueValueToFeatures);
+
+        // color tree
+        this._colorTree(obs, cm);
+
+        return keyInfo;
+    };
+
+    /**
      * Finds the branches that are unique to each category in obs
      *
      * @param {Object} observations grouped by categories
@@ -734,7 +821,7 @@ define([
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
 
-            for (j = 0; j < categories.length; j++) {
+            for (var j = 0; j < categories.length; j++) {
                 category = categories[j];
                 if (obs[category].has(node)) {
                     this._treeData[node].inSample = true;
@@ -894,6 +981,15 @@ define([
      */
     Empress.prototype.getGradientStep = function (cat, grad, traj) {
         return this._biom.getGradientStep(cat, grad, traj);
+    };
+
+    /**
+     * Returns an array of feature metadata column names.
+     *
+     * @return {Array}
+     */
+    Empress.prototype.getFeatureMetadataCategories = function () {
+        return this._featureMetadataColumns;
     };
 
     return Empress;
