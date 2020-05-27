@@ -96,7 +96,25 @@ define(["Colorer"], function (Colorer) {
     };
 
     /**
-     * Sets the components of the samples panel back to there default value
+     * Analogue to SidePanel.__samplePanelReset() for feature coloring
+     */
+    SidePanel.prototype.__featurePanelReset = function () {
+        // set color map back to default
+        this.fColor.value = "discrete-coloring-qiime";
+
+        // uncheck button
+        this.fHideChk.checked = false;
+
+        // set default branch length back to 1
+        var thickenBranch = document.getElementById("sample-line-width");
+        this.fLineWidth.value = 1;
+
+        // hide update button
+        this.fUpdateBtn.classList.add("hidden");
+    };
+
+    /**
+     * Sets the components of the samples panel back to their default value
      * and hides the additional options
      */
     SidePanel.prototype.__samplePanelClose = function () {
@@ -121,9 +139,33 @@ define(["Colorer"], function (Colorer) {
     };
 
     /**
-     * Updates/redraws the tree
+     * Analogue to SidePanel.__samplePanelClose() for feature coloring
      */
-    SidePanel.prototype._updateSample = function () {
+    SidePanel.prototype.__featurePanelClose = function () {
+        // disable sample check box
+        this.fChk.checked = false;
+
+        // disable the sample category select
+        this.fSel.disabled = true;
+
+        // hide the additional options
+        this.fAddOpts.classList.add("hidden");
+
+        // reset panel
+        this.__featurePanelReset();
+
+        //reset tree
+        this.empress.resetTree();
+        this.empress.drawTree();
+
+        // clear legends
+        this.legend.clearAllLegends();
+    };
+
+    /**
+     * Updates/redraws the tree for sample coloring
+     */
+    SidePanel.prototype._updateSampleColoring = function () {
         this.empress.resetTree();
 
         // clear legends
@@ -143,6 +185,30 @@ define(["Colorer"], function (Colorer) {
     };
 
     /**
+     * Updates/redraws the tree for feature coloring
+     */
+    SidePanel.prototype._updateFeatureColoring = function () {
+        this.empress.resetTree();
+
+        // clear legends
+        this.legend.clearAllLegends();
+
+        // color tree
+        this._colorFeatureTree();
+
+        var lWidth = this.fLineWidth.value;
+        // TODO analogue of this but for feature metadata
+        // if (lWidth !== 1) {
+        //     this.empress.thickenSameSampleLines(lWidth - 1);
+        // }
+        this.empress.drawTree();
+
+        // hide update button
+        this.fUpdateBtn.classList.add("hidden");
+    };
+
+
+    /**
      * Colors the tree
      */
     SidePanel.prototype._colorSampleTree = function () {
@@ -151,6 +217,16 @@ define(["Colorer"], function (Colorer) {
         var hide = this.sHideChk.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col);
         this.empress.setNonSampleBranchVisibility(hide);
+        this.legend.addColorKey(colBy, keyInfo, "node", false);
+    };
+
+    /**
+     * Analogue of _colorSampleTree()
+     */
+    SidePanel.prototype._colorFeatureTree = function () {
+        var colBy = this.fSel.value;
+        var col = this.fColor.value;
+        var keyInfo = this.empress.colorByFeatureMetadata(colBy, col);
         this.legend.addColorKey(colBy, keyInfo, "node", false);
     };
 
@@ -273,7 +349,7 @@ define(["Colorer"], function (Colorer) {
         };
 
         this.sUpdateBtn.onclick = function () {
-            sp._updateSample();
+            sp._updateSampleColoring();
         };
     };
 
@@ -283,7 +359,6 @@ define(["Colorer"], function (Colorer) {
     SidePanel.prototype.addFeatureTab = function () {
         var sp = this;
 
-        // TODO replace with feature UI elements
         var i, opt;
         // add feature metadata categories / "columns"
         var selOpts = this.empress.getFeatureMetadataCategories();
@@ -304,8 +379,7 @@ define(["Colorer"], function (Colorer) {
                 sp.fAddOpts.classList.remove("hidden");
                 sp.fUpdateBtn.classList.remove("hidden");
             } else {
-                // TODO analogue of this for feature metadata!!!
-                //sp.__samplePanelClose();
+                sp.__featurePanelClose();
             }
         };
 
@@ -322,9 +396,7 @@ define(["Colorer"], function (Colorer) {
         };
 
         this.fUpdateBtn.onclick = function () {
-            // TODO analogue of this for features!!! (this will actually like
-            // DO the drawing lol)
-            sp._updateSample();
+            sp._updateFeatureColoring();
         };
     };
 

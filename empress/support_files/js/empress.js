@@ -1,11 +1,12 @@
 define([
+    "underscore",
     "Camera",
     "Drawer",
     "Colorer",
     "VectorOps",
     "CanvasEvents",
     "util",
-], function (Camera, Drawer, Colorer, VectorOps, CanvasEvents, util) {
+], function (_, Camera, Drawer, Colorer, VectorOps, CanvasEvents, util) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -694,6 +695,62 @@ define([
 
         // get percent of branches belonging to unique category (i.e. just gut)
         this.percentColoredBySample(obs, keyInfo);
+
+        return keyInfo;
+    };
+
+    /**
+     * Color the tree based on a feature metadata column
+     *
+     * @param {String} cat The feature metadata column to color nodes by
+     * @param {String} color - the color map to use
+     *
+     * @return {Object} Maps unique values in this f. metadata column to colors
+     */
+    Empress.prototype.colorByFeatureMetadata = function (cat, color) {
+        var tree = this._tree;
+        // 1. produce a mapping of unique values in this feature metadata
+        //    column to an array of the feature(s) with each value
+        var uniqueValueToFeatures = {};
+        _.mapObject(this._featureMetadata, function(fmRow, featureID) {
+            // This is loosely based on how BIOMTable.getObsBy() works.
+            var fmVal = fmRow[cat];
+            if (_.has(uniqueValueToFeatures, fmVal)) {
+                uniqueValueToFeatures[fmVal].push(featureID);
+            } else {
+                uniqueValueToFeatures[fmVal] = [featureID];
+            }
+        });
+
+        var sortedUniqueValues = util.naturalSort(
+            Object.keys(uniqueValueToFeatures)
+        );
+        console.log(uniqueValueToFeatures);
+        // shared by the following for loop
+        var i, j, uniqueVal;
+
+        // convert observation IDs to _treeData keys
+        for (i = 0; i < sortedUniqueValues.length; i++) {
+            uniqueVal = sortedUniqueValues[i];
+            uniqueValueToFeatures[uniqueVal] = this._namesToKeys(
+                uniqueValueToFeatures[uniqueVal]
+            );
+        }
+
+        // assign colors to unique values
+        var colorer = new Colorer(color, sortedUniqueValues);
+        // colors for drawing the tree
+        var cm = colorer.getMapRGB();
+        // colors for the legend
+        var keyInfo = colorer.getMapHex();
+
+        // TODO: color internal nodes if their children all have same fm val
+        //       this should involve generalizing the s.m. coloring logic?
+        // // assign internal nodes to appropriate category based on its children
+        // obs = this._projectObservations(obs);
+
+        // color tree
+        this._colorTree(uniqueValueToFeatures, cm);
 
         return keyInfo;
     };
