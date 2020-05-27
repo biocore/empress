@@ -107,6 +107,8 @@ def plot(
                 tree_data[i]["arcy0"] = node.arcy0
                 tree_data[i]["arcx1"] = node.arcx1
                 tree_data[i]["arcy1"] = node.arcy1
+                tree_data[i]["arcstartangle"] = node.highest_child_clangle
+                tree_data[i]["arcendangle"] = node.lowest_child_clangle
 
         if node.name in names_to_keys:
             names_to_keys[node.name].append(i)
