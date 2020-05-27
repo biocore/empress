@@ -210,7 +210,7 @@ define([
             // The same as rectangular layout, but we don't draw anything for
             // the root.
             var leafCt = this._tree.numleafs();
-            numLines = leafCt + 3 * (this._tree.size - leafCt - 1);
+            numLines = leafCt + 16 * (this._tree.size - leafCt - 1);
         } else {
             numLines = this._tree.size - 1;
         }
@@ -357,22 +357,38 @@ define([
                 // 2. Draw arc, if this is an internal node (note again that
                 // we're skipping the root)
                 if (this._treeData[node].hasOwnProperty("arcx0")) {
-                    coords[coords_index++] = this._treeData[node].arcx0;
-                    coords[coords_index++] = this._treeData[node].arcy0;
-                    coords.set(color, coords_index);
-                    coords_index += 3;
-                    coords[coords_index++] = this._treeData[node].xc1;
-                    coords[coords_index++] = this._treeData[node].yc1;
-                    coords.set(color, coords_index);
-                    coords_index += 3;
-                    coords[coords_index++] = this._treeData[node].xc1;
-                    coords[coords_index++] = this._treeData[node].yc1;
-                    coords.set(color, coords_index);
-                    coords_index += 3;
-                    coords[coords_index++] = this._treeData[node].arcx1;
-                    coords[coords_index++] = this._treeData[node].arcy1;
-                    coords.set(color, coords_index);
-                    coords_index += 3;
+                    // arcs are create by sampling 15 small lines along the
+                    // circle spanned by rotating arcx0
+                    var arcStartAngle = this._treeData[node].arcstartangle;
+                    var arcEndAngle = this._treeData[node].arcendangle;
+                    var numSamples = 15;
+                    var arcDeltaAngle = arcEndAngle - arcStartAngle;
+                    var arcAngle = arcDeltaAngle / numSamples;
+                    var sX = this._treeData[node].arcx0;
+                    var sY = this._treeData[node].arcy0;
+                    for (var frag = 0; frag < numSamples; frag++) {
+                        var x =
+                            sX * Math.cos(frag * arcAngle) -
+                            sY * Math.sin(frag * arcAngle);
+                        var y =
+                            sX * Math.sin(frag * arcAngle) +
+                            sY * Math.cos(frag * arcAngle);
+                        coords[coords_index++] = x;
+                        coords[coords_index++] = y;
+                        coords.set(color, coords_index);
+                        coords_index += 3;
+
+                        x =
+                            sX * Math.cos((frag + 1) * arcAngle) -
+                            sY * Math.sin((frag + 1) * arcAngle);
+                        y =
+                            sX * Math.sin((frag + 1) * arcAngle) +
+                            sY * Math.cos((frag + 1) * arcAngle);
+                        coords[coords_index++] = x;
+                        coords[coords_index++] = y;
+                        coords.set(color, coords_index);
+                        coords_index += 3;
+                    }
                 }
             } else {
                 // Draw nodes for the unrooted layout.
@@ -577,22 +593,45 @@ define([
                 // (TODO: this will need to be adapted when the arc is changed
                 // to be a bezier curve)
                 if (this._treeData[node].hasOwnProperty("arcx0")) {
-                    var arc0corners = VectorOps.computeBoxCorners(
-                        this._treeData[node].arcx0,
-                        this._treeData[node].arcy0,
-                        this._treeData[node].xc1,
-                        this._treeData[node].yc1,
-                        amount
-                    );
-                    var arc1corners = VectorOps.computeBoxCorners(
-                        this._treeData[node].xc1,
-                        this._treeData[node].yc1,
-                        this._treeData[node].arcx1,
-                        this._treeData[node].arcy1,
-                        amount
-                    );
-                    this._addTriangleCoords(coords, arc0corners, color);
-                    this._addTriangleCoords(coords, arc1corners, color);
+                    // arcs are create by sampling 15 small lines along the
+                    // circle spanned by rotating arcx0
+                    var arcStartAngle = this._treeData[node].arcstartangle;
+                    var arcEndAngle = this._treeData[node].arcendangle;
+                    var numSamples = 15;
+                    var arcDeltaAngle = arcEndAngle - arcStartAngle;
+                    var arcAngle = arcDeltaAngle / numSamples;
+                    var sX = this._treeData[node].arcx0;
+                    var sY = this._treeData[node].arcy0;
+                    for (var frag = 0; frag < numSamples; frag++) {
+                        x1 =
+                            sX * Math.cos(frag * arcAngle) -
+                            sY * Math.sin(frag * arcAngle);
+                        y1 =
+                            sX * Math.sin(frag * arcAngle) +
+                            sY * Math.cos(frag * arcAngle);
+                        x2 =
+                            sX * Math.cos((frag + 1) * arcAngle) -
+                            sY * Math.sin((frag + 1) * arcAngle);
+                        y2 =
+                            sX * Math.sin((frag + 1) * arcAngle) +
+                            sY * Math.cos((frag + 1) * arcAngle);
+                        var arc0corners = VectorOps.computeBoxCorners(
+                            x1,
+                            y1,
+                            x2,
+                            y2,
+                            amount
+                        );
+                        var arc1corners = VectorOps.computeBoxCorners(
+                            x1,
+                            y1,
+                            x2,
+                            y2,
+                            amount
+                        );
+                        this._addTriangleCoords(coords, arc0corners, color);
+                        this._addTriangleCoords(coords, arc1corners, color);
+                    }
                 }
                 // Thicken the actual "node" portion, extending from the center
                 // of the layout

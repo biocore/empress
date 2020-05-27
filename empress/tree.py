@@ -411,8 +411,14 @@ class Tree(TreeNode):
         # may happen if the tree is a straight line.
 
         # set scaling factors
-        x_scaling_factor = width / (max_x - min_x)
-        y_scaling_factor = height / (max_y - min_y)
+        # normalize the coordinate based on the largest dimension
+        width_scale = width / (max_x - min_x)
+        height_scale = height / (max_y - min_y)
+        scale_factor = width_scale if width_scale > height_scale else\
+            height_scale
+        x_scaling_factor = scale_factor
+        y_scaling_factor = scale_factor
+
         for n in self.preorder():
             n.xc0 *= x_scaling_factor
             n.yc0 *= y_scaling_factor
