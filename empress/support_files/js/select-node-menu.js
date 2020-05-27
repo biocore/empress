@@ -1,4 +1,4 @@
-define([], function () {
+define(["underscore", "util"], function (_, util) {
     function SelectedNodeMenu(empress, drawer) {
         this.empress = empress;
         this.drawer = drawer;
@@ -14,6 +14,9 @@ define([], function () {
         this.addBtn = document.getElementById("hover-add-btn");
         this.nodeIdLabel = document.getElementById("hover-table-node-id");
         this.notes = document.getElementById("hover-table-notes");
+        this.fmTable = document.getElementById("hover-fm-table");
+        this.fmHeader = document.getElementById("hover-fm-header");
+        this.smHeader = document.getElementById("hover-sm-header");
         this.nodeKeys = null;
     }
 
@@ -37,7 +40,8 @@ define([], function () {
             var val = selectMenu.sel.value;
             selectMenu.sel.options[selectMenu.sel.selectedIndex].remove();
             selectMenu.fields.push(val);
-            selectMenu.showNodeMenu();
+            selectMenu.smHeader.classList.remove("hidden");
+            selectMenu.showNodeMenu(true);
         };
         this.addBtn.onclick = click;
     };
@@ -46,7 +50,7 @@ define([], function () {
      * Displays the hover node menu. nodeKeys must be set in order to use this
      * method.
      */
-    SelectedNodeMenu.prototype.showNodeMenu = function () {
+    SelectedNodeMenu.prototype.showNodeMenu = function (addingMoreSampleCats) {
         // make sure the state machine is set
         if (this.nodeKeys === null) {
             throw "showNodeMenu(): Nodes have not be set in the state machine!";
@@ -61,7 +65,7 @@ define([], function () {
         // reset node-hover menu
         this.table.innerHTML = "";
 
-        this.nodeIdLabel.innerHTML = "ID:" + node.name;
+        this.nodeIdLabel.innerHTML = "ID: " + node.name;
 
         // add id row
         this.notes.innerHTML =
@@ -75,7 +79,7 @@ define([], function () {
         // show either leaf or internal node
         var t = emp._tree;
         if (t.isleaf(t.postorderselect(this.nodeKeys[0]))) {
-            this.showLeafNode();
+            this.showLeafNode(addingMoreSampleCats);
         } else {
             this.showInternalNode();
         }
@@ -92,7 +96,7 @@ define([], function () {
      * Creates the node hover-table for a tip node. nodeKeys must be set in
      * before this function is called.
      */
-    SelectedNodeMenu.prototype.showLeafNode = function () {
+    SelectedNodeMenu.prototype.showLeafNode = function (addingMoreSampleCats) {
         // test to make sure nodeKeys is set
         if (this.nodeKeys === null) {
             throw "showLeafNode(): nodeKeys is not set!";
@@ -105,8 +109,29 @@ define([], function () {
 
         // get the name of the tip
         var name = this.empress._treeData[this.nodeKeys[0]].name;
+
+        // Only add feature metadata if we're showing the hover box for a node
+        // the first time
+        if (!addingMoreSampleCats) {
+            if (this.empress._featureMetadataColumns.length > 0) {
+                if (_.has(this.empress._featureMetadata, name)) {
+                    this.fmHeader.classList.remove("hidden");
+                    this.fmTable.classList.remove("hidden");
+                    var headerRow = this.fmTable.insertRow(-1);
+                    var featureRow = this.fmTable.insertRow(-1);
+                    for (var x = 0; x < this.empress._featureMetadataColumns.length; x++) {
+                        var colName = this.empress._featureMetadataColumns[x];
+                        var colCell = headerRow.insertCell(-1);
+                        colCell.innerHTML = "<strong>" + colName + "</strong>";
+                        var dataCell = featureRow.insertCell(-1);
+                        dataCell.innerHTML = this.empress._featureMetadata[name][colName];
+                    }
+                }
+            }
+        }
+
         // loop over all metadata fields the user has added to the hover-table.
-        this.fields.sort();
+        this.fields = util.naturalSort(this.fields);
         for (var i = 0; i < this.fields.length; i++) {
             var field = this.fields[i];
 
@@ -117,23 +142,23 @@ define([], function () {
              *  var type = this.fields[i].type; // tree, sample, or feature
              */
 
-            // create new row in hover-table
-            row = this.table.insertRow(-1);
-            cell = row.insertCell(-1);
-            cell.innerHTML = "<strong>" + field + "</strong>";
+            // create new rows in hover-table: 1 for header, 1 for data
+            var fieldHeaderRow = this.table.insertRow(-1);
+            var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
+            fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
+            fieldHeaderCell.rowSpan = 2;
+            fieldHeaderCell.classList.add("hover-table-header-cell");
+
+            var fieldDataRow = this.table.insertRow(-1);
 
             // add row values
             var obs = this.empress._biom.getObsCountsBy(field, name);
-            var categories = Object.keys(obs);
-            categories.sort();
+            var categories = util.naturalSort(Object.keys(obs));
             for (var j = 0; j < categories.length; j++) {
-                cell = row.insertCell(-1);
-                cell.innerHTML =
-                    "<p>" +
-                    categories[j] +
-                    "<br>" +
-                    obs[categories[j]] +
-                    "</p>";
+                var categoryHeaderCell = fieldHeaderRow.insertCell(-1);
+                categoryHeaderCell.innerHTML = "<strong>" + categories[j] + "</strong>";
+                var categoryDataCell = fieldDataRow.insertCell(-1);
+                categoryDataCell.innerHTML = obs[categories[j]];
             }
         }
     };
@@ -222,7 +247,7 @@ define([], function () {
         }
 
         // create hover-table
-        this.fields.sort();
+        this.fields = util.naturalSort(this.fields);
         for (i = 0; i < this.fields.length; i++) {
             // add row
             field = this.fields[i];
@@ -230,8 +255,7 @@ define([], function () {
             cell = row.insertCell(-1);
             cell.innerHTML = "<strong>" + field + "</strong>";
 
-            fieldValues = Object.keys(fieldsMap[field]);
-            fieldValues.sort();
+            fieldValues = util.naturalSort(Object.keys(fieldsMap[field]));
             for (j = 0; j < fieldValues.length; j++) {
                 fieldValue = fieldValues[j];
                 cell = row.insertCell(-1);
@@ -252,6 +276,9 @@ define([], function () {
         this.table.innerHTML = "";
         this.nodeKeys = null;
         this.box.classList.add("hidden");
+        this.fmHeader.classList.add("hidden");
+        this.fmTable.classList.add("hidden");
+        this.fmTable.innerHTML = "";
         this.drawer.loadSelectedNodeBuff([]);
     };
 
