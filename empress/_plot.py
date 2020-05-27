@@ -145,7 +145,7 @@ def plot(
         feature_metadata_json = feature_metadata.to_dict(orient='index')
         feature_metadata_columns = list(feature_metadata.columns)
     else:
-        feature_metadata_json =  {}
+        feature_metadata_json = {}
         feature_metadata_columns = []
 
     # create a mapping of observation ids and the samples that contain them
