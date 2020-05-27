@@ -207,7 +207,6 @@ define(["Colorer"], function (Colorer) {
         this.fUpdateBtn.classList.add("hidden");
     };
 
-
     /**
      * Colors the tree
      */

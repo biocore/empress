@@ -712,7 +712,7 @@ define([
         // 1. produce a mapping of unique values in this feature metadata
         //    column to an array of the feature(s) with each value
         var uniqueValueToFeatures = {};
-        _.mapObject(this._featureMetadata, function(fmRow, featureID) {
+        _.mapObject(this._featureMetadata, function (fmRow, featureID) {
             // This is loosely based on how BIOMTable.getObsBy() works.
             var fmVal = fmRow[cat];
             if (_.has(uniqueValueToFeatures, fmVal)) {
