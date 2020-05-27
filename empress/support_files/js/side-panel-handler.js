@@ -102,11 +102,7 @@ define(["Colorer"], function (Colorer) {
         // set color map back to default
         this.fColor.value = "discrete-coloring-qiime";
 
-        // uncheck button
-        this.fHideChk.checked = false;
-
         // set default branch length back to 1
-        var thickenBranch = document.getElementById("sample-line-width");
         this.fLineWidth.value = 1;
 
         // hide update button
