@@ -1,4 +1,4 @@
-define(["underscore"], function (_) {
+define(["underscore", "util"], function (_, util) {
     function SelectedNodeMenu(empress, drawer) {
         this.empress = empress;
         this.drawer = drawer;
@@ -16,6 +16,7 @@ define(["underscore"], function (_) {
         this.notes = document.getElementById("hover-table-notes");
         this.fmTable = document.getElementById("hover-fm-table");
         this.fmHeader = document.getElementById("hover-fm-header");
+        this.smHeader = document.getElementById("hover-sm-header");
         this.nodeKeys = null;
     }
 
@@ -39,6 +40,7 @@ define(["underscore"], function (_) {
             var val = selectMenu.sel.value;
             selectMenu.sel.options[selectMenu.sel.selectedIndex].remove();
             selectMenu.fields.push(val);
+            selectMenu.smHeader.classList.remove("hidden");
             selectMenu.showNodeMenu(true);
         };
         this.addBtn.onclick = click;
@@ -129,7 +131,7 @@ define(["underscore"], function (_) {
         }
 
         // loop over all metadata fields the user has added to the hover-table.
-        this.fields.sort();
+        this.fields = util.naturalSort(this.fields);
         for (var i = 0; i < this.fields.length; i++) {
             var field = this.fields[i];
 
@@ -140,23 +142,22 @@ define(["underscore"], function (_) {
              *  var type = this.fields[i].type; // tree, sample, or feature
              */
 
-            // create new row in hover-table
-            row = this.table.insertRow(-1);
-            cell = row.insertCell(-1);
-            cell.innerHTML = "<strong>" + field + "</strong>";
+            // create new rows in hover-table: 1 for header, 1 for data
+            var fieldHeaderRow = this.table.insertRow(-1);
+            var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
+            fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
+            fieldHeaderCell.rowSpan = 2;
+
+            var fieldDataRow = this.table.insertRow(-1);
 
             // add row values
             var obs = this.empress._biom.getObsCountsBy(field, name);
-            var categories = Object.keys(obs);
-            categories.sort();
+            var categories = util.naturalSort(Object.keys(obs));
             for (var j = 0; j < categories.length; j++) {
-                cell = row.insertCell(-1);
-                cell.innerHTML =
-                    "<p>" +
-                    categories[j] +
-                    "<br>" +
-                    obs[categories[j]] +
-                    "</p>";
+                var categoryHeaderCell = fieldHeaderRow.insertCell(-1);
+                categoryHeaderCell.innerHTML = "<strong>" + categories[j] + "</strong>";
+                var categoryDataCell = fieldDataRow.insertCell(-1);
+                categoryDataCell.innerHTML = obs[categories[j]];
             }
         }
     };
@@ -245,7 +246,7 @@ define(["underscore"], function (_) {
         }
 
         // create hover-table
-        this.fields.sort();
+        this.fields = util.naturalSort(this.fields);
         for (i = 0; i < this.fields.length; i++) {
             // add row
             field = this.fields[i];
@@ -253,8 +254,7 @@ define(["underscore"], function (_) {
             cell = row.insertCell(-1);
             cell.innerHTML = "<strong>" + field + "</strong>";
 
-            fieldValues = Object.keys(fieldsMap[field]);
-            fieldValues.sort();
+            fieldValues = util.naturalSort(Object.keys(fieldsMap[field]));
             for (j = 0; j < fieldValues.length; j++) {
                 fieldValue = fieldValues[j];
                 cell = row.insertCell(-1);

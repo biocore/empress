@@ -291,8 +291,9 @@ label:hover .tooltip {
 #hover-table tr {
     padding: 0px 15px;
 }
+
 #hover-table tr td {
-    vertical-align: top;
+    border: 1px solid lightgray;
 }
 
 #hover-table tr td p{
@@ -308,7 +309,6 @@ label:hover .tooltip {
     background-color: lightgray;
     height: 25px;
     margin-top: 10px;
-    border: 0;
     cursor: pointer;
     outline: none;
     padding: 0px 15px;
