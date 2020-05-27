@@ -1,4 +1,4 @@
-define([], function () {
+define(["underscore"], function (_) {
     function SelectedNodeMenu(empress, drawer) {
         this.empress = empress;
         this.drawer = drawer;
@@ -14,6 +14,8 @@ define([], function () {
         this.addBtn = document.getElementById("hover-add-btn");
         this.nodeIdLabel = document.getElementById("hover-table-node-id");
         this.notes = document.getElementById("hover-table-notes");
+        this.fmTable = document.getElementById("hover-fm-table");
+        this.fmHeader = document.getElementById("hover-fm-header");
         this.nodeKeys = null;
     }
 
@@ -37,7 +39,7 @@ define([], function () {
             var val = selectMenu.sel.value;
             selectMenu.sel.options[selectMenu.sel.selectedIndex].remove();
             selectMenu.fields.push(val);
-            selectMenu.showNodeMenu();
+            selectMenu.showNodeMenu(true);
         };
         this.addBtn.onclick = click;
     };
@@ -46,7 +48,7 @@ define([], function () {
      * Displays the hover node menu. nodeKeys must be set in order to use this
      * method.
      */
-    SelectedNodeMenu.prototype.showNodeMenu = function () {
+    SelectedNodeMenu.prototype.showNodeMenu = function (addingMoreSampleCats) {
         // make sure the state machine is set
         if (this.nodeKeys === null) {
             throw "showNodeMenu(): Nodes have not be set in the state machine!";
@@ -61,7 +63,7 @@ define([], function () {
         // reset node-hover menu
         this.table.innerHTML = "";
 
-        this.nodeIdLabel.innerHTML = "ID:" + node.name;
+        this.nodeIdLabel.innerHTML = "ID: " + node.name;
 
         // add id row
         this.notes.innerHTML =
@@ -75,7 +77,7 @@ define([], function () {
         // show either leaf or internal node
         var t = emp._tree;
         if (t.isleaf(t.postorderselect(this.nodeKeys[0]))) {
-            this.showLeafNode();
+            this.showLeafNode(addingMoreSampleCats);
         } else {
             this.showInternalNode();
         }
@@ -92,7 +94,7 @@ define([], function () {
      * Creates the node hover-table for a tip node. nodeKeys must be set in
      * before this function is called.
      */
-    SelectedNodeMenu.prototype.showLeafNode = function () {
+    SelectedNodeMenu.prototype.showLeafNode = function (addingMoreSampleCats) {
         // test to make sure nodeKeys is set
         if (this.nodeKeys === null) {
             throw "showLeafNode(): nodeKeys is not set!";
@@ -105,6 +107,27 @@ define([], function () {
 
         // get the name of the tip
         var name = this.empress._treeData[this.nodeKeys[0]].name;
+
+        // Only add feature metadata if we're showing the hover box for a node
+        // the first time
+        if (!addingMoreSampleCats) {
+            if (this.empress._featureMetadataColumns.length > 0) {
+                if (_.has(this.empress._featureMetadata, name)) {
+                    this.fmHeader.classList.remove("hidden");
+                    this.fmTable.classList.remove("hidden");
+                    var headerRow = this.fmTable.insertRow(-1);
+                    var featureRow = this.fmTable.insertRow(-1);
+                    for (var x = 0; x < this.empress._featureMetadataColumns.length; x++) {
+                        var colName = this.empress._featureMetadataColumns[x];
+                        var colCell = headerRow.insertCell(-1);
+                        colCell.innerHTML = "<strong>" + colName + "</strong>";
+                        var dataCell = featureRow.insertCell(-1);
+                        dataCell.innerHTML = this.empress._featureMetadata[name][colName];
+                    }
+                }
+            }
+        }
+
         // loop over all metadata fields the user has added to the hover-table.
         this.fields.sort();
         for (var i = 0; i < this.fields.length; i++) {
@@ -252,6 +275,9 @@ define([], function () {
         this.table.innerHTML = "";
         this.nodeKeys = null;
         this.box.classList.add("hidden");
+        this.fmHeader.classList.add("hidden");
+        this.fmTable.classList.add("hidden");
+        this.fmTable.innerHTML = "";
         this.drawer.loadSelectedNodeBuff([]);
     };
 
