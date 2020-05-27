@@ -744,13 +744,22 @@ define([
         // colors for the legend
         var keyInfo = colorer.getMapHex();
 
-        // TODO: color internal nodes if their children all have same fm val
-        //       this should involve generalizing the s.m. coloring logic?
-        // // assign internal nodes to appropriate category based on its children
-        // obs = this._projectObservations(obs);
+        // color internal nodes if their children all have same fm val
+        // this is adapted from _projectObservations() below
+        for (var ii = 1; ii < this._tree.size; ii++) {
+            var parent = tree.postorder(tree.parent(tree.postorderselect(ii)));
+
+            for (var jj = 0; jj < sortedUniqueValues.length; jj++) {
+                uniqueVal = sortedUniqueValues[jj];
+                if (uniqueValueToFeatures[uniqueVal].has(ii)) {
+                    uniqueValueToFeatures[uniqueVal].add(parent);
+                }
+            }
+        }
+        var obs = util.keepUniqueKeys(uniqueValueToFeatures);
 
         // color tree
-        this._colorTree(uniqueValueToFeatures, cm);
+        this._colorTree(obs, cm);
 
         return keyInfo;
     };
@@ -773,7 +782,7 @@ define([
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
 
-            for (j = 0; j < categories.length; j++) {
+            for (var j = 0; j < categories.length; j++) {
                 category = categories[j];
                 if (obs[category].has(node)) {
                     this._treeData[node].inSample = true;
