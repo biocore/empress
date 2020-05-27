@@ -141,7 +141,12 @@ def plot(
                         for k, v in sample_data_type.items()}
 
     # Convert feature metadata, similarly to how we handle sample metadata
-    feature_metadata_json = feature_metadata.to_dict(orient='index')
+    if feature_metadata is not None:
+        feature_metadata_json = feature_metadata.to_dict(orient='index')
+        feature_metadata_columns = list(feature_metadata.columns)
+    else:
+        feature_metadata_json =  {}
+        feature_metadata_columns = []
 
     # create a mapping of observation ids and the samples that contain them
     obs_data = {}
@@ -158,7 +163,7 @@ def plot(
         'sample_data': sample_data,
         'sample_data_type': sample_data_type,
         'feature_metadata': feature_metadata_json,
-        'feature_metadata_columns': list(feature_metadata.columns),
+        'feature_metadata_columns': feature_metadata_columns,
         'obs_data': obs_data,
         'names': names,
         'layout_to_coordsuffix': layout_to_coordsuffix,

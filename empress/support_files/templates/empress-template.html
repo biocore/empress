@@ -131,7 +131,10 @@
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress, legend);
         sPanel.addSampleTab();
-        sPanel.addFeatureTab();
+        if ({{ feature_metadata_columns }}.length > 0) {
+            sPanel.addFeatureTab();
+            document.getElementById("fmOpenButton").classList.remove("hidden");
+        }
         sPanel.addLayoutTab();
 
         // create animator state machine
