@@ -277,35 +277,35 @@ label:hover .tooltip {
     border-color: transparent lightgray transparent transparent;
 }
 
-#hover-table {
+.menu-table {
     background-color: white;
 }
 
-#hover-table thead, #hover-table tbody{
+.menu-table thead, .menu-table tbody{
     display: block;
     max-width: 500px;
     max-height: 300px;
     overflow: auto;
 }
 
-#hover-table tr {
+.menu-table tr {
     padding: 0px 15px;
 }
 
-#hover-table tr td {
+.menu-table tr td {
     border: 1px solid lightgray;
 }
 
-#hover-table tr td p{
+.menu-table tr td p{
     text-align: right;
 }
 
-#hover-table tr td:nth-last-child(1) {
+.menu-table tr td:nth-last-child(1) {
     max-width: 200px;
     text-overflow: ellipsis;
 }
 
-#hover-table tr td button:only-child {
+.menu-table tr td button:only-child {
     background-color: lightgray;
     height: 25px;
     margin-top: 10px;
@@ -316,14 +316,15 @@ label:hover .tooltip {
     font-size: 8pt;
 }
 
-#hover-table tbody tr td:nth-child(1) {
+.hover-table-header-cell {
+    background-color: white;
     position: relative;
     position: -webkit-sticky; /* Safari */
     position: sticky;
     left: 0;
 }
 
-#hover-table tr td button:only-child:hover {
+.menu-table tr td button:only-child:hover {
     background-color: darkgray;
 }
 

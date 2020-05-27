@@ -147,6 +147,7 @@ define(["underscore", "util"], function (_, util) {
             var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
             fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
             fieldHeaderCell.rowSpan = 2;
+            fieldHeaderCell.classList.add("hover-table-header-cell");
 
             var fieldDataRow = this.table.insertRow(-1);
 
