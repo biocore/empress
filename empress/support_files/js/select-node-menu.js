@@ -119,12 +119,18 @@ define(["underscore", "util"], function (_, util) {
                     this.fmTable.classList.remove("hidden");
                     var headerRow = this.fmTable.insertRow(-1);
                     var featureRow = this.fmTable.insertRow(-1);
-                    for (var x = 0; x < this.empress._featureMetadataColumns.length; x++) {
+                    for (
+                        var x = 0;
+                        x < this.empress._featureMetadataColumns.length;
+                        x++
+                    ) {
                         var colName = this.empress._featureMetadataColumns[x];
                         var colCell = headerRow.insertCell(-1);
                         colCell.innerHTML = "<strong>" + colName + "</strong>";
                         var dataCell = featureRow.insertCell(-1);
-                        dataCell.innerHTML = this.empress._featureMetadata[name][colName];
+                        dataCell.innerHTML = this.empress._featureMetadata[
+                            name
+                        ][colName];
                     }
                 }
             }
@@ -156,7 +162,8 @@ define(["underscore", "util"], function (_, util) {
             var categories = util.naturalSort(Object.keys(obs));
             for (var j = 0; j < categories.length; j++) {
                 var categoryHeaderCell = fieldHeaderRow.insertCell(-1);
-                categoryHeaderCell.innerHTML = "<strong>" + categories[j] + "</strong>";
+                categoryHeaderCell.innerHTML =
+                    "<strong>" + categories[j] + "</strong>";
                 var categoryDataCell = fieldDataRow.insertCell(-1);
                 categoryDataCell.innerHTML = obs[categories[j]];
             }
