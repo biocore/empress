@@ -244,6 +244,12 @@ class TestTools(unittest.TestCase):
         )
 
     def test_match_inputs_feature_metadata_nothing_dropped(self):
+        """Tests that feature names corresponding to internal nodes and tips
+           in the tree are both allowed as entries in the feature metadata.
+
+           (self.feature_metadata describes three features, "e", "h", and "a".
+            h is an internal node in self.tree, and e and a are tips.)
+        """
         t = Tree.from_tree(self.tree)
         f_table, f_sample_metadata, f_feature_metadata = tools.match_inputs(
             t, self.table, self.sample_metadata, self.feature_metadata
@@ -259,6 +265,11 @@ class TestTools(unittest.TestCase):
         )
 
     def test_match_inputs_feature_metadata_no_features_in_tree(self):
+        """Tests that feature names not corresponding to internal nodes / tips
+           in the tree are filtered out of the feature metadata, and that if
+           all features in the input feature metadata are filtered that an
+           error is raised.
+        """
         t = Tree.from_tree(self.tree)
         bad_fm = self.feature_metadata.copy()
         bad_fm.index = range(len(self.feature_metadata.index))
@@ -272,6 +283,9 @@ class TestTools(unittest.TestCase):
             tools.match_inputs(t, self.table, self.sample_metadata, bad_fm)
 
     def test_match_inputs_feature_metadata_some_features_dropped(self):
+        """Tests the filtering case described above, but with not all
+           feature(s) in the feature metadata getting filtered out.
+        """
         t = Tree.from_tree(self.tree)
         # Manipulate bad_fm so that only the "e" feature should get preserved
         # (since it's actually in the tree, while "asdf" and "hjkl" aren't)
