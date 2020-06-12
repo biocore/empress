@@ -187,7 +187,7 @@ define(["underscore", "util"], function (_, util) {
                 "<br>" +
                 "Warning: " +
                 this.nodeKeys.length +
-                " nodes exists with the above id." +
+                " nodes exist with the above id." +
                 "<br>" +
                 "The following table shows the aggregated values from all " +
                 " nodes with the above id.";
