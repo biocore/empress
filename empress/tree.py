@@ -2,6 +2,7 @@ import warnings
 from skbio import TreeNode
 import numpy as np
 
+
 class TreeFormatWarning(Warning):
     pass
 
