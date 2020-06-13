@@ -67,6 +67,14 @@ class Tree(TreeNode):
         max_branch_length = 0
         for n in tree.postorder(include_self=False):
             if n.name is not None:
+                # NOTE: This should eventually be taken out when
+                # fill_missing_node_names() is refactored. However, for now,
+                # this makes sure that users can't accidentally break things by
+                # naming nodes identical to our default names for missing nodes
+                if n.name.startswith("EmpressNode"):
+                    raise ValueError(
+                        'Node names can\'t start with "EmpressNode".'
+                    )
                 if n.is_tip():
                     tip_names.append(n.name)
                 else:

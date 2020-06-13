@@ -73,6 +73,13 @@ class TestTree(unittest.TestCase):
             ):
                 Tree.from_tree(t)
 
+    def test_from_tree_node_starts_with_EmpressNode(self):
+        t = TreeNode.read(['((a:1,b:3)c:2,EmpressNode1:5)e:2;'])
+        with self.assertRaisesRegex(
+            ValueError, 'Node names can\'t start with "EmpressNode"'
+        ):
+            Tree.from_tree(t)
+
     def test_nonroot_missing_branchlengths(self):
         # Note about the fourth test tree here: the reason this triggers a
         # missing-branch-length error before a negative-branch-length error is
