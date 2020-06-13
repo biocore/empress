@@ -59,14 +59,17 @@ class Tree(TreeNode):
             raise ValueError("Tree must contain at least 2 nodes.")
 
         # While traversing the tree, record tip / internal node names
+        # (Nodes without names are ignored, since we'll assign those later
+        # using tools.name_internal_nodes())
         tip_names = []
         internal_node_names = []
         max_branch_length = 0
         for n in tree.postorder(include_self=False):
-            if n.is_tip():
-                tip_names.append(n.name)
-            else:
-                internal_node_names.append(n.name)
+            if n.name is not None:
+                if n.is_tip():
+                    tip_names.append(n.name)
+                else:
+                    internal_node_names.append(n.name)
             if n.length is None:
                 raise ValueError(
                     "Non-root branches of the tree must have lengths."
@@ -90,10 +93,18 @@ class Tree(TreeNode):
                 "positive length."
             )
 
-        if len(set(tip_names)) != len(tip_names):
+        unique_tip_name_set = set(tip_names)
+        if len(unique_tip_name_set) != len(tip_names):
             raise ValueError("Tip names in the tree must be unique.")
 
-        if len(set(internal_node_names)) != len(internal_node_names):
+        unique_internal_node_name_set = set(internal_node_names)
+        if len(unique_tip_name_set & unique_internal_node_name_set) > 0:
+            raise ValueError(
+                "Tip names in the tree cannot overlap with internal node "
+                "names."
+            )
+
+        if len(unique_internal_node_name_set) != len(internal_node_names):
             warnings.warn(
                 "Internal node names in the tree are not unique.",
                 TreeFormatWarning

@@ -41,6 +41,23 @@ class TestTree(unittest.TestCase):
         ):
             Tree.from_tree(t)
 
+    def test_from_tree_overlapping_tip_and_internal_node_names(self):
+        bad_newicks = [
+            # Tip overlaps with non-root internal node
+            '((a:1,b:3)a:2,d:5)e:2;',
+            # Tip overlaps with root node
+            '((a:1,b:3)c:2,d:5)a:2;',
+            # Tip overlaps with both non-root and root internal nodes
+            '((a:1,b:3)a:2,d:5)a:2;'
+        ]
+        for nwk in bad_newicks:
+            t = TreeNode.read([nwk])
+            with self.assertRaisesRegex(
+                ValueError,
+                "Tip names in the tree cannot overlap with internal node names"
+            ):
+                Tree.from_tree(t)
+
     def test_from_tree_duplicate_internal_node_names(self):
         bad_newicks = [
             # Two non-root internal nodes have same name
@@ -55,8 +72,6 @@ class TestTree(unittest.TestCase):
                 "Internal node names in the tree are not unique"
             ):
                 Tree.from_tree(t)
-
-    # TODO: test overlapping tip and internal node ID
 
     def test_nonroot_missing_branchlengths(self):
         # Note about the fourth test tree here: the reason this triggers a
