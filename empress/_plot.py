@@ -72,7 +72,9 @@ def plot(
     # 3. Go forward with creating the Empress visualization!
 
     # Fill in missing Node names *after* doing input matching, so that we
-    # don't get things mixed up
+    # don't get things mixed up (e.g. if the table contains a feature named
+    # EmpressNode0, we shouldn't match it up with a re-named node in the tree
+    # named EmpressNode0)
     tools.fill_missing_node_names(empress_tree)
 
     # extract balance parenthesis

@@ -122,7 +122,9 @@ def match_inputs(
     https://github.com/biocore/qurro/blob/b9613534b2125c2e7ee22e79fdff311812f4fefe/qurro/_df_utils.py#L255
     """
     # Match table and tree.
-    tip_names = [n.name for n in tree.tips()]
+    # (Ignore None-named tips in the tree, which will be replaced later on
+    # with "default" names like "EmpressNode0".)
+    tip_names = [n.name for n in tree.tips() if n.name is not None]
     tree_and_table_features = set(tip_names) & set(table.index)
 
     if len(tree_and_table_features) == 0:
