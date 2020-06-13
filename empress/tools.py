@@ -27,12 +27,12 @@ def name_internal_nodes(tree):
         Tree with fully labeled internal nodes and branches.
     """
     # initialize tree with branch lengths and node names if they are missing
-    current_unlabled_node = 0
+    current_unlabeled_node = 0
     for n in tree.postorder(include_self=True):
         if n.length is None:
             n.length = 0
         if n.name is None:
-            new_name = 'EmpressNode%d' % current_unlabled_node
+            new_name = 'EmpressNode{}'.format(current_unlabeled_node)
             n.name = new_name
             current_unlabled_node += 1
 
