@@ -34,7 +34,7 @@ def name_internal_nodes(tree):
         if n.name is None:
             new_name = 'EmpressNode{}'.format(current_unlabeled_node)
             n.name = new_name
-            current_unlabled_node += 1
+            current_unlabeled_node += 1
 
 
 def read(file_name, file_format='newick'):
