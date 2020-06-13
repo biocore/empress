@@ -79,6 +79,11 @@ class Tree(TreeNode):
                 )
             max_branch_length = max(n.length, max_branch_length)
 
+        # We didn't consider the root node in the above traversal since we
+        # don't care about its length. However, we do care about its name,
+        # so we add the root's name to internal_node_names.
+        internal_node_names.append(tree.name)
+
         if max_branch_length == 0:
             raise ValueError(
                 "At least one non-root branch of the tree must have a "

@@ -42,15 +42,21 @@ class TestTree(unittest.TestCase):
             Tree.from_tree(t)
 
     def test_from_tree_duplicate_internal_node_names(self):
-        t = TreeNode.read(['((a:1,b:3)c:2,(d:2,e:3)c:5)r:2;'])
-        with self.assertWarnsRegex(
-            TreeFormatWarning, "Internal node names in the tree are not unique"
-        ):
-            Tree.from_tree(t)
+        bad_newicks = [
+            # Two non-root internal nodes have same name
+            '((a:1,b:3)c:2,(d:2,e:3)c:5)r:2;',
+            # Two internal nodes (one of which is the root) have same name
+            '((a:1,b:3)c:2,(d:2,e:3)f:5)c:2;'
+        ]
+        for nwk in bad_newicks:
+            t = TreeNode.read([nwk])
+            with self.assertWarnsRegex(
+                TreeFormatWarning,
+                "Internal node names in the tree are not unique"
+            ):
+                Tree.from_tree(t)
 
     # TODO: test overlapping tip and internal node ID
-    # TODO: test overlapping internal node and root ID (root should be
-    # considered an internal node)
 
     def test_nonroot_missing_branchlengths(self):
         # Note about the fourth test tree here: the reason this triggers a
