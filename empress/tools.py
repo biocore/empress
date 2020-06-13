@@ -12,19 +12,20 @@ class DataMatchingWarning(Warning):
     pass
 
 
-def name_internal_nodes(tree):
-    """ Name internal nodes that don't have a name
+def fill_missing_node_data(tree):
+    """ Names nodes in the tree without a name, and sets a branch
+        length of 0 for nodes in the tree without a branch length provided.
 
      Parameters
      ----------
      tree : skbio.TreeNode or empress.Tree
-        Input tree with labeled tips and partially unlabeled internal nodes
-        or branch lengths.
+        Input tree with potentially unnamed nodes and potentially missing
+        branch lengths.
 
     Returns
     -------
     skbio.TreeNode or empress.Tree
-        Tree with fully labeled internal nodes and branches.
+        Tree with fully labeled nodes and branches.
     """
     # initialize tree with branch lengths and node names if they are missing
     current_unlabeled_node = 0
