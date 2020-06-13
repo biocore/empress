@@ -33,6 +33,13 @@ class TestTree(unittest.TestCase):
         ):
             Tree.from_tree(st)
 
+    def test_from_tree_duplicate_tip_names(self):
+        t = TreeNode.read(['((i:1,a:3)b:2,i:5)r:2;'])
+        with self.assertRaisesRegex(
+            ValueError, "Tip names in the tree must be unique"
+        ):
+            Tree.from_tree(t)
+
     def test_nonroot_missing_branchlengths(self):
         # Note about the fourth test tree here: the reason this triggers a
         # missing-branch-length error before a negative-branch-length error is

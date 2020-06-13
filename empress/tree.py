@@ -54,8 +54,14 @@ class Tree(TreeNode):
         if tree.count() <= 1:
             raise ValueError("Tree must contain at least 2 nodes.")
 
+        tip_names = []
+        internal_node_names = []
         max_branch_length = 0
         for n in tree.postorder(include_self=False):
+            if n.is_tip():
+                tip_names.append(n.name)
+            else:
+                internal_node_names.append(n.name)
             if n.length is None:
                 raise ValueError(
                     "Non-root branches of the tree must have lengths."
@@ -73,6 +79,9 @@ class Tree(TreeNode):
                 "At least one non-root branch of the tree must have a "
                 "positive length."
             )
+
+        if len(set(tip_names)) != len(tip_names):
+            raise ValueError("Tip names in the tree must be unique.")
 
         for n in tree.postorder():
             n.__class__ = Tree
