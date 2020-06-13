@@ -1,5 +1,9 @@
+import warnings
 from skbio import TreeNode
 import numpy as np
+
+class TreeFormatWarning(Warning):
+    pass
 
 
 class Tree(TreeNode):
@@ -54,6 +58,7 @@ class Tree(TreeNode):
         if tree.count() <= 1:
             raise ValueError("Tree must contain at least 2 nodes.")
 
+        # While traversing the tree, record tip / internal node names
         tip_names = []
         internal_node_names = []
         max_branch_length = 0
@@ -82,6 +87,12 @@ class Tree(TreeNode):
 
         if len(set(tip_names)) != len(tip_names):
             raise ValueError("Tip names in the tree must be unique.")
+
+        if len(set(internal_node_names)) != len(internal_node_names):
+            warnings.warn(
+                "Internal node names in the tree are not unique.",
+                TreeFormatWarning
+            )
 
         for n in tree.postorder():
             n.__class__ = Tree

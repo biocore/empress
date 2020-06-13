@@ -7,6 +7,7 @@
 import unittest
 from skbio import TreeNode
 from empress import Tree
+from empress.tree import TreeFormatWarning
 
 
 class TestTree(unittest.TestCase):
@@ -39,6 +40,17 @@ class TestTree(unittest.TestCase):
             ValueError, "Tip names in the tree must be unique"
         ):
             Tree.from_tree(t)
+
+    def test_from_tree_duplicate_internal_node_names(self):
+        t = TreeNode.read(['((a:1,b:3)c:2,(d:2,e:3)c:5)r:2;'])
+        with self.assertWarnsRegex(
+            TreeFormatWarning, "Internal node names in the tree are not unique"
+        ):
+            Tree.from_tree(t)
+
+    # TODO: test overlapping tip and internal node ID
+    # TODO: test overlapping internal node and root ID (root should be
+    # considered an internal node)
 
     def test_nonroot_missing_branchlengths(self):
         # Note about the fourth test tree here: the reason this triggers a
