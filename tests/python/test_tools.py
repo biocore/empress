@@ -65,9 +65,9 @@ class TestTools(unittest.TestCase):
             index=["e", "h", "a"]
         )
 
-    def test_fill_missing_node_data(self):
+    def test_fill_missing_node_names(self):
         t = Tree.from_tree(self.tree)
-        tools.fill_missing_node_data(t)
+        tools.fill_missing_node_names(t)
         names = ['a', 'e', 'EmpressNode0', 'b', 'g', 'EmpressNode1', 'd', 'h',
                  'EmpressNode2']
         for i, node in enumerate(t.postorder()):

@@ -60,7 +60,7 @@ class Tree(TreeNode):
 
         # While traversing the tree, record tip / internal node names
         # (Nodes without names are ignored, since we'll assign those later
-        # using tools.fill_missing_node_data())
+        # using tools.fill_missing_node_names())
         tip_names = []
         internal_node_names = []
         max_branch_length = 0

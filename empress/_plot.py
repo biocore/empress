@@ -71,9 +71,9 @@ def plot(
 
     # 3. Go forward with creating the Empress visualization!
 
-    # Fill in missing data (including naming None-named nodes) *after*
-    # doing input matching, so that we don't get things mixed up
-    tools.fill_missing_node_data(empress_tree)
+    # Fill in missing Node names *after* doing input matching, so that we
+    # don't get things mixed up
+    tools.fill_missing_node_names(empress_tree)
 
     # extract balance parenthesis
     bp_tree = list(t.B)

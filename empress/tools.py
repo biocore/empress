@@ -12,26 +12,22 @@ class DataMatchingWarning(Warning):
     pass
 
 
-def fill_missing_node_data(tree):
-    """ Names nodes in the tree without a name, and sets a branch
-        length of 0 for nodes in the tree without a branch length provided.
+def fill_missing_node_names(tree):
+    """ Names nodes in the tree without a name.
 
      Parameters
      ----------
      tree : skbio.TreeNode or empress.Tree
-        Input tree with potentially unnamed nodes and potentially missing
-        branch lengths.
+        Input tree with potentially unnamed nodes (i.e. nodes' .name attributes
+        can be None).
 
     Returns
     -------
     skbio.TreeNode or empress.Tree
-        Tree with fully labeled nodes and branches.
+        Tree with all nodes assigned a name.
     """
-    # initialize tree with branch lengths and node names if they are missing
     current_unlabeled_node = 0
     for n in tree.postorder(include_self=True):
-        if n.length is None:
-            n.length = 0
         if n.name is None:
             new_name = 'EmpressNode{}'.format(current_unlabeled_node)
             n.name = new_name
