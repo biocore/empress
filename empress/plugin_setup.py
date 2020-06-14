@@ -12,6 +12,7 @@ from ._plot import plot
 from qiime2.plugin import Plugin, Metadata, Bool, Citations
 from q2_types.tree import Phylogeny, Rooted
 from q2_types.feature_table import FeatureTable, Frequency
+from q2_types.ordination import PCoAResults
 
 import pkg_resources
 __version__ = pkg_resources.get_distribution('empress').version  # noqa
@@ -32,7 +33,8 @@ plugin.visualizers.register_function(
     function=plot,
     inputs={
         'tree': Phylogeny[Rooted],
-        'feature_table': FeatureTable[Frequency]
+        'feature_table': FeatureTable[Frequency],
+        'pcoa': PCoAResults,
     },
     parameters={
         'sample_metadata': Metadata,
@@ -42,13 +44,14 @@ plugin.visualizers.register_function(
     },
     input_descriptions={
         'tree': 'The phylogenetic tree to visualize.',
-        'feature_table': (
-            'A table containing the abundances of features within samples. '
-            'This information allows us to decorate the phylogeny by '
-            "sample metadata. It's expected that all features in the table "
-            'are also present as tips in the tree, and that all samples in '
-            'the table are also present in the sample metadata file.'
-        )
+        'feature_table': 'A table containing the abundances of features within'
+                         ' samples. This information allows us to decorate the'
+                         ' phylogeny by sample metadata. It\'s expected that '
+                         ' all features in the table are also present as '
+                         'tips in the tree, and that all samples in the table'
+                         ' are also present in the sample metadata file.',
+        'pcoa': 'Principal coordinates matrix to display simultaneously with '
+                'the phylogenetic tree.'
     },
     parameter_descriptions={
         'sample_metadata': (

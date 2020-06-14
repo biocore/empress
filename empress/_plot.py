@@ -14,6 +14,8 @@ import q2templates
 from q2_types.tree import NewickFormat
 
 from jinja2 import Environment, FileSystemLoader
+from emperor import Emperor
+from skbio import OrdinationResults
 from bp import parse_newick, to_skbio_treenode
 from empress import tools
 import pandas as pd
@@ -29,6 +31,7 @@ def plot(
     tree: NewickFormat,
     feature_table: pd.DataFrame,
     sample_metadata: qiime2.Metadata,
+    pcoa: OrdinationResults = None,
     feature_metadata: qiime2.Metadata = None,
     ignore_missing_samples: bool = False,
     filter_missing_features: bool = False
@@ -132,7 +135,7 @@ def plot(
         sample_ids = series[series].index.tolist()
         obs_data[series.name] = sample_ids
 
-    main_page = temp.render({
+    data_to_render = {
         'base_url': './support_files',
         'tree': bp_tree,
         'tree_data': tree_data,
@@ -143,7 +146,18 @@ def plot(
         'names': names,
         'layout_to_coordsuffix': layout_to_coordsuffix,
         'default_layout': default_layout,
-        })
+        'emperor_div': '',
+        'emperor_require_logic': '',
+        'emperor_style': '',
+        'emperor_base_dependencies': '',
+        'emperor_classes': ''
+    }
+
+    if pcoa is not None:
+        data_to_render.update(_make_emperor(pcoa, sample_metadata,
+                                            feature_metadata, output_dir))
+
+    main_page = temp.render(data_to_render)
 
     copytree(SUPPORT_FILES, os.path.join(output_dir, 'support_files'))
 
@@ -152,3 +166,69 @@ def plot(
 
     index = os.path.join(TEMPLATES, 'index.html')
     q2templates.render(index, output_dir)
+
+
+def _make_emperor(ordination, metadata, feature_metadata, output_dir):
+    viz = Emperor(ordination, metadata, remote='./emperor-resources/')
+    viz.width = '48vw'
+    viz.height = '100vh; float: right'
+
+    viz.copy_support_files(os.path.join(output_dir, 'emperor-resources'))
+
+    html = viz.make_emperor(standalone=True)
+    # q2view has a bug where double slashes mess things up
+    html = html.replace('emperor-resources//', 'emperor-resources/')
+    html = html.split('\n')
+
+    emperor_base_dependencies = html[6]
+
+    # TODO: maybe not needed anymore
+    # html = html.replace(' null, ec;', ' null;')
+
+    # line 14 is where the CSS includes start
+    emperor_style = '\n'.join([line.strip().replace("'", '').replace(',', '')
+                              for line in html[14:20]])
+
+    # main divs for emperor
+    emperor_div = '\n'.join(html[39:44])
+
+    # main js script
+    emperor_require_logic = '\n'.join(html[45:-3])
+
+    emperor_require_logic = emperor_require_logic.replace(
+        '/*__select_callback__*/', SELECTION_CALLBACK)
+
+    emperor_data = {
+        'emperor_div': emperor_div,
+        'emperor_require_logic': emperor_require_logic,
+        'emperor_style': emperor_style,
+        'emperor_base_dependencies': emperor_base_dependencies,
+        'emperor_classes': 'combined-plot-container'
+    }
+
+    return emperor_data
+
+
+# should be replaced for the string /*__select_callback__*/
+SELECTION_CALLBACK = """ var colorGroups = {}, color;
+for(var i=0; i < samples.length; i++) {
+  color = samples[i].material.color.getHexString();
+  if (colorGroups[color] === undefined) {
+    colorGroups[color] = [];
+  }
+  colorGroups[color].push(samples[i].name);
+}
+empress.colorSampleGroups(colorGroups);
+
+// 3 seconds before resetting
+setTimeout(function(){
+  empress.resetTree();
+  empress.drawTree();
+
+  samples.forEach(function(sample) {
+    sample.material.emissive.set(0x000000);
+  })
+
+  plotView.needsUpdate = true;
+}, 4000);
+"""
