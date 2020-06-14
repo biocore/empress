@@ -45,10 +45,8 @@ def plot(
 
     sample_metadata = sample_metadata.to_dataframe()
 
-    # create/parse tree
-    tree_file = str(tree)
     # path to the actual newick file
-    with open(tree_file) as file:
+    with open(str(tree)) as file:
         t = parse_newick(file.readline())
     empress_tree = Tree.from_tree(to_skbio_treenode(t))
     tools.name_internal_nodes(empress_tree)
