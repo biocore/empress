@@ -169,21 +169,16 @@ def plot(
 
 
 def _make_emperor(ordination, metadata, feature_metadata, output_dir):
-    viz = Emperor(ordination, metadata, remote='./emperor-resources/')
+    viz = Emperor(ordination, metadata, remote='./emperor-resources')
     viz.width = '48vw'
     viz.height = '100vh; float: right'
 
     viz.copy_support_files(os.path.join(output_dir, 'emperor-resources'))
 
     html = viz.make_emperor(standalone=True)
-    # q2view has a bug where double slashes mess things up
-    html = html.replace('emperor-resources//', 'emperor-resources/')
     html = html.split('\n')
 
     emperor_base_dependencies = html[6]
-
-    # TODO: maybe not needed anymore
-    # html = html.replace(' null, ec;', ' null;')
 
     # line 14 is where the CSS includes start
     emperor_style = '\n'.join([line.strip().replace("'", '').replace(',', '')
