@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 import skbio
 
-from pandas.util.testing import assert_index_equal
+from pandas.util.testing import assert_index_equal, assert_frame_equal
 from os.path import exists
 from shutil import rmtree
 
@@ -75,15 +75,25 @@ class TestCore(unittest.TestCase):
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
                                         0, 1, 0, 0, 0])
 
-        self.fail('Test some key aspects of these objects')
-        # self.assertEqual(self.table, None)
-        # self.assertEqual(self.tree, None)
-        # self.assertEqual(self.samples, None)
+        names = ['a', 'e', 'EmpressNode0', 'b', 'g', 'EmpressNode1', 'd', 'h',
+                 'EmpressNode2']
+        for i, node in enumerate(viz.tree.postorder()):
+            self.assertEqual(node.name, names[i])
+
+        # table should be unchanged and be a different id instance
+        assert_frame_equal(self.table, viz.table.T)
+        self.assertNotEqual(id(self.table), id(viz.table))
+
+        # sample metadata should be unchanged and be a different id instance
+        assert_frame_equal(self.sample_metadata, viz.samples)
+        self.assertNotEqual(id(self.sample_metadata), id(viz.samples))
+
+        self.assertIsNone(viz.features)
+        self.assertIsNone(viz.ordination)
 
     def test_init_with_ordination(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.pcoa)
-
 
         assert_index_equal(viz.ordination.samples.index,
                            self.pcoa.samples.index)
