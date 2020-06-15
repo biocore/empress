@@ -11,7 +11,7 @@ import numpy as np
 import skbio
 
 from skbio.util import assert_ordination_results_equal
-from pandas.util.testing import assert_index_equal, assert_frame_equal
+from pandas.util.testing import assert_frame_equal
 from os.path import exists
 from shutil import rmtree
 
@@ -116,9 +116,9 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.features)
 
-        assert_ordination_results_equal(viz.ordination.samples, self.pcoa)
+        assert_ordination_results_equal(viz.ordination, self.pcoa)
 
-        # emperor is instantiated as needed
+        # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
     def test_init_feature_metadata_warning(self):
