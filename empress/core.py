@@ -9,6 +9,7 @@
 from empress.tree import Tree
 from empress.tools import name_internal_nodes, match_inputs
 
+import warnings
 import pkg_resources
 import os
 import pandas as pd
@@ -27,12 +28,70 @@ class Empress():
                  feature_metadata=None, ordination=None,
                  ignore_missing_samples=False, filter_missing_features=False,
                  resource_path=None):
+        """Visualize a phylogenetic tree
+
+        Use this object to interactively display a phylogenetic tree using the
+        Empress GUI.
+
+        Parameters
+        ----------
+        tree: bp.Tree:
+            The phylogenetic tree to visualize.
+        table: pd.DataFrame:
+            The matrix to visualize paired with the phylogenetic tree.
+        sample_metadata: pd.DataFrame
+            DataFrame object with the metadata associated to the samples in the
+            ``ordination`` object, should have an index set and it should match
+            the identifiers in the ``ordination`` object.
+        feature_metadata: pd.DataFrame, optional
+            DataFrame object with the metadata associated to the features in
+            the ``table`` and ``tree`` objects, should have an index set and it
+            should match the feature identifiers.
+        ordination: skbio.OrdinationResults, optional
+            Object containing the computed values for an ordination method in
+            scikit-bio. Currently supports skbio.stats.ordination.PCoA and
+            skbio.stats.ordination.RDA results.
+        ignore_missing_samples: bool, optional
+            If True, pads missing samples (i.e. samples in the table but not
+            the metadata) with placeholder metadata. If False, raises a
+            DataMatchingError if any such samples exist. (Note that in either
+            case, samples in the metadata but not in the table are filtered
+            out; and if no samples are shared between the table and metadata, a
+            DataMatchingError is raised regardless.) This is analogous to the
+            ignore_missing_samples flag in Emperor.
+        filter_missing_features: bool, optional
+            If True, filters features from the table that aren't present as
+            tips in the tree. If False, raises a DataMatchingError if any such
+            features exist. (Note that in either case, features in the tree but
+            not in the table are preserved.)
+        resource_path: str, optional
+            Load the resources from a user-specified remote location. If set to
+            None resources are loaded from the current directory.
+
+
+        Attributes
+        ----------
+        tree:
+            Phylogenetic tree.
+        table:
+            Contingency matrix for teh phylogeny.
+        samples:
+            Sample metadata.
+        features:
+            Feature metadata
+        ordination:
+            Ordination matrix to visualize simultaneously with the tree.
+        base_url:
+            Base path to the remote resources.
+        """
 
         self.tree = tree
         self.table = table
         self.samples = sample_metadata.copy()
 
         if feature_metadata is not None:
+            warnings.warn('Feature metadata is currently not supported',
+                          UserWarning)
             self.features = feature_metadata.copy()
         else:
             self.features = None
@@ -43,7 +102,6 @@ class Empress():
         if self.base_url is None:
             self.base_url = './'
 
-        # TODO: validate metadata
         self._validate_data(ignore_missing_samples, filter_missing_features)
 
     def _validate_data(self, ignore_missing_samples, filter_missing_features):
@@ -230,6 +288,9 @@ class Empress():
                                 remote='./emperor-resources')
         self._emperor.width = '48vw'
         self._emperor.height = '100vh; float: right'
+
+        # make the background white so it matches Empress
+        self._emperor.set_background_color('white')
 
         html = self._emperor.make_emperor(standalone=True)
         html = html.split('\n')
