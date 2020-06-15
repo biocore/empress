@@ -814,7 +814,7 @@ define([
         var tree = this._tree;
         var categories = Object.keys(obs);
 
-        // assign internal nodes to approperiate category based on its children
+        // assign internal nodes to appropriate category based on children
         // iterate using postorder
         for (var i = 1; i < tree.size; i++) {
             var node = i;
