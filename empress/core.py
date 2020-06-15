@@ -21,6 +21,8 @@ from jinja2 import Environment, FileSystemLoader
 
 SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
+SELECTION_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
+                                       'selection-callback.js')
 
 
 class Empress():
@@ -134,7 +136,7 @@ class Empress():
         """Copies the support files to a target directory
 
         If an ordination is included Emperor's support files will also be
-        copied over.
+        copied over (in a directory named emperor-resources).
 
         Parameters
         ----------
@@ -299,20 +301,26 @@ class Empress():
         html = self._emperor.make_emperor(standalone=True)
         html = html.split('\n')
 
+        # The following line references will be replace with API calls to the
+        # Emperor object, however those are not implemented yet
         emperor_base_dependencies = html[6]
 
-        # line 14 is where the CSS includes start
+        # line 14 is where the CSS includes start, but it is surrounded by
+        # unnecessary tags so we strip those out
         style = '\n'.join([line.strip().replace("'", '').replace(',', '')
                            for line in html[14:20]])
 
         # main divs for emperor
         emperor_div = '\n'.join(html[39:44])
 
-        # main js script
+        # main js script for emperor
         emperor_require_logic = '\n'.join(html[45:-3])
 
+        # once everything is loaded replace the callback tag for custom JS
+        with open(SELECTION_CALLBACK_PATH) as f:
+            selection_callback = f.read()
         emperor_require_logic = emperor_require_logic.replace(
-            '/*__select_callback__*/', SELECTION_CALLBACK)
+            '/*__select_callback__*/', selection_callback)
 
         emperor_data = {
             'emperor_div': emperor_div,
@@ -323,27 +331,3 @@ class Empress():
         }
 
         return emperor_data
-
-
-SELECTION_CALLBACK = """ var colorGroups = {}, color;
-for(var i=0; i < samples.length; i++) {
-  color = samples[i].material.color.getHexString();
-  if (colorGroups[color] === undefined) {
-    colorGroups[color] = [];
-  }
-  colorGroups[color].push(samples[i].name);
-}
-empress.colorSampleGroups(colorGroups);
-
-// 3 seconds before resetting
-setTimeout(function(){
-  empress.resetTree();
-  empress.drawTree();
-
-  samples.forEach(function(sample) {
-    sample.material.emissive.set(0x000000);
-  })
-
-  plotView.needsUpdate = true;
-}, 4000);
-"""
