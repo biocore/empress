@@ -121,7 +121,8 @@
             '{{ default_layout }}',
             biom,
             {{ feature_metadata_columns }},
-            {{ feature_metadata | tojson }},
+            {{ tip_metadata | tojson }},
+            {{ int_metadata | tojson }},
             canvas
         );
         empress.initialize();

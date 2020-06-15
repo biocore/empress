@@ -15,7 +15,7 @@ from q2_types.tree import NewickFormat
 
 from jinja2 import Environment, FileSystemLoader
 from bp import parse_newick, to_skbio_treenode
-from empress import tools, taxonomy_utils
+from empress import tools
 import pandas as pd
 from empress.tree import Tree
 from shutil import copytree
@@ -57,13 +57,10 @@ def plot(
     # to tools.match_inputs() and keep using the transposed table for the rest
     # of this visualizer.
 
-    feature_table, sample_metadata, feature_metadata = tools.match_inputs(
+    feature_table, sample_md, tip_md, int_md = tools.match_inputs(
         empress_tree, feature_table.T, sample_metadata, feature_metadata,
         ignore_missing_samples, filter_missing_features
     )
-
-    if feature_metadata is not None:
-        feature_metadata = taxonomy_utils.split_taxonomy(feature_metadata)
 
     # TODO: Add a check for empty samples/features in the table? Filtering this
     # sorta stuff out would help speed things up (and would be good to report
@@ -130,7 +127,7 @@ def plot(
     temp = env.get_template('empress-template.html')
 
     # Convert sample metadata to a JSON-esque format
-    sample_data = sample_metadata.to_dict(orient='index')
+    sample_data = sample_md.to_dict(orient='index')
 
     # TODO: Empress is currently storing all metadata as strings. This is
     # memory intensive and won't scale well. We should convert all numeric
@@ -140,17 +137,22 @@ def plot(
     # data (i.e. NaN and "unknown") and also determines sorting order. The
     # original intent is to signal what columns are discrete/continuous.
     # type of sample metadata (n - number, o - object)
-    sample_data_type = sample_metadata.dtypes.to_dict()
+    sample_data_type = sample_md.dtypes.to_dict()
     sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
                         for k, v in sample_data_type.items()}
 
     # Convert feature metadata, similarly to how we handle sample metadata
-    if feature_metadata is not None:
-        feature_metadata_json = feature_metadata.to_dict(orient='index')
-        feature_metadata_columns = list(feature_metadata.columns)
+    if tip_md is not None or int_md is not None:
+        # We can just use tip_md.columns, since both tip_md and int_md (the
+        # feature metadata split up by tips and internal nodes) should have
+        # identical columns. (TODO: explicitly test that.)
+        feature_metadata_columns = list(tip_md.columns)
+        tip_md_json = tip_md.to_dict(orient='index')
+        int_md_json = int_md.to_dict(orient='index')
     else:
-        feature_metadata_json = {}
         feature_metadata_columns = []
+        tip_md_json = {}
+        int_md_json = {}
 
     # create a mapping of observation ids and the samples that contain them
     obs_data = {}
@@ -166,7 +168,8 @@ def plot(
         'names_to_keys': names_to_keys,
         'sample_data': sample_data,
         'sample_data_type': sample_data_type,
-        'feature_metadata': feature_metadata_json,
+        'tip_metadata': tip_md_json,
+        'int_metadata': int_md_json,
         'feature_metadata_columns': feature_metadata_columns,
         'obs_data': obs_data,
         'names': names,

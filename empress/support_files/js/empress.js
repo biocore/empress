@@ -28,6 +28,9 @@ define([
      *                       by a node's x2 and y2 coordinates in the data.
      * @param {String} defaultLayout The default layout to draw the tree with
      * @param {BIOMTable} biom The BIOM table used to color the tree
+     * @param {Array} featureMetadataColumns Columns of the feature metadata
+     * @param {Object} tipMetadata Feature metadata for tips in the tree
+     * @param {Object} intMetadata Feature metadata for internal nodes in tree
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
     function Empress(
@@ -38,7 +41,8 @@ define([
         defaultLayout,
         biom,
         featureMetadataColumns,
-        featureMetadata,
+        tipMetadata,
+        intMetadata,
         canvas
     ) {
         /**
@@ -113,10 +117,12 @@ define([
          * @type{Object}
          * Feature metadata: keys are tree node IDs, and values are objects
          * mapping feature metadata column names to the metadata value for that
-         * feature.
+         * feature. We split this up into tip and internal node feature
+         * metadata objects.
          * @private
          */
-        this._featureMetadata = featureMetadata;
+        this._tipMetadata = tipMetadata;
+        this._intMetadata = intMetadata;
 
         /**
          * @type{Object}
@@ -747,17 +753,22 @@ define([
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
     Empress.prototype.colorByFeatureMetadata = function (cat, color) {
+        // TODO: Look at #fm-method-chk value
+        // If checked, only use tip metadata, as is done below.
+        // If unchecked, use both tip and internal node metadata, and don't do
+        // propagation.
+        // (encapsulate shared code in a sep func)
         var tree = this._tree;
         // 1. produce a mapping of unique values in this feature metadata
         //    column to an array of the feature(s) with each value
         var uniqueValueToFeatures = {};
-        _.mapObject(this._featureMetadata, function (fmRow, featureID) {
+        _.mapObject(this._tipMetadata, function (fmRow, tipID) {
             // This is loosely based on how BIOMTable.getObsBy() works.
             var fmVal = fmRow[cat];
             if (_.has(uniqueValueToFeatures, fmVal)) {
-                uniqueValueToFeatures[fmVal].push(featureID);
+                uniqueValueToFeatures[fmVal].push(tipID);
             } else {
-                uniqueValueToFeatures[fmVal] = [featureID];
+                uniqueValueToFeatures[fmVal] = [tipID];
             }
         });
 

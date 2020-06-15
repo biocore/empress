@@ -112,9 +112,10 @@ define(["underscore", "util"], function (_, util) {
 
         // Only add feature metadata if we're showing the hover box for a node
         // the first time
+        // TODO: add equivalent of this for internal nodes' feature metadata
         if (!addingMoreSampleCats) {
             if (this.empress._featureMetadataColumns.length > 0) {
-                if (_.has(this.empress._featureMetadata, name)) {
+                if (_.has(this.empress._tipMetadata, name)) {
                     this.fmHeader.classList.remove("hidden");
                     this.fmTable.classList.remove("hidden");
                     var headerRow = this.fmTable.insertRow(-1);
@@ -128,9 +129,9 @@ define(["underscore", "util"], function (_, util) {
                         var colCell = headerRow.insertCell(-1);
                         colCell.innerHTML = "<strong>" + colName + "</strong>";
                         var dataCell = featureRow.insertCell(-1);
-                        dataCell.innerHTML = this.empress._featureMetadata[
-                            name
-                        ][colName];
+                        dataCell.innerHTML = this.empress._tipMetadata[name][
+                            colName
+                        ];
                     }
                 }
             }
