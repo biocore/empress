@@ -158,28 +158,182 @@ class TestCore(unittest.TestCase):
     def test_to_dict(self):
         viz = Empress(self.tree, self.table, self.sample_metadata)
         obs = viz._to_dict()
-
-        self.fail('Write real tests for other attributes')
-        self.assertTrue(obs['emperor_div'].startswith('<div>..'))
-        self.assertTrue(obs['emperor_require_logic'].startswith('<div>..'))
-        self.assertTrue(obs['emperor_style'].startswith('<div>..'))
-        self.assertTrue(obs['emperor_base_dependencies'].startswith('<div>..'))
-        self.assertTrue(obs['emperor_classes'], 'combined-plot-container')
+        self.assertEqual(obs, DICT_A)
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.pcoa)
         obs = viz._to_dict()
 
-        self.fail('Write real tests for other attributes')
-        self.assertTrue(obs['emperor_div'].startswith('<div>..'))
-        self.assertTrue(obs['emperor_require_logic'].startswith('<div>..'))
-        self.assertTrue(obs['emperor_style'].startswith('<div>..'))
-        self.assertTrue(obs['emperor_base_dependencies'].startswith('<div>..'))
+        self.assertEqual(viz._emperor.width, '48vw')
+        self.assertEqual(viz._emperor.height, '100vh; float: right')
+
+        # we test key by key so we can do "general" checks on the emperor
+        # values, this helps with tests not breaking if any character changes
+        # in # Emperor
+        for key, value in obs.items():
+            if not key.startswith('emperor_'):
+                self.assertEqual(obs[key], DICT_A[key])
+
+        exp = "    <div id='emperor-notebook"
+        self.assertTrue(obs['emperor_div'].startswith(exp))
+
+        exp = "// When running in the Jupyter"
+        self.assertTrue(obs['emperor_require_logic'].startswith(exp))
+
+        exp = "}); // END REQUIRE.JS block"
+        self.assertTrue(obs['emperor_require_logic'].endswith(exp))
+
+        exp = '<link id="emperor-css" rel="stylesheet"'
+        self.assertTrue(obs['emperor_style'].startswith(exp))
+
+        exp = "vendor/js/jquery-"
+        self.assertEqual(obs['emperor_base_dependencies'].count(exp), 1)
+
         self.assertTrue(obs['emperor_classes'], 'combined-plot-container')
 
-        self.assertEquals(obs._emperor.width, '48vw')
-        self.assertEquals(obs._emperor.width, '100vh; float: right;')
+
+# How data should look like when converted to a dict
+DICT_A = {'base_url': './support_files',
+          'default_layout': 'Unrooted',
+          'emperor_base_dependencies': '',
+          'emperor_classes': '',
+          'emperor_div': '',
+          'emperor_require_logic': '',
+          'emperor_style': '',
+          'layout_to_coordsuffix': {'Rectangular': 'r', 'Unrooted': '2'},
+          'names': ['EmpressNode2',
+                    'g',
+                    'EmpressNode0',
+                    'a',
+                    'e',
+                    'b',
+                    'h',
+                    'EmpressNode1',
+                    'd'],
+          'names_to_keys': {'EmpressNode0': [3],
+                            'EmpressNode1': [6],
+                            'EmpressNode2': [9],
+                            'a': [1],
+                            'b': [4],
+                            'd': [7],
+                            'e': [2],
+                            'g': [5],
+                            'h': [8]},
+          'obs_data': {'Sample1': ['a', 'b', 'd'],
+                       'Sample2': ['a', 'b', 'd'],
+                       'Sample3': ['a'],
+                       'Sample4': []},
+          'sample_data': {'Sample1': {'Metadata1': 0,
+                                      'Metadata2': 0,
+                                      'Metadata3': 1,
+                                      'Metadata4': 'abc'},
+                          'Sample2': {'Metadata1': 0,
+                                      'Metadata2': 0,
+                                      'Metadata3': 2,
+                                      'Metadata4': 'def'},
+                          'Sample3': {'Metadata1': 0,
+                                      'Metadata2': 0,
+                                      'Metadata3': 3,
+                                      'Metadata4': 'ghi'},
+                          'Sample4': {'Metadata1': 1,
+                                      'Metadata2': 0,
+                                      'Metadata3': 4,
+                                      'Metadata4': 'jkl'}},
+          'sample_data_type': {'Metadata1': 'n',
+                               'Metadata2': 'n',
+                               'Metadata3': 'n',
+                               'Metadata4': 'o'},
+          'tree': [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0],
+          'tree_data': {1: {'color': [0.75, 0.75, 0.75],
+                            'name': 'a',
+                            'sampVal': 1,
+                            'single_samp': False,
+                            'visible': True,
+                            'x2': -82.19088834200284,
+                            'xr': 2412.0,
+                            'y2': 1568.2955749395592,
+                            'yr': -2386.875},
+                        2: {'color': [0.75, 0.75, 0.75],
+                            'name': 'e',
+                            'sampVal': 1,
+                            'single_samp': False,
+                            'visible': True,
+                            'x2': 948.7236134182863,
+                            'xr': 3216.0,
+                            'y2': 2108.2845722271436,
+                            'yr': -1381.875},
+                        3: {'color': [0.75, 0.75, 0.75],
+                            'highestchildyr': -1381.875,
+                            'lowestchildyr': -2386.875,
+                            'name': 'EmpressNode0',
+                            'sampVal': 1,
+                            'single_samp': False,
+                            'visible': True,
+                            'x2': 295.3117872853636,
+                            'xr': 1608.0,
+                            'y2': 1102.1185942229504,
+                            'yr': -1884.375},
+                        4: {'color': [0.75, 0.75, 0.75],
+                            'name': 'b',
+                            'sampVal': 1,
+                            'single_samp': False,
+                            'visible': True,
+                            'x2': 1485.5419815224768,
+                            'xr': 2412.0,
+                            'y2': 192.57380029925002,
+                            'yr': -376.875},
+                        5: {'color': [0.75, 0.75, 0.75],
+                            'highestchildyr': -376.875,
+                            'lowestchildyr': -1884.375,
+                            'name': 'g',
+                            'sampVal': 1,
+                            'single_samp': False,
+                            'visible': True,
+                            'x2': 326.7059130664611,
+                            'xr': 804.0,
+                            'y2': 503.08298900209684,
+                            'yr': -1130.625},
+                        6: {'color': [0.75, 0.75, 0.75],
+                            'name': 'EmpressNode1',
+                            'sampVal': 1,
+                            'single_samp': False,
+                            'visible': True,
+                            'x2': -622.0177003518252,
+                            'xr': 2412.0,
+                            'y2': -1605.201583225047,
+                            'yr': 628.125},
+                        7: {'color': [0.75, 0.75, 0.75],
+                            'name': 'd',
+                            'sampVal': 1,
+                            'single_samp': False,
+                            'visible': True,
+                            'x2': -2333.458018477523,
+                            'xr': 4020.0,
+                            'y2': -1651.0752884434787,
+                            'yr': 1633.125},
+                        8: {'color': [0.75, 0.75, 0.75],
+                            'highestchildyr': 1633.125,
+                            'lowestchildyr': 628.125,
+                            'name': 'h',
+                            'sampVal': 1,
+                            'single_samp': False,
+                            'visible': True,
+                            'x2': -653.4118261329227,
+                            'xr': 1608.0,
+                            'y2': -1006.1659780041933,
+                            'yr': 1130.625},
+                        9: {'color': [0.75, 0.75, 0.75],
+                            'highestchildyr': 1130.625,
+                            'lowestchildyr': -1130.625,
+                            'name': 'EmpressNode2',
+                            'sampVal': 1,
+                            'single_samp': False,
+                            'visible': True,
+                            'x2': 0.0,
+                            'xr': 0.0,
+                            'y2': 0.0,
+                            'yr': 0.0}}}
 
 
 if __name__ == "__main__":
