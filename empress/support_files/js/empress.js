@@ -764,7 +764,6 @@ define([
         var sortedUniqueValues = util.naturalSort(
             Object.keys(uniqueValueToFeatures)
         );
-        console.log(uniqueValueToFeatures);
         // shared by the following for loop
         var i, j, uniqueVal;
 
