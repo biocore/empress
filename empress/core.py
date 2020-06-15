@@ -106,8 +106,8 @@ class Empress():
 
         if self.ordination is not None:
             self._emperor = Emperor(
-                self.ordination, sample_metadata=self.samples,
-                feature_metadata=self.features,
+                self.ordination, mapping_file=self.samples,
+                feature_mapping_file=self.features,
                 ignore_missing_samples=ignore_missing_samples,
                 remote='./emperor-resources')
         else:
@@ -295,9 +295,6 @@ class Empress():
     def _scavenge_emperor(self):
         self._emperor.width = '48vw'
         self._emperor.height = '100vh; float: right'
-
-        # make the background white so it matches Empress
-        self._emperor.set_background_color('white')
 
         html = self._emperor.make_emperor(standalone=True)
         html = html.split('\n')
