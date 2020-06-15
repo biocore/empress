@@ -298,6 +298,53 @@ class TestTools(unittest.TestCase):
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
         assert_frame_equal(self.feature_metadata.loc[["e"]], f_bad_fm)
 
+    def test_match_inputs_feature_metadata_root_metadata_allowed(self):
+        """Tests that feature metadata for the root node is preserved."""
+        # Slightly modified version of self.tree where root has a name (i)
+        t = Tree.from_tree(
+            TreeNode.read(['(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2)i:1;'])
+        )
+        fm = self.feature_metadata.copy()
+        fm.index = ["a", "g", "i"]
+        f_table, f_sample_metadata, f_fm = tools.match_inputs(
+            t, self.table, self.sample_metadata, fm
+        )
+        # (check that we didn't mess up the table / sample metadata matching by
+        # accident)
+        assert_frame_equal(f_table, self.table)
+        assert_frame_equal(f_sample_metadata, self.sample_metadata)
+        # Main point of this test: all of the feature metadata should have been
+        # kept, since a, g, and i are all included in the tree (i in particular
+        # is important to verify, since it's the root)
+        assert_frame_equal(fm, f_fm, check_like=True)
+
+    def test_match_inputs_feature_metadata_duplicate_name_internal_node(self):
+        """Tests that feature metadata for internal nodes with duplicate names
+           is preserved.
+
+           In the JS interface, there are two options for coloring nodes by
+           feature metadata: 1) just coloring tips (and propagating
+           clades with uniform feature metadata upwards), or 2) coloring all
+           nodes with feature metadata, which can include internal nodes. In
+           2), internal nodes with the same name will have the same feature
+           metadata color.
+        """
+        # Slightly modified version of self.tree with duplicate internal node
+        # names (i and g)
+        t = Tree.from_tree(
+            TreeNode.read(['(((a:1,e:2)i:1,b:2)g:1,(:1,d:3)g:2)i:1;'])
+        )
+        fm = self.feature_metadata.copy()
+        fm.index = ["a", "g", "i"]
+        f_table, f_sample_metadata, f_fm = tools.match_inputs(
+            t, self.table, self.sample_metadata, fm
+        )
+        assert_frame_equal(f_table, self.table)
+        assert_frame_equal(f_sample_metadata, self.sample_metadata)
+        # Main point of this test: all of the feature metadata should have been
+        # kept, even though g and i were both duplicate node names.
+        assert_frame_equal(fm, f_fm, check_like=True)
+
 
 if __name__ == "__main__":
     unittest.main()
