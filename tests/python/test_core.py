@@ -10,10 +10,12 @@ import pandas as pd
 import numpy as np
 import skbio
 
+from skbio.util import assert_ordination_results_equal
 from pandas.util.testing import assert_index_equal, assert_frame_equal
 from os.path import exists
 from shutil import rmtree
 
+from emperor import Emperor
 from empress.core import Empress
 from bp import parse_newick
 
@@ -95,10 +97,29 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.pcoa)
 
-        assert_index_equal(viz.ordination.samples.index,
-                           self.pcoa.samples.index)
+        self.assertEqual(viz.base_url, './')
+        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
+                                        0, 1, 0, 0, 0])
 
-        self.fail('Validate other aspects')
+        names = ['a', 'e', 'EmpressNode0', 'b', 'g', 'EmpressNode1', 'd', 'h',
+                 'EmpressNode2']
+        for i, node in enumerate(viz.tree.postorder()):
+            self.assertEqual(node.name, names[i])
+
+        # table should be unchanged and be a different id instance
+        assert_frame_equal(self.table, viz.table.T)
+        self.assertNotEqual(id(self.table), id(viz.table))
+
+        # sample metadata should be unchanged and be a different id instance
+        assert_frame_equal(self.sample_metadata, viz.samples)
+        self.assertNotEqual(id(self.sample_metadata), id(viz.samples))
+
+        self.assertIsNone(viz.features)
+
+        assert_ordination_results_equal(viz.ordination.samples, self.pcoa)
+
+        # emperor is instantiated as needed
+        self.assertTrue(isinstance(viz._emperor, Emperor))
 
     def test_init_feature_metadata_warning(self):
 

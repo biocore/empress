@@ -104,6 +104,15 @@ class Empress():
 
         self._validate_data(ignore_missing_samples, filter_missing_features)
 
+        if self.ordination is not None:
+            self._emperor = Emperor(
+                self.ordination, sample_metadata=self.samples,
+                feature_metadata=self.features,
+                ignore_missing_samples=ignore_missing_samples,
+                remote='./emperor-resources')
+        else:
+            self._emperor = None
+
     def _validate_data(self, ignore_missing_samples, filter_missing_features):
         # extract balance parenthesis
         self._bp_tree = list(self.tree.B)
@@ -139,7 +148,7 @@ class Empress():
         # copy the required resources
         copytree(SUPPORT_FILES, os.path.join(target, 'support_files'))
 
-        if self.ordination is not None:
+        if self._emperor is not None:
             self._emperor.copy_support_files(os.path.join(target,
                                                           'emperor-resources'))
 
@@ -175,7 +184,7 @@ class Empress():
         return plot
 
     def _to_dict(self):
-        """Convert processed data into a dictionary of decompositions
+        """Convert processed data into a dictionary
 
         Returns
         -------
@@ -259,7 +268,7 @@ class Empress():
             'emperor_classes': ''
         }
 
-        if self.ordination is not None:
+        if self._emperor is not None:
             data_to_render.update(self._scavenge_emperor())
 
         return data_to_render
@@ -284,8 +293,6 @@ class Empress():
         return env.get_template('empress-template.html')
 
     def _scavenge_emperor(self):
-        self._emperor = Emperor(self.ordination, self.samples,
-                                remote='./emperor-resources')
         self._emperor.width = '48vw'
         self._emperor.height = '100vh; float: right'
 
