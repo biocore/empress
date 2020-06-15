@@ -172,12 +172,12 @@ def plot(
         'names': names,
         'layout_to_coordsuffix': layout_to_coordsuffix,
         'default_layout': default_layout,
-        })
+    })
 
     copytree(SUPPORT_FILES, os.path.join(output_dir, 'support_files'))
 
-    with open(os.path.join(output_dir, 'empress.html'), 'w') as file:
-        file.write(main_page)
+    with open(os.path.join(output_dir, 'empress.html'), 'w') as ehtmlfile:
+        ehtmlfile.write(main_page)
 
     index = os.path.join(TEMPLATES, 'index.html')
     q2templates.render(index, output_dir)
