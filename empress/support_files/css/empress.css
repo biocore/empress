@@ -909,3 +909,7 @@ button.close:hover {
   line-height: normal !important;
   justify-content: start !important;
 }
+
+.indented {
+  margin-left: 2em;
+}
