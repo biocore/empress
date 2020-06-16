@@ -5,7 +5,8 @@ define([
     "VectorOps",
     "CanvasEvents",
     "util",
-], function (Camera, Drawer, Colorer, VectorOps, CanvasEvents, util) {
+    "chroma"
+], function (Camera, Drawer, Colorer, VectorOps, CanvasEvents, util, chroma) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -586,11 +587,7 @@ define([
             obs = Array.from(observationsPerGroup[group]);
 
             // convert hex string to rgb array
-            var rgb = [
-                parseInt(group.slice(0, 2), 16) / 255,
-                parseInt(group.slice(2, 4), 16) / 255,
-                parseInt(group.slice(4), 16) / 255,
-            ];
+            var rgb = chroma(group).gl().slice(0, 3);
 
             for (var i = 0; i < obs.length; i++) {
                 this._treeData[obs[i]].color = rgb;

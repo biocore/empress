@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2016-2019, QIIME 2 development team.
+# Copyright (c) 2016-2019, empress development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -44,12 +44,13 @@ plugin.visualizers.register_function(
     },
     input_descriptions={
         'tree': 'The phylogenetic tree to visualize.',
-        'feature_table': 'A table containing the abundances of features within'
-                         ' samples. This information allows us to decorate the'
-                         ' phylogeny by sample metadata. It\'s expected that '
-                         ' all features in the table are also present as '
-                         'tips in the tree, and that all samples in the table'
-                         ' are also present in the sample metadata file.',
+        'feature_table': 'A table containing the abundances of features '
+                         'within samples. This information allows us to '
+                         'decorate the phylogeny by sample metadata. It\'s '
+                         'expected that all features in the table are also '
+                         'present as tips in the tree, and that all samples '
+                         'in the table are also present in the sample '
+                         'metadata file.',
         'pcoa': 'Principal coordinates matrix to display simultaneously with '
                 'the phylogenetic tree.'
     },

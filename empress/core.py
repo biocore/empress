@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2016-2019, QIIME 2 development team.
+# Copyright (c) 2016-2019, empress development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -53,7 +53,7 @@ class Empress():
             Object containing the computed values for an ordination method in
             scikit-bio. Currently supports skbio.stats.ordination.PCoA and
             skbio.stats.ordination.RDA results.
-        ignore_missing_samples: bool, optional
+        ignore_missing_samples: bool, optional (default False)
             If True, pads missing samples (i.e. samples in the table but not
             the metadata) with placeholder metadata. If False, raises a
             DataMatchingError if any such samples exist. (Note that in either
@@ -61,7 +61,7 @@ class Empress():
             out; and if no samples are shared between the table and metadata, a
             DataMatchingError is raised regardless.) This is analogous to the
             ignore_missing_samples flag in Emperor.
-        filter_missing_features: bool, optional
+        filter_missing_features: bool, optional (default False)
             If True, filters features from the table that aren't present as
             tips in the tree. If False, raises a DataMatchingError if any such
             features exist. (Note that in either case, features in the tree but
@@ -76,11 +76,11 @@ class Empress():
         tree:
             Phylogenetic tree.
         table:
-            Contingency matrix for teh phylogeny.
+            Contingency matrix for the phylogeny.
         samples:
             Sample metadata.
         features:
-            Feature metadata
+            Feature metadata.
         ordination:
             Ordination matrix to visualize simultaneously with the tree.
         base_url:
@@ -180,7 +180,6 @@ class Empress():
         # _to_dict puts the data into a dictionary-like object for consumption
         data = self._to_dict()
 
-        # need to do something about low and high
         plot = main_template.render(data)
 
         return plot
