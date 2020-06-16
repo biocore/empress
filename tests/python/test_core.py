@@ -168,6 +168,10 @@ class TestCore(unittest.TestCase):
         self.assertEqual(viz._emperor.width, '48vw')
         self.assertEqual(viz._emperor.height, '100vh; float: right')
 
+        self.assertEqual(viz._emperor.settings['axes']['axesColor'], 'black')
+        self.assertEqual(viz._emperor.settings['axes']['backgroundColor'],
+                         'white')
+
         # we test key by key so we can do "general" checks on the emperor
         # values, this helps with tests not breaking if any character changes
         # in # Emperor
