@@ -300,6 +300,10 @@ class Empress():
         self._emperor.width = '48vw'
         self._emperor.height = '100vh; float: right'
 
+        # make the background white so it matches Empress
+        self._emperor.set_background_color('white')
+        self._emperor.set_axes(color='black')
+
         html = self._emperor.make_emperor(standalone=True)
         html = html.split('\n')
 
