@@ -46,9 +46,9 @@ class Empress():
             ``ordination`` object, should have an index set and it should match
             the identifiers in the ``ordination`` object.
         feature_metadata: pd.DataFrame, optional
-            DataFrame object with the metadata associated to the features in
-            the ``table`` and ``tree`` objects, should have an index set and it
-            should match the feature identifiers.
+            DataFrame object with the metadata associated to the names of
+            tips and/or internal nodes in the  ``tree`` object, should have an
+            index set and it should match at least one of these nodes' names.
         ordination: skbio.OrdinationResults, optional
             Object containing the computed values for an ordination method in
             scikit-bio. Currently supports skbio.stats.ordination.PCoA and
