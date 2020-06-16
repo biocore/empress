@@ -265,6 +265,34 @@ class TestTaxonomyUtils(unittest.TestCase):
         split_fm = tax_utils.split_taxonomy(funky_fm)
         self.check_basic_case_worked(split_fm)
 
+    def test_split_taxonomy_SILVA_annotation(self):
+        """Tests that a particular taxonomy annotation that has caused
+           errors with QIIME 2 in the past is split properly.
+        """
+        fm = pd.DataFrame({
+            "Taxonomy": [
+                (
+                    "D_0__Bacteria;D_1__Gemmatimonadetes;"
+                    "D_2__Gemmatimonadetes;D_3__Gemmatimonadales;"
+                    "D_4__Gemmatimonadaceae;D_5__Gemmatimonas;"
+                    "D_6__uncultured bacterium "
+                )
+            ]
+        }, index=["f0"])
+        split_fm = tax_utils.split_taxonomy(fm)
+        assert_series_equal(
+            split_fm.loc["f0"],
+            pd.Series({
+                "Level 1": "D_0__Bacteria",
+                "Level 2": "D_1__Gemmatimonadetes",
+                "Level 3": "D_2__Gemmatimonadetes",
+                "Level 4": "D_3__Gemmatimonadales",
+                "Level 5": "D_4__Gemmatimonadaceae",
+                "Level 6": "D_5__Gemmatimonas",
+                "Level 7": "D_6__uncultured bacterium",
+            }, name="f0")
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
