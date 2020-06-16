@@ -55,6 +55,11 @@ def match_inputs(
 ):
     """Matches various input sources.
 
+    Also "splits up" the feature metadata, first by calling
+    taxonomy_utils.split_taxonomy() on it and then by splitting the resulting
+    DataFrame into two separate DataFrames (one for tips and one for internal
+    nodes).
+
     Parameters
     ----------
 

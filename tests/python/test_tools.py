@@ -8,8 +8,8 @@ import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
 from skbio import TreeNode
-from empress import Tree
-import empress.tools as tools
+from empress import Tree, tools
+from empress.taxonomy_utils import split_taxonomy
 
 
 class TestTools(unittest.TestCase):
@@ -168,7 +168,7 @@ class TestTools(unittest.TestCase):
                 "visualization."
             )
         ):
-            out_table, out_sm, fm = tools.match_inputs(
+            out_table, out_sm, tm, im = tools.match_inputs(
                 t, bad_table, self.sample_metadata,
                 filter_missing_features=True
             )
@@ -211,10 +211,7 @@ class TestTools(unittest.TestCase):
                 "metadata."
             )
         ):
-            tools.match_inputs(
-                t, bad_table, self.sample_metadata, ignore_missing_samples=True
-            )
-            out_table, out_sm, fm = tools.match_inputs(
+            out_table, out_sm, tm, im = tools.match_inputs(
                 t, bad_table, self.sample_metadata, ignore_missing_samples=True
             )
 
@@ -246,25 +243,24 @@ class TestTools(unittest.TestCase):
         )
 
     def test_match_inputs_feature_metadata_nothing_dropped(self):
-        """Tests that feature names corresponding to internal nodes and tips
-           in the tree are both allowed as entries in the feature metadata.
+        """Tests that tip/internal node names allowed as entries in feat. md.
 
            (self.feature_metadata describes three features, "e", "h", and "a".
             h is an internal node in self.tree, and e and a are tips.)
         """
         t = Tree.from_tree(self.tree)
-        f_table, f_sample_metadata, f_feature_metadata = tools.match_inputs(
+        f_table, f_sample_metadata, tip_md, int_md = tools.match_inputs(
             t, self.table, self.sample_metadata, self.feature_metadata
         )
         assert_frame_equal(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
-        # Check that no filtering had to be done (the feature metadata might be
-        # out of order compared to the original since we called .loc[] on it,
-        # hence our use of check_like=True, but the actual data should be the
-        # same)
-        assert_frame_equal(
-            f_feature_metadata, self.feature_metadata, check_like=True
-        )
+        # Check that no filtering had to be done -- only differences in output
+        # and input feature metadata should be that 1) the output is split into
+        # two DataFrames, one for tip and one for internal node metadata, and
+        # 2) the taxonomy column was split up.
+        st_fm = split_taxonomy(self.feature_metadata)
+        assert_frame_equal(tip_md, st_fm.loc[["e", "a"]])
+        assert_frame_equal(int_md, st_fm.loc[["h"]])
 
     def test_match_inputs_feature_metadata_no_features_in_tree(self):
         """Tests that feature names not corresponding to internal nodes / tips
