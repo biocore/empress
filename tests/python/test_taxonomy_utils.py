@@ -259,6 +259,12 @@ class TestTaxonomyUtils(unittest.TestCase):
         funky_fm.loc["f3", "Taxonomy"] = (
             "     " + funky_fm.loc["f3", "Taxonomy"].replace(";", " ;") + " "
         )
+        # This really should never happen in practice, since I believe that
+        # QIIME 2's taxonomy format stores its data as a TSV file. Also having
+        # a tab character in a taxonomy annotation sounds pretty sketchy to me.
+        # However, we may as well test that -- if for example QIIME 2 switches
+        # to CSV instead of TSV -- leading/trailing tabs are still treated as
+        # leading/trailing whitespace and are therefore ignored.
         funky_fm.loc["f4", "Taxonomy"] = (
             " \t " + funky_fm.loc["f4", "Taxonomy"] + "\t"
         )
