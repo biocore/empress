@@ -52,7 +52,9 @@ class TestIntegration(TestPluginBase):
 
     def test_execution(self):
         """Just checks that the visualizer at least runs without errors."""
-        self.result = self.plot(self.tree, self.table, self.md, self.fmd)
+        self.result = self.plot(tree=self.tree, feature_table=self.table,
+                                sample_metadata=self.md,
+                                feature_metadata=self.fmd)
         self.assertIsInstance(self.result, Results)
         self.assertIsInstance(self.result.visualization, Visualization)
         # TODO check details of viz more carefully (likely by digging into the
