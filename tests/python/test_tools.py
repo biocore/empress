@@ -75,24 +75,26 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_nothing_dropped(self):
         t = Tree.from_tree(self.tree)
-        filtered_table, filtered_sample_metadata, feat_md = tools.match_inputs(
+        filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
             t, self.table, self.sample_metadata
         )
         assert_frame_equal(filtered_table, self.table)
-        assert_frame_equal(filtered_sample_metadata, self.sample_metadata)
+        assert_frame_equal(filtered_sample_md, self.sample_metadata)
         # We didn't pass in any feature metadata, so we shouldn't get any out
-        self.assertIsNone(feat_md)
+        self.assertIsNone(t_md)
+        self.assertIsNone(i_md)
 
     def test_match_inputs_only_1_feature_in_table(self):
         # This is technically allowed (so long as this 1 feature is a tree tip)
         t = Tree.from_tree(self.tree)
         tiny_table = self.table.loc[["a"]]
-        filtered_tiny_table, filtered_sample_metadata, fm = tools.match_inputs(
+        filtered_tiny_table, filtered_sample_md, tm, im = tools.match_inputs(
             t, tiny_table, self.sample_metadata
         )
         assert_frame_equal(filtered_tiny_table, tiny_table)
-        assert_frame_equal(filtered_sample_metadata, self.sample_metadata)
-        self.assertIsNone(fm)
+        assert_frame_equal(filtered_sample_md, self.sample_metadata)
+        self.assertIsNone(tm)
+        self.assertIsNone(im)
 
     def test_match_inputs_no_tips_in_table(self):
         t = Tree.from_tree(self.tree)
