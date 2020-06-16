@@ -64,6 +64,7 @@ class TestTools(unittest.TestCase):
             },
             index=["e", "h", "a"]
         )
+        self.split_tax_fm = split_taxonomy(self.feature_metadata)
 
     def test_fill_missing_node_names(self):
         t = Tree.from_tree(self.tree)
@@ -258,9 +259,10 @@ class TestTools(unittest.TestCase):
         # and input feature metadata should be that 1) the output is split into
         # two DataFrames, one for tip and one for internal node metadata, and
         # 2) the taxonomy column was split up.
-        st_fm = split_taxonomy(self.feature_metadata)
-        assert_frame_equal(tip_md, st_fm.loc[["e", "a"]])
-        assert_frame_equal(int_md, st_fm.loc[["h"]])
+        assert_frame_equal(
+            tip_md, self.split_tax_fm.loc[["e", "a"]], check_like=True
+        )
+        assert_frame_equal(int_md, self.split_tax_fm.loc[["h"]])
 
     def test_match_inputs_feature_metadata_no_features_in_tree(self):
         """Tests that feature names not corresponding to internal nodes / tips
@@ -289,12 +291,16 @@ class TestTools(unittest.TestCase):
         # (since it's actually in the tree, while "asdf" and "hjkl" aren't)
         bad_fm = self.feature_metadata.copy()
         bad_fm.index = ["e", "asdf", "hjkl"]
-        f_table, f_sample_metadata, f_bad_fm = tools.match_inputs(
+        f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
             t, self.table, self.sample_metadata, bad_fm
         )
         assert_frame_equal(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
-        assert_frame_equal(self.feature_metadata.loc[["e"]], f_bad_fm)
+        # Check that the feature metadata just describes "e" (which should be
+        # in the tip metadata)
+        assert_frame_equal(t_fm, self.split_tax_fm.loc[["e"]])
+        # ... and check that the internal node metadata is empty.
+        self.assertEqual(len(i_fm.index), 0)
 
     def test_match_inputs_feature_metadata_root_metadata_allowed(self):
         """Tests that feature metadata for the root node is preserved."""
@@ -304,17 +310,20 @@ class TestTools(unittest.TestCase):
         )
         fm = self.feature_metadata.copy()
         fm.index = ["a", "g", "i"]
-        f_table, f_sample_metadata, f_fm = tools.match_inputs(
+        f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
             t, self.table, self.sample_metadata, fm
         )
         # (check that we didn't mess up the table / sample metadata matching by
         # accident)
         assert_frame_equal(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
+
+        split_fm = split_taxonomy(fm)
         # Main point of this test: all of the feature metadata should have been
         # kept, since a, g, and i are all included in the tree (i in particular
         # is important to verify, since it's the root)
-        assert_frame_equal(fm, f_fm, check_like=True)
+        assert_frame_equal(t_fm, split_fm.loc[["a"]])
+        assert_frame_equal(i_fm, split_fm.loc[["g", "i"]], check_like=True)
 
     def test_match_inputs_feature_metadata_duplicate_name_internal_node(self):
         """Tests that feature metadata for internal nodes with duplicate names
@@ -334,14 +343,17 @@ class TestTools(unittest.TestCase):
         )
         fm = self.feature_metadata.copy()
         fm.index = ["a", "g", "i"]
-        f_table, f_sample_metadata, f_fm = tools.match_inputs(
+        f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
             t, self.table, self.sample_metadata, fm
         )
         assert_frame_equal(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
+
+        split_fm = split_taxonomy(fm)
         # Main point of this test: all of the feature metadata should have been
         # kept, even though g and i were both duplicate node names.
-        assert_frame_equal(fm, f_fm, check_like=True)
+        assert_frame_equal(t_fm, split_fm.loc[["a"]])
+        assert_frame_equal(i_fm, split_fm.loc[["g", "i"]], check_like=True)
 
 
 if __name__ == "__main__":
