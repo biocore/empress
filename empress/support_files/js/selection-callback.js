@@ -1,4 +1,13 @@
-// For exclusive use with Emperor
+/*
+ *
+ * This File is intended to be used only with Emperor
+ *
+ */
+
+// if there's any coloring setup remove it
+legend.clearAllLegends();
+empress.resetTree();
+
 var colorGroups = {},
     color;
 for (var i = 0; i < samples.length; i++) {
