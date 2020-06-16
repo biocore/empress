@@ -732,7 +732,7 @@ define([
         // colors for the legend
         var keyInfo = colorer.getMapHex();
 
-        // assign internal nodes to approperiate category based on its children
+        // assign internal nodes to appropriate category based on its children
         obs = this._projectObservations(obs);
 
         // color tree
@@ -818,7 +818,7 @@ define([
      *
      * @param {Object} observations grouped by categories
      *
-     * @return {Object} the branches of the tree that are uniqe to category in
+     * @return {Object} the branches of the tree that are unique to category in
                         obs
     */
     Empress.prototype._projectObservations = function (obs) {
