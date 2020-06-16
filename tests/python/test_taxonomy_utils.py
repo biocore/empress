@@ -38,55 +38,12 @@ class TestTaxonomyUtils(unittest.TestCase):
             index=["f1", "f2", "f3", "f4"]
         )
 
-    def test_split_taxonomy_no_tax_column(self):
-        fm2 = self.feature_metadata.copy()
-        fm2.columns = ["asdf", "ghjkl"]
-        fm3 = tax_utils.split_taxonomy(fm2)
-        assert_frame_equal(fm2, fm3)
+    def check_basic_case_worked(self, split_fm):
+        """Checks that a given DataFrame matches the expected output from
+           running split_taxonomy() on self.feature_metadata.
+        """
 
-    def test_split_taxonomy_multiple_tax_columns(self):
-        bad_fm = self.feature_metadata.copy()
-        bad_fm.columns = ["Taxonomy", "taxon"]
-        # As with above, parentheses mess up regexes -- raw strings fix that
-        with self.assertRaisesRegex(
-            tax_utils.TaxonomyError,
-            (
-                "Multiple columns in the feature metadata have one of the "
-                r"following names \(case insensitive\): "
-                r"\('taxon', 'taxonomy'\). At most one feature metadata "
-                "column can have a name from that list."
-            )
-        ):
-            tax_utils.split_taxonomy(bad_fm)
-
-    def test_split_taxonomy_invalid_level_column(self):
-        bad_fm = self.feature_metadata.copy()
-        bad_fm.columns = ["Taxonomy", "Level 20"]
-        with self.assertRaisesRegex(
-            tax_utils.TaxonomyError,
-            (
-                "The feature metadata contains a taxonomy column, but also "
-                r"already contains column\(s\) starting with the text 'Level' "
-                r"\(case insensitive\)."
-            )
-        ):
-            tax_utils.split_taxonomy(bad_fm)
-
-    def test_split_taxonomy_level_column_but_no_taxonomy_column(self):
-        meh_fm = self.feature_metadata.copy()
-        meh_fm.columns = ["I'm ambivalent!", "Level 20"]
-        meh_fm2 = tax_utils.split_taxonomy(meh_fm)
-        assert_frame_equal(meh_fm, meh_fm2)
-
-    def test_split_taxonomy_basic_case(self):
-        initial_fm = self.feature_metadata.copy()
-        split_fm = tax_utils.split_taxonomy(initial_fm)
-
-        # First off, check that initial_fm was NOT modified: the input DF
-        # should remain untouched
-        assert_frame_equal(self.feature_metadata, initial_fm)
-
-        # Next, let's verify that split_fm looks how we expect it to look.
+        # Let's verify that split_fm looks how we expect it to look.
         # ...First, by checking the columns -- should indicate that the
         # correct number of taxonomic levels were identified
         self.assertCountEqual(split_fm.columns, [
@@ -94,10 +51,10 @@ class TestTaxonomyUtils(unittest.TestCase):
             "Level 7", "Confidence"
         ])
         # ...Next, check the index -- no features should've been dropped (that
-        # isn't even a thing that this function does, but let's be safe :P)
+        # isn't even a thing that split_taxonomy() does, but let's be safe :P)
         self.assertCountEqual(split_fm.index, ["f1", "f2", "f3", "f4"])
 
-        # Now, let's check each row individually. This is kinda inelegant.
+        # Finally, let's check each row individually. This is kinda inelegant.
         assert_series_equal(
             split_fm.loc["f1"],
             pd.Series({
@@ -150,6 +107,58 @@ class TestTaxonomyUtils(unittest.TestCase):
                 "Confidence": 1
             }, name="f4")
         )
+
+    def test_split_taxonomy_no_tax_column(self):
+        fm2 = self.feature_metadata.copy()
+        fm2.columns = ["asdf", "ghjkl"]
+        fm3 = tax_utils.split_taxonomy(fm2)
+        assert_frame_equal(fm2, fm3)
+
+    def test_split_taxonomy_multiple_tax_columns(self):
+        bad_fm = self.feature_metadata.copy()
+        bad_fm.columns = ["Taxonomy", "taxon"]
+        # As with above, parentheses mess up regexes -- raw strings fix that
+        with self.assertRaisesRegex(
+            tax_utils.TaxonomyError,
+            (
+                "Multiple columns in the feature metadata have one of the "
+                r"following names \(case insensitive\): "
+                r"\('taxon', 'taxonomy'\). At most one feature metadata "
+                "column can have a name from that list."
+            )
+        ):
+            tax_utils.split_taxonomy(bad_fm)
+
+    def test_split_taxonomy_invalid_level_column(self):
+        bad_fm = self.feature_metadata.copy()
+        bad_fm.columns = ["Taxonomy", "Level 20"]
+        with self.assertRaisesRegex(
+            tax_utils.TaxonomyError,
+            (
+                "The feature metadata contains a taxonomy column, but also "
+                r"already contains column\(s\) starting with the text 'Level' "
+                r"\(case insensitive\)."
+            )
+        ):
+            tax_utils.split_taxonomy(bad_fm)
+
+    def test_split_taxonomy_level_column_but_no_taxonomy_column(self):
+        meh_fm = self.feature_metadata.copy()
+        meh_fm.columns = ["I'm ambivalent!", "Level 20"]
+        meh_fm2 = tax_utils.split_taxonomy(meh_fm)
+        assert_frame_equal(meh_fm, meh_fm2)
+
+    def test_split_taxonomy_basic_case(self):
+        initial_fm = self.feature_metadata.copy()
+        split_fm = tax_utils.split_taxonomy(initial_fm)
+
+        # First off, check that initial_fm was NOT modified: the input DF
+        # should remain untouched
+        assert_frame_equal(self.feature_metadata, initial_fm)
+
+        # Do all the in-depth testing of split_fm in a utility func (we'll
+        # reuse this code a bit later)
+        self.check_basic_case_worked(split_fm)
 
     def test_split_taxonomy_rows_with_no_semicolons(self):
         funky_fm = self.feature_metadata.copy()
@@ -235,6 +244,26 @@ class TestTaxonomyUtils(unittest.TestCase):
             split_fm.loc["f4"],
             pd.Series({"Level 1": "Viruses", "Confidence": 1}, name="f4")
         )
+
+    def test_split_taxonomy_leading_trailing_whitespace(self):
+        """Tests that taxonomy strings with leading/trailing whitespace are
+           handled as expected (i.e. this whitespace is stripped).
+        """
+        # We insert a bunch of whitespace around the taxonomy info (and in the
+        # case of f3, around each level), but the actual information remains
+        # the same as with the basic test case: so the levels should be the
+        # same.
+        funky_fm = self.feature_metadata.copy()
+        funky_fm.loc["f1", "Taxonomy"] = funky_fm.loc["f1", "Taxonomy"] + "  "
+        funky_fm.loc["f2", "Taxonomy"] = " " + funky_fm.loc["f2", "Taxonomy"]
+        funky_fm.loc["f3", "Taxonomy"] = (
+            "     " + funky_fm.loc["f3", "Taxonomy"].replace(";", " ;") + " "
+        )
+        funky_fm.loc["f4", "Taxonomy"] = (
+            " \t " + funky_fm.loc["f4", "Taxonomy"] + "\t"
+        )
+        split_fm = tax_utils.split_taxonomy(funky_fm)
+        self.check_basic_case_worked(split_fm)
 
 
 if __name__ == "__main__":
