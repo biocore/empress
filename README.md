@@ -6,7 +6,7 @@ Empress is a fast and scalable phylogenetic tree viewer.
 ## Installation
 
 Before following these instructions, make sure your QIIME 2 conda environment
-is activated (a version of at least 2019.1 is required). Then, run the
+is activated (a version of at least **2019.10** is required). Then, run the
 following commands:
 
 ```bash
