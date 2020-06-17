@@ -356,7 +356,9 @@ define([
                     // origin is the root of the tree and endpoint is the start
                     // of the arc, by arcendangle - arcstartangle radians.
                     var numSamples = 15;
-                    var arcDeltaAngle = this._treeData[node].arcendangle - this._treeData[node].arcstartangle;
+                    var arcDeltaAngle =
+                        this._treeData[node].arcendangle -
+                        this._treeData[node].arcstartangle;
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this._treeData[node].arcx0;
                     var sY = this._treeData[node].arcy0;
@@ -593,7 +595,9 @@ define([
                     // is the root of the tree and endpoint is the start of the
                     // arc, by arcendangle - arcstartangle radians.
                     var numSamples = 15;
-                    var arcDeltaAngle = this._treeData[node].arcendangle - this._treeData[node].arcstartangle;
+                    var arcDeltaAngle =
+                        this._treeData[node].arcendangle -
+                        this._treeData[node].arcstartangle;
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this._treeData[node].arcx0;
                     var sY = this._treeData[node].arcy0;
