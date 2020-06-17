@@ -193,7 +193,6 @@ class Tree(TreeNode):
         layout_algs = (
             self.layout_unrooted,
             self.layout_rectangular,
-            self.layout_circular,
         )
         # We set the default layout to whatever the first layout in
         # layout_algs is, but this behavior is of course modifiable
