@@ -226,8 +226,8 @@ class Empress():
             # Also add vertical bar coordinate info for the rectangular layout,
             # and start point & arc coordinate info for the circular layout
             if not node.is_tip():
-                tree_data[i]["highestchildyr"] = node.highest_child_yr
-                tree_data[i]["lowestchildyr"] = node.lowest_child_yr
+                tree_data[i]["highestchildyr"] = node.highestchildyr
+                tree_data[i]["lowestchildyr"] = node.lowestchildyr
                 if not node.is_root():
                     tree_data[i]["arcx0"] = node.arcx0
                     tree_data[i]["arcy0"] = node.arcy0
