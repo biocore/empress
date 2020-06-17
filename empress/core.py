@@ -167,10 +167,10 @@ class Empress():
 
         Notes
         -----
-        Once you generate the plot (and write it to a HTML file in a given directory)
-        you will need to copy the support files (the JS/CSS/etc. code needed to
-        view the visualization) to the same directory by calling the
-        ``copy_support_files`` method.
+        Once you generate the plot (and write it to a HTML file in a given
+        directory) you will need to copy the support files (the JS/CSS/etc.
+        code needed to view the visualization) to the same directory by calling
+        the ``copy_support_files`` method.
 
         See Also
         --------
