@@ -121,13 +121,6 @@ class TestCore(unittest.TestCase):
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
-    def test_init_feature_metadata_warning(self):
-
-        with self.assertWarnsRegex(UserWarning, 'Feature metadata is currently'
-                                   ' not supported'):
-            Empress(self.tree, self.table, self.sample_metadata,
-                    feature_metadata=self.sample_metadata.copy())
-
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
 

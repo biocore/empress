@@ -7,7 +7,16 @@ define([
     "CanvasEvents",
     "util",
     "chroma",
-], function (Camera, Drawer, Colorer, VectorOps, CanvasEvents, util, chroma) {
+], function (
+    _,
+    Camera,
+    Drawer,
+    Colorer,
+    VectorOps,
+    CanvasEvents,
+    util,
+    chroma
+) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;

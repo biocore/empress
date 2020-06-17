@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from empress.tree import Tree
-from empress.tools import name_internal_nodes, match_inputs
+from empress.tools import fill_missing_node_names, match_inputs
 
 import warnings
 import pkg_resources
@@ -92,8 +92,6 @@ class Empress():
         self.samples = sample_metadata.copy()
 
         if feature_metadata is not None:
-            warnings.warn('Feature metadata is currently not supported',
-                          UserWarning)
             self.features = feature_metadata.copy()
         else:
             self.features = None
@@ -107,9 +105,13 @@ class Empress():
         self._validate_data(ignore_missing_samples, filter_missing_features)
 
         if self.ordination is not None:
+            # Note that tip-level metadata is the only "feature metadata" we
+            # send to Emperor, because internal nodes in the tree should not
+            # correspond to features in the table (and thus to arrows in a
+            # biplot).
             self._emperor = Emperor(
                 self.ordination, mapping_file=self.samples,
-                feature_mapping_file=self.features,
+                feature_mapping_file=self.tip_md,
                 ignore_missing_samples=ignore_missing_samples,
                 remote='./emperor-resources')
         else:
@@ -120,17 +122,17 @@ class Empress():
         self._bp_tree = list(self.tree.B)
 
         self.tree = Tree.from_tree(to_skbio_treenode(self.tree))
-        name_internal_nodes(self.tree)
+        fill_missing_node_names(self.tree)
 
         # Note that the feature_table we get from QIIME 2 (as an argument to
         # this function) is set up such that the index describes sample IDs and
         # the columns describe feature IDs. We transpose this table before
         # sending it to tools.match_inputs() and keep using the transposed
         # table for the rest of this visualizer.
-        self.table, self.samples = match_inputs(self.tree, self.table.T,
-                                                self.samples, self.features,
-                                                ignore_missing_samples,
-                                                filter_missing_features)
+        self.table, self.samples, self.tip_md, self.int_md = match_inputs(
+            self.tree, self.table.T, self.samples, self.features,
+            ignore_missing_samples, filter_missing_features
+        )
 
     def copy_support_files(self, target=None):
         """Copies the support files to a target directory
@@ -218,8 +220,8 @@ class Empress():
                 tree_data[i][ycoord] = getattr(node, ycoord)
             # Also add vertical bar coordinate info for the rectangular layout
             if not node.is_tip():
-                tree_data[i]["highestchildyr"] = node.highestchildyr
-                tree_data[i]["lowestchildyr"] = node.lowestchildyr
+                tree_data[i]["highestchildyr"] = node.highest_child_yr
+                tree_data[i]["lowestchildyr"] = node.lowest_child_yr
 
             if node.name in names_to_keys:
                 names_to_keys[node.name].append(i)
@@ -232,6 +234,18 @@ class Empress():
 
         # Convert sample metadata to a JSON-esque format
         sample_data = self.samples.to_dict(orient='index')
+
+        # Convert feature metadata, similarly to how we handle sample metadata
+        if self.tip_md is not None or self.int_md is not None:
+            # We can just use self.tip_md.columns, since both the tip and
+            # internal node metadata should have identical columns. (TODO test)
+            feature_metadata_columns = list(self.tip_md.columns)
+            tip_md_json = self.tip_md.to_dict(orient='index')
+            int_md_json = self.int_md.to_dict(orient='index')
+        else:
+            feature_metadata_columns = []
+            tip_md_json = {}
+            int_md_json = {}
 
         # TODO: Empress is currently storing all metadata as strings. This is
         # memory intensive and won't scale well. We should convert all numeric
@@ -260,6 +274,9 @@ class Empress():
             'names_to_keys': names_to_keys,
             'sample_data': sample_data,
             'sample_data_type': sample_data_type,
+            'tip_metadata': tip_md_json,
+            'int_metadata': int_md_json,
+            'feature_metadata_columns': feature_metadata_columns,
             'obs_data': obs_data,
             'names': names,
             'layout_to_coordsuffix': layout_to_coordsuffix,
