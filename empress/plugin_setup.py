@@ -9,7 +9,7 @@
 
 from ._plot import plot
 
-from qiime2.plugin import Plugin, Metadata, Bool, Citations
+from qiime2.plugin import Plugin, Metadata, Bool, Citations, Int, Range
 from q2_types.tree import Phylogeny, Rooted
 from q2_types.feature_table import FeatureTable, Frequency
 from q2_types.ordination import PCoAResults
@@ -40,7 +40,8 @@ plugin.visualizers.register_function(
         'sample_metadata': Metadata,
         'feature_metadata': Metadata,
         'ignore_missing_samples': Bool,
-        'filter_missing_features': Bool
+        'filter_missing_features': Bool,
+        'number_of_features': Int % Range(1, None)
     },
     input_descriptions={
         'tree': 'The phylogenetic tree to visualize.',
@@ -83,6 +84,13 @@ plugin.visualizers.register_function(
             'at least one feature in the table is also present as a tip in '
             'the tree.'
         ),
+        'number_of_features': 'The number of most important features '
+                              '(arrows) to display in the ordination.'
+                              ' "Importance" is calculated for each feature '
+                              'based on the vector’s magnitude '
+                              '(euclidean distance from origin). Note, this '
+                              'parameter is only honored when a biplot is '
+                              'inputed.',
     },
     name='Visualize and Explore Phylogenies with Empress',
     description=(

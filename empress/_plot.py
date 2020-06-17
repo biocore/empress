@@ -11,8 +11,10 @@ import pkg_resources
 
 import qiime2
 import q2templates
+import numpy as np
 import pandas as pd
 
+from scipy.spatial.distance import euclidean
 from q2_types.tree import NewickFormat
 from skbio import OrdinationResults
 from bp import parse_newick
@@ -27,10 +29,21 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
          sample_metadata: qiime2.Metadata, pcoa: OrdinationResults = None,
          feature_metadata: qiime2.Metadata = None,
          ignore_missing_samples: bool = False,
-         filter_missing_features: bool = False) -> None:
+         filter_missing_features: bool = False,
+         number_of_features: int = 5) -> None:
     # TODO: do not ignore the feature metadata when specified by the user
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()
+
+    if pcoa is not None and pcoa.features is not None:
+        # select the top N most important features based on the vector's
+        # magnitude (coped from q2-emperor)
+        feats = pcoa.features.copy()
+        origin = np.zeros_like(feats.columns)
+        feats['importance'] = feats.apply(euclidean, axis=1, args=(origin,))
+        feats.sort_values('importance', inplace=True, ascending=False)
+        feats.drop(['importance'], inplace=True, axis=1)
+        pcoa.features = feats[:number_of_features].copy()
 
     sample_metadata = sample_metadata.to_dataframe()
 
