@@ -357,19 +357,6 @@ label:hover .tooltip {
     left: 0vw;
 }
 
-canvas {
-    width: 100vw;
-    height: 100vh;
-}
-
-.tree-surface {
-    position: fixed;
-    top: 0vh;
-    left: 0vw;
-    width: 100vw;
-    height: 100vw;
-}
-
 /* referenced from  https://webglfundamentals.org/webgl/lessons/webgl-text-html.html*/
 .container {
     position: absolute;
@@ -384,6 +371,14 @@ canvas {
     overflow: hidden;
     width: 100vw;
     height: 100vh;
+}
+
+/* This class is added to container and tree-container to keep empress on the
+ * left-hand-side of the screen when combined with Emperor
+ */
+.combined-plot-container {
+  width: 50vw !important;
+  float: left;
 }
 
 #dvicontainer {
@@ -433,18 +428,16 @@ canvas {
 /* control panel */
 
 #side-panel {
-    position: fixed;
-    top: 0vh;
-    left: 100vw;
-    transform: translateX(-100%);
+    position: absolute;
+    top: 0px;
+    right: 0px;
     width: 450px;
 }
 
 #show-ctrl {
-    position: fixed;
-    top: 0vh;
-    left: 100vw;
-    transform: translateX(-100%);
+    position: absolute;
+    top: 0px;
+    right: 0px;
     opacity: 0.5;
     background-color: #777;
 }

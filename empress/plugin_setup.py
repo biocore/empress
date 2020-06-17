@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2016-2019, QIIME 2 development team.
+# Copyright (c) 2016-2019, empress development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,9 +9,10 @@
 
 from ._plot import plot
 
-from qiime2.plugin import Plugin, Metadata, Bool, Citations
+from qiime2.plugin import Plugin, Metadata, Bool, Citations, Int, Range
 from q2_types.tree import Phylogeny, Rooted
 from q2_types.feature_table import FeatureTable, Frequency
+from q2_types.ordination import PCoAResults
 
 import pkg_resources
 __version__ = pkg_resources.get_distribution('empress').version  # noqa
@@ -32,23 +33,27 @@ plugin.visualizers.register_function(
     function=plot,
     inputs={
         'tree': Phylogeny[Rooted],
-        'feature_table': FeatureTable[Frequency]
+        'feature_table': FeatureTable[Frequency],
+        'pcoa': PCoAResults,
     },
     parameters={
         'sample_metadata': Metadata,
         'feature_metadata': Metadata,
         'ignore_missing_samples': Bool,
-        'filter_missing_features': Bool
+        'filter_missing_features': Bool,
+        'number_of_features': Int % Range(1, None)
     },
     input_descriptions={
         'tree': 'The phylogenetic tree to visualize.',
-        'feature_table': (
-            'A table containing the abundances of features within samples. '
-            'This information allows us to decorate the phylogeny by '
-            "sample metadata. It's expected that all features in the table "
-            'are also present as tips in the tree, and that all samples in '
-            'the table are also present in the sample metadata file.'
-        )
+        'feature_table': 'A table containing the abundances of features '
+                         'within samples. This information allows us to '
+                         'decorate the phylogeny by sample metadata. It\'s '
+                         'expected that all features in the table are also '
+                         'present as tips in the tree, and that all samples '
+                         'in the table are also present in the sample '
+                         'metadata file.',
+        'pcoa': 'Principal coordinates matrix to display simultaneously with '
+                'the phylogenetic tree.'
     },
     parameter_descriptions={
         'sample_metadata': (
@@ -79,6 +84,13 @@ plugin.visualizers.register_function(
             'at least one feature in the table is also present as a tip in '
             'the tree.'
         ),
+        'number_of_features': 'The number of most important features '
+                              '(arrows) to display in the ordination.'
+                              ' "Importance" is calculated for each feature '
+                              'based on the vector’s magnitude '
+                              '(euclidean distance from origin). Note, this '
+                              'parameter is only honored when a biplot is '
+                              'inputed.',
     },
     name='Visualize and Explore Phylogenies with Empress',
     description=(

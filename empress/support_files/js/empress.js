@@ -6,7 +6,8 @@ define([
     "VectorOps",
     "CanvasEvents",
     "util",
-], function (_, Camera, Drawer, Colorer, VectorOps, CanvasEvents, util) {
+    "chroma",
+], function (Camera, Drawer, Colorer, VectorOps, CanvasEvents, util, chroma) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -672,10 +673,54 @@ define([
      */
     Empress.prototype.colorSampleIDs = function (sIds, rgb) {
         var tree = this._tree;
-        var obs = this._biom.getSampleObs(sIds);
+        var obs = this._biom.getObjservationUnionForSamples(sIds);
+        obs = Array.from(this._namesToKeys(obs));
+        obs = this._projectObservations({ samples: new Set(obs) });
+        obs = Array.from(obs.samples);
+
         for (var i = 0; i < obs.length; i++) {
-            this._treeData[obs].color = rgb;
+            this._treeData[obs[i]].color = rgb;
         }
+        this.drawTree();
+    };
+
+    /**
+     *
+     * Color the tree by sample groups
+     *
+     * This method assumes we receive a list of samples and colors from
+     * Emperor then it goes ahead and creates one group per color.
+     *
+     * @param {Array} sampleGroups - A list of sample identifiers
+     */
+    Empress.prototype.colorSampleGroups = function (sampleGroups) {
+        var observationsPerGroup = {},
+            obs;
+
+        // get a group of observations per color
+        for (var group in sampleGroups) {
+            obs = this._biom.getObjservationUnionForSamples(
+                sampleGroups[group]
+            );
+            obs = Array.from(this._namesToKeys(obs));
+            observationsPerGroup[group] = new Set(obs);
+        }
+
+        // project to ancestors
+        observationsPerGroup = this._projectObservations(observationsPerGroup);
+
+        for (group in observationsPerGroup) {
+            obs = Array.from(observationsPerGroup[group]);
+
+            // convert hex string to rgb array
+            var rgb = chroma(group).gl().slice(0, 3);
+
+            for (var i = 0; i < obs.length; i++) {
+                this._treeData[obs[i]].color = rgb;
+            }
+        }
+
+        this.drawTree();
     };
 
     /**
