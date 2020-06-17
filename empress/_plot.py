@@ -61,3 +61,6 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
         file.write(str(viz))
 
     viz.copy_support_files(output_dir)
+
+    index = os.path.join(TEMPLATES, 'index.html')
+    q2templates.render(index, output_dir)
