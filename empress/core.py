@@ -217,9 +217,12 @@ class Empress():
                 tree_data[i][xcoord] = getattr(node, xcoord)
                 tree_data[i][ycoord] = getattr(node, ycoord)
             # Hack: it isn't mentioned above, but we need start pos info for
-            # circular layout
+            # circular layout. The start pos for the other layouts is the parent
+            # xy coordinates so we need only need to specify the start for
+            # circular layout.
             tree_data[i]["xc0"] = node.xc0
             tree_data[i]["yc0"] = node.yc0
+
             # Also add vertical bar coordinate info for the rectangular layout,
             # and start point & arc coordinate info for the circular layout
             if not node.is_tip():
@@ -228,8 +231,6 @@ class Empress():
                 if not node.is_root():
                     tree_data[i]["arcx0"] = node.arcx0
                     tree_data[i]["arcy0"] = node.arcy0
-                    tree_data[i]["arcx1"] = node.arcx1
-                    tree_data[i]["arcy1"] = node.arcy1
                     tree_data[i]["arcstartangle"] = node.highest_child_clangle
                     tree_data[i]["arcendangle"] = node.lowest_child_clangle
 

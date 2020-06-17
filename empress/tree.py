@@ -173,7 +173,6 @@ class Tree(TreeNode):
         # drawing vertical lines for them in the future.
         for n in self.preorder():
             if not n.is_tip():
-                # wow, child does not look like a word any more
                 n.highest_child_yr = float("-inf")
                 n.lowest_child_yr = float("inf")
                 for c in n.children:

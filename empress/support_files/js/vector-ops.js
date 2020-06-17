@@ -100,25 +100,26 @@ define([], function () {
         var length = magnitude(point);
         var over = point[1] < 0;
 
-        // find top left of box of thick line
+        // find top left of box
         tL = [0, amount];
         tL = rotate(tL, angle, over);
         tL = translate(tL, x2, y2);
 
+        // find top right of box
         tR = [length, amount];
         tR = rotate(tR, angle, over);
         tR = translate(tR, x2, y2);
 
-        // find bottom point of thick line
+        // find bottom left of box
         bL = [0, -1 * amount];
         bL = rotate(bL, angle, over);
         bL = translate(bL, x2, y2);
 
+        //f find bottom right of box
         bR = [length, -1 * amount];
         bR = rotate(bR, angle, over);
         bR = translate(bR, x2, y2);
-        // Idea of returning this as an object instead of a 2-D array based on
-        // https://stackoverflow.com/questions/2917175/return-multiple-values-in-javascript#comment2969172_2917186
+
         return { tL: tL, tR: tR, bL: bL, bR: bR };
     }
 
