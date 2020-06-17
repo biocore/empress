@@ -125,7 +125,7 @@ class Tree(TreeNode):
         coordinates for each node, so that layout algorithms can be rapidly
         toggled between in the JS interface.
 
-        Also adds on .highest_child_yr and .lowest_child_yr attributes to
+        Also adds on .highestchildyr and .lowestchildyr attributes to
         internal nodes so that vertical bars for these nodes can be drawn in
         the rectangular layout.
 
@@ -167,19 +167,19 @@ class Tree(TreeNode):
         #
         # NOTE / TODO: This will have the effect of drawing vertical lines even
         # for nodes with only 1 child -- in this case lowest_childyr ==
-        # highest_child_yr for this node, so all of the stuff drawn in WebGL
+        # highestchildyr for this node, so all of the stuff drawn in WebGL
         # for this vertical line shouldn't show up. I don't think this should
         # cause any problems, but it may be worth detecting these cases and not
         # drawing vertical lines for them in the future.
         for n in self.preorder():
             if not n.is_tip():
-                n.highest_child_yr = float("-inf")
-                n.lowest_child_yr = float("inf")
+                n.highestchildyr = float("-inf")
+                n.lowestchildyr = float("inf")
                 for c in n.children:
-                    if c.yr > n.highest_child_yr:
-                        n.highest_child_yr = c.yr
-                    if c.yr < n.lowest_child_yr:
-                        n.lowest_child_yr = c.yr
+                    if c.yr > n.highestchildyr:
+                        n.highestchildyr = c.yr
+                    if c.yr < n.lowestchildyr:
+                        n.lowestchildyr = c.yr
 
         return layout_to_coordsuffix, default_layout
 
