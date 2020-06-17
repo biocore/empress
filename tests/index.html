@@ -40,7 +40,12 @@
           'Colorer' : './support_files/js/colorer',
           'BiomTable': './support_files/js/biom-table',
           'SummaryHelper': './support_files/js/summary-helper',
-          'util': './support_files/js/util',
+          'util' : './support_files/js/util',
+          'Empress' : './support_files/js/empress',
+          'Drawer' : './support_files/js/drawer',
+          'VectorOps' : './support_files/js/vector-ops',
+          'CanvasEvents' : './support_files/js/canvas-events',
+          'SelectedNodeMenu' : './support_files/js/select-node-menu',
 
           /* test paths */
           'testBPTree' : './../tests/test-bp-tree',
@@ -49,21 +54,24 @@
           'testBIOMTable' : './../tests/test-biom-table',
           'testColorer' : './../tests/test-colorer',
           'testSummaryHelper': './../tests/test-summary-helper',
-          'testUtil': './../tests/test-util'
+          'testUtil' : './../tests/test-util',
+          'testCircularLayoutComputation' : './../tests/test-circular-layout-computation'
         }
     });
 
     // load tests
     require(
         ['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray', 'BPTree',
-         'Camera', 'Colorer', 'BiomTable', 'SummaryHelper', 'util',
+         'Camera', 'Colorer', 'BiomTable', 'SummaryHelper', 'util', 'Empress',
          'testBPTree', 'testByteTree', 'testBIOMTable', 'testCamera',
-         'testColorer', 'testSummaryHelper', 'testUtil'],
+         'testColorer', 'testSummaryHelper', 'testUtil',
+         'testCircularLayoutComputation'],
 
         // start tests
         function ($, gl, chroma, underscore, ByteArray, BPTree, Camera,
-          testBIOMTable, Colorer, BiomTable, SummaryHelper, util, testBPTree,
-          testByteTree, testCamera, testColorer, testSummaryHelper, testUtil) {
+          testBIOMTable, Colorer, BiomTable, SummaryHelper, util, Empress,
+          testBPTree, testByteTree, testCamera, testColorer, testSummaryHelper,
+          testUtil, testCircularLayoutComputation) {
             $(document).ready(function() {
                 QUnit.start();
             });

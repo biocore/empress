@@ -76,10 +76,58 @@ define([], function () {
         return point;
     }
 
+    /**
+     * Returns an Object describing the top-left, top-right, bottom-left, and
+     * bottom-right coordinates of a "thick line" box connecting two points
+     * specified by (x1, y1) and (x2, y2).
+     *
+     * The output object from this function is directly passable into
+     * Empress._addTriangleCoords() as the corners parameter, for reference.
+     *
+     * @param {Number} x1
+     * @param {Number} y1
+     * @param {Number} x2
+     * @param {Number} y2
+     * @param {Number} amount - Thickness of the box to be drawn
+     *
+     * @return {Object} corners - Contains keys tL, tR, bL, bR
+     */
+    function computeBoxCorners(x1, y1, x2, y2, amount) {
+        var point = translate([x1, y1], -1 * x2, -1 * y2);
+
+        // find angle/length of branch
+        var angle = getAngle(point);
+        var length = magnitude(point);
+        var over = point[1] < 0;
+
+        // find top left of box
+        tL = [0, amount];
+        tL = rotate(tL, angle, over);
+        tL = translate(tL, x2, y2);
+
+        // find top right of box
+        tR = [length, amount];
+        tR = rotate(tR, angle, over);
+        tR = translate(tR, x2, y2);
+
+        // find bottom left of box
+        bL = [0, -1 * amount];
+        bL = rotate(bL, angle, over);
+        bL = translate(bL, x2, y2);
+
+        //f find bottom right of box
+        bR = [length, -1 * amount];
+        bR = rotate(bR, angle, over);
+        bR = translate(bR, x2, y2);
+
+        return { tL: tL, tR: tR, bL: bL, bR: bR };
+    }
+
     return {
         getAngle: getAngle,
         magnitude: magnitude,
         rotate: rotate,
         translate: translate,
+        computeBoxCorners,
     };
 });
