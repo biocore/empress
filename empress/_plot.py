@@ -51,14 +51,13 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
     # path to the actual newick file
     with open(str(tree)) as file:
         t = parse_newick(file.readline())
-
+    trim_tree = filter_unobserved_features_from_phylogeny
     viz = Empress(tree=t, table=feature_table,
                   sample_metadata=sample_metadata,
                   feature_metadata=feature_metadata, ordination=pcoa,
                   ignore_missing_samples=ignore_missing_samples,
                   filter_missing_features=filter_missing_features,
-                  filter_unobserved_features_from_phylogeny=\
-                  filter_unobserved_features_from_phylogeny)
+                  filter_unobserved_features_from_phylogeny=trim_tree)
 
     with open(os.path.join(output_dir, 'empress.html'), 'w') as file:
         file.write(str(viz))
