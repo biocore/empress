@@ -269,9 +269,9 @@ class TestTree(unittest.TestCase):
         #       since they both start at the root.
         expected_start = [(38.490018, 0.0),
                           (-19.245009, 33.333333),
-                          (0.0,0.0),
-                          (0.0,0.0),
-                          (0.0,0.0)]
+                          (0.0, 0.0),
+                          (0.0, 0.0),
+                          (0.0, 0.0)]
         self.check_coords(t, "xc0", "yc0", expected_start)
 
         # check ending location for each node
@@ -293,17 +293,6 @@ class TestTree(unittest.TestCase):
         self.assertAlmostEqual(b.highest_child_clangle, expected_angles[0])
         self.assertAlmostEqual(b.lowest_child_clangle, expected_angles[1])
 
-        print("--------")
-        for n in t.postorder(include_self=True):
-            print(
-                n.name,
-                (n.xc0, n.yc0),
-                (n.xc1, n.yc1))
-            if hasattr(n, "arcx0"):
-                print(
-                (n.arcx0, n.arcy0),
-                n.highest_child_clangle,
-                n.lowest_child_clangle)
 
 if __name__ == "__main__":
     unittest.main()
