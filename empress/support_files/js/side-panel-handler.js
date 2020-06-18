@@ -48,6 +48,7 @@ define(["Colorer"], function (Colorer) {
         this.fColor = document.getElementById("feature-color");
         this.fLineWidth = document.getElementById("feature-line-width");
         this.fUpdateBtn = document.getElementById("feature-update");
+        this.fMethodChk = document.getElementById("fm-method-chk");
 
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
@@ -221,7 +222,10 @@ define(["Colorer"], function (Colorer) {
     SidePanel.prototype._colorFeatureTree = function () {
         var colBy = this.fSel.value;
         var col = this.fColor.value;
-        var keyInfo = this.empress.colorByFeatureMetadata(colBy, col);
+        var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
+        var keyInfo = this.empress.colorByFeatureMetadata(
+            colBy, col, coloringMethod
+        );
         this.legend.addColorKey(colBy, keyInfo, "node", false);
     };
 
@@ -387,6 +391,10 @@ define(["Colorer"], function (Colorer) {
         };
 
         this.fLineWidth.onchange = function () {
+            sp.fUpdateBtn.classList.remove("hidden");
+        };
+
+        this.fMethodChk.onchange = function () {
             sp.fUpdateBtn.classList.remove("hidden");
         };
 

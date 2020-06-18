@@ -799,46 +799,64 @@ define([
     };
 
     /**
-     * Color the tree based on a feature metadata column
+     * Color the tree based on a feature metadata column.
      *
-     * @param {String} cat The feature metadata column to color nodes by
-     * @param {String} color - the color map to use
+     * @param {String} cat The feature metadata column to color nodes by.
+     *                     It's assumed that this is present in
+     *                     this._featureMetadataColumns.
+     * @param {String} color The name of the color map to use.
+     * @param {String} method Defines how coloring is done. If this is "tip",
+     *                        then only tip-level feature metadata will be
+     *                        used, and (similar to sample coloring) upwards
+     *                        propagation of unique values will be done in
+     *                        order to color internal nodes where applicable.
+     *                        If this is "all", then this will use both tip and
+     *                        internal node feature metadata without doing any
+     *                        propagation. If this is anything else, this will
+     *                        throw an error.
      *
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
-    Empress.prototype.colorByFeatureMetadata = function (cat, color) {
-        // TODO: Look at #fm-method-chk value
-        // If checked, only use tip metadata, as is done below.
-        // If unchecked, use both tip and internal node metadata, and don't do
-        // propagation.
-        // (encapsulate shared code in a sep func)
-        var tree = this._tree;
-        // 1. produce a mapping of unique values in this feature metadata
-        //    column to an array of the feature(s) with each value
+    Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+        // Produce a mapping of unique values in this feature metadata
+        // column to an array of the feature(s) with each value.
+        // The coloring method influences how much of the feature metadata
+        // we'll look at. (While we're at it, validate the coloring method.)
+        var fmObjs;
+        if (method === "tip") {
+            var fmObjs = [this._tipMetadata];
+        } else if (method === "all") {
+            var fmObjs = [this._tipMetadata, this._intMetadata];
+        } else {
+            throw 'F. metadata coloring method "' + method + '" unrecognized.';
+        }
+
         var uniqueValueToFeatures = {};
-        _.mapObject(this._tipMetadata, function (fmRow, tipID) {
-            // This is loosely based on how BIOMTable.getObsBy() works.
-            var fmVal = fmRow[cat];
-            if (_.has(uniqueValueToFeatures, fmVal)) {
-                uniqueValueToFeatures[fmVal].push(tipID);
-            } else {
-                uniqueValueToFeatures[fmVal] = [tipID];
-            }
+        _.each(fmObjs, function(mObj) {
+            _.mapObject(mObj, function (fmRow, tipID) {
+                // This is loosely based on how BIOMTable.getObsBy() works.
+                var fmVal = fmRow[cat];
+                if (_.has(uniqueValueToFeatures, fmVal)) {
+                    uniqueValueToFeatures[fmVal].push(tipID);
+                } else {
+                    uniqueValueToFeatures[fmVal] = [tipID];
+                }
+            });
         });
 
+        var thisEmpress = this;
         var sortedUniqueValues = util.naturalSort(
             Object.keys(uniqueValueToFeatures)
         );
-        // shared by the following for loop
-        var i, j, uniqueVal;
-
-        // convert observation IDs to _treeData keys
-        for (i = 0; i < sortedUniqueValues.length; i++) {
+        // convert observation IDs to _treeData keys. Notably, this includes
+        // converting the values of uniqueValueToFeatures from Arrays to Sets.
+        var obs = {};
+        _.each(sortedUniqueValues, function(uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
-            uniqueValueToFeatures[uniqueVal] = this._namesToKeys(
+            obs[uniqueVal] = thisEmpress._namesToKeys(
                 uniqueValueToFeatures[uniqueVal]
             );
-        }
+        });
 
         // assign colors to unique values
         var colorer = new Colorer(color, sortedUniqueValues);
@@ -847,19 +865,19 @@ define([
         // colors for the legend
         var keyInfo = colorer.getMapHex();
 
-        // color internal nodes if their children all have same fm val
-        // this is adapted from _projectObservations() below
-        for (var ii = 1; ii < this._tree.size; ii++) {
-            var parent = tree.postorder(tree.parent(tree.postorderselect(ii)));
-
-            for (var jj = 0; jj < sortedUniqueValues.length; jj++) {
-                uniqueVal = sortedUniqueValues[jj];
-                if (uniqueValueToFeatures[uniqueVal].has(ii)) {
-                    uniqueValueToFeatures[uniqueVal].add(parent);
-                }
-            }
+        // Do upwards propagation only if the coloring method is "tip"
+        // TODO / NOTE: _projectObservations sets the .inSample property of
+        // features that are colored with metadata. This is "wrong," in the
+        // sense that samples don't really have anything to do with feature
+        // metadata coloring, but I don't *think* this will impact things
+        // because this property is only used for hiding non-sample features
+        // (which should not be doable with feature metadata coloring).
+        // However, it would be good to test this, because funky things may
+        // happen when the user tries to click on both the sample and feature
+        // metadata coloring checkboxes at once.
+        if (method === "tip") {
+            obs = this._projectObservations(obs);
         }
-        var obs = util.keepUniqueKeys(uniqueValueToFeatures);
 
         // color tree
         this._colorTree(obs, cm);
