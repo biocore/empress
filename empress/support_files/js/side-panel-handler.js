@@ -114,6 +114,43 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         this.legend.clearAllLegends();
     };
 
+    /* Resets the sample metadata coloring tab. */
+    SidePanel.prototype._resetSampleTab = function () {
+        this._resetTab(
+            {
+                sChk: { checked: false },
+                sSel: { disabled: true },
+                sColor: { value: "discrete-coloring-qiime" },
+                sHideChk: { checked: false },
+                sLineWidth: { value: 1 },
+            },
+            [this.sAddOpts, this.sUpdateBtn]
+        );
+    };
+
+    /* Resets the feature metadata coloring tab. */
+    SidePanel.prototype._resetFeatureTab = function () {
+        this._resetTab(
+            {
+                fChk: { checked: false },
+                fSel: { disabled: true },
+                fColor: { value: "discrete-coloring-qiime" },
+                fLineWidth: { value: 1 },
+                fMethodChk: { checked: true },
+            },
+            [this.fAddOpts, this.fUpdateBtn]
+        );
+        // Since we reset fMethodChk above to its "default" of being checked,
+        // we also update fMethodDesc to be consistent. Note that updating
+        // fMethodDesc here is technically unnecessary, since
+        // updateFeatureMethodDesc() will be called anyway when expanding the
+        // feature metadata coloring tab again. However, we do this here just
+        // so the state of the page can remain consistent, even if the user
+        // won't notice due to most of the feature tab (everything under
+        // fAddOpts) being hidden.
+        this.updateFeatureMethodDesc();
+    };
+
     /**
      * Resets and then re-colors the tree, using an arbitrary "coloring
      * function" as well as a few other configurable things.
@@ -278,20 +315,12 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         // toggle the sample/color map selectors
         this.sChk.onclick = function () {
             if (sp.sChk.checked) {
+                sp._resetFeatureTab();
                 sp.sSel.disabled = false;
                 sp.sAddOpts.classList.remove("hidden");
                 sp.sUpdateBtn.classList.remove("hidden");
             } else {
-                sp._resetTab(
-                    {
-                        sChk: { checked: false },
-                        sSel: { disabled: true },
-                        sColor: { value: "discrete-coloring-qiime" },
-                        sHideChk: { checked: false },
-                        sLineWidth: { value: 1 },
-                    },
-                    [sp.sAddOpts, sp.sUpdateBtn]
-                );
+                sp._resetSampleTab();
             }
         };
 
@@ -354,20 +383,13 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         // toggle the sample/color map selectors
         this.fChk.onclick = function () {
             if (sp.fChk.checked) {
+                sp._resetSampleTab();
                 sp.updateFeatureMethodDesc();
                 sp.fSel.disabled = false;
                 sp.fAddOpts.classList.remove("hidden");
                 sp.fUpdateBtn.classList.remove("hidden");
             } else {
-                sp._resetTab(
-                    {
-                        fChk: { checked: false },
-                        fSel: { disabled: true },
-                        fColor: { value: "discrete-coloring-qiime" },
-                        fLineWidth: { value: 1 },
-                    },
-                    [sp.fAddOpts, sp.fUpdateBtn]
-                );
+                sp._resetFeatureTab();
             }
         };
 
