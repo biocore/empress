@@ -66,6 +66,10 @@ class TestTools(unittest.TestCase):
             index=["e", "h", "a"]
         )
         self.split_tax_fm = split_taxonomy(self.feature_metadata)
+        self.exp_split_fm_cols = [
+            "Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Level 6",
+            "Level 7", "Confidence"
+        ]
 
     def test_fill_missing_node_names(self):
         t = Tree.from_tree(self.tree)
@@ -264,6 +268,9 @@ class TestTools(unittest.TestCase):
             tip_md, self.split_tax_fm.loc[["e", "a"]], check_like=True
         )
         assert_frame_equal(int_md, self.split_tax_fm.loc[["h"]])
+        # Check that the tip + internal node metadata have identical columns
+        self.assertListEqual(list(tip_md.columns), self.exp_split_fm_cols)
+        self.assertListEqual(list(int_md.columns), self.exp_split_fm_cols)
 
     def test_match_inputs_feature_metadata_no_features_in_tree(self):
         """Tests that feature names not corresponding to internal nodes / tips
@@ -302,6 +309,12 @@ class TestTools(unittest.TestCase):
         assert_frame_equal(t_fm, self.split_tax_fm.loc[["e"]])
         # ... and check that the internal node metadata is empty.
         self.assertEqual(len(i_fm.index), 0)
+        # Columns should be the same between tip and internal md, though.
+        # (It shouldn't really make a difference, since the empty internal
+        # metadata will be represented as an empty dict/JSON object ({}) in
+        # the generated HTML... but may as well check.)
+        self.assertListEqual(list(t_fm.columns), self.exp_split_fm_cols)
+        self.assertListEqual(list(i_fm.columns), self.exp_split_fm_cols)
 
     def test_match_inputs_feature_metadata_root_metadata_allowed(self):
         """Tests that feature metadata for the root node is preserved."""
@@ -355,6 +368,29 @@ class TestTools(unittest.TestCase):
         # kept, even though g and i were both duplicate node names.
         assert_frame_equal(t_fm, split_fm.loc[["a"]])
         assert_frame_equal(i_fm, split_fm.loc[["g", "i"]], check_like=True)
+
+    def test_match_inputs_feature_metadata_only_internal_node_metadata(self):
+        """Tests that feature metadata only for internal nodes is allowed."""
+        # Slightly modified version of self.tree where root has a name (i)
+        t = Tree.from_tree(
+            TreeNode.read(['(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2)i:1;'])
+        )
+        fm = self.feature_metadata.copy()
+        fm.index = ["h", "g", "i"]
+        f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
+            t, self.table, self.sample_metadata, fm
+        )
+        assert_frame_equal(f_table, self.table)
+        assert_frame_equal(f_sample_metadata, self.sample_metadata)
+
+        split_fm = split_taxonomy(fm)
+        # 1) Check that tip metadata is empty
+        self.assertEqual(len(t_fm.index), 0)
+        # 2) Check that internal node metadata was preserved
+        assert_frame_equal(i_fm, split_fm.loc[fm.index], check_like=True)
+        # 3) Check that columns on both DFs are identical
+        self.assertListEqual(list(t_fm.columns), self.exp_split_fm_cols)
+        self.assertListEqual(list(i_fm.columns), self.exp_split_fm_cols)
 
 
 if __name__ == "__main__":

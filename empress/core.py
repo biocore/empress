@@ -238,7 +238,7 @@ class Empress():
         # Convert feature metadata, similarly to how we handle sample metadata
         if self.tip_md is not None or self.int_md is not None:
             # We can just use self.tip_md.columns, since both the tip and
-            # internal node metadata should have identical columns. (TODO test)
+            # internal node metadata should have identical columns
             feature_metadata_columns = list(self.tip_md.columns)
             tip_md_json = self.tip_md.to_dict(orient='index')
             int_md_json = self.int_md.to_dict(orient='index')
