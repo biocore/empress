@@ -101,7 +101,9 @@ class Empress():
         if self.base_url is None:
             self.base_url = './'
 
-        self._validate_data(ignore_missing_samples, filter_missing_features)
+        self._validate_and_match_data(
+            ignore_missing_samples, filter_missing_features
+        )
 
         if self.ordination is not None:
             # Note that tip-level metadata is the only "feature metadata" we
@@ -116,7 +118,8 @@ class Empress():
         else:
             self._emperor = None
 
-    def _validate_data(self, ignore_missing_samples, filter_missing_features):
+    def _validate_and_match_data(self, ignore_missing_samples,
+                                 filter_missing_features):
         # extract balance parenthesis
         self._bp_tree = list(self.tree.B)
 
