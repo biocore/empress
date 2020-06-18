@@ -172,7 +172,7 @@ define([
         this.drawTree();
         this._events.setMouseEvents();
         var nodeNames = Object.keys(this._nameToKeys);
-        nodeNames = nodeNames.filter((n) => !n.includes("EmpressNode"));
+        nodeNames = nodeNames.filter((n) => !n.startsWith("EmpressNode"));
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
     };
@@ -250,7 +250,7 @@ define([
 
         for (var i = 1; i <= tree.size; i++) {
             var node = this._treeData[i];
-            if (!node.name.includes("EmpressNode")) {
+            if (!node.name.startsWith("EmpressNode")) {
                 coords[coords_index++] = this.getX(node);
                 coords[coords_index++] = this.getY(node);
                 coords.set(node.color, coords_index);
