@@ -49,6 +49,7 @@ define(["Colorer"], function (Colorer) {
         this.fLineWidth = document.getElementById("feature-line-width");
         this.fUpdateBtn = document.getElementById("feature-update");
         this.fMethodChk = document.getElementById("fm-method-chk");
+        this.fMethodDesc = document.getElementById("fm-method-desc");
 
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
@@ -354,6 +355,21 @@ define(["Colorer"], function (Colorer) {
         };
     };
 
+    SidePanel.prototype.updateFeatureMethodDesc = function () {
+        if (this.fMethodChk.checked) {
+            this.fMethodDesc.textContent =
+                "With this checkbox setting, only tip metadata will be " +
+                "used: internal nodes where all descendants have the same " +
+                "feature metadata value are themselves considered to have " +
+                "that value.";
+        } else {
+            this.fMethodDesc.textContent =
+                "With this checkbox setting, both tip and internal node " +
+                "metadata will be used, without any sort of upwards " +
+                '"propagation."';
+        }
+    };
+
     /**
      * Initializes feature metadata coloring components
      */
@@ -376,6 +392,7 @@ define(["Colorer"], function (Colorer) {
         // toggle the sample/color map selectors
         this.fChk.onclick = function () {
             if (sp.fChk.checked) {
+                sp.updateFeatureMethodDesc();
                 sp.fSel.disabled = false;
                 sp.fAddOpts.classList.remove("hidden");
                 sp.fUpdateBtn.classList.remove("hidden");
@@ -398,6 +415,7 @@ define(["Colorer"], function (Colorer) {
 
         this.fMethodChk.onchange = function () {
             sp.fUpdateBtn.classList.remove("hidden");
+            sp.updateFeatureMethodDesc();
         };
 
         this.fUpdateBtn.onclick = function () {

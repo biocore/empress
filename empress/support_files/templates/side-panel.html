@@ -77,13 +77,10 @@
       <p>
         <label for="fm-method-chk">Only use tip-level metadata?</label>
         <input id="fm-method-chk" type="checkbox" checked="true">
-        <p class="side-panel-notes indented">
-          If checked, this will just color tips (ignoring any feature metadata
-          specified for internal nodes). Internal nodes will be
-          colored if their descendant tips all have feature metadata provided
-          and share the same feature metadata value. If *not* checked, this
-          will color all tips and internal nodes that have feature metadata
-          provided without doing any "propagation."
+        <!-- We'll fill this in when the feature metadata tab is opened,
+             and we'll update it when fm-method-chk is updated.
+        -->
+        <p class="side-panel-notes indented" id="fm-method-desc">
         </p>
       </p>
       <p>
