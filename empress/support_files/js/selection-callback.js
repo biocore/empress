@@ -6,6 +6,7 @@
 
 // if there's any coloring setup remove it, and re-enable the update button
 sPanel.sUpdateBtn.classList.remove("hidden");
+sPanel.fUpdateBtn.classList.remove("hidden");
 legend.clearAllLegends();
 empress.resetTree();
 
