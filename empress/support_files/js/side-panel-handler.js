@@ -195,10 +195,9 @@ define(["Colorer"], function (Colorer) {
         this._colorFeatureTree();
 
         var lWidth = this.fLineWidth.value;
-        // TODO analogue of this but for feature metadata
-        // if (lWidth !== 1) {
-        //     this.empress.thickenSameSampleLines(lWidth - 1);
-        // }
+        if (lWidth !== 1) {
+            this.empress.thickenSameSampleLines(lWidth - 1);
+        }
         this.empress.drawTree();
 
         // hide update button
@@ -402,7 +401,10 @@ define(["Colorer"], function (Colorer) {
         this.fSel.onchange = showUpdateBtn;
         this.fColor.onchange = showUpdateBtn;
         this.fLineWidth.onchange = showUpdateBtn;
-        this.fMethodChk.onchange = showUpdateBtn;
+        this.fMethodChk.onchange = function () {
+            sp.updateFeatureMethodDesc();
+            showUpdateBtn();
+        };
 
         this.fUpdateBtn.onclick = function () {
             sp._updateFeatureColoring();
