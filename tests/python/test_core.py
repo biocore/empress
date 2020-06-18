@@ -17,7 +17,7 @@ from shutil import rmtree
 
 from emperor import Emperor
 from empress.core import Empress
-from bp import parse_newick, to_skbio_treenode
+from bp import parse_newick
 from six import StringIO
 from skbio.tree import TreeNode
 
@@ -86,7 +86,8 @@ class TestCore(unittest.TestCase):
                 rmtree(path)
 
     def test_init(self):
-        viz = Empress(self.tree, self.table, self.sample_metadata)
+        viz = Empress(self.tree, self.table, self.sample_metadata, 
+                      filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, './')
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
@@ -110,7 +111,8 @@ class TestCore(unittest.TestCase):
 
     def test_init_with_ordination(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      ordination=self.pcoa)
+                      ordination=self.pcoa, 
+                      filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, './')
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
@@ -141,13 +143,15 @@ class TestCore(unittest.TestCase):
         with self.assertWarnsRegex(UserWarning, 'Feature metadata is currently'
                                    ' not supported'):
             Empress(self.tree, self.table, self.sample_metadata,
-                    feature_metadata=self.sample_metadata.copy())
+                    feature_metadata=self.sample_metadata.copy(), 
+                    filter_unobserved_features_from_phylogeny=False)
 
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
 
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      resource_path=local_path)
+                      resource_path=local_path, 
+                      filter_unobserved_features_from_phylogeny=False)
         self.assertEqual(viz.base_url, local_path)
 
         viz.copy_support_files()
@@ -160,7 +164,8 @@ class TestCore(unittest.TestCase):
         local_path = './other-local-path/'
 
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      resource_path=local_path)
+                      resource_path=local_path, 
+                      filter_unobserved_features_from_phylogeny=False)
         self.assertEqual(viz.base_url, local_path)
 
         viz.copy_support_files(target='./something-else')
@@ -171,13 +176,15 @@ class TestCore(unittest.TestCase):
         self.files_to_remove.append('./something-else')
 
     def test_to_dict(self):
-        viz = Empress(self.tree, self.table, self.sample_metadata)
+        viz = Empress(self.tree, self.table, self.sample_metadata, 
+                      filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
         self.assertEqual(obs, DICT_A)
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      ordination=self.pcoa)
+                      ordination=self.pcoa, 
+                      filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
 
         self.assertEqual(viz._emperor.width, '48vw')
@@ -215,7 +222,8 @@ class TestCore(unittest.TestCase):
 
         viz = Empress(self.tree, self.filtered_table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=True)
-        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0])
+        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
+                                        0, 0, 0])
 
         names = ['a', 'EmpressNode0', 'b', 'g', 'd', 'h', 'EmpressNode1']
         for i, node in enumerate(viz.tree.postorder()):
