@@ -49,6 +49,11 @@ define(["underscore", "util"], function (_, util) {
     /*
      * Creates a HTML table describing sample presence info for a feature.
      *
+     * This is set up as a static method
+     * (https://stackoverflow.com/a/1635143/10730311) to make testing easier
+     * (and also because it really doesn't need to depend on the state of this
+     * object).
+     *
      * @param{ctData} Object Two-dimensional mapping: The keys are the
      *                       sample metadata fields to include in the table,
      *                       and the values are Objects mapping unique values
@@ -58,9 +63,12 @@ define(["underscore", "util"], function (_, util) {
      * @param{tableEle} HTMLElement A reference to the <table> element to
      *                              which this method will insert HTML.
      *                              This can just be the return value of
-     *                              document.getElementById().
+     *                              document.getElementById(). This element's
+     *                              innerHTML will be cleared at the start of
+     *                              this method.
      */
     SelectedNodeMenu.makeSampleMetadataTable = function (ctData, tableEle) {
+        tableEle.innerHTML = "";
         // loop over all metadata fields the user has decided to show
         var sortedFields = util.naturalSort(_.keys(ctData));
         for (var i = 0; i < sortedFields.length; i++) {
@@ -112,9 +120,6 @@ define(["underscore", "util"], function (_, util) {
         var nodeKeys = this.nodeKeys;
         var node = emp._treeData[nodeKeys[0]];
         var name = node.name;
-
-        // reset node-hover menu
-        this.table.innerHTML = "";
 
         this.nodeIdLabel.innerHTML = "ID: " + node.name;
 
