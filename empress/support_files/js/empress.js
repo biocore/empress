@@ -824,9 +824,9 @@ define([
         // we'll look at. (While we're at it, validate the coloring method.)
         var fmObjs;
         if (method === "tip") {
-            var fmObjs = [this._tipMetadata];
+            fmObjs = [this._tipMetadata];
         } else if (method === "all") {
-            var fmObjs = [this._tipMetadata, this._intMetadata];
+            fmObjs = [this._tipMetadata, this._intMetadata];
         } else {
             throw 'F. metadata coloring method "' + method + '" unrecognized.';
         }
