@@ -479,33 +479,33 @@ define([
      *                        passed to Drawer.loadSampleThickBuf().
      * @param {Number} node   Node index in this._treeData, from which we'll
      *                        retrieve coordinate information.
-     * @param {Number} amount Desired line thickness (note that this will be
-     *                        applied on both sides of the line -- so if
-     *                        amount = 1 here then the drawn thick line will
-     *                        have a width of 1 + 1 = 2).
+     * @param {Number} level Desired line thickness (note that this will be
+     *                       applied on both sides of the line -- so if
+     *                       level = 1 here then the drawn thick line will
+     *                       have a width of 1 + 1 = 2).
      */
     Empress.prototype._addThickVerticalLineCoords = function (
         coords,
         node,
-        amount
+        level
     ) {
         var corners = {
             tL: [
-                this.getX(this._treeData[node]) - amount,
+                this.getX(this._treeData[node]) - level,
                 this._treeData[node].highestchildyr,
             ],
             tR: [
-                this.getX(this._treeData[node]) + amount,
+                this.getX(this._treeData[node]) + level,
                 this._treeData[node].highestchildyr,
             ],
 
             bL: [
-                this.getX(this._treeData[node]) - amount,
+                this.getX(this._treeData[node]) - level,
                 this._treeData[node].lowestchildyr,
             ],
 
             bR: [
-                this.getX(this._treeData[node]) + amount,
+                this.getX(this._treeData[node]) + level,
                 this._treeData[node].lowestchildyr,
             ],
         };
@@ -517,13 +517,16 @@ define([
      * Thickens the branches that belong to unique sample categories
      * (i.e. features that are only in gut)
      *
-     * @param {Number} amount - How thick to make branch
+     * @param {Number} level - Desired line thickness (note that this will be
+     *                         applied on both sides of the line -- so if
+     *                         level = 1 here then the drawn thick line will
+     *                         have a width of 1 + 1 = 2).
      */
-    Empress.prototype.thickenSameSampleLines = function (amount) {
+    Empress.prototype.thickenSameSampleLines = function (level) {
         // we do this because SidePanel._updateSample() calls this function
         // with lWidth - 1, so in order to make sure we're setting this
         // properly we add 1 to this value.
-        this._currentLineWidth = amount + 1;
+        this._currentLineWidth = level + 1;
         var tree = this._tree;
 
         // the coordinate of the tree.
@@ -540,7 +543,7 @@ define([
             this._currentLayout === "Rectangular" &&
             this._treeData[tree.size].sampleColored
         ) {
-            this._addThickVerticalLineCoords(coords, tree.size, amount);
+            this._addThickVerticalLineCoords(coords, tree.size, level);
         }
         // iterate through the tree in postorder, skip root
         for (var i = 1; i < this._tree.size; i++) {
@@ -556,7 +559,7 @@ define([
             if (this._currentLayout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
-                    this._addThickVerticalLineCoords(coords, node, amount);
+                    this._addThickVerticalLineCoords(coords, node, level);
                 }
                 /* Draw a horizontal thick line for this node -- we can safely
                  * do this for all nodes since this ignores the root, and all
@@ -569,19 +572,19 @@ define([
                 corners = {
                     tL: [
                         this.getX(this._treeData[parent]),
-                        this.getY(this._treeData[node]) + amount,
+                        this.getY(this._treeData[node]) + level,
                     ],
                     tR: [
                         this.getX(this._treeData[node]),
-                        this.getY(this._treeData[node]) + amount,
+                        this.getY(this._treeData[node]) + level,
                     ],
                     bL: [
                         this.getX(this._treeData[parent]),
-                        this.getY(this._treeData[node]) - amount,
+                        this.getY(this._treeData[node]) - level,
                     ],
                     bR: [
                         this.getX(this._treeData[node]),
-                        this.getY(this._treeData[node]) - amount,
+                        this.getY(this._treeData[node]) - level,
                     ],
                 };
                 this._addTriangleCoords(coords, corners, color);
@@ -619,14 +622,14 @@ define([
                             y1,
                             x2,
                             y2,
-                            amount
+                            level
                         );
                         var arc1corners = VectorOps.computeBoxCorners(
                             x1,
                             y1,
                             x2,
                             y2,
-                            amount
+                            level
                         );
                         this._addTriangleCoords(coords, arc0corners, color);
                         this._addTriangleCoords(coords, arc1corners, color);
@@ -638,14 +641,14 @@ define([
                 y1 = this._treeData[node].yc0;
                 x2 = this.getX(this._treeData[node]);
                 y2 = this.getY(this._treeData[node]);
-                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, amount);
+                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, level);
                 this._addTriangleCoords(coords, corners, color);
             } else {
                 x1 = this.getX(this._treeData[parent]);
                 y1 = this.getY(this._treeData[parent]);
                 x2 = this.getX(this._treeData[node]);
                 y2 = this.getY(this._treeData[node]);
-                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, amount);
+                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, level);
                 this._addTriangleCoords(coords, corners, color);
             }
         }

@@ -62,6 +62,7 @@ require(['jquery', 'BPTree', 'Empress'], function($, BPTree, Empress) {
             },
 
             teardown: function() {
+                this.empress = null;
             }
         });
 
