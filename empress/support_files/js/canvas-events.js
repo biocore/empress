@@ -168,7 +168,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 var closestDist = Infinity;
                 var closestNode = null;
                 var xDist, yDist;
-                for (var i = 1; i < empress._tree.size; i++) {
+                for (var i = 1; i <= empress._tree.size; i++) {
                     var node = empress._treeData[i];
                     var nodeX = empress.getX(node);
                     var nodeY = empress.getY(node);
