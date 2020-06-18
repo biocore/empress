@@ -124,7 +124,10 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      *
      * @param{String} colorMethodName The name of a method of SidePanel to call
      *                                to re-color the tree: for example,
-     *                                "_colorSampleTree".
+     *                                "_colorSampleTree". (Passing the actual
+     *                                method as an argument seems to cause
+     *                                problems due to "this" not working
+     *                                properly. This was the easiest solution.)
      * @param{lwInput} HTMLElement An <input> with type="number" from which
      *                             we'll get the .value indicating the line
      *                             width to use when thickening lines.
