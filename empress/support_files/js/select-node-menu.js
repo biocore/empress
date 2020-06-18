@@ -269,7 +269,9 @@ define(["underscore", "util"], function (_, util) {
         var isDup = false;
         if (this.nodeKeys.length > 1) {
             this.warning.textContent =
-                "Warning: " + this.nodeKeys.length + " nodes exist with the " +
+                "Warning: " +
+                this.nodeKeys.length +
+                " nodes exist with the " +
                 "above ID.";
             isDup = true;
         }
