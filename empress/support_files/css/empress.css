@@ -28,7 +28,6 @@ input[type=text], input[type=number], select {
     background-color: white;
     height: 28px;
     border: none;
-    cursor: pointer;
     outline: none;
     border-radius: 3px;
     padding-left: 5px;
