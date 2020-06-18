@@ -63,8 +63,10 @@ plugin.visualizers.register_function(
             'be automatically filtered out of the visualization.'
         ),
         'feature_metadata': (
-            'Feature metadata. Can be used to color tips in the tree by their '
-            'unique values for feature metadata fields.'
+            'Feature metadata. Can be used to color nodes (tips and/or '
+            'internal nodes) in the tree. Features described in the metadata '
+            'that are not present in the tree will be automatically filtered '
+            'out of the visualization.'
         ),
         # Parameter descriptions adapted from q2-emperor's
         # --p-ignore-missing-samples flag.
