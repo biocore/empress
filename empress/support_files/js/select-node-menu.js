@@ -105,6 +105,36 @@ define(["underscore", "util"], function (_, util) {
         }
     };
 
+    /*
+     * Creates a HTML table (and a header) describing feature metadata.
+     *
+     * This checks to make sure that there actually is feature metadata (and
+     * that the requested node has feature metadata) before creating things --
+     * unlike makeSampleMetadataTable(), it's expected that some nodes may not
+     * have any feature metadata information, or that feature metadata may not
+     * have even been provided in the first place. (If this is the case, this
+     * function will hide the fmHeader and fmTable elements.)
+     *
+     * @param{String} nodeName Name of the node to create this table for.
+     *                         Duplicate names (for internal nodes) are ok.
+     * @param{Array} mdCols Array of metadata columns present in each entry in
+     *                      mdObj. If this is an empty array, this function
+     *                      won't create anything, and will hide the fmHeader
+     *                      and fmTable elements -- see above for details.
+     * @param{Object} mdObj Object describing feature metadata. The keys should
+     *                      be node names, and the value for a node name N
+     *                      should be another Object mapping the metadata
+     *                      columns (in mdCols) to the metadata values for
+     *                      the node name N.
+     * @param{HTMLElement} fmHeader A reference to a header HTML element to
+     *                              hide / unhide depending on whether or not
+     *                              feature metadata will be shown for this
+     *                              node name.
+     * @param{HTMLElement} fmTable A reference to the <table> element to
+     *                             which this method will insert HTML.
+     *                             This element's innerHTML will be cleared at
+     *                             the start of this method.
+     */
     SelectedNodeMenu.makeFeatureMetadataTable = function (
         nodeName,
         mdCols,
