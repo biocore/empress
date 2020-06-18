@@ -832,7 +832,7 @@ define([
         }
 
         var uniqueValueToFeatures = {};
-        _.each(fmObjs, function(mObj) {
+        _.each(fmObjs, function (mObj) {
             _.mapObject(mObj, function (fmRow, tipID) {
                 // This is loosely based on how BIOMTable.getObsBy() works.
                 var fmVal = fmRow[cat];
@@ -851,7 +851,7 @@ define([
         // convert observation IDs to _treeData keys. Notably, this includes
         // converting the values of uniqueValueToFeatures from Arrays to Sets.
         var obs = {};
-        _.each(sortedUniqueValues, function(uniqueVal, i) {
+        _.each(sortedUniqueValues, function (uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
             obs[uniqueVal] = thisEmpress._namesToKeys(
                 uniqueValueToFeatures[uniqueVal]

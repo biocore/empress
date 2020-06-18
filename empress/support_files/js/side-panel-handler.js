@@ -224,7 +224,9 @@ define(["Colorer"], function (Colorer) {
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
         var keyInfo = this.empress.colorByFeatureMetadata(
-            colBy, col, coloringMethod
+            colBy,
+            col,
+            coloringMethod
         );
         this.legend.addColorKey(colBy, keyInfo, "node", false);
     };
