@@ -5,6 +5,7 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
+import copy
 import unittest
 import pandas as pd
 import numpy as np
@@ -42,6 +43,14 @@ class TestCore(unittest.TestCase):
                 "Metadata4": ["abc", "def", "ghi", "jkl"]
             },
             index=list(self.table.index)
+        )
+
+        self.feature_metadata = pd.DataFrame(
+            {
+                "fmdcol1": ["asdf", "ghjk"],
+                "fmdcol2": ["qwer", "tyui"]
+            },
+            index=["a", "h"]
         )
 
         eigvals = pd.Series(np.array([0.50, 0.25, 0.25]),
@@ -152,6 +161,21 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.table, self.sample_metadata)
         obs = viz._to_dict()
         self.assertEqual(obs, DICT_A)
+
+    def test_to_dict_with_feature_metadata(self):
+        viz = Empress(
+            self.tree, self.table, self.sample_metadata, self.feature_metadata
+        )
+        obs = viz._to_dict()
+        dict_a_with_fm = copy.deepcopy(DICT_A)
+        dict_a_with_fm["tip_metadata"] = {
+            "a": {"fmdcol1": "asdf", "fmdcol2": "qwer"}
+        }
+        dict_a_with_fm["int_metadata"] = {
+            "h": {"fmdcol1": "ghjk", "fmdcol2": "tyui"}
+        }
+        dict_a_with_fm["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
+        self.assertEqual(obs, dict_a_with_fm)
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
