@@ -18,12 +18,16 @@ from shutil import rmtree
 from emperor import Emperor
 from empress.core import Empress
 from bp import parse_newick, to_skbio_treenode
+from six import StringIO
+from skbio.tree import TreeNode
 
 
 class TestCore(unittest.TestCase):
     def setUp(self):
         self.tree = parse_newick('(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2):1;')
-        self.pruned_tree = parse_newick('((a:2,b:2)g:1,d:5):1;')
+        self.pruned_tree = TreeNode.read(
+            StringIO('(((a:1)EmpressNode0:1,b:2)g:1,(d:3)h:2)EmpressNode1:1;')
+        )
         # Test table/metadata (mostly) adapted from Qurro:
         # the table is transposed to match QIIME2's expectation
         self.table = pd.DataFrame(
@@ -212,6 +216,7 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.filtered_table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=True)
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0])
+
         names = ['a', 'EmpressNode0', 'b', 'g', 'd', 'h', 'EmpressNode1']
         for i, node in enumerate(viz.tree.postorder()):
             self.assertEqual(node.name, names[i])

@@ -130,9 +130,8 @@ class Empress():
 
         # extract balance parenthesis
         self._bp_tree = list(self.tree.B)
-        self.skbio_tree = to_skbio_treenode(self.tree)
 
-        self.tree = Tree.from_tree(self.skbio_tree)
+        self.tree = Tree.from_tree(to_skbio_treenode(self.tree))
         name_internal_nodes(self.tree)
 
         # Note that the feature_table we get from QIIME 2 (as an argument to
