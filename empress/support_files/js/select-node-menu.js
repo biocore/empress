@@ -41,7 +41,7 @@ define(["underscore", "util"], function (_, util) {
             selectMenu.sel.options[selectMenu.sel.selectedIndex].remove();
             selectMenu.fields.push(val);
             selectMenu.smHeader.classList.remove("hidden");
-            selectMenu.showNodeMenu(true);
+            selectMenu.showNodeMenu();
         };
         this.addBtn.onclick = click;
     };
@@ -54,13 +54,13 @@ define(["underscore", "util"], function (_, util) {
      * (and also because it really doesn't need to depend on the state of this
      * object).
      *
-     * @param{ctData} Object Two-dimensional mapping: The keys are the
+     * @param{Object} ctData Two-dimensional mapping: The keys are the
      *                       sample metadata fields to include in the table,
      *                       and the values are Objects mapping unique values
      *                       in these fields to numbers describing this
      *                       feature's presence for these values.
      *                       e.g. {"body-site": {"gut": 5, "tongue": 2}}
-     * @param{tableEle} HTMLElement A reference to the <table> element to
+     * @param{HTMLElement} tableEle A reference to the <table> element to
      *                              which this method will insert HTML.
      *                              This can just be the return value of
      *                              document.getElementById(). This element's
@@ -109,7 +109,7 @@ define(["underscore", "util"], function (_, util) {
      * Displays the hover node menu. nodeKeys must be set in order to use this
      * method.
      */
-    SelectedNodeMenu.prototype.showNodeMenu = function (addingMoreSampleCats) {
+    SelectedNodeMenu.prototype.showNodeMenu = function () {
         // make sure the state machine is set
         if (this.nodeKeys === null) {
             throw "showNodeMenu(): Nodes have not be set in the state machine!";
@@ -122,6 +122,7 @@ define(["underscore", "util"], function (_, util) {
         var name = node.name;
 
         this.nodeIdLabel.innerHTML = "ID: " + node.name;
+        this.fmTable.innerHTML = "";
 
         // add id row
         this.notes.innerHTML =
@@ -135,7 +136,7 @@ define(["underscore", "util"], function (_, util) {
         // show either leaf or internal node
         var t = emp._tree;
         if (t.isleaf(t.postorderselect(this.nodeKeys[0]))) {
-            this.showLeafNode(addingMoreSampleCats);
+            this.showLeafNode();
         } else {
             this.showInternalNode();
         }
@@ -152,13 +153,13 @@ define(["underscore", "util"], function (_, util) {
      * Creates the node hover-table for a tip node. nodeKeys must be set in
      * before this function is called.
      */
-    SelectedNodeMenu.prototype.showLeafNode = function (addingMoreSampleCats) {
+    SelectedNodeMenu.prototype.showLeafNode = function () {
         // test to make sure nodeKeys is set
         if (this.nodeKeys === null) {
             throw "showLeafNode(): nodeKeys is not set!";
         }
 
-        // test to make sure the leaf node is uniqe
+        // test to make sure the leaf node is unique
         if (this.nodeKeys.length > 1) {
             throw "showLeafNode(): Leaf nodes must be unique!";
         }
@@ -166,29 +167,24 @@ define(["underscore", "util"], function (_, util) {
         // get the name of the tip
         var name = this.empress._treeData[this.nodeKeys[0]].name;
 
-        // Only add feature metadata if we're showing the hover box for a node
-        // the first time
-        // TODO: add equivalent of this for internal nodes' feature metadata
-        if (!addingMoreSampleCats) {
-            if (this.empress._featureMetadataColumns.length > 0) {
-                if (_.has(this.empress._tipMetadata, name)) {
-                    this.fmHeader.classList.remove("hidden");
-                    this.fmTable.classList.remove("hidden");
-                    var headerRow = this.fmTable.insertRow(-1);
-                    var featureRow = this.fmTable.insertRow(-1);
-                    for (
-                        var x = 0;
-                        x < this.empress._featureMetadataColumns.length;
-                        x++
-                    ) {
-                        var colName = this.empress._featureMetadataColumns[x];
-                        var colCell = headerRow.insertCell(-1);
-                        colCell.innerHTML = "<strong>" + colName + "</strong>";
-                        var dataCell = featureRow.insertCell(-1);
-                        dataCell.innerHTML = this.empress._tipMetadata[name][
-                            colName
-                        ];
-                    }
+        if (this.empress._featureMetadataColumns.length > 0) {
+            if (_.has(this.empress._tipMetadata, name)) {
+                this.fmHeader.classList.remove("hidden");
+                this.fmTable.classList.remove("hidden");
+                var headerRow = this.fmTable.insertRow(-1);
+                var featureRow = this.fmTable.insertRow(-1);
+                for (
+                    var x = 0;
+                    x < this.empress._featureMetadataColumns.length;
+                    x++
+                ) {
+                    var colName = this.empress._featureMetadataColumns[x];
+                    var colCell = headerRow.insertCell(-1);
+                    colCell.innerHTML = "<strong>" + colName + "</strong>";
+                    var dataCell = featureRow.insertCell(-1);
+                    dataCell.innerHTML = this.empress._tipMetadata[name][
+                        colName
+                    ];
                 }
             }
         }
@@ -222,12 +218,35 @@ define(["underscore", "util"], function (_, util) {
         if (this.nodeKeys.length > 1) {
             this.notes.innerHTML +=
                 "<br>" +
-                "Warning: " +
+                "<strong>Warning: " +
                 this.nodeKeys.length +
-                " nodes exist with the above id." +
+                " nodes exist with the above id.</strong>" +
                 "<br>" +
-                "The following table shows the aggregated values from all " +
+                "The above table shows the aggregated values from all " +
                 " nodes with the above id.";
+        }
+
+        var name = this.empress._treeData[this.nodeKeys[0]].name;
+        if (this.empress._featureMetadataColumns.length > 0) {
+            if (_.has(this.empress._intMetadata, name)) {
+                this.fmHeader.classList.remove("hidden");
+                this.fmTable.classList.remove("hidden");
+                var headerRow = this.fmTable.insertRow(-1);
+                var featureRow = this.fmTable.insertRow(-1);
+                for (
+                    var x = 0;
+                    x < this.empress._featureMetadataColumns.length;
+                    x++
+                ) {
+                    var colName = this.empress._featureMetadataColumns[x];
+                    var colCell = headerRow.insertCell(-1);
+                    colCell.innerHTML = "<strong>" + colName + "</strong>";
+                    var dataCell = featureRow.insertCell(-1);
+                    dataCell.innerHTML = this.empress._intMetadata[name][
+                        colName
+                    ];
+                }
+            }
         }
         // create object that will map fields to all of their possible values
         var field,
@@ -324,7 +343,7 @@ define(["underscore", "util"], function (_, util) {
         }
 
         // test if nodeKeys represents tips then only one key should exist i.e.
-        // tips must be uniqe
+        // tips must be unique
         var t = emp._tree;
         if (t.isleaf(t.postorderselect(nodeKeys[0])) && nodeKeys.length > 1) {
             throw (
