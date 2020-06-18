@@ -844,7 +844,7 @@ define([
             });
         });
 
-        var thisEmpress = this;
+        var emp = this;
         var sortedUniqueValues = util.naturalSort(
             Object.keys(uniqueValueToFeatures)
         );
@@ -853,7 +853,7 @@ define([
         var obs = {};
         _.each(sortedUniqueValues, function (uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
-            obs[uniqueVal] = thisEmpress._namesToKeys(
+            obs[uniqueVal] = emp._namesToKeys(
                 uniqueValueToFeatures[uniqueVal]
             );
         });
