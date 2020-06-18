@@ -866,15 +866,15 @@ define([
         var keyInfo = colorer.getMapHex();
 
         // Do upwards propagation only if the coloring method is "tip"
-        // TODO / NOTE: _projectObservations sets the .inSample property of
+        // TODO / NOTE: _projectObservations() sets the .inSample property of
         // features that are colored with metadata. This is "wrong," in the
         // sense that samples don't really have anything to do with feature
         // metadata coloring, but I don't *think* this will impact things
-        // because this property is only used for hiding non-sample features
-        // (which should not be doable with feature metadata coloring).
-        // However, it would be good to test this, because funky things may
-        // happen when the user tries to click on both the sample and feature
-        // metadata coloring checkboxes at once.
+        // because I think resetTree() should be called before any other
+        // coloring operations would be done. However, would be good to test
+        // things -- or at least to rename a lot of these coloring utilities
+        // to talk about "groups" rather than "samples", esp. since I think
+        // animation has the same problem...
         if (method === "tip") {
             obs = this._projectObservations(obs);
         }
