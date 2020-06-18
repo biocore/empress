@@ -67,10 +67,6 @@ require(['jquery', 'BPTree', 'Empress'], function($, BPTree, Empress) {
         });
 
         test('Test Circular Layout Arc Computation', function() {
-            // converting result to Set makes validation eaiser since
-            // getObjservationUnionForSamples uses a Set and then converts the
-            // Set to an array. The convertion does not keep order so converting
-            // the result back to a Set makes validation easier.
             var coords = this.empress.getCoords();
 
             // NOTE: all node numbers are in reference to the postorder position
