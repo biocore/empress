@@ -243,15 +243,17 @@ class Empress():
         # the program since it hasn't had taxonomy splitting / matching / etc.
         # done.)
         if self.features is not None:
-            # We can just use self.tip_md.columns, since both the tip and
-            # internal node metadata should have identical columns, even if
-            # either of them is empty (empty DataFrames can still have columns)
-            # (We know that they both won't be empty, because that'd mean that
-            # none of the IDs in the feature metadata matched any nodes in the
-            # tree -- which would cause an error.)
+            # If we're in this block, we know that self.tip_md and self.int_md
+            # are both DataFrames. They have identical columns, so we can just
+            # use self.tip_md.columns when setting feature_metadata_columns.
+            # (We don't use self.features.columns because stuff like taxonomy
+            # splitting will have changed the columns from what they initially
+            # were in some cases.)
             feature_metadata_columns = list(self.tip_md.columns)
-            # (Also, calling .to_dict() on an empty DataFrame just gives you
-            # {}, so this is ok.)
+            # Calling .to_dict() on an empty DataFrame just gives you {}, so
+            # this is safe even if there is no tip or internal node metadata.
+            # (...At least one of these DFs should be populated, though, since
+            # none of the feature IDs matching up would have caused an error.)
             tip_md_json = self.tip_md.to_dict(orient='index')
             int_md_json = self.int_md.to_dict(orient='index')
         else:
