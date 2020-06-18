@@ -57,7 +57,7 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
                   feature_metadata=feature_metadata, ordination=pcoa,
                   ignore_missing_samples=ignore_missing_samples,
                   filter_missing_features=filter_missing_features,
-                  filter_unobserved_features_from_phylogeny=
+                  filter_unobserved_features_from_phylogeny=\
                   filter_unobserved_features_from_phylogeny)
 
     with open(os.path.join(output_dir, 'empress.html'), 'w') as file:
