@@ -46,6 +46,57 @@ define(["underscore", "util"], function (_, util) {
         this.addBtn.onclick = click;
     };
 
+    /*
+     * Creates a HTML table describing sample presence info for a feature.
+     *
+     * @param{ctData} Object Two-dimensional mapping: The keys are the
+     *                       sample metadata fields to include in the table,
+     *                       and the values are Objects mapping unique values
+     *                       in these fields to numbers describing this
+     *                       feature's presence for these values.
+     *                       e.g. {"body-site": {"gut": 5, "tongue": 2}}
+     * @param{tableEle} HTMLElement A reference to the <table> element to
+     *                              which this method will insert HTML.
+     *                              This can just be the return value of
+     *                              document.getElementById().
+     */
+    SelectedNodeMenu.makeSampleMetadataTable = function (ctData, tableEle) {
+        // loop over all metadata fields the user has decided to show
+        var sortedFields = util.naturalSort(_.keys(ctData));
+        for (var i = 0; i < sortedFields.length; i++) {
+            var field = sortedFields[i];
+
+            // Create new rows in hover-table: the first row is for this
+            // metadata field's "headers" (the unique values in the field,
+            // e.g. "gut", "tongue", etc. for a field like body site), and
+            // the second row is for the sample presence data for
+            // the selected tree node within these unique values.
+            //
+            // Each group of two rows additionally has a header cell
+            // on its leftmost side which spans both the header and data
+            // rows; this header cell contains the name of the selected
+            // metadata field, and has some fancy CSS that keeps it frozen
+            // in place as the user scrolls the table horizontally.
+            var fieldHeaderRow = tableEle.insertRow(-1);
+            var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
+            fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
+            fieldHeaderCell.rowSpan = 2;
+            fieldHeaderCell.classList.add("hover-table-header-cell");
+
+            var fieldDataRow = tableEle.insertRow(-1);
+
+            // add row values for this metadata field, one column at a time
+            var categories = util.naturalSort(_.keys(ctData[field]));
+            for (var j = 0; j < categories.length; j++) {
+                var categoryHeaderCell = fieldHeaderRow.insertCell(-1);
+                categoryHeaderCell.innerHTML =
+                    "<strong>" + categories[j] + "</strong>";
+                var categoryDataCell = fieldDataRow.insertCell(-1);
+                categoryDataCell.innerHTML = ctData[field][categories[j]];
+            }
+        }
+    }
+
     /**
      * Displays the hover node menu. nodeKeys must be set in order to use this
      * method.
@@ -92,6 +143,7 @@ define(["underscore", "util"], function (_, util) {
         this.box.classList.remove("hidden");
     };
 
+
     /**
      * Creates the node hover-table for a tip node. nodeKeys must be set in
      * before this function is called.
@@ -137,38 +189,18 @@ define(["underscore", "util"], function (_, util) {
             }
         }
 
-        // loop over all metadata fields the user has added to the hover-table.
-        this.fields = util.naturalSort(this.fields);
-        for (var i = 0; i < this.fields.length; i++) {
-            var field = this.fields[i];
-
-            /*
-             * TODO: Once feature metadata is available, this will be used to
-             * flag if field is from the sample or feature metadata
-             *
-             *  var type = this.fields[i].type; // tree, sample, or feature
-             */
-
-            // create new rows in hover-table: 1 for header, 1 for data
-            var fieldHeaderRow = this.table.insertRow(-1);
-            var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
-            fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
-            fieldHeaderCell.rowSpan = 2;
-            fieldHeaderCell.classList.add("hover-table-header-cell");
-
-            var fieldDataRow = this.table.insertRow(-1);
-
-            // add row values
+        var ctData = {};
+        for (var f = 0; f < this.fields.length; f++) {
+            var field = this.fields[f];
             var obs = this.empress._biom.getObsCountsBy(field, name);
-            var categories = util.naturalSort(Object.keys(obs));
-            for (var j = 0; j < categories.length; j++) {
-                var categoryHeaderCell = fieldHeaderRow.insertCell(-1);
-                categoryHeaderCell.innerHTML =
-                    "<strong>" + categories[j] + "</strong>";
-                var categoryDataCell = fieldDataRow.insertCell(-1);
-                categoryDataCell.innerHTML = obs[categories[j]];
+            var categories = _.keys(obs);
+            ctData[field] = {};
+            for (var c = 0; c < categories.length; c++) {
+                var cat = categories[c];
+                ctData[field][cat] = obs[cat];
             }
         }
+        SelectedNodeMenu.makeSampleMetadataTable(ctData, this.table);
     };
 
     /**
@@ -254,27 +286,7 @@ define(["underscore", "util"], function (_, util) {
             }
         }
 
-        // create hover-table
-        this.fields = util.naturalSort(this.fields);
-        for (i = 0; i < this.fields.length; i++) {
-            // add row
-            field = this.fields[i];
-            row = this.table.insertRow(-1);
-            cell = row.insertCell(-1);
-            cell.innerHTML = "<strong>" + field + "</strong>";
-
-            fieldValues = util.naturalSort(Object.keys(fieldsMap[field]));
-            for (j = 0; j < fieldValues.length; j++) {
-                fieldValue = fieldValues[j];
-                cell = row.insertCell(-1);
-                cell.innerHTML =
-                    "<p>" +
-                    fieldValue +
-                    "<br>" +
-                    fieldsMap[field][fieldValue] +
-                    "</p>";
-            }
-        }
+        SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.table);
     };
 
     /**
