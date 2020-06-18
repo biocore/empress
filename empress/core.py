@@ -9,7 +9,6 @@
 from empress.tree import Tree
 from empress.tools import fill_missing_node_names, match_inputs
 
-import warnings
 import pkg_resources
 import os
 import pandas as pd

@@ -103,7 +103,7 @@ define(["underscore", "util"], function (_, util) {
                 categoryDataCell.innerHTML = ctData[field][categories[j]];
             }
         }
-    }
+    };
 
     /**
      * Displays the hover node menu. nodeKeys must be set in order to use this
@@ -147,7 +147,6 @@ define(["underscore", "util"], function (_, util) {
         // show table
         this.box.classList.remove("hidden");
     };
-
 
     /**
      * Creates the node hover-table for a tip node. nodeKeys must be set in
