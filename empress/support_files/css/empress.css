@@ -367,12 +367,6 @@ label:hover .tooltip {
     height: 100vh;
 }
 
-#tree-container {
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-}
-
 /* This class is added to container and tree-container to keep empress on the
  * left-hand-side of the screen when combined with Emperor
  */
