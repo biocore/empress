@@ -18,11 +18,16 @@ from shutil import rmtree
 from emperor import Emperor
 from empress.core import Empress
 from bp import parse_newick
+from six import StringIO
+from skbio.tree import TreeNode
 
 
 class TestCore(unittest.TestCase):
     def setUp(self):
         self.tree = parse_newick('(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2):1;')
+        self.pruned_tree = TreeNode.read(
+            StringIO('(((a:1)EmpressNode0:1,b:2)g:1,(d:3)h:2)EmpressNode1:1;')
+        )
         # Test table/metadata (mostly) adapted from Qurro:
         # the table is transposed to match QIIME2's expectation
         self.table = pd.DataFrame(
@@ -43,6 +48,16 @@ class TestCore(unittest.TestCase):
             },
             index=list(self.table.index)
         )
+
+        self.filtered_table = pd.DataFrame(
+            {
+                "Sample1": [1, 2, 4],
+                "Sample2": [8, 7, 5],
+                "Sample3": [1, 0, 0],
+                "Sample4": [0, 0, 0]
+            },
+            index=["a", "b", "d"]
+        ).T
 
         eigvals = pd.Series(np.array([0.50, 0.25, 0.25]),
                             index=['PC1', 'PC2', 'PC3'])
@@ -71,7 +86,8 @@ class TestCore(unittest.TestCase):
                 rmtree(path)
 
     def test_init(self):
-        viz = Empress(self.tree, self.table, self.sample_metadata)
+        viz = Empress(self.tree, self.table, self.sample_metadata,
+                      filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, './')
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
@@ -95,7 +111,8 @@ class TestCore(unittest.TestCase):
 
     def test_init_with_ordination(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      ordination=self.pcoa)
+                      ordination=self.pcoa,
+                      filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, './')
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
@@ -126,13 +143,15 @@ class TestCore(unittest.TestCase):
         with self.assertWarnsRegex(UserWarning, 'Feature metadata is currently'
                                    ' not supported'):
             Empress(self.tree, self.table, self.sample_metadata,
-                    feature_metadata=self.sample_metadata.copy())
+                    feature_metadata=self.sample_metadata.copy(),
+                    filter_unobserved_features_from_phylogeny=False)
 
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
 
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      resource_path=local_path)
+                      resource_path=local_path,
+                      filter_unobserved_features_from_phylogeny=False)
         self.assertEqual(viz.base_url, local_path)
 
         viz.copy_support_files()
@@ -145,7 +164,8 @@ class TestCore(unittest.TestCase):
         local_path = './other-local-path/'
 
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      resource_path=local_path)
+                      resource_path=local_path,
+                      filter_unobserved_features_from_phylogeny=False)
         self.assertEqual(viz.base_url, local_path)
 
         viz.copy_support_files(target='./something-else')
@@ -156,13 +176,15 @@ class TestCore(unittest.TestCase):
         self.files_to_remove.append('./something-else')
 
     def test_to_dict(self):
-        viz = Empress(self.tree, self.table, self.sample_metadata)
+        viz = Empress(self.tree, self.table, self.sample_metadata,
+                      filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
         self.assertEqual(obs, DICT_A)
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      ordination=self.pcoa)
+                      ordination=self.pcoa,
+                      filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
 
         self.assertEqual(viz._emperor.width, '48vw')
@@ -195,6 +217,28 @@ class TestCore(unittest.TestCase):
         self.assertEqual(obs['emperor_base_dependencies'].count(exp), 1)
 
         self.assertTrue(obs['emperor_classes'], 'combined-plot-container')
+
+    def test_filter_unobserved_features_from_phylogeny(self):
+
+        viz = Empress(self.tree, self.filtered_table, self.sample_metadata,
+                      filter_unobserved_features_from_phylogeny=True)
+        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
+                                        0, 0, 0])
+
+        names = ['a', 'EmpressNode0', 'b', 'g', 'd', 'h', 'EmpressNode1']
+        for i, node in enumerate(viz.tree.postorder()):
+            self.assertEqual(node.name, names[i])
+
+        # table should be unchanged and be a different id instance
+        assert_frame_equal(self.filtered_table, viz.table.T)
+        self.assertNotEqual(id(self.filtered_table), id(viz.table))
+
+        # sample metadata should be unchanged and be a different id instance
+        assert_frame_equal(self.sample_metadata, viz.samples)
+        self.assertNotEqual(id(self.sample_metadata), id(viz.samples))
+
+        self.assertIsNone(viz.features)
+        self.assertIsNone(viz.ordination)
 
 
 # How data should look like when converted to a dict

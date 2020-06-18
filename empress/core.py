@@ -29,7 +29,8 @@ class Empress():
     def __init__(self, tree, table, sample_metadata,
                  feature_metadata=None, ordination=None,
                  ignore_missing_samples=False, filter_missing_features=False,
-                 resource_path=None):
+                 resource_path=None,
+                 filter_unobserved_features_from_phylogeny=True):
         """Visualize a phylogenetic tree
 
         Use this object to interactively display a phylogenetic tree using the
@@ -69,6 +70,10 @@ class Empress():
         resource_path: str, optional
             Load the resources from a user-specified remote location. If set to
             None resources are loaded from the current directory.
+        filter_unobserved_features_from_phylogeny: bool, optional
+            If True, filters features from the phylogeny that aren't present as
+            features in feature table. features in feature table. Otherwise,
+            the phylogeny is not filtered.
 
 
         Attributes
@@ -104,7 +109,9 @@ class Empress():
         if self.base_url is None:
             self.base_url = './'
 
-        self._validate_data(ignore_missing_samples, filter_missing_features)
+        self._validate_data(ignore_missing_samples,
+                            filter_missing_features,
+                            filter_unobserved_features_from_phylogeny)
 
         if self.ordination is not None:
             self._emperor = Emperor(
@@ -115,7 +122,12 @@ class Empress():
         else:
             self._emperor = None
 
-    def _validate_data(self, ignore_missing_samples, filter_missing_features):
+    def _validate_data(self, ignore_missing_samples, filter_missing_features,
+                       filter_unobserved_features_from_phylogeny):
+        # remove unobserved features from the phylogeny
+        if filter_unobserved_features_from_phylogeny:
+            self.tree = self.tree.shear(set(self.table.columns))
+
         # extract balance parenthesis
         self._bp_tree = list(self.tree.B)
 
