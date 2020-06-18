@@ -105,6 +105,36 @@ define(["underscore", "util"], function (_, util) {
         }
     };
 
+    SelectedNodeMenu.makeFeatureMetadataTable = function (
+        nodeName,
+        mdCols,
+        mdObj,
+        fmHeader,
+        fmTable
+    ) {
+        fmTable.innerHTML = "";
+        // If there is feature metadata, and if this node name is present as a
+        // key in the feature metadata, then show this information.
+        // (This uses boolean short-circuiting, so the _.has() should only be
+        // evaluated if mdCols has a length of > 0.)
+        if (mdCols.length > 0 && _.has(mdObj, nodeName)) {
+            var headerRow = fmTable.insertRow(-1);
+            var featureRow = fmTable.insertRow(-1);
+            for (var x = 0; x < mdCols.length; x++) {
+                var colName = mdCols[x];
+                var colCell = headerRow.insertCell(-1);
+                colCell.innerHTML = "<strong>" + colName + "</strong>";
+                var dataCell = featureRow.insertCell(-1);
+                dataCell.innerHTML = mdObj[nodeName][colName];
+            }
+            fmHeader.classList.remove("hidden");
+            fmTable.classList.remove("hidden");
+        } else {
+            fmHeader.classList.add("hidden");
+            fmTable.classList.add("hidden");
+        }
+    };
+
     /**
      * Displays the hover node menu. nodeKeys must be set in order to use this
      * method.
@@ -122,7 +152,6 @@ define(["underscore", "util"], function (_, util) {
         var name = node.name;
 
         this.nodeIdLabel.innerHTML = "ID: " + node.name;
-        this.fmTable.innerHTML = "";
 
         // add id row
         this.notes.innerHTML =
@@ -160,6 +189,8 @@ define(["underscore", "util"], function (_, util) {
         }
 
         // test to make sure the leaf node is unique
+        // (This should already be enforced in the Python side of things, but
+        // we may as well be extra cautious.)
         if (this.nodeKeys.length > 1) {
             throw "showLeafNode(): Leaf nodes must be unique!";
         }
@@ -167,28 +198,18 @@ define(["underscore", "util"], function (_, util) {
         // get the name of the tip
         var name = this.empress._treeData[this.nodeKeys[0]].name;
 
-        if (this.empress._featureMetadataColumns.length > 0) {
-            if (_.has(this.empress._tipMetadata, name)) {
-                this.fmHeader.classList.remove("hidden");
-                this.fmTable.classList.remove("hidden");
-                var headerRow = this.fmTable.insertRow(-1);
-                var featureRow = this.fmTable.insertRow(-1);
-                for (
-                    var x = 0;
-                    x < this.empress._featureMetadataColumns.length;
-                    x++
-                ) {
-                    var colName = this.empress._featureMetadataColumns[x];
-                    var colCell = headerRow.insertCell(-1);
-                    colCell.innerHTML = "<strong>" + colName + "</strong>";
-                    var dataCell = featureRow.insertCell(-1);
-                    dataCell.innerHTML = this.empress._tipMetadata[name][
-                        colName
-                    ];
-                }
-            }
-        }
+        // 1. Add feature metadata information (if present for this tip; if
+        // there isn't feature metadata for this tip, the f.m. UI elements in
+        // the selected node menu will be hidden)
+        SelectedNodeMenu.makeFeatureMetadataTable(
+            name,
+            this.empress._featureMetadataColumns,
+            this.empress._tipMetadata,
+            this.fmHeader,
+            this.fmTable
+        );
 
+        // 2. Add sample presence information for this tip
         var ctData = {};
         for (var f = 0; f < this.fields.length; f++) {
             var field = this.fields[f];
@@ -226,28 +247,22 @@ define(["underscore", "util"], function (_, util) {
                 " nodes with the above id.";
         }
 
+        // 1. Add feature metadata information (if present) for this node
+        // (Note that we allow duplicate-name internal nodes to have
+        // feature metadata; this isn't a problem)
         var name = this.empress._treeData[this.nodeKeys[0]].name;
-        if (this.empress._featureMetadataColumns.length > 0) {
-            if (_.has(this.empress._intMetadata, name)) {
-                this.fmHeader.classList.remove("hidden");
-                this.fmTable.classList.remove("hidden");
-                var headerRow = this.fmTable.insertRow(-1);
-                var featureRow = this.fmTable.insertRow(-1);
-                for (
-                    var x = 0;
-                    x < this.empress._featureMetadataColumns.length;
-                    x++
-                ) {
-                    var colName = this.empress._featureMetadataColumns[x];
-                    var colCell = headerRow.insertCell(-1);
-                    colCell.innerHTML = "<strong>" + colName + "</strong>";
-                    var dataCell = featureRow.insertCell(-1);
-                    dataCell.innerHTML = this.empress._intMetadata[name][
-                        colName
-                    ];
-                }
-            }
-        }
+        SelectedNodeMenu.makeFeatureMetadataTable(
+            name,
+            this.empress._featureMetadataColumns,
+            this.empress._intMetadata,
+            this.fmHeader,
+            this.fmTable
+        );
+
+        // 2. Compute sample presence information for this node.
+        // (NOTE: this does not prevent "double-counting" samples, so the
+        // aggregation for duplicate names should be fixed.)
+
         // create object that will map fields to all of their possible values
         var field,
             fieldValues,
@@ -273,7 +288,7 @@ define(["underscore", "util"], function (_, util) {
             var nodeKey = this.nodeKeys[i];
 
             // find first and last preorder positions of the subtree spanned
-            // by the current interal node
+            // by the current internal node
             var emp = this.empress;
             var t = emp._tree;
             var n = t.postorderselect(nodeKey);
