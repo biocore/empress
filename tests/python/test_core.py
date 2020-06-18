@@ -86,7 +86,7 @@ class TestCore(unittest.TestCase):
                 rmtree(path)
 
     def test_init(self):
-        viz = Empress(self.tree, self.table, self.sample_metadata, 
+        viz = Empress(self.tree, self.table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, './')
@@ -111,7 +111,7 @@ class TestCore(unittest.TestCase):
 
     def test_init_with_ordination(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      ordination=self.pcoa, 
+                      ordination=self.pcoa,
                       filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, './')
@@ -143,14 +143,14 @@ class TestCore(unittest.TestCase):
         with self.assertWarnsRegex(UserWarning, 'Feature metadata is currently'
                                    ' not supported'):
             Empress(self.tree, self.table, self.sample_metadata,
-                    feature_metadata=self.sample_metadata.copy(), 
+                    feature_metadata=self.sample_metadata.copy(),
                     filter_unobserved_features_from_phylogeny=False)
 
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
 
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      resource_path=local_path, 
+                      resource_path=local_path,
                       filter_unobserved_features_from_phylogeny=False)
         self.assertEqual(viz.base_url, local_path)
 
@@ -164,7 +164,7 @@ class TestCore(unittest.TestCase):
         local_path = './other-local-path/'
 
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      resource_path=local_path, 
+                      resource_path=local_path,
                       filter_unobserved_features_from_phylogeny=False)
         self.assertEqual(viz.base_url, local_path)
 
@@ -176,14 +176,14 @@ class TestCore(unittest.TestCase):
         self.files_to_remove.append('./something-else')
 
     def test_to_dict(self):
-        viz = Empress(self.tree, self.table, self.sample_metadata, 
+        viz = Empress(self.tree, self.table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
         self.assertEqual(obs, DICT_A)
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      ordination=self.pcoa, 
+                      ordination=self.pcoa,
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
 
