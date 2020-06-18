@@ -57,7 +57,7 @@ define(["Colorer"], function (Colorer) {
         // uncheck button
         this.sHideChk.checked = false;
 
-        // used in event closers
+        // used in event closures
         var panel = this;
 
         // hides the side menu
@@ -128,7 +128,7 @@ define(["Colorer"], function (Colorer) {
         // reset panel
         this.__samplePanelReset();
 
-        //reset tree
+        // reset tree
         this.empress.resetTree();
         this.empress.drawTree();
 
@@ -152,7 +152,7 @@ define(["Colorer"], function (Colorer) {
         // reset panel
         this.__featurePanelReset();
 
-        //reset tree
+        // reset tree
         this.empress.resetTree();
         this.empress.drawTree();
 
@@ -305,7 +305,7 @@ define(["Colorer"], function (Colorer) {
      * Initializes sample components
      */
     SidePanel.prototype.addSampleTab = function () {
-        // for use in closers
+        // for use in closures
         var sp = this;
 
         var i, opt;
@@ -332,17 +332,12 @@ define(["Colorer"], function (Colorer) {
             }
         };
 
-        this.sSel.onchange = function () {
+        var showUpdateBtn = function () {
             sp.sUpdateBtn.classList.remove("hidden");
         };
-
-        this.sColor.onchange = function () {
-            sp.sUpdateBtn.classList.remove("hidden");
-        };
-
-        this.sLineWidth.onchange = function () {
-            sp.sUpdateBtn.classList.remove("hidden");
-        };
+        this.sSel.onchange = showUpdateBtn;
+        this.sColor.onchange = showUpdateBtn;
+        this.sLineWidth.onchange = showUpdateBtn;
 
         // deterines whether to show features not in samples
         this.sHideChk.onclick = function () {
@@ -401,22 +396,13 @@ define(["Colorer"], function (Colorer) {
             }
         };
 
-        this.fSel.onchange = function () {
+        var showUpdateBtn = function () {
             sp.fUpdateBtn.classList.remove("hidden");
         };
-
-        this.fColor.onchange = function () {
-            sp.fUpdateBtn.classList.remove("hidden");
-        };
-
-        this.fLineWidth.onchange = function () {
-            sp.fUpdateBtn.classList.remove("hidden");
-        };
-
-        this.fMethodChk.onchange = function () {
-            sp.fUpdateBtn.classList.remove("hidden");
-            sp.updateFeatureMethodDesc();
-        };
+        this.fSel.onchange = showUpdateBtn;
+        this.fColor.onchange = showUpdateBtn;
+        this.fLineWidth.onchange = showUpdateBtn;
+        this.fMethodChk.onchange = showUpdateBtn;
 
         this.fUpdateBtn.onclick = function () {
             sp._updateFeatureColoring();
