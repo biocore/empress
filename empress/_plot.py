@@ -31,7 +31,7 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
          ignore_missing_samples: bool = False,
          filter_missing_features: bool = False,
          number_of_features: int = 5,
-         filter_unobserved_features_from_phylogeny: bool = False) -> None:
+         filter_unobserved_features_from_phylogeny: bool = True) -> None:
     # TODO: do not ignore the feature metadata when specified by the user
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()
@@ -57,7 +57,8 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
                   feature_metadata=feature_metadata, ordination=pcoa,
                   ignore_missing_samples=ignore_missing_samples,
                   filter_missing_features=filter_missing_features,
-                  filter_unobserved_features_from_phylogeny=filter_unobserved_features_from_phylogeny)
+                  filter_unobserved_features_from_phylogeny=
+                  filter_unobserved_features_from_phylogeny)
 
     with open(os.path.join(output_dir, 'empress.html'), 'w') as file:
         file.write(str(viz))

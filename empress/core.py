@@ -30,7 +30,7 @@ class Empress():
                  feature_metadata=None, ordination=None,
                  ignore_missing_samples=False, filter_missing_features=False,
                  resource_path=None,
-                 filter_unobserved_features_from_phylogeny=False):
+                 filter_unobserved_features_from_phylogeny=True):
         """Visualize a phylogenetic tree
 
         Use this object to interactively display a phylogenetic tree using the
@@ -72,7 +72,8 @@ class Empress():
             None resources are loaded from the current directory.
         filter_unobserved_features_from_phylogeny: bool, optional
             If True, filters features from the phylogeny that aren't present as
-            features in feature table. If False, no error will raise.
+            features in feature table. features in feature table. Otherwise,
+            the phylogeny is not filtered.
 
 
         Attributes
@@ -108,7 +109,9 @@ class Empress():
         if self.base_url is None:
             self.base_url = './'
 
-        self._validate_data(ignore_missing_samples, filter_missing_features, filter_unobserved_features_from_phylogeny)
+        self._validate_data(ignore_missing_samples,
+                            filter_missing_features,
+                            filter_unobserved_features_from_phylogeny)
 
         if self.ordination is not None:
             self._emperor = Emperor(
@@ -119,15 +122,17 @@ class Empress():
         else:
             self._emperor = None
 
-    def _validate_data(self, ignore_missing_samples, filter_missing_features, filter_unobserved_features_from_phylogeny):
+    def _validate_data(self, ignore_missing_samples, filter_missing_features,
+                       filter_unobserved_features_from_phylogeny):
         # remove unobserved features from the phylogeny
         if filter_unobserved_features_from_phylogeny:
-            self.tree = self.tree.shear(set(self.table.T.index))
-            
+            self.tree = self.tree.shear(set(self.table.columns))
+
         # extract balance parenthesis
         self._bp_tree = list(self.tree.B)
+        self.skbio_tree = to_skbio_treenode(self.tree)
 
-        self.tree = Tree.from_tree(to_skbio_treenode(self.tree))
+        self.tree = Tree.from_tree(self.skbio_tree)
         name_internal_nodes(self.tree)
 
         # Note that the feature_table we get from QIIME 2 (as an argument to

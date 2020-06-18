@@ -94,7 +94,7 @@ plugin.visualizers.register_function(
                               'inputed.',
         'filter_unobserved_features_from_phylogeny': (
             'If this flag is passed, filters features from the phylogeny '
-            'that are not present as features in feature table.'
+            'that are not present as features in feature table. Default is True.'
         )
     },
     name='Visualize and Explore Phylogenies with Empress',
