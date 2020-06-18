@@ -883,8 +883,15 @@ button.close:hover {
     background-color: gray;
 }
 
+#hover-table-warning {
+  font-size: small;
+  font-weight: bold;
+  max-width: 500px;
+}
+
 #hover-table-notes {
-  font-size: xx-small;
+  max-width: 500px;
+  font-size: small;
 }
 
 /* Somewhere else in the CSS adjusts line height and justify-content,

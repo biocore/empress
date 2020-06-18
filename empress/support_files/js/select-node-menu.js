@@ -14,6 +14,7 @@ define(["underscore", "util"], function (_, util) {
         this.addBtn = document.getElementById("hover-add-btn");
         this.nodeIdLabel = document.getElementById("hover-table-node-id");
         this.notes = document.getElementById("hover-table-notes");
+        this.warning = document.getElementById("hover-table-warning");
         this.fmTable = document.getElementById("hover-fm-table");
         this.fmHeader = document.getElementById("hover-fm-header");
         this.smHeader = document.getElementById("hover-sm-header");
@@ -181,16 +182,10 @@ define(["underscore", "util"], function (_, util) {
         var node = emp._treeData[nodeKeys[0]];
         var name = node.name;
 
-        this.nodeIdLabel.innerHTML = "ID: " + node.name;
+        this.nodeIdLabel.textContent = "ID: " + node.name;
 
-        // add id row
-        this.notes.innerHTML =
-            "For tip nodes: values represent number of unique samples that " +
-            "contain the tip node." +
-            "<br>" +
-            "For internal nodes: values represent the number of unique " +
-            "samples that contain any of its descendants." +
-            "<br>";
+        this.notes.textContent = "";
+        this.warning.textContent = "";
 
         // show either leaf or internal node
         var t = emp._tree;
@@ -252,6 +247,11 @@ define(["underscore", "util"], function (_, util) {
             }
         }
         SelectedNodeMenu.makeSampleMetadataTable(ctData, this.table);
+        if (this.fields.length > 0) {
+            this.notes.textContent =
+                "This node is a tip in the tree. These values represent the " +
+                "number of unique samples that contain this node.";
+        }
     };
 
     /**
@@ -266,15 +266,12 @@ define(["underscore", "util"], function (_, util) {
             throw "showInternalNode(): nodeKeys is not set!";
         }
 
+        var isDup = false;
         if (this.nodeKeys.length > 1) {
-            this.notes.innerHTML +=
-                "<br>" +
-                "<strong>Warning: " +
-                this.nodeKeys.length +
-                " nodes exist with the above id.</strong>" +
-                "<br>" +
-                "The above table shows the aggregated values from all " +
-                " nodes with the above id.";
+            this.warning.textContent =
+                "Warning: " + this.nodeKeys.length + " nodes exist with the " +
+                "above ID.";
+            isDup = true;
         }
 
         // 1. Add feature metadata information (if present) for this node
@@ -355,6 +352,22 @@ define(["underscore", "util"], function (_, util) {
         }
 
         SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.table);
+        if (this.fields.length > 0) {
+            if (isDup) {
+                this.notes.textContent =
+                    "This node is an internal node in the tree with a " +
+                    "duplicated name. These values represent the number of " +
+                    "unique samples that contain any of this node's " +
+                    "descendants, aggregated across all nodes with this " +
+                    "name. (This is buggy, so please don't trust these " +
+                    "numbers right now.)";
+            } else {
+                this.notes.textContent =
+                    "This node is an internal node in the tree. These " +
+                    "values represent the number of unique samples that " +
+                    "contain any of this node's descendants.";
+            }
+        }
     };
 
     /**
