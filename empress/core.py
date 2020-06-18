@@ -237,11 +237,21 @@ class Empress():
         # Convert sample metadata to a JSON-esque format
         sample_data = self.samples.to_dict(orient='index')
 
-        # Convert feature metadata, similarly to how we handle sample metadata
-        if self.tip_md is not None or self.int_md is not None:
+        # Convert feature metadata, similarly to how we handle sample metadata.
+        # If the user passed in feature metadata, self.features won't be None.
+        # (We don't actually use any data from self.features at this point in
+        # the program since it hasn't had taxonomy splitting / matching / etc.
+        # done.)
+        if self.features is not None:
             # We can just use self.tip_md.columns, since both the tip and
-            # internal node metadata should have identical columns
+            # internal node metadata should have identical columns, even if
+            # either of them is empty (empty DataFrames can still have columns)
+            # (We know that they both won't be empty, because that'd mean that
+            # none of the IDs in the feature metadata matched any nodes in the
+            # tree -- which would cause an error.)
             feature_metadata_columns = list(self.tip_md.columns)
+            # (Also, calling .to_dict() on an empty DataFrame just gives you
+            # {}, so this is ok.)
             tip_md_json = self.tip_md.to_dict(orient='index')
             int_md_json = self.int_md.to_dict(orient='index')
         else:
