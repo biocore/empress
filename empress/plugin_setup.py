@@ -1,11 +1,10 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2016-2019, empress development team.
+# Copyright (c) 2016-2020, empress development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
-
 
 from ._plot import plot
 
@@ -64,8 +63,10 @@ plugin.visualizers.register_function(
             'be automatically filtered out of the visualization.'
         ),
         'feature_metadata': (
-            'Feature metadata. Not currently used for anything, but will '
-            'be soon.'
+            'Feature metadata. Can be used to color nodes (tips and/or '
+            'internal nodes) in the tree. Features described in the metadata '
+            'that are not present in the tree will be automatically filtered '
+            'out of the visualization.'
         ),
         # Parameter descriptions adapted from q2-emperor's
         # --p-ignore-missing-samples flag.

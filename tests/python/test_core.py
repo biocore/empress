@@ -5,6 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
+
+import copy
 import unittest
 import pandas as pd
 import numpy as np
@@ -49,6 +51,13 @@ class TestCore(unittest.TestCase):
             index=list(self.table.index)
         )
 
+        self.feature_metadata = pd.DataFrame(
+            {
+                "fmdcol1": ["asdf", "ghjk"],
+                "fmdcol2": ["qwer", "tyui"]
+            },
+            index=["a", "h"]
+        )
         self.filtered_table = pd.DataFrame(
             {
                 "Sample1": [1, 2, 4],
@@ -139,14 +148,6 @@ class TestCore(unittest.TestCase):
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
-    def test_init_feature_metadata_warning(self):
-
-        with self.assertWarnsRegex(UserWarning, 'Feature metadata is currently'
-                                   ' not supported'):
-            Empress(self.tree, self.table, self.sample_metadata,
-                    feature_metadata=self.sample_metadata.copy(),
-                    filter_unobserved_features_from_phylogeny=False)
-
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
 
@@ -181,6 +182,22 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
         self.assertEqual(obs, DICT_A)
+
+    def test_to_dict_with_feature_metadata(self):
+        viz = Empress(
+            self.tree, self.table, self.sample_metadata, self.feature_metadata,
+            filter_unobserved_features_from_phylogeny=False
+        )
+        obs = viz._to_dict()
+        dict_a_with_fm = copy.deepcopy(DICT_A)
+        dict_a_with_fm["tip_metadata"] = {
+            "a": {"fmdcol1": "asdf", "fmdcol2": "qwer"}
+        }
+        dict_a_with_fm["int_metadata"] = {
+            "h": {"fmdcol1": "ghjk", "fmdcol2": "tyui"}
+        }
+        dict_a_with_fm["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
+        self.assertEqual(obs, dict_a_with_fm)
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
@@ -295,6 +312,9 @@ DICT_A = {'base_url': './support_files',
                                'Metadata2': 'n',
                                'Metadata3': 'n',
                                'Metadata4': 'o'},
+          'tip_metadata': {},
+          'int_metadata': {},
+          'feature_metadata_columns': [],
           'tree': [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0],
           'tree_data': {1: {'color': [0.75, 0.75, 0.75],
                             'name': 'a',

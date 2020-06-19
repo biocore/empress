@@ -1,12 +1,15 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2018--, empress development team.
+# Copyright (c) 2016-2020, empress development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
+# The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
+
 import unittest
 from skbio import TreeNode
 from empress import Tree
+from empress.tree import TreeFormatWarning
 from math import sqrt
 
 
@@ -33,6 +36,52 @@ class TestTree(unittest.TestCase):
             ValueError, "must contain at least 2 nodes"
         ):
             Tree.from_tree(st)
+
+    def test_from_tree_duplicate_tip_names(self):
+        t = TreeNode.read(['((i:1,a:3)b:2,i:5)r:2;'])
+        with self.assertRaisesRegex(
+            ValueError, "Tip names in the tree must be unique"
+        ):
+            Tree.from_tree(t)
+
+    def test_from_tree_overlapping_tip_and_internal_node_names(self):
+        bad_newicks = [
+            # Tip overlaps with non-root internal node
+            '((a:1,b:3)a:2,d:5)e:2;',
+            # Tip overlaps with root node
+            '((a:1,b:3)c:2,d:5)a:2;',
+            # Tip overlaps with both non-root and root internal nodes
+            '((a:1,b:3)a:2,d:5)a:2;'
+        ]
+        for nwk in bad_newicks:
+            t = TreeNode.read([nwk])
+            with self.assertRaisesRegex(
+                ValueError,
+                "Tip names in the tree cannot overlap with internal node names"
+            ):
+                Tree.from_tree(t)
+
+    def test_from_tree_duplicate_internal_node_names(self):
+        bad_newicks = [
+            # Two non-root internal nodes have same name
+            '((a:1,b:3)c:2,(d:2,e:3)c:5)r:2;',
+            # Two internal nodes (one of which is the root) have same name
+            '((a:1,b:3)c:2,(d:2,e:3)f:5)c:2;'
+        ]
+        for nwk in bad_newicks:
+            t = TreeNode.read([nwk])
+            with self.assertWarnsRegex(
+                TreeFormatWarning,
+                "Internal node names in the tree are not unique"
+            ):
+                Tree.from_tree(t)
+
+    def test_from_tree_node_starts_with_EmpressNode(self):
+        t = TreeNode.read(['((a:1,b:3)c:2,EmpressNode1:5)e:2;'])
+        with self.assertRaisesRegex(
+            ValueError, 'Node names can\'t start with "EmpressNode"'
+        ):
+            Tree.from_tree(t)
 
     def test_nonroot_missing_branchlengths(self):
         # Note about the fourth test tree here: the reason this triggers a
@@ -157,28 +206,28 @@ class TestTree(unittest.TestCase):
                            (0.0, 0.0)]       # i (root)
         self.check_coords(t, "xr", "yr", expected_coords)
 
-        # Check that lowestchildyr and highestchildyr attributes were set
+        # Check that lowest_child_yr and highest_child_yr attributes were set
         # properly. We do this by iterating over tree.non_tips(), which (like
         # check_coords()) also uses a post-order traversal.
         # (Note that the "coordinates" in this list of 2-tuples are ordered as
         # (lowest child y-coordinate, highest child y-coordinate). Computing
         # these from the list above should be pretty simple.)
-        expected_lowesthighestchildyr = [(-296.875, -171.875),  # f
-                                         (-234.375,  -46.875),  # g
-                                         (78.125,    203.125),  # h
-                                         (-140.625,  140.625)]  # i
+        expected_lowesthighest_child_yr = [(-296.875, -171.875),  # f
+                                           (-234.375,  -46.875),  # g
+                                           (78.125,    203.125),  # h
+                                           (-140.625,  140.625)]  # i
         for i, node in enumerate(t.non_tips()):
-            l, h = expected_lowesthighestchildyr[i]
-            self.assertTrue(hasattr(node, "lowestchildyr"))
-            self.assertTrue(hasattr(node, "highestchildyr"))
-            self.assertAlmostEqual(node.lowestchildyr, l, places=5)
-            self.assertAlmostEqual(node.highestchildyr, h, places=5)
+            l, h = expected_lowesthighest_child_yr[i]
+            self.assertTrue(hasattr(node, "lowest_child_yr"))
+            self.assertTrue(hasattr(node, "highest_child_yr"))
+            self.assertAlmostEqual(node.lowest_child_yr, l, places=5)
+            self.assertAlmostEqual(node.highest_child_yr, h, places=5)
 
         # ... And also check that tip nodes *don't* have these attributes,
         # since tips don't have children.
         for node in t.tips():
-            self.assertFalse(hasattr(node, "lowestchildyr"))
-            self.assertFalse(hasattr(node, "highestchildyr"))
+            self.assertFalse(hasattr(node, "lowest_child_yr"))
+            self.assertFalse(hasattr(node, "highest_child_yr"))
 
     def check_basic_tree_rect_layout(self, t):
         """Checks that the Empress tree for "((b:2)a:1)root:100;" has a correct
@@ -188,8 +237,8 @@ class TestTree(unittest.TestCase):
         expected_coords = [(100, 0.0), (100 / 3.0, 0.0), (0.0, 0.0)]
         self.check_coords(t, "xr", "yr", expected_coords)
         for node in t.non_tips():
-            self.assertEqual(node.lowestchildyr, 0)
-            self.assertEqual(node.highestchildyr, 0)
+            self.assertEqual(node.lowest_child_yr, 0)
+            self.assertEqual(node.highest_child_yr, 0)
 
     def test_straightline_tree_rect_layout(self):
         """Checks that all nodes are drawn as expected even when there aren't
@@ -204,8 +253,8 @@ class TestTree(unittest.TestCase):
         expected_coords = [(100, 0.0), (100 / 3.0, 0.0), (0.0, 0.0)]
         self.check_coords(t, "xr", "yr", expected_coords)
         for node in t.non_tips():
-            self.assertEqual(node.lowestchildyr, 0)
-            self.assertEqual(node.highestchildyr, 0)
+            self.assertEqual(node.lowest_child_yr, 0)
+            self.assertEqual(node.highest_child_yr, 0)
         self.check_basic_tree_rect_layout(t)
 
     def test_missing_root_length_tree_rect_layout(self):
@@ -218,8 +267,8 @@ class TestTree(unittest.TestCase):
         expected_coords = [(100, 0.0), (100 / 3.0, 0.0), (0.0, 0.0)]
         self.check_coords(t, "xr", "yr", expected_coords)
         for node in t.non_tips():
-            self.assertEqual(node.lowestchildyr, 0)
-            self.assertEqual(node.highestchildyr, 0)
+            self.assertEqual(node.lowest_child_yr, 0)
+            self.assertEqual(node.highest_child_yr, 0)
         self.check_basic_tree_rect_layout(t)
 
     def test_circular_layout_scaling_factor(self):

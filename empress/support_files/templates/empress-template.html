@@ -36,16 +36,20 @@
     {{ emperor_div }}
   </div>
 
-    <!-- hover box -->
-    <div class="hidden" id="hover-box">
-      <h1 id="hover-table-node-id"></h1>
-      <table id="hover-table"></table>
+    <!-- node selection menu box -->
+    <div class="hidden" id="menu-box">
+      <h1 id="menu-box-node-id"></h1>
+      <p id="menu-box-warning"></p>
+      <h3 class="hidden" id="menu-fm-header">Feature Metadata</h3>
+      <table class="menu-table hidden" id="menu-fm-table"></table>
+      <h3 class="hidden" id="menu-sm-header">Sample Presence Information</h3>
+      <p id="menu-box-notes"></p>
+      <table class="menu-table" id="menu-sm-table"></table>
       <br><strong>Select a metadata column to summarize</strong>
-      <label class="hover-select-container">
-        <select id="hover-select"></select>
+      <label class="menu-select-container">
+        <select id="menu-select"></select>
       </label>
-      <button id="hover-add-btn">Add</button>
-      <div id="hover-table-notes"></div>
+      <button id="menu-add-btn">Add</button>
     </div>
 
     <!-- color keys -->
@@ -109,7 +113,9 @@
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr, {{ names }});
 
-        var canvas = document.getElementById('tree-surface')
+        var fmCols = {{ feature_metadata_columns }};
+
+        var canvas = document.getElementById('tree-surface');
 
         var biom = new BIOMTable(
           {{ obs_data }},
@@ -123,6 +129,9 @@
             {{ layout_to_coordsuffix | tojson }},
             '{{ default_layout }}',
             biom,
+            fmCols,
+            {{ tip_metadata | tojson }},
+            {{ int_metadata | tojson }},
             canvas
         );
         empress.initialize();
@@ -135,6 +144,10 @@
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress, legend);
         sPanel.addSampleTab();
+        if (fmCols.length > 0) {
+            sPanel.addFeatureTab();
+            document.getElementById("fmOpenButton").classList.remove("hidden");
+        }
         sPanel.addLayoutTab();
 
         // create animator state machine

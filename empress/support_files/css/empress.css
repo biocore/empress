@@ -28,7 +28,6 @@ input[type=text], input[type=number], select {
     background-color: white;
     height: 28px;
     border: none;
-    cursor: pointer;
     outline: none;
     border-radius: 3px;
     padding-left: 5px;
@@ -241,9 +240,9 @@ label:hover .tooltip {
 }
 
 
-/* hover box */
+/* node selection menu box */
 
-#hover-box {
+#menu-box {
     position: fixed;
     border: 1px solid transparent;
     background-color: lightgray;
@@ -251,13 +250,13 @@ label:hover .tooltip {
     padding: 20px;
 }
 
-#hover-box:hover {
+#menu-box:hover {
     opacity: 1.0;
     box-shadow: 10px 10px 40px rgba(0, 0, 0, 0.2);
     border: 1px solid lightgray;
 }
 
-#hover-box::after, #hover-box:hover::before {
+#menu-box::after, #menu-box:hover::before {
     content: " ";
     position: absolute;
     border-style: solid;
@@ -265,50 +264,50 @@ label:hover .tooltip {
     margin-top: -10px;
 }
 
-#hover-box:after {
+#menu-box:after {
     top: 40px;
     border-width: 10px;
     border-color: transparent white transparent transparent;
 }
 
-#hover-box:hover:before {
+#menu-box:hover:before {
     top: 39px;
     border-width: 11px;
     border-color: transparent lightgray transparent transparent;
 }
 
-#hover-table {
+.menu-table {
     background-color: white;
 }
 
-#hover-table thead, #hover-table tbody{
+.menu-table thead, .menu-table tbody{
     display: block;
     max-width: 500px;
     max-height: 300px;
     overflow: auto;
 }
 
-#hover-table tr {
+.menu-table tr {
     padding: 0px 15px;
 }
-#hover-table tr td {
-    vertical-align: top;
+
+.menu-table tr td {
+    border: 1px solid lightgray;
 }
 
-#hover-table tr td p{
+.menu-table tr td p{
     text-align: right;
 }
 
-#hover-table tr td:nth-last-child(1) {
+.menu-table tr td:nth-last-child(1) {
     max-width: 200px;
     text-overflow: ellipsis;
 }
 
-#hover-table tr td button:only-child {
+.menu-table tr td button:only-child {
     background-color: lightgray;
     height: 25px;
     margin-top: 10px;
-    border: 0;
     cursor: pointer;
     outline: none;
     padding: 0px 15px;
@@ -316,26 +315,27 @@ label:hover .tooltip {
     font-size: 8pt;
 }
 
-#hover-table tbody tr td:nth-child(1) {
+.menu-box-header-cell {
+    background-color: white;
     position: relative;
     position: -webkit-sticky; /* Safari */
     position: sticky;
     left: 0;
 }
 
-#hover-table tr td button:only-child:hover {
+.menu-table tr td button:only-child:hover {
     background-color: darkgray;
 }
 
-#hover-select {
+#menu-select {
     background-color: white;
 }
 
-.hover-select-container {
+.menu-select-container {
     position: relative;
 }
 
-.hover-select-container:after {
+.menu-select-container:after {
     position: absolute;
     content: "\203A";
     transform: rotate(90deg);
@@ -361,12 +361,6 @@ label:hover .tooltip {
     position: absolute;
     top: 0vh;
     left: 0vw;
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-}
-
-#tree-container {
     overflow: hidden;
     width: 100vw;
     height: 100vh;
@@ -889,6 +883,26 @@ button.close:hover {
     background-color: gray;
 }
 
-#hover-table-notes {
-  font-size: xx-small;
+#menu-box-warning {
+  font-size: small;
+  font-weight: bold;
+  max-width: 500px;
+}
+
+#menu-box-notes {
+  max-width: 500px;
+  font-size: small;
+}
+
+/* Somewhere else in the CSS adjusts line height and justify-content,
+ * so we reset these here.
+ */
+.side-panel-notes {
+  font-size: small;
+  line-height: normal !important;
+  justify-content: start !important;
+}
+
+.indented {
+  margin-left: 2em;
 }

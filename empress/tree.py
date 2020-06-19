@@ -1,5 +1,18 @@
+# ----------------------------------------------------------------------------
+# Copyright (c) 2016-2020, empress development team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file LICENSE, distributed with this software.
+# ----------------------------------------------------------------------------
+
+import warnings
 from skbio import TreeNode
 import numpy as np
+
+
+class TreeFormatWarning(Warning):
+    pass
 
 
 class Tree(TreeNode):
@@ -54,8 +67,26 @@ class Tree(TreeNode):
         if tree.count() <= 1:
             raise ValueError("Tree must contain at least 2 nodes.")
 
+        # While traversing the tree, record tip / internal node names
+        # (Nodes without names are ignored, since we'll assign those later
+        # using tools.fill_missing_node_names())
+        tip_names = []
+        internal_node_names = []
         max_branch_length = 0
         for n in tree.postorder(include_self=False):
+            if n.name is not None:
+                # NOTE: This should eventually be taken out when
+                # fill_missing_node_names() is refactored. However, for now,
+                # this makes sure that users can't accidentally break things by
+                # naming nodes identical to our default names for missing nodes
+                if n.name.startswith("EmpressNode"):
+                    raise ValueError(
+                        'Node names can\'t start with "EmpressNode".'
+                    )
+                if n.is_tip():
+                    tip_names.append(n.name)
+                else:
+                    internal_node_names.append(n.name)
             if n.length is None:
                 raise ValueError(
                     "Non-root branches of the tree must have lengths."
@@ -68,10 +99,32 @@ class Tree(TreeNode):
                 )
             max_branch_length = max(n.length, max_branch_length)
 
+        # We didn't consider the root node in the above traversal since we
+        # don't care about its length. However, we do care about its name,
+        # so we add the root's name to internal_node_names.
+        internal_node_names.append(tree.name)
+
         if max_branch_length == 0:
             raise ValueError(
                 "At least one non-root branch of the tree must have a "
                 "positive length."
+            )
+
+        unique_tip_name_set = set(tip_names)
+        if len(unique_tip_name_set) != len(tip_names):
+            raise ValueError("Tip names in the tree must be unique.")
+
+        unique_internal_node_name_set = set(internal_node_names)
+        if len(unique_tip_name_set & unique_internal_node_name_set) > 0:
+            raise ValueError(
+                "Tip names in the tree cannot overlap with internal node "
+                "names."
+            )
+
+        if len(unique_internal_node_name_set) != len(internal_node_names):
+            warnings.warn(
+                "Internal node names in the tree are not unique.",
+                TreeFormatWarning
             )
 
         for n in tree.postorder():
@@ -125,7 +178,7 @@ class Tree(TreeNode):
         coordinates for each node, so that layout algorithms can be rapidly
         toggled between in the JS interface.
 
-        Also adds on .highestchildyr and .lowestchildyr attributes to
+        Also adds on .highest_child_yr and .lowest_child_yr attributes to
         internal nodes so that vertical bars for these nodes can be drawn in
         the rectangular layout.
 
@@ -166,20 +219,21 @@ class Tree(TreeNode):
         # the rectangular layout; used to draw vertical lines for these nodes.
         #
         # NOTE / TODO: This will have the effect of drawing vertical lines even
-        # for nodes with only 1 child -- in this case lowest_childyr ==
-        # highestchildyr for this node, so all of the stuff drawn in WebGL
+        # for nodes with only 1 child -- in this case lowest_child_yr ==
+        # highest_child_yr for this node, so all of the stuff drawn in WebGL
         # for this vertical line shouldn't show up. I don't think this should
         # cause any problems, but it may be worth detecting these cases and not
         # drawing vertical lines for them in the future.
         for n in self.preorder():
             if not n.is_tip():
-                n.highestchildyr = float("-inf")
-                n.lowestchildyr = float("inf")
+                # wow, child does not look like a word any more
+                n.highest_child_yr = float("-inf")
+                n.lowest_child_yr = float("inf")
                 for c in n.children:
-                    if c.yr > n.highestchildyr:
-                        n.highestchildyr = c.yr
-                    if c.yr < n.lowestchildyr:
-                        n.lowestchildyr = c.yr
+                    if c.yr > n.highest_child_yr:
+                        n.highest_child_yr = c.yr
+                    if c.yr < n.lowest_child_yr:
+                        n.lowest_child_yr = c.yr
 
         return layout_to_coordsuffix, default_layout
 
@@ -358,8 +412,8 @@ class Tree(TreeNode):
                 prev_clangle += anglepernode
             else:
                 # Center internal nodes at an angle above their children
-                n.clangle = sum([c.clangle for c in n.children])\
-                    / len(n.children)
+                child_clangle_sum = sum([c.clangle for c in n.children])
+                n.clangle = child_clangle_sum / len(n.children)
 
         max_clradius = 0
         self.clradius = 0

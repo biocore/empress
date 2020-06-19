@@ -55,8 +55,22 @@ require(['jquery', 'BPTree', 'Empress'], function($, BPTree, Empress) {
                     }
 
                 }
-                this.empress = new Empress(tree, treeData, null,
-                    layoutToCoordSuffix, "Circular", null, null);
+                // README: If this test starts failing at some point in the
+                // future, it will probably be due to the parameters of the
+                // Empress object having been changed around without this
+                // invocation of the object being updated.
+                this.empress = new Empress(
+                    tree,
+                    treeData,
+                    null,
+                    layoutToCoordSuffix,
+                    "Circular",
+                    null,
+                    [],
+                    {},
+                    {},
+                    null
+                );
                 this.empress._drawer = new Object();
                 this.empress._drawer.VERTEX_SIZE = 5;
             },

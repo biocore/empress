@@ -1,4 +1,4 @@
-define(["Colorer"], function (Colorer) {
+define(["underscore", "Colorer"], function (_, Colorer) {
     // class name for css tags
     var COLLAPSE_CLASS = "collapsible";
     /**
@@ -41,13 +41,23 @@ define(["Colorer"], function (Colorer) {
         this.sLineWidth = document.getElementById("sample-line-width");
         this.sUpdateBtn = document.getElementById("sample-update");
 
+        // feature metadata GUI components
+        this.fChk = document.getElementById("feature-chk");
+        this.fSel = document.getElementById("feature-options");
+        this.fAddOpts = document.getElementById("feature-add");
+        this.fColor = document.getElementById("feature-color");
+        this.fLineWidth = document.getElementById("feature-line-width");
+        this.fUpdateBtn = document.getElementById("feature-update");
+        this.fMethodChk = document.getElementById("fm-method-chk");
+        this.fMethodDesc = document.getElementById("fm-method-desc");
+
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
 
         // uncheck button
         this.sHideChk.checked = false;
 
-        // used in event closers
+        // used in event closures
         var panel = this;
 
         // hides the side menu
@@ -70,72 +80,124 @@ define(["Colorer"], function (Colorer) {
     }
 
     /**
-     * Sets the components of the samples panel back to there default value
+     * Utility function that resets various HTML elements, then resets the
+     * tree and its legends.
+     *
+     * This is intended to be used when the user un-checks the "Color by..."
+     * checkbox for sample / feature metadata coloring.
+     *
+     * @param{Object} eleNameToProperties Maps strings (defining the name of a
+     *                                    HTMLElement which is saved as an
+     *                                    attribute of SidePanel, e.g. "sChk")
+     *                                    to another Object, which maps
+     *                                    property names of this attribute to
+     *                                    the desired value to which this
+     *                                    element's property should be set.
+     *                                    e.g. {sChk: {checked: false}}
+     * @param{Array} elesToHide Array of HTMLElements to hide. Each of the
+     *                          elements in this array will have "hidden" added
+     *                          to its classList.
      */
-    SidePanel.prototype.__samplePanelReset = function () {
-        // set color map back to default
-        this.sColor.value = "discrete-coloring-qiime";
-
-        // uncheck button
-        this.sHideChk.checked = false;
-
-        // set default branch length back to 1
-        var thickenBranch = document.getElementById("sample-line-width");
-        this.sLineWidth.value = 1;
-
-        // hide update button
-        this.sUpdateBtn.classList.add("hidden");
-    };
-
-    /**
-     * Sets the components of the samples panel back to there default value
-     * and hides the additional options
-     */
-    SidePanel.prototype.__samplePanelClose = function () {
-        // disable sample check box
-        this.sChk.checked = false;
-
-        // disable the sample category select
-        this.sSel.disabled = true;
-
-        // hide the additional options
-        this.sAddOpts.classList.add("hidden");
-
-        // reset panel
-        this.__samplePanelReset();
-
-        //reset tree
+    SidePanel.prototype._resetTab = function (eleNameToProperties, elesToHide) {
+        var sp = this;
+        _.each(eleNameToProperties, function (properties, eleName) {
+            _.each(properties, function (propVal, prop) {
+                sp[eleName][prop] = propVal;
+            });
+        });
+        _.each(elesToHide, function (ele) {
+            ele.classList.add("hidden");
+        });
+        // Reset tree and then clear legends
         this.empress.resetTree();
         this.empress.drawTree();
-
-        // clear legends
         this.legend.clearAllLegends();
     };
 
+    /* Resets the sample metadata coloring tab. */
+    SidePanel.prototype._resetSampleTab = function () {
+        this._resetTab(
+            {
+                sChk: { checked: false },
+                sSel: { disabled: true },
+                sColor: { value: "discrete-coloring-qiime" },
+                sHideChk: { checked: false },
+                sLineWidth: { value: 1 },
+            },
+            [this.sAddOpts, this.sUpdateBtn]
+        );
+    };
+
+    /* Resets the feature metadata coloring tab. */
+    SidePanel.prototype._resetFeatureTab = function () {
+        this._resetTab(
+            {
+                fChk: { checked: false },
+                fSel: { disabled: true },
+                fColor: { value: "discrete-coloring-qiime" },
+                fLineWidth: { value: 1 },
+                fMethodChk: { checked: true },
+            },
+            [this.fAddOpts, this.fUpdateBtn]
+        );
+        // Since we reset fMethodChk above to its "default" of being checked,
+        // we also update fMethodDesc to be consistent. Note that updating
+        // fMethodDesc here is technically unnecessary, since
+        // updateFeatureMethodDesc() will be called anyway when expanding the
+        // feature metadata coloring tab again. However, we do this here just
+        // so the state of the page can remain consistent, even if the user
+        // won't notice due to most of the feature tab (everything under
+        // fAddOpts) being hidden.
+        this.updateFeatureMethodDesc();
+    };
+
     /**
-     * Updates/redraws the tree
+     * Resets and then re-colors the tree, using an arbitrary "coloring
+     * function" as well as a few other configurable things.
+     *
+     * This function was designed to encapsulate shared code between the sample
+     * and feature metadata coloring settings. (There is definitely more work
+     * to be done on removing shared code, but this is a start.)
+     *
+     * @param{String} colorMethodName The name of a method of SidePanel to call
+     *                                to re-color the tree: for example,
+     *                                "_colorSampleTree". (Passing the actual
+     *                                method as an argument seems to cause
+     *                                problems due to "this" not working
+     *                                properly. This was the easiest solution.)
+     * @param{lwInput} HTMLElement An <input> with type="number" from which
+     *                             we'll get the .value indicating the line
+     *                             width to use when thickening lines.
+     * @param{updateBtn} HTMLElement This element will be hidden at the end of
+     *                               this function. It should correspond to the
+     *                               "Update" button for the sample or feature
+     *                               metadata coloring tab.
      */
-    SidePanel.prototype._updateSample = function () {
+    SidePanel.prototype._updateColoring = function (
+        colorMethodName,
+        lwInput,
+        updateBtn
+    ) {
         this.empress.resetTree();
 
         // clear legends
         this.legend.clearAllLegends();
 
         // color tree
-        this._colorSampleTree();
+        this[colorMethodName]();
 
-        var lWidth = this.sLineWidth.value;
+        var lWidth = lwInput.value;
         if (lWidth !== 1) {
             this.empress.thickenSameSampleLines(lWidth - 1);
         }
         this.empress.drawTree();
 
         // hide update button
-        this.sUpdateBtn.classList.add("hidden");
+        updateBtn.classList.add("hidden");
     };
 
     /**
-     * Colors the tree
+     * Colors the tree based on the sample metadata coloring settings.
      */
     SidePanel.prototype._colorSampleTree = function () {
         var colBy = this.sSel.value;
@@ -143,6 +205,21 @@ define(["Colorer"], function (Colorer) {
         var hide = this.sHideChk.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col);
         this.empress.setNonSampleBranchVisibility(hide);
+        this.legend.addColorKey(colBy, keyInfo, "node", false);
+    };
+
+    /**
+     * Colors the tree based on the feature metadata coloring settings.
+     */
+    SidePanel.prototype._colorFeatureTree = function () {
+        var colBy = this.fSel.value;
+        var col = this.fColor.value;
+        var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
+        var keyInfo = this.empress.colorByFeatureMetadata(
+            colBy,
+            col,
+            coloringMethod
+        );
         this.legend.addColorKey(colBy, keyInfo, "node", false);
     };
 
@@ -219,7 +296,7 @@ define(["Colorer"], function (Colorer) {
      * Initializes sample components
      */
     SidePanel.prototype.addSampleTab = function () {
-        // for use in closers
+        // for use in closures
         var sp = this;
 
         var i, opt;
@@ -238,25 +315,21 @@ define(["Colorer"], function (Colorer) {
         // toggle the sample/color map selectors
         this.sChk.onclick = function () {
             if (sp.sChk.checked) {
+                sp._resetFeatureTab();
                 sp.sSel.disabled = false;
                 sp.sAddOpts.classList.remove("hidden");
                 sp.sUpdateBtn.classList.remove("hidden");
             } else {
-                sp.__samplePanelClose();
+                sp._resetSampleTab();
             }
         };
 
-        this.sSel.onchange = function () {
+        var showUpdateBtn = function () {
             sp.sUpdateBtn.classList.remove("hidden");
         };
-
-        this.sColor.onchange = function () {
-            sp.sUpdateBtn.classList.remove("hidden");
-        };
-
-        this.sLineWidth.onchange = function () {
-            sp.sUpdateBtn.classList.remove("hidden");
-        };
+        this.sSel.onchange = showUpdateBtn;
+        this.sColor.onchange = showUpdateBtn;
+        this.sLineWidth.onchange = showUpdateBtn;
 
         // deterines whether to show features not in samples
         this.sHideChk.onclick = function () {
@@ -265,7 +338,78 @@ define(["Colorer"], function (Colorer) {
         };
 
         this.sUpdateBtn.onclick = function () {
-            sp._updateSample();
+            sp._updateColoring(
+                "_colorSampleTree",
+                sp.sLineWidth,
+                sp.sUpdateBtn
+            );
+        };
+    };
+
+    SidePanel.prototype.updateFeatureMethodDesc = function () {
+        if (this.fMethodChk.checked) {
+            this.fMethodDesc.textContent =
+                "With this checkbox setting, only tip metadata will be " +
+                "used: internal nodes where all descendants have the same " +
+                "feature metadata value are themselves considered to have " +
+                "that value.";
+        } else {
+            this.fMethodDesc.textContent =
+                "With this checkbox setting, both tip and internal node " +
+                "metadata will be used, without any sort of upwards " +
+                '"propagation."';
+        }
+    };
+
+    /**
+     * Initializes feature metadata coloring components
+     */
+    SidePanel.prototype.addFeatureTab = function () {
+        var sp = this;
+
+        var i, opt;
+        // add feature metadata categories / "columns"
+        var selOpts = this.empress.getFeatureMetadataCategories();
+        for (i = 0; i < selOpts.length; i++) {
+            opt = document.createElement("option");
+            opt.value = selOpts[i];
+            opt.innerHTML = selOpts[i];
+            this.fSel.appendChild(opt);
+        }
+
+        // The color map selector
+        Colorer.addColorsToSelect(this.fColor);
+
+        // toggle the sample/color map selectors
+        this.fChk.onclick = function () {
+            if (sp.fChk.checked) {
+                sp._resetSampleTab();
+                sp.updateFeatureMethodDesc();
+                sp.fSel.disabled = false;
+                sp.fAddOpts.classList.remove("hidden");
+                sp.fUpdateBtn.classList.remove("hidden");
+            } else {
+                sp._resetFeatureTab();
+            }
+        };
+
+        var showUpdateBtn = function () {
+            sp.fUpdateBtn.classList.remove("hidden");
+        };
+        this.fSel.onchange = showUpdateBtn;
+        this.fColor.onchange = showUpdateBtn;
+        this.fLineWidth.onchange = showUpdateBtn;
+        this.fMethodChk.onchange = function () {
+            sp.updateFeatureMethodDesc();
+            showUpdateBtn();
+        };
+
+        this.fUpdateBtn.onclick = function () {
+            sp._updateColoring(
+                "_colorFeatureTree",
+                sp.fLineWidth,
+                sp.fUpdateBtn
+            );
         };
     };
 
