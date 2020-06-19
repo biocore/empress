@@ -8,16 +8,16 @@ define(["underscore", "util"], function (_, util) {
             SAMPLE_DATA: "s",
             FEATRUE_DATA: "f",
         };
-        this.table = document.getElementById("hover-table");
-        this.box = document.getElementById("hover-box");
-        this.sel = document.getElementById("hover-select");
-        this.addBtn = document.getElementById("hover-add-btn");
-        this.nodeIdLabel = document.getElementById("hover-table-node-id");
-        this.notes = document.getElementById("hover-table-notes");
-        this.warning = document.getElementById("hover-table-warning");
-        this.fmTable = document.getElementById("hover-fm-table");
-        this.fmHeader = document.getElementById("hover-fm-header");
-        this.smHeader = document.getElementById("hover-sm-header");
+        this.smTable = document.getElementById("menu-sm-table");
+        this.box = document.getElementById("menu-box");
+        this.sel = document.getElementById("menu-select");
+        this.addBtn = document.getElementById("menu-add-btn");
+        this.nodeIdLabel = document.getElementById("menu-box-node-id");
+        this.notes = document.getElementById("menu-box-notes");
+        this.warning = document.getElementById("menu-box-warning");
+        this.fmTable = document.getElementById("menu-fm-table");
+        this.fmHeader = document.getElementById("menu-fm-header");
+        this.smHeader = document.getElementById("menu-sm-header");
         this.nodeKeys = null;
     }
 
@@ -75,7 +75,7 @@ define(["underscore", "util"], function (_, util) {
         for (var i = 0; i < sortedFields.length; i++) {
             var field = sortedFields[i];
 
-            // Create new rows in hover-table: the first row is for this
+            // Create new rows in menu-table: the first row is for this
             // metadata field's "headers" (the unique values in the field,
             // e.g. "gut", "tongue", etc. for a field like body site), and
             // the second row is for the sample presence data for
@@ -90,7 +90,7 @@ define(["underscore", "util"], function (_, util) {
             var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
             fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
             fieldHeaderCell.rowSpan = 2;
-            fieldHeaderCell.classList.add("hover-table-header-cell");
+            fieldHeaderCell.classList.add("menu-box-header-cell");
 
             var fieldDataRow = tableEle.insertRow(-1);
 
@@ -167,8 +167,8 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Displays the hover node menu. nodeKeys must be set in order to use this
-     * method.
+     * Displays the node selection menu. nodeKeys must be set in order to use
+     * this method.
      */
     SelectedNodeMenu.prototype.showNodeMenu = function () {
         // make sure the state machine is set
@@ -195,7 +195,7 @@ define(["underscore", "util"], function (_, util) {
             this.showInternalNode();
         }
 
-        // place hover-node menu next to node
+        // place menu-node menu next to node
         // otherwise place the (aggregated) node-menu over the root of the tree
         this.updateMenuPosition();
 
@@ -204,7 +204,7 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Creates the node hover-table for a tip node. nodeKeys must be set in
+     * Creates the node menu-table for a tip node. nodeKeys must be set in
      * before this function is called.
      */
     SelectedNodeMenu.prototype.showLeafNode = function () {
@@ -246,7 +246,7 @@ define(["underscore", "util"], function (_, util) {
                 ctData[field][cat] = obs[cat];
             }
         }
-        SelectedNodeMenu.makeSampleMetadataTable(ctData, this.table);
+        SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
         if (this.fields.length > 0) {
             this.notes.textContent =
                 "This node is a tip in the tree. These values represent the " +
@@ -255,7 +255,7 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Creates the node hover-table for internal nodes. nodeKeys must be set in
+     * Creates the node menu-table for internal nodes. nodeKeys must be set in
      * before this function is called. Furthermore, if there are more than key
      * in nodeKeys, then the keys must represent internal nodes with the same
      * name in the newick tree.
@@ -353,7 +353,7 @@ define(["underscore", "util"], function (_, util) {
             }
         }
 
-        SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.table);
+        SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.smTable);
         if (this.fields.length > 0) {
             if (isDup) {
                 this.notes.textContent =
@@ -376,7 +376,7 @@ define(["underscore", "util"], function (_, util) {
      * Resets the state machine.
      */
     SelectedNodeMenu.prototype.clearSelectedNode = function () {
-        this.table.innerHTML = "";
+        this.smTable.innerHTML = "";
         this.nodeKeys = null;
         this.box.classList.add("hidden");
         this.fmHeader.classList.add("hidden");
@@ -434,9 +434,9 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Set the coordinates of the node hover-table. If nodeKeys was set to a
-     * single node, then the hover-table will be placed next to that node.
-     * Otherwise, the hover-table will be placed next to the root of the tree.
+     * Set the coordinates of the node menu box. If nodeKeys was set to a
+     * single node, then the box will be placed next to that node.
+     * Otherwise, the box will be placed next to the root of the tree.
      */
     SelectedNodeMenu.prototype.updateMenuPosition = function () {
         if (this.nodeKeys === null) {

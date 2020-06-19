@@ -240,9 +240,9 @@ label:hover .tooltip {
 }
 
 
-/* hover box */
+/* node selection menu box */
 
-#hover-box {
+#menu-box {
     position: fixed;
     border: 1px solid transparent;
     background-color: lightgray;
@@ -250,13 +250,13 @@ label:hover .tooltip {
     padding: 20px;
 }
 
-#hover-box:hover {
+#menu-box:hover {
     opacity: 1.0;
     box-shadow: 10px 10px 40px rgba(0, 0, 0, 0.2);
     border: 1px solid lightgray;
 }
 
-#hover-box::after, #hover-box:hover::before {
+#menu-box::after, #menu-box:hover::before {
     content: " ";
     position: absolute;
     border-style: solid;
@@ -264,13 +264,13 @@ label:hover .tooltip {
     margin-top: -10px;
 }
 
-#hover-box:after {
+#menu-box:after {
     top: 40px;
     border-width: 10px;
     border-color: transparent white transparent transparent;
 }
 
-#hover-box:hover:before {
+#menu-box:hover:before {
     top: 39px;
     border-width: 11px;
     border-color: transparent lightgray transparent transparent;
@@ -315,7 +315,7 @@ label:hover .tooltip {
     font-size: 8pt;
 }
 
-.hover-table-header-cell {
+.menu-box-header-cell {
     background-color: white;
     position: relative;
     position: -webkit-sticky; /* Safari */
@@ -327,15 +327,15 @@ label:hover .tooltip {
     background-color: darkgray;
 }
 
-#hover-select {
+#menu-select {
     background-color: white;
 }
 
-.hover-select-container {
+.menu-select-container {
     position: relative;
 }
 
-.hover-select-container:after {
+.menu-select-container:after {
     position: absolute;
     content: "\203A";
     transform: rotate(90deg);
@@ -883,13 +883,13 @@ button.close:hover {
     background-color: gray;
 }
 
-#hover-table-warning {
+#menu-box-warning {
   font-size: small;
   font-weight: bold;
   max-width: 500px;
 }
 
-#hover-table-notes {
+#menu-box-notes {
   max-width: 500px;
   font-size: small;
 }

@@ -112,7 +112,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // buffer object for tree nodes
         s.nodeVertBuff = c.createBuffer();
 
-        // buffer object for active 'hovered' node
+        // buffer object for active 'selected' node
         s.selectedNodeBuff = c.createBuffer();
 
         // buffer object for colored clades
