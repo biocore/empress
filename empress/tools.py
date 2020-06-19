@@ -145,7 +145,7 @@ def match_inputs(
     # (Ignore None-named tips in the tree, which will be replaced later on
     # with "default" names like "EmpressNode0".)
     tip_names = set([n.name for n in tree.tips() if n.name is not None])
-    tree_and_table_features = tip_names & set(table.index)
+    tree_and_table_features = table.index.intersection(tip_names)
 
     if len(tree_and_table_features) == 0:
         # Error condition 1
@@ -252,17 +252,17 @@ def match_inputs(
     if feature_metadata is not None:
         # Split up taxonomy column, if present in the feature metadata
         ts_feature_metadata = taxonomy_utils.split_taxonomy(feature_metadata)
-        fm_ids = set(ts_feature_metadata.index)
+        fm_ids = ts_feature_metadata.index
 
         # Subset tip metadata
-        fm_and_tip_features = fm_ids & tip_names
+        fm_and_tip_features = fm_ids.intersection(tip_names)
         tip_metadata = ts_feature_metadata.loc[fm_and_tip_features]
 
         # Subset internal node metadata
         internal_node_names = set([
             n.name for n in tree.non_tips(include_self=True)
         ])
-        fm_and_int_features = fm_ids & internal_node_names
+        fm_and_int_features = fm_ids.intersection(internal_node_names)
         int_metadata = ts_feature_metadata.loc[fm_and_int_features]
 
         if len(tip_metadata.index) == 0 and len(int_metadata.index) == 0:
