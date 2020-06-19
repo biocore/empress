@@ -185,7 +185,8 @@ class TestCore(unittest.TestCase):
 
     def test_to_dict_with_feature_metadata(self):
         viz = Empress(
-            self.tree, self.table, self.sample_metadata, self.feature_metadata
+            self.tree, self.table, self.sample_metadata, self.feature_metadata,
+            filter_unobserved_features_from_phylogeny=False
         )
         obs = viz._to_dict()
         dict_a_with_fm = copy.deepcopy(DICT_A)
