@@ -127,6 +127,6 @@ define([], function () {
         magnitude: magnitude,
         rotate: rotate,
         translate: translate,
-        computeBoxCorners,
+        computeBoxCorners: computeBoxCorners,
     };
 });
