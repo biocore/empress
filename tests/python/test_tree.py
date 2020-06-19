@@ -10,6 +10,7 @@ import unittest
 from skbio import TreeNode
 from empress import Tree
 from empress.tree import TreeFormatWarning
+from math import sqrt
 
 
 class TestTree(unittest.TestCase):
@@ -269,6 +270,77 @@ class TestTree(unittest.TestCase):
             self.assertEqual(node.lowest_child_yr, 0)
             self.assertEqual(node.highest_child_yr, 0)
         self.check_basic_tree_rect_layout(t)
+
+    def test_circular_layout_scaling_factor(self):
+        """Checks to make sure the scaling factor applied at the end of
+           the circular layout calculation preservers branch lengths. Basically
+           a nodes length in the circular layout space should be proportional
+           to its branch length.
+        """
+        st = TreeNode.read(["((d:4,c:3)b:2,a:1)root:1;"])
+        t = Tree.from_tree(st)
+        t.coords(100, 100)
+
+        # All nodes' length (beside the root which is represented by a point)
+        # in the circular layout space should have roughly the
+        # same proportional length compared to their branch length.
+        #
+        # For example, in the above tree, if d's length in the circular layout
+        # space is 1.5x larger than its branch length than all nodes should be
+        # roughly 1.5x larger than their branch lengths.
+        test_prop = None
+        for n in t.preorder(include_self=False):
+            n_prop = sqrt((n.xc1-n.xc0)**2 + (n.yc1-n.yc0)**2) / n.length
+            if test_prop is None:
+                test_prop = n_prop
+            else:
+                self.assertAlmostEqual(test_prop, n_prop, places=5)
+
+    def test_circular_layout(self):
+        """Test to make sure the circular layout computes what we expect it to.
+           For each node, circular layou computer the following things:
+                (xc0, yc0) - the starting location for each node
+                (xc1, yc1) - the ending location for each node
+
+            Then, all non-root internal nodes, have an arc that connects the
+            "starting points" of the children with the minimum and maximum
+            angle:
+                (arcx0, arcy0) - the starting location for the arc
+                highest_child_clangle - the starting angle for the arc
+                lowest_child_clangle - the ending angle for the arc
+        """
+        st = TreeNode.read(["((d:4,c:3)b:2,a:1)root:1;"])
+        t = Tree.from_tree(st)
+        t.coords(100, 100)
+
+        # check starting location for each node
+        # Note: nodes 'a' and 'b' should have the same starting coordinates
+        #       since they both start at the root.
+        expected_start = [(38.490018, 0.0),
+                          (-19.245009, 33.333333),
+                          (0.0, 0.0),
+                          (0.0, 0.0),
+                          (0.0, 0.0)]
+        self.check_coords(t, "xc0", "yc0", expected_start)
+
+        # check ending location for each node
+        expected_end = [(115.470054, 0.0),
+                        (-48.112522, 83.333333),
+                        (19.245009, 33.333333),
+                        (-9.622504, -16.666667),
+                        (0.0, 0.0)]
+        self.check_coords(t, "xc1", "yc1", expected_end)
+
+        # check starting location for b's arc
+        expected_arc = [-19.245009, 33.333333]
+        b = t.find("b")
+        self.assertAlmostEqual(b.arcx0, expected_arc[0], places=5)
+        self.assertAlmostEqual(b.arcy0, expected_arc[1], places=5)
+
+        # check b's arc angles
+        expected_angles = [2.0943951, 0.0]
+        self.assertAlmostEqual(b.highest_child_clangle, expected_angles[0])
+        self.assertAlmostEqual(b.lowest_child_clangle, expected_angles[1])
 
 
 if __name__ == "__main__":

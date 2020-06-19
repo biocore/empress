@@ -201,6 +201,7 @@ class Tree(TreeNode):
         layout_algs = (
             self.layout_unrooted,
             self.layout_rectangular,
+            self.layout_circular,
         )
         # We set the default layout to whatever the first layout in
         # layout_algs is, but this behavior is of course modifiable
@@ -218,7 +219,7 @@ class Tree(TreeNode):
         # the rectangular layout; used to draw vertical lines for these nodes.
         #
         # NOTE / TODO: This will have the effect of drawing vertical lines even
-        # for nodes with only 1 child -- in this case lowest_childyr ==
+        # for nodes with only 1 child -- in this case lowest_child_yr ==
         # highest_child_yr for this node, so all of the stuff drawn in WebGL
         # for this vertical line shouldn't show up. I don't think this should
         # cause any problems, but it may be worth detecting these cases and not
@@ -411,8 +412,8 @@ class Tree(TreeNode):
                 prev_clangle += anglepernode
             else:
                 # Center internal nodes at an angle above their children
-                n.clangle = \
-                    sum([c.clangle for c in n.children]) / len(n.children)
+                child_clangle_sum = sum([c.clangle for c in n.children])
+                n.clangle = child_clangle_sum / len(n.children)
 
         max_clradius = 0
         self.clradius = 0

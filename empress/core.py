@@ -28,7 +28,8 @@ class Empress():
     def __init__(self, tree, table, sample_metadata,
                  feature_metadata=None, ordination=None,
                  ignore_missing_samples=False, filter_missing_features=False,
-                 resource_path=None):
+                 resource_path=None,
+                 filter_unobserved_features_from_phylogeny=True):
         """Visualize a phylogenetic tree
 
         Use this object to interactively display a phylogenetic tree using the
@@ -68,6 +69,10 @@ class Empress():
         resource_path: str, optional
             Load the resources from a user-specified remote location. If set to
             None resources are loaded from the current directory.
+        filter_unobserved_features_from_phylogeny: bool, optional
+            If True, filters features from the phylogeny that aren't present as
+            features in feature table. features in feature table. Otherwise,
+            the phylogeny is not filtered.
 
 
         Attributes
@@ -102,7 +107,9 @@ class Empress():
             self.base_url = './'
 
         self._validate_and_match_data(
-            ignore_missing_samples, filter_missing_features
+            ignore_missing_samples,
+            filter_missing_features,
+            filter_unobserved_features_from_phylogeny
         )
 
         if self.ordination is not None:
@@ -119,7 +126,12 @@ class Empress():
             self._emperor = None
 
     def _validate_and_match_data(self, ignore_missing_samples,
-                                 filter_missing_features):
+                                 filter_missing_features,
+                                 filter_unobserved_features_from_phylogeny):
+        # remove unobserved features from the phylogeny
+        if filter_unobserved_features_from_phylogeny:
+            self.tree = self.tree.shear(set(self.table.columns))
+
         # extract balance parenthesis
         self._bp_tree = list(self.tree.B)
 
@@ -220,10 +232,23 @@ class Empress():
                 ycoord = "y" + layoutsuffix
                 tree_data[i][xcoord] = getattr(node, xcoord)
                 tree_data[i][ycoord] = getattr(node, ycoord)
-            # Also add vertical bar coordinate info for the rectangular layout
+            # Hack: it isn't mentioned above, but we need start pos info for
+            # circular layout. The start pos for the other layouts is the
+            # parent xy coordinates so we need only need to specify the start
+            # for circular layout.
+            tree_data[i]["xc0"] = node.xc0
+            tree_data[i]["yc0"] = node.yc0
+
+            # Also add vertical bar coordinate info for the rectangular layout,
+            # and start point & arc coordinate info for the circular layout
             if not node.is_tip():
                 tree_data[i]["highestchildyr"] = node.highest_child_yr
                 tree_data[i]["lowestchildyr"] = node.lowest_child_yr
+                if not node.is_root():
+                    tree_data[i]["arcx0"] = node.arcx0
+                    tree_data[i]["arcy0"] = node.arcy0
+                    tree_data[i]["arcstartangle"] = node.highest_child_clangle
+                    tree_data[i]["arcendangle"] = node.lowest_child_clangle
 
             if node.name in names_to_keys:
                 names_to_keys[node.name].append(i)
@@ -268,8 +293,7 @@ class Empress():
         # This is used in biom-table. Currently this is only used to ignore
         # null data (i.e. NaN and "unknown") and also determines sorting order.
         # The original intent is to signal what columns are
-        # discrete/continuous.  type of sample metadata (n - number, o -
-        # object)
+        # discrete/continuous. type of sample metadata (n - number, o - object)
         sample_data_type = self.samples.dtypes.to_dict()
         sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
                             for k, v in sample_data_type.items()}

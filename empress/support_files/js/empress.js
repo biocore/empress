@@ -67,8 +67,11 @@ define([
          * used to draw the tree
          * @private
          */
-        this._drawer = new Drawer(canvas, this._cam);
-        this._canvas = canvas;
+        // allow canvas to be null to make testing empress easier
+        if (canvas !== null) {
+            this._drawer = new Drawer(canvas, this._cam);
+            this._canvas = canvas;
+        }
 
         /**
          * @type {Array}
@@ -160,7 +163,10 @@ define([
          * @type{CanvasEvents}
          * Handles user events
          */
-        this._events = new CanvasEvents(this, this._drawer, canvas);
+        // allow canvas to be null to make testing empress easier
+        if (canvas !== null) {
+            this._events = new CanvasEvents(this, this._drawer, canvas);
+        }
     }
 
     /**
@@ -223,11 +229,18 @@ define([
             var leafAndRootCt = this._tree.numleafs() + 1;
             numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
         } else if (this._currentLayout === "Circular") {
-            // The same as rectangular layout, but we don't draw anything for
-            // the root.
+            // All internal nodes (except root which is just a point) have an
+            // arc that is made out of 15 small line segments. In addition, all
+            // non-root nodes have an additional line that connects them to
+            // their parent's arc. So the same example above would have
+            // numLines = 3 + 16 * (5 - 3 - 1) = 19.
+            // i.e. 3 lines for the leaves and 16 * (5 - 3 - 1) lines for the
+            // internal nodes. The -1 is there because we do not draw a line
+            // for the root.
             var leafCt = this._tree.numleafs();
             numLines = leafCt + 16 * (this._tree.size - leafCt - 1);
         } else {
+            // the root is not drawn in the unrooted layout
             numLines = this._tree.size - 1;
         }
 
@@ -278,11 +291,10 @@ define([
 
         var coords_index = 0;
 
-        /* Draw a vertical line / arc for the root node, if we're in
-         * rectangular or circular layout mode. Note that we *don't* draw
-         * a horizontal line (with the branch length of the root) for the
-         * root node, even if it has a nonzero branch length; this could be
-         * modified in the future if desired. See #141 on GitHub.
+        /* Draw a vertical line, if we're in rectangular layout mode. Note that
+         * we *don't* draw a horizontal line (with the branch length of the
+         * root) for the root node, even if it has a nonzero branch length;
+         * this could be modified in the future if desired. See #141 on GitHub.
          *
          * (The python code explicitly disallows trees with <= 1 nodes, so
          * we're never going to be in the unfortunate situation of having the
@@ -373,33 +385,35 @@ define([
                 // 2. Draw arc, if this is an internal node (note again that
                 // we're skipping the root)
                 if (this._treeData[node].hasOwnProperty("arcx0")) {
-                    // arcs are create by sampling 15 small lines along the
-                    // circle spanned by rotating arcx0
-                    var arcStartAngle = this._treeData[node].arcstartangle;
-                    var arcEndAngle = this._treeData[node].arcendangle;
+                    // arcs are created by sampling 15 small lines along the
+                    // arc spanned by rotating (arcx0, arcy0), the line whose
+                    // origin is the root of the tree and endpoint is the start
+                    // of the arc, by arcendangle - arcstartangle radians.
                     var numSamples = 15;
-                    var arcDeltaAngle = arcEndAngle - arcStartAngle;
-                    var arcAngle = arcDeltaAngle / numSamples;
+                    var arcDeltaAngle =
+                        this._treeData[node].arcendangle -
+                        this._treeData[node].arcstartangle;
+                    var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this._treeData[node].arcx0;
                     var sY = this._treeData[node].arcy0;
-                    for (var frag = 0; frag < numSamples; frag++) {
+                    for (var line = 0; line < numSamples; line++) {
                         var x =
-                            sX * Math.cos(frag * arcAngle) -
-                            sY * Math.sin(frag * arcAngle);
+                            sX * Math.cos(line * sampleAngle) -
+                            sY * Math.sin(line * sampleAngle);
                         var y =
-                            sX * Math.sin(frag * arcAngle) +
-                            sY * Math.cos(frag * arcAngle);
+                            sX * Math.sin(line * sampleAngle) +
+                            sY * Math.cos(line * sampleAngle);
                         coords[coords_index++] = x;
                         coords[coords_index++] = y;
                         coords.set(color, coords_index);
                         coords_index += 3;
 
                         x =
-                            sX * Math.cos((frag + 1) * arcAngle) -
-                            sY * Math.sin((frag + 1) * arcAngle);
+                            sX * Math.cos((line + 1) * sampleAngle) -
+                            sY * Math.sin((line + 1) * sampleAngle);
                         y =
-                            sX * Math.sin((frag + 1) * arcAngle) +
-                            sY * Math.cos((frag + 1) * arcAngle);
+                            sX * Math.sin((line + 1) * sampleAngle) +
+                            sY * Math.cos((line + 1) * sampleAngle);
                         coords[coords_index++] = x;
                         coords[coords_index++] = y;
                         coords.set(color, coords_index);
@@ -499,33 +513,31 @@ define([
      *                        passed to Drawer.loadSampleThickBuf().
      * @param {Number} node   Node index in this._treeData, from which we'll
      *                        retrieve coordinate information.
-     * @param {Number} amount Desired line thickness (note that this will be
-     *                        applied on both sides of the line -- so if
-     *                        amount = 1 here then the drawn thick line will
-     *                        have a width of 1 + 1 = 2).
+     * @param {Number} level Desired line thickness (note that this will be
+     *                       applied on both sides of the line -- so if
+     *                       level = 1 here then the drawn thick line will
+     *                       have a width of 1 + 1 = 2).
      */
     Empress.prototype._addThickVerticalLineCoords = function (
         coords,
         node,
-        amount
+        level
     ) {
         var corners = {
             tL: [
-                this.getX(this._treeData[node]) - amount,
+                this.getX(this._treeData[node]) - level,
                 this._treeData[node].highestchildyr,
             ],
             tR: [
-                this.getX(this._treeData[node]) + amount,
+                this.getX(this._treeData[node]) + level,
                 this._treeData[node].highestchildyr,
             ],
-
             bL: [
-                this.getX(this._treeData[node]) - amount,
+                this.getX(this._treeData[node]) - level,
                 this._treeData[node].lowestchildyr,
             ],
-
             bR: [
-                this.getX(this._treeData[node]) + amount,
+                this.getX(this._treeData[node]) + level,
                 this._treeData[node].lowestchildyr,
             ],
         };
@@ -537,20 +549,24 @@ define([
      * Thickens the branches that belong to unique sample categories
      * (i.e. features that are only in gut)
      *
-     * @param {Number} amount - How thick to make branch
+     * @param {Number} level - Desired line thickness (note that this will be
+     *                         applied on both sides of the line -- so if
+     *                         level = 1 here then the drawn thick line will
+     *                         have a width of 1 + 1 = 2).
      */
-    Empress.prototype.thickenSameSampleLines = function (amount) {
+    Empress.prototype.thickenSameSampleLines = function (level) {
         // we do this because SidePanel._updateSample() calls this function
         // with lWidth - 1, so in order to make sure we're setting this
         // properly we add 1 to this value.
-        this._currentLineWidth = amount + 1;
+        this._currentLineWidth = level + 1;
         var tree = this._tree;
 
         // the coordinate of the tree.
         var coords = [];
         this._drawer.loadSampleThickBuf([]);
 
-        var corners;
+        // define these variables so jslint does not complain
+        var x1, y1, x2, y2, corners;
 
         // In the corner case where the root node (located at index tree.size)
         // has an assigned color, thicken the root's drawn vertical line when
@@ -559,7 +575,7 @@ define([
             this._currentLayout === "Rectangular" &&
             this._treeData[tree.size].sampleColored
         ) {
-            this._addThickVerticalLineCoords(coords, tree.size, amount);
+            this._addThickVerticalLineCoords(coords, tree.size, level);
         }
         // iterate through the tree in postorder, skip root
         for (var i = 1; i < this._tree.size; i++) {
@@ -575,7 +591,7 @@ define([
             if (this._currentLayout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
-                    this._addThickVerticalLineCoords(coords, node, amount);
+                    this._addThickVerticalLineCoords(coords, node, level);
                 }
                 /* Draw a horizontal thick line for this node -- we can safely
                  * do this for all nodes since this ignores the root, and all
@@ -588,19 +604,19 @@ define([
                 corners = {
                     tL: [
                         this.getX(this._treeData[parent]),
-                        this.getY(this._treeData[node]) + amount,
+                        this.getY(this._treeData[node]) + level,
                     ],
                     tR: [
                         this.getX(this._treeData[node]),
-                        this.getY(this._treeData[node]) + amount,
+                        this.getY(this._treeData[node]) + level,
                     ],
                     bL: [
                         this.getX(this._treeData[parent]),
-                        this.getY(this._treeData[node]) - amount,
+                        this.getY(this._treeData[node]) - level,
                     ],
                     bR: [
                         this.getX(this._treeData[node]),
-                        this.getY(this._treeData[node]) - amount,
+                        this.getY(this._treeData[node]) - level,
                     ],
                 };
                 this._addTriangleCoords(coords, corners, color);
@@ -609,41 +625,43 @@ define([
                 // (TODO: this will need to be adapted when the arc is changed
                 // to be a bezier curve)
                 if (this._treeData[node].hasOwnProperty("arcx0")) {
-                    // arcs are create by sampling 15 small lines along the
-                    // circle spanned by rotating arcx0
-                    var arcStartAngle = this._treeData[node].arcstartangle;
-                    var arcEndAngle = this._treeData[node].arcendangle;
+                    // arcs are created by sampling 15 small lines along the
+                    // arc spanned by rotating arcx0, the line whose origin
+                    // is the root of the tree and endpoint is the start of the
+                    // arc, by arcendangle - arcstartangle radians.
                     var numSamples = 15;
-                    var arcDeltaAngle = arcEndAngle - arcStartAngle;
-                    var arcAngle = arcDeltaAngle / numSamples;
+                    var arcDeltaAngle =
+                        this._treeData[node].arcendangle -
+                        this._treeData[node].arcstartangle;
+                    var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this._treeData[node].arcx0;
                     var sY = this._treeData[node].arcy0;
-                    for (var frag = 0; frag < numSamples; frag++) {
+                    for (var line = 0; line < numSamples; line++) {
                         x1 =
-                            sX * Math.cos(frag * arcAngle) -
-                            sY * Math.sin(frag * arcAngle);
+                            sX * Math.cos(line * sampleAngle) -
+                            sY * Math.sin(line * sampleAngle);
                         y1 =
-                            sX * Math.sin(frag * arcAngle) +
-                            sY * Math.cos(frag * arcAngle);
+                            sX * Math.sin(line * sampleAngle) +
+                            sY * Math.cos(line * sampleAngle);
                         x2 =
-                            sX * Math.cos((frag + 1) * arcAngle) -
-                            sY * Math.sin((frag + 1) * arcAngle);
+                            sX * Math.cos((line + 1) * sampleAngle) -
+                            sY * Math.sin((line + 1) * sampleAngle);
                         y2 =
-                            sX * Math.sin((frag + 1) * arcAngle) +
-                            sY * Math.cos((frag + 1) * arcAngle);
+                            sX * Math.sin((line + 1) * sampleAngle) +
+                            sY * Math.cos((line + 1) * sampleAngle);
                         var arc0corners = VectorOps.computeBoxCorners(
                             x1,
                             y1,
                             x2,
                             y2,
-                            amount
+                            level
                         );
                         var arc1corners = VectorOps.computeBoxCorners(
                             x1,
                             y1,
                             x2,
                             y2,
-                            amount
+                            level
                         );
                         this._addTriangleCoords(coords, arc0corners, color);
                         this._addTriangleCoords(coords, arc1corners, color);
@@ -651,22 +669,18 @@ define([
                 }
                 // Thicken the actual "node" portion, extending from the center
                 // of the layout
-                corners = VectorOps.computeBoxCorners(
-                    this._treeData[node].xc0,
-                    this._treeData[node].yc0,
-                    this.getX(this._treeData[node]),
-                    this.getY(this._treeData[node]),
-                    amount
-                );
+                x1 = this._treeData[node].xc0;
+                y1 = this._treeData[node].yc0;
+                x2 = this.getX(this._treeData[node]);
+                y2 = this.getY(this._treeData[node]);
+                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, level);
                 this._addTriangleCoords(coords, corners, color);
             } else {
-                corners = VectorOps.computeBoxCorners(
-                    this.getX(this._treeData[parent]),
-                    this.getY(this._treeData[parent]),
-                    this.getX(this._treeData[node]),
-                    this.getY(this._treeData[node]),
-                    amount
-                );
+                x1 = this.getX(this._treeData[parent]);
+                y1 = this.getY(this._treeData[parent]);
+                x2 = this.getX(this._treeData[node]);
+                y2 = this.getY(this._treeData[node]);
+                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, level);
                 this._addTriangleCoords(coords, corners, color);
             }
         }

@@ -40,7 +40,8 @@ plugin.visualizers.register_function(
         'feature_metadata': Metadata,
         'ignore_missing_samples': Bool,
         'filter_missing_features': Bool,
-        'number_of_features': Int % Range(1, None)
+        'number_of_features': Int % Range(1, None),
+        'filter_unobserved_features_from_phylogeny': Bool
     },
     input_descriptions={
         'tree': 'The phylogenetic tree to visualize.',
@@ -92,6 +93,11 @@ plugin.visualizers.register_function(
                               '(euclidean distance from origin). Note, this '
                               'parameter is only honored when a biplot is '
                               'inputed.',
+        'filter_unobserved_features_from_phylogeny': (
+            'If this flag is passed, filters features from the phylogeny '
+            'that are not present as features in feature table. '
+            'Default is True.'
+        )
     },
     name='Visualize and Explore Phylogenies with Empress',
     description=(
