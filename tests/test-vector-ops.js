@@ -1,8 +1,6 @@
 require(["jquery", "VectorOps"], function($, VectorOps) {
     $(document).ready(function() {
         // Setup test variables
-        // Note: This is ran for each test() so tests can modify bpArray without
-        // effecting other test
         module("VectorOps" , {
             setup: function() {
             },
