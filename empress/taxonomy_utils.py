@@ -118,21 +118,26 @@ def split_taxonomy(feature_metadata):
                 TaxonomyWarning
             )
 
-        # N semicolons (max) means that there are N + 1 taxonomic levels: we
-        # use max_sc_count + 2 below to account for us using 1-indexing instead
-        # of 0-indexing
-        tax_levels = pd.DataFrame(
-            index=feature_metadata.index, dtype='str',
-            columns=['Level {}'.format(i) for i in range(1, max_sc_count + 2)]
+        # OK, actually do splitting now (taking into account max_sc_count)
+        def split_taxonomy_col(fm_row):
+            levels = [r.strip() for r in fm_row.loc[tax_col_name].split(";")]
+            # If this row's taxonomy has less levels than the max number of
+            # levels, pad it out with empty strings.
+            if len(levels) < max_sc_count + 1:
+                num_missing_levels = (max_sc_count + 1) - len(levels)
+                levels += ["Unspecified"] * num_missing_levels
+            return levels
+
+        # Our use of result_type="expand" means that tax_levels will be a
+        # DataFrame with the same index as feature_metadata but with one column
+        # for each taxonomic level (in order -- Kingdom, Phylum, etc.)
+        tax_levels = feature_metadata.apply(
+            split_taxonomy_col, axis="columns", result_type="expand"
         )
-
-        split_tax_levels = feature_metadata[tax_col_name].str.split(';')
-        # Still need to strip internal whitespace -- e.g. " p__Firmicutes"
-        for i, names in enumerate(split_tax_levels):
-            tax_levels.iloc[i, :len(names)] = [x.strip() for x in names]
-
-        tax_levels.fillna('Unspecified', inplace=True)
-
+        # Assign human-friendly column names: Level 1, Level 2, ...
+        tax_levels.columns = [
+            "Level {}".format(i) for i in range(1, len(tax_levels.columns) + 1)
+        ]
         fm_no_tax = feature_metadata.drop(columns=tax_col_name)
         # Finally, join the f.m. with the tax. levels DF by the index.
         return pd.concat([tax_levels, fm_no_tax], axis="columns")
