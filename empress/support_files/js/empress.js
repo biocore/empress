@@ -853,9 +853,7 @@ define([
         var obs = {};
         _.each(sortedUniqueValues, function (uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
-            obs[uniqueVal] = emp._namesToKeys(
-                uniqueValueToFeatures[uniqueVal]
-            );
+            obs[uniqueVal] = emp._namesToKeys(uniqueValueToFeatures[uniqueVal]);
         });
 
         // assign colors to unique values
