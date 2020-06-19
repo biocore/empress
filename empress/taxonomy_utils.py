@@ -100,22 +100,9 @@ def split_taxonomy(feature_metadata):
                 "(case insensitive)."
             )
 
-        max_sc_count = 0
-
-        def find_max_semicolon_count(fm_row):
-            # We need to be able to update max_sc_count as we go through each
-            # row, and Python gets angry if we don't explicitly declare it as
-            # "nonlocal" before referencing it here. See
-            # https://stackoverflow.com/a/46018922/10730311
-            nonlocal max_sc_count
-            row_sc_count = fm_row.loc[tax_col_name].count(";")
-            max_sc_count = max(max_sc_count, row_sc_count)
-
-        # Figure out maximum number of semicolons in any feature (this works
-        # on a per-row basis even though axis="columns", because each call
-        # to validate_semicolon_count() gets a Series of columns which is
-        # technically a row I guess)
-        feature_metadata.apply(find_max_semicolon_count, axis="columns")
+        # Find the maximum number of ;s within any of the taxonomy annotations
+        # Thanks Yoshiki for showing how to do this concisely :)
+        max_sc_count = feature_metadata[tax_col_name].str.count(";").max()
 
         if max_sc_count == 0:
             # We allow this in the case of single-rank taxonomies (e.g. just
