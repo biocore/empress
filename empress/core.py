@@ -228,10 +228,23 @@ class Empress():
                 ycoord = "y" + layoutsuffix
                 tree_data[i][xcoord] = getattr(node, xcoord)
                 tree_data[i][ycoord] = getattr(node, ycoord)
-            # Also add vertical bar coordinate info for the rectangular layout
+            # Hack: it isn't mentioned above, but we need start pos info for
+            # circular layout. The start pos for the other layouts is the
+            # parent xy coordinates so we need only need to specify the start
+            # for circular layout.
+            tree_data[i]["xc0"] = node.xc0
+            tree_data[i]["yc0"] = node.yc0
+
+            # Also add vertical bar coordinate info for the rectangular layout,
+            # and start point & arc coordinate info for the circular layout
             if not node.is_tip():
                 tree_data[i]["highestchildyr"] = node.highestchildyr
                 tree_data[i]["lowestchildyr"] = node.lowestchildyr
+                if not node.is_root():
+                    tree_data[i]["arcx0"] = node.arcx0
+                    tree_data[i]["arcy0"] = node.arcy0
+                    tree_data[i]["arcstartangle"] = node.highest_child_clangle
+                    tree_data[i]["arcendangle"] = node.lowest_child_clangle
 
             if node.name in names_to_keys:
                 names_to_keys[node.name].append(i)
@@ -252,8 +265,7 @@ class Empress():
         # This is used in biom-table. Currently this is only used to ignore
         # null data (i.e. NaN and "unknown") and also determines sorting order.
         # The original intent is to signal what columns are
-        # discrete/continuous.  type of sample metadata (n - number, o -
-        # object)
+        # discrete/continuous. type of sample metadata (n - number, o - object)
         sample_data_type = self.samples.dtypes.to_dict()
         sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
                             for k, v in sample_data_type.items()}

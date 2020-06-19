@@ -125,9 +125,9 @@ class Tree(TreeNode):
         coordinates for each node, so that layout algorithms can be rapidly
         toggled between in the JS interface.
 
-        Also adds on .highestchildyr and .lowestchildyr attributes to internal
-        nodes so that vertical bars for these nodes can be drawn in the
-        rectangular layout.
+        Also adds on .highestchildyr and .lowestchildyr attributes to
+        internal nodes so that vertical bars for these nodes can be drawn in
+        the rectangular layout.
 
         Parameters
         ----------
@@ -148,6 +148,7 @@ class Tree(TreeNode):
         layout_algs = (
             self.layout_unrooted,
             self.layout_rectangular,
+            self.layout_circular,
         )
         # We set the default layout to whatever the first layout in
         # layout_algs is, but this behavior is of course modifiable
@@ -156,6 +157,8 @@ class Tree(TreeNode):
             name, suffix = alg(width, height)
             layout_to_coordsuffix[name] = suffix
             self.alter_coordinates_relative_to_root(suffix)
+            if name == "Circular":
+                self.alter_coordinates_relative_to_root("c0")
             if default_layout is None:
                 default_layout = name
 
@@ -163,16 +166,20 @@ class Tree(TreeNode):
         # the rectangular layout; used to draw vertical lines for these nodes.
         #
         # NOTE / TODO: This will have the effect of drawing vertical lines even
-        # for nodes with only 1 child -- in this case lowestchildyr ==
-        # highestchildyr for this node, so all of the stuff drawn in WebGL for
-        # this vertical line shouldn't show up. I don't think this should cause
-        # any problems, but it may be worth detecting these cases and not
+        # for nodes with only 1 child -- in this case lowest_childyr ==
+        # highestchildyr for this node, so all of the stuff drawn in WebGL
+        # for this vertical line shouldn't show up. I don't think this should
+        # cause any problems, but it may be worth detecting these cases and not
         # drawing vertical lines for them in the future.
         for n in self.preorder():
             if not n.is_tip():
-                child_y_coords = [c.yr for c in n.children]
-                n.highestchildyr = max(child_y_coords)
-                n.lowestchildyr = min(child_y_coords)
+                n.highestchildyr = float("-inf")
+                n.lowestchildyr = float("inf")
+                for c in n.children:
+                    if c.yr > n.highestchildyr:
+                        n.highestchildyr = c.yr
+                    if c.yr < n.lowestchildyr:
+                        n.lowestchildyr = c.yr
 
         return layout_to_coordsuffix, default_layout
 
@@ -215,7 +222,7 @@ class Tree(TreeNode):
         y-positions are centered over their descendant tips' positions.
         x-positions are computed based on nodes' branch lengths.
 
-        Following this algorithm, nodes' unrooted layout coordinates are
+        Following this algorithm, nodes' rectangular layout coordinates are
         accessible at [node].xr and [node].yr.
 
         For a simple tree, this layout should look something like:
@@ -294,6 +301,154 @@ class Tree(TreeNode):
         # this line to all of its child nodes (where the length of the
         # horizontal line is proportional to the node length in question).
         return "Rectangular", "r"
+
+    def layout_circular(self, width, height):
+        """ Circular layout version of the rectangular layout.
+
+        Works analogously to the rectangular layout:
+
+            -Each tip is assigned a unique angle from the "center"/root of
+             the tree (out of the range [0, 2pi] in radians), and internal
+             nodes are set to an angle equal to the average of their
+             children's. This mirrors the assignment of y-coordinates for
+             the rectangular layout.
+
+            -All nodes are then assigned a radius equal to the sum of their
+             branch lengths descending from the root (but not including
+             the root's branch length, if provided -- the root is represented
+             as just a single point in the center of the layout). This mirrors
+             the assignment of x-coordinates for the rectangular layout.
+
+            -Lastly, we'll draw arcs for every internal node (except for the
+             root) connecting the "start points" of the child nodes of that
+             node with the minimum and maximum angle. (These points should
+             occur at the radius equal to the "end" of the given internal
+             node.)
+                We don't draw this arc for the root node because we don't draw
+                the root the same way we do the other nodes in the tree:
+                the root is represented as just a single point at the center
+                of the layout. Due to this, there isn't a way to draw an arc
+                from the root, since the root's "end" is at the same point as
+                its beginning (so the arc wouldn't be visible).
+
+        Following this algorithm, nodes' circular layout coordinates are
+        accessible at [node].xc and [node].yc. Angles will also be available
+        at [node].clangle, and radii will be available at [node].clradius; and
+        for non-root internal nodes, arc start and end coordinates will be
+        available at [node].arcx0, [node].arcy0, [node].arcx1, & [node].arcy1.
+
+        Parameters
+        ----------
+        width : float
+            width of the canvas
+        height : float
+            height of the canvas
+
+        References
+        ----------
+        https://github.com/qiime/Topiary-Explorer/blob/master/src/topiaryexplorer/TreeVis.java
+            Description above + the implementation of this algorithm
+            derived from the Polar layout algorithm code.
+        """
+        anglepernode = (2 * np.pi) / self.leafcount
+        prev_clangle = 0
+        for n in self.postorder():
+            if n.is_tip():
+                n.clangle = prev_clangle
+                prev_clangle += anglepernode
+            else:
+                # Center internal nodes at an angle above their children
+                n.clangle = sum([c.clangle for c in n.children])\
+                    / len(n.children)
+
+        max_clradius = 0
+        self.clradius = 0
+        for n in self.preorder(include_self=False):
+            n.clradius = n.parent.clradius + n.length
+            if n.clradius > max_clradius:
+                max_clradius = n.clradius
+
+        # Now that we have the polar coordinates of the nodes, convert these
+        # coordinates to normal x/y coordinates.
+        # NOTE that non-root nodes will actually have two x/y coordinates we
+        # need to keep track of: one for the "end" of the node's line, and
+        # another for the "start" of the node's line. The latter of these is
+        # needed because the node's line begins at the parent node's radius but
+        # the child node's angle, if that makes sense -- and since converting
+        # from polar to x/y and back is annoying, it's easiest to just compute
+        # this in python.
+        max_x = max_y = float("-inf")
+        min_x = min_y = float("inf")
+        for n in self.postorder():
+            n.xc1 = n.clradius * np.cos(n.clangle)
+            n.yc1 = n.clradius * np.sin(n.clangle)
+            if n.is_root():
+                # NOTE that the root has a clradius of 0 (since it's just
+                # represented as a point at the center of the layout). We don't
+                # even bother drawing the root in the Empress JS code, but for
+                # the purposes of alter_coordinates_relative_to_root() we need
+                # to explicitly position the root at (0, 0).
+                n.xc0 = 0
+                n.yc0 = 0
+            else:
+                n.xc0 = n.parent.clradius * np.cos(n.clangle)
+                n.yc0 = n.parent.clradius * np.sin(n.clangle)
+            # NOTE: We don't bother testing the xc0 / yc0 coordinates as
+            # "extrema" because they should always be further "within" the
+            # tree than the xc1 / yc1 coordinates.
+            # TODO: verify that the "tree is a line" case doesn't mess this up.
+            if n.xc1 > max_x:
+                max_x = n.xc1
+            if n.yc1 > max_y:
+                max_y = n.yc1
+            if n.xc1 < min_x:
+                min_x = n.xc1
+            if n.yc1 < min_y:
+                min_y = n.yc1
+
+        # TODO: raise error if the maximum and minimum are same for x or y.
+        # may happen if the tree is a straight line.
+
+        # set scaling factors
+        # normalize the coordinate based on the largest dimension
+        width_scale = width / (max_x - min_x)
+        height_scale = height / (max_y - min_y)
+        scale_factor = width_scale if width_scale > height_scale else\
+            height_scale
+        x_scaling_factor = scale_factor
+        y_scaling_factor = scale_factor
+
+        for n in self.preorder():
+            n.xc0 *= x_scaling_factor
+            n.yc0 *= y_scaling_factor
+            n.xc1 *= x_scaling_factor
+            n.yc1 *= y_scaling_factor
+            if not n.is_tip() and not n.is_root():
+                n.highest_child_clangle = float("-inf")
+                n.lowest_child_clangle = float("inf")
+                for c in n.children:
+                    if c.clangle > n.highest_child_clangle:
+                        n.highest_child_clangle = c.clangle
+                    if c.clangle < n.lowest_child_clangle:
+                        n.lowest_child_clangle = c.clangle
+                # Figure out "arc" endpoints for the circular layout
+                # NOTE: As with the "vertical lines" for internal nodes in the
+                # rectangular layout, these arcs will be drawn for nodes with
+                # only one child. Here, this case would mean that the
+                # highest_child_clangle would equal the lowest_child_clangle,
+                # so arcx0 would equal arcx1 and arcy0 would equal arcy1. So
+                # nothing should show up (but it may be worth addressing this
+                # in the future).
+                n.arcx0 = n.clradius * np.cos(n.highest_child_clangle)
+                n.arcy0 = n.clradius * np.sin(n.highest_child_clangle)
+                n.arcx1 = n.clradius * np.cos(n.lowest_child_clangle)
+                n.arcy1 = n.clradius * np.sin(n.lowest_child_clangle)
+                n.arcx0 *= x_scaling_factor
+                n.arcy0 *= y_scaling_factor
+                n.arcx1 *= x_scaling_factor
+                n.arcy1 *= y_scaling_factor
+
+        return "Circular", "c1"
 
     def layout_unrooted(self, width, height):
         """ Find best scaling factor for fitting the tree in the figure.
