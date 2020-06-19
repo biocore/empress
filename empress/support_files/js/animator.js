@@ -150,7 +150,7 @@ define(["Colorer"], function (Colorer) {
         // Retrive list of unique categories to display during the animation.
         this.trajectoryCol = trajectory;
         var trajectories = this.empress.getUniqueSampleValues(trajectory);
-
+        trajectories.push("non-unique");
         // Assign a color to each unique category
         var colorer = new Colorer(cm, trajectories);
         this.cm = colorer.getMapRGB();
@@ -326,7 +326,7 @@ define(["Colorer"], function (Colorer) {
             category = categories[i];
             obs[category] = this.empress._namesToKeys(obs[category]);
         }
-        obs = this.empress._projectObservations(obs);
+        obs = this.empress._projectObservations(obs, true);
 
         return { name: name, keyInfo: this.legendInfo, obs: obs };
     };

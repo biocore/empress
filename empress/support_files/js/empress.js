@@ -666,7 +666,7 @@ define([
         var tree = this._tree;
         var obs = this._biom.getObjservationUnionForSamples(sIds);
         obs = Array.from(this._namesToKeys(obs));
-        obs = this._projectObservations({ samples: new Set(obs) });
+        obs = this._projectObservations({ samples: new Set(obs) }, false);
         obs = Array.from(obs.samples);
 
         for (var i = 0; i < obs.length; i++) {
@@ -698,7 +698,10 @@ define([
         }
 
         // project to ancestors
-        observationsPerGroup = this._projectObservations(observationsPerGroup);
+        observationsPerGroup = this._projectObservations(
+            observationsPerGroup,
+            false
+        );
 
         for (group in observationsPerGroup) {
             obs = Array.from(observationsPerGroup[group]);
@@ -761,15 +764,16 @@ define([
             obs[category] = this._namesToKeys(obs[category]);
         }
 
+        // assign internal nodes to approperiate category based on its children
+        obs = this._projectObservations(obs, true);
+
         // assign colors to categories
+        categories = util.naturalSort(Object.keys(obs));
         var colorer = new Colorer(color, categories);
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
         var keyInfo = colorer.getMapHex();
-
-        // assign internal nodes to approperiate category based on its children
-        obs = this._projectObservations(obs);
 
         // color tree
         this._colorTree(obs, cm);
@@ -781,33 +785,83 @@ define([
     };
 
     /**
-     * Finds the branches that are unique to each category in obs
+     * Projects the groups in obs up the tree.
      *
-     * @param {Object} observations grouped by categories
+     * This function performs two distinct operations:
+     *      1) Removes the non-unique observations from each group in obs
+     *         (i.e. performs an 'exclusive or' between each group) and, if
+     *         addNonUnique is true, then places all non-unique observations
+     *         in a "non-unique" group.
      *
-     * @return {Object} the branches of the tree that are uniqe to category in
-                        obs
-    */
-    Empress.prototype._projectObservations = function (obs) {
-        var tree = this._tree;
-        var categories = Object.keys(obs);
+     *      2) Assigns internal nodes to a group if all of its children belong
+     *         to the same group.
+     *
+     * Note: All tips that are not passed into obs are considered to belong to
+     *       a "not-represented" group.
+     *       Also, if addNonUnique is true, then a "non-unique" object will
+     *       be inserted into the return object.
+     *
+     * @param {Object} obs Maps cateogires to a set of observations (i.e. tips)
+     * @param {Boolean} addNonUnique If true, and then insert the "non-unique"
+     *                               group into the returning object.
+     * @return {Object}
+     */
+    Empress.prototype._projectObservations = function (obs, addNonUnique) {
+        var tree = this._tree,
+            categories = Object.keys(obs),
+            notRepresented = new Set(),
+            i,
+            j;
+
+        // find "non-represented" tips
+        // Note: the following uses postorder traversal
+        for (i = 1; i < tree.size; i++) {
+            if (tree.isleaf(tree.postorderselect(i))) {
+                var represented = false;
+                for (j = 0; j < categories.length; j++) {
+                    if (obs[categories[j]].has(i)) represented = true;
+                }
+                if (!represented) notRepresented.add(i);
+            }
+        }
 
         // assign internal nodes to approperiate category based on its children
         // iterate using postorder
-        for (var i = 1; i < tree.size; i++) {
+        for (i = 1; i < tree.size; i++) {
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
 
             for (j = 0; j < categories.length; j++) {
                 category = categories[j];
+
+                // add internal nodes to groups
                 if (obs[category].has(node)) {
                     this._treeData[node].inSample = true;
                     obs[category].add(parent);
                 }
+                if (notRepresented.has(node)) {
+                    notRepresented.add(parent);
+                }
             }
         }
-        obs = util.keepUniqueKeys(obs);
-        return obs;
+        var result = util.keepUniqueKeys(obs, notRepresented);
+
+        // remove all "non-unique" branches that aren't tips
+        // Note: if all children belong to "non-unique" should we project that
+        //       up the tree? Current behavior does not project it up the tree
+        //       because branches in this group may be elements of different
+        //       groups. For example "b1" may belong to skin and oral while
+        //       "b2" may belong to gut and skin.
+        for (var elem of result["non-unique"]) {
+            if (!tree.isleaf(tree.postorderselect(elem))) {
+                result["non-unique"].delete(elem);
+            }
+        }
+
+        // keep "non-unique" tips if addNNonUnique is true
+        if (!addNonUnique) delete result["non-unique"];
+
+        return result;
     };
 
     /**
@@ -852,14 +906,14 @@ define([
             }
         }
 
-        // calculate total and relative percentages in each group
-        var sampleCategies = Object.keys(sampleObs);
-        for (i = 0; i < sampleCategies.length; i++) {
-            var category = sampleCategies[i];
-            var branchesInCategory = sampleObs[category].length;
-            keyInfo[category].tPercent = branchesInCategory / this._tree.size;
-            keyInfo[category].rPercent = branchesInCategory / relativeTreeSize;
-        }
+        // // calculate total and relative percentages in each group
+        // var sampleCategies = Object.keys(sampleObs);
+        // for (i = 0; i < sampleCategies.length; i++) {
+        //     var category = sampleCategies[i];
+        //     var branchesInCategory = sampleObs[category].length;
+        //     keyInfo[category].tPercent = branchesInCategory / this._tree.size;
+        //     keyInfo[category].rPercent = branchesInCategory / relativeTreeSize;
+        // }
     };
 
     /**

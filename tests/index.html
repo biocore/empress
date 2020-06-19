@@ -56,7 +56,8 @@
           'testSummaryHelper': './../tests/test-summary-helper',
           'testUtil' : './../tests/test-util',
           'testCircularLayoutComputation' : './../tests/test-circular-layout-computation',
-          'testVectorOps' : './../tests/test-vector-ops'
+          'testVectorOps' : './../tests/test-vector-ops',
+          'testEmpress' : './../tests/test-empress'
         }
     });
 
@@ -66,13 +67,13 @@
          'Camera', 'Colorer', 'BiomTable', 'SummaryHelper', 'util', 'Empress',
          'testBPTree', 'testByteTree', 'testBIOMTable', 'testCamera',
          'testColorer', 'testSummaryHelper', 'testUtil',
-         'testCircularLayoutComputation', 'testVectorOps'],
+         'testCircularLayoutComputation', 'testVectorOps', 'testEmpress'],
 
         // start tests
         function ($, gl, chroma, underscore, ByteArray, BPTree, Camera,
           testBIOMTable, Colorer, BiomTable, SummaryHelper, util, Empress,
           testBPTree, testByteTree, testCamera, testColorer, testSummaryHelper,
-          testUtil, testCircularLayoutComputation, testVectorOps) {
+          testUtil, testCircularLayoutComputation, testVectorOps, testEmpress) {
             $(document).ready(function() {
                 QUnit.start();
             });
