@@ -113,7 +113,9 @@
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr, {{ names }});
 
-        var canvas = document.getElementById('tree-surface')
+        var fmCols = {{ feature_metadata_columns }};
+
+        var canvas = document.getElementById('tree-surface');
 
         var biom = new BIOMTable(
           {{ obs_data }},
@@ -127,7 +129,7 @@
             {{ layout_to_coordsuffix | tojson }},
             '{{ default_layout }}',
             biom,
-            {{ feature_metadata_columns }},
+            fmCols,
             {{ tip_metadata | tojson }},
             {{ int_metadata | tojson }},
             canvas
@@ -142,7 +144,7 @@
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress, legend);
         sPanel.addSampleTab();
-        if ({{ feature_metadata_columns }}.length > 0) {
+        if (fmCols.length > 0) {
             sPanel.addFeatureTab();
             document.getElementById("fmOpenButton").classList.remove("hidden");
         }
