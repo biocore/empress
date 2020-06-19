@@ -65,7 +65,7 @@ def split_taxonomy(feature_metadata):
     invalid_level_columns_present = False
     tax_col_index = None
     tax_col_name = None
-    for col, i in zip(lowercase_col_names, range(len(lowercase_col_names))):
+    for i, col in enumerate(lowercase_col_names):
         if col in VALID_TAXONOMY_COLUMN_NAMES:
             if tax_col_index is None:
                 tax_col_index = i
