@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2016-2019, empress development team.
+# Copyright (c) 2016-2020, empress development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -32,9 +32,6 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
          filter_missing_features: bool = False,
          number_of_features: int = 5,
          filter_unobserved_features_from_phylogeny: bool = True) -> None:
-    # TODO: do not ignore the feature metadata when specified by the user
-    if feature_metadata is not None:
-        feature_metadata = feature_metadata.to_dataframe()
 
     if pcoa is not None and pcoa.features is not None:
         # select the top N most important features based on the vector's
@@ -47,6 +44,9 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
         pcoa.features = feats[:number_of_features].copy()
 
     sample_metadata = sample_metadata.to_dataframe()
+
+    if feature_metadata is not None:
+        feature_metadata = feature_metadata.to_dataframe()
 
     # path to the actual newick file
     with open(str(tree)) as file:

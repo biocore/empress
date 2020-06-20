@@ -1,7 +1,16 @@
+# ----------------------------------------------------------------------------
+# Copyright (c) 2016-2020, empress development team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file LICENSE, distributed with this software.
+# ----------------------------------------------------------------------------
+
 import warnings
 import pandas as pd
 import skbio
 from skbio import TreeNode
+from empress import taxonomy_utils
 
 
 class DataMatchingError(Exception):
@@ -12,29 +21,26 @@ class DataMatchingWarning(Warning):
     pass
 
 
-def name_internal_nodes(tree):
-    """ Name internal nodes that don't have a name
+def fill_missing_node_names(tree):
+    """ Names nodes in the tree without a name.
 
      Parameters
      ----------
      tree : skbio.TreeNode or empress.Tree
-        Input tree with labeled tips and partially unlabeled internal nodes
-        or branch lengths.
+        Input tree with potentially unnamed nodes (i.e. nodes' .name attributes
+        can be None).
 
     Returns
     -------
     skbio.TreeNode or empress.Tree
-        Tree with fully labeled internal nodes and branches.
+        Tree with all nodes assigned a name.
     """
-    # initialize tree with branch lengths and node names if they are missing
-    current_unlabled_node = 0
+    current_unlabeled_node = 0
     for n in tree.postorder(include_self=True):
-        if n.length is None:
-            n.length = 0
         if n.name is None:
-            new_name = 'EmpressNode%d' % current_unlabled_node
+            new_name = 'EmpressNode{}'.format(current_unlabeled_node)
             n.name = new_name
-            current_unlabled_node += 1
+            current_unlabeled_node += 1
 
 
 def read(file_name, file_format='newick'):
@@ -57,6 +63,11 @@ def match_inputs(
 ):
     """Matches various input sources.
 
+    Also "splits up" the feature metadata, first by calling
+    taxonomy_utils.split_taxonomy() on it and then by splitting the resulting
+    DataFrame into two separate DataFrames (one for tips and one for internal
+    nodes).
+
     Parameters
     ----------
 
@@ -64,15 +75,17 @@ def match_inputs(
         The tree to be visualized.
     table: pd.DataFrame
         Representation of the feature table. The index should describe feature
-        IDs; the columns should describe sample IDs.
+        IDs; the columns should describe sample IDs. (It's expected that
+        feature IDs in the table only describe tips in the tree, not internal
+        nodes.)
     sample_metadata: pd.DataFrame
         Sample metadata. The index should describe sample IDs; the columns
         should describe different sample metadata fields' names.
     feature_metadata: pd.DataFrame or None
         Feature metadata. If this is passed, the index should describe feature
         IDs and the columns should describe different feature metadata fields'
-        names. NOTE: THIS CURRENTLY IS NOT CHECKED, BUT IT SHOULD BE IN THE
-        FUTURE WHEN #130 IS ADDRESSED.
+        names. (Feature IDs here can describe tips or internal nodes in the
+        tree.)
     ignore_missing_samples: bool
         If True, pads missing samples (i.e. samples in the table but not the
         metadata) with placeholder metadata. If False, raises a
@@ -89,8 +102,10 @@ def match_inputs(
 
     Returns
     -------
-    (table, sample_metadata): (pd.DataFrame, pd.DataFrame)
-        Versions of the input table and sample metadata filtered such that:
+    (table, sample_metadata, tip_metadata, int_metadata):
+        (pd.DataFrame, pd.DataFrame, pd.DataFrame / None, pd.DataFrame / None)
+        Versions of the input table, sample metadata, and feature metadata
+        filtered such that:
             -The table only contains features also present as tips in the tree.
             -The sample metadata only contains samples also present in the
              table.
@@ -98,6 +113,15 @@ def match_inputs(
              have all of their sample metadata values set to "This sample has
              no metadata". (This will only be done if ignore_missing_samples is
              True; otherwise, this situation will trigger an error. See below.)
+            -If feature metadata was not passed, tip_metadata and int_metadata
+             will both be None. Otherwise, tip_metadata will contain the
+             entries of the feature metadata where the feature name was present
+             as a tip in the tree, and int_metadata will contain the entries
+             of the feature metadata where the feature name was present as
+             internal node(s) in the tree.
+                -Also, for sanity's sake, this will call
+                 taxonomy_utils.split_taxonomy() on the feature metadata before
+                 splitting it up into tip and internal node metadata.
 
     Raises
     ------
@@ -109,6 +133,8 @@ def match_inputs(
             3. No samples are shared between the sample metadata and table.
             4. There are samples present in the table but not in the sample
                metadata, AND ignore_missing_samples is False.
+            5. The feature metadata was passed, but no features present in it
+               are also present as tips or internal nodes in the tree.
 
     References
     ----------
@@ -116,8 +142,10 @@ def match_inputs(
     https://github.com/biocore/qurro/blob/b9613534b2125c2e7ee22e79fdff311812f4fefe/qurro/_df_utils.py#L255
     """
     # Match table and tree.
-    tip_names = [n.name for n in tree.tips()]
-    tree_and_table_features = set(tip_names) & set(table.index)
+    # (Ignore None-named tips in the tree, which will be replaced later on
+    # with "default" names like "EmpressNode0".)
+    tip_names = set([n.name for n in tree.tips() if n.name is not None])
+    tree_and_table_features = table.index.intersection(tip_names)
 
     if len(tree_and_table_features) == 0:
         # Error condition 1
@@ -216,4 +244,32 @@ def match_inputs(
     # sample_metadata.shape[0] and sf_sample_metadata.shape[0]. However, the
     # presence of such "dropped samples" is a common occurrence in 16S studies,
     # so we currently don't do that for the sake of avoiding alarm fatigue.
-    return ff_table, sf_sample_metadata
+
+    # If the feature metadata was passed, filter it so that it only contains
+    # features present as tips / internal nodes in the tree
+    tip_metadata = None
+    int_metadata = None
+    if feature_metadata is not None:
+        # Split up taxonomy column, if present in the feature metadata
+        ts_feature_metadata = taxonomy_utils.split_taxonomy(feature_metadata)
+        fm_ids = ts_feature_metadata.index
+
+        # Subset tip metadata
+        fm_and_tip_features = fm_ids.intersection(tip_names)
+        tip_metadata = ts_feature_metadata.loc[fm_and_tip_features]
+
+        # Subset internal node metadata
+        internal_node_names = set([
+            n.name for n in tree.non_tips(include_self=True)
+        ])
+        fm_and_int_features = fm_ids.intersection(internal_node_names)
+        int_metadata = ts_feature_metadata.loc[fm_and_int_features]
+
+        if len(tip_metadata.index) == 0 and len(int_metadata.index) == 0:
+            # Error condition 5
+            raise DataMatchingError(
+                "No features in the feature metadata are present in the tree, "
+                "either as tips or as internal nodes."
+            )
+
+    return ff_table, sf_sample_metadata, tip_metadata, int_metadata

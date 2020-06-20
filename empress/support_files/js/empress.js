@@ -1,4 +1,5 @@
 define([
+    "underscore",
     "Camera",
     "Drawer",
     "Colorer",
@@ -6,7 +7,16 @@ define([
     "CanvasEvents",
     "util",
     "chroma",
-], function (Camera, Drawer, Colorer, VectorOps, CanvasEvents, util, chroma) {
+], function (
+    _,
+    Camera,
+    Drawer,
+    Colorer,
+    VectorOps,
+    CanvasEvents,
+    util,
+    chroma
+) {
     // The index position of the color array
     const RED = 0;
     const GREEN = 1;
@@ -28,6 +38,9 @@ define([
      *                       by a node's x2 and y2 coordinates in the data.
      * @param {String} defaultLayout The default layout to draw the tree with
      * @param {BIOMTable} biom The BIOM table used to color the tree
+     * @param {Array} featureMetadataColumns Columns of the feature metadata
+     * @param {Object} tipMetadata Feature metadata for tips in the tree
+     * @param {Object} intMetadata Feature metadata for internal nodes in tree
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
     function Empress(
@@ -37,6 +50,9 @@ define([
         layoutToCoordSuffix,
         defaultLayout,
         biom,
+        featureMetadataColumns,
+        tipMetadata,
+        intMetadata,
         canvas
     ) {
         /**
@@ -104,6 +120,24 @@ define([
         this._biom = biom;
 
         /**
+         * @type{Array}
+         * Feature metadata column names.
+         * @private
+         */
+        this._featureMetadataColumns = featureMetadataColumns;
+
+        /**
+         * @type{Object}
+         * Feature metadata: keys are tree node IDs, and values are objects
+         * mapping feature metadata column names to the metadata value for that
+         * feature. We split this up into tip and internal node feature
+         * metadata objects.
+         * @private
+         */
+        this._tipMetadata = tipMetadata;
+        this._intMetadata = intMetadata;
+
+        /**
          * @type{Object}
          * As described above, maps layout names to node coordinate suffixes
          * in the tree data.
@@ -144,7 +178,7 @@ define([
         this.drawTree();
         this._events.setMouseEvents();
         var nodeNames = Object.keys(this._nameToKeys);
-        nodeNames = nodeNames.filter((n) => !n.includes("EmpressNode"));
+        nodeNames = nodeNames.filter((n) => !n.startsWith("EmpressNode"));
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
     };
@@ -195,18 +229,18 @@ define([
             var leafAndRootCt = this._tree.numleafs() + 1;
             numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
         } else if (this._currentLayout === "Circular") {
-            // All internal nodes (excpet root which is just a point) have an
+            // All internal nodes (except root which is just a point) have an
             // arc that is made out of 15 small line segments. In addition, all
             // non-root nodes have an additional line that connects them to
-            // their parents arc. So the same example above would have
+            // their parent's arc. So the same example above would have
             // numLines = 3 + 16 * (5 - 3 - 1) = 19.
-            // I.E. 3 lines for the leafs and 16*(5 - 3 - 1) lines for the
-            // internal nodes. The -1 is there because we do not draw a line for
-            // the root.
+            // i.e. 3 lines for the leaves and 16 * (5 - 3 - 1) lines for the
+            // internal nodes. The -1 is there because we do not draw a line
+            // for the root.
             var leafCt = this._tree.numleafs();
             numLines = leafCt + 16 * (this._tree.size - leafCt - 1);
         } else {
-            // the root is not drawn
+            // the root is not drawn in the unrooted layout
             numLines = this._tree.size - 1;
         }
 
@@ -229,7 +263,7 @@ define([
 
         for (var i = 1; i <= tree.size; i++) {
             var node = this._treeData[i];
-            if (!node.name.includes("EmpressNode")) {
+            if (!node.name.startsWith("EmpressNode")) {
                 coords[coords_index++] = this.getX(node);
                 coords[coords_index++] = this.getY(node);
                 coords.set(node.color, coords_index);
@@ -351,7 +385,7 @@ define([
                 // 2. Draw arc, if this is an internal node (note again that
                 // we're skipping the root)
                 if (this._treeData[node].hasOwnProperty("arcx0")) {
-                    // arcs are create by sampling 15 small lines along the
+                    // arcs are created by sampling 15 small lines along the
                     // arc spanned by rotating (arcx0, arcy0), the line whose
                     // origin is the root of the tree and endpoint is the start
                     // of the arc, by arcendangle - arcstartangle radians.
@@ -498,12 +532,10 @@ define([
                 this.getX(this._treeData[node]) + level,
                 this._treeData[node].highestchildyr,
             ],
-
             bL: [
                 this.getX(this._treeData[node]) - level,
                 this._treeData[node].lowestchildyr,
             ],
-
             bR: [
                 this.getX(this._treeData[node]) + level,
                 this._treeData[node].lowestchildyr,
@@ -533,7 +565,7 @@ define([
         var coords = [];
         this._drawer.loadSampleThickBuf([]);
 
-        // define theses variables so jslint does not complain
+        // define these variables so jslint does not complain
         var x1, y1, x2, y2, corners;
 
         // In the corner case where the root node (located at index tree.size)
@@ -593,7 +625,7 @@ define([
                 // (TODO: this will need to be adapted when the arc is changed
                 // to be a bezier curve)
                 if (this._treeData[node].hasOwnProperty("arcx0")) {
-                    // arcs are create by sampling 15 small lines along the
+                    // arcs are created by sampling 15 small lines along the
                     // arc spanned by rotating arcx0, the line whose origin
                     // is the root of the tree and endpoint is the start of the
                     // arc, by arcendangle - arcstartangle radians.
@@ -774,7 +806,6 @@ define([
         var cm = colorer.getMapRGB();
         // colors for the legend
         var keyInfo = colorer.getMapHex();
-
         // color tree
         this._colorTree(obs, cm);
 
@@ -785,6 +816,91 @@ define([
     };
 
     /**
+     * Color the tree based on a feature metadata column.
+     *
+     * @param {String} cat The feature metadata column to color nodes by.
+     *                     It's assumed that this is present in
+     *                     this._featureMetadataColumns.
+     * @param {String} color The name of the color map to use.
+     * @param {String} method Defines how coloring is done. If this is "tip",
+     *                        then only tip-level feature metadata will be
+     *                        used, and (similar to sample coloring) upwards
+     *                        propagation of unique values will be done in
+     *                        order to color internal nodes where applicable.
+     *                        If this is "all", then this will use both tip and
+     *                        internal node feature metadata without doing any
+     *                        propagation. If this is anything else, this will
+     *                        throw an error.
+     *
+     * @return {Object} Maps unique values in this f. metadata column to colors
+     */
+    Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+        // Produce a mapping of unique values in this feature metadata
+        // column to an array of the feature(s) with each value.
+        // The coloring method influences how much of the feature metadata
+        // we'll look at. (While we're at it, validate the coloring method.)
+        var fmObjs;
+        if (method === "tip") {
+            fmObjs = [this._tipMetadata];
+        } else if (method === "all") {
+            fmObjs = [this._tipMetadata, this._intMetadata];
+        } else {
+            throw 'F. metadata coloring method "' + method + '" unrecognized.';
+        }
+
+        var uniqueValueToFeatures = {};
+        _.each(fmObjs, function (mObj) {
+            _.mapObject(mObj, function (fmRow, tipID) {
+                // This is loosely based on how BIOMTable.getObsBy() works.
+                var fmVal = fmRow[cat];
+                if (_.has(uniqueValueToFeatures, fmVal)) {
+                    uniqueValueToFeatures[fmVal].push(tipID);
+                } else {
+                    uniqueValueToFeatures[fmVal] = [tipID];
+                }
+            });
+        });
+
+        var emp = this;
+        var sortedUniqueValues = util.naturalSort(
+            Object.keys(uniqueValueToFeatures)
+        );
+        // convert observation IDs to _treeData keys. Notably, this includes
+        // converting the values of uniqueValueToFeatures from Arrays to Sets.
+        var obs = {};
+        _.each(sortedUniqueValues, function (uniqueVal, i) {
+            uniqueVal = sortedUniqueValues[i];
+            obs[uniqueVal] = emp._namesToKeys(uniqueValueToFeatures[uniqueVal]);
+        });
+
+        // assign colors to unique values
+        var colorer = new Colorer(color, sortedUniqueValues);
+        // colors for drawing the tree
+        var cm = colorer.getMapRGB();
+        // colors for the legend
+        var keyInfo = colorer.getMapHex();
+
+        // Do upwards propagation only if the coloring method is "tip"
+        // TODO / NOTE: _projectObservations() sets the .inSample property of
+        // features that are colored with metadata. This is "wrong," in the
+        // sense that samples don't really have anything to do with feature
+        // metadata coloring, but I don't *think* this will impact things
+        // because I think resetTree() should be called before any other
+        // coloring operations would be done. However, would be good to test
+        // things -- or at least to rename a lot of these coloring utilities
+        // to talk about "groups" rather than "samples", esp. since I think
+        // animation has the same problem...
+        if (method === "tip") {
+            obs = this._projectObservations(obs, false);
+        }
+
+        // color tree
+        this._colorTree(obs, cm);
+
+        return keyInfo;
+    };
+
+    /*
      * Projects the groups in obs up the tree.
      *
      * This function performs two distinct operations:
@@ -825,7 +941,7 @@ define([
             }
         }
 
-        // assign internal nodes to approperiate category based on its children
+        // assign internal nodes to appropriate category based on children
         // iterate using postorder
         for (i = 1; i < tree.size; i++) {
             var node = i;
@@ -1012,6 +1128,15 @@ define([
      */
     Empress.prototype.getGradientStep = function (cat, grad, traj) {
         return this._biom.getGradientStep(cat, grad, traj);
+    };
+
+    /**
+     * Returns an array of feature metadata column names.
+     *
+     * @return {Array}
+     */
+    Empress.prototype.getFeatureMetadataCategories = function () {
+        return this._featureMetadataColumns;
     };
 
     return Empress;

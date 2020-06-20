@@ -44,9 +44,6 @@ define([], function () {
      *                       if theta is the rotating amount, then angle
      *                       is defined as {"cos": cos(theta),
                                             "sin": sin(theta)}
-     * @param {Boolean} over if true rotate point in positve sine direction
-     *                       if false rotate point in negative sine direction
-     *
      * @return {Array}
      */
     function rotate(point, angle) {
@@ -120,11 +117,13 @@ define([], function () {
         tL = rotate(tL, angle);
         tL = translate(tL, x1, y1);
 
-        //f find bottom right of box
+        // find bottom right of box
         tR = [length, -1 * amount];
         tR = rotate(tR, angle);
         tR = translate(tR, x1, y1);
 
+        // Idea of returning this as an object instead of a 2-D array based on
+        // https://stackoverflow.com/questions/2917175/return-multiple-values-in-javascript#comment2969172_2917186
         return { tL: tL, tR: tR, bL: bL, bR: bR };
     }
 
@@ -133,6 +132,6 @@ define([], function () {
         magnitude: magnitude,
         rotate: rotate,
         translate: translate,
-        computeBoxCorners,
+        computeBoxCorners: computeBoxCorners,
     };
 });

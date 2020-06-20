@@ -1,4 +1,4 @@
-define([], function () {
+define(["underscore", "util"], function (_, util) {
     function SelectedNodeMenu(empress, drawer) {
         this.empress = empress;
         this.drawer = drawer;
@@ -8,12 +8,16 @@ define([], function () {
             SAMPLE_DATA: "s",
             FEATRUE_DATA: "f",
         };
-        this.table = document.getElementById("hover-table");
-        this.box = document.getElementById("hover-box");
-        this.sel = document.getElementById("hover-select");
-        this.addBtn = document.getElementById("hover-add-btn");
-        this.nodeIdLabel = document.getElementById("hover-table-node-id");
-        this.notes = document.getElementById("hover-table-notes");
+        this.smTable = document.getElementById("menu-sm-table");
+        this.box = document.getElementById("menu-box");
+        this.sel = document.getElementById("menu-select");
+        this.addBtn = document.getElementById("menu-add-btn");
+        this.nodeIdLabel = document.getElementById("menu-box-node-id");
+        this.notes = document.getElementById("menu-box-notes");
+        this.warning = document.getElementById("menu-box-warning");
+        this.fmTable = document.getElementById("menu-fm-table");
+        this.fmHeader = document.getElementById("menu-fm-header");
+        this.smHeader = document.getElementById("menu-sm-header");
         this.nodeKeys = null;
     }
 
@@ -37,14 +41,134 @@ define([], function () {
             var val = selectMenu.sel.value;
             selectMenu.sel.options[selectMenu.sel.selectedIndex].remove();
             selectMenu.fields.push(val);
+            selectMenu.smHeader.classList.remove("hidden");
             selectMenu.showNodeMenu();
         };
         this.addBtn.onclick = click;
     };
 
+    /*
+     * Creates a HTML table describing sample presence info for a feature.
+     *
+     * This is set up as a static method
+     * (https://stackoverflow.com/a/1635143/10730311) to make testing easier
+     * (and also because it really doesn't need to depend on the state of this
+     * object).
+     *
+     * @param{Object} ctData Two-dimensional mapping: The keys are the
+     *                       sample metadata fields to include in the table,
+     *                       and the values are Objects mapping unique values
+     *                       in these fields to numbers describing this
+     *                       feature's presence for these values.
+     *                       e.g. {"body-site": {"gut": 5, "tongue": 2}}
+     * @param{HTMLElement} tableEle A reference to the <table> element to
+     *                              which this method will insert HTML.
+     *                              This can just be the return value of
+     *                              document.getElementById(). This element's
+     *                              innerHTML will be cleared at the start of
+     *                              this method.
+     */
+    SelectedNodeMenu.makeSampleMetadataTable = function (ctData, tableEle) {
+        tableEle.innerHTML = "";
+        // loop over all metadata fields the user has decided to show
+        var sortedFields = util.naturalSort(_.keys(ctData));
+        for (var i = 0; i < sortedFields.length; i++) {
+            var field = sortedFields[i];
+
+            // Create new rows in menu-table: the first row is for this
+            // metadata field's "headers" (the unique values in the field,
+            // e.g. "gut", "tongue", etc. for a field like body site), and
+            // the second row is for the sample presence data for
+            // the selected tree node within these unique values.
+            //
+            // Each group of two rows additionally has a header cell
+            // on its leftmost side which spans both the header and data
+            // rows; this header cell contains the name of the selected
+            // metadata field, and has some fancy CSS that keeps it frozen
+            // in place as the user scrolls the table horizontally.
+            var fieldHeaderRow = tableEle.insertRow(-1);
+            var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
+            fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
+            fieldHeaderCell.rowSpan = 2;
+            fieldHeaderCell.classList.add("menu-box-header-cell");
+
+            var fieldDataRow = tableEle.insertRow(-1);
+
+            // add row values for this metadata field, one column at a time
+            var categories = util.naturalSort(_.keys(ctData[field]));
+            for (var j = 0; j < categories.length; j++) {
+                var categoryHeaderCell = fieldHeaderRow.insertCell(-1);
+                categoryHeaderCell.innerHTML =
+                    "<strong>" + categories[j] + "</strong>";
+                var categoryDataCell = fieldDataRow.insertCell(-1);
+                categoryDataCell.innerHTML = ctData[field][categories[j]];
+            }
+        }
+    };
+
+    /*
+     * Creates a HTML table (and a header) describing feature metadata.
+     *
+     * This checks to make sure that there actually is feature metadata (and
+     * that the requested node has feature metadata) before creating things --
+     * unlike makeSampleMetadataTable(), it's expected that some nodes may not
+     * have any feature metadata information, or that feature metadata may not
+     * have even been provided in the first place. (If this is the case, this
+     * function will hide the fmHeader and fmTable elements.)
+     *
+     * @param{String} nodeName Name of the node to create this table for.
+     *                         Duplicate names (for internal nodes) are ok.
+     * @param{Array} mdCols Array of metadata columns present in each entry in
+     *                      mdObj. If this is an empty array, this function
+     *                      won't create anything, and will hide the fmHeader
+     *                      and fmTable elements -- see above for details.
+     * @param{Object} mdObj Object describing feature metadata. The keys should
+     *                      be node names, and the value for a node name N
+     *                      should be another Object mapping the metadata
+     *                      columns (in mdCols) to the metadata values for
+     *                      the node name N.
+     * @param{HTMLElement} fmHeader A reference to a header HTML element to
+     *                              hide / unhide depending on whether or not
+     *                              feature metadata will be shown for this
+     *                              node name.
+     * @param{HTMLElement} fmTable A reference to the <table> element to
+     *                             which this method will insert HTML.
+     *                             This element's innerHTML will be cleared at
+     *                             the start of this method.
+     */
+    SelectedNodeMenu.makeFeatureMetadataTable = function (
+        nodeName,
+        mdCols,
+        mdObj,
+        fmHeader,
+        fmTable
+    ) {
+        fmTable.innerHTML = "";
+        // If there is feature metadata, and if this node name is present as a
+        // key in the feature metadata, then show this information.
+        // (This uses boolean short-circuiting, so the _.has() should only be
+        // evaluated if mdCols has a length of > 0.)
+        if (mdCols.length > 0 && _.has(mdObj, nodeName)) {
+            var headerRow = fmTable.insertRow(-1);
+            var featureRow = fmTable.insertRow(-1);
+            for (var x = 0; x < mdCols.length; x++) {
+                var colName = mdCols[x];
+                var colCell = headerRow.insertCell(-1);
+                colCell.innerHTML = "<strong>" + colName + "</strong>";
+                var dataCell = featureRow.insertCell(-1);
+                dataCell.innerHTML = mdObj[nodeName][colName];
+            }
+            fmHeader.classList.remove("hidden");
+            fmTable.classList.remove("hidden");
+        } else {
+            fmHeader.classList.add("hidden");
+            fmTable.classList.add("hidden");
+        }
+    };
+
     /**
-     * Displays the hover node menu. nodeKeys must be set in order to use this
-     * method.
+     * Displays the node selection menu. nodeKeys must be set in order to use
+     * this method.
      */
     SelectedNodeMenu.prototype.showNodeMenu = function () {
         // make sure the state machine is set
@@ -58,19 +182,10 @@ define([], function () {
         var node = emp._treeData[nodeKeys[0]];
         var name = node.name;
 
-        // reset node-hover menu
-        this.table.innerHTML = "";
+        this.nodeIdLabel.textContent = "ID: " + node.name;
 
-        this.nodeIdLabel.innerHTML = "ID:" + node.name;
-
-        // add id row
-        this.notes.innerHTML =
-            "For tip nodes: values represent number of unique samples that " +
-            "contain the tip node." +
-            "<br>" +
-            "For internal nodes: values represent the number of unique " +
-            "samples that contain any of its descendants." +
-            "<br>";
+        this.notes.textContent = "";
+        this.warning.textContent = "";
 
         // show either leaf or internal node
         var t = emp._tree;
@@ -80,7 +195,7 @@ define([], function () {
             this.showInternalNode();
         }
 
-        // place hover-node menu next to node
+        // place menu-node menu next to node
         // otherwise place the (aggregated) node-menu over the root of the tree
         this.updateMenuPosition();
 
@@ -89,7 +204,7 @@ define([], function () {
     };
 
     /**
-     * Creates the node hover-table for a tip node. nodeKeys must be set in
+     * Creates the node menu-table for a tip node. nodeKeys must be set in
      * before this function is called.
      */
     SelectedNodeMenu.prototype.showLeafNode = function () {
@@ -98,48 +213,49 @@ define([], function () {
             throw "showLeafNode(): nodeKeys is not set!";
         }
 
-        // test to make sure the leaf node is uniqe
+        // test to make sure the leaf node is unique
+        // (This should already be enforced in the Python side of things, but
+        // we may as well be extra cautious.)
         if (this.nodeKeys.length > 1) {
             throw "showLeafNode(): Leaf nodes must be unique!";
         }
 
         // get the name of the tip
         var name = this.empress._treeData[this.nodeKeys[0]].name;
-        // loop over all metadata fields the user has added to the hover-table.
-        this.fields.sort();
-        for (var i = 0; i < this.fields.length; i++) {
-            var field = this.fields[i];
 
-            /*
-             * TODO: Once feature metadata is available, this will be used to
-             * flag if field is from the sample or feature metadata
-             *
-             *  var type = this.fields[i].type; // tree, sample, or feature
-             */
+        // 1. Add feature metadata information (if present for this tip; if
+        // there isn't feature metadata for this tip, the f.m. UI elements in
+        // the selected node menu will be hidden)
+        SelectedNodeMenu.makeFeatureMetadataTable(
+            name,
+            this.empress._featureMetadataColumns,
+            this.empress._tipMetadata,
+            this.fmHeader,
+            this.fmTable
+        );
 
-            // create new row in hover-table
-            row = this.table.insertRow(-1);
-            cell = row.insertCell(-1);
-            cell.innerHTML = "<strong>" + field + "</strong>";
-
-            // add row values
+        // 2. Add sample presence information for this tip
+        var ctData = {};
+        for (var f = 0; f < this.fields.length; f++) {
+            var field = this.fields[f];
             var obs = this.empress._biom.getObsCountsBy(field, name);
-            var categories = Object.keys(obs);
-            categories.sort();
-            for (var j = 0; j < categories.length; j++) {
-                cell = row.insertCell(-1);
-                cell.innerHTML =
-                    "<p>" +
-                    categories[j] +
-                    "<br>" +
-                    obs[categories[j]] +
-                    "</p>";
+            var categories = _.keys(obs);
+            ctData[field] = {};
+            for (var c = 0; c < categories.length; c++) {
+                var cat = categories[c];
+                ctData[field][cat] = obs[cat];
             }
+        }
+        SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
+        if (this.fields.length > 0) {
+            this.notes.textContent =
+                "This node is a tip in the tree. These values represent the " +
+                "number of unique samples that contain this node.";
         }
     };
 
     /**
-     * Creates the node hover-table for internal nodes. nodeKeys must be set in
+     * Creates the node menu-table for internal nodes. nodeKeys must be set in
      * before this function is called. Furthermore, if there are more than key
      * in nodeKeys, then the keys must represent internal nodes with the same
      * name in the newick tree.
@@ -150,16 +266,32 @@ define([], function () {
             throw "showInternalNode(): nodeKeys is not set!";
         }
 
+        var isDup = false;
         if (this.nodeKeys.length > 1) {
-            this.notes.innerHTML +=
-                "<br>" +
+            this.warning.textContent =
                 "Warning: " +
                 this.nodeKeys.length +
-                " nodes exists with the above id." +
-                "<br>" +
-                "The following table shows the aggregated values from all " +
-                " nodes with the above id.";
+                " nodes exist with the " +
+                "above ID.";
+            isDup = true;
         }
+
+        // 1. Add feature metadata information (if present) for this node
+        // (Note that we allow duplicate-name internal nodes to have
+        // feature metadata; this isn't a problem)
+        var name = this.empress._treeData[this.nodeKeys[0]].name;
+        SelectedNodeMenu.makeFeatureMetadataTable(
+            name,
+            this.empress._featureMetadataColumns,
+            this.empress._intMetadata,
+            this.fmHeader,
+            this.fmTable
+        );
+
+        // 2. Compute sample presence information for this node.
+        // (NOTE: this does not prevent "double-counting" samples, so the
+        // aggregation for duplicate names should be fixed.)
+
         // create object that will map fields to all of their possible values
         var field,
             fieldValues,
@@ -185,7 +317,7 @@ define([], function () {
             var nodeKey = this.nodeKeys[i];
 
             // find first and last preorder positions of the subtree spanned
-            // by the current interal node
+            // by the current internal node
             var emp = this.empress;
             var t = emp._tree;
             var n = t.postorderselect(nodeKey);
@@ -221,26 +353,21 @@ define([], function () {
             }
         }
 
-        // create hover-table
-        this.fields.sort();
-        for (i = 0; i < this.fields.length; i++) {
-            // add row
-            field = this.fields[i];
-            row = this.table.insertRow(-1);
-            cell = row.insertCell(-1);
-            cell.innerHTML = "<strong>" + field + "</strong>";
-
-            fieldValues = Object.keys(fieldsMap[field]);
-            fieldValues.sort();
-            for (j = 0; j < fieldValues.length; j++) {
-                fieldValue = fieldValues[j];
-                cell = row.insertCell(-1);
-                cell.innerHTML =
-                    "<p>" +
-                    fieldValue +
-                    "<br>" +
-                    fieldsMap[field][fieldValue] +
-                    "</p>";
+        SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.smTable);
+        if (this.fields.length > 0) {
+            if (isDup) {
+                this.notes.textContent =
+                    "This node is an internal node in the tree with a " +
+                    "duplicated name. These values represent the number of " +
+                    "unique samples that contain any of this node's " +
+                    "descendants, aggregated across all nodes with this " +
+                    "name. (This is buggy, so please don't trust these " +
+                    "numbers right now.)";
+            } else {
+                this.notes.textContent =
+                    "This node is an internal node in the tree. These " +
+                    "values represent the number of unique samples that " +
+                    "contain any of this node's descendants.";
             }
         }
     };
@@ -249,9 +376,12 @@ define([], function () {
      * Resets the state machine.
      */
     SelectedNodeMenu.prototype.clearSelectedNode = function () {
-        this.table.innerHTML = "";
+        this.smTable.innerHTML = "";
         this.nodeKeys = null;
         this.box.classList.add("hidden");
+        this.fmHeader.classList.add("hidden");
+        this.fmTable.classList.add("hidden");
+        this.fmTable.innerHTML = "";
         this.drawer.loadSelectedNodeBuff([]);
     };
 
@@ -273,7 +403,7 @@ define([], function () {
         }
 
         // test if nodeKeys represents tips then only one key should exist i.e.
-        // tips must be uniqe
+        // tips must be unique
         var t = emp._tree;
         if (t.isleaf(t.postorderselect(nodeKeys[0])) && nodeKeys.length > 1) {
             throw (
@@ -304,9 +434,9 @@ define([], function () {
     };
 
     /**
-     * Set the coordinates of the node hover-table. If nodeKeys was set to a
-     * single node, then the hover-table will be placed next to that node.
-     * Otherwise, the hover-table will be placed next to the root of the tree.
+     * Set the coordinates of the node menu box. If nodeKeys was set to a
+     * single node, then the box will be placed next to that node.
+     * Otherwise, the box will be placed next to the root of the tree.
      */
     SelectedNodeMenu.prototype.updateMenuPosition = function () {
         if (this.nodeKeys === null) {
