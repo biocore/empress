@@ -41,7 +41,7 @@ require(['jquery', 'BPTree', 'Empress', "util"], function($, BPTree, Empress, ut
 
                 }
                 this.empress = new Empress(tree, treeData, null,
-                    null, null, null, null);
+                    null, null, null, null, null, null, null);
             },
 
             teardown: function() {
@@ -62,7 +62,6 @@ require(['jquery', 'BPTree', 'Empress', "util"], function($, BPTree, Empress, ut
                 "non-unique" : new Set([])
             };
             var result = this.empress._projectObservations(obs, true);
-            console.log({"???": result})
 
             var groups = ["g1", "g2", "g3", "non-unique"];
             for (var i = 0; i < groups.length; i++) {
@@ -86,7 +85,6 @@ require(['jquery', 'BPTree', 'Empress', "util"], function($, BPTree, Empress, ut
                 "non-unique" : new Set([])
             };
             var result = this.empress._projectObservations(obs, true);
-            console.log({"???": result})
 
             var groups = ["g1", "g2", "g3", "non-unique"];
             for (var i = 0; i < groups.length; i++) {
