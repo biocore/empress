@@ -186,7 +186,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         // color tree
         this[colorMethodName]();
 
-        var lWidth = lwInput.value;
+        var lWidth = parseInt(lwInput.value);
         if (lWidth !== 1) {
             this.empress.thickenSameSampleLines(lWidth - 1);
         }
