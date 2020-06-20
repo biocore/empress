@@ -785,7 +785,7 @@ define([
     Empress.prototype.colorBySampleCat = function (cat, color) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
-        var categories = util.naturalSort(Object.keys(obs));
+        var categories = Object.keys(obs);
 
         // shared by the following for loops
         var i, j, category;
@@ -796,7 +796,7 @@ define([
             obs[category] = this._namesToKeys(obs[category]);
         }
 
-        // assign internal nodes to approperiate category based on its children
+        // assign internal nodes to appropriate category based on its children
         obs = this._projectObservations(obs, true);
 
         // assign colors to categories
@@ -808,9 +808,6 @@ define([
         var keyInfo = colorer.getMapHex();
         // color tree
         this._colorTree(obs, cm);
-
-        // get percent of branches belonging to unique category (i.e. just gut)
-        this.percentColoredBySample(obs, keyInfo);
 
         return keyInfo;
     };
@@ -907,20 +904,24 @@ define([
      *      1) Removes the non-unique observations from each group in obs
      *         (i.e. performs an 'exclusive or' between each group) and, if
      *         addNonUnique is true, then places all non-unique observations
-     *         in a "non-unique" group.
+     *         (that are tips in the tree) in a "non-unique" group.
      *
      *      2) Assigns internal nodes to a group if all of its children belong
      *         to the same group.
      *
      * Note: All tips that are not passed into obs are considered to belong to
-     *       a "not-represented" group.
+     *       a "not-represented" group, which will be omitted from the
+     *       returned version of obs.
      *       Also, if addNonUnique is true, then a "non-unique" object will
      *       be inserted into the return object.
      *
-     * @param {Object} obs Maps cateogires to a set of observations (i.e. tips)
+     * @param {Object} obs Maps categories to a set of observations (i.e. tips)
      * @param {Boolean} addNonUnique If true, and then insert the "non-unique"
      *                               group into the returning object.
-     * @return {Object}
+     * @return {Object} returns A Map with the same group names (plus
+                        'non-uniqe' if addNonUnique is true) that maps groups
+                        to a set of keys (i.e. tree nodes) that are unique to
+                        each group.
      */
     Empress.prototype._projectObservations = function (obs, addNonUnique) {
         var tree = this._tree,
@@ -935,7 +936,10 @@ define([
             if (tree.isleaf(tree.postorderselect(i))) {
                 var represented = false;
                 for (j = 0; j < categories.length; j++) {
-                    if (obs[categories[j]].has(i)) represented = true;
+                    if (obs[categories[j]].has(i)) {
+                        represented = true;
+                        break;
+                    }
                 }
                 if (!represented) notRepresented.add(i);
             }
@@ -943,6 +947,10 @@ define([
 
         // assign internal nodes to appropriate category based on children
         // iterate using postorder
+        // Note that, although we don't explicitly iterate over the
+        // root (at index tree.size) in this loop, we iterate over all its
+        // descendants; so in the event that all leaves are unique,
+        // the root can still get assigned to a group.
         for (i = 1; i < tree.size; i++) {
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
@@ -974,7 +982,7 @@ define([
             }
         }
 
-        // keep "non-unique" tips if addNNonUnique is true
+        // keep "non-unique" tips if addNonUnique is true
         if (!addNonUnique) delete result["non-unique"];
 
         return result;
@@ -999,37 +1007,6 @@ define([
                 this._treeData[key].sampleColored = true;
             }
         }
-    };
-
-    /**
-     * Cacluates the total and relative pertange of the tree that was colored by
-     * each category in sampleObs
-     *
-     * @param {Object} sampleObs The object containing which tree branches are
-     *                 colored by which sample category
-     * @param {Object} keyInfo The object containing the information to be
-     *                 displayed in the sample legend
-     */
-    Empress.prototype.percentColoredBySample = function (sampleObs, keyInfo) {
-        // calculate relative tree size i.e. the subtree spanned by the samples
-        // iterate over tree using postorder
-
-        var i,
-            relativeTreeSize = 0;
-        for (i = 1; i <= this._tree.size; i++) {
-            if (this._treeData[i].inSample) {
-                relativeTreeSize++;
-            }
-        }
-
-        // // calculate total and relative percentages in each group
-        // var sampleCategies = Object.keys(sampleObs);
-        // for (i = 0; i < sampleCategies.length; i++) {
-        //     var category = sampleCategies[i];
-        //     var branchesInCategory = sampleObs[category].length;
-        //     keyInfo[category].tPercent = branchesInCategory / this._tree.size;
-        //     keyInfo[category].rPercent = branchesInCategory / relativeTreeSize;
-        // }
     };
 
     /**

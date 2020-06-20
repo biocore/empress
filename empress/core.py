@@ -24,6 +24,10 @@ SELECTION_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
                                        'selection-callback.js')
 
 
+class MetadataFieldError(Exception):
+    pass
+
+
 class Empress():
     def __init__(self, tree, table, sample_metadata,
                  feature_metadata=None, ordination=None,
@@ -95,8 +99,17 @@ class Empress():
         self.table = table
         self.samples = sample_metadata.copy()
 
+        if 'non-unique' in self.samples:
+            raise MetadataFieldError(
+                "Sample metadata contains invalid field name 'non-unique'"
+            )
+
         if feature_metadata is not None:
             self.features = feature_metadata.copy()
+            if 'non-unique' in self.features:
+                raise MetadataFieldError(
+                    "Sample metadata contains invalid field name 'non-unique'"
+                )
         else:
             self.features = None
 

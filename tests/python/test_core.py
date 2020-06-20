@@ -19,6 +19,7 @@ from shutil import rmtree
 
 from emperor import Emperor
 from empress.core import Empress
+from empress.core import MetadataFieldError
 from bp import parse_newick
 from six import StringIO
 from skbio.tree import TreeNode
@@ -257,6 +258,49 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.features)
         self.assertIsNone(viz.ordination)
+
+    def test_invalid_sample_field_names(self):
+        bad_sample_metadata = pd.DataFrame(
+            {
+                "Metadata1": [0, 0, 0, 1],
+                "Metadata2": [0, 0, 0, 0],
+                "Metadata3": [1, 2, 3, 4],
+                "Metadata4": ["abc", "def", "ghi", "jkl"],
+                "non-unique": [0, 0, 0, 0]
+            },
+            index=list(self.table.index)
+        )
+
+        bad_feature_metadata = pd.DataFrame(
+            {
+                "fmdcol1": ["asdf", "ghjk"],
+                "fmdcol2": ["qwer", "tyui"],
+                "non-unique": [0, 0]
+            },
+            index=["a", "h"]
+        )
+
+        # make sure error is thrown for invalid sample metadata
+        # currently, the only invalid field name is 'non-unique'
+        # 'non-unique' is a special field used in empress during sample
+        # based metadata coloring
+        with self.assertRaises(MetadataFieldError):
+            Empress(
+                self.tree, self.table, bad_sample_metadata,
+                self.feature_metadata,
+                filter_unobserved_features_from_phylogeny=False
+            )
+
+        # Note: 'non-unique' should not cause any issues with feature based
+        # metadata coloring. However, feature based metadata coloring uses
+        # the same frame work as sample based coloring so to be on the safe
+        # side, 'non-unique' should still be invalid
+        with self.assertRaises(MetadataFieldError):
+            Empress(
+                self.tree, self.table, self.sample_metadata,
+                bad_feature_metadata,
+                filter_unobserved_features_from_phylogeny=False
+            )
 
 
 # How data should look like when converted to a dict

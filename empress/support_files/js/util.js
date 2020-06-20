@@ -6,7 +6,7 @@ define(["underscore"], function (_) {
      *
      * @param {Object} keys Maps groups to sets of keys.
      * @param {Set} removeAll Set of keys to remove regardless of whether or not
-     *              the are unique.
+     *              they are unique.
      *
      * @return {Object} A new object with the non unique keys removed
      */

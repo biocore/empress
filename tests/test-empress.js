@@ -6,7 +6,7 @@ require(['jquery', 'BPTree', 'Empress', "util"], function($, BPTree, Empress, ut
         module('Empress' , {
             setup: function() {
                 // tree comes from the following newick string
-                // ((f,(e,d)c)b,a)root;
+                // ((1,(2,3)4)5,6)7;
                 var tree = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]));
                 var treeData = {
@@ -70,6 +70,9 @@ require(['jquery', 'BPTree', 'Empress', "util"], function($, BPTree, Empress, ut
                 var resultArray = Array.from(result[group]);
                 deepEqual(resultArray, expectedArray);
             }
+
+            var columns = Object.keys(result);
+            deepEqual(columns, groups);
         });
 
         test('Test _projectObservations, missing tips in obs', function() {
@@ -93,6 +96,9 @@ require(['jquery', 'BPTree', 'Empress', "util"], function($, BPTree, Empress, ut
                 var resultArray = Array.from(result[group]);
                 deepEqual(resultArray, expectedArray);
             }
+
+            var columns = Object.keys(result);
+            deepEqual(columns, groups);
         });
     });
 });
