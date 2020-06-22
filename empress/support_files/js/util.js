@@ -1,7 +1,7 @@
 define(["underscore"], function (_) {
     /**
      * Remove all non unique keys
-     * Note: keys are refering to empress._treeData (i.e. postorder position of
+     * Note: keys are referring to empress._treeData (i.e. postorder position of
      *       tree nodes starting at 1)
      *
      * @param {Object} keys Maps groups to sets of keys.

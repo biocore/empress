@@ -900,7 +900,7 @@ define([
      *      1) Removes the non-unique observations from each group in obs
      *         (i.e. performs an 'exclusive or' between each group).
      *
-     *      2) Assigns internal nodes to a group if all of its children belong
+     *      2) Assigns each internal node to a group if all of its children belong
      *         to the same group.
      *
      * Note: All tips that are not passed into obs are considered to belong to
@@ -908,8 +908,6 @@ define([
      *       returned version of obs.
      *
      * @param {Object} obs Maps categories to a set of observations (i.e. tips)
-     * @param {Boolean} addNonUnique If true, and then insert the "non-unique"
-     *                               group into the returning object.
      * @return {Object} returns A Map with the same group names that maps groups
                         to a set of keys (i.e. tree nodes) that are unique to
                         each group.
