@@ -1,12 +1,16 @@
 define(["underscore"], function (_) {
     /**
      * Remove all non unique keys
+     * Note: keys are referring to empress._treeData (i.e. postorder position of
+     *       tree nodes starting at 1)
      *
-     * @param {Object} keys An object containing multiple lists of keys
+     * @param {Object} keys Maps groups to sets of keys.
+     * @param {Set} removeAll Set of keys to remove regardless of whether or not
+     *              they are unique.
      *
      * @return {Object} A new object with the non unique keys removed
      */
-    function keepUniqueKeys(keys) {
+    function keepUniqueKeys(keys, removeAll) {
         // get unique keys
         var items = Object.keys(keys);
         var i;
@@ -30,7 +34,7 @@ define(["underscore"], function (_) {
             .flatten()
             .value();
         var uniqueKeys = new Set(uniqueKeysArray);
-        var hasKey = function (key) {
+        var isUnique = function (key) {
             return uniqueKeys.has(key);
         };
 
@@ -39,7 +43,15 @@ define(["underscore"], function (_) {
         items = Object.keys(keys);
         for (i = 0; i < items.length; i++) {
             var itemKeys = [...keys[items[i]]];
-            result[items[i]] = _.filter(itemKeys, hasKey);
+            var keep = new Set();
+            for (var j = 0; j < itemKeys.length; j++) {
+                if (removeAll.has(itemKeys[j])) continue;
+
+                if (isUnique(itemKeys[j])) {
+                    keep.add(itemKeys[j]);
+                }
+            }
+            result[items[i]] = keep;
         }
 
         return result;
