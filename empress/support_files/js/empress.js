@@ -164,7 +164,8 @@ define([
          * Handles user events
          */
         // allow canvas to be null to make testing empress easier
-        if (canvas !== null) {
+        if (canvas !== null &&
+                document.getElementById("quick-search") !== null) {
             this._events = new CanvasEvents(this, this._drawer, canvas);
         }
     }
@@ -258,7 +259,7 @@ define([
      */
     Empress.prototype.getNodeCoords = function () {
         var tree = this._tree;
-        var coords = new Float32Array(tree.size * 5);
+        var coords = [];
         var coords_index = 0;
 
         for (var i = 1; i <= tree.size; i++) {
@@ -266,12 +267,12 @@ define([
             if (!node.name.startsWith("EmpressNode")) {
                 coords[coords_index++] = this.getX(node);
                 coords[coords_index++] = this.getY(node);
-                coords.set(node.color, coords_index);
+                coords.push(...node.color);
                 coords_index += 3;
             }
         }
 
-        return coords;
+        return new Float32Array(coords);
     };
 
     /**
@@ -714,7 +715,8 @@ define([
      * This method assumes we receive a list of samples and colors from
      * Emperor then it goes ahead and creates one group per color.
      *
-     * @param {Array} sampleGroups - A list of sample identifiers
+     * @param {Object} sampleGroups - A map of color hex string to list of
+     *                                sample identifiers.
      */
     Empress.prototype.colorSampleGroups = function (sampleGroups) {
         var observationsPerGroup = {},
@@ -1095,7 +1097,7 @@ define([
      * and trajectory. Ignores trajectories which represent missing data. (i.e.
      * 'unknown' for non-numberic and NaN for numeric)
      *
-     * @param{Object} col The column in metadata the gradient belongs to.
+     * @param{Object} field The column in metadata the gradient belongs to.
      * @param{Object} grad The value for the gradient. observations that have
      *                this value will only be returned.
      * @param{Object} traj The column for the trajectory. All observations with
@@ -1103,8 +1105,8 @@ define([
      *
      * @return{Object} return a mapping of trajectory values to observations.
      */
-    Empress.prototype.getGradientStep = function (cat, grad, traj) {
-        return this._biom.getGradientStep(cat, grad, traj);
+    Empress.prototype.getGradientStep = function (field, grad, traj) {
+        return this._biom.getGradientStep(field, grad, traj);
     };
 
     /**
