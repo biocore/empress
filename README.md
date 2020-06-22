@@ -54,6 +54,8 @@ qiime empress plot \
 This generates a visualization of a phylogenetic tree at
 `docs/moving-pictures/empress-tree.qzv`.
 
+![Empress screenshot in q2view](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/screenshot.png)
+
 ### Example 2: Using Empress to visualize a tree in tandem with an ordination
 
 ```bash
@@ -69,6 +71,8 @@ qiime empress plot \
 This generates a visualization of a phylogenetic tree alongside a visualization
 of a PCoA plot (using Emperor) at `docs/moving-pictures/empress-tree-tandem.qzv`.
 
+![Empress and Emperor example GIF in q2view](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/empress-emperor-example.gif)
+
 ##### Output Artifacts
 
 - `empress-tree.qzv` [view](https://view.qiime2.org/?src=https%3A%2F%2Fraw.githubusercontent.com%2Fbiocore%2Fempress%2Fmaster%2Fdocs%2Fmoving-pictures%2Fempress-tree.qzv) | [download](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/empress-tree.qzv)
@@ -76,10 +80,6 @@ of a PCoA plot (using Emperor) at `docs/moving-pictures/empress-tree-tandem.qzv`
 
 This QIIME 2 visualization can be viewed either using `qiime tools view` or by
 uploading it to [`view.qiime2.org`](https://view.qiime2.org).
-
-### Screenshot
-
-![Empress screenshot in q2view](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/screenshot.png)
 
 ## Running Empress' Tests
 
