@@ -39,8 +39,7 @@ define(["underscore"], function (_) {
         };
 
         // get the unique keys in each item
-        var result = {},
-            nonUniqueKeys = new Set();
+        var result = {};
         items = Object.keys(keys);
         for (i = 0; i < items.length; i++) {
             var itemKeys = [...keys[items[i]]];
@@ -50,14 +49,10 @@ define(["underscore"], function (_) {
 
                 if (isUnique(itemKeys[j])) {
                     keep.add(itemKeys[j]);
-                } else {
-                    nonUniqueKeys.add(itemKeys[j]);
                 }
             }
             result[items[i]] = keep;
         }
-
-        result["non-unique"] = nonUniqueKeys;
 
         return result;
     }

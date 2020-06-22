@@ -698,7 +698,7 @@ define([
         var tree = this._tree;
         var obs = this._biom.getObjservationUnionForSamples(sIds);
         obs = Array.from(this._namesToKeys(obs));
-        obs = this._projectObservations({ samples: new Set(obs) }, false);
+        obs = this._projectObservations({ samples: new Set(obs) });
         obs = Array.from(obs.samples);
 
         for (var i = 0; i < obs.length; i++) {
@@ -730,10 +730,7 @@ define([
         }
 
         // project to ancestors
-        observationsPerGroup = this._projectObservations(
-            observationsPerGroup,
-            false
-        );
+        observationsPerGroup = this._projectObservations(observationsPerGroup);
 
         for (group in observationsPerGroup) {
             obs = Array.from(observationsPerGroup[group]);
@@ -797,7 +794,7 @@ define([
         }
 
         // assign internal nodes to appropriate category based on its children
-        obs = this._projectObservations(obs, true);
+        obs = this._projectObservations(obs);
 
         // assign colors to categories
         categories = util.naturalSort(Object.keys(obs));
@@ -888,7 +885,7 @@ define([
         // to talk about "groups" rather than "samples", esp. since I think
         // animation has the same problem...
         if (method === "tip") {
-            obs = this._projectObservations(obs, false);
+            obs = this._projectObservations(obs);
         }
 
         // color tree
@@ -902,9 +899,7 @@ define([
      *
      * This function performs two distinct operations:
      *      1) Removes the non-unique observations from each group in obs
-     *         (i.e. performs an 'exclusive or' between each group) and, if
-     *         addNonUnique is true, then places all non-unique observations
-     *         (that are tips in the tree) in a "non-unique" group.
+     *         (i.e. performs an 'exclusive or' between each group).
      *
      *      2) Assigns internal nodes to a group if all of its children belong
      *         to the same group.
@@ -912,18 +907,15 @@ define([
      * Note: All tips that are not passed into obs are considered to belong to
      *       a "not-represented" group, which will be omitted from the
      *       returned version of obs.
-     *       Also, if addNonUnique is true, then a "non-unique" object will
-     *       be inserted into the return object.
      *
      * @param {Object} obs Maps categories to a set of observations (i.e. tips)
      * @param {Boolean} addNonUnique If true, and then insert the "non-unique"
      *                               group into the returning object.
-     * @return {Object} returns A Map with the same group names (plus
-                        'non-uniqe' if addNonUnique is true) that maps groups
+     * @return {Object} returns A Map with the same group names that maps groups
                         to a set of keys (i.e. tree nodes) that are unique to
                         each group.
      */
-    Empress.prototype._projectObservations = function (obs, addNonUnique) {
+    Empress.prototype._projectObservations = function (obs) {
         var tree = this._tree,
             categories = Object.keys(obs),
             notRepresented = new Set(),
@@ -969,21 +961,6 @@ define([
             }
         }
         var result = util.keepUniqueKeys(obs, notRepresented);
-
-        // remove all "non-unique" branches that aren't tips
-        // Note: if all children belong to "non-unique" should we project that
-        //       up the tree? Current behavior does not project it up the tree
-        //       because branches in this group may be elements of different
-        //       groups. For example "b1" may belong to skin and oral while
-        //       "b2" may belong to gut and skin.
-        for (var elem of result["non-unique"]) {
-            if (!tree.isleaf(tree.postorderselect(elem))) {
-                result["non-unique"].delete(elem);
-            }
-        }
-
-        // keep "non-unique" tips if addNonUnique is true
-        if (!addNonUnique) delete result["non-unique"];
 
         return result;
     };

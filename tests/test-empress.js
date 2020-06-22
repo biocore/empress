@@ -59,11 +59,10 @@ require(['jquery', 'BPTree', 'Empress', "util"], function($, BPTree, Empress, ut
                 "g1" : new Set([2,3,4]),
                 "g2" : new Set([1]),
                 "g3" : new Set([6]),
-                "non-unique" : new Set([])
             };
-            var result = this.empress._projectObservations(obs, true);
+            var result = this.empress._projectObservations(obs);
 
-            var groups = ["g1", "g2", "g3", "non-unique"];
+            var groups = ["g1", "g2", "g3"];
             for (var i = 0; i < groups.length; i++) {
                 var group = groups[i];
                 var expectedArray = Array.from(expectedResult[group]);
@@ -84,12 +83,11 @@ require(['jquery', 'BPTree', 'Empress', "util"], function($, BPTree, Empress, ut
             var expectedResult = {
                 "g1" : new Set([2, 3, 4]),
                 "g2" : new Set([]),
-                "g3" : new Set([6]),
-                "non-unique" : new Set([])
+                "g3" : new Set([6])
             };
-            var result = this.empress._projectObservations(obs, true);
+            var result = this.empress._projectObservations(obs);
 
-            var groups = ["g1", "g2", "g3", "non-unique"];
+            var groups = ["g1", "g2", "g3"];
             for (var i = 0; i < groups.length; i++) {
                 var group = groups[i];
                 var expectedArray = Array.from(expectedResult[group]);
