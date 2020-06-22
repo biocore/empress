@@ -782,7 +782,7 @@ define([
     Empress.prototype.colorBySampleCat = function (cat, color) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
-        var categories = Object.keys(obs);
+        var categories = util.naturalSort(Object.keys(obs));
 
         // shared by the following for loops
         var i, j, category;
@@ -797,7 +797,6 @@ define([
         obs = this._projectObservations(obs);
 
         // assign colors to categories
-        categories = util.naturalSort(Object.keys(obs));
         var colorer = new Colorer(color, categories);
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
