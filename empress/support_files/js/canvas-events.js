@@ -92,7 +92,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             // draw tree
             drawer.draw();
 
-            // update the hover node menu
+            // update the node selection menu
             selectedNodeMenu.updateMenuPosition();
         };
 
@@ -148,7 +148,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             // draw tree
             drawer.draw();
 
-            // update the hover node menu
+            // update the node selection menu
             selectedNodeMenu.updateMenuPosition();
         };
 
@@ -168,7 +168,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 var closestDist = Infinity;
                 var closestNode = null;
                 var xDist, yDist;
-                for (var i = 1; i < empress._tree.size; i++) {
+                for (var i = 1; i <= empress._tree.size; i++) {
                     var node = empress._treeData[i];
                     var nodeX = empress.getX(node);
                     var nodeY = empress.getY(node);
@@ -191,7 +191,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 yDist = e.clientY - nY;
                 var screenDist = Math.sqrt(xDist * xDist + yDist * yDist);
                 if (screenDist < epsilon) {
-                    canvasEvents.placeHoverNodeBox(closeNode.name, false);
+                    canvasEvents.placeNodeSelectionMenu(closeNode.name, false);
                 }
             }
         };
@@ -225,7 +225,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             quickSearchBar.innerHTML = nodeId;
 
             // show the selected node menu
-            canvasEvents.placeHoverNodeBox(nodeId);
+            canvasEvents.placeNodeSelectionMenu(nodeId);
 
             // clear possible words menu
             removeSuggestionMenu();
@@ -302,7 +302,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             // <ENTER> key is pressed
             if (key.keyCode === 13) {
                 removeSuggestionMenu();
-                canvasEvents.placeHoverNodeBox(this.value);
+                canvasEvents.placeNodeSelectionMenu(this.value);
             }
         };
 
@@ -329,22 +329,23 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
          */
         var search = function () {
             var nodeId = quickSearchBar.value;
-            canvasEvents.placeHoverNodeBox(nodeId);
+            canvasEvents.placeNodeSelectionMenu(nodeId);
         };
         searchBtn.onclick = search;
     };
 
     /**
-     * Creates a node-hover box for nodeId. If nodeId does not exist, then this
-     * this method will make the background color of the quick search bar red.
+     * Creates a node selection menu box for nodeId. If nodeId does
+     * not exist, then this this method will make the background color of the
+     * quick search bar red.
      * This method is call from the both the quick search btn and when the user
      * clicks on the canvas.
      *
-     * @param{String} nodeId The node id to make a node-hover box for.
+     * @param{String} nodeId The node ID to make a node selection menu box for.
      * @param{Boolean} moveTree If true, then this method will move the viewing
      *                          window of the tree to the node.
      */
-    CanvasEvents.prototype.placeHoverNodeBox = function (
+    CanvasEvents.prototype.placeNodeSelectionMenu = function (
         nodeId,
         moveTree = true
     ) {

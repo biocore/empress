@@ -27,7 +27,7 @@ define([], function () {
 
         /**
          * @type {Object}
-         * Sample metedata format:
+         * Sample metadata format:
          * {sampleID1: {cat1: val, cat2: val, ...},
          *  sampleID2: {cat1: val, cat2: val, ...},
          *  ...}

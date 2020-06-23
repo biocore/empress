@@ -5,6 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
+
+import copy
 import unittest
 import pandas as pd
 import numpy as np
@@ -49,6 +51,16 @@ class TestCore(unittest.TestCase):
             index=list(self.table.index)
         )
 
+<<<<<<< HEAD
+=======
+        self.feature_metadata = pd.DataFrame(
+            {
+                "fmdcol1": ["asdf", "ghjk"],
+                "fmdcol2": ["qwer", "tyui"]
+            },
+            index=["a", "h"]
+        )
+>>>>>>> upstream/master
         self.filtered_table = pd.DataFrame(
             {
                 "Sample1": [1, 2, 4],
@@ -79,6 +91,7 @@ class TestCore(unittest.TestCase):
                 proportion_explained=proportion_explained)
 
         self.files_to_remove = []
+        self.maxDiff = None
 
     def tearDown(self):
         for path in self.files_to_remove:
@@ -138,6 +151,7 @@ class TestCore(unittest.TestCase):
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
+<<<<<<< HEAD
     def test_init_feature_metadata_warning(self):
 
         with self.assertWarnsRegex(UserWarning, 'Feature metadata is currently'
@@ -146,6 +160,8 @@ class TestCore(unittest.TestCase):
                     feature_metadata=self.sample_metadata.copy(),
                     filter_unobserved_features_from_phylogeny=False)
 
+=======
+>>>>>>> upstream/master
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
 
@@ -180,6 +196,22 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
         self.assertEqual(obs, DICT_A)
+
+    def test_to_dict_with_feature_metadata(self):
+        viz = Empress(
+            self.tree, self.table, self.sample_metadata, self.feature_metadata,
+            filter_unobserved_features_from_phylogeny=False
+        )
+        obs = viz._to_dict()
+        dict_a_with_fm = copy.deepcopy(DICT_A)
+        dict_a_with_fm["tip_metadata"] = {
+            "a": {"fmdcol1": "asdf", "fmdcol2": "qwer"}
+        }
+        dict_a_with_fm["int_metadata"] = {
+            "h": {"fmdcol1": "ghjk", "fmdcol2": "tyui"}
+        }
+        dict_a_with_fm["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
+        self.assertEqual(obs, dict_a_with_fm)
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
@@ -249,7 +281,9 @@ DICT_A = {'base_url': './support_files',
           'emperor_div': '',
           'emperor_require_logic': '',
           'emperor_style': '',
-          'layout_to_coordsuffix': {'Rectangular': 'r', 'Unrooted': '2'},
+          'layout_to_coordsuffix': {'Circular': 'c1',
+                                    'Rectangular': 'r',
+                                    'Unrooted': '2'},
           'names': ['EmpressNode2',
                     'g',
                     'EmpressNode0',
@@ -292,6 +326,9 @@ DICT_A = {'base_url': './support_files',
                                'Metadata2': 'n',
                                'Metadata3': 'n',
                                'Metadata4': 'o'},
+          'tip_metadata': {},
+          'int_metadata': {},
+          'feature_metadata_columns': [],
           'tree': [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0],
           'tree_data': {1: {'color': [0.75, 0.75, 0.75],
                             'name': 'a',
@@ -299,8 +336,12 @@ DICT_A = {'base_url': './support_files',
                             'single_samp': False,
                             'visible': True,
                             'x2': -82.19088834200284,
+                            'xc0': 1481.4675640601124,
+                            'xc1': 2222.2013460901685,
                             'xr': 2412.0,
                             'y2': 1568.2955749395592,
+                            'yc0': 0.0,
+                            'yc1': 0.0,
                             'yr': -2386.875},
                         2: {'color': [0.75, 0.75, 0.75],
                             'name': 'e',
@@ -308,10 +349,18 @@ DICT_A = {'base_url': './support_files',
                             'single_samp': False,
                             'visible': True,
                             'x2': 948.7236134182863,
+                            'xc0': 457.7986539098309,
+                            'xc1': 915.5973078196618,
                             'xr': 3216.0,
                             'y2': 2108.2845722271436,
+                            'yc0': 1408.9593804792778,
+                            'yc1': 2817.9187609585556,
                             'yr': -1381.875},
-                        3: {'color': [0.75, 0.75, 0.75],
+                        3: {'arcendangle': 0,
+                            'arcstartangle': 1.2566370614359172,
+                            'arcx0': 457.7986539098309,
+                            'arcy0': 1408.9593804792778,
+                            'color': [0.75, 0.75, 0.75],
                             'highestchildyr': -1381.875,
                             'lowestchildyr': -2386.875,
                             'name': 'EmpressNode0',
@@ -319,8 +368,12 @@ DICT_A = {'base_url': './support_files',
                             'single_samp': False,
                             'visible': True,
                             'x2': 295.3117872853636,
+                            'xc0': 599.2662179699436,
+                            'xc1': 1198.5324359398871,
                             'xr': 1608.0,
                             'y2': 1102.1185942229504,
+                            'yc0': 435.3923929520944,
+                            'yc1': 870.7847859041888,
                             'yr': -1884.375},
                         4: {'color': [0.75, 0.75, 0.75],
                             'name': 'b',
@@ -328,10 +381,18 @@ DICT_A = {'base_url': './support_files',
                             'single_samp': False,
                             'visible': True,
                             'x2': 1485.5419815224768,
+                            'xc0': -599.2662179699435,
+                            'xc1': -1797.7986539098304,
                             'xr': 2412.0,
                             'y2': 192.57380029925002,
+                            'yc0': 435.3923929520945,
+                            'yc1': 1306.1771788562833,
                             'yr': -376.875},
-                        5: {'color': [0.75, 0.75, 0.75],
+                        5: {'arcendangle': 0.6283185307179586,
+                            'arcstartangle': 2.5132741228718345,
+                            'arcx0': -599.2662179699435,
+                            'arcy0': 435.3923929520945,
+                            'color': [0.75, 0.75, 0.75],
                             'highestchildyr': -376.875,
                             'lowestchildyr': -1884.375,
                             'name': 'g',
@@ -339,8 +400,12 @@ DICT_A = {'base_url': './support_files',
                             'single_samp': False,
                             'visible': True,
                             'x2': 326.7059130664611,
+                            'xc0': 0.0,
+                            'xc1': 4.5356862759171076e-14,
                             'xr': 804.0,
                             'y2': 503.08298900209684,
+                            'yc0': 0.0,
+                            'yc1': 740.7337820300562,
                             'yr': -1130.625},
                         6: {'color': [0.75, 0.75, 0.75],
                             'name': 'EmpressNode1',
@@ -348,8 +413,12 @@ DICT_A = {'base_url': './support_files',
                             'single_samp': False,
                             'visible': True,
                             'x2': -622.0177003518252,
+                            'xc0': -1198.5324359398871,
+                            'xc1': -1797.7986539098308,
                             'xr': 2412.0,
                             'y2': -1605.201583225047,
+                            'yc0': -870.7847859041887,
+                            'yc1': -1306.177178856283,
                             'yr': 628.125},
                         7: {'color': [0.75, 0.75, 0.75],
                             'name': 'd',
@@ -357,10 +426,18 @@ DICT_A = {'base_url': './support_files',
                             'single_samp': False,
                             'visible': True,
                             'x2': -2333.458018477523,
+                            'xc0': 457.79865390983053,
+                            'xc1': 1144.4966347745763,
                             'xr': 4020.0,
                             'y2': -1651.0752884434787,
+                            'yc0': -1408.9593804792778,
+                            'yc1': -3522.398451198195,
                             'yr': 1633.125},
-                        8: {'color': [0.75, 0.75, 0.75],
+                        8: {'arcendangle': 3.7699111843077517,
+                            'arcstartangle': 5.026548245743669,
+                            'arcx0': 457.79865390983053,
+                            'arcy0': -1408.9593804792778,
+                            'color': [0.75, 0.75, 0.75],
                             'highestchildyr': 1633.125,
                             'lowestchildyr': 628.125,
                             'name': 'h',
@@ -368,8 +445,12 @@ DICT_A = {'base_url': './support_files',
                             'single_samp': False,
                             'visible': True,
                             'x2': -653.4118261329227,
+                            'xc0': -0.0,
+                            'xc1': -457.79865390983105,
                             'xr': 1608.0,
                             'y2': -1006.1659780041933,
+                            'yc0': -0.0,
+                            'yc1': -1408.9593804792778,
                             'yr': 1130.625},
                         9: {'color': [0.75, 0.75, 0.75],
                             'highestchildyr': 1130.625,
@@ -379,8 +460,12 @@ DICT_A = {'base_url': './support_files',
                             'single_samp': False,
                             'visible': True,
                             'x2': 0.0,
+                            'xc0': 0.0,
+                            'xc1': 0.0,
                             'xr': 0.0,
                             'y2': 0.0,
+                            'yc0': 0.0,
+                            'yc1': 0.0,
                             'yr': 0.0}}}
 
 

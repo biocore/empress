@@ -1,8 +1,8 @@
 <!-- The Header bar -->
 <div id="autocomplete-container">
   <p class="side-header">
-      <input type="text" id="quick-search" placeholder="Search by node ID..."
-             style="flex-grow: 1;">
+    <input type="text" id="quick-search" placeholder="Search by node ID..."
+           style="flex-grow: 1;">
     <button id="side-header-search-btn" style="flex-grow: 1;">Search</button>
     <button id="hide-ctrl" title="Hide control panel"
             style="font-size: 10pt; padding: 0 0 3px 3px;">&#9701;</button>
@@ -10,8 +10,13 @@
 </div>
 
 <!-- Sample Coloring Options -->
-<button class="side-header collapsible">Sample Coloring</button>
+<button class="side-header collapsible">Sample Metadata Coloring</button>
 <div class="side-content control hidden">
+  <p class="side-panel-notes">
+    Color tips in the tree that are unique to certain groups of samples.
+    Internal nodes where all descendants are unique to a group are themselves
+    considered unique to that group.
+  </p>
   <p>
     <label for="sample-chk">Color by...</label>
     <input id="sample-chk" type="checkbox">
@@ -42,10 +47,56 @@
   </p>
 </div>
 
+<!-- Feature Metadata Coloring Options -->
+<button id="fmOpenButton" class="side-header collapsible hidden">Feature
+    Metadata Coloring</button>
+<div class="side-content control hidden">
+  <p class="side-panel-notes">
+    Color nodes in the tree based on feature metadata: for example,
+    taxonomic annotations.
+  </p>
+  <p>
+    <label for="feature-chk">Color by...</label>
+    <input id="feature-chk" type="checkbox">
+    <label class="select-container">
+      <select id="feature-options"  disabled="true"></select>
+    </label>
+  </p>
+  <p class="hidden">
+    <div id="feature-add" class="hidden">
+      <p>
+        <label for="feature-color">Choose Color Map</label>
+        <label class="select-container">
+          <select id="feature-color"></select>
+        </label>
+      </p>
+      <p>
+        <label for="feature-line-width">Line Width</label>
+        <input id="feature-line-width" type="number" value="1">
+      </p>
+      <p>
+        <label for="fm-method-chk">Only use tip-level metadata?</label>
+        <input id="fm-method-chk" type="checkbox" checked="true">
+        <!-- We'll fill this in when the feature metadata tab is opened,
+             and we'll update it when fm-method-chk is updated.
+        -->
+        <p class="side-panel-notes indented" id="fm-method-desc">
+        </p>
+      </p>
+      <p>
+        <button id="feature-update" class="hidden">Update</button>
+      </p>
+    </div>
+  </p>
+</div>
+
 <!-- Layout options; shamelessly copied from above.
      Stuff will be added to the #layout-div element below when
      SidePanel.addLayoutTab() is called :)
 -->
 <button class="side-header collapsible">Layout</button>
 <div class="side-content control hidden" id="layout-div">
+  <p class="side-panel-notes">
+    Change how the tree is drawn.
+  </p>
 </div>

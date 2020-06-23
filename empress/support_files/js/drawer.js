@@ -112,7 +112,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // buffer object for tree nodes
         s.nodeVertBuff = c.createBuffer();
 
-        // buffer object for active 'hovered' node
+        // buffer object for active 'selected' node
         s.selectedNodeBuff = c.createBuffer();
 
         // buffer object for colored clades
@@ -144,7 +144,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // canvas needs to be a square in order simplify various calculations
         // such as zoom/moving tree
         // set size of canvas to be the larger of the two inorder to fill the
-        // the available space
+        // available space
         this.dim = width > height ? width : height;
         var can = this.contex_.canvas;
         can.width = this.dim;

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2016-2019, empress development team.
+# Copyright (c) 2016-2020, empress development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -7,9 +7,8 @@
 # ----------------------------------------------------------------------------
 
 from empress.tree import Tree
-from empress.tools import name_internal_nodes, match_inputs
+from empress.tools import fill_missing_node_names, match_inputs
 
-import warnings
 import pkg_resources
 import os
 import pandas as pd
@@ -97,8 +96,6 @@ class Empress():
         self.samples = sample_metadata.copy()
 
         if feature_metadata is not None:
-            warnings.warn('Feature metadata is currently not supported',
-                          UserWarning)
             self.features = feature_metadata.copy()
         else:
             self.features = None
@@ -109,21 +106,39 @@ class Empress():
         if self.base_url is None:
             self.base_url = './'
 
+<<<<<<< HEAD
         self._validate_data(ignore_missing_samples,
                             filter_missing_features,
                             filter_unobserved_features_from_phylogeny)
+=======
+        self._validate_and_match_data(
+            ignore_missing_samples,
+            filter_missing_features,
+            filter_unobserved_features_from_phylogeny
+        )
+>>>>>>> upstream/master
 
         if self.ordination is not None:
+            # Note that tip-level metadata is the only "feature metadata" we
+            # send to Emperor, because internal nodes in the tree should not
+            # correspond to features in the table (and thus to arrows in a
+            # biplot).
             self._emperor = Emperor(
                 self.ordination, mapping_file=self.samples,
-                feature_mapping_file=self.features,
+                feature_mapping_file=self.tip_md,
                 ignore_missing_samples=ignore_missing_samples,
                 remote='./emperor-resources')
         else:
             self._emperor = None
 
+<<<<<<< HEAD
     def _validate_data(self, ignore_missing_samples, filter_missing_features,
                        filter_unobserved_features_from_phylogeny):
+=======
+    def _validate_and_match_data(self, ignore_missing_samples,
+                                 filter_missing_features,
+                                 filter_unobserved_features_from_phylogeny):
+>>>>>>> upstream/master
         # remove unobserved features from the phylogeny
         if filter_unobserved_features_from_phylogeny:
             self.tree = self.tree.shear(set(self.table.columns))
@@ -132,17 +147,17 @@ class Empress():
         self._bp_tree = list(self.tree.B)
 
         self.tree = Tree.from_tree(to_skbio_treenode(self.tree))
-        name_internal_nodes(self.tree)
+        fill_missing_node_names(self.tree)
 
         # Note that the feature_table we get from QIIME 2 (as an argument to
         # this function) is set up such that the index describes sample IDs and
         # the columns describe feature IDs. We transpose this table before
         # sending it to tools.match_inputs() and keep using the transposed
         # table for the rest of this visualizer.
-        self.table, self.samples = match_inputs(self.tree, self.table.T,
-                                                self.samples, self.features,
-                                                ignore_missing_samples,
-                                                filter_missing_features)
+        self.table, self.samples, self.tip_md, self.int_md = match_inputs(
+            self.tree, self.table.T, self.samples, self.features,
+            ignore_missing_samples, filter_missing_features
+        )
 
     def copy_support_files(self, target=None):
         """Copies the support files to a target directory
@@ -228,10 +243,23 @@ class Empress():
                 ycoord = "y" + layoutsuffix
                 tree_data[i][xcoord] = getattr(node, xcoord)
                 tree_data[i][ycoord] = getattr(node, ycoord)
-            # Also add vertical bar coordinate info for the rectangular layout
+            # Hack: it isn't mentioned above, but we need start pos info for
+            # circular layout. The start pos for the other layouts is the
+            # parent xy coordinates so we need only need to specify the start
+            # for circular layout.
+            tree_data[i]["xc0"] = node.xc0
+            tree_data[i]["yc0"] = node.yc0
+
+            # Also add vertical bar coordinate info for the rectangular layout,
+            # and start point & arc coordinate info for the circular layout
             if not node.is_tip():
-                tree_data[i]["highestchildyr"] = node.highestchildyr
-                tree_data[i]["lowestchildyr"] = node.lowestchildyr
+                tree_data[i]["highestchildyr"] = node.highest_child_yr
+                tree_data[i]["lowestchildyr"] = node.lowest_child_yr
+                if not node.is_root():
+                    tree_data[i]["arcx0"] = node.arcx0
+                    tree_data[i]["arcy0"] = node.arcy0
+                    tree_data[i]["arcstartangle"] = node.highest_child_clangle
+                    tree_data[i]["arcendangle"] = node.lowest_child_clangle
 
             if node.name in names_to_keys:
                 names_to_keys[node.name].append(i)
@@ -245,6 +273,30 @@ class Empress():
         # Convert sample metadata to a JSON-esque format
         sample_data = self.samples.to_dict(orient='index')
 
+        # Convert feature metadata, similarly to how we handle sample metadata.
+        # If the user passed in feature metadata, self.features won't be None.
+        # (We don't actually use any data from self.features at this point in
+        # the program since it hasn't had taxonomy splitting / matching / etc.
+        # done.)
+        if self.features is not None:
+            # If we're in this block, we know that self.tip_md and self.int_md
+            # are both DataFrames. They have identical columns, so we can just
+            # use self.tip_md.columns when setting feature_metadata_columns.
+            # (We don't use self.features.columns because stuff like taxonomy
+            # splitting will have changed the columns from what they initially
+            # were in some cases.)
+            feature_metadata_columns = list(self.tip_md.columns)
+            # Calling .to_dict() on an empty DataFrame just gives you {}, so
+            # this is safe even if there is no tip or internal node metadata.
+            # (...At least one of these DFs should be populated, though, since
+            # none of the feature IDs matching up would have caused an error.)
+            tip_md_json = self.tip_md.to_dict(orient='index')
+            int_md_json = self.int_md.to_dict(orient='index')
+        else:
+            feature_metadata_columns = []
+            tip_md_json = {}
+            int_md_json = {}
+
         # TODO: Empress is currently storing all metadata as strings. This is
         # memory intensive and won't scale well. We should convert all numeric
         # data/compress metadata.
@@ -252,8 +304,7 @@ class Empress():
         # This is used in biom-table. Currently this is only used to ignore
         # null data (i.e. NaN and "unknown") and also determines sorting order.
         # The original intent is to signal what columns are
-        # discrete/continuous.  type of sample metadata (n - number, o -
-        # object)
+        # discrete/continuous. type of sample metadata (n - number, o - object)
         sample_data_type = self.samples.dtypes.to_dict()
         sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
                             for k, v in sample_data_type.items()}
@@ -272,6 +323,9 @@ class Empress():
             'names_to_keys': names_to_keys,
             'sample_data': sample_data,
             'sample_data_type': sample_data_type,
+            'tip_metadata': tip_md_json,
+            'int_metadata': int_md_json,
+            'feature_metadata_columns': feature_metadata_columns,
             'obs_data': obs_data,
             'names': names,
             'layout_to_coordsuffix': layout_to_coordsuffix,

@@ -6,28 +6,30 @@
 
 // if there's any coloring setup remove it, and re-enable the update button
 sPanel.sUpdateBtn.classList.remove("hidden");
+sPanel.fUpdateBtn.classList.remove("hidden");
 legend.clearAllLegends();
 empress.resetTree();
 
-var colorGroups = {},
-    color;
-for (var i = 0; i < samples.length; i++) {
-    color = samples[i].material.color.getHexString();
-    if (colorGroups[color] === undefined) {
-        colorGroups[color] = [];
-    }
-    colorGroups[color].push(samples[i].name);
+// fetch a mapping of colors to plottable objects
+var groups = view.groupByColor(samples);
+var namesOnly = {};
+
+// convert the array of plottable objects to just names
+for (var key in groups) {
+    namesOnly[key] = groups[key].map(function (item) {
+        return item.name;
+    });
 }
-empress.colorSampleGroups(colorGroups);
+empress.colorSampleGroups(namesOnly);
 
 // 3 seconds before resetting
 setTimeout(function () {
     empress.resetTree();
     empress.drawTree();
 
-    samples.forEach(function (sample) {
-        sample.material.emissive.set(0x000000);
-    });
+    for (var key in groups) {
+        view.setEmissive(0x000000, groups[key]);
+    }
 
     plotView.needsUpdate = true;
 }, 4000);

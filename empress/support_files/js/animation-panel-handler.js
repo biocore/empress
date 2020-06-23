@@ -178,7 +178,7 @@ define(["Colorer"], function (Colorer) {
                 gradient,
                 cm,
                 hide,
-                lWidth
+                lWidth - 1
             );
 
             // start animation

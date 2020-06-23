@@ -150,7 +150,6 @@ define(["Colorer"], function (Colorer) {
         // Retrive list of unique categories to display during the animation.
         this.trajectoryCol = trajectory;
         var trajectories = this.empress.getUniqueSampleValues(trajectory);
-
         // Assign a color to each unique category
         var colorer = new Colorer(cm, trajectories);
         this.cm = colorer.getMapRGB();
