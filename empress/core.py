@@ -106,17 +106,11 @@ class Empress():
         if self.base_url is None:
             self.base_url = './'
 
-<<<<<<< HEAD
-        self._validate_data(ignore_missing_samples,
-                            filter_missing_features,
-                            filter_unobserved_features_from_phylogeny)
-=======
         self._validate_and_match_data(
             ignore_missing_samples,
             filter_missing_features,
             filter_unobserved_features_from_phylogeny
         )
->>>>>>> upstream/master
 
         if self.ordination is not None:
             # Note that tip-level metadata is the only "feature metadata" we
@@ -131,14 +125,9 @@ class Empress():
         else:
             self._emperor = None
 
-<<<<<<< HEAD
-    def _validate_data(self, ignore_missing_samples, filter_missing_features,
-                       filter_unobserved_features_from_phylogeny):
-=======
     def _validate_and_match_data(self, ignore_missing_samples,
                                  filter_missing_features,
                                  filter_unobserved_features_from_phylogeny):
->>>>>>> upstream/master
         # remove unobserved features from the phylogeny
         if filter_unobserved_features_from_phylogeny:
             self.tree = self.tree.shear(set(self.table.columns))
