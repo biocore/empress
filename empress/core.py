@@ -37,9 +37,9 @@ class Empress():
 
         Parameters
         ----------
-        tree: bp.Tree:
+        tree: bp.Tree
             The phylogenetic tree to visualize.
-        table: pd.DataFrame:
+        table: pd.DataFrame
             The matrix to visualize paired with the phylogenetic tree.
         sample_metadata: pd.DataFrame
             DataFrame object with the metadata associated to the samples in the
