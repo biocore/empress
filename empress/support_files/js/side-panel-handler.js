@@ -256,7 +256,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             // </p>
             // The <p> breaks lines in a way that looks nice, and the
             // label/input just define the radio buttons as is normal in HTML:
-            // see https://www.w3schools.com/tags/att_input_type_radio.ascope.
+            // see https://www.w3schools.com/tags/att_input_type_radio.asp.
             pele = document.createElement("p");
             lele = document.createElement("label");
             iele = document.createElement("input");
