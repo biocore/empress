@@ -854,7 +854,7 @@ define([
             });
         });
 
-        var emp = this;
+        var scope = this;
         var sortedUniqueValues = util.naturalSort(
             Object.keys(uniqueValueToFeatures)
         );
@@ -863,7 +863,9 @@ define([
         var obs = {};
         _.each(sortedUniqueValues, function (uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
-            obs[uniqueVal] = emp._namesToKeys(uniqueValueToFeatures[uniqueVal]);
+            obs[uniqueVal] = scope._namesToKeys(
+                uniqueValueToFeatures[uniqueVal]
+            );
         });
 
         // assign colors to unique values
