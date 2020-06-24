@@ -58,23 +58,23 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         this.sHideChk.checked = false;
 
         // used in event closures
-        var panel = this;
+        var scope = this;
 
         // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
         collapse.onclick = function () {
             document
-                .getElementById(panel.SIDE_PANEL_ID)
+                .getElementById(scope.SIDE_PANEL_ID)
                 .classList.add("hidden");
-            document.getElementById(panel.SHOW_ID).classList.remove("hidden");
+            document.getElementById(scope.SHOW_ID).classList.remove("hidden");
         };
 
         // // shows the side menu
         var show = document.getElementById(this.SHOW_ID);
         show.onclick = function () {
-            document.getElementById(panel.SHOW_ID).classList.add("hidden");
+            document.getElementById(scope.SHOW_ID).classList.add("hidden");
             document
-                .getElementById(panel.SIDE_PANEL_ID)
+                .getElementById(scope.SIDE_PANEL_ID)
                 .classList.remove("hidden");
         };
     }
@@ -99,10 +99,10 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      *                          to its classList.
      */
     SidePanel.prototype._resetTab = function (eleNameToProperties, elesToHide) {
-        var sp = this;
+        var scope = this;
         _.each(eleNameToProperties, function (properties, eleName) {
             _.each(properties, function (propVal, prop) {
-                sp[eleName][prop] = propVal;
+                scope[eleName][prop] = propVal;
             });
         });
         _.each(elesToHide, function (ele) {
@@ -236,7 +236,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      * (These are pretty simple compared to the sample metadata options.)
      */
     SidePanel.prototype.addLayoutTab = function () {
-        var sp = this;
+        var scope = this;
         var LAYOUT_RADIO_BUTTON_NAME = "layoutoptions";
         // Get layout info from the Empress instance
         var layouts = this.empress.getAvailableLayouts();
@@ -245,7 +245,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         var pele, lele, iele;
 
         var radioBtnOnClickFunc = function () {
-            sp.empress.updateLayout(this.value);
+            scope.empress.updateLayout(this.value);
         };
 
         for (var i = 0; i < layouts.length; i++) {
@@ -256,7 +256,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             // </p>
             // The <p> breaks lines in a way that looks nice, and the
             // label/input just define the radio buttons as is normal in HTML:
-            // see https://www.w3schools.com/tags/att_input_type_radio.asp.
+            // see https://www.w3schools.com/tags/att_input_type_radio.ascope.
             pele = document.createElement("p");
             lele = document.createElement("label");
             iele = document.createElement("input");
@@ -297,7 +297,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      */
     SidePanel.prototype.addSampleTab = function () {
         // for use in closures
-        var sp = this;
+        var scope = this;
 
         var i, opt;
         // add sample categories
@@ -314,18 +314,18 @@ define(["underscore", "Colorer"], function (_, Colorer) {
 
         // toggle the sample/color map selectors
         this.sChk.onclick = function () {
-            if (sp.sChk.checked) {
-                sp._resetFeatureTab();
-                sp.sSel.disabled = false;
-                sp.sAddOpts.classList.remove("hidden");
-                sp.sUpdateBtn.classList.remove("hidden");
+            if (scope.sChk.checked) {
+                scope._resetFeatureTab();
+                scope.sSel.disabled = false;
+                scope.sAddOpts.classList.remove("hidden");
+                scope.sUpdateBtn.classList.remove("hidden");
             } else {
-                sp._resetSampleTab();
+                scope._resetSampleTab();
             }
         };
 
         var showUpdateBtn = function () {
-            sp.sUpdateBtn.classList.remove("hidden");
+            scope.sUpdateBtn.classList.remove("hidden");
         };
         this.sSel.onchange = showUpdateBtn;
         this.sColor.onchange = showUpdateBtn;
@@ -333,15 +333,15 @@ define(["underscore", "Colorer"], function (_, Colorer) {
 
         // deterines whether to show features not in samples
         this.sHideChk.onclick = function () {
-            sp.empress.setNonSampleBranchVisibility(this.checked);
-            sp.empress.drawTree();
+            scope.empress.setNonSampleBranchVisibility(this.checked);
+            scope.empress.drawTree();
         };
 
         this.sUpdateBtn.onclick = function () {
-            sp._updateColoring(
+            scope._updateColoring(
                 "_colorSampleTree",
-                sp.sLineWidth,
-                sp.sUpdateBtn
+                scope.sLineWidth,
+                scope.sUpdateBtn
             );
         };
     };
@@ -365,7 +365,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      * Initializes feature metadata coloring components
      */
     SidePanel.prototype.addFeatureTab = function () {
-        var sp = this;
+        var scope = this;
 
         var i, opt;
         // add feature metadata categories / "columns"
@@ -382,33 +382,33 @@ define(["underscore", "Colorer"], function (_, Colorer) {
 
         // toggle the sample/color map selectors
         this.fChk.onclick = function () {
-            if (sp.fChk.checked) {
-                sp._resetSampleTab();
-                sp.updateFeatureMethodDesc();
-                sp.fSel.disabled = false;
-                sp.fAddOpts.classList.remove("hidden");
-                sp.fUpdateBtn.classList.remove("hidden");
+            if (scope.fChk.checked) {
+                scope._resetSampleTab();
+                scope.updateFeatureMethodDesc();
+                scope.fSel.disabled = false;
+                scope.fAddOpts.classList.remove("hidden");
+                scope.fUpdateBtn.classList.remove("hidden");
             } else {
-                sp._resetFeatureTab();
+                scope._resetFeatureTab();
             }
         };
 
         var showUpdateBtn = function () {
-            sp.fUpdateBtn.classList.remove("hidden");
+            scope.fUpdateBtn.classList.remove("hidden");
         };
         this.fSel.onchange = showUpdateBtn;
         this.fColor.onchange = showUpdateBtn;
         this.fLineWidth.onchange = showUpdateBtn;
         this.fMethodChk.onchange = function () {
-            sp.updateFeatureMethodDesc();
+            scope.updateFeatureMethodDesc();
             showUpdateBtn();
         };
 
         this.fUpdateBtn.onclick = function () {
-            sp._updateColoring(
+            scope._updateColoring(
                 "_colorFeatureTree",
-                sp.fLineWidth,
-                sp.fUpdateBtn
+                scope.fLineWidth,
+                scope.fUpdateBtn
             );
         };
     };

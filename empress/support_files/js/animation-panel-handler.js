@@ -105,8 +105,8 @@ define(["Colorer"], function (Colorer) {
      * Initializes GUI components/set up callback events
      */
     AnimationPanel.prototype.addAnimationTab = function () {
-        // used in closers
-        var ap = this;
+        // used in closures
+        var scope = this;
 
         // hide play/pause/next/previous/stop buttons
         this.__startOptions();
@@ -134,7 +134,7 @@ define(["Colorer"], function (Colorer) {
          * Sets hide parameter in animation state machine.
          */
         this.hideChk.onchange = function () {
-            ap.animator.setHide(ap.hideChk.checked);
+            scope.animator.setHide(scope.hideChk.checked);
         };
 
         /**
@@ -142,16 +142,16 @@ define(["Colorer"], function (Colorer) {
          * Sets line width parameter in animation state machine.
          */
         this.lWidth.onchange = function () {
-            var val = ap.lWidth.value;
+            var val = scope.lWidth.value;
 
             // make sure line width is positve
             if (val < 1) {
                 val = 1;
-                ap.lWidth = val;
+                scope.lWidth = val;
             }
 
             // pass line width to state machine
-            ap.animator.setLineWidth(val);
+            scope.animator.setLineWidth(val);
         };
 
         /**
@@ -162,18 +162,18 @@ define(["Colorer"], function (Colorer) {
          */
         this.startBtn.onclick = function () {
             // change GUI components
-            ap.__toogleSelects(true);
-            ap.__pauseOptions();
+            scope.__toogleSelects(true);
+            scope.__pauseOptions();
 
             // collect starting conditions for the animation
-            var gradient = ap.gradient.value;
-            var trajectory = ap.trajectory.value;
-            var cm = ap.colorSelect.value;
-            var hide = ap.hideChk.checked;
-            var lWidth = ap.lWidth.value;
+            var gradient = scope.gradient.value;
+            var trajectory = scope.trajectory.value;
+            var cm = scope.colorSelect.value;
+            var hide = scope.hideChk.checked;
+            var lWidth = scope.lWidth.value;
 
             // pass parameters to state machine
-            ap.animator.setAnimationParameters(
+            scope.animator.setAnimationParameters(
                 trajectory,
                 gradient,
                 cm,
@@ -182,7 +182,7 @@ define(["Colorer"], function (Colorer) {
             );
 
             // start animation
-            ap.animator.startAnimation();
+            scope.animator.startAnimation();
         };
 
         /**
@@ -190,8 +190,8 @@ define(["Colorer"], function (Colorer) {
          * Pauses the animation.
          */
         this.pauseBtn.onclick = function () {
-            ap.__resumeOptions();
-            ap.animator.pauseAnimation();
+            scope.__resumeOptions();
+            scope.animator.pauseAnimation();
         };
 
         /**
@@ -199,8 +199,8 @@ define(["Colorer"], function (Colorer) {
          * Resumes the animation.
          */
         this.resumeBtn.onclick = function () {
-            ap.__pauseOptions();
-            ap.animator.resumeAnimation();
+            scope.__pauseOptions();
+            scope.animator.resumeAnimation();
         };
 
         /**
@@ -208,9 +208,9 @@ define(["Colorer"], function (Colorer) {
          * Stops the animation and clears the state machine
          */
         this.stopBtn.onclick = function () {
-            ap.__toogleSelects(false);
-            ap.__startOptions();
-            ap.animator.stopAnimation();
+            scope.__toogleSelects(false);
+            scope.__startOptions();
+            scope.animator.stopAnimation();
         };
 
         /**
@@ -218,8 +218,8 @@ define(["Colorer"], function (Colorer) {
          * Shows the previous frame in the animation
          */
         this.prevFrameBtn.onclick = function () {
-            ap.animator.prevFrame();
-            ap.__resumeOptions();
+            scope.animator.prevFrame();
+            scope.__resumeOptions();
         };
 
         /**
@@ -227,8 +227,8 @@ define(["Colorer"], function (Colorer) {
          * Shows the next frame in the animation.
          */
         this.nextFrameBtn.onclick = function () {
-            ap.animator.nextFrame();
-            ap.__resumeOptions();
+            scope.animator.nextFrame();
+            scope.__resumeOptions();
         };
     };
 

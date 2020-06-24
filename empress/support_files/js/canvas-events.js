@@ -51,7 +51,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
      */
     CanvasEvents.prototype.setMouseEvents = function () {
         // need for use in closures
-        var canvasEvents = this;
+        var scope = this;
         var canvas = this.canvas;
         var drawer = this.drawer;
         var empress = this.empress;
@@ -62,7 +62,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
         // moves tree as long as mouse is pressed down
         var moveTree = function (e) {
             // set move flag
-            canvasEvents.mouseMove = true;
+            scope.mouseMove = true;
 
             // grab mouse location
             var center = canvas.offsetWidth / 2;
@@ -71,8 +71,8 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
 
             // find how far mouse move in tree space
             var curTreeCoords = gl.vec4.fromValues(
-                canvasEvents.mouseX,
-                canvasEvents.mouseY,
+                scope.mouseX,
+                scope.mouseY,
                 0,
                 1
             );
@@ -86,8 +86,8 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             gl.mat4.multiply(drawer.worldMat, transMat, drawer.worldMat);
 
             // update current mouse position
-            canvasEvents.mouseX = newX;
-            canvasEvents.mouseY = newY;
+            scope.mouseX = newX;
+            scope.mouseY = newY;
 
             // draw tree
             drawer.draw();
@@ -100,17 +100,17 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
         var stopMove = function (e) {
             document.onmouseup = null;
             document.onmousemove = null;
-            canvasEvents.mouseX = null;
-            canvasEvents.mouseY = null;
+            scope.mouseX = null;
+            scope.mouseY = null;
             canvas.style.cursor = "default";
         };
 
         // adds the listeners to the document to move tree
         var mouseDown = function (e) {
-            canvasEvents.mouseMove = false;
+            scope.mouseMove = false;
             var center = canvas.offsetWidth / 2;
-            canvasEvents.mouseX = e.clientX - center;
-            canvasEvents.mouseY = center - e.clientY;
+            scope.mouseX = e.clientX - center;
+            scope.mouseY = center - e.clientY;
             document.onmouseup = stopMove;
             document.onmousemove = moveTree;
             canvas.style.cursor = "none";
@@ -154,7 +154,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
 
         // removes the selected node menu if the mouseMove flag is not set
         var mouseClick = function (e) {
-            if (!canvasEvents.mouseMove) {
+            if (!scope.mouseMove) {
                 // clear old select menu
                 selectedNodeMenu.clearSelectedNode();
 
@@ -191,7 +191,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 yDist = e.clientY - nY;
                 var screenDist = Math.sqrt(xDist * xDist + yDist * yDist);
                 if (screenDist < epsilon) {
-                    canvasEvents.placeNodeSelectionMenu(closeNode.name, false);
+                    scope.placeNodeSelectionMenu(closeNode.name, false);
                 }
             }
         };
@@ -214,7 +214,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
         // need for use in closures
         var autocompleteContainer = this.autocompleteContainer;
         var quickSearchBar = this.quickSearchBar;
-        var canvasEvents = this;
+        var scope = this;
         var searchBtn = this.quickSearchBtn;
 
         var createClickEvent = function (e) {
@@ -225,7 +225,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             quickSearchBar.innerHTML = nodeId;
 
             // show the selected node menu
-            canvasEvents.placeNodeSelectionMenu(nodeId);
+            scope.placeNodeSelectionMenu(nodeId);
 
             // clear possible words menu
             removeSuggestionMenu();
@@ -302,7 +302,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             // <ENTER> key is pressed
             if (key.keyCode === 13) {
                 removeSuggestionMenu();
-                canvasEvents.placeNodeSelectionMenu(this.value);
+                scope.placeNodeSelectionMenu(this.value);
             }
         };
 
@@ -329,7 +329,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
          */
         var search = function () {
             var nodeId = quickSearchBar.value;
-            canvasEvents.placeNodeSelectionMenu(nodeId);
+            scope.placeNodeSelectionMenu(nodeId);
         };
         searchBtn.onclick = search;
     };
