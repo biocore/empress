@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from empress.tree import Tree
-from empress.tools import fill_missing_node_names, match_inputs
+from empress.tools import fill_missing_node_names, match_inputs, compress_biom
 
 import pkg_resources
 import os
@@ -299,6 +299,8 @@ class Empress():
                             for k, v in sample_data_type.items()}
 
         # create a mapping of observation ids and the samples that contain them
+        s_idxs, f_idxs, fid2idx, sidx_2_fidx_counts = compress_biom(self.table)
+
         obs_data = {}
         feature_table = (self.table > 0)
         for _, series in feature_table.iteritems():
