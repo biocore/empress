@@ -7,7 +7,9 @@
 # ----------------------------------------------------------------------------
 
 from empress.tree import Tree
-from empress.tools import fill_missing_node_names, match_inputs, jsonify_table
+from empress.tools import (
+    fill_missing_node_names, match_inputs, jsonify_table, jsonify_metadata
+)
 
 import pkg_resources
 import os
@@ -259,10 +261,14 @@ class Empress():
         for node in self.tree.preorder(include_self=True):
             names.append(node.name)
 
-        # Convert sample metadata to a JSON-esque format
-        sample_data = self.samples.to_dict(orient='index')
+        # create a mapping of observation ids and the samples that contain them
+        s_ids, f_ids, fid2idxs, sid2idxs, sidxs2fidxs = jsonify_table(
+            self.table
+        )
 
-        # Convert feature metadata, similarly to how we handle sample metadata.
+        sm_cols, sample_md_list = jsonify_metadata(sid2idxs, self.samples)
+
+        # Convert feature metadata to JSON.
         # If the user passed in feature metadata, self.features won't be None.
         # (We don't actually use any data from self.features at this point in
         # the program since it hasn't had taxonomy splitting / matching / etc.
@@ -286,21 +292,6 @@ class Empress():
             tip_md_json = {}
             int_md_json = {}
 
-        # TODO: Empress is currently storing all metadata as strings. This is
-        # memory intensive and won't scale well. We should convert all numeric
-        # data/compress metadata.
-
-        # This is used in biom-table. Currently this is only used to ignore
-        # null data (i.e. NaN and "unknown") and also determines sorting order.
-        # The original intent is to signal what columns are
-        # discrete/continuous. type of sample metadata (n - number, o - object)
-        sample_data_type = self.samples.dtypes.to_dict()
-        sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
-                            for k, v in sample_data_type.items()}
-
-        # create a mapping of observation ids and the samples that contain them
-        s_ids, f_ids, fid2idxs, sidxs2fidxs = jsonify_table(self.table)
-
         data_to_render = {
             'base_url': './support_files',
             # tree info
@@ -308,14 +299,15 @@ class Empress():
             'tree_data': tree_data,
             'names': names,
             'names_to_keys': names_to_keys,
-            # sample metadata
-            'sample_data': sample_data,
-            'sample_data_type': sample_data_type,
             # feature table
             's_ids': s_ids,
             'f_ids': f_ids,
+            's_ids_to_indices': sid2idxs,
             'f_ids_to_indices': fid2idxs,
             's_indices_to_f_indices': sidxs2fidxs,
+            # sample metadata
+            'sample_metadata_columns': sm_cols,
+            'sample_metadata': sample_md_list,
             # feature metadata
             'tip_metadata': tip_md_json,
             'int_metadata': int_md_json,

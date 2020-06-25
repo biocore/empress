@@ -284,7 +284,7 @@ def jsonify_table(table):
 
     Returns
     -------
-    (s_ids, f_ids, f_ids_to_indices, s_indices_to_f_indices)
+    (s_ids, f_ids, f_ids_to_indices, s_ids_to_indices, s_indices_to_f_indices)
         s_ids: list
             List of the sample IDs in the table. Empty samples (i.e. those that
             do not contain any features) are omitted.
@@ -292,10 +292,13 @@ def jsonify_table(table):
             List of the feature IDs in the table, analogous to s_ids. Empty
             features (i.e. those that are not present in any samples) are
             omitted.
-        f_ids_to_indices: dict
-            Inverse of f_ids: this maps feature IDs to their indices in f_ids.
+        s_ids_to_indices: dict
+            Inverse of s_ids: this maps sample IDs to their indices in s_ids.
             "Indices" refers to a feature or sample's 0-based position in f_ids
             or s_ids, respectively.
+        f_ids_to_indices: dict
+            Inverse of f_ids: this maps feature IDs to their indices in f_ids,
+            analogous to s_ids_to_indices.
         s_indices_to_f_indices: dict
             Maps sample indices (see above for definition of "indices" here)
             to a list of feature indices, where only the feature indices of
@@ -329,8 +332,6 @@ def jsonify_table(table):
     sample_ids = list(binarized_table.columns)
     feature_ids = list(binarized_table.index)
     f_ids_to_indices = {fid: idx for idx, fid in enumerate(feature_ids)}
-    # We don't include this in the output, but it's handy to have around for
-    # creating s_indices_to_f_indices below
     s_ids_to_indices = {sid: idx for idx, sid in enumerate(sample_ids)}
 
     s_indices_to_f_indices = {}
@@ -347,4 +348,38 @@ def jsonify_table(table):
         # this is .apply() \._./
     binarized_table.apply(save_present_features, axis="index")
 
-    return sample_ids, feature_ids, f_ids_to_indices, s_indices_to_f_indices
+    return (
+        sample_ids, feature_ids, f_ids_to_indices, s_ids_to_indices,
+        s_indices_to_f_indices
+    )
+
+
+def jsonify_metadata(index_ids_to_indices, metadata):
+    # We could ostensibly go further by
+    # identifying repeated metadata values and mapping *those* to integer IDs,
+    # but that may be 1) overkill and 2) not worth it until we get to really
+    # big datasets (and/or datasets with lots of repeated values).
+
+    indices = index_ids_to_indices.values()
+    sorted_indices = sorted(indices)
+    if sorted_indices != list(range(len(metadata.index))):
+        raise ValueError("Indices of index_ids_to_indices aren't valid.")
+
+    # Produce a dict mapping indices to a list of their corresponding metadata
+    # values -- e.g. {1: ["gut", "413", "asdf"], 0: ["tongue", "612", "ghjk"]}
+    # (Note that the indices are not necessarily sorted because we stick to
+    # the order of the index of the metadata)
+    indices_to_metadata_vals = {}
+    def save_metadata(row):
+        indices_to_metadata_vals[index_ids_to_indices[row.name]] = list(row)
+    metadata.apply(save_metadata, axis="columns")
+
+    # Although the dict we just produced is compressed, we can go further
+    # without much extra effort. We can sort the indices, and then just smoosh
+    # the dict into a list which can be accessed the exact same way (since [0]
+    # will now refer to the first element, [1] to the second, etc.)
+    metadata_vals = []
+    for i in sorted_indices:
+        metadata_vals.append(indices_to_metadata_vals[i])
+
+    return list(metadata.columns), metadata_vals
