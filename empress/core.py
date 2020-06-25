@@ -7,9 +7,8 @@
 # ----------------------------------------------------------------------------
 
 from empress.tree import Tree
-from empress.tools import (
-    fill_missing_node_names, match_inputs, jsonify_table, jsonify_metadata
-)
+from empress.tools import fill_missing_node_names, match_inputs
+from empress.compression_utils import compress_table, compress_metadata
 
 import pkg_resources
 import os
@@ -262,11 +261,11 @@ class Empress():
             names.append(node.name)
 
         # create a mapping of observation ids and the samples that contain them
-        s_ids, f_ids, fid2idxs, sid2idxs, sidxs2fidxs = jsonify_table(
+        s_ids, f_ids, fid2idxs, sid2idxs, compressed_table = compress_table(
             self.table
         )
 
-        sm_cols, sample_md_list = jsonify_metadata(sid2idxs, self.samples)
+        sm_cols, compressed_sm = compress_metadata(sid2idxs, self.samples)
 
         # Convert feature metadata to JSON.
         # If the user passed in feature metadata, self.features won't be None.
@@ -304,10 +303,10 @@ class Empress():
             'f_ids': f_ids,
             's_ids_to_indices': sid2idxs,
             'f_ids_to_indices': fid2idxs,
-            's_indices_to_f_indices': sidxs2fidxs,
+            'compressed_table': compressed_table,
             # sample metadata
             'sample_metadata_columns': sm_cols,
-            'sample_metadata': sample_md_list,
+            'compressed_sample_metadata': compressed_sm,
             # feature metadata
             'tip_metadata': tip_md_json,
             'int_metadata': int_md_json,
