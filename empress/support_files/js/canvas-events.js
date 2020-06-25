@@ -349,30 +349,29 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
         nodeId,
         moveTree = true
     ) {
-        var empress = this.empress;
-        var selectedNodeMenu = this.selectedNodeMenu;
-        var drawer = this.drawer;
-
         // multiple nodes can have the same name
-        var idList = empress._nameToKeys[nodeId];
+        var idList = this.empress._nameToKeys[nodeId];
 
         if (idList !== undefined) {
             // get first node
-            var node = empress._treeData[idList[0]];
+            var node = this.empress._treeData[idList[0]];
 
             if (idList.length > 1) {
-                node = empress._treeData[empress._tree.size - 1];
+                node = this.empress._treeData[this.empress._tree.size - 1];
             }
 
             if (moveTree) {
-                drawer.centerCameraOn(empress.getX(node), empress.getY(node));
+                this.drawer.centerCameraOn(
+                    this.empress.getX(node),
+                    this.empress.getY(node)
+                );
             }
 
             // show menu
-            selectedNodeMenu.setSelectedNodes(idList);
-            selectedNodeMenu.showNodeMenu();
+            this.selectedNodeMenu.setSelectedNodes(idList);
+            this.selectedNodeMenu.showNodeMenu();
 
-            empress.drawTree();
+            this.empress.drawTree();
         } else {
             this.quickSearchBar.classList.add("invalid-search");
         }

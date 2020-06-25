@@ -298,7 +298,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @param{Boolean} showTreeNodes If true the empress with display the tree
      *                               nodes.
      */
-    Drawer.prototype.setTreeNodeVisibility = function(showTreeNodes) {
+    Drawer.prototype.setTreeNodeVisibility = function (showTreeNodes) {
         this.showTreeNodes = showTreeNodes;
     };
     /**
@@ -399,28 +399,19 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     Drawer.prototype._findViewingCenter = function () {
         var width = this.treeContainer.offsetWidth,
             height = this.treeContainer.offsetHeight,
-            center;
-        if (width > height) {
-            center = this.toTreeCoords(width / 2, (width / 2) - (width - height) / 2);
-        } else {
-            center = this.toTreeCoords((width / 2), height / 2);
-        }
-        // center = this.toTreeCoords(width / 2, height / 2);
+            center = this.toTreeCoords(width / 2, height / 2);
         this.treeSpaceCenterX = center.x;
         this.treeSpaceCenterY = center.y;
-
-        console.log([width, height]);
-        console.log([this.treeSpaceCenterX, this.treeSpaceCenterY]);
     };
 
     /**
-     * Makes the point (x, y) appear in the center of the viewing window. (I.E 
+     * Makes the point (x, y) appear in the center of the viewing window. (I.E
      * center of screen)
      *
      * @param{Number} x The x position
      * @param{Number} y The y position
      */
-    Drawer.prototype.centerCameraOn = function(x, y) {
+    Drawer.prototype.centerCameraOn = function (x, y) {
         // create matrix to translate node to center of screen
         var center = gl.vec3.fromValues(
             this.treeSpaceCenterX,
@@ -431,11 +422,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         var centerMat = gl.mat4.create();
         gl.mat4.fromTranslation(centerMat, center);
 
-        var nodePos = gl.vec3.fromValues(
-            -1 * x,
-            -1 * y,
-            0
-        );
+        var nodePos = gl.vec3.fromValues(-1 * x, -1 * y, 0);
 
         var worldMat = gl.mat4.create();
         gl.mat4.fromTranslation(worldMat, nodePos);

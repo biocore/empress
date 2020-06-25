@@ -357,13 +357,13 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      * Other things such as changing the defualt color of the tree will be
      * added.
      */
-    SidePanel.prototype.addTreePropertiesTab = function() {
+    SidePanel.prototype.addTreePropertiesTab = function () {
         var scope = this;
-        this.treeNodesChk.onchange = function() {
+        this.treeNodesChk.onchange = function () {
             scope.empress.setTreeNodeVisibility(scope.treeNodesChk.checked);
             scope.empress.drawTree();
         };
-        this.recenterBtn.onclick = function() {
+        this.recenterBtn.onclick = function () {
             scope.empress._drawer.centerCameraOn(0, 0);
             scope.empress.drawTree();
         };

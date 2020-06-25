@@ -1101,7 +1101,7 @@ define([
      * @param{Boolean} showTreeNodes If true the empress with display the tree
      *                               nodes.
      */
-    Empress.prototype.setTreeNodeVisibility = function(showTreeNodes) {
+    Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
         this._drawer.setTreeNodeVisibility(showTreeNodes);
     };
 
