@@ -425,6 +425,8 @@ label:hover .tooltip {
     top: 0px;
     right: 0px;
     width: 450px;
+    max-height: 100%;
+    overflow-y: auto;
 }
 
 #show-ctrl {
