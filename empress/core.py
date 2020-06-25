@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from empress.tree import Tree
-from empress.tools import fill_missing_node_names, match_inputs, compress_biom
+from empress.tools import fill_missing_node_names, match_inputs, jsonify_table
 
 import pkg_resources
 import os
@@ -299,28 +299,31 @@ class Empress():
                             for k, v in sample_data_type.items()}
 
         # create a mapping of observation ids and the samples that contain them
-        s_idxs, f_idxs, fid2idx, sidx_2_fidx_counts = compress_biom(self.table)
-
-        obs_data = {}
-        feature_table = (self.table > 0)
-        for _, series in feature_table.iteritems():
-            sample_ids = series[series].index.tolist()
-            obs_data[series.name] = sample_ids
+        s_ids, f_ids, fid2idxs, sidxs2fidxs = jsonify_table(self.table)
 
         data_to_render = {
             'base_url': './support_files',
+            # tree info
             'tree': self._bp_tree,
             'tree_data': tree_data,
+            'names': names,
             'names_to_keys': names_to_keys,
+            # sample metadata
             'sample_data': sample_data,
             'sample_data_type': sample_data_type,
+            # feature table
+            's_ids': s_ids,
+            'f_ids': f_ids,
+            'f_ids_to_indices': fid2idxs,
+            's_indices_to_f_indices': sidxs2fidxs,
+            # feature metadata
             'tip_metadata': tip_md_json,
             'int_metadata': int_md_json,
             'feature_metadata_columns': feature_metadata_columns,
-            'obs_data': obs_data,
-            'names': names,
+            # layout information
             'layout_to_coordsuffix': layout_to_coordsuffix,
             'default_layout': default_layout,
+            # Emperor integration
             'emperor_div': '',
             'emperor_require_logic': '',
             'emperor_style': '',

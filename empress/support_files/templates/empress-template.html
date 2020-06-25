@@ -118,7 +118,10 @@
         var canvas = document.getElementById('tree-surface');
 
         var biom = new BIOMTable(
-          {{ obs_data }},
+          {{ s_ids }},
+          {{ f_ids }},
+          {{ f_ids_to_indices }},
+          {{ s_indices_to_f_indices }},
           {{ sample_data | tojson }},
           {{ sample_data_type | tojson }}
         );

@@ -70,7 +70,6 @@ def match_inputs(
 
     Parameters
     ----------
-
     tree: empress.tree.Tree
         The tree to be visualized.
     table: pd.DataFrame
@@ -273,3 +272,79 @@ def match_inputs(
             )
 
     return ff_table, sf_sample_metadata, tip_metadata, int_metadata
+
+def jsonify_table(table):
+    """Converts a feature table to a space-saving JSON format.
+
+    Parameters
+    ----------
+    table: pd.DataFrame
+        Representation of a feature table. The index should describe feature
+        IDs; the columns should describe sample IDs.
+
+    Returns
+    -------
+    (s_ids, f_ids, f_ids_to_indices, s_indices_to_f_indices)
+        s_ids: list
+            List of the sample IDs in the table. Empty samples (i.e. those that
+            do not contain any features) are omitted.
+        f_ids: list
+            List of the feature IDs in the table, analogous to s_ids. Empty
+            features (i.e. those that are not present in any samples) are
+            omitted.
+        f_ids_to_indices: dict
+            Inverse of f_ids: this maps feature IDs to their indices in f_ids.
+            "Indices" refers to a feature or sample's 0-based position in f_ids
+            or s_ids, respectively.
+        s_indices_to_f_indices: dict
+            Maps sample indices (see above for definition of "indices" here)
+            to a list of feature indices, where only the feature indices of
+            features that have a nonzero abundance in this sample are listed.
+
+    Raises
+    ------
+    ValueError
+        If the input table is completely empty (i.e. all zeroes).
+
+    References
+    ----------
+        - Inspired by redbiom and Qurro's JSON data models.
+        - Removal of empty samples / features based on
+          qurro._df_utils.remove_empty_samples_and_features().
+    """
+    # Remove empty samples / features
+    # (In Qurro, I used (table != 0) for this, but (table > 0) should also
+    # work. Should be able to assume a table won't have negative abundances.)
+    gt_0 = (table > 0)
+    filtered_table = table.loc[
+        gt_0.any(axis="columns"), gt_0.any(axis="index")
+    ]
+    if filtered_table.empty:
+        raise ValueError("All samples / features in matched table are empty.")
+
+    # (We do this again because filtered_table might be smaller now than it was
+    # above)
+    binarized_table = (filtered_table > 0)
+
+    sample_ids = list(binarized_table.columns)
+    feature_ids = list(binarized_table.index)
+    f_ids_to_indices = {fid: idx for idx, fid in enumerate(feature_ids)}
+    # We don't include this in the output, but it's handy to have around for
+    # creating s_indices_to_f_indices below
+    s_ids_to_indices = {sid: idx for idx, sid in enumerate(sample_ids)}
+
+    s_indices_to_f_indices = {}
+    def save_present_features(sample_column):
+        sample_idx = s_ids_to_indices[sample_column.name]
+        # Get a list of all feature IDs present in this sample
+        present_feature_ids = list(sample_column[sample_column].index)
+        # Convert this to a list of feature indices, and update the out dict
+        s_indices_to_f_indices[sample_idx] = [
+            f_ids_to_indices[fid] for fid in present_feature_ids
+        ]
+        # We don't return anything. This is kind of a cursed way of using
+        # df.apply() but it works, and it should be moderately efficient since
+        # this is .apply() \._./
+    binarized_table.apply(save_present_features, axis="index")
+
+    return sample_ids, feature_ids, f_ids_to_indices, s_indices_to_f_indices
