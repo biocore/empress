@@ -74,6 +74,7 @@ def compress_table(table):
 
     compressed_table = []
     sidx = 0
+
     def save_present_features(sample_column):
         nonlocal sidx
         # Get a list of all feature IDs present in this sample
@@ -106,24 +107,27 @@ def compress_table(table):
     )
 
 
-def compress_metadata(index_ids_to_indices, metadata):
+def compress_sample_metadata(sample_ids_to_indices, metadata):
     # We could ostensibly go further by
     # identifying repeated metadata values and mapping *those* to integer IDs,
     # but that may be 1) overkill and 2) not worth it until we get to really
     # big datasets (and/or datasets with lots of repeated values).
 
-    indices = index_ids_to_indices.values()
+    indices = sample_ids_to_indices.values()
     sorted_indices = sorted(indices)
     if sorted_indices != list(range(len(metadata.index))):
-        raise ValueError("Indices of index_ids_to_indices aren't valid.")
+        raise ValueError("Indices of sample_ids_to_indices aren't valid.")
 
-    # Produce a dict mapping indices to a list of their corresponding metadata
-    # values -- e.g. {1: ["gut", "413", "asdf"], 0: ["tongue", "612", "ghjk"]}
-    # (Note that the indices are not necessarily sorted because we stick to
-    # the order of the index of the metadata)
+    # Produce a dict mapping sample indices to a list of the corresponding
+    # sample's metadata values -- e.g. {1: ["gut", "413", "asdf"],
+    #                                   0: ["tongue", "612", "ghjk"], ...}.
+    # (Note that the indices are not necessarily processed in any particular
+    # order, since we're just following the sample metadata's order.)
     indices_to_metadata_vals = {}
+
     def save_metadata(row):
-        indices_to_metadata_vals[index_ids_to_indices[row.name]] = list(row)
+        indices_to_metadata_vals[sample_ids_to_indices[row.name]] = list(row)
+
     metadata.apply(save_metadata, axis="columns")
 
     # Although the dict we just produced is compressed, we can go further
@@ -136,3 +140,29 @@ def compress_metadata(index_ids_to_indices, metadata):
 
     return list(metadata.columns), metadata_vals
 
+
+def compress_feature_metadata(tip_metadata, int_metadata):
+    # If the user didn't pass in any feature metadata, we'll get to this block
+    if tip_metadata is None or int_metadata is None:
+        return [], {}, {}
+
+    # Verify that columns match up btwn. tip and internal node metadata
+    if not tip_metadata.columns.equals(int_metadata.columns):
+        raise ValueError("Tip & int. node feature metadata columns differ.")
+
+    # Verify that at least one feature metadata entry exists (since at this
+    # point we know that there should be at least *some* feature metadata)
+    if tip_metadata.empty and int_metadata.empty:
+        raise ValueError("Both tip & int. node feature metadata are empty.")
+
+    fm_cols = list(tip_metadata.columns)
+    # We want dicts mapping each feature ID to a list of the f.m. values for
+    # this feature ID. Since we're not mapping feature IDs to indices first,
+    # this is pretty simple to do with DataFrame.to_dict() using the
+    # orient="list" option -- however, orient="list" uses column-major order,
+    # so we transpose the metadata DFs before calling to_dict() in order to
+    # make sure our dicts are in row-major order (i.e. feature IDs are keys).
+    compressed_tm = tip_metadata.T.to_dict(orient="list")
+    compressed_im = int_metadata.T.to_dict(orient="list")
+
+    return fm_cols, compressed_tm, compressed_im

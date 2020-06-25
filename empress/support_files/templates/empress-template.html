@@ -123,7 +123,7 @@
           {{ f_ids_to_indices }},
           {{ s_ids_to_indices }},
           {{ compressed_table }},
-          {{ compressed_sample_metadata | tojson }},
+          {{ compressed_sample_metadata }},
           {{ sample_metadata_columns }},
         );
         var empress = new Empress(
@@ -134,8 +134,8 @@
             '{{ default_layout }}',
             biom,
             fmCols,
-            {{ tip_metadata | tojson }},
-            {{ int_metadata | tojson }},
+            {{ compressed_tip_metadata | tojson }},
+            {{ compressed_int_metadata | tojson }},
             canvas
         );
         empress.initialize();
