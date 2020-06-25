@@ -1092,5 +1092,18 @@ define([
         return this._featureMetadataColumns;
     };
 
+    /**
+     * Display the tree nodes.
+     * Note: Currently Empress will only display the nodes that had an assigned
+     * name in the newick string. (I.E. Empress will not show any node that
+     * starts with EmpressNode)
+     *
+     * @param{Boolean} showTreeNodes If true the empress with display the tree
+     *                               nodes.
+     */
+    Empress.prototype.setTreeNodeVisibility = function(showTreeNodes) {
+        this._drawer.setTreeNodeVisibility(showTreeNodes);
+    };
+
     return Empress;
 });

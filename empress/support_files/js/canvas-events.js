@@ -365,23 +365,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             }
 
             if (moveTree) {
-                // create matrix to translate node to center of screen
-                var center = gl.vec3.fromValues(
-                    drawer.treeSpaceCenterX,
-                    drawer.treeSpaceCenterY,
-                    1
-                );
-                var centerMat = gl.mat4.create();
-                gl.mat4.fromTranslation(centerMat, center);
-
-                var nodePos = gl.vec3.fromValues(
-                    -1 * empress.getX(node),
-                    -1 * empress.getY(node),
-                    1
-                );
-                var worldMat = gl.mat4.create();
-                gl.mat4.fromTranslation(drawer.worldMat, nodePos);
-                gl.mat4.multiply(drawer.worldMat, drawer.worldMat, centerMat);
+                drawer.centerCameraOn(empress.getX(node), empress.getY(node));
             }
 
             // show menu

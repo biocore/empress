@@ -61,6 +61,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
         // the dimension of the canvas
         this.dim = null;
+
+        this.showTreeNodes = true;
     }
 
     /**
@@ -131,6 +133,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.cam.placeCamera([0, 0, this.dim / 2], [0, 0, 0], [0, 1, 0]);
 
         this._findViewingCenter();
+        this.centerCameraOn(0, 0);
     };
 
     /**
@@ -287,6 +290,18 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
+     * Display the tree nodes.
+     * Note: Currently Empress will only display the nodes that had an assigned
+     * name in the newick string. (I.E. Empress will not show any node that
+     * starts with EmpressNode)
+     *
+     * @param{Boolean} showTreeNodes If true the empress with display the tree
+     *                               nodes.
+     */
+    Drawer.prototype.setTreeNodeVisibility = function(showTreeNodes) {
+        this.showTreeNodes = showTreeNodes;
+    };
+    /**
      * Draws tree and other metadata
      */
     Drawer.prototype.draw = function () {
@@ -306,10 +321,12 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         c.uniformMatrix4fv(s.mvpMat, false, mvp);
 
         // draw tree nodes
-        c.uniform1i(s.isSingle, 1);
-        c.uniform1f(s.pointSize, 4.0);
-        this.bindBuffer(s.nodeVertBuff);
-        c.drawArrays(c.POINTS, 0, this.nodeSize);
+        if (this.showTreeNodes) {
+            c.uniform1i(s.isSingle, 1);
+            c.uniform1f(s.pointSize, 4.0);
+            this.bindBuffer(s.nodeVertBuff);
+            c.drawArrays(c.POINTS, 0, this.nodeSize);
+        }
 
         // draw selected node
         c.uniform1f(s.pointSize, 9.0);
@@ -380,11 +397,49 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @private
      */
     Drawer.prototype._findViewingCenter = function () {
-        var width = this.treeContainer.offsetWidth;
-        var height = this.treeContainer.offsetHeight;
-        var center = this.toTreeCoords(width / 2, height / 2);
+        var width = this.treeContainer.offsetWidth,
+            height = this.treeContainer.offsetHeight,
+            center;
+        if (width > height) {
+            center = this.toTreeCoords(width / 2, (width / 2) - (width - height) / 2);
+        } else {
+            center = this.toTreeCoords((width / 2), height / 2);
+        }
+        // center = this.toTreeCoords(width / 2, height / 2);
         this.treeSpaceCenterX = center.x;
         this.treeSpaceCenterY = center.y;
+
+        console.log([width, height]);
+        console.log([this.treeSpaceCenterX, this.treeSpaceCenterY]);
+    };
+
+    /**
+     * Makes the point (x, y) appear in the center of the viewing window. (I.E 
+     * center of screen)
+     *
+     * @param{Number} x The x position
+     * @param{Number} y The y position
+     */
+    Drawer.prototype.centerCameraOn = function(x, y) {
+        // create matrix to translate node to center of screen
+        var center = gl.vec3.fromValues(
+            this.treeSpaceCenterX,
+            this.treeSpaceCenterY,
+            0
+        );
+
+        var centerMat = gl.mat4.create();
+        gl.mat4.fromTranslation(centerMat, center);
+
+        var nodePos = gl.vec3.fromValues(
+            -1 * x,
+            -1 * y,
+            0
+        );
+
+        var worldMat = gl.mat4.create();
+        gl.mat4.fromTranslation(worldMat, nodePos);
+        gl.mat4.multiply(this.worldMat, centerMat, worldMat);
     };
 
     return Drawer;
