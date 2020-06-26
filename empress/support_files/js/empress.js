@@ -1098,7 +1098,7 @@ define([
      * name in the newick string. (I.E. Empress will not show any node that
      * starts with EmpressNode)
      *
-     * @param{Boolean} showTreeNodes If true the empress with display the tree
+     * @param{Boolean} showTreeNodes If true then empress will display the tree
      *                               nodes.
      */
     Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {

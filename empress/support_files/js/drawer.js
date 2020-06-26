@@ -320,7 +320,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // set the mvp attribute
         c.uniformMatrix4fv(s.mvpMat, false, mvp);
 
-        // draw tree nodes
+        // draw tree node circles, if requested
         if (this.showTreeNodes) {
             c.uniform1i(s.isSingle, 1);
             c.uniform1f(s.pointSize, 4.0);
@@ -405,8 +405,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
-     * Makes the point (x, y) appear in the center of the viewing window. (I.E
-     * center of screen)
+     * Centers the viewing window on the point (x, y).
      *
      * @param{Number} x The x position
      * @param{Number} y The y position
@@ -422,7 +421,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         var centerMat = gl.mat4.create();
         gl.mat4.fromTranslation(centerMat, center);
 
-        var nodePos = gl.vec3.fromValues(-1 * x, -1 * y, 0);
+        var nodePos = gl.vec3.fromValues(-x, -y, 0);
 
         var worldMat = gl.mat4.create();
         gl.mat4.fromTranslation(worldMat, nodePos);
