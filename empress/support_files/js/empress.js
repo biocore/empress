@@ -33,9 +33,20 @@ define([
      *                       by a node's x2 and y2 coordinates in the data.
      * @param {String} defaultLayout The default layout to draw the tree with
      * @param {BIOMTable} biom The BIOM table used to color the tree
-     * @param {Array} featureMetadataColumns Columns of the feature metadata
+     * @param {Array} featureMetadataColumns Columns of the feature metadata.
+     *                Note: The order of this array should match the order of
+     *                      the arrays which are the values of tipMetadata and
+     *                      intMetadata. If no feature metadata was provided
+     *                      when generating an Empress visualization, this
+     *                      parameter should be [] (and tipMetadata and
+     *                      intMetadata should be {}s).
      * @param {Object} tipMetadata Feature metadata for tips in the tree
+     *                 Note: This should map tip names to an array of feature
+     *                       metadata values. Each array should have the same
+     *                       length as featureMetadataColumns.
      * @param {Object} intMetadata Feature metadata for internal nodes in tree
+     *                 Note: Should be formatted analogously to tipMetadata.
+     *                       Note that internal node names can be non-unique.
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
     function Empress(
@@ -123,10 +134,10 @@ define([
 
         /**
          * @type{Object}
-         * Feature metadata: keys are tree node IDs, and values are objects
-         * mapping feature metadata column names to the metadata value for that
-         * feature. We split this up into tip and internal node feature
-         * metadata objects.
+         * Feature metadata: keys are tree node names, and values are arrays
+         * of length equal to this._featureMetadataColumns.length.
+         * For the sake of simplicity, we split this up into tip and internal
+         * node feature metadata objects.
          * @private
          */
         this._tipMetadata = tipMetadata;
