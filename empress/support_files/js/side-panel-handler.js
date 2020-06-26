@@ -1,6 +1,4 @@
 define(["underscore", "Colorer"], function (_, Colorer) {
-    // class name for css tags
-    var COLLAPSE_CLASS = "collapsible";
     /**
      *
      * @class SidePanel

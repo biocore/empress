@@ -17,11 +17,6 @@ define([
     util,
     chroma
 ) {
-    // The index position of the color array
-    const RED = 0;
-    const GREEN = 1;
-    const BLUE = 2;
-
     /**
      * @class EmpressTree
      *
