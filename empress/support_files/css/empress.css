@@ -280,7 +280,7 @@ label:hover .tooltip {
     background-color: white;
 }
 
-.menu-table thead, .menu-table tbody{
+.menu-table thead, .menu-table tbody {
     display: block;
     max-width: 500px;
     max-height: 300px;
@@ -425,6 +425,8 @@ label:hover .tooltip {
     top: 0px;
     right: 0px;
     width: 450px;
+    max-height: 100%;
+    overflow-y: auto;
 }
 
 #show-ctrl {
@@ -892,6 +894,14 @@ button.close:hover {
 #menu-box-notes {
   max-width: 500px;
   font-size: small;
+}
+
+#menu-box-node-id {
+  max-width: 500px;
+  overflow-x: auto;
+  /* Don't break the node ID onto another line -- keep it all one line.
+   * See https://css-tricks.com/almanac/properties/w/whitespace/. */
+  white-space: nowrap;
 }
 
 /* Somewhere else in the CSS adjusts line height and justify-content,
