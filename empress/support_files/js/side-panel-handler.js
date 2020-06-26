@@ -361,7 +361,6 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         var scope = this;
         this.treeNodesChk.onchange = function () {
             scope.empress.setTreeNodeVisibility(scope.treeNodesChk.checked);
-            scope.empress.drawTree();
         };
         this.recenterBtn.onclick = function () {
             scope.empress._drawer.centerCameraOn(0, 0);

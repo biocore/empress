@@ -1103,6 +1103,7 @@ define([
      */
     Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
         this._drawer.setTreeNodeVisibility(showTreeNodes);
+        this.drawTree();
     };
 
     return Empress;

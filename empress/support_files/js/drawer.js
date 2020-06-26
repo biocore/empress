@@ -295,6 +295,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * name in the newick string. (I.E. Empress will not show any node that
      * starts with EmpressNode)
      *
+     * Note: this will only take effect after draw() is called.
+     *
      * @param{Boolean} showTreeNodes If true the empress with display the tree
      *                               nodes.
      */
