@@ -1125,12 +1125,12 @@ define([
             for (var i = 1; i <= this._tree.size; i++) {
                 node = this._treeData[i];
                 x += this.getX(node);
-                (y += this.getY(node)),
-                    (zoomAmount = Math.max(
-                        zoomAmount,
-                        Math.abs(this.getX(node)),
-                        Math.abs(this.getY(node))
-                    ));
+                y += this.getY(node);
+                zoomAmount = Math.max(
+                    zoomAmount,
+                    Math.abs(this.getX(node)),
+                    Math.abs(this.getY(node))
+                );
             }
 
             // each layout's avegerage point is define as followed:
