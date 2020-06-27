@@ -443,7 +443,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      *                              out by 1 / zoomAmount.
      * @param{Number} zoomAmount The amout to zoom in or out.
      */
-    Drawer.prototype.zoom = function(x, y, zoomIn, zoomAmount=this.scaleBy) {
+    Drawer.prototype.zoom = function (x, y, zoomIn, zoomAmount = this.scaleBy) {
         var zoomAt = gl.vec4.fromValues(x, y, 0, 1);
         // move tree
         var transVec = gl.vec3.create();

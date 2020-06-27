@@ -1114,20 +1114,23 @@ define([
     /**
      * Centers the viewing window at the average of the current layout.
      */
-    Empress.prototype.centerLayoutAvgPoint = function() {
+    Empress.prototype.centerLayoutAvgPoint = function () {
         if (!(this._currentLayout in this.layoutAvgPoint)) {
             // Add up x and y coordinates of all nodes in the tree (using
             // current layout).
-            var x = 0, y = 0, zoomAmount = 0, node;
+            var x = 0,
+                y = 0,
+                zoomAmount = 0,
+                node;
             for (var i = 1; i <= this._tree.size; i++) {
                 node = this._treeData[i];
                 x += this.getX(node);
-                y += this.getY(node),
-                zoomAmount = Math.max(
-                    zoomAmount,
-                    Math.abs(this.getX(node)),
-                    Math.abs(this.getY(node))
-                );
+                (y += this.getY(node)),
+                    (zoomAmount = Math.max(
+                        zoomAmount,
+                        Math.abs(this.getX(node)),
+                        Math.abs(this.getY(node))
+                    ));
             }
 
             // each layout's avegerage point is define as followed:
@@ -1141,8 +1144,8 @@ define([
             this.layoutAvgPoint[this._currentLayout] = [
                 x / this._tree.size,
                 y / this._tree.size,
-                2*zoomAmount / (this._drawer.dim)
-            ]
+                (2 * zoomAmount) / this._drawer.dim,
+            ];
         }
 
         // center the viewing window on the average point of the current layout
