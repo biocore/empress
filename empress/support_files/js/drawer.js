@@ -133,7 +133,6 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.cam.placeCamera([0, 0, this.dim / 2], [0, 0, 0], [0, 1, 0]);
 
         this._findViewingCenter();
-        this.centerCameraOn(0, 0);
     };
 
     /**
@@ -409,6 +408,9 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     /**
      * Centers the viewing window on the point (x, y).
      *
+     * Note: This function will reset all other camera options (such as zoom).
+     *
+     *
      * @param{Number} x The x position
      * @param{Number} y The y position
      */
@@ -428,6 +430,41 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         var worldMat = gl.mat4.create();
         gl.mat4.fromTranslation(worldMat, nodePos);
         gl.mat4.multiply(this.worldMat, centerMat, worldMat);
+    };
+
+    /**
+     * Zooms the viewing window in or out.
+     *
+     * @param{Number} x The x position to center the zoom operation on.
+     * @param{Number} y The y position to center the zoom operation on.
+     * @param{Boolean} zoomIn If true, the camera will zoom in. If false, the
+     *                        camera will zoom out.
+     *                        Note: if zoomIn=false then the camera will zoom
+     *                              out by 1 / zoomAmount.
+     * @param{Number} zoomAmount The amout to zoom in or out.
+     */
+    Drawer.prototype.zoom = function(x, y, zoomIn, zoomAmount=this.scaleBy) {
+        var zoomAt = gl.vec4.fromValues(x, y, 0, 1);
+        // move tree
+        var transVec = gl.vec3.create();
+        gl.vec3.sub(transVec, transVec, zoomAt);
+        var transMat = gl.mat4.create();
+        gl.mat4.fromTranslation(transMat, transVec);
+        gl.mat4.multiply(this.worldMat, transMat, this.worldMat);
+
+        // zoom tree
+        if (!zoomIn) zoomAmount = 1 / zoomAmount;
+
+        var zoomVec = gl.vec3.fromValues(zoomAmount, zoomAmount, zoomAmount),
+            zoomMat = gl.mat4.create();
+        gl.mat4.fromScaling(zoomMat, zoomVec);
+        gl.mat4.multiply(this.worldMat, zoomMat, this.worldMat);
+
+        // move tree back to original place
+        transVec = gl.vec3.fromValues(zoomAt[0], zoomAt[1], zoomAt[2]);
+        transMat = gl.mat4.create();
+        gl.mat4.fromTranslation(transMat, transVec);
+        gl.mat4.multiply(this.worldMat, transMat, this.worldMat);
     };
 
     return Drawer;

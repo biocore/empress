@@ -363,8 +363,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             scope.empress.setTreeNodeVisibility(scope.treeNodesChk.checked);
         };
         this.recenterBtn.onclick = function () {
-            scope.empress._drawer.centerCameraOn(0, 0);
-            scope.empress.drawTree();
+            scope.empress.centerLayoutAvgPoint();
         };
     };
 
