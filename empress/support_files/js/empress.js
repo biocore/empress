@@ -160,6 +160,11 @@ define([
         this._currentLayout = defaultLayout;
 
         /**
+         * type {Object}
+         * Maps tree layouts to the average point of each layout
+         */
+        this.layoutAvgPoint = {};
+        /**
          * @type{Number}
          * The line width used for drawing "thick" lines.
          */
@@ -180,13 +185,12 @@ define([
      */
     Empress.prototype.initialize = function () {
         this._drawer.initialize();
-        this._drawer.loadNodeBuff(this.getNodeCoords());
-        this.drawTree();
         this._events.setMouseEvents();
         var nodeNames = Object.keys(this._nameToKeys);
         nodeNames = nodeNames.filter((n) => !n.startsWith("EmpressNode"));
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
+        this.centerLayoutAvgPoint();
     };
 
     /**
@@ -1051,8 +1055,9 @@ define([
                     // The - 1 mimics the behavior of SidePanel._updateSample()
                     this.thickenSameSampleLines(this._currentLineWidth - 1);
                 }
-                this._drawer.loadNodeBuff(this.getNodeCoords());
-                this.drawTree();
+                // this._drawer.loadNodeBuff(this.getNodeCoords());
+                // this.drawTree();
+                this.centerLayoutAvgPoint();
             } else {
                 // This should never happen under normal circumstances (the
                 // input to this function should always be an existing layout
@@ -1107,6 +1112,71 @@ define([
      */
     Empress.prototype.getFeatureMetadataCategories = function () {
         return this._featureMetadataColumns;
+    };
+
+    /**
+     * Display the tree nodes.
+     * Note: Currently Empress will only display the nodes that had an assigned
+     * name in the newick string. (I.E. Empress will not show any node that
+     * starts with EmpressNode)
+     *
+     * @param{Boolean} showTreeNodes If true then empress will display the tree
+     *                               nodes.
+     */
+    Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
+        this._drawer.setTreeNodeVisibility(showTreeNodes);
+        this.drawTree();
+    };
+
+    /**
+     * Centers the viewing window at the average of the current layout.
+     */
+    Empress.prototype.centerLayoutAvgPoint = function () {
+        if (!(this._currentLayout in this.layoutAvgPoint)) {
+            // Add up x and y coordinates of all nodes in the tree (using
+            // current layout).
+            var x = 0,
+                y = 0,
+                zoomAmount = 0,
+                node;
+            for (var i = 1; i <= this._tree.size; i++) {
+                node = this._treeData[i];
+                x += this.getX(node);
+                y += this.getY(node);
+                zoomAmount = Math.max(
+                    zoomAmount,
+                    Math.abs(this.getX(node)),
+                    Math.abs(this.getY(node))
+                );
+            }
+
+            // each layout's avegerage point is define as followed:
+            // [x, y, zoomAmount] where x is the average of all x coordinates,
+            // y is the average of all y coordinates, and zoomAmount takes the
+            // largest x or y coordinate and normaizes it by dim / 2 (where
+            // dim is the dimension of the canvas).
+            // Note: zoomAmount is defined be a simple heuristic that should
+            // allow the majority of the tree to be visible in the viewing
+            // window.
+            this.layoutAvgPoint[this._currentLayout] = [
+                x / this._tree.size,
+                y / this._tree.size,
+                (2 * zoomAmount) / this._drawer.dim,
+            ];
+        }
+
+        // center the viewing window on the average point of the current layout
+        // and zoom out so the majority of the tree is visible.
+        var cX = this.layoutAvgPoint[this._currentLayout][0],
+            cY = this.layoutAvgPoint[this._currentLayout][1];
+        this._drawer.centerCameraOn(cX, cY);
+        this._drawer.zoom(
+            this._drawer.treeSpaceCenterX,
+            this._drawer.treeSpaceCenterY,
+            false,
+            this.layoutAvgPoint[this._currentLayout][2]
+        );
+        this.drawTree();
     };
 
     return Empress;
