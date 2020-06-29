@@ -156,7 +156,7 @@ define(["underscore", "util"], function (_, util) {
                 var colCell = headerRow.insertCell(-1);
                 colCell.innerHTML = "<strong>" + colName + "</strong>";
                 var dataCell = featureRow.insertCell(-1);
-                dataCell.innerHTML = mdObj[nodeName][colName];
+                dataCell.innerHTML = mdObj[nodeName][x];
             }
             fmHeader.classList.remove("hidden");
             fmTable.classList.remove("hidden");
