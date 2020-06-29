@@ -123,29 +123,9 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             var center = canvas.offsetWidth / 2;
             var mX = e.clientX - center;
             var mY = center - e.clientY;
-            var curPos = gl.vec4.fromValues(mX, mY, 0, 1);
 
-            // move tree
-            var transVec = gl.vec3.create();
-            gl.vec3.sub(transVec, transVec, curPos);
-            var transMat = gl.mat4.create();
-            gl.mat4.fromTranslation(transMat, transVec);
-            gl.mat4.multiply(drawer.worldMat, transMat, drawer.worldMat);
-
-            // zoom tree
-            var zoomBy = e.deltaY < 0 ? drawer.scaleBy : 1 / drawer.scaleBy;
-            var zoomVec = gl.vec3.fromValues(zoomBy, zoomBy, zoomBy);
-            var zoomMat = gl.mat4.create();
-            gl.mat4.fromScaling(zoomMat, zoomVec);
-            gl.mat4.multiply(drawer.worldMat, zoomMat, drawer.worldMat);
-
-            // move tree back to original place
-            transVec = gl.vec3.fromValues(curPos[0], curPos[1], curPos[2]);
-            transMat = gl.mat4.create();
-            gl.mat4.fromTranslation(transMat, transVec);
-            gl.mat4.multiply(drawer.worldMat, transMat, drawer.worldMat);
-
-            // draw tree
+            // zoom tree centered at curPos
+            drawer.zoom(mX, mY, e.deltaY < 0);
             drawer.draw();
 
             // update the node selection menu
@@ -349,46 +329,29 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
         nodeId,
         moveTree = true
     ) {
-        var empress = this.empress;
-        var selectedNodeMenu = this.selectedNodeMenu;
-        var drawer = this.drawer;
-
         // multiple nodes can have the same name
-        var idList = empress._nameToKeys[nodeId];
+        var idList = this.empress._nameToKeys[nodeId];
 
         if (idList !== undefined) {
             // get first node
-            var node = empress._treeData[idList[0]];
+            var node = this.empress._treeData[idList[0]];
 
             if (idList.length > 1) {
-                node = empress._treeData[empress._tree.size - 1];
+                node = this.empress._treeData[this.empress._tree.size - 1];
             }
 
             if (moveTree) {
-                // create matrix to translate node to center of screen
-                var center = gl.vec3.fromValues(
-                    drawer.treeSpaceCenterX,
-                    drawer.treeSpaceCenterY,
-                    1
+                this.drawer.centerCameraOn(
+                    this.empress.getX(node),
+                    this.empress.getY(node)
                 );
-                var centerMat = gl.mat4.create();
-                gl.mat4.fromTranslation(centerMat, center);
-
-                var nodePos = gl.vec3.fromValues(
-                    -1 * empress.getX(node),
-                    -1 * empress.getY(node),
-                    1
-                );
-                var worldMat = gl.mat4.create();
-                gl.mat4.fromTranslation(drawer.worldMat, nodePos);
-                gl.mat4.multiply(drawer.worldMat, drawer.worldMat, centerMat);
             }
 
             // show menu
-            selectedNodeMenu.setSelectedNodes(idList);
-            selectedNodeMenu.showNodeMenu();
+            this.selectedNodeMenu.setSelectedNodes(idList);
+            this.selectedNodeMenu.showNodeMenu();
 
-            empress.drawTree();
+            this.empress.drawTree();
         } else {
             this.quickSearchBar.classList.add("invalid-search");
         }

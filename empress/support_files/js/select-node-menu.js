@@ -383,6 +383,7 @@ define(["underscore", "util"], function (_, util) {
         this.fmTable.classList.add("hidden");
         this.fmTable.innerHTML = "";
         this.drawer.loadSelectedNodeBuff([]);
+        this.empress.drawTree();
     };
 
     /**
