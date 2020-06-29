@@ -196,6 +196,53 @@ define([
         this._drawer.draw();
     };
 
+    /**
+     * Creates an SVG string to export the current drawing
+     */
+    Empress.prototype.exportSvg = function () {
+      NODE_RADIUS = 50;
+
+      minX = 0;
+      maxX = 0;
+      minY = 0;
+      maxY = 0;
+      svg = "";
+
+      // create a line from x1,y1 to x2,y2 for every two consecutive coordinates
+      // 5 array elements encode one coordinate:
+      // i=x, i+1=y, i+2=red, i+3=green, i+4=blue
+      svg += '<!-- tree branches -->\n';
+      coords = this.getCoords();
+      for (i = 0; i+2*5 <= coords.length; i+=2*5) {
+        svg += '<line x1="'+coords[i]+'" y1="'+coords[i+1]+'" x2="'+coords[i+5]+'" y2="'+coords[i+1+5]+'" stroke="rgb('+(255*coords[i+2])+','+(255*coords[i+3])+','+(255*coords[i+4])+')"/>\n';
+
+        // obtain viewport from tree coordinates
+        minX = Math.min(minX, coords[i], coords[i+5]);
+        maxX = Math.max(maxX, coords[i], coords[i+5]);
+
+        minY = Math.min(minY, coords[i+1], coords[i+1+5]);
+        maxY = Math.max(maxY, coords[i+1], coords[i+1+5]);
+      }
+
+      // create a circle for each node
+      svg += '<!-- tree nodes -->\n';
+      coords = this.getNodeCoords();
+      for (i = 0; i+5 <= coords.length; i+=5) {
+        // getNodeCoords array seem to be larger than necessary and elements are initialized with 0.
+        // Thus, nodes at (0, 0) will be skipped (root will always be positioned at 0,0 and drawn below)
+        if ((coords[i] == 0) && (coords[i+1] == 0)) {
+           continue;
+        }
+        svg += '<circle cx="'+coords[i]+'" cy="'+coords[i+1]+'" r="'+NODE_RADIUS+'" style="fill:rgb('+(255*coords[i+2])+','+(255*coords[i+3])+','+(255*coords[i+4])+')"/>\n';
+      }
+
+      // add one black circle to indicate the root
+      svg += '<!-- root node -->\n';
+      svg += '<circle cx="0" cy="0" r="'+NODE_RADIUS+'" fill="rgb(0,0,0)"/>\n';
+
+      return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+(minX-NODE_RADIUS)+' '+(minY-NODE_RADIUS)+' '+(maxX-minX+2*NODE_RADIUS)+' '+(maxY-minY+2*NODE_RADIUS)+'">\n' + svg + '</svg>\n';
+    };
+
     Empress.prototype.getX = function (nodeObj) {
         var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
         return nodeObj[xname];
