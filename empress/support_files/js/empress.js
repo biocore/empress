@@ -818,8 +818,8 @@ define([
      * Color the tree based on a feature metadata column.
      *
      * @param {String} cat The feature metadata column to color nodes by.
-     *                     It's assumed that this is present in
-     *                     this._featureMetadataColumns.
+     *                     This must be present in this._featureMetadataColumns
+     *                     or an error will be thrown.
      * @param {String} color The name of the color map to use.
      * @param {String} method Defines how coloring is done. If this is "tip",
      *                        then only tip-level feature metadata will be
@@ -834,8 +834,17 @@ define([
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
     Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
-        // Produce a mapping of unique values in this feature metadata
-        // column to an array of the feature(s) with each value.
+        // In order to access feature metadata for a given node, we need to
+        // find the 0-based index in this._featureMetadataColumns that the
+        // specified f.m. column corresponds to. (We *could* get around this by
+        // generating a mapping of f.m. column name -> index in Python, but I
+        // don't expect that f.m. columns will be very large and this is only
+        // done once per coloring operation so this shouldn't be a bottleneck.)
+        var fmIdx = _.indexOf(this._featureMetadataColumns, cat);
+        if (fmIdx < 0) {
+            throw "Feature metadata column " + cat + " not present in data.";
+        }
+
         // The coloring method influences how much of the feature metadata
         // we'll look at. (While we're at it, validate the coloring method.)
         var fmObjs;
@@ -847,26 +856,28 @@ define([
             throw 'F. metadata coloring method "' + method + '" unrecognized.';
         }
 
+        // Produce a mapping of unique values in this feature metadata
+        // column to an array of the node name(s) with each value.
         var uniqueValueToFeatures = {};
         _.each(fmObjs, function (mObj) {
-            _.mapObject(mObj, function (fmRow, tipID) {
+            _.mapObject(mObj, function (fmRow, nodeName) {
                 // This is loosely based on how BIOMTable.getObsBy() works.
-                var fmVal = fmRow[cat];
+                var fmVal = fmRow[fmIdx];
                 if (_.has(uniqueValueToFeatures, fmVal)) {
-                    uniqueValueToFeatures[fmVal].push(tipID);
+                    uniqueValueToFeatures[fmVal].push(nodeName);
                 } else {
-                    uniqueValueToFeatures[fmVal] = [tipID];
+                    uniqueValueToFeatures[fmVal] = [nodeName];
                 }
             });
         });
 
-        var scope = this;
         var sortedUniqueValues = util.naturalSort(
             Object.keys(uniqueValueToFeatures)
         );
         // convert observation IDs to _treeData keys. Notably, this includes
         // converting the values of uniqueValueToFeatures from Arrays to Sets.
         var obs = {};
+        var scope = this;
         _.each(sortedUniqueValues, function (uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
             obs[uniqueVal] = scope._namesToKeys(

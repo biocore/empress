@@ -210,8 +210,6 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      * Colors the tree based on the feature metadata coloring settings.
      */
     SidePanel.prototype._colorFeatureTree = function () {
-        // Note that colBy corresponds to a 0-indexed position within
-        // this.empress' feature metadata column array
         var colBy = this.fSel.value;
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
@@ -373,10 +371,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         for (i = 0; i < selOpts.length; i++) {
             opt = document.createElement("option");
             opt.innerHTML = selOpts[i];
-            // Note: We set the "values" of these options to just the 0-indexed
-            // position of the corresponding feature metadata column. This will
-            // help with getting Empress to extract the values during coloring.
-            opt.value = i;
+            opt.value = selOpts[i];
             this.fSel.appendChild(opt);
         }
 
