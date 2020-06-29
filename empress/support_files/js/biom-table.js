@@ -1,48 +1,40 @@
 define([], function () {
     /**
-     * @class BIOM-table
+     * @class BIOMTable
      *
      * create a BIOM table that contains sample IDs along with the observations
      * seen in each sample and the metadata associated with each sample.
      *
-     * @param{Object} obs An object whose keys are sampleIds and values are a
-     *                list of observationIDs.
-     * @param{Object} samp An object whose keys are sampleIDs and values are the
-     *                associated metadata.
-     * @param{Object} types Maps sample column to datatype n - num, o - obj
+     * @param{Array} sIDs Array of sample IDs in the table.
+     * @param{Array} fIDs Array of feature (or "observation") IDs in the table.
+     * @param{Object} sID2Idx Mapping of sample IDs (the values in sIDs) to
+     *                        their 0-based indices in sIDs.
+     * @param{Object} fID2Idx Mapping of feature IDs (the values in fIDs) to
+     *                        their 0-based indices in fIDs.
+     * @param{Array} tbl Two-dimensional array where the outermost layer has
+     *                   the same length as sIDs. Each position i within tbl
+     *                   contains an "inner list" of arbitrary (but in the
+     *                   range [1, fIDs.length]) length, containing the fIDs
+     *                   indices of the features present within the sample
+     *                   in sIDs at index i.
+     * @param{Array} smCols Array of sample metadata column names.
+     * @param{Array} sm Two-dimensional array where the outermost layer has the
+     *                  same length as sIDs. Each position i within sm contains
+     *                  an "inner list" of length smCols.length, and sm[i][c]
+     *                  refers to the c-th sample metadata column (in smCols)'s
+     *                  value for the i-th sample (in sIDs).
      *
      * @return {BIOMTable}
      * constructs BIOMTable
      */
-    function BIOMTable(obs, samp, types) {
-        /**
-         * @type {Object}
-         * The observation table format:
-         * {sampleID1: [observationIDs],
-         *  sampleID2: [observationIDs],
-         *   ...}
-         * @private
-         */
-        this._obs = obs;
-
-        /**
-         * @type {Object}
-         * Sample metadata format:
-         * {sampleID1: {cat1: val, cat2: val, ...},
-         *  sampleID2: {cat1: val, cat2: val, ...},
-         *  ...}
-         * @private
-         */
-        this._samp = samp;
-
-        /**
-         * @type {Object}
-         * The datatypes of sample metadata
-         * 'n' => numeric
-         * 'o' => object/string
-         * {categoryName: 'n' or 'o'}
-         */
-        this._types = types;
+    function BIOMTable(sIDs, fIDs, sID2Idx, fID2Idx, tbl, smCols, sm) {
+        this._sIDs = sIDs;
+        this._fIDs = fIDs;
+        this._sID2Idx = sID2Idx;
+        this._fID2Idx = fID2Idx;
+        this.tbl = tbl;
+        this.smCols = smCols;
+        this.sm = sm;
     }
 
     /**
