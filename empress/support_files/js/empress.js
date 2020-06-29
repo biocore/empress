@@ -128,7 +128,7 @@ define([
 
         /**
          * @type{Object}
-         * Feature metadata: keys are tree node IDs, and values are objects
+         * Feature metadata: keys are tree node names, and values are objects
          * mapping feature metadata column names to the metadata value for that
          * feature. We split this up into tip and internal node feature
          * metadata objects.
