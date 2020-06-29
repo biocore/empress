@@ -54,6 +54,9 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
 
+        // export GUI components
+        this.eExportSvgBtn = document.getElementById("export-btn-svg")
+
         // uncheck button
         this.sHideChk.checked = false;
 
@@ -290,6 +293,21 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             pele.appendChild(iele);
             this.layoutDiv.appendChild(pele);
         }
+    };
+
+    /**
+     * Initializes export components
+     */
+    SidePanel.prototype.addExportTab = function () {
+      // for use in closures
+      var scope = this;
+
+      this.eExportSvgBtn.onclick = function () {
+        svgfile = scope.empress.exportSvg();
+
+        var blob = new Blob([svgfile], {type: 'image/svg+xml'});
+        saveAs(blob, 'empress-tree.svg');
+      };
     };
 
     /**
