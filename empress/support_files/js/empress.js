@@ -200,7 +200,7 @@ define([
      * Creates an SVG string to export the current drawing
      */
     Empress.prototype.exportSvg = function () {
-      NODE_RADIUS = 50;
+      NODE_RADIUS = 5;
 
       minX = 0;
       maxX = 0;
@@ -214,7 +214,14 @@ define([
       svg += '<!-- tree branches -->\n';
       coords = this.getCoords();
       for (i = 0; i+2*5 <= coords.length; i+=2*5) {
-        svg += '<line x1="'+coords[i]+'" y1="'+coords[i+1]+'" x2="'+coords[i+5]+'" y2="'+coords[i+1+5]+'" stroke="rgb('+(255*coords[i+2])+','+(255*coords[i+3])+','+(255*coords[i+4])+')"/>\n';
+        // "normal" lines have a default color,
+        // all other lines have a user defined thickness
+        linewidth = 1;
+        if ((coords[i+2] == this.DEFAULT_COLOR[0]) && (coords[i+3] == this.DEFAULT_COLOR[1]) && (coords[i+4] == this.DEFAULT_COLOR[2]) &&
+            (coords[i+2+5] == this.DEFAULT_COLOR[0]) && (coords[i+3+5] == this.DEFAULT_COLOR[1]) && (coords[i+4+5] == this.DEFAULT_COLOR[2])) {
+              linewidth = this._currentLineWidth;
+        }
+        svg += '<line x1="'+coords[i]+'" y1="'+coords[i+1]+'" x2="'+coords[i+5]+'" y2="'+coords[i+1+5]+'" stroke="rgb('+(255*coords[i+2])+','+(255*coords[i+3])+','+(255*coords[i+4])+')" style="stroke-width:'+linewidth+'" />\n';
 
         // obtain viewport from tree coordinates
         minX = Math.min(minX, coords[i], coords[i+5]);
