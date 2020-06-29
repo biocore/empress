@@ -59,7 +59,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         this.layoutDiv = document.getElementById("layout-div");
 
         // export GUI components
-        this.eExportSvgBtn = document.getElementById("export-btn-svg")
+        this.eExportSvgBtn = document.getElementById("export-btn-svg");
 
         // uncheck button
         this.sHideChk.checked = false;
