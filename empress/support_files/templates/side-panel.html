@@ -100,3 +100,77 @@
     Change how the tree is drawn.
   </p>
 </div>
+
+<!-- animate Options -->
+<button class="side-header collapsible">Animation</button>
+<div class="side-content control hidden">
+  <p class="side-panel-notes">
+    Color nodes in the tree that are unique to certain groups of samples
+    (specified by the trajectory) at different timepoints throughout a
+    gradient.
+  </p>
+  <p>
+    <label for="animate-color-select">Choose Color Map</label>
+    <label class="select-container">
+      <select id="animate-color-select"></select>
+    </label>
+  </p>
+  <p>
+    <label for="animate-gradient">Gradient</label>
+    <label class="select-container">
+      <select id="animate-gradient"></select>
+    </label>
+  </p>
+  <p>
+    <label for="animate-trajectory">Trajectory</label>
+    <label class="select-container">
+      <select id="animate-trajectory"></select>
+    </label>
+  </p>
+  <p>
+    <label for="animate-hide-non-feature">Hide Non-Sample Features</label>
+    <input id="animate-hide-non-feature" type="checkbox" value="false">
+  </p>
+  <p>
+    <label for="animate-line-width">Line Width</label>
+    <input id="animate-line-width" type="number" value="1">
+  </p>
+  <div>
+    <p>
+      <button id="animate-start-btn">Start</button>
+    </p>
+    <p>
+      <button id="animate-stop-btn">Stop Animation</button>
+    </p>
+    <p>
+      <button id="animate-pause-btn">Pause</button>
+    </p>
+    <div>
+      <p>
+        <button id="animate-resume-btn">Resume</button>
+        <button id="animate-prev-btn">Previous Frame</button>
+        <button id="animate-next-btn">Next Frame</button>
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<!-- Global Tree properties -->
+<button class="side-header collapsible">Tree Properties</button>
+<div class="side-content control hidden">
+  <p>
+    <label for="display-nodes-chk">Show node circles?</label>
+    <input id="display-nodes-chk" type="checkbox" checked="true">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, this draws circles at the positions of all tree nodes
+    which had a specified name in the input Newick file.
+  </p>
+  <p>
+    <button id="center-tree-btn">Reset Camera</button>
+  </p>
+  <p class="side-panel-notes indented">
+    Centers the screen on the root node of the tree.
+  </p>
+</div>

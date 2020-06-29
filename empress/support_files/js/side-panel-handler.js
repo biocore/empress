@@ -32,6 +32,10 @@ define(["underscore", "Colorer"], function (_, Colorer) {
 
         this.legend = legend;
 
+        // tree properties components
+        this.treeNodesChk = document.getElementById("display-nodes-chk");
+        this.recenterBtn = document.getElementById("center-tree-btn");
+
         // sample GUI components
         this.sChk = document.getElementById("sample-chk");
         this.sSel = document.getElementById("sample-options");
@@ -343,6 +347,23 @@ define(["underscore", "Colorer"], function (_, Colorer) {
                 scope.sLineWidth,
                 scope.sUpdateBtn
             );
+        };
+    };
+
+    /**
+     * Add the callback events for the global tree properties tab. The callback
+     * events include things like centering the tree and showing tree nodes.
+     *
+     * Other things such as changing the defualt color of the tree will be
+     * added.
+     */
+    SidePanel.prototype.addTreePropertiesTab = function () {
+        var scope = this;
+        this.treeNodesChk.onchange = function () {
+            scope.empress.setTreeNodeVisibility(scope.treeNodesChk.checked);
+        };
+        this.recenterBtn.onclick = function () {
+            scope.empress.centerLayoutAvgPoint();
         };
     };
 
