@@ -255,28 +255,30 @@ define([
         }
 
         // create a circle for each node
-        svg += "<!-- tree nodes -->\n";
-        coords = this.getNodeCoords();
-        for (i = 0; i + 5 <= coords.length; i += 5) {
-            // getNodeCoords array seem to be larger than necessary and elements are initialized with 0.
-            // Thus, nodes at (0, 0) will be skipped (root will always be positioned at 0,0 and drawn below)
-            if (coords[i] == 0 && coords[i + 1] == 0) {
-                continue;
+        if (this._drawer.showTreeNodes) {
+            svg += "<!-- tree nodes -->\n";
+            coords = this.getNodeCoords();
+            for (i = 0; i + 5 <= coords.length; i += 5) {
+                // getNodeCoords array seem to be larger than necessary and elements are initialized with 0.
+                // Thus, nodes at (0, 0) will be skipped (root will always be positioned at 0,0 and drawn below)
+                if (coords[i] == 0 && coords[i + 1] == 0) {
+                    continue;
+                }
+                svg +=
+                    '<circle cx="' +
+                    coords[i] +
+                    '" cy="' +
+                    coords[i + 1] +
+                    '" r="' +
+                    NODE_RADIUS +
+                    '" style="fill:rgb(' +
+                    255 * coords[i + 2] +
+                    "," +
+                    255 * coords[i + 3] +
+                    "," +
+                    255 * coords[i + 4] +
+                    ')"/>\n';
             }
-            svg +=
-                '<circle cx="' +
-                coords[i] +
-                '" cy="' +
-                coords[i + 1] +
-                '" r="' +
-                NODE_RADIUS +
-                '" style="fill:rgb(' +
-                255 * coords[i + 2] +
-                "," +
-                255 * coords[i + 3] +
-                "," +
-                255 * coords[i + 4] +
-                ')"/>\n';
         }
 
         // add one black circle to indicate the root
