@@ -200,7 +200,7 @@ define([
      * Creates an SVG string to export the current drawing
      */
     Empress.prototype.exportSvg = function () {
-        NODE_RADIUS = 5;
+        NODE_RADIUS = this._drawer.VERTEX_SIZE;
 
         minX = 0;
         maxX = 0;
