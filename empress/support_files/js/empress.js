@@ -847,13 +847,13 @@ define([
 
         var uniqueValueToFeatures = {};
         _.each(fmObjs, function (mObj) {
-            _.mapObject(mObj, function (fmRow, tipID) {
+            _.mapObject(mObj, function (fmRow, nodeID) {
                 // This is loosely based on how BIOMTable.getObsBy() works.
                 var fmVal = fmRow[cat];
                 if (_.has(uniqueValueToFeatures, fmVal)) {
-                    uniqueValueToFeatures[fmVal].push(tipID);
+                    uniqueValueToFeatures[fmVal].push(nodeID);
                 } else {
-                    uniqueValueToFeatures[fmVal] = [tipID];
+                    uniqueValueToFeatures[fmVal] = [nodeID];
                 }
             });
         });

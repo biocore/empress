@@ -272,7 +272,7 @@ define(["underscore", "util"], function (_, util) {
                 "Warning: " +
                 this.nodeKeys.length +
                 " nodes exist with the " +
-                "above ID.";
+                "above name.";
             isDup = true;
         }
 
