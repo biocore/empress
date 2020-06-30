@@ -303,15 +303,15 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      * Initializes export components
      */
     SidePanel.prototype.addExportTab = function () {
-      // for use in closures
-      var scope = this;
+        // for use in closures
+        var scope = this;
 
-      this.eExportSvgBtn.onclick = function () {
-        svgfile = scope.empress.exportSvg();
+        this.eExportSvgBtn.onclick = function () {
+            svgfile = scope.empress.exportSvg();
 
-        var blob = new Blob([svgfile], {type: 'image/svg+xml'});
-        saveAs(blob, 'empress-tree.svg');
-      };
+            var blob = new Blob([svgfile], { type: "image/svg+xml" });
+            saveAs(blob, "empress-tree.svg");
+        };
     };
 
     /**
