@@ -61,6 +61,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
         // the dimension of the canvas
         this.dim = null;
+
+        this.showTreeNodes = true;
     }
 
     /**
@@ -287,6 +289,20 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
+     * Display the tree nodes.
+     * Note: Currently Empress will only display the nodes that had an assigned
+     * name in the newick string. (I.E. Empress will not show any node that
+     * starts with EmpressNode)
+     *
+     * Note: this will only take effect after draw() is called.
+     *
+     * @param{Boolean} showTreeNodes If true the empress with display the tree
+     *                               nodes.
+     */
+    Drawer.prototype.setTreeNodeVisibility = function (showTreeNodes) {
+        this.showTreeNodes = showTreeNodes;
+    };
+    /**
      * Draws tree and other metadata
      */
     Drawer.prototype.draw = function () {
@@ -305,11 +321,13 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // set the mvp attribute
         c.uniformMatrix4fv(s.mvpMat, false, mvp);
 
-        // draw tree nodes
-        c.uniform1i(s.isSingle, 1);
-        c.uniform1f(s.pointSize, 4.0);
-        this.bindBuffer(s.nodeVertBuff);
-        c.drawArrays(c.POINTS, 0, this.nodeSize);
+        // draw tree node circles, if requested
+        if (this.showTreeNodes) {
+            c.uniform1i(s.isSingle, 1);
+            c.uniform1f(s.pointSize, 4.0);
+            this.bindBuffer(s.nodeVertBuff);
+            c.drawArrays(c.POINTS, 0, this.nodeSize);
+        }
 
         // draw selected node
         c.uniform1f(s.pointSize, 9.0);
@@ -380,11 +398,73 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @private
      */
     Drawer.prototype._findViewingCenter = function () {
-        var width = this.treeContainer.offsetWidth;
-        var height = this.treeContainer.offsetHeight;
-        var center = this.toTreeCoords(width / 2, height / 2);
+        var width = this.treeContainer.offsetWidth,
+            height = this.treeContainer.offsetHeight,
+            center = this.toTreeCoords(width / 2, height / 2);
         this.treeSpaceCenterX = center.x;
         this.treeSpaceCenterY = center.y;
+    };
+
+    /**
+     * Centers the viewing window on the point (x, y).
+     *
+     * Note: This function will reset all other camera options (such as zoom).
+     *
+     *
+     * @param{Number} x The x position
+     * @param{Number} y The y position
+     */
+    Drawer.prototype.centerCameraOn = function (x, y) {
+        // create matrix to translate node to center of screen
+        var center = gl.vec3.fromValues(
+            this.treeSpaceCenterX,
+            this.treeSpaceCenterY,
+            0
+        );
+
+        var centerMat = gl.mat4.create();
+        gl.mat4.fromTranslation(centerMat, center);
+
+        var nodePos = gl.vec3.fromValues(-x, -y, 0);
+
+        var worldMat = gl.mat4.create();
+        gl.mat4.fromTranslation(worldMat, nodePos);
+        gl.mat4.multiply(this.worldMat, centerMat, worldMat);
+    };
+
+    /**
+     * Zooms the viewing window in or out.
+     *
+     * @param{Number} x The x position to center the zoom operation on.
+     * @param{Number} y The y position to center the zoom operation on.
+     * @param{Boolean} zoomIn If true, the camera will zoom in. If false, the
+     *                        camera will zoom out.
+     *                        Note: if zoomIn=false then the camera will zoom
+     *                              out by 1 / zoomAmount.
+     * @param{Number} zoomAmount The amout to zoom in or out.
+     */
+    Drawer.prototype.zoom = function (x, y, zoomIn, zoomAmount = this.scaleBy) {
+        var zoomAt = gl.vec4.fromValues(x, y, 0, 1);
+        // move tree
+        var transVec = gl.vec3.create();
+        gl.vec3.sub(transVec, transVec, zoomAt);
+        var transMat = gl.mat4.create();
+        gl.mat4.fromTranslation(transMat, transVec);
+        gl.mat4.multiply(this.worldMat, transMat, this.worldMat);
+
+        // zoom tree
+        if (!zoomIn) zoomAmount = 1 / zoomAmount;
+
+        var zoomVec = gl.vec3.fromValues(zoomAmount, zoomAmount, zoomAmount),
+            zoomMat = gl.mat4.create();
+        gl.mat4.fromScaling(zoomMat, zoomVec);
+        gl.mat4.multiply(this.worldMat, zoomMat, this.worldMat);
+
+        // move tree back to original place
+        transVec = gl.vec3.fromValues(zoomAt[0], zoomAt[1], zoomAt[2]);
+        transMat = gl.mat4.create();
+        gl.mat4.fromTranslation(transMat, transVec);
+        gl.mat4.multiply(this.worldMat, transMat, this.worldMat);
     };
 
     return Drawer;

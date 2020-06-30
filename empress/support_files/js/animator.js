@@ -243,15 +243,15 @@ define(["Colorer"], function (Colorer) {
      */
     Animator.prototype.playAnimation = async function () {
         // used in closure
-        var animator = this;
+        var scope = this;
 
         // Animation loop
         setTimeout(function loop() {
-            if (!animator.pause && animator.curFrame != animator.totalFrames) {
-                if (animator.framesRdy[animator.curFrame]) {
-                    animator.drawFrame();
+            if (!scope.pause && scope.curFrame != scope.totalFrames) {
+                if (scope.framesRdy[scope.curFrame]) {
+                    scope.drawFrame();
                 }
-                setTimeout(loop, animator.timePerFram);
+                setTimeout(loop, scope.timePerFram);
             }
         }, 0);
     };

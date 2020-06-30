@@ -12,8 +12,8 @@
 
   <div>
     <!-- The tree -->
-    <div id="tree-container" class="{{ emperor_classes }}">
-      <div class="container {{ emperor_classes }}">
+    <div class="{{ emperor_classes }}">
+      <div id="tree-container" class="container {{ emperor_classes }}">
         <canvas class="tree-surface" id="tree-surface">
             Your browser does not support HTML5
         </canvas>
@@ -24,7 +24,6 @@
         <!-- Side panel -->
         <div id="side-panel">
           {% include 'side-panel.html'%}
-          {% include 'animate-panel.html' %}
         </div>
 
         <!-- show control panel button -->
@@ -143,6 +142,7 @@
         // The side menu
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress, legend);
+        sPanel.addTreePropertiesTab();
         sPanel.addSampleTab();
         if (fmCols.length > 0) {
             sPanel.addFeatureTab();
