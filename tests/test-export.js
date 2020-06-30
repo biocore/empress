@@ -30,6 +30,9 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
                     null
                 );
                 this.empress._drawer = new Object();
+                // without the below line, I get a out of bounds exception
+                // is this the intended behavior? Wired if you have to set
+                // this parameter
                 this.empress._drawer.VERTEX_SIZE = 5;
             },
 
@@ -38,22 +41,121 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
             }
         });
 
-        test("Test exportSvg, count graphical elements", function() {
-            obs_svg = this.empress.exportSvg();
+        count_svg_tags = function (svg_string) {
+            var lines = svg_string.match(/[^\n]+/g);
 
-            var lines = obs_svg.match(/[^\n]+/g);
             num_branches = 0;
             num_circles = 0;
+            num_nonthickbranches = 0;
+            num_noncoloredbranches = 0;
             for (i = 0; i < lines.length; i++) {
                 if (lines[i].includes("<line ")) {
                     num_branches++;
+                    if (lines[i].includes("style=\"stroke-width:1\"")) {
+                        num_nonthickbranches++;
+                    }
+                    if (lines[i].includes("stroke=\"rgb(191.25,191.25,191.25)\"")) {
+                        num_noncoloredbranches++;
+                    }
                 }
                 if (lines[i].includes("<circle ")) {
                   num_circles++;
                 }
             }
+            return [num_branches, num_circles, num_nonthickbranches, num_noncoloredbranches];
+        };
+
+        test("Test exportSvg, default layout", function() {
+            obs_svg = this.empress.exportSvg();
+
+            [num_branches,
+             num_circles,
+             num_nonthickbranches,
+             num_noncoloredbranches] = count_svg_tags(obs_svg);
+
             deepEqual(num_branches, 6);
-            deepEqual(num_circles, 1);  // only root
+            deepEqual(num_nonthickbranches, 6);  // all branches are NOT thickened
+            deepEqual(num_noncoloredbranches, 6);  // all branches are NOT colored
+            deepEqual(num_circles, 1);  // only root, since showTreeNodes is false
+        });
+
+        test("Test exportSvg, default layout + showTreeNodes", function() {
+            this.empress._drawer.showTreeNodes = true;
+
+            obs_svg = this.empress.exportSvg();
+
+            [num_branches,
+             num_circles,
+             num_nonthickbranches,
+             num_noncoloredbranches] = count_svg_tags(obs_svg);
+
+            deepEqual(num_branches, 6);
+            deepEqual(num_nonthickbranches, 6);  // all branches are NOT thickened
+            deepEqual(num_noncoloredbranches, 6);  // all branches are NOT colored
+            deepEqual(num_circles, 1+4);  // 1 root and 4 tips
+        });
+
+        test("Test exportSvg, default layout + showTreeNodes: rectangular", function() {
+            this.empress._drawer.showTreeNodes = true;
+            this.empress._currentLayout = "Rectangular";
+
+            obs_svg = this.empress.exportSvg();
+
+            [num_branches,
+             num_circles,
+             num_nonthickbranches,
+             num_noncoloredbranches] = count_svg_tags(obs_svg);
+
+            deepEqual(num_branches, 9);
+            deepEqual(num_nonthickbranches, 9);  // all branches are NOT thickened
+            deepEqual(num_noncoloredbranches, 9);  // all branches are NOT colored
+            deepEqual(num_circles, 1+4);  // 1 root and 4 tips
+        });
+
+        test("Test exportSvg, default layout + showTreeNodes: circular", function() {
+            this.empress._drawer.showTreeNodes = true;
+            this.empress._currentLayout = "Circular";
+
+            obs_svg = this.empress.exportSvg();
+
+            [num_branches,
+             num_circles,
+             num_nonthickbranches,
+             num_noncoloredbranches] = count_svg_tags(obs_svg);
+
+            deepEqual(num_branches, 36);
+            deepEqual(num_nonthickbranches, 36);  // all branches are NOT thickened
+            deepEqual(num_noncoloredbranches, 36);  // all branches are NOT colored
+            deepEqual(num_circles, 1+4);  // 1 root and 4 tips
+        });
+
+        test("Test exportSvg, color by sample metadata", function() {
+            this.empress._drawer.showTreeNodes = true;
+            this.empress.colorBySampleCat('diseased', 'discrete-coloring-qiime');  // color private features by sample-metadata and propagate buttom-up
+            this.empress._currentLineWidth = 4;  // draw colored branches thicker than normal
+            obs_svg = this.empress.exportSvg();
+
+            [num_branches,
+             num_circles,
+             num_nonthickbranches,
+             num_noncoloredbranches] = count_svg_tags(obs_svg);
+
+            deepEqual(num_branches, 6);
+            deepEqual(num_nonthickbranches, 2);
+            deepEqual(num_noncoloredbranches, 2);
+            deepEqual(num_circles, 1+4);  // 1 root and 4 tips
+        });
+
+        test("Test exportSvg, viewbox size", function() {
+            obs_svg = this.empress.exportSvg();
+            deepEqual(obs_svg.includes('viewBox="-2082.31494140625 -917.0977783203125 3829.0001220703125 3748.4317626953125"'), true);
+        });
+
+        test("Test exportSvg, viewbox size: circular with nodes", function() {
+            this.empress._currentLayout = "Circular";
+            this.empress._drawer.showTreeNodes = true;
+            obs_svg = this.empress.exportSvg();
+            deepEqual(obs_svg.includes('viewBox="-1613 -2417 5236 4030"'), true);
         });
     });
 });
