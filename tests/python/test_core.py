@@ -99,7 +99,7 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=False)
 
-        self.assertEqual(viz.base_url, './')
+        self.assertEqual(viz.base_url, 'support_files')
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
                                         0, 1, 0, 0, 0])
 
@@ -124,7 +124,7 @@ class TestCore(unittest.TestCase):
                       ordination=self.pcoa,
                       filter_unobserved_features_from_phylogeny=False)
 
-        self.assertEqual(viz.base_url, './')
+        self.assertEqual(viz.base_url, 'support_files')
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
                                         0, 1, 0, 0, 0])
 
@@ -260,7 +260,7 @@ class TestCore(unittest.TestCase):
 
 
 # How data should look like when converted to a dict
-DICT_A = {'base_url': './support_files',
+DICT_A = {'base_url': 'support_files',
           'default_layout': 'Unrooted',
           'emperor_base_dependencies': '',
           'emperor_classes': '',
@@ -315,7 +315,7 @@ DICT_A = {'base_url': './support_files',
           'tip_metadata': {},
           'int_metadata': {},
           'feature_metadata_columns': [],
-          'tree': [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0],
+          'tree': [250472],
           'tree_data': {1: {'color': [0.75, 0.75, 0.75],
                             'name': 'a',
                             'sampVal': 1,

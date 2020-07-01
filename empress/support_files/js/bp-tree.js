@@ -22,7 +22,7 @@ define(["ByteArray"], function (ByteArray) {
         if (coding !== undefined) {
           var b_len = b.length - 1;
 
-          var decoded_b = new Array();
+          var decoded_b = [];
           _.each(b, function (value, i) {
             var element = (value).toString(2).split('').map(function(s) {
               return s === '1' ? 1 : 0;
@@ -32,7 +32,7 @@ define(["ByteArray"], function (ByteArray) {
             // Note that we ae padding with 51, which should match the python code
             if (i < (b_len) && element.length < 51){
               var padding = new Array(coding - element.length).fill(0);
-              decoded_b.extend_push_apply(padding)
+              decoded_b.extend_push_apply(padding);
             }
             decoded_b.extend_push_apply(element);
 
