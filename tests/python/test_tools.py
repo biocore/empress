@@ -11,6 +11,7 @@ from pandas.testing import assert_frame_equal
 from skbio import TreeNode
 from empress import Tree, tools
 from empress.taxonomy_utils import split_taxonomy
+from bp import parse_newick, from_skbio_treenode
 
 
 class TestTools(unittest.TestCase):
@@ -80,7 +81,7 @@ class TestTools(unittest.TestCase):
             self.assertEqual(node.name, names[i])
 
     def test_match_inputs_nothing_dropped(self):
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
             t, self.table, self.sample_metadata
         )
@@ -92,7 +93,7 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_only_1_feature_in_table(self):
         # This is technically allowed (so long as this 1 feature is a tree tip)
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         tiny_table = self.table.loc[["a"]]
         filtered_tiny_table, filtered_sample_md, tm, im = tools.match_inputs(
             t, tiny_table, self.sample_metadata
@@ -103,7 +104,7 @@ class TestTools(unittest.TestCase):
         self.assertIsNone(im)
 
     def test_match_inputs_no_tips_in_table(self):
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         bad_table = self.table.copy()
         bad_table.index = range(len(self.table.index))
         with self.assertRaisesRegex(
@@ -123,7 +124,7 @@ class TestTools(unittest.TestCase):
             )
 
     def test_match_inputs_no_shared_samples(self):
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         bad_sample_metadata = self.sample_metadata.copy()
         bad_sample_metadata.index = ["lol", "nothing", "here", "matches"]
         with self.assertRaisesRegex(
@@ -144,7 +145,7 @@ class TestTools(unittest.TestCase):
             )
 
     def test_match_inputs_filter_missing_features_error(self):
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         bad_table = self.table.copy()
         # Replace one of the tip IDs in the table with an internal node ID,
         # instead. This isn't ok.
@@ -159,7 +160,7 @@ class TestTools(unittest.TestCase):
     def test_match_inputs_filter_missing_features_override(self):
         """Checks that --p-filter-missing-features works as expected."""
         # The inputs are the same as with the above test
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         bad_table = self.table.copy()
         bad_table.index = ["a", "b", "e", "g"]
         out_table = None
@@ -189,7 +190,7 @@ class TestTools(unittest.TestCase):
         )
 
     def test_match_inputs_ignore_missing_samples_error(self):
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         bad_table = self.table.copy()
         # Replace one of the sample IDs in the table with some junk
         bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
@@ -203,7 +204,7 @@ class TestTools(unittest.TestCase):
     def test_match_inputs_ignore_missing_samples_override(self):
         """Checks that --p-ignore-missing-samples works as expected."""
         # These inputs are the same as with the above test
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         bad_table = self.table.copy()
         # Replace one of the sample IDs in the table with some junk
         bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
@@ -254,7 +255,7 @@ class TestTools(unittest.TestCase):
            (self.feature_metadata describes three features, "e", "h", and "a".
             h is an internal node in self.tree, and e and a are tips.)
         """
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         f_table, f_sample_metadata, tip_md, int_md = tools.match_inputs(
             t, self.table, self.sample_metadata, self.feature_metadata
         )
@@ -278,7 +279,7 @@ class TestTools(unittest.TestCase):
            all features in the input feature metadata are filtered that an
            error is raised.
         """
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         bad_fm = self.feature_metadata.copy()
         bad_fm.index = range(len(self.feature_metadata.index))
         with self.assertRaisesRegex(
@@ -294,7 +295,7 @@ class TestTools(unittest.TestCase):
         """Tests the filtering case described above, but with not all
            feature(s) in the feature metadata getting filtered out.
         """
-        t = Tree.from_tree(self.tree)
+        t = from_skbio_treenode(self.tree)
         # Manipulate bad_fm so that only the "e" feature should get preserved
         # (since it's actually in the tree, while "asdf" and "hjkl" aren't)
         bad_fm = self.feature_metadata.copy()
@@ -319,9 +320,7 @@ class TestTools(unittest.TestCase):
     def test_match_inputs_feature_metadata_root_metadata_allowed(self):
         """Tests that feature metadata for the root node is preserved."""
         # Slightly modified version of self.tree where root has a name (i)
-        t = Tree.from_tree(
-            TreeNode.read(['(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2)i:1;'])
-        )
+        t = parse_newick('(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2)i:1;')
         fm = self.feature_metadata.copy()
         fm.index = ["a", "g", "i"]
         f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
@@ -352,9 +351,7 @@ class TestTools(unittest.TestCase):
         """
         # Slightly modified version of self.tree with duplicate internal node
         # names (i and g)
-        t = Tree.from_tree(
-            TreeNode.read(['(((a:1,e:2)i:1,b:2)g:1,(:1,d:3)g:2)i:1;'])
-        )
+        t = parse_newick('(((a:1,e:2)i:1,b:2)g:1,(:1,d:3)g:2)i:1;')
         fm = self.feature_metadata.copy()
         fm.index = ["a", "g", "i"]
         f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
@@ -372,9 +369,7 @@ class TestTools(unittest.TestCase):
     def test_match_inputs_feature_metadata_only_internal_node_metadata(self):
         """Tests that feature metadata only for internal nodes is allowed."""
         # Slightly modified version of self.tree where root has a name (i)
-        t = Tree.from_tree(
-            TreeNode.read(['(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2)i:1;'])
-        )
+        t = parse_newick('(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2)i:1;')
         fm = self.feature_metadata.copy()
         fm.index = ["h", "g", "i"]
         f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(

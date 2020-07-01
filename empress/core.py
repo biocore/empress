@@ -128,15 +128,7 @@ class Empress():
     def _validate_and_match_data(self, ignore_missing_samples,
                                  filter_missing_features,
                                  filter_unobserved_features_from_phylogeny):
-        # remove unobserved features from the phylogeny
-        if filter_unobserved_features_from_phylogeny:
-            self.tree = self.tree.shear(set(self.table.columns))
 
-        # extract balance parenthesis
-        self._bp_tree = list(self.tree.B)
-
-        self.tree = Tree.from_tree(to_skbio_treenode(self.tree))
-        fill_missing_node_names(self.tree)
 
         # Note that the feature_table we get from QIIME 2 (as an argument to
         # this function) is set up such that the index describes sample IDs and
@@ -147,6 +139,15 @@ class Empress():
             self.tree, self.table.T, self.samples, self.features,
             ignore_missing_samples, filter_missing_features
         )
+        # remove unobserved features from the phylogeny
+        if filter_unobserved_features_from_phylogeny:
+            self.tree = self.tree.shear(set(self.table.index))
+
+        # extract balance parenthesis
+        self._bp_tree = list(self.tree.B)
+
+        self.tree = Tree.from_tree(to_skbio_treenode(self.tree))
+        fill_missing_node_names(self.tree)
 
     def copy_support_files(self, target=None):
         """Copies the support files to a target directory

@@ -51,8 +51,6 @@ class TestCore(unittest.TestCase):
             index=list(self.table.index)
         )
 
-<<<<<<< HEAD
-=======
         self.feature_metadata = pd.DataFrame(
             {
                 "fmdcol1": ["asdf", "ghjk"],
@@ -60,7 +58,6 @@ class TestCore(unittest.TestCase):
             },
             index=["a", "h"]
         )
->>>>>>> upstream/master
         self.filtered_table = pd.DataFrame(
             {
                 "Sample1": [1, 2, 4],
@@ -151,17 +148,6 @@ class TestCore(unittest.TestCase):
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
-<<<<<<< HEAD
-    def test_init_feature_metadata_warning(self):
-
-        with self.assertWarnsRegex(UserWarning, 'Feature metadata is currently'
-                                   ' not supported'):
-            Empress(self.tree, self.table, self.sample_metadata,
-                    feature_metadata=self.sample_metadata.copy(),
-                    filter_unobserved_features_from_phylogeny=False)
-
-=======
->>>>>>> upstream/master
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
 

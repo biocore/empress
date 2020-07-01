@@ -635,3 +635,57 @@ class Tree(TreeNode):
             max_y, min_y = max(max_y, y2), min(min_y, y2)
 
         return (max_x, min_x, max_y, min_y)
+
+
+def convert_bp_tree_to_dict(bp_tree):
+    nodes = [{'children': [], 'name': None, 'length': None, 'is_leaf': False}
+             for _ in range(sum(bp_tree.B))]
+    root = nodes[0]
+    for i in range(sum(bp_tree.B)):
+        if i < bp_tree.B.size:
+            if bp_tree.isleaf(i):
+                nodes[i]['is_leaf'] = True
+        node_idx = bp_tree.preorderselect(i)
+        nodes[i]['name'] = bp_tree.name(node_idx)
+        nodes[i]['length'] = bp_tree.length(node_idx)
+        if node_idx != bp_tree.root():
+            parent = bp_tree.preorder(bp_tree.parent(node_idx)) - 1
+            nodes[parent]['children'].append(nodes[i])
+    root.length = None
+    return root
+
+# from
+# https://github.com/biocore/scikit-bio/blob/0.5.4/skbio/tree/_tree.py#L1043
+
+
+def preorder_dict_tree(root, include_root=True):
+    stack = [root]
+    while stack:
+        curr = stack.pop()
+        if include_root or (curr is not root):
+            yield curr
+        if curr['children']:
+            stack.extend(curr['children'][::-1])
+
+
+def bp_tree_tips(bp_tree):
+    tips = []
+    for i in range(bp_tree.B.size):
+        if isleaf(bp_tree, i):
+            tips.append(bp_tree.name(i))
+    return tips
+
+
+def bp_tree_non_tips(bp_tree):
+    non_tips = []
+    for i in range(bp_tree.B.size):
+        if not isleaf(bp_tree, i):
+            non_tips.append(bp_tree.name(i))
+    return non_tips
+
+
+def isleaf(bp_tree, i):
+    return bp_tree.B[i] and (not bp_tree.B[i + 1])
+
+
+

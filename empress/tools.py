@@ -11,6 +11,8 @@ import pandas as pd
 import skbio
 from skbio import TreeNode
 from empress import taxonomy_utils
+from empress.tree import bp_tree_tips, bp_tree_non_tips
+import numpy as np
 
 
 class DataMatchingError(Exception):
@@ -43,6 +45,32 @@ def fill_missing_node_names(tree):
             current_unlabeled_node += 1
 
 
+def fill_missing_node_names_from_bp_tree(bp_tree):
+    """ Names nodes in the tree without a name.
+
+     Parameters
+     ----------
+     tree : BP tree
+        Input tree with potentially unnamed nodes (i.e. nodes' .name attributes
+        can be None).
+
+    Returns
+    -------
+    skbio.TreeNode or empress.Tree
+        Tree with all nodes assigned a name.
+    """
+    current_unlabeled_node = 0
+    new_names = np.full(bp_tree.B.size, None, dtype=object)
+    for i in range(sum(bp_tree.B)):
+        if bp_tree.name(i) is None:
+            new_name = 'EmpressNode{}'.format(current_unlabeled_node)
+            new_names[i] = new_name
+            current_unlabeled_node += 1
+        else:
+            new_names[i] = bp_tree.name(i)
+    bp_tree.set_names(new_names)
+
+
 def read(file_name, file_format='newick'):
     """ Reads in contents from a file.
     """
@@ -54,7 +82,7 @@ def read(file_name, file_format='newick'):
 
 
 def match_inputs(
-    tree,
+    bp_tree,
     table,
     sample_metadata,
     feature_metadata=None,
@@ -71,7 +99,7 @@ def match_inputs(
     Parameters
     ----------
 
-    tree: empress.tree.Tree
+    bp_tree: BP Tree
         The tree to be visualized.
     table: pd.DataFrame
         Representation of the feature table. The index should describe feature
@@ -144,7 +172,8 @@ def match_inputs(
     # Match table and tree.
     # (Ignore None-named tips in the tree, which will be replaced later on
     # with "default" names like "EmpressNode0".)
-    tip_names = set([n.name for n in tree.tips() if n.name is not None])
+    tip_names = set([name for name in bp_tree_tips(bp_tree)
+                     if name is not None])
     tree_and_table_features = table.index.intersection(tip_names)
 
     if len(tree_and_table_features) == 0:
@@ -260,7 +289,7 @@ def match_inputs(
 
         # Subset internal node metadata
         internal_node_names = set([
-            n.name for n in tree.non_tips(include_self=True)
+            name for name in bp_tree_non_tips(bp_tree) if name is not None
         ])
         fm_and_int_features = fm_ids.intersection(internal_node_names)
         int_metadata = ts_feature_metadata.loc[fm_and_int_features]
