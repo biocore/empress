@@ -181,7 +181,19 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
+        tree_data = obs['tree_data']
+        exp = DICT_A['tree_data']
+
+        for node in tree_data:
+            for attr in tree_data[node]:
+                self.assertAlmostEqual(tree_data[node][attr], exp[node][attr])
+        # check that keys are identical otherwise
+        self.assertEqual(tree_data.keys(), exp.keys())
+
+        DICT_A.pop('tree_data')
+        obs.pop('tree_data')
         self.assertEqual(obs, DICT_A)
+        DICT_A['tree_data'] = exp
 
     def test_to_dict_with_feature_metadata(self):
         viz = Empress(
@@ -197,7 +209,19 @@ class TestCore(unittest.TestCase):
             "h": {"fmdcol1": "ghjk", "fmdcol2": "tyui"}
         }
         dict_a_with_fm["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
+
+        tree_data = obs['tree_data']
+        exp = dict_a_with_fm['tree_data']
+        for node in tree_data:
+            for attr in tree_data[node]:
+                self.assertAlmostEqual(tree_data[node][attr], exp[node][attr])
+        # check that keys are identical otherwise
+        self.assertEqual(tree_data.keys(), exp.keys())
+
+        obs.pop('tree_data')
+        dict_a_with_fm.pop('tree_data')
         self.assertEqual(obs, dict_a_with_fm)
+        dict_a_with_fm['tree_data'] = exp
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
@@ -216,7 +240,17 @@ class TestCore(unittest.TestCase):
         # values, this helps with tests not breaking if any character changes
         # in # Emperor
         for key, value in obs.items():
-            if not key.startswith('emperor_'):
+            if key == 'tree_data':
+                tree_data = obs['tree_data']
+                exp = DICT_A['tree_data']
+
+                for node in tree_data:
+                    for attr in tree_data[node]:
+                        self.assertAlmostEqual(tree_data[node][attr],
+                                               exp[node][attr])
+                # check that keys are identical otherwise
+                self.assertEqual(tree_data.keys(), exp.keys())
+            elif not key.startswith('emperor_'):
                 self.assertEqual(obs[key], DICT_A[key])
 
         exp = "    <div id='emperor-notebook"
