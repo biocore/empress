@@ -129,7 +129,6 @@ class Empress():
                                  filter_missing_features,
                                  filter_unobserved_features_from_phylogeny):
 
-
         # Note that the feature_table we get from QIIME 2 (as an argument to
         # this function) is set up such that the index describes sample IDs and
         # the columns describe feature IDs. We transpose this table before

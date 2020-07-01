@@ -655,6 +655,3 @@ def bp_tree_non_tips(bp_tree):
 
 def isleaf(bp_tree, i):
     return bp_tree.B[i] and (not bp_tree.B[i + 1])
-
-
-
