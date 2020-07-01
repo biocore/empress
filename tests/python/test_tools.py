@@ -392,6 +392,30 @@ class TestTools(unittest.TestCase):
         self.assertListEqual(list(t_fm.columns), self.exp_split_fm_cols)
         self.assertListEqual(list(i_fm.columns), self.exp_split_fm_cols)
 
+    def test_shifting(self):
+        # helper test function to count number of bits in the number
+        def _count_bits(n):
+            count = 0
+            while (n):
+                count += 1
+                n >>= 1
+            return count
+
+        tests = [
+            ([1, 1, 0, 0, 1, 1], [51]),
+            ([1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1], [4035]),
+            ([1, 1, 0, 0, 0, 0, 1, 1], [195]),
+            ([1], [1]),
+        ]
+
+        for test, obs in tests:
+            self.assertEqual(tools.shifting(test), obs)
+            self.assertEqual(_count_bits(obs[0]), len(test))
+
+        with self.assertRaisesRegex(ValueError, "Your list has values other "
+                                    "than 0-1s"):
+            tools.shifting([10])
+
 
 if __name__ == "__main__":
     unittest.main()

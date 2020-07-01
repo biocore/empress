@@ -11,6 +11,7 @@ import pandas as pd
 import skbio
 from skbio import TreeNode
 from empress import taxonomy_utils
+from itertools import zip_longest
 
 
 class DataMatchingError(Exception):
@@ -273,3 +274,45 @@ def match_inputs(
             )
 
     return ff_table, sf_sample_metadata, tip_metadata, int_metadata
+
+
+def shifting(bitlist, size=51):
+    """Takes a list of 0-1s, splits in in size and converts it to a list of int
+
+    Parameters
+    ----------
+    bitlist: list of int
+        The input list of 0-1
+    size: int
+        The size of the buffer
+
+    Returns
+    -------
+        list of int
+            Representation of the 0-1s as a list of int
+
+    Raises
+    ------
+    ValueError
+        If any of the list values is different than 0 or 1
+
+
+    The tree to be visualized.
+    References
+    ----------
+    Borrowed from https://stackoverflow.com/a/12461400
+    """
+    if not all(x in [0, 1] for x in bitlist):
+        raise ValueError('Your list has values other than 0-1s')
+
+    values = [iter(bitlist)] * size
+    ints = []
+    for num in zip_longest(*values):
+        out = 0
+        for bit in num:
+            if bit is None:
+                continue
+            out = (out << 1) | bit
+        ints.append(out)
+
+    return ints

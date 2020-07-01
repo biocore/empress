@@ -12,12 +12,34 @@ define(["ByteArray"], function (ByteArray) {
      * @return {BPTree}
      * @constructs BPTree
      */
-    function BPTree(b, names = null, lengths = null) {
+    function BPTree(b, names = null, lengths = null, coding = 51) {
         /**
          * @type {Uint8Array}
          * Used to store the structure of the tree
          * @private
          */
+
+        if (coding !== undefined) {
+          var b_len = b.length - 1;
+
+          var decoded_b = new Array();
+          _.each(b, function (value, i) {
+            var element = (value).toString(2).split('').map(function(s) {
+              return s === '1' ? 1 : 0;
+            });
+
+            // We need to pad the number if we are not in the last number of the list
+            // Note that we ae padding with 51, which should match the python code
+            if (i < (b_len) && element.length < 51){
+              var padding = new Array(coding - element.length).fill(0);
+              decoded_b.extend_push_apply(padding)
+            }
+            decoded_b.extend_push_apply(element);
+
+            b = decoded_b;
+          });
+
+        }
         this.b_ = b;
 
         /**
