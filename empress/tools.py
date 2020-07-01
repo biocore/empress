@@ -277,7 +277,7 @@ def match_inputs(
 
 
 def shifting(bitlist, size=51):
-    """Takes a list of 0-1s, splits in in size and converts it to a list of int
+    """Takes a list of 0-1s, splits in size and converts it to a list of int
 
     Parameters
     ----------
@@ -288,8 +288,8 @@ def shifting(bitlist, size=51):
 
     Returns
     -------
-        list of int
-            Representation of the 0-1s as a list of int
+    list of int
+        Representation of the 0-1s as a list of int
 
     Raises
     ------

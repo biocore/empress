@@ -7,7 +7,7 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
             setup: function() {
                 this.bpArray = new Uint8Array([1, 1, 1, 0, 1, 0, 1, 1 ,0, 0, 0,
                         1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]);
-                this.bpObj = new BPTree(this.bpArray);
+                this.bpObj = new BPTree(this.bpArray, coding=undefined);
 
                 // rank caches
                 this.r0 = ByteArray.sumVal(this.bpArray, Uint32Array, 0);
@@ -257,6 +257,11 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
             for (var k = 0; k < exp.length; k++) {
                 equal(this.bpObj.preorderselect(k + 1), exp[k]);
             }
+        });
+
+        test('Test coding', function() {
+          obj = new BPTree([3851728]);
+          equal(obj.b, this.bpObj.b);
         });
     });
 });

@@ -8,6 +8,7 @@ define(["ByteArray"], function (ByteArray) {
      * @param {Uint8Array} b The array that represents the tree structure
      * @param {Array} names The names of each node stored in preorder
      * @param {Array} lengths The lengths of each node stored in preorder
+     * @param {Number} coding The number of 1/0s coded in the tree, undefined not coded
      *
      * @return {BPTree}
      * @constructs BPTree
@@ -21,12 +22,14 @@ define(["ByteArray"], function (ByteArray) {
 
         if (coding !== undefined) {
           var b_len = b.length - 1;
-
           var decoded_b = [];
+
+          function _helper_decode(s) {
+            return s === '1' ? 1 : 0;
+          }
+
           _.each(b, function (value, i) {
-            var element = (value).toString(2).split('').map(function(s) {
-              return s === '1' ? 1 : 0;
-            });
+            var element = (value).toString(2).split('').map(_helper_decode);
 
             // We need to pad the number if we are not in the last number of the list
             // Note that we ae padding with 51, which should match the python code
