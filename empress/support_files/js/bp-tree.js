@@ -21,30 +21,35 @@ define(["ByteArray"], function (ByteArray) {
          */
 
         if (coding !== null) {
-          var b_len = b.length - 1;
-          var decoded_b = [];
+            var b_len = b.length - 1;
+            var decoded_b = [];
 
-          const _helper_decode = function (s) {
-            return s === '1' ? 1 : 0;
-          };
+            const _helper_decode = function (s) {
+                return s === "1" ? 1 : 0;
+            };
 
-          _.each(b, function (value, i) {
-            if (value === 0) {
-              decoded_b.push.apply(decoded_b, [0]);
-            } else {
-              var element = (value).toString(2).split('').map(_helper_decode);
+            _.each(b, function (value, i) {
+                if (value === 0) {
+                    decoded_b.push.apply(decoded_b, [0]);
+                } else {
+                    var element = value
+                        .toString(2)
+                        .split("")
+                        .map(_helper_decode);
 
-              // We need to pad the number if we are not in the last number of the list
-              // Note that we ae padding with 51, which should match the python code
-              if (i < (b_len) && element.length < 51){
-                var padding = new Array(coding - element.length).fill(0);
-                decoded_b.push.apply(decoded_b, padding);
-              }
-              decoded_b.push.apply(decoded_b, element);
-            }
-          });
+                    // We need to pad the number if we are not in the last number of the list
+                    // Note that we ae padding with 51, which should match the python code
+                    if (i < b_len && element.length < 51) {
+                        var padding = new Array(coding - element.length).fill(
+                            0
+                        );
+                        decoded_b.push.apply(decoded_b, padding);
+                    }
+                    decoded_b.push.apply(decoded_b, element);
+                }
+            });
 
-          b = decoded_b;
+            b = decoded_b;
         }
         this.b_ = b;
 
