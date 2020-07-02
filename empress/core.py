@@ -218,13 +218,10 @@ class Empress():
 
         tree_data = {}
         names_to_keys = {}
+        # Note: tree_data starts with index 1 because
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
             tree_data[i] = {
                 'name': node.name,
-                'color': [0.75, 0.75, 0.75],
-                'sampVal': 1,
-                'visible': True,
-                'single_samp': False
             }
             # Add coordinate data from all layouts for this node
             for layoutsuffix in layout_to_coordsuffix.values():

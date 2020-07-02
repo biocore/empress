@@ -178,6 +178,11 @@ define([
      * Initializes WebGL and then draws the tree
      */
     Empress.prototype.initialize = function () {
+        // add default color/visible to all nodes
+        for (var i = 1; i <= this._tree.size; i++) {
+            this._treeData[i].color = this.DEFAULT_COLOR;
+            this._treeData[i].visible = true;
+        }
         this._drawer.initialize();
         this._events.setMouseEvents();
         var nodeNames = Object.keys(this._nameToKeys);
