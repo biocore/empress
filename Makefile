@@ -48,3 +48,10 @@ docs:
 		--m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
 		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
 		--o-visualization docs/moving-pictures/empress-tree.qzv
+	qiime empress plot \
+		--i-tree docs/moving-pictures/rooted-tree.qza \
+		--i-feature-table docs/moving-pictures/table.qza \
+		--i-pcoa docs/moving-pictures/unweighted_unifrac_pcoa_results.qza \
+		--m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
+		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
+		--o-visualization docs/moving-pictures/empress-tree-tandem.qzv

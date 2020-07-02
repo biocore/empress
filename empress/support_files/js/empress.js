@@ -128,7 +128,7 @@ define([
 
         /**
          * @type{Object}
-         * Feature metadata: keys are tree node IDs, and values are objects
+         * Feature metadata: keys are tree node names, and values are objects
          * mapping feature metadata column names to the metadata value for that
          * feature. We split this up into tip and internal node feature
          * metadata objects.
@@ -154,6 +154,11 @@ define([
         this._currentLayout = defaultLayout;
 
         /**
+         * type {Object}
+         * Maps tree layouts to the average point of each layout
+         */
+        this.layoutAvgPoint = {};
+        /**
          * @type{Number}
          * The line width used for drawing "thick" lines.
          */
@@ -164,8 +169,10 @@ define([
          * Handles user events
          */
         // allow canvas to be null to make testing empress easier
-        if (canvas !== null &&
-                document.getElementById("quick-search") !== null) {
+        if (
+            canvas !== null &&
+            document.getElementById("quick-search") !== null
+        ) {
             this._events = new CanvasEvents(this, this._drawer, canvas);
         }
     }
@@ -175,13 +182,12 @@ define([
      */
     Empress.prototype.initialize = function () {
         this._drawer.initialize();
-        this._drawer.loadNodeBuff(this.getNodeCoords());
-        this.drawTree();
         this._events.setMouseEvents();
         var nodeNames = Object.keys(this._nameToKeys);
         nodeNames = nodeNames.filter((n) => !n.startsWith("EmpressNode"));
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
+        this.centerLayoutAvgPoint();
     };
 
     /**
@@ -699,7 +705,7 @@ define([
         var tree = this._tree;
         var obs = this._biom.getObjservationUnionForSamples(sIds);
         obs = Array.from(this._namesToKeys(obs));
-        obs = this._projectObservations({ samples: new Set(obs) }, false);
+        obs = this._projectObservations({ samples: new Set(obs) });
         obs = Array.from(obs.samples);
 
         for (var i = 0; i < obs.length; i++) {
@@ -715,8 +721,7 @@ define([
      * This method assumes we receive a list of samples and colors from
      * Emperor then it goes ahead and creates one group per color.
      *
-     * @param {Object} sampleGroups - A map of color hex string to list of
-     *                                sample identifiers.
+     * @param {Array} sampleGroups - A list of sample identifiers
      */
     Empress.prototype.colorSampleGroups = function (sampleGroups) {
         var observationsPerGroup = {},
@@ -732,10 +737,7 @@ define([
         }
 
         // project to ancestors
-        observationsPerGroup = this._projectObservations(
-            observationsPerGroup,
-            false
-        );
+        observationsPerGroup = this._projectObservations(observationsPerGroup);
 
         for (group in observationsPerGroup) {
             obs = Array.from(observationsPerGroup[group]);
@@ -799,7 +801,7 @@ define([
         }
 
         // assign internal nodes to appropriate category based on its children
-        obs = this._projectObservations(obs, true);
+        obs = this._projectObservations(obs);
 
         // assign colors to categories
         categories = util.naturalSort(Object.keys(obs));
@@ -849,18 +851,18 @@ define([
 
         var uniqueValueToFeatures = {};
         _.each(fmObjs, function (mObj) {
-            _.mapObject(mObj, function (fmRow, tipID) {
+            _.mapObject(mObj, function (fmRow, nodeID) {
                 // This is loosely based on how BIOMTable.getObsBy() works.
                 var fmVal = fmRow[cat];
                 if (_.has(uniqueValueToFeatures, fmVal)) {
-                    uniqueValueToFeatures[fmVal].push(tipID);
+                    uniqueValueToFeatures[fmVal].push(nodeID);
                 } else {
-                    uniqueValueToFeatures[fmVal] = [tipID];
+                    uniqueValueToFeatures[fmVal] = [nodeID];
                 }
             });
         });
 
-        var emp = this;
+        var scope = this;
         var sortedUniqueValues = util.naturalSort(
             Object.keys(uniqueValueToFeatures)
         );
@@ -869,7 +871,9 @@ define([
         var obs = {};
         _.each(sortedUniqueValues, function (uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
-            obs[uniqueVal] = emp._namesToKeys(uniqueValueToFeatures[uniqueVal]);
+            obs[uniqueVal] = scope._namesToKeys(
+                uniqueValueToFeatures[uniqueVal]
+            );
         });
 
         // assign colors to unique values
@@ -890,7 +894,7 @@ define([
         // to talk about "groups" rather than "samples", esp. since I think
         // animation has the same problem...
         if (method === "tip") {
-            obs = this._projectObservations(obs, false);
+            obs = this._projectObservations(obs);
         }
 
         // color tree
@@ -904,28 +908,21 @@ define([
      *
      * This function performs two distinct operations:
      *      1) Removes the non-unique observations from each group in obs
-     *         (i.e. performs an 'exclusive or' between each group) and, if
-     *         addNonUnique is true, then places all non-unique observations
-     *         (that are tips in the tree) in a "non-unique" group.
+     *         (i.e. performs an 'exclusive or' between each group).
      *
-     *      2) Assigns internal nodes to a group if all of its children belong
+     *      2) Assigns each internal node to a group if all of its children belong
      *         to the same group.
      *
      * Note: All tips that are not passed into obs are considered to belong to
      *       a "not-represented" group, which will be omitted from the
      *       returned version of obs.
-     *       Also, if addNonUnique is true, then a "non-unique" object will
-     *       be inserted into the return object.
      *
      * @param {Object} obs Maps categories to a set of observations (i.e. tips)
-     * @param {Boolean} addNonUnique If true, and then insert the "non-unique"
-     *                               group into the returning object.
-     * @return {Object} returns A Map with the same group names (plus
-                        'non-uniqe' if addNonUnique is true) that maps groups
+     * @return {Object} returns A Map with the same group names that maps groups
                         to a set of keys (i.e. tree nodes) that are unique to
                         each group.
      */
-    Empress.prototype._projectObservations = function (obs, addNonUnique) {
+    Empress.prototype._projectObservations = function (obs) {
         var tree = this._tree,
             categories = Object.keys(obs),
             notRepresented = new Set(),
@@ -972,28 +969,17 @@ define([
         }
         var result = util.keepUniqueKeys(obs, notRepresented);
 
-        // remove all "non-unique" branches that aren't tips
-        // Note: if all children belong to "non-unique" should we project that
-        //       up the tree? Current behavior does not project it up the tree
-        //       because branches in this group may be elements of different
-        //       groups. For example "b1" may belong to skin and oral while
-        //       "b2" may belong to gut and skin.
-        for (var elem of result["non-unique"]) {
-            if (!tree.isleaf(tree.postorderselect(elem))) {
-                result["non-unique"].delete(elem);
-            }
-        }
-
-        // keep "non-unique" tips if addNonUnique is true
-        if (!addNonUnique) delete result["non-unique"];
-
         return result;
     };
 
     /**
      * Updates the tree based on obs and cm but does not draw a new tree.
      *
-     * @param{Object} obs The mapping from sample category to unique features.
+     * Note: The nodes in each sample category should be unique. The behavior of
+     *       this function is undefined if nodes in each category are not
+     *       unique.
+     *
+     * @param{Object} obs The mapping from sample category to unique nodes.
      * @param{Object} cm The mapping from sample category to color.
      */
     Empress.prototype._colorTree = function (obs, cm) {
@@ -1060,8 +1046,9 @@ define([
                     // The - 1 mimics the behavior of SidePanel._updateSample()
                     this.thickenSameSampleLines(this._currentLineWidth - 1);
                 }
-                this._drawer.loadNodeBuff(this.getNodeCoords());
-                this.drawTree();
+                // this._drawer.loadNodeBuff(this.getNodeCoords());
+                // this.drawTree();
+                this.centerLayoutAvgPoint();
             } else {
                 // This should never happen under normal circumstances (the
                 // input to this function should always be an existing layout
@@ -1116,6 +1103,71 @@ define([
      */
     Empress.prototype.getFeatureMetadataCategories = function () {
         return this._featureMetadataColumns;
+    };
+
+    /**
+     * Display the tree nodes.
+     * Note: Currently Empress will only display the nodes that had an assigned
+     * name in the newick string. (I.E. Empress will not show any node that
+     * starts with EmpressNode)
+     *
+     * @param{Boolean} showTreeNodes If true then empress will display the tree
+     *                               nodes.
+     */
+    Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
+        this._drawer.setTreeNodeVisibility(showTreeNodes);
+        this.drawTree();
+    };
+
+    /**
+     * Centers the viewing window at the average of the current layout.
+     */
+    Empress.prototype.centerLayoutAvgPoint = function () {
+        if (!(this._currentLayout in this.layoutAvgPoint)) {
+            // Add up x and y coordinates of all nodes in the tree (using
+            // current layout).
+            var x = 0,
+                y = 0,
+                zoomAmount = 0,
+                node;
+            for (var i = 1; i <= this._tree.size; i++) {
+                node = this._treeData[i];
+                x += this.getX(node);
+                y += this.getY(node);
+                zoomAmount = Math.max(
+                    zoomAmount,
+                    Math.abs(this.getX(node)),
+                    Math.abs(this.getY(node))
+                );
+            }
+
+            // each layout's avegerage point is define as followed:
+            // [x, y, zoomAmount] where x is the average of all x coordinates,
+            // y is the average of all y coordinates, and zoomAmount takes the
+            // largest x or y coordinate and normaizes it by dim / 2 (where
+            // dim is the dimension of the canvas).
+            // Note: zoomAmount is defined be a simple heuristic that should
+            // allow the majority of the tree to be visible in the viewing
+            // window.
+            this.layoutAvgPoint[this._currentLayout] = [
+                x / this._tree.size,
+                y / this._tree.size,
+                (2 * zoomAmount) / this._drawer.dim,
+            ];
+        }
+
+        // center the viewing window on the average point of the current layout
+        // and zoom out so the majority of the tree is visible.
+        var cX = this.layoutAvgPoint[this._currentLayout][0],
+            cY = this.layoutAvgPoint[this._currentLayout][1];
+        this._drawer.centerCameraOn(cX, cY);
+        this._drawer.zoom(
+            this._drawer.treeSpaceCenterX,
+            this._drawer.treeSpaceCenterY,
+            false,
+            this.layoutAvgPoint[this._currentLayout][2]
+        );
+        this.drawTree();
     };
 
     return Empress;

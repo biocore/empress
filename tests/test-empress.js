@@ -1,4 +1,4 @@
-require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function($, BPTree, Empress, BiomTable, util, chroma) {
+require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function($, BPTree, Empress, BiomTable, util, chroma) {
     $(document).ready(function() {
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray without
@@ -343,7 +343,8 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
             var color = [0.5, 0.6, 0.7];
             this.empress.colorSampleIDs(samples, color);
 
-            // Note: these are the only nodes that should colored
+            // Note: 1 does not belong to s2 or s7 so it should not be colored
+            //       which means the color should not be projected up to node 5
             var cNodes = new Set([2, 3, 4, 6]);
             for (var i = 1; i <= 7; i++) {
                 var node = this.empress._treeData[i];
@@ -356,11 +357,15 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
          });
 
          test("Test colorSampleGroups, single group", function() {
-            // Note: this covers the enitre tree
+            // Note: the group names for colorSampleGroup must be a color
+            // hex string
             var sampleGroup = {
-                "FF0000": ["s1", "s2", "s3"]
+                "FF0000": ["s1", "s2", "s7"]
             };
             this.empress.colorSampleGroups(sampleGroup);
+
+            // the entire tree should be colored the samples in sampleGroup
+            // contain all tips
             for (var i = 1; i <=7; i++) {
                 var node = this.empress._treeData[i];
                 deepEqual(node.color, [1.0, 0, 0]);
@@ -368,11 +373,16 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
          });
 
          test("Test colorSampleGroups, mult group", function() {
+            // Note: the group names for colorSampleGroup must be a color
+            // hex string
             var sampleGroups = {
                 "FF0000": ["s4", "s7"],
                 "00FF00": ["s1", "s2"]
             }
+
+            // red nodes are the unique nodes in FFOOOO
             var redNodes = new Set([6]);
+            // green nodes are the unique nodes in 00FF00
             var greeNodes = new Set([1, 3]);
             this.empress.colorSampleGroups(sampleGroups);
             for (var i = 1; i <=7; i++) {
@@ -419,7 +429,7 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
 
             // make sure only a and b are valid groups as 'a' and 'b' are
             // the only values in 'f1'
-            var groups = ["a", "b", "non-unique"];
+            var groups = ["a", "b"];
             var resultGroups = util.naturalSort(Object.keys(cm));
             deepEqual(resultGroups, groups);
 
@@ -428,21 +438,14 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
             // "a" group
             var groupCm = cm["a"];
             notDeepEqual(cm["b"], cm);
-            notDeepEqual(cm["non-unique"], cm);
 
             // "b" group
             var groupCm = cm["b"];
             notDeepEqual(cm["a"], cm);
-            notDeepEqual(cm["non-unique"], cm);
-
-            // "non-unique" group
-            var groupCm = cm["non-unique"];
-            notDeepEqual(cm["a"], cm);
-            notDeepEqual(cm["b"], cm);
 
             // make sure nodes where assigned the correct color
+            // note that gropu b does not have any unique nodes
             var aGroupNodes = new Set([1, 3]);
-            var nonUniqueNodes = new Set([2, 6]);
             for (var i = 1; i<=7; i++) {
                 var node = this.empress._treeData[i];
                 if (aGroupNodes.has(i)) {
@@ -450,23 +453,18 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
                         node.color,
                         chroma(cm["a"]).gl().slice(0, 3)
                     );
-                } else if (nonUniqueNodes.has(i)) {
-                    deepEqual(
-                        node.color,
-                        chroma(cm["non-unique"]).gl().slice(0, 3)
-                    );
-                } else {
+                }  else {
                     deepEqual(node.color, [1.0, 1.0, 1.0]);
                 }
             }
 
          });
 
-        test("Test colorByFeatureMetadata, tip only", function() {
+        // test("Test colorByFeatureMetadata, tip only", function() {
 
-        });
+        // });
 
-        test('Test _projectObservations, all tips in obs', function() {
+        test("Test _projectObservations, all tips in obs", function() {
             var obs = {
                 "g1" : new Set([2, 3]),
                 "g2" : new Set([1]),
@@ -476,15 +474,14 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
                 "g1" : new Set([2,3,4]),
                 "g2" : new Set([1]),
                 "g3" : new Set([6]),
-                "non-unique" : new Set([])
             };
-            var result = this.empress._projectObservations(obs, true);
+            var result = this.empress._projectObservations(obs);
 
-            var groups = ["g1", "g2", "g3", "non-unique"];
+            var groups = ["g1", "g2", "g3"];
             for (var i = 0; i < groups.length; i++) {
                 var group = groups[i];
                 var expectedArray = Array.from(expectedResult[group]);
-                var resultArray = Array.from(result[group]);
+                var resultArray = util.naturalSort(Array.from(result[group]));
                 deepEqual(resultArray, expectedArray);
             }
 
@@ -492,7 +489,7 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
             deepEqual(columns, groups);
         });
 
-        test('Test _projectObservations, missing tips in obs', function() {
+        test("Test _projectObservations, missing tips in obs", function() {
             var obs = {
                 "g1" : new Set([2, 3]),
                 "g2" : new Set([]),
@@ -501,16 +498,61 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
             var expectedResult = {
                 "g1" : new Set([2, 3, 4]),
                 "g2" : new Set([]),
-                "g3" : new Set([6]),
-                "non-unique" : new Set([])
+                "g3" : new Set([6])
             };
-            var result = this.empress._projectObservations(obs, true);
+            var result = this.empress._projectObservations(obs);
 
-            var groups = ["g1", "g2", "g3", "non-unique"];
+            var groups = ["g1", "g2", "g3"];
             for (var i = 0; i < groups.length; i++) {
                 var group = groups[i];
                 var expectedArray = Array.from(expectedResult[group]);
-                var resultArray = Array.from(result[group]);
+                var resultArray = util.naturalSort(Array.from(result[group]));
+                deepEqual(resultArray, expectedArray);
+            }
+
+            var columns = Object.keys(result);
+            deepEqual(columns, groups);
+        });
+
+        test("Test _projectObservations, all tips are unique to group", function() {
+            var obs = {
+                "g1": new Set([1, 2, 3, 6]),
+                "g2": new Set([])
+            };
+            var expectedResult = {
+                "g1": new Set([1, 2, 3, 4, 5, 6, 7]),
+                "g2": new Set([])
+            };
+            var result = this.empress._projectObservations(obs);
+
+            var groups = ["g1", "g2"];
+            for (var i = 0; i < groups.length; i++) {
+                var group = groups[i];
+                var expectedArray = Array.from(expectedResult[group]);
+                var resultArray = util.naturalSort(Array.from(result[group]));
+                deepEqual(resultArray, expectedArray);
+            }
+
+            var columns = Object.keys(result);
+            deepEqual(columns, groups);
+        });
+
+        test("Test _projectObservations, no tips are present in any group", function() {
+            var obs = {
+                "g1": new Set([]),
+                "g2": new Set([])
+            };
+            var expectedResult = {
+                "g1": new Set([]),
+                "g2": new Set([])
+            };
+            var result = this.empress._projectObservations(obs);
+
+            var groups = ["g1", "g2"];
+            for (var i = 0; i < groups.length; i++) {
+                var group = groups[i];
+                var expectedArray = Array.from(expectedResult[group]);
+                var resultArray = util.naturalSort(Array.from(result[group]));
                 deepEqual(resultArray, expectedArray);
             }
 
@@ -545,6 +587,19 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
             }
         });
 
+        test("Test resetTree", function() {
+            var e = this.empress; // used to shorten funciton calls
+            var keys  = Object.keys(e._treeData);
+            e.resetTree();
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                deepEqual(e._treeData[key].color, e.DEFAULT_COLOR);
+                equal(e._treeData[key].inSample, false);
+                equal(e._treeData[key].sampleColored, false);
+                equal(e._treeData[key].visible, true);
+            }
+        });
+
         test("Test getSampleCategories", function() {
             var categories = ["f1", "grad", "traj"];
             var result = this.empress.getSampleCategories();
@@ -557,6 +612,15 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
             var result = this.empress.getAvailableLayouts();
             result = util.naturalSort(result);
             deepEqual(result, layouts);
+        });
+
+        test("Test updateLayout", function() {
+            // check if layout updates with valid layout
+            this.empress.updateLayout("Circular");
+            deepEqual(this.empress._currentLayout, "Circular");
+
+            // check to make sure an error is thrown with invalid layout
+            throws(function() {this.empress.updateLayout("bad_layout");});
         });
 
         test("Test getDefaultLayout", function(){
@@ -602,6 +666,44 @@ require(['jquery', 'BPTree', 'Empress', "BiomTable", "util", "chroma"], function
             var columns = util.naturalSort(
                 this.empress.getFeatureMetadataCategories());
             deepEqual(columns, expectedColumns);
+        });
+
+        test("Test centerLayoutAvgPoint", function() {
+            // cache average point for all layouts
+            this.empress._currentLayout = "Rectangular";
+            this.empress.centerLayoutAvgPoint();
+            this.empress._currentLayout = "Circular";
+            this.empress.centerLayoutAvgPoint();
+            this.empress._currentLayout = "Unrooted";
+            this.empress.centerLayoutAvgPoint();
+
+            // x coord for rectangular layout
+            ok(
+                Math.abs(this.empress.layoutAvgPoint["Rectangular"][0] - 7)
+                <= 1.0e-15)
+            // y coor for rectangular layout
+            ok(
+                Math.abs(this.empress.layoutAvgPoint["Rectangular"][1] - 8)
+                <= 1.0e-15)
+
+            // x coord for circular layout
+            ok(
+                Math.abs(this.empress.layoutAvgPoint["Circular"][0] - 21)
+                <= 1.0e-15)
+            // y coor for circular layout
+            ok(
+                Math.abs(this.empress.layoutAvgPoint["Circular"][1] - 22)
+                <= 1.0e-15)
+
+            // x coord for Unrooted layout
+            ok(
+                Math.abs(this.empress.layoutAvgPoint["Unrooted"][0] - 35)
+                <= 1.0e-15)
+            // y coor for Unrooted layout
+            ok(
+                Math.abs(this.empress.layoutAvgPoint["Unrooted"][1] - 36)
+                <= 1.0e-15)
+
         });
     });
 });
