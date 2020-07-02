@@ -12,7 +12,7 @@ define(["underscore", "util"], function (_, util) {
         this.box = document.getElementById("menu-box");
         this.sel = document.getElementById("menu-select");
         this.addBtn = document.getElementById("menu-add-btn");
-        this.nodeIdLabel = document.getElementById("menu-box-node-id");
+        this.nodeNameLabel = document.getElementById("menu-box-node-id");
         this.notes = document.getElementById("menu-box-notes");
         this.warning = document.getElementById("menu-box-warning");
         this.fmTable = document.getElementById("menu-fm-table");
@@ -182,7 +182,7 @@ define(["underscore", "util"], function (_, util) {
         var node = emp._treeData[nodeKeys[0]];
         var name = node.name;
 
-        this.nodeIdLabel.textContent = "ID: " + node.name;
+        this.nodeNameLabel.textContent = "Name: " + node.name;
 
         this.notes.textContent = "";
         this.warning.textContent = "";
@@ -272,7 +272,7 @@ define(["underscore", "util"], function (_, util) {
                 "Warning: " +
                 this.nodeKeys.length +
                 " nodes exist with the " +
-                "above ID.";
+                "above name.";
             isDup = true;
         }
 

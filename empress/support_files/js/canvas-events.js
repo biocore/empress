@@ -198,14 +198,14 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
         var searchBtn = this.quickSearchBtn;
 
         var createClickEvent = function (e) {
-            var nodeId = this.id;
+            var nodeName = this.id;
 
             // set text of quick-search to match suggested word
-            quickSearchBar.value = nodeId;
-            quickSearchBar.innerHTML = nodeId;
+            quickSearchBar.value = nodeName;
+            quickSearchBar.innerHTML = nodeName;
 
             // show the selected node menu
-            scope.placeNodeSelectionMenu(nodeId);
+            scope.placeNodeSelectionMenu(nodeName);
 
             // clear possible words menu
             removeSuggestionMenu();
@@ -308,29 +308,30 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
          * click event for quickSearchBtn
          */
         var search = function () {
-            var nodeId = quickSearchBar.value;
-            scope.placeNodeSelectionMenu(nodeId);
+            var nodeName = quickSearchBar.value;
+            scope.placeNodeSelectionMenu(nodeName);
         };
         searchBtn.onclick = search;
     };
 
     /**
-     * Creates a node selection menu box for nodeId. If nodeId does
+     * Creates a node selection menu box for nodeName. If nodeName does
      * not exist, then this this method will make the background color of the
      * quick search bar red.
      * This method is call from the both the quick search btn and when the user
      * clicks on the canvas.
      *
-     * @param{String} nodeId The node ID to make a node selection menu box for.
+     * @param{String} nodeName The node name to make a node selection menu box
+     * for.
      * @param{Boolean} moveTree If true, then this method will move the viewing
      *                          window of the tree to the node.
      */
     CanvasEvents.prototype.placeNodeSelectionMenu = function (
-        nodeId,
+        nodeName,
         moveTree = true
     ) {
         // multiple nodes can have the same name
-        var idList = this.empress._nameToKeys[nodeId];
+        var idList = this.empress._nameToKeys[nodeName];
 
         if (idList !== undefined) {
             // get first node
