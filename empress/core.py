@@ -218,7 +218,8 @@ class Empress():
 
         tree_data = {}
         names_to_keys = {}
-        # Note: tree_data starts with index 1 because
+        # Note: tree_data starts with index 1 because the bp tree uses 1 based
+        # indexing
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
             tree_data[i] = {
                 'name': node.name,
