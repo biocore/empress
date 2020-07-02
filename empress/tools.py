@@ -45,32 +45,6 @@ def fill_missing_node_names(tree):
             current_unlabeled_node += 1
 
 
-def fill_missing_node_names_from_bp_tree(bp_tree):
-    """ Names nodes in the tree without a name.
-
-     Parameters
-     ----------
-     tree : BP tree
-        Input tree with potentially unnamed nodes (i.e. nodes' .name attributes
-        can be None).
-
-    Returns
-    -------
-    skbio.TreeNode or empress.Tree
-        Tree with all nodes assigned a name.
-    """
-    current_unlabeled_node = 0
-    new_names = np.full(bp_tree.B.size, None, dtype=object)
-    for i in range(sum(bp_tree.B)):
-        if bp_tree.name(i) is None:
-            new_name = 'EmpressNode{}'.format(current_unlabeled_node)
-            new_names[i] = new_name
-            current_unlabeled_node += 1
-        else:
-            new_names[i] = bp_tree.name(i)
-    bp_tree.set_names(new_names)
-
-
 def read(file_name, file_format='newick'):
     """ Reads in contents from a file.
     """
@@ -99,7 +73,7 @@ def match_inputs(
     Parameters
     ----------
 
-    bp_tree: BP Tree
+    bp_tree: bp.BP
         The tree to be visualized.
     table: pd.DataFrame
         Representation of the feature table. The index should describe feature

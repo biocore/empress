@@ -19,12 +19,20 @@ from shutil import rmtree
 
 from emperor import Emperor
 from empress.core import Empress
-from bp import parse_newick
+from bp import parse_newick, from_skbio_treenode
 from six import StringIO
 from skbio.tree import TreeNode
 
 
 class TestCore(unittest.TestCase):
+
+    def assert_almost_equal_tree_data(self, tree_data, exp):
+        for node in tree_data:
+            for attr in tree_data[node]:
+                self.assertAlmostEqual(tree_data[node][attr], exp[node][attr])
+        # check that keys are identical otherwise
+        self.assertEqual(tree_data.keys(), exp.keys())
+
     def setUp(self):
         self.tree = parse_newick('(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2):1;')
         self.pruned_tree = TreeNode.read(
@@ -181,19 +189,16 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
+        dict_a_cp = copy.deepcopy(DICT_A)
+
         tree_data = obs['tree_data']
-        exp = DICT_A['tree_data']
+        exp = dict_a_cp['tree_data']
 
-        for node in tree_data:
-            for attr in tree_data[node]:
-                self.assertAlmostEqual(tree_data[node][attr], exp[node][attr])
-        # check that keys are identical otherwise
-        self.assertEqual(tree_data.keys(), exp.keys())
+        self.assert_almost_equal_tree_data(tree_data, exp)
 
-        DICT_A.pop('tree_data')
+        dict_a_cp.pop('tree_data')
         obs.pop('tree_data')
-        self.assertEqual(obs, DICT_A)
-        DICT_A['tree_data'] = exp
+        self.assertEqual(obs, dict_a_cp)
 
     def test_to_dict_with_feature_metadata(self):
         viz = Empress(
@@ -212,16 +217,11 @@ class TestCore(unittest.TestCase):
 
         tree_data = obs['tree_data']
         exp = dict_a_with_fm['tree_data']
-        for node in tree_data:
-            for attr in tree_data[node]:
-                self.assertAlmostEqual(tree_data[node][attr], exp[node][attr])
-        # check that keys are identical otherwise
-        self.assertEqual(tree_data.keys(), exp.keys())
+        self.assert_almost_equal_tree_data(tree_data, exp)
 
         obs.pop('tree_data')
         dict_a_with_fm.pop('tree_data')
         self.assertEqual(obs, dict_a_with_fm)
-        dict_a_with_fm['tree_data'] = exp
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
@@ -243,13 +243,7 @@ class TestCore(unittest.TestCase):
             if key == 'tree_data':
                 tree_data = obs['tree_data']
                 exp = DICT_A['tree_data']
-
-                for node in tree_data:
-                    for attr in tree_data[node]:
-                        self.assertAlmostEqual(tree_data[node][attr],
-                                               exp[node][attr])
-                # check that keys are identical otherwise
-                self.assertEqual(tree_data.keys(), exp.keys())
+                self.assert_almost_equal_tree_data(tree_data, exp)
             elif not key.startswith('emperor_'):
                 self.assertEqual(obs[key], DICT_A[key])
 

@@ -638,20 +638,60 @@ class Tree(TreeNode):
 
 
 def bp_tree_tips(bp_tree):
+    """ Extracts tip names in the tree
+
+    Parameters
+    ----------
+    bp_tree : bp.BP
+        Input BP tree
+    Returns
+    -------
+    tips : list of strings
+        list of tip names in the tree
+    """
     tips = []
+    # Iterate through all open and closing parentheses and extract tip names
     for i in range(bp_tree.B.size):
-        if isleaf(bp_tree, i):
+        # Check if this is a leaf node and has a label
+        if isleaf(bp_tree, i) and (bp_tree.name(i) is not None):
             tips.append(bp_tree.name(i))
     return tips
 
 
 def bp_tree_non_tips(bp_tree):
+    """ Extracts internal node names in the tree
+
+       Parameters
+       ----------
+       bp_tree : bp.BP
+           Input BP tree
+       Returns
+       -------
+       non_tips : list of strings
+           list of internal node names in the tree
+    """
     non_tips = []
     for i in range(bp_tree.B.size):
-        if not isleaf(bp_tree, i):
+        # Check if this is an opening parenthesis, is not leaf, and
+        # has a node label
+        if bp_tree.B[i] and (not isleaf(bp_tree, i)) and \
+                (bp_tree.name(i) is not None):
             non_tips.append(bp_tree.name(i))
     return non_tips
 
 
 def isleaf(bp_tree, i):
+    """ Checks if node at position i belongs to a leaf node or not
+
+        Parameters
+       ----------
+       bp_tree : bp.BP
+           Input BP tree
+        i : int
+           The query node index
+       Returns
+       -------
+       int
+           1 if this is a leaf node, 0 otherwise
+    """
     return bp_tree.B[i] and (not bp_tree.B[i + 1])

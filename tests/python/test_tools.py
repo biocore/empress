@@ -21,6 +21,7 @@ class TestTools(unittest.TestCase):
 
     def setUp(self):
         self.tree = self.mock_tree_from_nwk()
+        self.bp_tree = from_skbio_treenode(self.tree)
         # Test table/metadata (mostly) adapted from Qurro:
         # https://github.com/biocore/qurro/blob/b9613534b2125c2e7ee22e79fdff311812f4fefe/qurro/tests/test_df_utils.py#L178
         self.table = pd.DataFrame(
@@ -81,9 +82,8 @@ class TestTools(unittest.TestCase):
             self.assertEqual(node.name, names[i])
 
     def test_match_inputs_nothing_dropped(self):
-        t = from_skbio_treenode(self.tree)
         filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
-            t, self.table, self.sample_metadata
+            self.bp_tree, self.table, self.sample_metadata
         )
         assert_frame_equal(filtered_table, self.table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
@@ -93,10 +93,9 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_only_1_feature_in_table(self):
         # This is technically allowed (so long as this 1 feature is a tree tip)
-        t = from_skbio_treenode(self.tree)
         tiny_table = self.table.loc[["a"]]
         filtered_tiny_table, filtered_sample_md, tm, im = tools.match_inputs(
-            t, tiny_table, self.sample_metadata
+            self.bp_tree, tiny_table, self.sample_metadata
         )
         assert_frame_equal(filtered_tiny_table, tiny_table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
@@ -104,14 +103,13 @@ class TestTools(unittest.TestCase):
         self.assertIsNone(im)
 
     def test_match_inputs_no_tips_in_table(self):
-        t = from_skbio_treenode(self.tree)
         bad_table = self.table.copy()
         bad_table.index = range(len(self.table.index))
         with self.assertRaisesRegex(
             tools.DataMatchingError,
             "No features in the feature table are present as tips in the tree."
         ):
-            tools.match_inputs(t, bad_table, self.sample_metadata)
+            tools.match_inputs(self.bp_tree, bad_table, self.sample_metadata)
         # Check that --p-filter-missing-features still doesn't work to override
         # this, since there are NO matching features at all
         with self.assertRaisesRegex(
@@ -119,12 +117,11 @@ class TestTools(unittest.TestCase):
             "No features in the feature table are present as tips in the tree."
         ):
             tools.match_inputs(
-                t, bad_table, self.sample_metadata,
+                self.bp_tree, bad_table, self.sample_metadata,
                 filter_missing_features=True
             )
 
     def test_match_inputs_no_shared_samples(self):
-        t = from_skbio_treenode(self.tree)
         bad_sample_metadata = self.sample_metadata.copy()
         bad_sample_metadata.index = ["lol", "nothing", "here", "matches"]
         with self.assertRaisesRegex(
@@ -132,7 +129,7 @@ class TestTools(unittest.TestCase):
             "No samples in the feature table are present in the sample "
             "metadata."
         ):
-            tools.match_inputs(t, self.table, bad_sample_metadata)
+            tools.match_inputs(self.bp_tree, self.table, bad_sample_metadata)
         # Check that --p-ignore-missing-samples still doesn't work to override
         # this, since there are NO matching samples at all
         with self.assertRaisesRegex(
@@ -141,11 +138,11 @@ class TestTools(unittest.TestCase):
             "metadata."
         ):
             tools.match_inputs(
-                t, self.table, bad_sample_metadata, ignore_missing_samples=True
+                self.bp_tree, self.table,
+                bad_sample_metadata, ignore_missing_samples=True
             )
 
     def test_match_inputs_filter_missing_features_error(self):
-        t = from_skbio_treenode(self.tree)
         bad_table = self.table.copy()
         # Replace one of the tip IDs in the table with an internal node ID,
         # instead. This isn't ok.
@@ -155,12 +152,11 @@ class TestTools(unittest.TestCase):
             "The feature table contains features that aren't present as tips "
             "in the tree."
         ):
-            tools.match_inputs(t, bad_table, self.sample_metadata)
+            tools.match_inputs(self.bp_tree, bad_table, self.sample_metadata)
 
     def test_match_inputs_filter_missing_features_override(self):
         """Checks that --p-filter-missing-features works as expected."""
         # The inputs are the same as with the above test
-        t = from_skbio_treenode(self.tree)
         bad_table = self.table.copy()
         bad_table.index = ["a", "b", "e", "g"]
         out_table = None
@@ -176,7 +172,7 @@ class TestTools(unittest.TestCase):
             )
         ):
             out_table, out_sm, tm, im = tools.match_inputs(
-                t, bad_table, self.sample_metadata,
+                self.bp_tree, bad_table, self.sample_metadata,
                 filter_missing_features=True
             )
         self.assertCountEqual(out_table.index, ["a", "b", "e"])
@@ -190,7 +186,6 @@ class TestTools(unittest.TestCase):
         )
 
     def test_match_inputs_ignore_missing_samples_error(self):
-        t = from_skbio_treenode(self.tree)
         bad_table = self.table.copy()
         # Replace one of the sample IDs in the table with some junk
         bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
@@ -199,12 +194,11 @@ class TestTools(unittest.TestCase):
             "The feature table contains samples that aren't present in the "
             "sample metadata."
         ):
-            tools.match_inputs(t, bad_table, self.sample_metadata)
+            tools.match_inputs(self.bp_tree, bad_table, self.sample_metadata)
 
     def test_match_inputs_ignore_missing_samples_override(self):
         """Checks that --p-ignore-missing-samples works as expected."""
         # These inputs are the same as with the above test
-        t = from_skbio_treenode(self.tree)
         bad_table = self.table.copy()
         # Replace one of the sample IDs in the table with some junk
         bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
@@ -219,7 +213,8 @@ class TestTools(unittest.TestCase):
             )
         ):
             out_table, out_sm, tm, im = tools.match_inputs(
-                t, bad_table, self.sample_metadata, ignore_missing_samples=True
+                self.bp_tree, bad_table, self.sample_metadata,
+                ignore_missing_samples=True
             )
 
         self.assertCountEqual(
@@ -255,9 +250,9 @@ class TestTools(unittest.TestCase):
            (self.feature_metadata describes three features, "e", "h", and "a".
             h is an internal node in self.tree, and e and a are tips.)
         """
-        t = from_skbio_treenode(self.tree)
         f_table, f_sample_metadata, tip_md, int_md = tools.match_inputs(
-            t, self.table, self.sample_metadata, self.feature_metadata
+            self.bp_tree, self.table,
+            self.sample_metadata, self.feature_metadata
         )
         assert_frame_equal(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
@@ -279,7 +274,6 @@ class TestTools(unittest.TestCase):
            all features in the input feature metadata are filtered that an
            error is raised.
         """
-        t = from_skbio_treenode(self.tree)
         bad_fm = self.feature_metadata.copy()
         bad_fm.index = range(len(self.feature_metadata.index))
         with self.assertRaisesRegex(
@@ -289,19 +283,19 @@ class TestTools(unittest.TestCase):
                 "either as tips or as internal nodes."
             )
         ):
-            tools.match_inputs(t, self.table, self.sample_metadata, bad_fm)
+            tools.match_inputs(self.bp_tree, self.table,
+                               self.sample_metadata, bad_fm)
 
     def test_match_inputs_feature_metadata_some_features_dropped(self):
         """Tests the filtering case described above, but with not all
            feature(s) in the feature metadata getting filtered out.
         """
-        t = from_skbio_treenode(self.tree)
         # Manipulate bad_fm so that only the "e" feature should get preserved
         # (since it's actually in the tree, while "asdf" and "hjkl" aren't)
         bad_fm = self.feature_metadata.copy()
         bad_fm.index = ["e", "asdf", "hjkl"]
         f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
-            t, self.table, self.sample_metadata, bad_fm
+            self.bp_tree, self.table, self.sample_metadata, bad_fm
         )
         assert_frame_equal(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
