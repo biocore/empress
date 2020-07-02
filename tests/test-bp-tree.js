@@ -7,7 +7,7 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
             setup: function() {
                 this.bpArray = new Uint8Array([1, 1, 1, 0, 1, 0, 1, 1 ,0, 0, 0,
                         1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]);
-                this.bpObj = new BPTree(this.bpArray, coding=undefined);
+                this.bpObj = new BPTree(this.bpArray, null, null, null);
 
                 // rank caches
                 this.r0 = ByteArray.sumVal(this.bpArray, Uint32Array, 0);
@@ -116,7 +116,7 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
         test('Test name/lenth set', function() {
             var names = [...Array(this.bpObj.size).keys()];
             var lengths = names.map(k => parseInt(k));
-            var resBP = new BPTree(this.bpArray, names, lengths);
+            var resBP = new BPTree(this.bpArray, names, lengths, null);
             for (var i = 0; i < this.bpObj.size; i++) {
                 var index = resBP.preorderselect(i+1);
                 equal(resBP.name(index), names[i] ,'Name');
@@ -260,8 +260,25 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
         });
 
         test('Test coding', function() {
+          // zeros and ones test
           obj = new BPTree([3851728]);
           equal(obj.b, this.bpObj.b);
+
+          // zeros test
+          exp = [0, 0, 0, 0, 0, 0];
+          obj = new BPTree(exp);
+          equal(obj.b_.length, exp.length);
+
+          // odds test
+          exp = [5, 0, 0, 0, 0]
+          obj = new BPTree(exp);
+          equal(obj.b_.length, 51 + 4);
+
+          exp = [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+          obj = new BPTree(exp);
+          equal(obj.b_.length, 51 + 51 + 4);
         });
     });
 });

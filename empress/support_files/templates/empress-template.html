@@ -5,13 +5,6 @@
     <link rel='stylesheet' type="text/css" href='{{ base_url }}/css/empress.css'>
     {{ emperor_style }}
 
-    <!-- adding here so all methods can use it -->
-    <script>
-      Array.prototype.extend_push_apply = function(array) {
-        this.push.apply(this, array)
-      }
-    </script>
-
     <script src='{{ base_url }}/vendor/require-2.1.22.min.js'></script>
     {{ emperor_base_dependencies }}
   </head>

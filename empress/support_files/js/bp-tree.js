@@ -8,7 +8,7 @@ define(["ByteArray"], function (ByteArray) {
      * @param {Uint8Array} b The array that represents the tree structure
      * @param {Array} names The names of each node stored in preorder
      * @param {Array} lengths The lengths of each node stored in preorder
-     * @param {Number} coding The number of 1/0s coded in the tree, undefined not coded
+     * @param {Number} coding The number of 1/0s coded in the tree, null not coded
      *
      * @return {BPTree}
      * @constructs BPTree
@@ -20,28 +20,31 @@ define(["ByteArray"], function (ByteArray) {
          * @private
          */
 
-        if (coding !== undefined) {
+        if (coding !== null) {
           var b_len = b.length - 1;
           var decoded_b = [];
 
           const _helper_decode = function (s) {
             return s === '1' ? 1 : 0;
-          }
+          };
 
           _.each(b, function (value, i) {
-            var element = (value).toString(2).split('').map(_helper_decode);
+            if (value === 0) {
+              decoded_b.push.apply(decoded_b, [0]);
+            } else {
+              var element = (value).toString(2).split('').map(_helper_decode);
 
-            // We need to pad the number if we are not in the last number of the list
-            // Note that we ae padding with 51, which should match the python code
-            if (i < (b_len) && element.length < 51){
-              var padding = new Array(coding - element.length).fill(0);
-              decoded_b.extend_push_apply(padding);
+              // We need to pad the number if we are not in the last number of the list
+              // Note that we ae padding with 51, which should match the python code
+              if (i < (b_len) && element.length < 51){
+                var padding = new Array(coding - element.length).fill(0);
+                decoded_b.push.apply(decoded_b, padding);
+              }
+              decoded_b.push.apply(decoded_b, element);
             }
-            decoded_b.extend_push_apply(element);
-
-            b = decoded_b;
           });
 
+          b = decoded_b;
         }
         this.b_ = b;
 

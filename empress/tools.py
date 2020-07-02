@@ -313,6 +313,11 @@ def shifting(bitlist, size=51):
             if bit is None:
                 continue
             out = (out << 1) | bit
-        ints.append(out)
+
+        # if out == 0, then everything was zeros so return extend those many
+        if out == 0:
+            ints.extend([x for x in num if x is not None])
+        else:
+            ints.append(out)
 
     return ints

@@ -401,16 +401,50 @@ class TestTools(unittest.TestCase):
                 n >>= 1
             return count
 
+        # tests ones and zeros
         tests = [
             ([1, 1, 0, 0, 1, 1], [51]),
             ([1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1], [4035]),
             ([1, 1, 0, 0, 0, 0, 1, 1], [195]),
+            ([1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0], [1560]),
+            ([1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0], [24960]),
             ([1], [1]),
         ]
-
         for test, obs in tests:
             self.assertEqual(tools.shifting(test), obs)
             self.assertEqual(_count_bits(obs[0]), len(test))
+
+        # test zeros
+        tests = [
+            ([0, 0, 0, 0], [0, 0, 0, 0]),
+            ([0], [0]),
+        ]
+        for test, obs in tests:
+            self.assertEqual(tools.shifting(test), obs)
+            self.assertEqual(len(test), len(obs))
+
+        # some odd cases
+        tests = [
+            ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
+              # up to here is a 5
+              0, 0, 0, 0], [5, 0, 0, 0, 0]),
+            ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
+              # up to here is a 5
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              # up to here is a 0
+              0, 0, 0, 0], [
+              5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        ]
+        for test, obs in tests:
+            self.assertEqual(tools.shifting(test), obs)
 
         with self.assertRaisesRegex(ValueError, "Your list has values other "
                                     "than 0-1s"):

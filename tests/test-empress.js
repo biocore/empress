@@ -9,7 +9,7 @@ require(["jquery", "BPTree", "Empress", "util"], function($, BPTree, Empress, ut
                 // ((1,(2,3)4)5,6)7;
                 var tree = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]),
-                    coding=undefined);
+                    null, null, null);
                 var treeData = {
                     7: {
                         "color":[1.0, 1.0, 1.0],
