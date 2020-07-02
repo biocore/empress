@@ -148,14 +148,16 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
 
         test("Test exportSvg, viewbox size", function() {
             obs_svg = this.empress.exportSvg();
-            deepEqual(obs_svg.includes('viewBox="-2082.31494140625 -917.0977783203125 3829.0001220703125 3748.4317626953125"'), true);
+            console.log(obs_svg);
+            deepEqual(obs_svg.includes('viewBox="-2081.31494140625 -916.0977783203125 3827.0001220703125 3746.4317626953125"'), true);
         });
 
         test("Test exportSvg, viewbox size: circular with nodes", function() {
             this.empress._currentLayout = "Circular";
             this.empress._drawer.showTreeNodes = true;
             obs_svg = this.empress.exportSvg();
-            deepEqual(obs_svg.includes('viewBox="-1613 -2417 5236 4030"'), true);
+            console.log(obs_svg);
+            deepEqual(obs_svg.includes('viewBox="-1612 -2416 5234 4028"'), true);
         });
     });
 });

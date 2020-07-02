@@ -200,7 +200,9 @@ define([
      * Creates an SVG string to export the current drawing
      */
     Empress.prototype.exportSvg = function () {
-        NODE_RADIUS = this._drawer.VERTEX_SIZE;
+        // TODO: use the same value as the actual WebGL drawing engine, but
+        // right now this value is hard coded on line 327 of drawer.js
+        NODE_RADIUS = 4;
 
         minX = 0;
         maxX = 0;
@@ -213,17 +215,18 @@ define([
         // i=x, i+1=y, i+2=red, i+3=green, i+4=blue
         svg += "<!-- tree branches -->\n";
         coords = this.getCoords();
-        for (i = 0; i + 2 * 5 <= coords.length; i += 2 * 5) {
+        for (i = 0; i + 2 * this._drawer.VERTEX_SIZE <= coords.length; i += 2 * this._drawer.VERTEX_SIZE) {
             // "normal" lines have a default color,
             // all other lines have a user defined thickness
+            // All lines are defined using the information from the child node.
+            // So, if coords[i+2] == DEFAULT_COLOR then coords[i+2+5] will
+            // also be equal to DEFAULT_COLOR. Thus, we can save checking three
+            // array elements here.
             linewidth = this._currentLineWidth;
             if (
                 coords[i + 2] == this.DEFAULT_COLOR[0] &&
                 coords[i + 3] == this.DEFAULT_COLOR[1] &&
-                coords[i + 4] == this.DEFAULT_COLOR[2] &&
-                coords[i + 2 + 5] == this.DEFAULT_COLOR[0] &&
-                coords[i + 3 + 5] == this.DEFAULT_COLOR[1] &&
-                coords[i + 4 + 5] == this.DEFAULT_COLOR[2]
+                coords[i + 4] == this.DEFAULT_COLOR[2]
             ) {
                 linewidth = 1;
             }
@@ -233,9 +236,9 @@ define([
                 '" y1="' +
                 coords[i + 1] +
                 '" x2="' +
-                coords[i + 5] +
+                coords[i + this._drawer.VERTEX_SIZE] +
                 '" y2="' +
-                coords[i + 1 + 5] +
+                coords[i + 1 + this._drawer.VERTEX_SIZE] +
                 '" stroke="rgb(' +
                 255 * coords[i + 2] +
                 "," +
@@ -247,20 +250,21 @@ define([
                 '" />\n';
 
             // obtain viewport from tree coordinates
-            minX = Math.min(minX, coords[i], coords[i + 5]);
-            maxX = Math.max(maxX, coords[i], coords[i + 5]);
+            minX = Math.min(minX, coords[i], coords[i + this._drawer.VERTEX_SIZE]);
+            maxX = Math.max(maxX, coords[i], coords[i + this._drawer.VERTEX_SIZE]);
 
-            minY = Math.min(minY, coords[i + 1], coords[i + 1 + 5]);
-            maxY = Math.max(maxY, coords[i + 1], coords[i + 1 + 5]);
+            minY = Math.min(minY, coords[i + 1], coords[i + 1 + this._drawer.VERTEX_SIZE]);
+            maxY = Math.max(maxY, coords[i + 1], coords[i + 1 + this._drawer.VERTEX_SIZE]);
         }
 
         // create a circle for each node
         if (this._drawer.showTreeNodes) {
             svg += "<!-- tree nodes -->\n";
             coords = this.getNodeCoords();
-            for (i = 0; i + 5 <= coords.length; i += 5) {
+            for (i = 0; i + this._drawer.VERTEX_SIZE <= coords.length; i += this._drawer.VERTEX_SIZE) {
                 // getNodeCoords array seem to be larger than necessary and elements are initialized with 0.
                 // Thus, nodes at (0, 0) will be skipped (root will always be positioned at 0,0 and drawn below)
+                // This is a known issue and will be resolved with #142
                 if (coords[i] == 0 && coords[i + 1] == 0) {
                     continue;
                 }
@@ -282,6 +286,7 @@ define([
         }
 
         // add one black circle to indicate the root
+        // Not sure if this speacial treatment for root is necessary once #142 is merged.
         svg += "<!-- root node -->\n";
         svg +=
             '<circle cx="0" cy="0" r="' +
