@@ -19,7 +19,7 @@ from shutil import rmtree
 
 from emperor import Emperor
 from empress.core import Empress
-from bp import parse_newick, from_skbio_treenode
+from bp import parse_newick
 from six import StringIO
 from skbio.tree import TreeNode
 

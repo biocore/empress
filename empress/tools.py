@@ -12,7 +12,6 @@ import skbio
 from skbio import TreeNode
 from empress import taxonomy_utils
 from empress.tree import bp_tree_tips, bp_tree_non_tips
-import numpy as np
 
 
 class DataMatchingError(Exception):
