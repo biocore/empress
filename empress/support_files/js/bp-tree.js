@@ -24,7 +24,7 @@ define(["ByteArray"], function (ByteArray) {
           var b_len = b.length - 1;
           var decoded_b = [];
 
-          function _helper_decode(s) {
+          const _helper_decode = function (s) {
             return s === '1' ? 1 : 0;
           }
 
