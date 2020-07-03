@@ -82,7 +82,10 @@ def compress_table(table):
         # booleans)
         present_feature_ids = list(sample_column[sample_column].index)
 
-        # Convert this to a list of feature indices
+        # Convert this to a list of feature indices. This list should be sorted
+        # so that feature indices are in ascending order by default, since
+        # we assigned feature indices by iterating through the table. (TODO:
+        # test this.)
         present_feature_indices = [
             f_ids_to_indices[fid] for fid in present_feature_ids
         ]
