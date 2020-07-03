@@ -308,6 +308,49 @@ define([
         );
     };
 
+    /**
+     * Creates an SVG string to export legends
+     */
+    Empress.prototype._exportSVG_legend = function (dom) {
+        unit = 30;
+        top_left_x = 50;
+        top_left_y = 20;
+        factor_lineheight = 1.8;
+        svg = "";
+
+        // used as a rough estimate about the consumed width by text strings
+        var myCanvas = document.createElement("canvas");
+        var context = myCanvas.getContext("2d");
+        context.font = "bold "+unit+"pt verdana";
+
+        // the document can have up to three legends, of which at most one shall be visible at any given timepoint. This might change and thus this method can draw multiple legends
+        row = 1;
+        for (let legend of dom.getElementsByClassName('legend')) {
+            max_line_width = 0;
+            title = legend.getElementsByClassName('legend-title');
+            svg_legend = "";
+            if (title.length > 0) {
+                titlelabel = title.item(0).innerHTML;
+                max_line_width = Math.max(max_line_width, context.measureText(titlelabel).width)
+                svg_legend += '<text x="'+(top_left_x + unit)+'" y="'+(top_left_y + (row*(unit*factor_lineheight)))+'" style="font-weight:bold;font-size:'+unit+'pt;">'+titlelabel+'</text>\n';
+                row++;
+                for (let item of legend.getElementsByClassName('gradient-bar')) {
+                    color = item.getElementsByClassName("category-color").item(0).getAttribute("style").split(':')[1].split(';')[0]
+                    itemlabel = item.getElementsByClassName("gradient-label").item(0).getAttribute("title");
+                    max_line_width = Math.max(max_line_width, context.measureText(itemlabel).width)
+
+                    svg_legend += '<rect x="'+(top_left_x + unit)+'" y="'+(top_left_y + (row*(unit*factor_lineheight))- (unit))+'" width="'+unit+'" height="'+unit+'" style="fill:'+color+'"/>\n';
+                    svg_legend += '<text x="'+(top_left_x + 2.5*unit)+'" y="'+(top_left_y + (row*(unit*factor_lineheight)))+'" style="font-size:'+unit+'pt;">'+itemlabel+'</text>\n';
+                    row++;
+                }
+                svg += '<g>\n<rect x="'+top_left_x+'" y="'+(top_left_y + ((row-legend.getElementsByClassName('gradient-bar').length-2)*(unit*factor_lineheight)))+'" width="'+(max_line_width+2*unit)+'" height="'+(((legend.getElementsByClassName('gradient-bar').length+1)*unit)*factor_lineheight+unit)+'" style="fill:#eeeeee;stroke:#000000;stroke-width:1" ry="30" />\n' + svg_legend + '</g>\n';
+                row += 2;
+            }
+        }
+
+        return svg;
+    };
+
     Empress.prototype.getX = function (nodeObj) {
         var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
         return nodeObj[xname];
