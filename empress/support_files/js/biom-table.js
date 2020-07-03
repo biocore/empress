@@ -2,8 +2,8 @@ define([], function () {
     /**
      * @class BIOMTable
      *
-     * create a BIOM table that contains sample IDs along with the observations
-     * seen in each sample and the metadata associated with each sample.
+     * Create a BIOM table that describes the features contained within each
+     * sample and the metadata associated with each sample.
      *
      * @param{Array} sIDs Array of sample IDs in the table.
      * @param{Array} fIDs Array of feature (or "observation") IDs in the table.
@@ -32,9 +32,9 @@ define([], function () {
         this._fIDs = fIDs;
         this._sID2Idx = sID2Idx;
         this._fID2Idx = fID2Idx;
-        this.tbl = tbl;
-        this.smCols = smCols;
-        this.sm = sm;
+        this._tbl = tbl;
+        this._smCols = smCols;
+        this._sm = sm;
     }
 
     /**
@@ -64,7 +64,7 @@ define([], function () {
      *
      * @return {Array}
      */
-    BIOMTable.prototype.getObjservationUnionForSamples = function (sIds) {
+    BIOMTable.prototype.getObservationUnionForSamples = function (sIds) {
         var result = new Set();
         var addToResult = function (ob) {
             result.add(ob);

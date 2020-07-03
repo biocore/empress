@@ -706,7 +706,7 @@ define([
      */
     Empress.prototype.colorSampleIDs = function (sIds, rgb) {
         var tree = this._tree;
-        var obs = this._biom.getObjservationUnionForSamples(sIds);
+        var obs = this._biom.getObservationUnionForSamples(sIds);
         obs = Array.from(this._namesToKeys(obs));
         obs = this._projectObservations({ samples: new Set(obs) });
         obs = Array.from(obs.samples);
@@ -732,7 +732,7 @@ define([
 
         // get a group of observations per color
         for (var group in sampleGroups) {
-            obs = this._biom.getObjservationUnionForSamples(
+            obs = this._biom.getObservationUnionForSamples(
                 sampleGroups[group]
             );
             obs = Array.from(this._namesToKeys(obs));
