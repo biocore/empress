@@ -38,26 +38,6 @@ define([], function () {
     }
 
     /**
-     * Returns a list of observations in the sample
-     * Example: countArray is [1,0], obsIDs is ['OTU1', 'OTU2'] => returns ['OTU1']
-     *
-     * @param {Array} countArray - Array of counts for different tips
-     * @param {Array} obsIDs - Array of observation IDs for each index of the
-     *                countArray
-     *
-     * @return {Array}
-     */
-    BIOMTable.convertToObs = function (countArray, obsIDs) {
-        var obs = [];
-        for (var i = 0; i < countArray.length; i++) {
-            if (countArray[i] != 0) {
-                obs.push(obsIDs[i]);
-            }
-        }
-        return obs;
-    };
-
-    /**
      * Returns a list of observations in the samples
      *
      * @param {Array} sIds - Array of sample Ids
@@ -131,23 +111,6 @@ define([], function () {
         }
 
         return result;
-    };
-
-    /**
-     * Returns the set of unique observations in samples.
-     *
-     * @return {Set}
-     */
-    BIOMTable.prototype.getObservations = function () {
-        var obs = new Set();
-
-        for (var sample in this._samp) {
-            for (var i = 0; i < this._obs[sample].length; i++) {
-                obs.add(this._obs[sample][i]);
-            }
-        }
-
-        return obs;
     };
 
     /**
