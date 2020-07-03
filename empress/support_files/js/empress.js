@@ -120,7 +120,8 @@ define([
 
         /**
          * @type {BiomTable}
-         * Sample metadata
+         * BIOM table: includes feature presence information and sample-level
+         * metadata.
          * @private
          */
         this._biom = biom;
