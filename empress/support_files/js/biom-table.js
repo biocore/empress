@@ -108,7 +108,7 @@ define(["underscore"], function (_) {
         var colIdx = _.indexOf(this._smCols, col);
         if (colIdx < 0) {
             throw new Error(
-                "Sample metadata category " + col + " not present in data."
+                'Sample metadata column "' + col + '" not present in data.'
             );
         }
         var valueToFeatureIdxs = {};

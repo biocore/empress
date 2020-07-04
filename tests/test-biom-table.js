@@ -136,7 +136,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     );
                 },
                 /Feature index "100" unrecognized./,
-                'Test: error thrown if unrecognized feature index passed.'
+                'Test: error thrown if unrecognized feature index passed'
             );
             throws(
                 function() {
@@ -145,7 +145,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     );
                 },
                 /Feature index "asdf" unrecognized./,
-                'Test: error thrown if unrecognized feature index passed.'
+                'Test: error thrown if unrecognized feature index passed'
             );
         });
 
@@ -175,7 +175,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     scope.biomTable.getObservationUnionForSamples(['sBad']);
                 },
                 /Sample ID "sBad" not recognized in BIOM table./,
-                'Test: error thrown if unrecognized sample ID passed.'
+                'Test: error thrown if unrecognized sample ID passed'
             );
         });
 
@@ -212,6 +212,15 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     'j' : new Set()
                 },
                 'Test: find observations in f3'
+            );
+
+            var scope = this;
+            throws(
+                function() {
+                    scope.biomTable.getObsBy("f100");
+                },
+                /Sample metadata column "f100" not present in data./,
+                'Test: error thrown if unrecognized metadata col passed'
             );
         });
 
