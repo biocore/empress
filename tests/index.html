@@ -17,6 +17,8 @@
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
 
+  <!-- add any test GUI components to this div-->
+  <div id="test-div"></div>
 
   <script>
     QUnit.config.autostart = false;
@@ -34,6 +36,7 @@
           'underscore' : './support_files/vendor/underscore-min',
 
           /* succinct tree paths */
+          'AnimationPanel': './support_files/js/animation-panel-handler',
           'ByteArray': './support_files/js/byte-array',
           'BPTree' : './support_files/js/bp-tree',
           'Camera' : './support_files/js/camera',
@@ -57,23 +60,66 @@
           'testUtil' : './../tests/test-util',
           'testCircularLayoutComputation' : './../tests/test-circular-layout-computation',
           'testVectorOps' : './../tests/test-vector-ops',
-          'testEmpress' : './../tests/test-empress'
+          'testEmpress' : './../tests/test-empress',
+          'testAnimationHandler': './../tests/test-animation-panel-handler'
         }
     });
 
     // load tests
     require(
-        ['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray', 'BPTree',
-         'Camera', 'Colorer', 'BiomTable', 'SummaryHelper', 'util', 'Empress',
-         'testBPTree', 'testByteTree', 'testBIOMTable', 'testCamera',
-         'testColorer', 'testSummaryHelper', 'testUtil',
-         'testCircularLayoutComputation', 'testVectorOps', 'testEmpress'],
+        ['jquery',
+         'glMatrix',
+         'chroma',
+         'underscore',
+         'AnimationPanel',
+         'ByteArray',
+         'BPTree',
+         'Camera',
+         'Colorer',
+         'BiomTable',
+         'SummaryHelper',
+         'util',
+         'Empress',
+         'testBPTree',
+         'testByteTree',
+         'testBIOMTable',
+         'testCamera',
+         'testColorer',
+         'testSummaryHelper',
+         'testUtil',
+         'testCircularLayoutComputation',
+         'testVectorOps',
+         'testEmpress',
+         'testAnimationHandler'
+         ],
 
         // start tests
-        function ($, gl, chroma, underscore, ByteArray, BPTree, Camera,
-          testBIOMTable, Colorer, BiomTable, SummaryHelper, util, Empress,
-          testBPTree, testByteTree, testCamera, testColorer, testSummaryHelper,
-          testUtil, testCircularLayoutComputation, testVectorOps, testEmpress) {
+        function (
+          $,
+          gl,
+          chroma,
+          underscore,
+          AnimationPanel,
+          ByteArray,
+          BPTree,
+          Camera,
+          testBIOMTable,
+          Colorer,
+          BiomTable,
+          SummaryHelper,
+          util,
+          Empress,
+          testBPTree,
+          testByteTree,
+          testCamera,
+          testColorer,
+          testSummaryHelper,
+          testUtil,
+          testCircularLayoutComputation,
+          testVectorOps,
+          testEmpress,
+          testAnimationHandler
+        ) {
             $(document).ready(function() {
                 QUnit.start();
             });
