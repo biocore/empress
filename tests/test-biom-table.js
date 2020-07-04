@@ -5,63 +5,101 @@ require(['jquery','BiomTable'], function($, BiomTable) {
         // effecting other test
         module('Biom Table' , {
             setup: function() {
-                this._obs = {
-                    's1': ['o1', 'o2', 'o4', 'o5', 'o7', 'o10'],
-                    's2': ['o1', 'o3', 'o5', 'o6', 'o7', 'o9'],
-                    's3': ['o2', 'o3', 'o6'],
-                    's4': ['o4', 'o8'],
-                    's5': ['o5', 'o8']
+                this._sIDs = ["s1", "s2", "s3", "s4", "s5"];
+                this._fIDs = [
+                    "o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9", "o10"
+                ];
+                this._sID2Idx = {"s1": 0, "s2": 1, "s3": 2, "s4": 3, "s5": 4};
+                this._fID2Idx = {
+                    "o1": 0,
+                    "o2": 1,
+                    "o3": 2,
+                    "o4": 3,
+                    "o5": 4,
+                    "o6": 5,
+                    "o7": 6,
+                    "o8": 7,
+                    "o9": 8,
+                    "o10": 9
                 };
-
-                this._samp = {
-                    's1': {
-                        'f1': 'a',
-                        'f2': 'd',
-                        'f3': 'i',
-                        'f4': 4
-                    },
-                    's2': {
-                        'f1': 'a',
-                        'f2': 'd',
-                        'f3': 'j',
-                        'f4': 3
-                    },
-                    's3': {
-                        'f1': 'c',
-                        'f2': 'd',
-                        'f3': 'j',
-                        'f4': 1
-                    },
-                    's4': {
-                        'f1': 'b',
-                        'f2': 'e',
-                        'f3': 'j',
-                        'f4': 2
-                    },
-                    's5': {
-                        'f1': 'b',
-                        'f2': 'f',
-                        'f3': 'h',
-                        'f4': 5
-                    }
-                };
-                this._types = {
-                    'f1': 'o',
-                    'f2': 'o',
-                    'f3': 'o',
-                    'f4': 'n'
-                }
+                // Each row is a sample; each array is the indices of the
+                // features present in each sample
+                this.tbl = [
+                    [0, 1, 3, 4, 6, 9],
+                    [0, 2, 4, 5, 6, 8],
+                    [1, 2, 5],
+                    [3, 7],
+                    [4, 7]
+                ];
+                this._smCols = ["m1", "m2", "m3", "m4"];
+                this._sm = [
+                    ["a", "d", "i", "4"],
+                    ["a", "d", "j", "3"],
+                    ["c", "d", "j", "1"],
+                    ["b", "e", "j", "2"],
+                    ["b", "f", "h", "5"]
+                ];
                 this.biomTable = new BiomTable(
-                    this._obs,
-                    this._samp,
-                    this._types
+                    this._sIDs,
+                    this._fIDs,
+                    this._sID2IDx,
+                    this._fID2IDx,
+                    this.tbl,
+                    this._smCols,
+                    this._sm
                 );
+                // For comparison, here is the original _obs and _samp data
+                // that were used as test data here (before the compression
+                // refactoring).
+                // this._obs = {
+                //     's1': ['o1', 'o2', 'o4', 'o5', 'o7', 'o10'],
+                //     's2': ['o1', 'o3', 'o5', 'o6', 'o7', 'o9'],
+                //     's3': ['o2', 'o3', 'o6'],
+                //     's4': ['o4', 'o8'],
+                //     's5': ['o5', 'o8']
+                // };
+                // this._samp = {
+                //     's1': {
+                //         'f1': 'a',
+                //         'f2': 'd',
+                //         'f3': 'i',
+                //         'f4': 4
+                //     },
+                //     's2': {
+                //         'f1': 'a',
+                //         'f2': 'd',
+                //         'f3': 'j',
+                //         'f4': 3
+                //     },
+                //     's3': {
+                //         'f1': 'c',
+                //         'f2': 'd',
+                //         'f3': 'j',
+                //         'f4': 1
+                //     },
+                //     's4': {
+                //         'f1': 'b',
+                //         'f2': 'e',
+                //         'f3': 'j',
+                //         'f4': 2
+                //     },
+                //     's5': {
+                //         'f1': 'b',
+                //         'f2': 'f',
+                //         'f3': 'h',
+                //         'f4': 5
+                //     }
+                // };
             },
 
             teardown: function() {
-                this._obs = null;
-                this._samp = null;
-                this._types = null;
+                this._sIDs = null;
+                this._fIDs = null;
+                this._sID2Idx = null;
+                this._fID2Idx = null;
+                this.tbl = null;
+                this._smCols = null;
+                this._sm = null;
                 this.biomTable = null;
             }
         });
@@ -138,14 +176,6 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     'j' : 1
                 },
                 'Test: getObsCountsBy(f1, o1)'
-            );
-        });
-
-        test('Test getObservations', function () {
-            deepEqual(
-                this.biomTable.getObservations(),
-                new Set([['o1', 'o2', 'o3', 'o4', 'o5', 'o6', 'o7', 'o8', 'o9', 'o10']]),
-                'Test: getObservations'
             );
         });
 
