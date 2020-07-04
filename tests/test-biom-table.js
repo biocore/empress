@@ -124,6 +124,14 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 [],
                 'Test: input list of samples is empty'
             );
+            var scope = this;
+            throws(
+                function() {
+                    scope.biomTable.getObservationUnionForSamples(['sBad']);
+                },
+                /Sample ID "sBad" not recognized in BIOM table./,
+                'Test: error thrown if unrecognized sample ID passed.'
+            );
         });
 
         test('Test getObsBy', function() {

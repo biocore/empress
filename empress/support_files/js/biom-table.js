@@ -38,7 +38,9 @@ define(["underscore"], function (_) {
     }
 
     /**
-     * Returns a list of observations (features) present in the input samples
+     * Returns a list of observations (features) present in the input samples.
+     *
+     * Throws an error if any of the sample IDs are unrecognized.
      *
      * @param {Array} samples - Array of sample IDs
      *
@@ -53,6 +55,9 @@ define(["underscore"], function (_) {
             // Add these indices to totalFeatureIndices (which is a set,
             // so duplicate indices are implicitly ignored)
             var sampleIdx = scope._sID2Idx[sID];
+            if (_.isUndefined(sampleIdx)) {
+                throw 'Sample ID "' + sID + '" not recognized in BIOM table.';
+            }
             var featureIndices = scope._tbl[sampleIdx];
             _.each(featureIndices, function(fIdx) {
                 totalFeatureIndices.add(fIdx);
@@ -69,10 +74,10 @@ define(["underscore"], function (_) {
     };
 
     /**
-     * Returns a object of observation ids whose keys are the values of a sample
-     * category.
+     * Returns a object mapping all values of a sample metadata category
+     * to an array of the features present within all samples in that category.
      *
-     * @param {String} cat The category to return observation
+     * @param {String} cat Sample metadata category
      *
      * @return {Object}
      */
