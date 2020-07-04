@@ -40,11 +40,11 @@ define(["underscore"], function (_) {
     /**
      * Returns a list of observations (features) present in the input samples.
      *
-     * Throws an error if any of the sample IDs are unrecognized.
-     *
      * @param {Array} samples - Array of sample IDs
      *
      * @return {Array} features - Array of feature IDs
+     *
+     * @throws {Error} If any of the sample IDs are unrecognized.
      */
     BIOMTable.prototype.getObservationUnionForSamples = function (samples) {
         var scope = this;
@@ -56,7 +56,9 @@ define(["underscore"], function (_) {
             // so duplicate indices are implicitly ignored)
             var sampleIdx = scope._sID2Idx[sID];
             if (_.isUndefined(sampleIdx)) {
-                throw 'Sample ID "' + sID + '" not recognized in BIOM table.';
+                throw new Error(
+                    'Sample ID "' + sID + '" not recognized in BIOM table.'
+                );
             }
             var featureIndices = scope._tbl[sampleIdx];
             _.each(featureIndices, function(fIdx) {
@@ -77,9 +79,13 @@ define(["underscore"], function (_) {
      * Returns a object mapping all values of a sample metadata category
      * to an array of the features present within all samples in that category.
      *
+     * Throws an error if any of the sample IDs are unrecognized.
+     *
      * @param {String} cat Sample metadata category
      *
      * @return {Object}
+     *
+     * @throws {Error} If the sample metadata category is unrecognized.
      */
     BIOMTable.prototype.getObsBy = function (cat) {
         var result = {};
