@@ -1,4 +1,4 @@
-define([], function () {
+define(["underscore"], function (_) {
     /**
      * @class BIOMTable
      *
@@ -38,22 +38,34 @@ define([], function () {
     }
 
     /**
-     * Returns a list of observations in the samples
+     * Returns a list of observations (features) present in the input samples
      *
-     * @param {Array} sIds - Array of sample Ids
+     * @param {Array} samples - Array of sample IDs
      *
-     * @return {Array}
+     * @return {Array} features - Array of feature IDs
      */
-    BIOMTable.prototype.getObservationUnionForSamples = function (sIds) {
-        var result = new Set();
-        var addToResult = function (ob) {
-            result.add(ob);
-        };
-        for (var i = 0; i < sIds.length; i++) {
-            var obs = this._obs[sIds[i]];
-            obs.forEach(addToResult);
-        }
-        return Array.from(result);
+    BIOMTable.prototype.getObservationUnionForSamples = function (samples) {
+        var scope = this;
+        var totalFeatureIndices = new Set();
+        // For each sample...
+        _.each(samples, function(sID) {
+            // Figure out the indices of the features in this sample.
+            // Add these indices to totalFeatureIndices (which is a set,
+            // so duplicate indices are implicitly ignored)
+            var sampleIdx = scope._sID2Idx[sID];
+            var featureIndices = scope._tbl[sampleIdx];
+            _.each(featureIndices, function(fIdx) {
+                totalFeatureIndices.add(fIdx);
+            });
+        });
+        // Finally, convert totalFeatureIndices from indices to IDs
+        var totalFeatureIndicesArray = Array.from(totalFeatureIndices);
+        var totalFeatureIDsArray = _.map(
+            totalFeatureIndicesArray, function(idx) {
+                return scope._fIDs[idx];
+            }
+        );
+        return totalFeatureIDsArray;
     };
 
     /**

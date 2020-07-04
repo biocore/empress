@@ -24,14 +24,14 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 };
                 // Each row is a sample; each array is the indices of the
                 // features present in each sample
-                this.tbl = [
+                this._tbl = [
                     [0, 1, 3, 4, 6, 9],
                     [0, 2, 4, 5, 6, 8],
                     [1, 2, 5],
                     [3, 7],
                     [4, 7]
                 ];
-                this._smCols = ["m1", "m2", "m3", "m4"];
+                this._smCols = ["f1", "f2", "f3", "f4"];
                 this._sm = [
                     ["a", "d", "i", "4"],
                     ["a", "d", "j", "3"],
@@ -42,9 +42,9 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 this.biomTable = new BiomTable(
                     this._sIDs,
                     this._fIDs,
-                    this._sID2IDx,
-                    this._fID2IDx,
-                    this.tbl,
+                    this._sID2Idx,
+                    this._fID2Idx,
+                    this._tbl,
                     this._smCols,
                     this._sm
                 );
@@ -97,7 +97,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 this._fIDs = null;
                 this._sID2Idx = null;
                 this._fID2Idx = null;
-                this.tbl = null;
+                this._tbl = null;
                 this._smCols = null;
                 this._sm = null;
                 this.biomTable = null;
@@ -105,19 +105,24 @@ require(['jquery','BiomTable'], function($, BiomTable) {
         });
 
         test('Test getObservationUnionForSamples', function() {
-            // converting result to Set makes validation eaiser since
-            // getObjservationUnionForSamples uses a Set and then converts the
-            // Set to an array. The convertion does not keep order so converting
+            // converting result to Set makes validation easier since
+            // getObservationUnionForSamples uses a Set and then converts the
+            // Set to an array. The conversion does not keep order so converting
             // the result back to a Set makes validation easier.
             deepEqual(
-                new Set(this.biomTable.getObjservationUnionForSamples(['s1'])),
+                new Set(this.biomTable.getObservationUnionForSamples(['s1'])),
                 new Set(['o1', 'o2', 'o4', 'o5', 'o7', 'o10']),
                 'Test: observations in s1'
             );
             deepEqual(
-                new Set(this.biomTable.getObjservationUnionForSamples(['s1', 's4'])),
+                new Set(this.biomTable.getObservationUnionForSamples(['s1', 's4'])),
                 new Set(['o1', 'o2', 'o4', 'o5', 'o7', 'o8', 'o10']),
                 'Test: observations in s1 and s4'
+            );
+            deepEqual(
+                this.biomTable.getObservationUnionForSamples([]),
+                [],
+                'Test: input list of samples is empty'
             );
         });
 
@@ -127,7 +132,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
 
             // convert obsReturned elements (which are arrays) to Set since
             // getObsBy uses Sets and then converts the Sets to arrays.
-            // The convertion does not keep order so converting the result back
+            // The conversion does not keep order so converting the result back
             // to Sets makes validation easier.
             for (var i = 0; i < keys.length; i++) {
                 obsReturned[keys[i]] = new Set(obsReturned[keys[i]]);
@@ -189,7 +194,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
 
         test('Test getUniqueSampleValues', function() {
             // convert result to a Set since getUniqueSampleValues uses a Set
-            // and then converts the Set to an array. The convertion does not
+            // and then converts the Set to an array. The conversion does not
             // keep order so converting the result back to a Set makes
             // validation easier.
             deepEqual(
@@ -213,7 +218,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
 
             // convert obsReturned elements (which are arrays) to Set since
             // getGradientStep uses Sets and then converts the Sets to arrays.
-            // The convertion does not keep order so converting the result back
+            // The conversion does not keep order so converting the result back
             // to Sets makes validation easier.
             for (var i = 0; i < keys.length; i++) {
                 obsReturned[keys[i]] = new Set(obsReturned[keys[i]]);
