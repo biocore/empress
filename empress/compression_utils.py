@@ -129,7 +129,9 @@ def compress_sample_metadata(sample_ids_to_indices, metadata):
     indices_to_metadata_vals = {}
 
     def save_metadata(row):
-        indices_to_metadata_vals[sample_ids_to_indices[row.name]] = list(row)
+        # Convert the metadata values to strings
+        str_vals = [str(v) for v in row]
+        indices_to_metadata_vals[sample_ids_to_indices[row.name]] = str_vals
 
     metadata.apply(save_metadata, axis="columns")
 
