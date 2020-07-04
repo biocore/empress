@@ -35,6 +35,7 @@ define(["underscore"], function (_) {
         this._tbl = tbl;
         this._smCols = smCols;
         this._sm = sm;
+        // TODO add validation and error handling?
     }
 
     /**
@@ -172,7 +173,7 @@ define(["underscore"], function (_) {
      * @return{Array}
      */
     BIOMTable.prototype.getSampleCategories = function () {
-        return Object.keys(Object.values(this._samp)[0]).sort();
+        return this._smCols;
     };
 
     /**
