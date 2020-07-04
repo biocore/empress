@@ -700,25 +700,6 @@ define([
     };
 
     /**
-     * Color the tree by sample IDs
-     *
-     * @param {Array} sID - The sample IDs
-     * @param {Array} rgb - The rgb array which defines the color
-     */
-    Empress.prototype.colorSampleIDs = function (sIds, rgb) {
-        var tree = this._tree;
-        var obs = this._biom.getObservationUnionForSamples(sIds);
-        obs = Array.from(this._namesToKeys(obs));
-        obs = this._projectObservations({ samples: new Set(obs) });
-        obs = Array.from(obs.samples);
-
-        for (var i = 0; i < obs.length; i++) {
-            this._treeData[obs[i]].color = rgb;
-        }
-        this.drawTree();
-    };
-
-    /**
      *
      * Color the tree by sample groups
      *
