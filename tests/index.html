@@ -39,7 +39,6 @@
           'Camera' : './support_files/js/camera',
           'Colorer' : './support_files/js/colorer',
           'BiomTable': './support_files/js/biom-table',
-          'SummaryHelper': './support_files/js/summary-helper',
           'util' : './support_files/js/util',
           'Empress' : './support_files/js/empress',
           'Drawer' : './support_files/js/drawer',
@@ -53,7 +52,6 @@
           'testCamera' : './../tests/test-camera',
           'testBIOMTable' : './../tests/test-biom-table',
           'testColorer' : './../tests/test-colorer',
-          'testSummaryHelper': './../tests/test-summary-helper',
           'testUtil' : './../tests/test-util',
           'testCircularLayoutComputation' : './../tests/test-circular-layout-computation',
           'testVectorOps' : './../tests/test-vector-ops',
@@ -64,15 +62,15 @@
     // load tests
     require(
         ['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray', 'BPTree',
-         'Camera', 'Colorer', 'BiomTable', 'SummaryHelper', 'util', 'Empress',
+         'Camera', 'Colorer', 'BiomTable', 'util', 'Empress',
          'testBPTree', 'testByteTree', 'testBIOMTable', 'testCamera',
-         'testColorer', 'testSummaryHelper', 'testUtil',
+         'testColorer', 'testUtil',
          'testCircularLayoutComputation', 'testVectorOps', 'testEmpress'],
 
         // start tests
         function ($, gl, chroma, underscore, ByteArray, BPTree, Camera,
-          testBIOMTable, Colorer, BiomTable, SummaryHelper, util, Empress,
-          testBPTree, testByteTree, testCamera, testColorer, testSummaryHelper,
+          testBIOMTable, Colorer, BiomTable, util, Empress,
+          testBPTree, testByteTree, testCamera, testColorer,
           testUtil, testCircularLayoutComputation, testVectorOps, testEmpress) {
             $(document).ready(function() {
                 QUnit.start();
