@@ -38,6 +38,30 @@ define(["underscore"], function (_) {
     }
 
     /**
+     * Converts a set of feature indices to an array of feature IDs.
+     *
+     * This is a utility method; this conversion operation is surprisingly
+     * common in this class' methods.
+     *
+     * @param {Set} fIdxSet - set of feature indices
+     *
+     * @return {Array} fIDs - array of feature IDs
+     *
+     * @throws {Error} If any of the feature indices are unrecognized.
+     */
+    BIOMTable.prototype._featureIndexSetToIDArray = function (fIdxSet) {
+        var scope = this;
+        var fIdxArray = Array.from(fIdxSet);
+        return _.map(fIdxArray, function(idx) {
+            fID = scope._fIDs[idx];
+            if (_.isUndefined(fID)) {
+                throw new Error('Feature index "' + idx + '" unrecognized.');
+            }
+            return fID;
+        });
+    }
+
+    /**
      * Returns a list of observations (features) present in the input samples.
      *
      * @param {Array} samples - Array of sample IDs
@@ -66,45 +90,51 @@ define(["underscore"], function (_) {
             });
         });
         // Finally, convert totalFeatureIndices from indices to IDs
-        var totalFeatureIndicesArray = Array.from(totalFeatureIndices);
-        var totalFeatureIDsArray = _.map(
-            totalFeatureIndicesArray, function(idx) {
-                return scope._fIDs[idx];
-            }
-        );
-        return totalFeatureIDsArray;
+        return this._featureIndexSetToIDArray(totalFeatureIndices);
     };
 
     /**
-     * Returns a object mapping all values of a sample metadata category
-     * to an array of the features present within all samples in that category.
+     * Returns a object mapping all values of a sample metadata column
+     * to an array of all the features present within all samples with each
+     * value.
      *
-     * Throws an error if any of the sample IDs are unrecognized.
+     * @param {String} smCol Sample metadata column (e.g. "body site")
      *
-     * @param {String} cat Sample metadata category
-     *
-     * @return {Object}
+     * @return {Object} valueToFeatureIDs
      *
      * @throws {Error} If the sample metadata category is unrecognized.
      */
-    BIOMTable.prototype.getObsBy = function (cat) {
-        var result = {};
+    BIOMTable.prototype.getObsBy = function (col) {
+        var colIdx = _.indexOf(this._smCols, col);
+        if (colIdx < 0) {
+            throw new Error(
+                "Sample metadata category " + col + " not present in data."
+            );
+        }
+        var valueToFeatureIdxs = {};
         var cVal;
-        for (var sample in this._samp) {
-            cVal = this._samp[sample][cat];
-            if (!(cVal in result)) {
-                result[cVal] = new Set();
-            }
-            for (var i = 0; i < this._obs[sample].length; i++) {
-                result[cVal].add(this._obs[sample][i]);
-            }
+        var scope = this;
+        var addSampleFeatures = function (sIdx, cVal) {
+            _.each(scope._tbl[sIdx], function(fIdx) {
+                valueToFeatureIdxs[cVal].add(fIdx);
+            });
         }
-
-        for (var key in result) {
-            result[key] = Array.from(result[key]);
-        }
-
-        return result;
+        // For each sample...
+        _.each(this._sm, function(smRow, sIdx) {
+            // Figure out what value this sample has for the specified column
+            cVal = smRow[colIdx];
+            // Record this sample's features for the sample's value
+            if (!_.has(valueToFeatureIdxs, cVal)) {
+                valueToFeatureIdxs[cVal] = new Set();
+            }
+            addSampleFeatures(sIdx, cVal);
+        });
+        // Produce a version of valueToFeatureIdxs where
+        // 1) The Sets of feature indices are converted to Arrays
+        // 2) The feature indices are replaced with IDs
+        return _.mapObject(valueToFeatureIdxs, function(fIdxSet) {
+            return scope._featureIndexSetToIDArray(fIdxSet);
+        });
     };
 
     /**

@@ -104,6 +104,51 @@ require(['jquery','BiomTable'], function($, BiomTable) {
             }
         });
 
+        test('Test _featureIndexSetToIDArray', function() {
+            var observedArray = this.biomTable._featureIndexSetToIDArray(
+                new Set([0, 2, 4, 3])
+            );
+            ok(Array.isArray(observedArray), 'Test: returns an array');
+            deepEqual(
+                this.biomTable._featureIndexSetToIDArray(new Set()),
+                [],
+                'Test: empty set maps to empty array'
+            );
+            deepEqual(
+                this.biomTable._featureIndexSetToIDArray(new Set([9])),
+                ["o10"],
+                'Test: one feature index correctly mapped'
+            );
+            // We don't know (or really care) about the order of the array
+            // returned by this function, so we just convert it to a Set.
+            // (We already know now that this function returns an Array, so
+            // this is acceptable.)
+            deepEqual(
+                new Set(observedArray),
+                new Set(["o1", "o3", "o4", "o5"]),
+                'Test: multiple feature indices correctly mapped'
+            );
+            var scope = this;
+            throws(
+                function() {
+                    scope.biomTable._featureIndexSetToIDArray(
+                        new Set([100])
+                    );
+                },
+                /Feature index "100" unrecognized./,
+                'Test: error thrown if unrecognized feature index passed.'
+            );
+            throws(
+                function() {
+                    scope.biomTable._featureIndexSetToIDArray(
+                        new Set(['asdf'])
+                    );
+                },
+                /Feature index "asdf" unrecognized./,
+                'Test: error thrown if unrecognized feature index passed.'
+            );
+        });
+
         test('Test getObservationUnionForSamples', function() {
             // converting result to Set makes validation easier since
             // getObservationUnionForSamples uses a Set and then converts the
