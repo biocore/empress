@@ -39,6 +39,44 @@ define(["underscore", "util"], function (_, util) {
         // arrays are sorted in asc. order
     }
 
+    BIOMTable.prototype._getSampleIndexFromID = function(sID) {
+        var sIdx = this._sID2Idx[sID];
+        if (_.isUndefined(sIdx)) {
+            throw new Error(
+                'Sample ID "' + sID + '" not in BIOM table.'
+            );
+        }
+        return sIdx;
+    }
+
+    BIOMTable.prototype._getFeatureIndexFromID = function(fID) {
+        var fIdx = this._fID2Idx[fID];
+        if (_.isUndefined(fIdx)) {
+            throw new Error(
+                'Feature ID "' + fID + '" not in BIOM table.'
+            );
+        }
+        return fIdx;
+    };
+
+    BIOMTable.prototype._getFeatureIDFromIndex = function(fIdx) {
+        var fID = this._fIDs[fIdx];
+        if (_.isUndefined(fID)) {
+            throw new Error('Feature index "' + fIdx + '" invalid.');
+        }
+        return fID;
+    };
+
+    BIOMTable.prototype._getSampleMetadataColIndex = function(col) {
+        var colIdx = _.indexOf(this._smCols, col);
+        if (colIdx < 0) {
+            throw new Error(
+                'Sample metadata column "' + col + '" not in BIOM table.'
+            );
+        }
+        return colIdx;
+    };
+
     /**
      * Converts a set of feature indices to an array of feature IDs.
      *
@@ -55,13 +93,9 @@ define(["underscore", "util"], function (_, util) {
         var scope = this;
         var fIdxArray = Array.from(fIdxSet);
         return _.map(fIdxArray, function(idx) {
-            fID = scope._fIDs[idx];
-            if (_.isUndefined(fID)) {
-                throw new Error('Feature index "' + idx + '" unrecognized.');
-            }
-            return fID;
+            return scope._getFeatureIDFromIndex(idx);
         });
-    }
+    };
 
     /**
      * Returns a list of observations (features) present in the input samples.
@@ -80,12 +114,7 @@ define(["underscore", "util"], function (_, util) {
             // Figure out the indices of the features in this sample.
             // Add these indices to totalFeatureIndices (which is a set,
             // so duplicate indices are implicitly ignored)
-            var sampleIdx = scope._sID2Idx[sID];
-            if (_.isUndefined(sampleIdx)) {
-                throw new Error(
-                    'Sample ID "' + sID + '" not recognized in BIOM table.'
-                );
-            }
+            var sampleIdx = scope._getSampleIndexFromID(sID);
             var featureIndices = scope._tbl[sampleIdx];
             _.each(featureIndices, function(fIdx) {
                 totalFeatureIndices.add(fIdx);
@@ -107,15 +136,10 @@ define(["underscore", "util"], function (_, util) {
      * @throws {Error} If the sample metadata column is unrecognized.
      */
     BIOMTable.prototype.getObsBy = function (col) {
-        var colIdx = _.indexOf(this._smCols, col);
-        if (colIdx < 0) {
-            throw new Error(
-                'Sample metadata column "' + col + '" not present in data.'
-            );
-        }
+        var scope = this;
+        var colIdx = this._getSampleMetadataColIndex(col);
         var valueToFeatureIdxs = {};
         var cVal;
-        var scope = this;
         var addSampleFeatures = function (sIdx, cVal) {
             _.each(scope._tbl[sIdx], function(fIdx) {
                 valueToFeatureIdxs[cVal].add(fIdx);
@@ -153,23 +177,11 @@ define(["underscore", "util"], function (_, util) {
      *                 If the feature ID is unrecognized.
      */
     BIOMTable.prototype.getObsCountsBy = function (col, fID) {
-        // TODO: abstract all of these indexing operations to their own
-        // internal BIOM functions and test those
-        var colIdx = _.indexOf(this._smCols, col);
-        if (colIdx < 0) {
-            throw new Error(
-                'Sample metadata column "' + col + '" not present in data.'
-            );
-        }
-        var fIdx = this._fID2Idx[fID];
-        if (_.isUndefined(fIdx)) {
-            throw new Error(
-                'Feature ID "' + fID + '" not recognized in BIOM table.'
-            );
-        }
+        var scope = this;
+        var colIdx = this._getSampleMetadataColIndex(col);
+        var fIdx = this._getFeatureIndexFromID(fID);
         var valueToCountOfSampleWithObs = {};
         var cVal, fIdxPos;
-        var scope = this;
         // Iterate through each sample of the BIOM table
         _.each(this._tbl, function(presentFeatureIndices, sIdx) {
             // Figure out what metadata value this sample has at the column.
@@ -221,12 +233,7 @@ define(["underscore", "util"], function (_, util) {
      * @throws {Error} If the sample metadata column is unrecognized.
      */
     BIOMTable.prototype.getUniqueSampleValues = function (col) {
-        var colIdx = _.indexOf(this._smCols, col);
-        if (colIdx < 0) {
-            throw new Error(
-                'Sample metadata column "' + col + '" not present in data.'
-            );
-        }
+        var colIdx = this._getSampleMetadataColIndex(col);
         var values = new Set();
         _.each(this._sm, function(smRow) {
             values.add(smRow[colIdx]);
@@ -257,19 +264,9 @@ define(["underscore", "util"], function (_, util) {
      *                 If no samples' gradient column value is gradVal.
      */
     BIOMTable.prototype.getGradientStep = function (gradCol, gradVal, trajCol) {
-        var gcIdx = _.indexOf(this._smCols, gradCol);
-        if (gcIdx < 0) {
-            throw new Error(
-                'Sample metadata column "' + gradCol + '" not present in data.'
-            );
-        }
-        var tcIdx = _.indexOf(this._smCols, trajCol);
-        if (tcIdx < 0) {
-            throw new Error(
-                'Sample metadata column "' + trajCol + '" not present in data.'
-            );
-        }
         var scope = this;
+        var gcIdx = this._getSampleMetadataColIndex(gradCol);
+        var tcIdx = this._getSampleMetadataColIndex(trajCol);
         var trajValToFeatureIndexSet = {};
         _.each(this._sm, function(smRow, sIdx) {
             if (smRow[gcIdx] === gradVal) {
@@ -309,13 +306,7 @@ define(["underscore", "util"], function (_, util) {
 
         // Convert array of feature IDs to an array of indices
         var fIndices = _.map(fIDs, function(fID) {
-            var fIdx = scope._fID2Idx[fID];
-            if (_.isUndefined(fIdx)) {
-                throw new Error(
-                    'Feature ID "' + fID + '" not recognized in BIOM table.'
-                );
-            }
-            return fIdx;
+            return scope._getFeatureIndexFromID(fID);
         });
 
         // Now, we can go through the table and find samples with matches
@@ -354,21 +345,11 @@ define(["underscore", "util"], function (_, util) {
      *                 If any of the sample IDs are unrecognized.
      */
     BIOMTable.prototype.getSampleValuesCount = function (samples, col) {
-        var colIdx = _.indexOf(this._smCols, col);
-        if (colIdx < 0) {
-            throw new Error(
-                'Sample metadata column "' + col + '" not present in data.'
-            );
-        }
         var scope = this;
+        var colIdx = this._getSampleMetadataColIndex(col);
         var valueToSampleCount = {};
         _.each(samples, function(sID) {
-            var sampleIdx = scope._sID2Idx[sID];
-            if (_.isUndefined(sampleIdx)) {
-                throw new Error(
-                    'Sample ID "' + sID + '" not recognized in BIOM table.'
-                );
-            }
+            var sampleIdx = scope._getSampleIndexFromID(sID);
             var cVal = scope._sm[sampleIdx][colIdx];
             if (_.has(valueToSampleCount, cVal)) {
                 valueToSampleCount[cVal] += 1;

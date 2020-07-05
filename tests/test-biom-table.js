@@ -138,7 +138,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                         new Set([100])
                     );
                 },
-                /Feature index "100" unrecognized./,
+                /Feature index "100" invalid./,
                 'Test: error thrown if unrecognized feature index passed'
             );
             throws(
@@ -147,7 +147,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                         new Set(['asdf'])
                     );
                 },
-                /Feature index "asdf" unrecognized./,
+                /Feature index "asdf" invalid./,
                 'Test: error thrown if unrecognized feature index passed'
             );
         });
@@ -177,7 +177,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 function() {
                     scope.biomTable.getObservationUnionForSamples(['sBad']);
                 },
-                /Sample ID "sBad" not recognized in BIOM table./,
+                /Sample ID "sBad" not in BIOM table./,
                 'Test: error thrown if unrecognized sample ID passed'
             );
         });
@@ -222,7 +222,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 function() {
                     scope.biomTable.getObsBy("f100");
                 },
-                /Sample metadata column "f100" not present in data./,
+                /Sample metadata column "f100" not in BIOM table./,
                 'Test: error thrown if unrecognized metadata col passed'
             );
         });
@@ -253,7 +253,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 function() {
                     scope.biomTable.getObsCountsBy('f100', 'o1');
                 },
-                /Sample metadata column "f100" not present in data./,
+                /Sample metadata column "f100" not in BIOM table./,
                 'Test: error thrown if unrecognized metadata col passed'
             );
 
@@ -261,7 +261,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 function() {
                     scope.biomTable.getObsCountsBy('f1', 'o100');
                 },
-                /Feature ID "o100" not recognized in BIOM table./,
+                /Feature ID "o100" not in BIOM table./,
                 'Test: error thrown if unrecognized feature ID passed'
             );
 
@@ -273,7 +273,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 function() {
                     scope.biomTable.getObsCountsBy('f100', 'o100');
                 },
-                /Sample metadata column "f100" not present in data./,
+                /Sample metadata column "f100" not in BIOM table./,
                 'Test: error thrown if unrecognized metadata col and ' +
                 'feature ID passed'
             );
@@ -337,7 +337,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 function() {
                     scope.biomTable.getUniqueSampleValues('asdfasdf');
                 },
-                /Sample metadata column "asdfasdf" not present in data./,
+                /Sample metadata column "asdfasdf" not in BIOM table./,
                 'Test: error thrown if unrecognized metadata col passed'
             );
         });
@@ -380,14 +380,14 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 function() {
                     scope.biomTable.getGradientStep('fasdf', 'd', 'f3');
                 },
-                /Sample metadata column "fasdf" not present in data./,
+                /Sample metadata column "fasdf" not in BIOM table./,
                 'Test: error thrown if unrecognized gradient col passed'
             );
             throws(
                 function() {
                     scope.biomTable.getGradientStep('f2', 'd', 'foiuoiu');
                 },
-                /Sample metadata column "foiuoiu" not present in data./,
+                /Sample metadata column "foiuoiu" not in BIOM table./,
                 'Test: error thrown if unrecognized trajectory col passed'
             );
             throws(
@@ -425,7 +425,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 function() {
                     scope.biomTable.getSamplesByObservations(['o1', 'oasdf']);
                 },
-                /Feature ID "oasdf" not recognized in BIOM table./,
+                /Feature ID "oasdf" not in BIOM table./,
                 'Test: error thrown if unrecognized feature ID passed'
             );
         });
@@ -467,14 +467,14 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 function() {
                     scope.biomTable.getSampleValuesCount(['sBad'], 'f1');
                 },
-                /Sample ID "sBad" not recognized in BIOM table./,
+                /Sample ID "sBad" not in BIOM table./,
                 'Test: error thrown if unrecognized sample ID passed'
             );
             throws(
                 function() {
                     scope.biomTable.getSampleValuesCount(['s1'], 'fasdf');
                 },
-                /Sample metadata column "fasdf" not present in data./,
+                /Sample metadata column "fasdf" not in BIOM table./,
                 'Test: error thrown if unrecognized metadata col passed'
             );
         });
