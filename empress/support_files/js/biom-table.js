@@ -281,28 +281,43 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Returns a list of samples that contain an observation in obIDs
+     * Returns an array of samples that contain at least one feature in fIDs
      *
-     * @param{Array} obIDs A list of observationIds (i.e. tip names)
+     * @param {Array} fIDs Array of feature IDs (i.e. tip names)
      *
-     * @return{Array} a list of samples
+     * @return {Array} containingSampleIDs Array of sample IDs
      */
-    BIOMTable.prototype.getSamplesByObservations = function (obIDs) {
-        var samples = Object.keys(this._obs);
-        var result = [];
+    BIOMTable.prototype.getSamplesByObservations = function (fIDs) {
+        var scope = this;
 
-        var checkSampleForObservations = function (sample, obs) {
-            return obs.some((id) => sample.includes(id));
-        };
-        // find all samples that contain at least one observation in obIDs
-        for (var i = 0; i < samples.length; i++) {
-            var sample = samples[i];
-            if (checkSampleForObservations(this._obs[sample], obIDs)) {
-                result.push(sample);
+        // Convert array of feature IDs to an array of indices
+        var fIndices = _.map(fIDs, function(fID) {
+            var fIdx = scope._fID2Idx[fID];
+            console.log(fID, fIdx);
+            if (_.isUndefined(fIdx)) {
+                throw new Error(
+                    'Feature ID "' + fID + '" not recognized in BIOM table.'
+                );
             }
-        }
+            return fIdx;
+        });
 
-        return result;
+        // Now, we can go through the table and find samples with matches
+        var containingSampleIDs = [];
+        _.each(this._tbl, function(presentFeatureIndices, sIdx) {
+            var sampleHasMatch = _.some(fIndices, function(fIdx) {
+                // See getObsCountsBy() documentation above. Briefly, we know
+                // presentFeatureIndices is sorted, so underscore.js can use
+                // a binary search for figuring out if this feature index is
+                // present in this sample.
+                fIdxPos = _.indexOf(presentFeatureIndices, fIdx, true);
+                return fIdxPos >= 0;
+            });
+            if (sampleHasMatch) {
+                containingSampleIDs.push(scope._sIDs[sIdx]);
+            }
+        });
+        return containingSampleIDs;
     };
 
     /**

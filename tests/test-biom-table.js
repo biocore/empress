@@ -378,9 +378,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
         });
 
         test('Test getSamplesByObservations', function() {
-            var obsReturned = this.biomTable.getSamplesByObservations(
-                ['o10']);
-            obsReturned.sort();
+            var obsReturned = this.biomTable.getSamplesByObservations(['o10']);
             deepEqual(
                 obsReturned,
                 ['s1'],
@@ -394,6 +392,19 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 obsReturned,
                 ['s1', 's2', 's3'],
                 'Test find samples that contain o1 and o2'
+            );
+            deepEqual(
+                this.biomTable.getSamplesByObservations([]),
+                [],
+                'Test empty array of feature IDs -> empty array of sample IDs'
+            );
+            var scope = this;
+            throws(
+                function() {
+                    scope.biomTable.getSamplesByObservations(['o1', 'oasdf']);
+                },
+                /Feature ID "oasdf" not recognized in BIOM table./,
+                'Test: error thrown if unrecognized feature ID passed'
             );
         });
 
@@ -423,6 +434,11 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     'e' : 1
                 },
                 'Test getSampleValuesCount passing s4 for f2 (just one sample)'
+            );
+            deepEqual(
+                this.biomTable.getSampleValuesCount([], 'f3'),
+                {},
+                'Test getSampleValuesCount: empty sample list -> empty Object'
             );
             var scope = this;
             throws(
