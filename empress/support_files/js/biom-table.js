@@ -147,7 +147,7 @@ define(["underscore", "util"], function (_, util) {
      * @param {String} col Sample metadata column
      * @param {String} fID Feature (aka observation) ID
      *
-     * @return {Object} valueToSampleWithObsCounts
+     * @return {Object} valueToCountOfSampleWithObs
      *
      * @throws {Error} If the sample metadata column is unrecognized.
      *                 If the feature ID is unrecognized.
@@ -214,7 +214,7 @@ define(["underscore", "util"], function (_, util) {
      * Returns an array of unique values in a metadata column, sorted using
      * util.naturalSort().
      *
-     * @param {String} col The sample metadata column to find unique values of.
+     * @param {String} col The sample metadata column to find unique values of
      *
      * @return {Array}
      */
@@ -306,30 +306,43 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Returns an Object mapping sample field values to the number of samples
-     * with that value.
+     * Given an array of sample IDs and a sample metadata column,
+     * returns an Object mapping sample metadata values for that column
+     * to the number of samples in the array with that value.
      *
-     * For example if field == 'body_site' then this function will return an
+     * For example, if col == 'body_site', then this function will return an
      * an object that maps each body site (oral, gut,...) to the number of
      * samples in 'samples' labelled as being from that body site.
      *
-     * @param{Array} samples A list of sample ids
-     * @param{String} field The category to count
+     * @param {Array} samples Array of sample IDs
+     * @param {String} col Sample metadata column
      *
-     * @return{Object}
+     * @return {Object} valueToSampleCount
      */
-    BIOMTable.prototype.getSampleValuesCount = function (samples, field) {
-        var result = {};
-        for (var i = 0; i < samples.length; i++) {
-            var fVal = this._samp[samples[i]][field];
-            if (fVal in result) {
-                result[fVal] += 1;
-            } else {
-                result[fVal] = 1;
-            }
+    BIOMTable.prototype.getSampleValuesCount = function (samples, col) {
+        var colIdx = _.indexOf(this._smCols, col);
+        if (colIdx < 0) {
+            throw new Error(
+                'Sample metadata column "' + col + '" not present in data.'
+            );
         }
-
-        return result;
+        var scope = this;
+        var valueToSampleCount = {};
+        _.each(samples, function(sID) {
+            var sampleIdx = scope._sID2Idx[sID];
+            if (_.isUndefined(sampleIdx)) {
+                throw new Error(
+                    'Sample ID "' + sID + '" not recognized in BIOM table.'
+                );
+            }
+            var cVal = scope._sm[sampleIdx][colIdx];
+            if (_.has(valueToSampleCount, cVal)) {
+                valueToSampleCount[cVal] += 1;
+            } else {
+                valueToSampleCount[cVal] = 1;
+            }
+        });
+        return valueToSampleCount;
     };
 
     return BIOMTable;

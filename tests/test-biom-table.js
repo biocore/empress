@@ -399,13 +399,45 @@ require(['jquery','BiomTable'], function($, BiomTable) {
 
         test('Test getSampleValuesCount', function() {
             deepEqual(
-                this.biomTable.getSampleValuesCount(['s1','s2','s3','s4','s5'], 'f1'),
+                this.biomTable.getSampleValuesCount(
+                    ['s1', 's2', 's3', 's4', 's5'], 'f1'
+                ),
                 {
                     'a' : 2,
                     'b' : 2,
                     'c' : 1
                 },
                 'Test getSampleValuesCount passing all samples for f1 category'
+            );
+            deepEqual(
+                this.biomTable.getSampleValuesCount(['s1', 's3'], 'f4'),
+                {
+                    '4' : 1,
+                    '1' : 1
+                },
+                'Test getSampleValuesCount passing s1 and s3 for f4'
+            );
+            deepEqual(
+                this.biomTable.getSampleValuesCount(['s4'], 'f2'),
+                {
+                    'e' : 1
+                },
+                'Test getSampleValuesCount passing s4 for f2 (just one sample)'
+            );
+            var scope = this;
+            throws(
+                function() {
+                    scope.biomTable.getSampleValuesCount(['sBad'], 'f1');
+                },
+                /Sample ID "sBad" not recognized in BIOM table./,
+                'Test: error thrown if unrecognized sample ID passed'
+            );
+            throws(
+                function() {
+                    scope.biomTable.getSampleValuesCount(['s1'], 'fasdf');
+                },
+                /Sample metadata column "fasdf" not present in data./,
+                'Test: error thrown if unrecognized metadata col passed'
             );
         });
 
