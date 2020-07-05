@@ -1072,19 +1072,20 @@ define([
 
     /**
      * Returns a mapping of trajectory values to observations given a gradient
-     * and trajectory. Ignores trajectories which represent missing data. (i.e.
-     * 'unknown' for non-numberic and NaN for numeric)
+     * and trajectory. See BIOMTable.getGradientStep()'s docs for details.
      *
-     * @param{Object} col The column in metadata the gradient belongs to.
-     * @param{Object} grad The value for the gradient. observations that have
-     *                this value will only be returned.
-     * @param{Object} traj The column for the trajectory. All observations with
-     *                missing data in this column will be ignored.
+     * @param {String} gradCol Sample metadata column for the gradient
+     * @param {String} gradVal Value within the gradient column to get
+     *                         information for
+     * @param {String} trajCol Sample metadata column for the trajectory
      *
-     * @return{Object} return a mapping of trajectory values to observations.
+     * @return {Object} Maps trajectory values to an array of feature IDs
+     *
+     * @throws {Error} If the gradient or trajectory columns are unrecognized.
+     *                 If no samples' gradient column value is gradVal.
      */
-    Empress.prototype.getGradientStep = function (cat, grad, traj) {
-        return this._biom.getGradientStep(cat, grad, traj);
+    Empress.prototype.getGradientStep = function (gradCol, gradVal, trajCol) {
+        return this._biom.getGradientStep(gradCol, gradVal, trajCol);
     };
 
     /**

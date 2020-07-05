@@ -359,7 +359,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     3 : new Set([['o1', 'o3', 'o5', 'o6', 'o7', 'o9']]),
                     4 : new Set(['o1', 'o2', 'o4', 'o5', 'o7', 'o10'])
                 },
-                'Test gradient a trjectory f4'
+                'Test gradient a trajectory f4'
             );
 
             obsReturned = this.biomTable.getGradientStep('f2', 'd', 'f3');
@@ -373,7 +373,29 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     'i' : new Set(['o1', 'o2', 'o4', 'o5', 'o7', 'o10']),
                     'j' : new Set(['o1', 'o2',, 'o3', 'o5', 'o6', 'o7', 'o9'])
                 },
-                'Test gradient d trjectory f3'
+                'Test gradient d trajectory f3'
+            );
+            var scope = this;
+            throws(
+                function() {
+                    scope.biomTable.getGradientStep('fasdf', 'd', 'f3');
+                },
+                /Sample metadata column "fasdf" not present in data./,
+                'Test: error thrown if unrecognized gradient col passed'
+            );
+            throws(
+                function() {
+                    scope.biomTable.getGradientStep('f2', 'd', 'foiuoiu');
+                },
+                /Sample metadata column "foiuoiu" not present in data./,
+                'Test: error thrown if unrecognized trajectory col passed'
+            );
+            throws(
+                function() {
+                    scope.biomTable.getGradientStep('f2', 'a', 'f3');
+                },
+                /No samples have "a" as their value in the "f2" gradient sample metadata column./,
+                'Test: error thrown if no samples have the input gradient val'
             );
         });
 

@@ -217,6 +217,8 @@ define(["underscore", "util"], function (_, util) {
      * @param {String} col The sample metadata column to find unique values of
      *
      * @return {Array}
+     *
+     * @throws {Error} If the sample metadata column is unrecognized.
      */
     BIOMTable.prototype.getUniqueSampleValues = function (col) {
         var colIdx = _.indexOf(this._smCols, col);
@@ -233,51 +235,64 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Returns a mapping of trajectory values to observations given a gradient
-     * and trajectory. Ignores trajectories which represent missing data. (i.e.
-     * 'unknown' for non-numberic and NaN for numeric)
+     * Given gradient and trajectory information, returns an Object that maps
+     * trajectory values to an array of all of the feature IDs present within
+     * samples with this trajectory value and with the specified gradient
+     * value.
      *
-     * @param{String} cat The column in metadata the gradient belongs to.
-     * @param{String} grad The value for the gradient. observations that have
-     *                this value will only be returned.
-     * @param{Object} traj The column for the trajectory. All observations with
-     *                missing data in this column will be ignored.
+     * Note that this does not filter to feature IDs that are unique to
+     * trajectory values. (In the context of Empress animation, this should be
+     * done later using the output of this function.)
      *
-     * @return{Object} return a mapping of trajectory values to observations.
+     * @param {String} gradCol Sample metadata column for the gradient
+     *                         (e.g. "day")
+     * @param {String} gradVal Value within the gradient column to get
+     *                         information for (e.g. "20")
+     * @param {String} trajCol Sample metadata column for the trajectory
+     *                         (e.g. "subject")
+     *
+     * @return {Object} Maps trajectory values to an array of feature IDs
+     *
+     * @throws {Error} If the gradient or trajectory columns are unrecognized.
+     *                 If no samples' gradient column value is gradVal.
      */
-    BIOMTable.prototype.getGradientStep = function (cat, grad, traj) {
-        var obs = {};
-        var samples = Object.keys(this._samp);
-        var isNumeric = this._types[traj] === "n";
-
-        // add observations to mapping object
-        var addItems = function (items, container) {
-            items.forEach((x) => container.add(x));
-        };
-
-        // for all sample's whose gradient is the same as grad
-        // add sample feature observations to the samples trajectory value
-        for (var i = 0; i < samples.length; i++) {
-            var sId = samples[i];
-            var sample = this._samp[sId];
-            if (grad === sample[cat]) {
-                var cVal = sample[traj];
-
-                // checking if trajectory value is missing
-
-                // add sample observations to the appropriate mapping
-                if (!(sample[traj] in obs)) {
-                    obs[sample[traj]] = new Set();
+    BIOMTable.prototype.getGradientStep = function (gradCol, gradVal, trajCol) {
+        var gcIdx = _.indexOf(this._smCols, gradCol);
+        if (gcIdx < 0) {
+            throw new Error(
+                'Sample metadata column "' + gradCol + '" not present in data.'
+            );
+        }
+        var tcIdx = _.indexOf(this._smCols, trajCol);
+        if (tcIdx < 0) {
+            throw new Error(
+                'Sample metadata column "' + trajCol + '" not present in data.'
+            );
+        }
+        var scope = this;
+        var trajValToFeatureIndexSet = {};
+        _.each(this._sm, function(smRow, sIdx) {
+            if (smRow[gcIdx] === gradVal) {
+                var tVal = smRow[tcIdx];
+                if (!_.has(trajValToFeatureIndexSet, tVal)) {
+                    trajValToFeatureIndexSet[tVal] = new Set();
                 }
-                addItems(this._obs[sId], obs[sample[traj]]);
+                // Add the indices of all of the features in this sample to
+                // trajValToFeatureIndexSet[tVal]
+                _.each(scope._tbl[sIdx], function(fIdx) {
+                    trajValToFeatureIndexSet[tVal].add(fIdx);
+                });
             }
+        });
+        if (_.isEmpty(trajValToFeatureIndexSet)) {
+            throw new Error(
+                'No samples have "' + gradVal + '" as their value in the "' +
+                gradCol + '" gradient sample metadata column.'
+            );
         }
-
-        // convert sets arrays
-        for (var key in obs) {
-            obs[key] = Array.from(obs[key]);
-        }
-        return obs;
+        return _.mapObject(trajValToFeatureIndexSet, function(fIndexSet) {
+            return scope._featureIndexSetToIDArray(fIndexSet);
+        });
     };
 
     /**
@@ -286,6 +301,8 @@ define(["underscore", "util"], function (_, util) {
      * @param {Array} fIDs Array of feature IDs (i.e. tip names)
      *
      * @return {Array} containingSampleIDs Array of sample IDs
+     *
+     * @throws {Error} If any of the feature IDs are unrecognized.
      */
     BIOMTable.prototype.getSamplesByObservations = function (fIDs) {
         var scope = this;
@@ -293,7 +310,6 @@ define(["underscore", "util"], function (_, util) {
         // Convert array of feature IDs to an array of indices
         var fIndices = _.map(fIDs, function(fID) {
             var fIdx = scope._fID2Idx[fID];
-            console.log(fID, fIdx);
             if (_.isUndefined(fIdx)) {
                 throw new Error(
                     'Feature ID "' + fID + '" not recognized in BIOM table.'
@@ -333,6 +349,9 @@ define(["underscore", "util"], function (_, util) {
      * @param {String} col Sample metadata column
      *
      * @return {Object} valueToSampleCount
+     *
+     * @throws {Error} If the sample metadata column is unrecognized.
+     *                 If any of the sample IDs are unrecognized.
      */
     BIOMTable.prototype.getSampleValuesCount = function (samples, col) {
         var colIdx = _.indexOf(this._smCols, col);
