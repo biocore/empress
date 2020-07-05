@@ -23,7 +23,8 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     "o10": 9
                 };
                 // Each row is a sample; each array is the indices of the
-                // features present in each sample
+                // features present in each sample. Notably, each array within
+                // this table should be sorted in ascending order.
                 this._tbl = [
                     [0, 1, 3, 4, 6, 9],
                     [0, 2, 4, 5, 6, 8],
@@ -50,7 +51,9 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 );
                 // For comparison, here is the original _obs and _samp data
                 // that were used as test data here (before the compression
-                // refactoring).
+                // refactoring). With the exception of placing the numeric
+                // sample metadata in strings, this data is the same as what is
+                // defined above.
                 // this._obs = {
                 //     's1': ['o1', 'o2', 'o4', 'o5', 'o7', 'o10'],
                 //     's2': ['o1', 'o3', 'o5', 'o6', 'o7', 'o9'],
@@ -243,6 +246,36 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     'j' : 1
                 },
                 'Test: getObsCountsBy(f1, o1)'
+            );
+
+            var scope = this;
+            throws(
+                function() {
+                    scope.biomTable.getObsCountsBy('f100', 'o1');
+                },
+                /Sample metadata column "f100" not present in data./,
+                'Test: error thrown if unrecognized metadata col passed'
+            );
+
+            throws(
+                function() {
+                    scope.biomTable.getObsCountsBy('f1', 'o100');
+                },
+                /Feature ID "o100" not recognized in BIOM table./,
+                'Test: error thrown if unrecognized feature ID passed'
+            );
+
+            // The metadata error takes "precedence" over the feature ID
+            // error so it's what we check for, but the order doesn't matter --
+            // it's just what we're going with. (This test just verifies that
+            // *both* inputs being invalid doesn't explode everything.)
+            throws(
+                function() {
+                    scope.biomTable.getObsCountsBy('f100', 'o100');
+                },
+                /Sample metadata column "f100" not present in data./,
+                'Test: error thrown if unrecognized metadata col and ' +
+                'feature ID passed'
             );
         });
 

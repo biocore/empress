@@ -35,7 +35,8 @@ define(["underscore"], function (_) {
         this._tbl = tbl;
         this._smCols = smCols;
         this._sm = sm;
-        // TODO add validation and error handling?
+        // TODO add validation and error handling? i.e. verify that table
+        // arrays are sorted in asc. order
     }
 
     /**
@@ -44,9 +45,9 @@ define(["underscore"], function (_) {
      * This is a utility method; this conversion operation is surprisingly
      * common in this class' methods.
      *
-     * @param {Set} fIdxSet - set of feature indices
+     * @param {Set} fIdxSet set of feature indices
      *
-     * @return {Array} fIDs - array of feature IDs
+     * @return {Array} fIDs array of feature IDs
      *
      * @throws {Error} If any of the feature indices are unrecognized.
      */
@@ -65,9 +66,9 @@ define(["underscore"], function (_) {
     /**
      * Returns a list of observations (features) present in the input samples.
      *
-     * @param {Array} samples - Array of sample IDs
+     * @param {Array} samples Array of sample IDs
      *
-     * @return {Array} features - Array of feature IDs
+     * @return {Array} features Array of feature IDs
      *
      * @throws {Error} If any of the sample IDs are unrecognized.
      */
@@ -103,7 +104,7 @@ define(["underscore"], function (_) {
      *
      * @return {Object} valueToFeatureIDs
      *
-     * @throws {Error} If the sample metadata category is unrecognized.
+     * @throws {Error} If the sample metadata column is unrecognized.
      */
     BIOMTable.prototype.getObsBy = function (col) {
         var colIdx = _.indexOf(this._smCols, col);
@@ -139,32 +140,65 @@ define(["underscore"], function (_) {
     };
 
     /**
-     * Returns a object that maps values of a sample category to number of
-     * samples obID was seen in.
-     * category.
+     * Returns a object that maps the unique values of a sample metadata column
+     * to the number of samples with that metadata value containing a given
+     * feature.
      *
-     * @param {String} cat The category to return observation
-     * @param {String} obID The observation to count
+     * @param {String} col Sample metadata column
+     * @param {String} fID Feature (aka observation) ID
      *
-     * @return {Object}
+     * @return {Object} valueToSampleWithObsCounts
+     *
+     * @throws {Error} If the sample metadata column is unrecognized.
+     *                 If the feature ID is unrecognized.
      */
-    BIOMTable.prototype.getObsCountsBy = function (cat, obID) {
-        var result = {};
-        var cVal;
-        for (var sample in this._samp) {
-            cVal = this._samp[sample][cat];
-            if (!(cVal in result)) {
-                result[cVal] = 0;
-            }
-            for (var i = 0; i < this._obs[sample].length; i++) {
-                if (this._obs[sample][i] === obID) {
-                    result[cVal] += 1;
-                    break;
-                }
-            }
+    BIOMTable.prototype.getObsCountsBy = function (col, fID) {
+        // TODO: abstract all of these indexing operations to their own
+        // internal BIOM functions and test those
+        var colIdx = _.indexOf(this._smCols, col);
+        if (colIdx < 0) {
+            throw new Error(
+                'Sample metadata column "' + col + '" not present in data.'
+            );
         }
-
-        return result;
+        var fIdx = this._fID2Idx[fID];
+        if (_.isUndefined(fIdx)) {
+            throw new Error(
+                'Feature ID "' + fID + '" not recognized in BIOM table.'
+            );
+        }
+        var valueToCountOfSampleWithObs = {};
+        var cVal, fIdxPos;
+        var scope = this;
+        // Iterate through each sample of the BIOM table
+        _.each(this._tbl, function(presentFeatureIndices, sIdx) {
+            // Figure out what metadata value this sample has at the column.
+            // If we haven't recorded it as a key in our output Object yet, do
+            // so and set it to default to 0.
+            cVal = scope._sm[sIdx][colIdx];
+            if (!_.has(valueToCountOfSampleWithObs, cVal)) {
+                valueToCountOfSampleWithObs[cVal] = 0;
+            }
+            // Now, we check if we need to update the cVal entry by 1
+            // (indicating that one more sample with cVal contains the
+            // specified feature). We do this using presentFeatureIndices,
+            // which is an array of the indices of the features within this
+            // sample.
+            //
+            // We know that presentFeatureIndices is sorted in ascending order,
+            // so we can do this check using _.indexOf() while setting the
+            // "isSorted" parameter to true. This will use a binary search,
+            // making this check likely faster than manual iteration.
+            // See https://underscorejs.org/#indexOf.
+            fIdxPos = _.indexOf(presentFeatureIndices, fIdx, true);
+            if (fIdxPos >= 0) {
+                // This sample actually contains the feature!
+                cVal = scope._sm[sIdx][colIdx];
+                // Update our output Object's count info accordingly.
+                valueToCountOfSampleWithObs[cVal] += 1;
+            }
+        });
+        return valueToCountOfSampleWithObs;
     };
 
     /**
