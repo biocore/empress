@@ -302,23 +302,44 @@ require(['jquery','BiomTable'], function($, BiomTable) {
         });
 
         test('Test getUniqueSampleValues', function() {
-            // convert result to a Set since getUniqueSampleValues uses a Set
-            // and then converts the Set to an array. The conversion does not
-            // keep order so converting the result back to a Set makes
-            // validation easier.
             deepEqual(
-                new Set(this.biomTable.getUniqueSampleValues('f1')),
-                new Set(['a', 'b', 'c']),
+                this.biomTable.getUniqueSampleValues('f1'),
+                ['a', 'b', 'c'],
                 'Test non-numeric category f1'
             );
-
-            // dont convert result for f4 because f4 is numeric and the order
-            // of the result does matter for numeric fields
             deepEqual(
                 this.biomTable.getUniqueSampleValues('f4'),
-                [1,2,3,4,5],
+                ['1', '2', '3', '4', '5'],
                 'Test numeric category f4'
-            )
+            );
+            var tblWithMixedf3 = new BiomTable(
+                this._sIDs,
+                this._fIDs,
+                this._sID2Idx,
+                this._fID2Idx,
+                this._tbl,
+                this._smCols,
+                [
+                    ["a", "d", "2", "4"],
+                    ["a", "d", "j", "3"],
+                    ["c", "d", "10", "1"],
+                    ["b", "e", "1", "2"],
+                    ["b", "f", "i", "5"]
+                ]
+            );
+            deepEqual(
+                tblWithMixedf3.getUniqueSampleValues('f3'),
+                ['i', 'j', '1', '2', '10'],
+                'Test mixed numeric and non-numeric category'
+            );
+            var scope = this;
+            throws(
+                function() {
+                    scope.biomTable.getUniqueSampleValues('asdfasdf');
+                },
+                /Sample metadata column "asdfasdf" not present in data./,
+                'Test: error thrown if unrecognized metadata col passed'
+            );
         });
 
         test('Test getGradientStep', function() {

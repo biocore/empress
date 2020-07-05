@@ -211,26 +211,25 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Returns an array of unique values in a metadata column.
+     * Returns an array of unique values in a metadata column, sorted using
+     * util.naturalSort().
      *
-     * @param{Object} field The column of data
+     * @param {String} col The sample metadata column to find unique values of.
      *
-     * @return{Object}
+     * @return {Array}
      */
-    BIOMTable.prototype.getUniqueSampleValues = function (field) {
-        var values = new Set();
-        var isNumeric = this._types[field] === "n";
-        for (var sample in this._samp) {
-            // grab next value in column
-            var cVal = this._samp[sample][field];
-
-            // ignore missing data
-            values.add(cVal);
+    BIOMTable.prototype.getUniqueSampleValues = function (col) {
+        var colIdx = _.indexOf(this._smCols, col);
+        if (colIdx < 0) {
+            throw new Error(
+                'Sample metadata column "' + col + '" not present in data.'
+            );
         }
-
-        // convert result to array and sort
-        values = [...values];
-        return isNumeric ? values.sort((a, b) => a - b) : values.sort();
+        var values = new Set();
+        _.each(this._sm, function(smRow) {
+            values.add(smRow[colIdx]);
+        });
+        return util.naturalSort(Array.from(values));
     };
 
     /**
