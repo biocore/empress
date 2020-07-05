@@ -34,6 +34,14 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
                 // is this the intended behavior? Wired if you have to set
                 // this parameter
                 this.empress._drawer.VERTEX_SIZE = 5;
+
+
+                // for legend export
+                var content = '<div id="tip-color-key" class="legend hidden" disabled="true"></div><div id="node-color-key" class="legend" disabled="true"><div class="legend-title">collection_timestamp</div><div class="gradient-bar"><div class="category-color" style="background: #ff0000;"></div><label class="gradient-label" title="sample4">sample4</label></div><div class="gradient-bar"><div class="category-color" style="background: #0000ff;"></div><label class="gradient-label" title="2017-08-07">2017-08-07</label></div><div class="gradient-bar"><div class="category-color" style="background: #f27304;"></div><label class="gradient-label" title="2017-03-06">2017-03-06</label></div><div class="gradient-bar"><div class="category-color" style="background: #008000;"></div><label class="gradient-label" title="2017-07-13">2017-07-13</label></div></div><div id="clade-color-key" class="legend hidden" disabled="true"></div>';
+                var doctype = document.implementation.createDocumentType( 'html', '', '');
+                this.dom_legend = document.implementation.createDocument('', 'html', doctype);
+                // duplicate content to test with two legends to be drawn
+                this.dom_legend.documentElement.innerHTML = content + content
             },
 
             teardown: function() {
@@ -66,20 +74,13 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
         };
 
         test("Test exportSvg, draw legend", function() {
-          content = '<div id="tip-color-key" class="legend hidden" disabled="true"></div><div id="node-color-key" class="legend" disabled="true"><div class="legend-title">collection_timestamp</div><div class="gradient-bar"><div class="category-color" style="background: #ff0000;"></div><label class="gradient-label" title="sample4">sample4</label></div><div class="gradient-bar"><div class="category-color" style="background: #0000ff;"></div><label class="gradient-label" title="2017-08-07">2017-08-07</label></div><div class="gradient-bar"><div class="category-color" style="background: #f27304;"></div><label class="gradient-label" title="2017-03-06">2017-03-06</label></div><div class="gradient-bar"><div class="category-color" style="background: #008000;"></div><label class="gradient-label" title="2017-07-13">2017-07-13</label></div></div><div id="clade-color-key" class="legend hidden" disabled="true"></div>';
-
-          var doctype = document.implementation.createDocumentType( 'html', '', '');
-          var dom = document.implementation.createDocument('', 'html', doctype);
-          dom.documentElement.innerHTML = content + content
-
-          //console.log(.getElementsByClassName('legend'));
-          x = this.empress._exportSVG_legend(dom.documentElement);
-          console.log('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">\n' + x + "</svg>\n");
+          svg_legend = this.empress.exportSVG_legend(this.dom_legend.documentElement);
+          console.log(x);
           deepEqual("Stefan", "Stefan");
         });
 
         test("Test exportSvg, default layout", function() {
-            obs_svg = this.empress.exportSvg();
+            [obs_svg, svg_viewbox] = this.empress.exportSvg();
 
             [num_branches,
              num_circles,
@@ -95,7 +96,7 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
         test("Test exportSvg, default layout + showTreeNodes", function() {
             this.empress._drawer.showTreeNodes = true;
 
-            obs_svg = this.empress.exportSvg();
+            [obs_svg, svg_viewbox] = this.empress.exportSvg();
 
             [num_branches,
              num_circles,
@@ -112,7 +113,7 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
             this.empress._drawer.showTreeNodes = true;
             this.empress._currentLayout = "Rectangular";
 
-            obs_svg = this.empress.exportSvg();
+            [obs_svg, svg_viewbox] = this.empress.exportSvg();
 
             [num_branches,
              num_circles,
@@ -129,7 +130,7 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
             this.empress._drawer.showTreeNodes = true;
             this.empress._currentLayout = "Circular";
 
-            obs_svg = this.empress.exportSvg();
+            [obs_svg, svg_viewbox] = this.empress.exportSvg();
 
             [num_branches,
              num_circles,
@@ -146,7 +147,7 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
             this.empress._drawer.showTreeNodes = true;
             this.empress.colorBySampleCat('diseased', 'discrete-coloring-qiime');  // color private features by sample-metadata and propagate buttom-up
             this.empress._currentLineWidth = 4;  // draw colored branches thicker than normal
-            obs_svg = this.empress.exportSvg();
+            [obs_svg, svg_viewbox] = this.empress.exportSvg();
 
             [num_branches,
              num_circles,
@@ -160,15 +161,15 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
         });
 
         test("Test exportSvg, viewbox size", function() {
-            obs_svg = this.empress.exportSvg();
-            deepEqual(obs_svg.includes('viewBox="-2081.31494140625 -916.0977783203125 3827.0001220703125 3746.4317626953125"'), true);
+            [obs_svg, svg_viewbox] = this.empress.exportSvg();
+            deepEqual(svg_viewbox, 'viewBox="-2081.31494140625 -916.0977783203125 3827.0001220703125 3746.4317626953125"');
         });
 
         test("Test exportSvg, viewbox size: circular with nodes", function() {
             this.empress._currentLayout = "Circular";
             this.empress._drawer.showTreeNodes = true;
-            obs_svg = this.empress.exportSvg();
-            deepEqual(obs_svg.includes('viewBox="-1612 -2416 5234 4028"'), true);
+            [obs_svg, svg_viewbox] = this.empress.exportSvg();
+            deepEqual(svg_viewbox, 'viewBox="-1612 -2416 5234 4028"');
         });
     });
 });
