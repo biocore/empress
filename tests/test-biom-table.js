@@ -245,7 +245,7 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                     'i' : 1,
                     'j' : 1
                 },
-                'Test: getObsCountsBy(f1, o1)'
+                'Test: getObsCountsBy(f3, o5)'
             );
 
             var scope = this;
@@ -283,7 +283,21 @@ require(['jquery','BiomTable'], function($, BiomTable) {
             deepEqual(
                 this.biomTable.getSampleCategories(),
                 ['f1', 'f2', 'f3', 'f4'],
-                'Test getSampleCategories'
+                'Test getSampleCategories()'
+            );
+            var tblWithNonAlphabeticallySortedMDFields = new BiomTable(
+                this._sIDs,
+                this._fIDs,
+                this._sID2Idx,
+                this._fID2Idx,
+                this._tbl,
+                ['f4', 'f1', 'f3', 'f2'],
+                this._sm
+            );
+            deepEqual(
+                tblWithNonAlphabeticallySortedMDFields.getSampleCategories(),
+                ['f1', 'f2', 'f3', 'f4'],
+                'Test that getSampleCategories() actually sorts field names'
             );
         });
 
@@ -298,8 +312,8 @@ require(['jquery','BiomTable'], function($, BiomTable) {
                 'Test non-numeric category f1'
             );
 
-            // dont convert result for f4 because f4 is numberic and the order
-            // of the result does matter for numberic fields
+            // dont convert result for f4 because f4 is numeric and the order
+            // of the result does matter for numeric fields
             deepEqual(
                 this.biomTable.getUniqueSampleValues('f4'),
                 [1,2,3,4,5],

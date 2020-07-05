@@ -1,4 +1,4 @@
-define(["underscore"], function (_) {
+define(["underscore", "util"], function (_, util) {
     /**
      * @class BIOMTable
      *
@@ -202,17 +202,16 @@ define(["underscore"], function (_) {
     };
 
     /**
-     * Returns a sorted list of sample categories
+     * Returns an array of sample categories, sorted using util.naturalSort().
      *
-     * @return{Array}
+     * @return {Array}
      */
     BIOMTable.prototype.getSampleCategories = function () {
-        return this._smCols;
+        return util.naturalSort(this._smCols);
     };
 
     /**
-     * Returns an array of unique values in a metadata column. If column is
-     * numeric then the array is sorted in ascending order.
+     * Returns an array of unique values in a metadata column.
      *
      * @param{Object} field The column of data
      *
