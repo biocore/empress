@@ -28,6 +28,46 @@ define(["underscore", "util"], function (_, util) {
      * constructs BIOMTable
      */
     function BIOMTable(sIDs, fIDs, sID2Idx, fID2Idx, tbl, smCols, sm) {
+        // Do some basic validation to make sure that the inputs seem ok
+        // This is useful to have in case the python code gets messed up
+        if (sIDs.length !== tbl.length) {
+            throw new Error('Sample IDs and table are uneven lengths.');
+        } else if (sIDs.length !== sm.length) {
+            throw new Error('Sample IDs and metadata are uneven lengths.');
+        } else if (sIDs.length !== _.size(sID2Idx)) {
+            throw new Error('Sample IDs and ID -> index are uneven lengths.');
+        } else if (fIDs.length !== _.size(fID2Idx)) {
+            throw new Error('Feature IDs and ID -> index are uneven lengths.');
+        }
+        _.each(tbl, function(presentFeatureIndices, sIdx) {
+            if (presentFeatureIndices.length === 0) {
+                // Empty samples should have been removed in python
+                throw new Error(
+                    'Sample at index "' + sIdx + '" has no features.'
+                );
+            } else if (presentFeatureIndices.length > fIDs.length) {
+                throw new Error(
+                    'Sample at index "' + sIdx + '" has more features than ' +
+                    'are present in the table.'
+                );
+            }
+            // Verify that the entries of each sample in the table are in
+            // strictly increasing order. We rely on this so that we can use
+            // binary search when checking if a feature is in a sample.
+            var prev;
+            _.each(presentFeatureIndices, function(i) {
+                if (_.isUndefined(prev)) {
+                    prev = i;
+                } else {
+                    if (i <= prev) {
+                        throw new Error(
+                            'Sample at index "' + sIdx + '" has ' +
+                            'non-strictly-increasing feature indices in table.'
+                        );
+                    }
+                }
+            });
+        });
         this._sIDs = sIDs;
         this._fIDs = fIDs;
         this._sID2Idx = sID2Idx;
@@ -35,8 +75,6 @@ define(["underscore", "util"], function (_, util) {
         this._tbl = tbl;
         this._smCols = smCols;
         this._sm = sm;
-        // TODO add validation and error handling? i.e. verify that table
-        // arrays are sorted in asc. order
     }
 
     BIOMTable.prototype._getSampleIndexFromID = function(sID) {
