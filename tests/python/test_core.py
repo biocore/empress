@@ -18,6 +18,7 @@ from os.path import exists
 from shutil import rmtree
 
 from emperor import Emperor
+from empress import tools
 from empress.core import Empress
 from bp import parse_newick
 from six import StringIO
@@ -48,6 +49,15 @@ class TestCore(unittest.TestCase):
                 "Sample4": [0, 0, 0, 0]
             },
             index=["a", "b", "e", "d"]
+        ).T
+        self.unrelated_table = pd.DataFrame(
+            {
+                "Sample1": [5, 2, 0, 2],
+                "Sample2": [2, 3, 0, 1],
+                "Sample3": [5, 2, 0, 0],
+                "Sample4": [4, 5, 0, 4]
+            },
+            index=["h", "i", "j", "k"]
         ).T
         self.sample_metadata = pd.DataFrame(
             {
@@ -285,6 +295,24 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.features)
         self.assertIsNone(viz.ordination)
+
+    def test_no_intersection_between_tree_and_table(self):
+        bad_table = self.unrelated_table.copy()
+        bad_table.index = range(len(self.unrelated_table.index))
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "No features in the feature table are present as tips in the tree."
+        ):
+            _ = Empress(self.tree, self.unrelated_table, self.sample_metadata,
+                        filter_unobserved_features_from_phylogeny=False)
+        # Check that --p-filter-missing-features still doesn't work to override
+        # this, since there are NO matching features at all
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "No features in the feature table are present as tips in the tree."
+        ):
+            _ = Empress(self.tree, self.unrelated_table, self.sample_metadata,
+                        filter_unobserved_features_from_phylogeny=True)
 
 
 # How data should look like when converted to a dict
