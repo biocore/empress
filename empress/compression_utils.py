@@ -116,10 +116,15 @@ def compress_sample_metadata(sample_ids_to_indices, metadata):
     # but that may be 1) overkill and 2) not worth it until we get to really
     # big datasets (and/or datasets with lots of repeated values).
 
-    indices = sample_ids_to_indices.values()
-    sorted_indices = sorted(indices)
-    if sorted_indices != list(range(len(metadata.index))):
-        raise ValueError("Indices of sample_ids_to_indices aren't valid.")
+    sample_ids = sample_ids_to_indices.keys()
+    num_shared_samples = len(metadata.index.intersection(sample_ids))
+    if num_shared_samples < len(sample_ids):
+        # Sanity check: metadata's samples should be a superset of the samples
+        # in sample_ids_to_indices (empty samples were removed from the
+        # latter during table compression). If the metadata's samples are
+        # instead *missing* samples that are in sample_ids_to_indices,
+        # something is seriously wrong.
+        raise ValueError("Metadata is missing sample IDs.")
 
     # Produce a dict mapping sample indices to a list of the corresponding
     # sample's metadata values -- e.g. {1: ["gut", "413", "asdf"],
@@ -129,18 +134,23 @@ def compress_sample_metadata(sample_ids_to_indices, metadata):
     indices_to_metadata_vals = {}
 
     def save_metadata(row):
-        # Convert the metadata values to strings
-        str_vals = [str(v) for v in row]
-        indices_to_metadata_vals[sample_ids_to_indices[row.name]] = str_vals
+        sid = row.name
+        # Skip samples that are in the metadata but not in
+        # sample_ids_to_indices: these correspond to empty samples
+        if sid in sample_ids_to_indices:
+            # Convert the metadata values to strings
+            str_vals = [str(v) for v in row]
+            indices_to_metadata_vals[sample_ids_to_indices[sid]] = str_vals
 
     metadata.apply(save_metadata, axis="columns")
 
     # Although the dict we just produced is compressed, we can go further
-    # without much extra effort. We can sort the indices, and then just smoosh
-    # the dict into a list which can be accessed the exact same way (since [0]
-    # will now refer to the first element, [1] to the second, etc.)
+    # without much extra effort. We implicitly sort the indices in ascending
+    # and then smoosh the dict into a list which can be accessed the exact
+    # same way (since [0] will now refer to the first element, [1] to the
+    # second, etc.)
     metadata_vals = []
-    for i in sorted_indices:
+    for i in range(len(sample_ids)):
         metadata_vals.append(indices_to_metadata_vals[i])
 
     return list(metadata.columns), metadata_vals
