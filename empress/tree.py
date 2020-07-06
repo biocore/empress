@@ -673,11 +673,11 @@ def bp_tree_non_tips(bp_tree):
     """
     non_tips = []
     for i in range(bp_tree.B.size):
-        # Check if this is an opening parenthesis, is not leaf, and
+        pos_name = bp_tree.name(i)
+        # Check if this is an opening parenthesis, is not a leaf, and
         # has a node label
-        if bp_tree.B[i] and (not isleaf(bp_tree, i)) and \
-                (bp_tree.name(i) is not None):
-            non_tips.append(bp_tree.name(i))
+        if bp_tree.B[i] and not isleaf(bp_tree, i) and pos_name is not None:
+            non_tips.append(pos_name)
     return non_tips
 
 
