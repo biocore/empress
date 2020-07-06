@@ -1,5 +1,7 @@
 def compress_table(table):
-    """Converts a feature table to a space-saving format for use in HTML.
+    """Converts a feature table to a space-saving format.
+
+    Also removes empty samples and features, while we're at it.
 
     Parameters
     ----------
@@ -28,14 +30,14 @@ def compress_table(table):
             Two-dimensional list. The "outer list" is of length len(s_ids).
             Each position i within this outer list holds an "inner list" of
             arbitrary (but within the range [1, len(f_ids)]) length.
-            The inner list at position i contains the indices of the
+            The i-th inner list contains the feature indices of the
             features present (i.e. at any abundance > 0) within the
-            sample with index i.
+            sample with index i. Each inner list is sorted in ascending order.
 
     Raises
     ------
     ValueError
-        If the input table is completely empty (i.e. all zeroes).
+        - If the input table is completely empty (i.e. all zeroes).
 
     References
     ----------
@@ -84,8 +86,7 @@ def compress_table(table):
 
         # Convert this to a list of feature indices. This list should be sorted
         # so that feature indices are in ascending order by default, since
-        # we assigned feature indices by iterating through the table. (TODO:
-        # test this.)
+        # we assigned feature indices by iterating through the table.
         present_feature_indices = [
             f_ids_to_indices[fid] for fid in present_feature_ids
         ]
@@ -110,21 +111,69 @@ def compress_table(table):
     )
 
 
-def compress_sample_metadata(sample_ids_to_indices, metadata):
-    # We could ostensibly go further by
-    # identifying repeated metadata values and mapping *those* to integer IDs,
-    # but that may be 1) overkill and 2) not worth it until we get to really
-    # big datasets (and/or datasets with lots of repeated values).
+def compress_sample_metadata(s_ids_to_indices, metadata):
+    """Converts a sample metadata DataFrame to a space-saving format.
 
-    sample_ids = sample_ids_to_indices.keys()
+    We could ostensibly save more space by identifying repeated metadata
+    values and mapping *those* to integer IDs. (For example, a lot of Qiita
+    studies' sample metadata files have lots of frequently repeated values like
+    "host_subject_id", the various empo_* fields, etc.) However, that may be
+    1) overkill and 2) not worth it until we get to really big datasets
+    (and/or datasets with lots of repeated values).
+
+    Parameters
+    ----------
+    s_ids_to_indices: dict
+        Maps sample IDs (strings) to 0-based indices in an existing list of
+        sample IDs. In practice, this should just be the "s_ids_to_indices"
+        output from compress_table().
+    metadata: pd.DataFrame
+        Sample metadata. The index should describe sample IDs, and the columns
+        should describe sample metadata fields (e.g. "body site").
+        It's ok if there are sample IDs in this DataFrame that are not present
+        as keys in s_ids_to_indices (this will be the case for samples that
+        were removed from the feature table for being empty); however, if there
+        are sample IDs in s_ids_to_indices that are not present in the
+        metadata, an error will be raised.
+
+    Returns
+    -------
+    (metadata_columns, metadata_vals)
+        metadata_columns: list
+            List of the sample metadata column names, all converted to strings.
+        metadata_vals: list
+            Two-dimensional list. The "outer list" is of length
+            len(s_ids_to_indices.keys()). Each position i within this outer
+            list holds an "inner list" of length len(metadata_columns).
+            The c-th value of the i-th inner list contains the c-th
+            sample metadata column (in metadata_columns)'s value for the
+            sample with index i, converted to a string.
+
+    Raises
+    ------
+    ValueError
+        - If the metadata is missing sample IDs that are present as keys in
+          s_ids_to_indices.
+        - If the values of s_ids_to_indices are invalid: that is, if sorting
+          the values in ascending order does not produce a list of
+          [0, 1, 2, 3, ..., len(s_ids_to_indices.keys())].
+
+    References
+    ----------
+        - Inspired by redbiom and Qurro's JSON data models.
+    """
+    sample_ids = s_ids_to_indices.keys()
     num_shared_samples = len(metadata.index.intersection(sample_ids))
     if num_shared_samples < len(sample_ids):
         # Sanity check: metadata's samples should be a superset of the samples
-        # in sample_ids_to_indices (empty samples were removed from the
+        # in s_ids_to_indices (empty samples were removed from the
         # latter during table compression). If the metadata's samples are
-        # instead *missing* samples that are in sample_ids_to_indices,
+        # instead *missing* samples that are in s_ids_to_indices,
         # something is seriously wrong.
         raise ValueError("Metadata is missing sample IDs.")
+
+    if sorted(s_ids_to_indices.values()) != range(len(sample_ids)):
+        raise ValueError("Values of s_ids_to_indices are invalid.")
 
     # Produce a dict mapping sample indices to a list of the corresponding
     # sample's metadata values -- e.g. {1: ["gut", "413", "asdf"],
@@ -136,11 +185,11 @@ def compress_sample_metadata(sample_ids_to_indices, metadata):
     def save_metadata(row):
         sid = row.name
         # Skip samples that are in the metadata but not in
-        # sample_ids_to_indices: these correspond to empty samples
-        if sid in sample_ids_to_indices:
+        # s_ids_to_indices: these correspond to empty samples
+        if sid in s_ids_to_indices:
             # Convert the metadata values to strings
             str_vals = [str(v) for v in row]
-            indices_to_metadata_vals[sample_ids_to_indices[sid]] = str_vals
+            indices_to_metadata_vals[s_ids_to_indices[sid]] = str_vals
 
     metadata.apply(save_metadata, axis="columns")
 
@@ -153,13 +202,73 @@ def compress_sample_metadata(sample_ids_to_indices, metadata):
     for i in range(len(sample_ids)):
         metadata_vals.append(indices_to_metadata_vals[i])
 
-    return list(metadata.columns), metadata_vals
+    return [str(c) for c in metadata.columns], metadata_vals
 
 
 def compress_feature_metadata(tip_metadata, int_metadata):
+    """Converts tip/internal node metadata DataFrames to dicts to save space.
+
+    This is a pretty early optimization -- ideally we would use 2-D lists as
+    our final metadata structure, similar to the table / sample metadata
+    compression. This should be revisited when the tree data node-name
+    revamping has been merged in.
+
+    Parameters
+    ----------
+    tip_metadata: pd.DataFrame or None
+        Metadata for tip nodes. If not None, the index should describe node
+        names, and the columns should describe feature metadata fields.
+    int_metadata: pd.DataFrame or None
+        Metadata for internal nodes. If not None, the index should describe
+        node names, and the columns should describe feature metadata fields.
+
+    Note that the columns of tip_metadata and int_metadata should be identical,
+    even if the feature metadata only describes tip or internal nodes. (In that
+    case, then the other feature metadata parameter should still be a DataFrame
+    -- albeit an empty one, with no feature names in its index.) The only case
+    in which the parameters should be None is if there was no feature metadata
+    at all.
+
+    Returns
+    -------
+    (metadata_columns, compressed_tip_metadata, compressed_int_metadata)
+        metadata_columns: list
+            List of the feature metadata column names, all converted to
+            strings. If both input DFs are None, this will be {}.
+        compressed_tip_metadata: dict
+            Maps node names in tip_metadata to a list of feature metadata
+            values, in the same order as in metadata_columns and converted to
+            strings. If tip_metadata was empty, or if both input DFs were None,
+            this will be {}.
+        compressed_int_metadata: dict
+            Maps node names in int_metadata to a list of feature metadata
+            values, in the same order as in metadata_columns and converted to
+            strings. If int_metadata was empty, or if both input DFs were None,
+            this will be {}.
+
+    Raises
+    ------
+    ValueError
+        - If only one of tip_metadata and int_metadata is None.
+        - If the columns of tip_metadata are not identical to the columns of
+          int_metadata.
+        - If both the tip and internal node metadata DataFrames are empty.
+
+    References
+    ----------
+        - Inspired by redbiom and Qurro's JSON data models.
+    """
     # If the user didn't pass in any feature metadata, we'll get to this block
-    if tip_metadata is None or int_metadata is None:
+    if tip_metadata is None and int_metadata is None:
         return [], {}, {}
+
+    # *This* should never happen. If it did, it's a sign that this function is
+    # being misused. (The ^ is a logical XOR; see
+    # https://stackoverflow.com/a/432844/10730311.)
+    if (tip_metadata is None) ^ (int_metadata is not None):
+        raise ValueError(
+            "Only one of tip & int. node feature metadata is None."
+        )
 
     # Verify that columns match up btwn. tip and internal node metadata
     if not tip_metadata.columns.equals(int_metadata.columns):
@@ -170,7 +279,7 @@ def compress_feature_metadata(tip_metadata, int_metadata):
     if tip_metadata.empty and int_metadata.empty:
         raise ValueError("Both tip & int. node feature metadata are empty.")
 
-    fm_cols = list(tip_metadata.columns)
+    fm_cols = [str(c) for c in tip_metadata.columns]
     # We want dicts mapping each feature ID to a list of the f.m. values for
     # this feature ID. Since we're not mapping feature IDs to indices first,
     # this is pretty simple to do with DataFrame.to_dict() using the
