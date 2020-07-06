@@ -28,8 +28,15 @@ define(["underscore", "util"], function (_, util) {
      * constructs BIOMTable
      */
     function BIOMTable(sIDs, fIDs, sID2Idx, fID2Idx, tbl, smCols, sm) {
-        // Do some basic validation to make sure that the inputs seem ok
-        // This is useful to have in case the python code gets messed up
+        // Do some basic validation to make sure that the inputs seem ok.
+        // This is useful to have in case the python code gets messed up.
+        //
+        // NOTE that this is not comprehensive; for example, this doesn't check
+        // that all of the sample indices are exactly unique. The main goal
+        // here is checking that things seem sane where quickly doable (e.g.
+        // length checking) and where things have a reasonable chance of
+        // getting messed up (e.g. checking that feature indices in the table
+        // are sorted)
         if (sIDs.length !== tbl.length) {
             throw new Error('Sample IDs and table are uneven lengths.');
         } else if (sIDs.length !== sm.length) {
@@ -48,7 +55,7 @@ define(["underscore", "util"], function (_, util) {
             } else if (presentFeatureIndices.length > fIDs.length) {
                 throw new Error(
                     'Sample at index "' + sIdx + '" has more features than ' +
-                    'are present in the table.'
+                    'are possible.'
                 );
             }
             // Verify that the entries of each sample in the table are in

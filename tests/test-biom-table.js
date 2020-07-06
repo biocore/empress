@@ -107,6 +107,131 @@ require(['jquery','BiomTable'], function($, BiomTable) {
             }
         });
 
+        test('Test constructor validation', function() {
+            // First off, test basic "ok" data
+            new BiomTable(
+                ['s1'],
+                ['o1'],
+                {'s1': 0},
+                {'o1': 0},
+                [[0]],
+                ['f1', 'f2'],
+                [['x', 'y']]
+            );
+            // See https://stackoverflow.com/a/9822522/10730311
+            ok(true, 'Normal table construction works without errors');
+
+            // Now, test the weird stuff
+            throws(
+                function() {
+                    new BiomTable(
+                        ['s1'],
+                        ['o1'],
+                        {'s1': 0},
+                        {'o1': 0},
+                        [[0], [0]],
+                        ['f1', 'f2'],
+                        [['x', 'y']]
+                    );
+                },
+                /Sample IDs and table are uneven lengths./,
+                'Number of samples in table differs from number of sample IDs'
+            );
+            throws(
+                function() {
+                    new BiomTable(
+                        ['s1'],
+                        ['o1'],
+                        {'s1': 0},
+                        {'o1': 0},
+                        [[0]],
+                        ['f1', 'f2'],
+                        [['x', 'y'], ['z', 'a']]
+                    );
+                },
+                /Sample IDs and metadata are uneven lengths./,
+                'Number of samples in metadata differs from number of ' +
+                'sample IDs'
+            );
+            throws(
+                function() {
+                    new BiomTable(
+                        ['s1'],
+                        ['o1'],
+                        {'s1': 0, 's2': 1},
+                        {'o1': 0},
+                        [[0]],
+                        ['f1', 'f2'],
+                        [['x', 'y']]
+                    );
+                },
+                /Sample IDs and ID -> index are uneven lengths./,
+                'Number of samples in ID -> index differs from number of ' +
+                'sample IDs'
+            );
+            throws(
+                function() {
+                    new BiomTable(
+                        ['s1'],
+                        ['o1'],
+                        {'s1': 0},
+                        {'o1': 0, 'o2': 1},
+                        [[0]],
+                        ['f1', 'f2'],
+                        [['x', 'y']]
+                    );
+                },
+                /Feature IDs and ID -> index are uneven lengths./,
+                'Number of features in ID -> index differs from number of ' +
+                'feature IDs'
+            );
+            throws(
+                function() {
+                    new BiomTable(
+                        ['s1'],
+                        ['o1'],
+                        {'s1': 0},
+                        {'o1': 0},
+                        [[]],
+                        ['f1', 'f2'],
+                        [['x', 'y']]
+                    );
+                },
+                /Sample at index "0" has no features./,
+                'Empty sample in table'
+            );
+            throws(
+                function() {
+                    new BiomTable(
+                        ['s1'],
+                        ['o1'],
+                        {'s1': 0},
+                        {'o1': 0},
+                        [[0, 1]],
+                        ['f1', 'f2'],
+                        [['x', 'y']]
+                    );
+                },
+                /Sample at index "0" has more features than are possible./,
+                'Sample with too many features in the table'
+            );
+            throws(
+                function() {
+                    new BiomTable(
+                        ['s1'],
+                        ['o1', 'o2', 'o3'],
+                        {'s1': 0},
+                        {'o1': 0, 'o2': 1, 'o3': 2},
+                        [[1, 0, 2]],
+                        ['f1', 'f2'],
+                        [['x', 'y']]
+                    );
+                },
+                /Sample at index "0" has non-strictly-increasing feature indices in table./,
+                'Sample with non-strictly-increasing feature indices in the table'
+            );
+        });
+
         test('Test _featureIndexSetToIDArray', function() {
             var observedArray = this.biomTable._featureIndexSetToIDArray(
                 new Set([0, 2, 4, 3])
