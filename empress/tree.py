@@ -659,7 +659,7 @@ def bp_tree_tips(bp_tree):
 
 
 def bp_tree_non_tips(bp_tree):
-    """ Extracts internal node names in the tree
+    """ Extracts internal node names in the tree, ignoring unnamed nodes.
 
        Parameters
        ----------
