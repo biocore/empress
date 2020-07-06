@@ -5,10 +5,11 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
+from copy import deepcopy
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from empress.compression_utils import compress_table
+from empress.compression_utils import compress_table, compress_sample_metadata
 
 
 class TestCompressionUtils(unittest.TestCase):
@@ -23,7 +24,7 @@ class TestCompressionUtils(unittest.TestCase):
             },
             index=["a", "b", "e", "d"]
         )
-        self.smd = pd.DataFrame(
+        self.sm = pd.DataFrame(
             {
                 "Metadata1": [0, 0, 0, 1],
                 "Metadata2": [0, 0, 0, 0],
@@ -32,7 +33,8 @@ class TestCompressionUtils(unittest.TestCase):
             },
             index=list(self.table.columns)[:]
         )
-        self.tmd = pd.DataFrame(
+        self.sid2idx = {"Sample1": 0, "Sample2": 1, "Sample3": 2}
+        self.tm = pd.DataFrame(
             {
                 "Level 1": ["k__Bacteria", "k__Bacteria"],
                 "Level 2": ["p__Bacteroidetes", "p__Bacteroidetes"],
@@ -45,7 +47,7 @@ class TestCompressionUtils(unittest.TestCase):
             },
             index=["e", "a"]
         )
-        self.imd = pd.DataFrame(
+        self.im = pd.DataFrame(
             {
                 "Level 1": ["k__Bacteria", "k__Archaea"],
                 "Level 2": ["p__Proteobacteria", "Unspecified"],
@@ -79,9 +81,7 @@ class TestCompressionUtils(unittest.TestCase):
 
         # Check sid2idx, which maps sample IDs in s_ids to their 0-based index
         # in s_ids.
-        self.assertEqual(
-            sid2idx, {"Sample1": 0, "Sample2": 1, "Sample3": 2}
-        )
+        self.assertEqual(sid2idx, self.sid2idx)
 
         # Check fid2idx, structured same as above but for features in f_ids.
         self.assertEqual(fid2idx, {"a": 0, "b": 1, "d": 2})
@@ -191,8 +191,36 @@ class TestCompressionUtils(unittest.TestCase):
         ):
             compress_table(diff_table)
 
-    def test_compress_sample_metadata_basic(self):
-        pass
+    def test_compress_sample_metadata_numeric_values_1_missing_sample(self):
+        sm_copy = self.sm.copy()
+        sid2idx_copy = deepcopy(self.sid2idx)
+        sm_cols, sm_vals = compress_sample_metadata(sid2idx_copy, sm_copy)
+
+        # As with compress_table(), verify that the inputs were left untouched.
+        assert_frame_equal(sm_copy, self.sm)
+        self.assertEqual(sid2idx_copy, self.sid2idx)
+
+        self.assertEqual(
+            sm_cols, ["Metadata1", "Metadata2", "Metadata3", "Metadata4"]
+        )
+        # For ease-of-reading, here's the metadata from above:
+        # "Metadata1": [0, 0, 0, 1],
+        # "Metadata2": [0, 0, 0, 0],
+        # "Metadata3": [1, 2, 3, 4],
+        # "Metadata4": ["abc", "def", "ghi", "jkl"]
+        # Check that the metadata values were all converted to strings and are
+        # structured properly. Also, Sample4's metadata should be missing from
+        # sm_vals since it wasn't described in sid2idx (and *that* is because
+        # with this test data, by default, Sample4 is empty and would've been
+        # filtered out by compress_table()).
+        self.assertEqual(
+            sm_vals,
+            [
+                ["0", "0", "1", "abc"],  # Sample1's metadata
+                ["0", "0", "2", "def"],  # Sample2's metadata
+                ["0", "0", "3", "ghi"]   # Sample3's metadata
+            ]
+        )
 
     def test_compress_sample_metadata_outputs_are_strings(self):
         pass
