@@ -215,7 +215,11 @@ define([
         // i=x, i+1=y, i+2=red, i+3=green, i+4=blue
         svg += "<!-- tree branches -->\n";
         coords = this.getCoords();
-        for (i = 0; i + 2 * this._drawer.VERTEX_SIZE <= coords.length; i += 2 * this._drawer.VERTEX_SIZE) {
+        for (
+            i = 0;
+            i + 2 * this._drawer.VERTEX_SIZE <= coords.length;
+            i += 2 * this._drawer.VERTEX_SIZE
+        ) {
             // "normal" lines have a default color,
             // all other lines have a user defined thickness
             // All lines are defined using the information from the child node.
@@ -250,18 +254,38 @@ define([
                 '" />\n';
 
             // obtain viewport from tree coordinates
-            minX = Math.min(minX, coords[i], coords[i + this._drawer.VERTEX_SIZE]);
-            maxX = Math.max(maxX, coords[i], coords[i + this._drawer.VERTEX_SIZE]);
+            minX = Math.min(
+                minX,
+                coords[i],
+                coords[i + this._drawer.VERTEX_SIZE]
+            );
+            maxX = Math.max(
+                maxX,
+                coords[i],
+                coords[i + this._drawer.VERTEX_SIZE]
+            );
 
-            minY = Math.min(minY, coords[i + 1], coords[i + 1 + this._drawer.VERTEX_SIZE]);
-            maxY = Math.max(maxY, coords[i + 1], coords[i + 1 + this._drawer.VERTEX_SIZE]);
+            minY = Math.min(
+                minY,
+                coords[i + 1],
+                coords[i + 1 + this._drawer.VERTEX_SIZE]
+            );
+            maxY = Math.max(
+                maxY,
+                coords[i + 1],
+                coords[i + 1 + this._drawer.VERTEX_SIZE]
+            );
         }
 
         // create a circle for each node
         if (this._drawer.showTreeNodes) {
             svg += "<!-- tree nodes -->\n";
             coords = this.getNodeCoords();
-            for (i = 0; i + this._drawer.VERTEX_SIZE <= coords.length; i += this._drawer.VERTEX_SIZE) {
+            for (
+                i = 0;
+                i + this._drawer.VERTEX_SIZE <= coords.length;
+                i += this._drawer.VERTEX_SIZE
+            ) {
                 // getNodeCoords array seem to be larger than necessary and elements are initialized with 0.
                 // Thus, nodes at (0, 0) will be skipped (root will always be positioned at 0,0 and drawn below)
                 // This is a known issue and will be resolved with #142
@@ -293,15 +317,18 @@ define([
             NODE_RADIUS +
             '" fill="rgb(0,0,0)"/>\n';
 
-        return [svg, ('viewBox="' +
-            (minX - NODE_RADIUS) +
-            " " +
-            (minY - NODE_RADIUS) +
-            " " +
-            (maxX - minX + 2 * NODE_RADIUS) +
-            " " +
-            (maxY - minY + 2 * NODE_RADIUS) +
-            '"')];
+        return [
+            svg,
+            'viewBox="' +
+                (minX - NODE_RADIUS) +
+                " " +
+                (minY - NODE_RADIUS) +
+                " " +
+                (maxX - minX + 2 * NODE_RADIUS) +
+                " " +
+                (maxY - minY + 2 * NODE_RADIUS) +
+                '"',
+        ];
     };
 
     /**
@@ -312,54 +339,106 @@ define([
         // each other.
         top_left_x = 0;
         top_left_y = 0;
-        unit = 30;  // all distances are based on this variable, thus "zooming" can be realised by just increasing this single value
-        factor_lineheight = 1.8;  // distance between two text lines as a multiplication factor of unit
-        svg = "";  // the svg string to be generated
+        unit = 30; // all distances are based on this variable, thus "zooming" can be realised by just increasing this single value
+        factor_lineheight = 1.8; // distance between two text lines as a multiplication factor of unit
+        svg = ""; // the svg string to be generated
 
         // used as a rough estimate about the consumed width by text strings
         var myCanvas = document.createElement("canvas");
         var context = myCanvas.getContext("2d");
-        context.font = "bold "+unit+"pt verdana";
+        context.font = "bold " + unit + "pt verdana";
 
         // the document can have up to three legends, of which at most one shall be visible at any given timepoint. This might change and thus this method can draw multiple legends
-        row = 1;  // count the number of used rows
-        for (let legend of dom.getElementsByClassName('legend')) {
+        row = 1; // count the number of used rows
+        for (let legend of dom.getElementsByClassName("legend")) {
             max_line_width = 0;
-            title = legend.getElementsByClassName('legend-title');
+            title = legend.getElementsByClassName("legend-title");
             svg_legend = "";
             if (title.length > 0) {
                 titlelabel = title.item(0).innerHTML;
-                max_line_width = Math.max(max_line_width, context.measureText(titlelabel).width)
-                svg_legend += '<text x="' + (top_left_x + unit) +
-                              '" y="' + (top_left_y + (row * (unit * factor_lineheight)))+
-                              '" style="font-weight:bold;font-size:' + unit + 'pt;">' + titlelabel + '</text>\n';
+                max_line_width = Math.max(
+                    max_line_width,
+                    context.measureText(titlelabel).width
+                );
+                svg_legend +=
+                    '<text x="' +
+                    (top_left_x + unit) +
+                    '" y="' +
+                    (top_left_y + row * (unit * factor_lineheight)) +
+                    '" style="font-weight:bold;font-size:' +
+                    unit +
+                    'pt;">' +
+                    titlelabel +
+                    "</text>\n";
                 row++;
-                for (let item of legend.getElementsByClassName('gradient-bar')) {
-                    color = item.getElementsByClassName("category-color").item(0).getAttribute("style").split(':')[1].split(';')[0]
-                    itemlabel = item.getElementsByClassName("gradient-label").item(0).getAttribute("title");
-                    max_line_width = Math.max(max_line_width, context.measureText(itemlabel).width)
+                for (let item of legend.getElementsByClassName(
+                    "gradient-bar"
+                )) {
+                    color = item
+                        .getElementsByClassName("category-color")
+                        .item(0)
+                        .getAttribute("style")
+                        .split(":")[1]
+                        .split(";")[0];
+                    itemlabel = item
+                        .getElementsByClassName("gradient-label")
+                        .item(0)
+                        .getAttribute("title");
+                    max_line_width = Math.max(
+                        max_line_width,
+                        context.measureText(itemlabel).width
+                    );
 
                     // a rect left of the label to indicate the used color
-                    svg_legend += '<rect x="' + (top_left_x + unit) +
-                                  '" y="' + (top_left_y + (row * (unit * factor_lineheight)) - (unit)) +
-                                  '" width="' + unit +
-                                  '" height="' + unit +
-                                  '" style="fill:' + color +
-                                  '"/>\n';
+                    svg_legend +=
+                        '<rect x="' +
+                        (top_left_x + unit) +
+                        '" y="' +
+                        (top_left_y + row * (unit * factor_lineheight) - unit) +
+                        '" width="' +
+                        unit +
+                        '" height="' +
+                        unit +
+                        '" style="fill:' +
+                        color +
+                        '"/>\n';
                     // the key label
-                    svg_legend += '<text x="' + (top_left_x + 2.5 * unit) +
-                                  '" y="' + (top_left_y + (row * (unit * factor_lineheight))) +
-                                  '" style="font-size:' + unit + 'pt;">' + itemlabel + '</text>\n';
+                    svg_legend +=
+                        '<text x="' +
+                        (top_left_x + 2.5 * unit) +
+                        '" y="' +
+                        (top_left_y + row * (unit * factor_lineheight)) +
+                        '" style="font-size:' +
+                        unit +
+                        'pt;">' +
+                        itemlabel +
+                        "</text>\n";
                     row++;
                 }
                 // draw a rect behind, i.e. lower z-order, the legend title and colored keys to visually group the legend. Also acutally put these elements into a group for easier manual editing
                 // rect shall have a certain padding, its height must exceed number of used text rows and width must be larger than longest key text and/or legend title
-                svg += '<g>\n<rect x="' + top_left_x +
-                       '" y="' + (top_left_y + ((row - legend.getElementsByClassName('gradient-bar').length - 2) * (unit * factor_lineheight))) +
-                       '" width="' + (max_line_width + 2 * unit ) +
-                       '" height="' + (((legend.getElementsByClassName('gradient-bar').length + 1) * unit) * factor_lineheight + unit ) +
-                       '" style="fill:#eeeeee;stroke:#000000;stroke-width:1" ry="30" />\n' + svg_legend + '</g>\n';
-                row += 2;  // one blank row between two legends
+                svg +=
+                    '<g>\n<rect x="' +
+                    top_left_x +
+                    '" y="' +
+                    (top_left_y +
+                        (row -
+                            legend.getElementsByClassName("gradient-bar")
+                                .length -
+                            2) *
+                            (unit * factor_lineheight)) +
+                    '" width="' +
+                    (max_line_width + 2 * unit) +
+                    '" height="' +
+                    ((legend.getElementsByClassName("gradient-bar").length +
+                        1) *
+                        unit *
+                        factor_lineheight +
+                        unit) +
+                    '" style="fill:#eeeeee;stroke:#000000;stroke-width:1" ry="30" />\n' +
+                    svg_legend +
+                    "</g>\n";
+                row += 2; // one blank row between two legends
             }
         }
 

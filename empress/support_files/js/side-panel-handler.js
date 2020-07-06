@@ -310,9 +310,16 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             // create SVG tags to draw the tree and determine viewbox for whole figure
             [svg_tree, svg_viewbox] = scope.empress.exportSvg();
             // create SVG tags for legend, collected from the HTML document
-            svg_legend = scope.empress.exportSVG_legend(document)
+            svg_legend = scope.empress.exportSVG_legend(document);
             // add all SVG elements into one string ...
-            svg = '<svg xmlns="http://www.w3.org/2000/svg" ' + svg_viewbox + ' >\n' + svg_tree + "\n" + svg_legend + "</svg>\n";
+            svg =
+                '<svg xmlns="http://www.w3.org/2000/svg" ' +
+                svg_viewbox +
+                " >\n" +
+                svg_tree +
+                "\n" +
+                svg_legend +
+                "</svg>\n";
             // ... and present user as a downloadable file
             var blob = new Blob([svg], { type: "image/svg+xml" });
             saveAs(blob, "empress-tree.svg");

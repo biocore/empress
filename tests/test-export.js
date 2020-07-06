@@ -1,5 +1,11 @@
-require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree, Empress, util, BIOMTable) {
-    $(document).ready(function() {
+require(["jquery", "BPTree", "Empress", "util", "BiomTable"], function (
+    $,
+    BPTree,
+    Empress,
+    util,
+    BIOMTable
+) {
+    $(document).ready(function () {
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray without
         // effecting other test
@@ -37,16 +43,25 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
 
 
                 // for legend export
-                var content = '<div id="tip-color-key" class="legend hidden" disabled="true"></div><div id="node-color-key" class="legend" disabled="true"><div class="legend-title">collection_timestamp</div><div class="gradient-bar"><div class="category-color" style="background: #ff0000;"></div><label class="gradient-label" title="sample4">sample4</label></div><div class="gradient-bar"><div class="category-color" style="background: #0000ff;"></div><label class="gradient-label" title="2017-08-07">2017-08-07</label></div><div class="gradient-bar"><div class="category-color" style="background: #f27304;"></div><label class="gradient-label" title="2017-03-06">2017-03-06</label></div><div class="gradient-bar"><div class="category-color" style="background: #008000;"></div><label class="gradient-label" title="2017-07-13">2017-07-13</label></div></div><div id="clade-color-key" class="legend hidden" disabled="true"></div>';
-                var doctype = document.implementation.createDocumentType( 'html', '', '');
-                this.dom_legend = document.implementation.createDocument('', 'html', doctype);
+                var content =
+                    '<div id="tip-color-key" class="legend hidden" disabled="true"></div><div id="node-color-key" class="legend" disabled="true"><div class="legend-title">collection_timestamp</div><div class="gradient-bar"><div class="category-color" style="background: #ff0000;"></div><label class="gradient-label" title="sample4">sample4</label></div><div class="gradient-bar"><div class="category-color" style="background: #0000ff;"></div><label class="gradient-label" title="2017-08-07">2017-08-07</label></div><div class="gradient-bar"><div class="category-color" style="background: #f27304;"></div><label class="gradient-label" title="2017-03-06">2017-03-06</label></div><div class="gradient-bar"><div class="category-color" style="background: #008000;"></div><label class="gradient-label" title="2017-07-13">2017-07-13</label></div></div><div id="clade-color-key" class="legend hidden" disabled="true"></div>';
+                var doctype = document.implementation.createDocumentType(
+                    "html",
+                    "",
+                    ""
+                );
+                this.dom_legend = document.implementation.createDocument(
+                    "",
+                    "html",
+                    doctype
+                );
                 // duplicate content to test with two legends to be drawn
-                this.dom_legend.documentElement.innerHTML = content + content
+                this.dom_legend.documentElement.innerHTML = content + content;
             },
 
-            teardown: function() {
+            teardown: function () {
                 this.empress = null;
-            }
+            },
         });
 
         count_svg_tags = function (svg_string) {
@@ -59,117 +74,178 @@ require(["jquery", "BPTree", "Empress", "util", 'BiomTable'], function($, BPTree
             for (i = 0; i < lines.length; i++) {
                 if (lines[i].includes("<line ")) {
                     num_branches++;
-                    if (lines[i].includes("style=\"stroke-width:1\"")) {
+                    if (lines[i].includes('style="stroke-width:1"')) {
                         num_nonthickbranches++;
                     }
-                    if (lines[i].includes("stroke=\"rgb(191.25,191.25,191.25)\"")) {
+                    if (
+                        lines[i].includes('stroke="rgb(191.25,191.25,191.25)"')
+                    ) {
                         num_noncoloredbranches++;
                     }
                 }
                 if (lines[i].includes("<circle ")) {
-                  num_circles++;
+                    num_circles++;
                 }
             }
-            return [num_branches, num_circles, num_nonthickbranches, num_noncoloredbranches];
+            return [
+                num_branches,
+                num_circles,
+                num_nonthickbranches,
+                num_noncoloredbranches,
+            ];
         };
 
-        test("Test exportSvg, draw legend", function() {
-          svg_legend = this.empress.exportSVG_legend(this.dom_legend.documentElement);
-          console.log(x);
-          deepEqual("Stefan", "Stefan");
-        });
-
-        test("Test exportSvg, default layout", function() {
+        test("Test exportSvg, default layout", function () {
             [obs_svg, svg_viewbox] = this.empress.exportSvg();
 
-            [num_branches,
-             num_circles,
-             num_nonthickbranches,
-             num_noncoloredbranches] = count_svg_tags(obs_svg);
+            [
+                num_branches,
+                num_circles,
+                num_nonthickbranches,
+                num_noncoloredbranches,
+            ] = count_svg_tags(obs_svg);
 
             deepEqual(num_branches, 6);
-            deepEqual(num_nonthickbranches, 6);  // all branches are NOT thickened
-            deepEqual(num_noncoloredbranches, 6);  // all branches are NOT colored
-            deepEqual(num_circles, 1);  // only root, since showTreeNodes is false
+            deepEqual(num_nonthickbranches, 6); // all branches are NOT thickened
+            deepEqual(num_noncoloredbranches, 6); // all branches are NOT colored
+            deepEqual(num_circles, 1); // only root, since showTreeNodes is false
         });
 
-        test("Test exportSvg, default layout + showTreeNodes", function() {
+        test("Test exportSvg, default layout + showTreeNodes", function () {
             this.empress._drawer.showTreeNodes = true;
 
             [obs_svg, svg_viewbox] = this.empress.exportSvg();
 
-            [num_branches,
-             num_circles,
-             num_nonthickbranches,
-             num_noncoloredbranches] = count_svg_tags(obs_svg);
+            [
+                num_branches,
+                num_circles,
+                num_nonthickbranches,
+                num_noncoloredbranches,
+            ] = count_svg_tags(obs_svg);
 
             deepEqual(num_branches, 6);
-            deepEqual(num_nonthickbranches, 6);  // all branches are NOT thickened
-            deepEqual(num_noncoloredbranches, 6);  // all branches are NOT colored
-            deepEqual(num_circles, 1+4);  // 1 root and 4 tips
+            deepEqual(num_nonthickbranches, 6); // all branches are NOT thickened
+            deepEqual(num_noncoloredbranches, 6); // all branches are NOT colored
+            deepEqual(num_circles, 1 + 4); // 1 root and 4 tips
         });
 
-        test("Test exportSvg, default layout + showTreeNodes: rectangular", function() {
+        test("Test exportSvg, default layout + showTreeNodes: rectangular", function () {
             this.empress._drawer.showTreeNodes = true;
             this.empress._currentLayout = "Rectangular";
 
             [obs_svg, svg_viewbox] = this.empress.exportSvg();
 
-            [num_branches,
-             num_circles,
-             num_nonthickbranches,
-             num_noncoloredbranches] = count_svg_tags(obs_svg);
+            [
+                num_branches,
+                num_circles,
+                num_nonthickbranches,
+                num_noncoloredbranches,
+            ] = count_svg_tags(obs_svg);
 
             deepEqual(num_branches, 9);
-            deepEqual(num_nonthickbranches, 9);  // all branches are NOT thickened
-            deepEqual(num_noncoloredbranches, 9);  // all branches are NOT colored
-            deepEqual(num_circles, 1+4);  // 1 root and 4 tips
+            deepEqual(num_nonthickbranches, 9); // all branches are NOT thickened
+            deepEqual(num_noncoloredbranches, 9); // all branches are NOT colored
+            deepEqual(num_circles, 1 + 4); // 1 root and 4 tips
         });
 
-        test("Test exportSvg, default layout + showTreeNodes: circular", function() {
+        test("Test exportSvg, default layout + showTreeNodes: circular", function () {
             this.empress._drawer.showTreeNodes = true;
             this.empress._currentLayout = "Circular";
 
             [obs_svg, svg_viewbox] = this.empress.exportSvg();
 
-            [num_branches,
-             num_circles,
-             num_nonthickbranches,
-             num_noncoloredbranches] = count_svg_tags(obs_svg);
+            [
+                num_branches,
+                num_circles,
+                num_nonthickbranches,
+                num_noncoloredbranches,
+            ] = count_svg_tags(obs_svg);
 
             deepEqual(num_branches, 36);
-            deepEqual(num_nonthickbranches, 36);  // all branches are NOT thickened
-            deepEqual(num_noncoloredbranches, 36);  // all branches are NOT colored
-            deepEqual(num_circles, 1+4);  // 1 root and 4 tips
+            deepEqual(num_nonthickbranches, 36); // all branches are NOT thickened
+            deepEqual(num_noncoloredbranches, 36); // all branches are NOT colored
+            deepEqual(num_circles, 1 + 4); // 1 root and 4 tips
         });
 
-        test("Test exportSvg, color by sample metadata", function() {
+        test("Test exportSvg, color by sample metadata", function () {
             this.empress._drawer.showTreeNodes = true;
-            this.empress.colorBySampleCat('diseased', 'discrete-coloring-qiime');  // color private features by sample-metadata and propagate buttom-up
-            this.empress._currentLineWidth = 4;  // draw colored branches thicker than normal
+            this.empress.colorBySampleCat(
+                "diseased",
+                "discrete-coloring-qiime"
+            ); // color private features by sample-metadata and propagate buttom-up
+            this.empress._currentLineWidth = 4; // draw colored branches thicker than normal
             [obs_svg, svg_viewbox] = this.empress.exportSvg();
 
-            [num_branches,
-             num_circles,
-             num_nonthickbranches,
-             num_noncoloredbranches] = count_svg_tags(obs_svg);
+            [
+                num_branches,
+                num_circles,
+                num_nonthickbranches,
+                num_noncoloredbranches,
+            ] = count_svg_tags(obs_svg);
 
             deepEqual(num_branches, 6);
             deepEqual(num_nonthickbranches, 2);
             deepEqual(num_noncoloredbranches, 2);
-            deepEqual(num_circles, 1+4);  // 1 root and 4 tips
+            deepEqual(num_circles, 1 + 4); // 1 root and 4 tips
         });
 
-        test("Test exportSvg, viewbox size", function() {
+        test("Test exportSvg, viewbox size", function () {
             [obs_svg, svg_viewbox] = this.empress.exportSvg();
-            deepEqual(svg_viewbox, 'viewBox="-2081.31494140625 -916.0977783203125 3827.0001220703125 3746.4317626953125"');
+            deepEqual(
+                svg_viewbox,
+                'viewBox="-2081.31494140625 -916.0977783203125 3827.0001220703125 3746.4317626953125"'
+            );
         });
 
-        test("Test exportSvg, viewbox size: circular with nodes", function() {
+        test("Test exportSvg, viewbox size: circular with nodes", function () {
             this.empress._currentLayout = "Circular";
             this.empress._drawer.showTreeNodes = true;
             [obs_svg, svg_viewbox] = this.empress.exportSvg();
             deepEqual(svg_viewbox, 'viewBox="-1612 -2416 5234 4028"');
+        });
+
+        count_svg_tags_legend = function (svg_string) {
+            var lines = svg_string.match(/[^\n]+/g);
+
+            num_groups = 0;
+            num_key_rects = 0;
+            num_key_labels = 0;
+            num_titles = 0;
+            for (i = 0; i < lines.length; i++) {
+                if (lines[i].includes("<rect ")) {
+                    if (!lines[i].includes('ry="')) {
+                        num_key_rects++;
+                    }
+                }
+                if (lines[i].includes("<text ")) {
+                    if (lines[i].includes("font-weight:bold")) {
+                        num_titles++;
+                    } else {
+                        num_key_labels++;
+                    }
+                }
+                if (lines[i].includes("<g>")) {
+                    num_groups++;
+                }
+            }
+            return [num_groups, num_key_rects, num_key_labels, num_titles];
+        };
+
+        test("Test exportSVG_legend, draw legend", function () {
+            obs_legend = this.empress.exportSVG_legend(
+                this.dom_legend.documentElement
+            );
+            [
+                num_groups,
+                num_key_rects,
+                num_key_labels,
+                num_titles,
+            ] = count_svg_tags_legend(obs_legend);
+
+            deepEqual(num_groups, 1 * 2);
+            deepEqual(num_key_rects, 4 * 2);
+            deepEqual(num_key_labels, 4 * 2);
+            deepEqual(num_titles, 1 * 2);
         });
     });
 });
