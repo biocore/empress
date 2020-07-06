@@ -9,7 +9,7 @@ def compress_table(table):
 
     Returns
     -------
-    (s_ids, f_ids, f_ids_to_indices, s_ids_to_indices, compressed_table)
+    (s_ids, f_ids, s_ids_to_indices, f_ids_to_indices, compressed_table)
         s_ids: list
             List of the sample IDs in the table. Empty samples (i.e. those that
             do not contain any features) are omitted.
@@ -105,7 +105,7 @@ def compress_table(table):
     binarized_table.apply(save_present_features, axis="index")
 
     return (
-        sample_ids, feature_ids, f_ids_to_indices, s_ids_to_indices,
+        sample_ids, feature_ids, s_ids_to_indices, f_ids_to_indices,
         compressed_table
     )
 

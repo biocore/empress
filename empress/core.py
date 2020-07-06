@@ -261,7 +261,7 @@ class Empress():
         for node in self.tree.preorder(include_self=True):
             names.append(node.name)
 
-        s_ids, f_ids, fid2idxs, sid2idxs, compressed_table = compress_table(
+        s_ids, f_ids, sid2idxs, fid2idxs, compressed_table = compress_table(
             self.table
         )
         sm_cols, compressed_sm = compress_sample_metadata(
