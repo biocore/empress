@@ -691,7 +691,7 @@ def isleaf(bp_tree, i):
            The query node index
        Returns
        -------
-       int
-           1 if this is a leaf node, 0 otherwise
+       bool
+           True if this is a leaf node, False otherwise
     """
     return bp_tree.B[i] and (not bp_tree.B[i + 1])
