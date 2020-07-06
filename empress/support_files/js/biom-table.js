@@ -77,6 +77,15 @@ define(["underscore", "util"], function (_, util) {
         this._sm = sm;
     }
 
+    /**
+     * Converts sample ID to sample index.
+     *
+     * @param {String} sID
+     *
+     * @return {Number} sIdx
+     *
+     * @throws {Error} If the sample ID is unrecognized.
+     */
     BIOMTable.prototype._getSampleIndexFromID = function(sID) {
         var sIdx = this._sID2Idx[sID];
         if (_.isUndefined(sIdx)) {
@@ -87,6 +96,15 @@ define(["underscore", "util"], function (_, util) {
         return sIdx;
     }
 
+    /**
+     * Converts feature ID to feature index.
+     *
+     * @param {String} fID
+     *
+     * @return {Number} fIdx
+     *
+     * @throws {Error} If the feature ID is unrecognized.
+     */
     BIOMTable.prototype._getFeatureIndexFromID = function(fID) {
         var fIdx = this._fID2Idx[fID];
         if (_.isUndefined(fIdx)) {
@@ -97,6 +115,15 @@ define(["underscore", "util"], function (_, util) {
         return fIdx;
     };
 
+    /**
+     * Converts feature index to feature ID.
+     *
+     * @param {String} fIdx
+     *
+     * @return {Number} fID
+     *
+     * @throws {Error} If the feature index is invalid.
+     */
     BIOMTable.prototype._getFeatureIDFromIndex = function(fIdx) {
         var fID = this._fIDs[fIdx];
         if (_.isUndefined(fID)) {
@@ -105,6 +132,15 @@ define(["underscore", "util"], function (_, util) {
         return fID;
     };
 
+    /**
+     * Converts sample metadata column name to index in this._smCols.
+     *
+     * @param {String} col
+     *
+     * @return {Number} colIdx
+     *
+     * @throws {Error} If the column name isn't in this._smCols.
+     */
     BIOMTable.prototype._getSampleMetadataColIndex = function(col) {
         var colIdx = _.indexOf(this._smCols, col);
         if (colIdx < 0) {
