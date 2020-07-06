@@ -305,8 +305,9 @@ class TestCore(unittest.TestCase):
         ):
             _ = Empress(self.tree, self.unrelated_table, self.sample_metadata,
                         filter_unobserved_features_from_phylogeny=False)
-        # Check that --p-filter-missing-features still doesn't work to override
-        # this, since there are NO matching features at all
+        # Check that --p-filter-unobserved-features-from-phylogeny doesn't
+        # override this: the data mismatch should be identified before attempting
+        # shearing
         with self.assertRaisesRegex(
             tools.DataMatchingError,
             "No features in the feature table are present as tips in the tree."
