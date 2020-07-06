@@ -652,9 +652,10 @@ def bp_tree_tips(bp_tree):
     tips = []
     # Iterate through all open and closing parentheses and extract tip names
     for i in range(bp_tree.B.size):
-        # Check if this is a leaf node and has a label
-        if isleaf(bp_tree, i) and (bp_tree.name(i) is not None):
-            tips.append(bp_tree.name(i))
+        pos_name = bp_tree.name(i)
+        # Check if this is a leaf node with a label
+        if isleaf(bp_tree, i) and (pos_name is not None):
+            tips.append(pos_name)
     return tips
 
 
