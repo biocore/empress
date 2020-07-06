@@ -38,15 +38,15 @@ define(["underscore", "util"], function (_, util) {
         // getting messed up (e.g. checking that feature indices in the table
         // are sorted)
         if (sIDs.length !== tbl.length) {
-            throw new Error('Sample IDs and table are uneven lengths.');
+            throw new Error("Sample IDs and table are uneven lengths.");
         } else if (sIDs.length !== sm.length) {
-            throw new Error('Sample IDs and metadata are uneven lengths.');
+            throw new Error("Sample IDs and metadata are uneven lengths.");
         } else if (sIDs.length !== _.size(sID2Idx)) {
-            throw new Error('Sample IDs and ID -> index are uneven lengths.');
+            throw new Error("Sample IDs and ID -> index are uneven lengths.");
         } else if (fIDs.length !== _.size(fID2Idx)) {
-            throw new Error('Feature IDs and ID -> index are uneven lengths.');
+            throw new Error("Feature IDs and ID -> index are uneven lengths.");
         }
-        _.each(tbl, function(presentFeatureIndices, sIdx) {
+        _.each(tbl, function (presentFeatureIndices, sIdx) {
             if (presentFeatureIndices.length === 0) {
                 // Empty samples should have been removed in python
                 throw new Error(
@@ -54,22 +54,26 @@ define(["underscore", "util"], function (_, util) {
                 );
             } else if (presentFeatureIndices.length > fIDs.length) {
                 throw new Error(
-                    'Sample at index "' + sIdx + '" has more features than ' +
-                    'are possible.'
+                    'Sample at index "' +
+                        sIdx +
+                        '" has more features than ' +
+                        "are possible."
                 );
             }
             // Verify that the entries of each sample in the table are in
             // strictly increasing order. We rely on this so that we can use
             // binary search when checking if a feature is in a sample.
             var prev;
-            _.each(presentFeatureIndices, function(i) {
+            _.each(presentFeatureIndices, function (i) {
                 if (_.isUndefined(prev)) {
                     prev = i;
                 } else {
                     if (i <= prev) {
                         throw new Error(
-                            'Sample at index "' + sIdx + '" has ' +
-                            'non-strictly-increasing feature indices in table.'
+                            'Sample at index "' +
+                                sIdx +
+                                '" has ' +
+                                "non-strictly-increasing feature indices in table."
                         );
                     }
                 }
@@ -93,15 +97,13 @@ define(["underscore", "util"], function (_, util) {
      *
      * @throws {Error} If the sample ID is unrecognized.
      */
-    BIOMTable.prototype._getSampleIndexFromID = function(sID) {
+    BIOMTable.prototype._getSampleIndexFromID = function (sID) {
         var sIdx = this._sID2Idx[sID];
         if (_.isUndefined(sIdx)) {
-            throw new Error(
-                'Sample ID "' + sID + '" not in BIOM table.'
-            );
+            throw new Error('Sample ID "' + sID + '" not in BIOM table.');
         }
         return sIdx;
-    }
+    };
 
     /**
      * Converts feature ID to feature index.
@@ -112,12 +114,10 @@ define(["underscore", "util"], function (_, util) {
      *
      * @throws {Error} If the feature ID is unrecognized.
      */
-    BIOMTable.prototype._getFeatureIndexFromID = function(fID) {
+    BIOMTable.prototype._getFeatureIndexFromID = function (fID) {
         var fIdx = this._fID2Idx[fID];
         if (_.isUndefined(fIdx)) {
-            throw new Error(
-                'Feature ID "' + fID + '" not in BIOM table.'
-            );
+            throw new Error('Feature ID "' + fID + '" not in BIOM table.');
         }
         return fIdx;
     };
@@ -131,7 +131,7 @@ define(["underscore", "util"], function (_, util) {
      *
      * @throws {Error} If the feature index is invalid.
      */
-    BIOMTable.prototype._getFeatureIDFromIndex = function(fIdx) {
+    BIOMTable.prototype._getFeatureIDFromIndex = function (fIdx) {
         var fID = this._fIDs[fIdx];
         if (_.isUndefined(fID)) {
             throw new Error('Feature index "' + fIdx + '" invalid.');
@@ -148,7 +148,7 @@ define(["underscore", "util"], function (_, util) {
      *
      * @throws {Error} If the column name isn't in this._smCols.
      */
-    BIOMTable.prototype._getSampleMetadataColIndex = function(col) {
+    BIOMTable.prototype._getSampleMetadataColIndex = function (col) {
         var colIdx = _.indexOf(this._smCols, col);
         if (colIdx < 0) {
             throw new Error(
@@ -173,7 +173,7 @@ define(["underscore", "util"], function (_, util) {
     BIOMTable.prototype._featureIndexSetToIDArray = function (fIdxSet) {
         var scope = this;
         var fIdxArray = Array.from(fIdxSet);
-        return _.map(fIdxArray, function(idx) {
+        return _.map(fIdxArray, function (idx) {
             return scope._getFeatureIDFromIndex(idx);
         });
     };
@@ -191,13 +191,13 @@ define(["underscore", "util"], function (_, util) {
         var scope = this;
         var totalFeatureIndices = new Set();
         // For each sample...
-        _.each(samples, function(sID) {
+        _.each(samples, function (sID) {
             // Figure out the indices of the features in this sample.
             // Add these indices to totalFeatureIndices (which is a set,
             // so duplicate indices are implicitly ignored)
             var sampleIdx = scope._getSampleIndexFromID(sID);
             var featureIndices = scope._tbl[sampleIdx];
-            _.each(featureIndices, function(fIdx) {
+            _.each(featureIndices, function (fIdx) {
                 totalFeatureIndices.add(fIdx);
             });
         });
@@ -222,12 +222,12 @@ define(["underscore", "util"], function (_, util) {
         var valueToFeatureIdxs = {};
         var cVal;
         var addSampleFeatures = function (sIdx, cVal) {
-            _.each(scope._tbl[sIdx], function(fIdx) {
+            _.each(scope._tbl[sIdx], function (fIdx) {
                 valueToFeatureIdxs[cVal].add(fIdx);
             });
-        }
+        };
         // For each sample...
-        _.each(this._sm, function(smRow, sIdx) {
+        _.each(this._sm, function (smRow, sIdx) {
             // Figure out what value this sample has for the specified column
             cVal = smRow[colIdx];
             // Record this sample's features for the sample's value
@@ -239,7 +239,7 @@ define(["underscore", "util"], function (_, util) {
         // Produce a version of valueToFeatureIdxs where
         // 1) The Sets of feature indices are converted to Arrays
         // 2) The feature indices are replaced with IDs
-        return _.mapObject(valueToFeatureIdxs, function(fIdxSet) {
+        return _.mapObject(valueToFeatureIdxs, function (fIdxSet) {
             return scope._featureIndexSetToIDArray(fIdxSet);
         });
     };
@@ -264,7 +264,7 @@ define(["underscore", "util"], function (_, util) {
         var valueToCountOfSampleWithObs = {};
         var cVal, fIdxPos;
         // Iterate through each sample of the BIOM table
-        _.each(this._tbl, function(presentFeatureIndices, sIdx) {
+        _.each(this._tbl, function (presentFeatureIndices, sIdx) {
             // Figure out what metadata value this sample has at the column.
             // If we haven't recorded it as a key in our output Object yet, do
             // so and set it to default to 0.
@@ -316,7 +316,7 @@ define(["underscore", "util"], function (_, util) {
     BIOMTable.prototype.getUniqueSampleValues = function (col) {
         var colIdx = this._getSampleMetadataColIndex(col);
         var values = new Set();
-        _.each(this._sm, function(smRow) {
+        _.each(this._sm, function (smRow) {
             values.add(smRow[colIdx]);
         });
         return util.naturalSort(Array.from(values));
@@ -349,7 +349,7 @@ define(["underscore", "util"], function (_, util) {
         var gcIdx = this._getSampleMetadataColIndex(gradCol);
         var tcIdx = this._getSampleMetadataColIndex(trajCol);
         var trajValToFeatureIndexSet = {};
-        _.each(this._sm, function(smRow, sIdx) {
+        _.each(this._sm, function (smRow, sIdx) {
             if (smRow[gcIdx] === gradVal) {
                 var tVal = smRow[tcIdx];
                 if (!_.has(trajValToFeatureIndexSet, tVal)) {
@@ -357,18 +357,21 @@ define(["underscore", "util"], function (_, util) {
                 }
                 // Add the indices of all of the features in this sample to
                 // trajValToFeatureIndexSet[tVal]
-                _.each(scope._tbl[sIdx], function(fIdx) {
+                _.each(scope._tbl[sIdx], function (fIdx) {
                     trajValToFeatureIndexSet[tVal].add(fIdx);
                 });
             }
         });
         if (_.isEmpty(trajValToFeatureIndexSet)) {
             throw new Error(
-                'No samples have "' + gradVal + '" as their value in the "' +
-                gradCol + '" gradient sample metadata column.'
+                'No samples have "' +
+                    gradVal +
+                    '" as their value in the "' +
+                    gradCol +
+                    '" gradient sample metadata column.'
             );
         }
-        return _.mapObject(trajValToFeatureIndexSet, function(fIndexSet) {
+        return _.mapObject(trajValToFeatureIndexSet, function (fIndexSet) {
             return scope._featureIndexSetToIDArray(fIndexSet);
         });
     };
@@ -386,14 +389,14 @@ define(["underscore", "util"], function (_, util) {
         var scope = this;
 
         // Convert array of feature IDs to an array of indices
-        var fIndices = _.map(fIDs, function(fID) {
+        var fIndices = _.map(fIDs, function (fID) {
             return scope._getFeatureIndexFromID(fID);
         });
 
         // Now, we can go through the table and find samples with matches
         var containingSampleIDs = [];
-        _.each(this._tbl, function(presentFeatureIndices, sIdx) {
-            var sampleHasMatch = _.some(fIndices, function(fIdx) {
+        _.each(this._tbl, function (presentFeatureIndices, sIdx) {
+            var sampleHasMatch = _.some(fIndices, function (fIdx) {
                 // See getObsCountsBy() documentation above. Briefly, we know
                 // presentFeatureIndices is sorted, so underscore.js can use
                 // a binary search for figuring out if this feature index is
@@ -429,7 +432,7 @@ define(["underscore", "util"], function (_, util) {
         var scope = this;
         var colIdx = this._getSampleMetadataColIndex(col);
         var valueToSampleCount = {};
-        _.each(samples, function(sID) {
+        _.each(samples, function (sID) {
             var sampleIdx = scope._getSampleIndexFromID(sID);
             var cVal = scope._sm[sampleIdx][colIdx];
             if (_.has(valueToSampleCount, cVal)) {

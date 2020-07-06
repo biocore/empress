@@ -714,9 +714,7 @@ define([
 
         // get a group of observations per color
         for (var group in sampleGroups) {
-            obs = this._biom.getObservationUnionForSamples(
-                sampleGroups[group]
-            );
+            obs = this._biom.getObservationUnionForSamples(sampleGroups[group]);
             obs = Array.from(this._namesToKeys(obs));
             observationsPerGroup[group] = new Set(obs);
         }
