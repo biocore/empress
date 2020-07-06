@@ -172,7 +172,7 @@ def compress_sample_metadata(s_ids_to_indices, metadata):
         # something is seriously wrong.
         raise ValueError("Metadata is missing sample IDs.")
 
-    if sorted(s_ids_to_indices.values()) != range(len(sample_ids)):
+    if sorted(s_ids_to_indices.values()) != list(range(len(sample_ids))):
         raise ValueError("Values of s_ids_to_indices are invalid.")
 
     # Produce a dict mapping sample indices to a list of the corresponding
@@ -265,7 +265,7 @@ def compress_feature_metadata(tip_metadata, int_metadata):
     # *This* should never happen. If it did, it's a sign that this function is
     # being misused. (The ^ is a logical XOR; see
     # https://stackoverflow.com/a/432844/10730311.)
-    if (tip_metadata is None) ^ (int_metadata is not None):
+    if tip_metadata is None ^ int_metadata is None:
         raise ValueError(
             "Only one of tip & int. node feature metadata is None."
         )
