@@ -313,7 +313,7 @@ class TestCore(unittest.TestCase):
             "No features in the feature table are present as tips in the tree."
         ):
             Empress(self.tree, self.unrelated_table, self.sample_metadata,
-                        filter_unobserved_features_from_phylogeny=True)
+                    filter_unobserved_features_from_phylogeny=True)
 
 
 # How data should look like when converted to a dict
