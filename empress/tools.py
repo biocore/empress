@@ -260,9 +260,7 @@ def match_inputs(
         tip_metadata = ts_feature_metadata.loc[fm_and_tip_features]
 
         # Subset internal node metadata
-        internal_node_names = set([
-            name for name in bp_tree_non_tips(bp_tree) if name is not None
-        ])
+        internal_node_names = set(bp_tree_non_tips(bp_tree))
         fm_and_int_features = fm_ids.intersection(internal_node_names)
         int_metadata = ts_feature_metadata.loc[fm_and_int_features]
 
