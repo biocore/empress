@@ -145,8 +145,7 @@ def match_inputs(
     # Match table and tree.
     # (Ignore None-named tips in the tree, which will be replaced later on
     # with "default" names like "EmpressNode0".)
-    tip_names = set([name for name in bp_tree_tips(bp_tree)
-                     if name is not None])
+    tip_names = set(bp_tree_tips(bp_tree))
     tree_and_table_features = table.index.intersection(tip_names)
 
     if len(tree_and_table_features) == 0:
