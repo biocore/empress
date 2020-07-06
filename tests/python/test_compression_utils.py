@@ -59,7 +59,7 @@ class TestCompressionUtils(unittest.TestCase):
             index=["h", "m"]
         )
 
-    def test_compress_table_basic(self):
+    def test_compress_table_1_empty_sample_and_feature(self):
         table_copy = self.table.copy()
         s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(table_copy)
 
@@ -139,8 +139,48 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         )
 
-    def test_compress_table_all_empty(self):
-        pass
+    def test_compress_table_no_empty_samples_or_features(self):
+        # Prevent Sample4 and feature "e" from being empty
+        diff_table = self.table.copy()
+        diff_table.loc["e", "Sample4"] = 3
+        s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(diff_table)
+        self.assertEqual(s_ids, ["Sample1", "Sample2", "Sample3", "Sample4"])
+        self.assertEqual(f_ids, ["a", "b", "e", "d"])
+        self.assertEqual(
+            sid2idx, {"Sample1": 0, "Sample2": 1, "Sample3": 2, "Sample4": 3}
+        )
+        self.assertEqual(fid2idx, {"a": 0, "b": 1, "e": 2, "d": 3})
+        self.assertEqual(
+            tbl,
+            [
+                [0, 1, 3],  # Sample1 contains features a, b, d
+                [0, 1, 3],  # Sample2 contains features a, b, d
+                [0],        # Sample3 contains feature  a only
+                [2]         # Sample3 contains feature  e only
+            ]
+        )
+
+    def test_compress_table_dense(self):
+        diff_table = self.table.copy()
+        diff_table.loc[:, :] = 333
+        s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(diff_table)
+        self.assertEqual(s_ids, ["Sample1", "Sample2", "Sample3", "Sample4"])
+        self.assertEqual(f_ids, ["a", "b", "e", "d"])
+        self.assertEqual(
+            sid2idx, {"Sample1": 0, "Sample2": 1, "Sample3": 2, "Sample4": 3}
+        )
+        self.assertEqual(fid2idx, {"a": 0, "b": 1, "e": 2, "d": 3})
+        # Every sample contains every feature, so all sample arrays should be
+        # identical.
+        self.assertEqual(
+            tbl,
+            [
+                [0, 1, 2, 3],
+                [0, 1, 2, 3],
+                [0, 1, 2, 3],
+                [0, 1, 2, 3]
+            ]
+        )
 
     def test_compress_sample_metadata_basic(self):
         pass
