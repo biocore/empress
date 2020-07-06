@@ -135,7 +135,7 @@ class TestCompressionUtils(unittest.TestCase):
             [
                 [0, 1, 3],  # Sample1 contains features a, b, d
                 [0, 1, 3],  # Sample2 contains features a, b, d
-                [0, 2]      # Sample3 contains feature  e only
+                [0, 2]      # Sample3 contains features a, e
             ]
         )
 
