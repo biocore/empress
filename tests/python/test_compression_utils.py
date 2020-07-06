@@ -60,12 +60,12 @@ class TestCompressionUtils(unittest.TestCase):
         )
 
     def test_compress_table_basic(self):
-        tbl_copy = self.table.copy()
-        s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(tbl_copy)
+        table_copy = self.table.copy()
+        s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(table_copy)
 
         # First off, verify that compress_table() leaves the original table DF
         # untouched.
-        assert_frame_equal(tbl_copy, self.table)
+        assert_frame_equal(table_copy, self.table)
 
         # Check s_ids, which just be a list of the sample IDs in the same order
         # as they were in the table's columns.
@@ -98,8 +98,26 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         )
 
-    def test_compress_table_empty_sample(self):
-        pass
+    def test_compress_table_no_empty_samples(self):
+        # Prevent Sample4 from being empty by making it, uh... not empty.
+        diff_table = self.table.copy()
+        diff_table.loc["d", "Sample4"] = 100
+        s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(diff_table)
+        self.assertEqual(s_ids, ["Sample1", "Sample2", "Sample3", "Sample4"])
+        self.assertEqual(f_ids, ["a", "b", "d"])
+        self.assertEqual(
+            sid2idx, {"Sample1": 0, "Sample2": 1, "Sample3": 2, "Sample4": 3}
+        )
+        self.assertEqual(fid2idx, {"a": 0, "b": 1, "d": 2})
+        self.assertEqual(
+            tbl,
+            [
+                [0, 1, 2],  # Sample1 contains features a, b, d
+                [0, 1, 2],  # Sample2 contains features a, b, d
+                [0],        # Sample3 contains feature  a only
+                [2]         # Sample4 contains feature  d only
+            ]
+        )
 
     def test_compress_table_empty_feature(self):
         pass
