@@ -160,7 +160,7 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         )
 
-    def test_compress_table_dense(self):
+    def test_compress_table_fully_dense(self):
         diff_table = self.table.copy()
         diff_table.loc[:, :] = 333
         s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(diff_table)
@@ -181,6 +181,15 @@ class TestCompressionUtils(unittest.TestCase):
                 [0, 1, 2, 3]
             ]
         )
+
+    def test_compress_table_fully_empty(self):
+        diff_table = self.table.copy()
+        diff_table.loc[:, :] = 0
+        with self.assertRaisesRegex(
+            ValueError,
+            "All samples / features in matched table are empty."
+        ):
+            compress_table(diff_table)
 
     def test_compress_sample_metadata_basic(self):
         pass
