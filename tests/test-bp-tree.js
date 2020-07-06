@@ -261,11 +261,11 @@ require(['jquery', 'ByteArray', 'BPTree'], function($, ByteArray, BPTree) {
 
         test('Test coding', function() {
           // zeros and ones test
-          obj = new BPTree([3851728]);
+          var obj = new BPTree([3851728]);
           equal(obj.b, this.bpObj.b);
 
           // zeros test
-          exp = [0, 0, 0, 0, 0, 0];
+          var exp = [0, 0, 0, 0, 0, 0];
           obj = new BPTree(exp);
           equal(obj.b_.length, exp.length);
 

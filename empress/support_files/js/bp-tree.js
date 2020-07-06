@@ -14,12 +14,6 @@ define(["ByteArray"], function (ByteArray) {
      * @constructs BPTree
      */
     function BPTree(b, names = null, lengths = null, coding = 51) {
-        /**
-         * @type {Uint8Array}
-         * Used to store the structure of the tree
-         * @private
-         */
-
         if (coding !== null) {
             var b_len = b.length - 1;
             var decoded_b = [];
@@ -51,6 +45,12 @@ define(["ByteArray"], function (ByteArray) {
 
             b = decoded_b;
         }
+
+        /**
+         * @type {Uint8Array}
+         * Used to store the structure of the tree
+         * @private
+         */
         this.b_ = b;
 
         /**

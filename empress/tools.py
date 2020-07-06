@@ -296,8 +296,6 @@ def shifting(bitlist, size=51):
     ValueError
         If any of the list values is different than 0 or 1
 
-
-    The tree to be visualized.
     References
     ----------
     Borrowed from https://stackoverflow.com/a/12461400
