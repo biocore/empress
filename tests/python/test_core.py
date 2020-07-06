@@ -312,7 +312,7 @@ class TestCore(unittest.TestCase):
             tools.DataMatchingError,
             "No features in the feature table are present as tips in the tree."
         ):
-            _ = Empress(self.tree, self.unrelated_table, self.sample_metadata,
+            Empress(self.tree, self.unrelated_table, self.sample_metadata,
                         filter_unobserved_features_from_phylogeny=True)
 
 
