@@ -638,7 +638,7 @@ class Tree(TreeNode):
 
 
 def bp_tree_tips(bp_tree):
-    """ Extracts tip names in the tree
+    """ Extracts tip names in the tree, ignoring unnamed tips.
 
     Parameters
     ----------
