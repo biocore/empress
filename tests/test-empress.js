@@ -175,7 +175,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 var tipMetadata = {
                     "1": {
                         "f1": 2,
-                        "f2": 3
+                        "f2": 2
                     },
                     "2": {
                         "f1": 1,
@@ -187,13 +187,13 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                     },
                     "EmpressNode6": {
                         "f1": 2,
-                        "f2": 3
+                        "f2": 2
                     }
                 }
                 var intMetadata = {
                     "internal": {
                         "f1": 1,
-                        "f2": 2
+                        "f2": 1
                     }
                 }
                 var biom = new BiomTable(obs, samp, types);
@@ -211,7 +211,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
 
         test("Test getX/getY", function(){
             // The tree coordinates were defined in such way that, starting at
-            // node 1, rectangula layout, and coord=1, a nodes coords should
+            // node 1, rectangular layout, and coord=1, a nodes coords should
             // be (coord++, coord++)
             var coord = 1;
 
@@ -460,9 +460,78 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
 
          });
 
-        // test("Test colorByFeatureMetadata, tip only", function() {
+        test("Test colorByFeatureMetadata, tip only", function() {
+            // make usre error is thrown when invalid color method is used
+            throws(function() {
+                this.empress.colorByFeatureMetadata(null, null, "badInput");
+            });
 
-        // });
+            // test 'tip' only method
+
+            // get color map
+            var cm = this.empress.colorByFeatureMetadata(
+                "f1",
+                "discrete-coloring-qiime",
+                "tip"
+            );
+            var groups = ["1", "2"];
+
+            // make sure '1' and '2' are the only gropus
+            var resultGroups = util.naturalSort(Object.keys(cm));
+            deepEqual(resultGroups, groups);
+
+            // make sure nodes were assigned correct color
+            var group1 = new Set([2, 3, 4]);
+            var group2 = new Set([1, 6]);
+            for (var i = 1; i <= 7; i++) {
+                var node = this.empress._treeData[i];
+                if (group1.has(i)) {
+                    deepEqual(
+                        node.color,
+                        chroma(cm["1"]).gl().slice(0, 3)
+                    );
+                } else if (group2.has(i)) {
+                    deepEqual(
+                        node.color,
+                        chroma(cm["2"]).gl().slice(0, 3)
+                    );
+                } else {
+                    deepEqual(node.color, [1.0, 1.0, 1.0]);
+                }
+            }
+
+            // test 'all' method
+
+            cm = this.empress.colorByFeatureMetadata(
+                "f2",
+                "discrete-coloring-qiime",
+                "all"
+            );
+            resultGroups = util.naturalSort(Object.keys(cm));
+            deepEqual(resultGroups, groups);
+
+            // Note: 'all' method does not use propagtion
+            //       if propagtion was used, then 4, 5 would belong to group2
+            group1 = new Set([4, 5]);
+            group2 = new Set([1, 2, 3, 6]);
+            for (i = 1; i <= 7; i++) {
+                node = this.empress._treeData[i];
+                if (group1.has(i)) {
+                    deepEqual(
+                        node.color,
+                        chroma(cm["1"]).gl().slice(0, 3)
+                    );
+                } else if (group2.has(i)) {
+                    deepEqual(
+                        node.color,
+                        chroma(cm["2"]).gl().slice(0, 3)
+                    );
+                } else {
+                    deepEqual(node.color, [1.0, 1.0, 1.0]);
+                }
+            }
+
+        });
 
         test("Test _projectObservations, all tips in obs", function() {
             var obs = {
