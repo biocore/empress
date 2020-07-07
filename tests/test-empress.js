@@ -274,36 +274,36 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
             // Note: node 6's name is EmpressNode6 which means it will not be
             // included in the getNodeCoords()
             var rectCoords = new Float32Array([
-                1, 2, 1.0, 1.0, 1.0,
-                3, 4, 1.0, 1.0, 1.0,
-                5, 6, 1.0, 1.0, 1.0,
-                7, 8, 1.0, 1.0, 1.0,
-                9, 10, 1.0, 1.0, 1.0,
-                13, 14, 1.0, 1.0, 1.0
+                1, 2, 0.75, 0.75, 0.75,
+                3, 4, 0.75, 0.75, 0.75,
+                5, 6, 0.75, 0.75, 0.75,
+                7, 8, 0.75, 0.75, 0.75,
+                9, 10, 0.75, 0.75, 0.75,
+                13, 14, 0.75, 0.75, 0.75,
             ]);
             this.empress._currentLayout = "Rectangular";
             var empressRecCoords = this.empress.getNodeCoords();
             deepEqual(empressRecCoords, rectCoords);
 
             var circCoords = new Float32Array([
-                15, 16, 1.0, 1.0, 1.0,
-                17, 18, 1.0, 1.0, 1.0,
-                19, 20, 1.0, 1.0, 1.0,
-                21, 22, 1.0, 1.0, 1.0,
-                23, 24, 1.0, 1.0, 1.0,
-                27, 28, 1.0, 1.0, 1.0,
+                15, 16, 0.75, 0.75, 0.75,
+                17, 18, 0.75, 0.75, 0.75,
+                19, 20, 0.75, 0.75, 0.75,
+                21, 22, 0.75, 0.75, 0.75,
+                23, 24, 0.75, 0.75, 0.75,
+                27, 28, 0.75, 0.75, 0.75,
             ]);
             this.empress._currentLayout = "Circular";
             var empressCirCoords = this.empress.getNodeCoords();
             deepEqual(empressCirCoords, circCoords);
 
             var unrootCoords = new Float32Array([
-                29, 30, 1.0, 1.0, 1.0,
-                31, 32, 1.0, 1.0, 1.0,
-                33, 34, 1.0, 1.0, 1.0,
-                35, 36, 1.0, 1.0, 1.0,
-                37, 38, 1.0, 1.0, 1.0,
-                41, 42, 1.0, 1.0, 1.0,
+                29, 30, 0.75, 0.75, 0.75,
+                31, 32, 0.75, 0.75, 0.75,
+                33, 34, 0.75, 0.75, 0.75,
+                35, 36, 0.75, 0.75, 0.75,
+                37, 38, 0.75, 0.75, 0.75,
+                41, 42, 0.75, 0.75, 0.75,
             ]);
             this.empress._currentLayout = "Unrooted";
             var empressUnrootCoords = this.empress.getNodeCoords();
@@ -339,7 +339,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
 
          test("Test colorSampleIDs", function() {
             var samples = ["s2","s7"];
-            var defaultColor = [1.0, 1.0, 1.0];
+            var defaultColor = [0.75, 0.75, 0.75];
             var color = [0.5, 0.6, 0.7];
             this.empress.colorSampleIDs(samples, color);
 
@@ -364,8 +364,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
             };
             this.empress.colorSampleGroups(sampleGroup);
 
-            // the entire tree should be colored the samples in sampleGroup
-            // contain all tips
+            // the entire tree should be colored. sampleGroup contain all tips
             for (var i = 1; i <=7; i++) {
                 var node = this.empress._treeData[i];
                 deepEqual(node.color, [1.0, 0, 0]);
@@ -392,7 +391,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 } else if(greeNodes.has(i)) {
                     deepEqual(node.color, [0, 1.0, 0]);
                 } else {
-                    deepEqual(node.color, [1.0, 1.0, 1.0]);
+                    deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
          });
@@ -454,7 +453,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         chroma(cm["a"]).gl().slice(0, 3)
                     );
                 }  else {
-                    deepEqual(node.color, [1.0, 1.0, 1.0]);
+                    deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
 
@@ -496,7 +495,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         chroma(cm["2"]).gl().slice(0, 3)
                     );
                 } else {
-                    deepEqual(node.color, [1.0, 1.0, 1.0]);
+                    deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
 
@@ -527,7 +526,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         chroma(cm["2"]).gl().slice(0, 3)
                     );
                 } else {
-                    deepEqual(node.color, [1.0, 1.0, 1.0]);
+                    deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
 
