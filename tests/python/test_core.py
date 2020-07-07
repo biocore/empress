@@ -117,7 +117,7 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=False)
 
-        self.assertEqual(viz.base_url, './')
+        self.assertEqual(viz.base_url, 'support_files')
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
                                         0, 1, 0, 0, 0])
 
@@ -142,7 +142,7 @@ class TestCore(unittest.TestCase):
                       ordination=self.pcoa,
                       filter_unobserved_features_from_phylogeny=False)
 
-        self.assertEqual(viz.base_url, './')
+        self.assertEqual(viz.base_url, 'support_files')
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
                                         0, 1, 0, 0, 0])
 
@@ -200,6 +200,14 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
         dict_a_cp = copy.deepcopy(DICT_A)
+
+        # NOTE: Uncomment the following two lines of code to write the current
+        # DICT_A to a file. Once it's written to a file, you can run
+        # "black -l 79 dictcode.py" (while in the same directory as the file)
+        # to format it so that it's consistent with how DICT_A is set up at the
+        # bottom of this file.
+        # with open("dictcode.py", "w") as f:
+        #     f.write("DICT_A = {}".format(str(obs)))
 
         tree_data = obs['tree_data']
         exp = dict_a_cp['tree_data']
@@ -315,23 +323,15 @@ class TestCore(unittest.TestCase):
 # How data should look like when converted to a dict
 #
 # For ease of future work, if this needs to be replaced this can be done so
-# by adding the following block of code to test_to_dict() above.
-# with open("dictcode.py", "w") as f:
-#     f.write("DICT_A = {}".format(str(obs)))
-# Then, run black -l 79 on the resulting python file to format it so that it's
-# consistent with what's below.
-# (Obviously, you should manually look over the DICT to check that it looks
-# sane)
+# by adding some code to test_to_dict() above; see that function's body
+# for details. (Obviously, you should first manually look over the DICT to
+# check that it looks sane, since it'll be used as a reference in these tests.)
 DICT_A = {
-    "base_url": "./support_files",
-    "tree": [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0],
+    "base_url": "support_files",
+    "tree": [250472],
     "tree_data": {
         1: {
             "name": "a",
-            "color": [0.75, 0.75, 0.75],
-            "sampVal": 1,
-            "visible": True,
-            "single_samp": False,
             "x2": -82.19088834200284,
             "y2": 1568.2955749395592,
             "xr": 2412.0,
@@ -343,10 +343,6 @@ DICT_A = {
         },
         2: {
             "name": "e",
-            "color": [0.75, 0.75, 0.75],
-            "sampVal": 1,
-            "visible": True,
-            "single_samp": False,
             "x2": 948.7236134182863,
             "y2": 2108.2845722271436,
             "xr": 3216.0,
@@ -358,10 +354,6 @@ DICT_A = {
         },
         3: {
             "name": "EmpressNode0",
-            "color": [0.75, 0.75, 0.75],
-            "sampVal": 1,
-            "visible": True,
-            "single_samp": False,
             "x2": 295.3117872853636,
             "y2": 1102.1185942229504,
             "xr": 1608.0,
@@ -379,10 +371,6 @@ DICT_A = {
         },
         4: {
             "name": "b",
-            "color": [0.75, 0.75, 0.75],
-            "sampVal": 1,
-            "visible": True,
-            "single_samp": False,
             "x2": 1485.5419815224768,
             "y2": 192.57380029925002,
             "xr": 2412.0,
@@ -394,10 +382,6 @@ DICT_A = {
         },
         5: {
             "name": "g",
-            "color": [0.75, 0.75, 0.75],
-            "sampVal": 1,
-            "visible": True,
-            "single_samp": False,
             "x2": 326.7059130664611,
             "y2": 503.08298900209684,
             "xr": 804.0,
@@ -415,10 +399,6 @@ DICT_A = {
         },
         6: {
             "name": "EmpressNode1",
-            "color": [0.75, 0.75, 0.75],
-            "sampVal": 1,
-            "visible": True,
-            "single_samp": False,
             "x2": -622.0177003518252,
             "y2": -1605.201583225047,
             "xr": 2412.0,
@@ -430,10 +410,6 @@ DICT_A = {
         },
         7: {
             "name": "d",
-            "color": [0.75, 0.75, 0.75],
-            "sampVal": 1,
-            "visible": True,
-            "single_samp": False,
             "x2": -2333.458018477523,
             "y2": -1651.0752884434787,
             "xr": 4020.0,
@@ -445,10 +421,6 @@ DICT_A = {
         },
         8: {
             "name": "h",
-            "color": [0.75, 0.75, 0.75],
-            "sampVal": 1,
-            "visible": True,
-            "single_samp": False,
             "x2": -653.4118261329227,
             "y2": -1006.1659780041933,
             "xr": 1608.0,
@@ -466,10 +438,6 @@ DICT_A = {
         },
         9: {
             "name": "EmpressNode2",
-            "color": [0.75, 0.75, 0.75],
-            "sampVal": 1,
-            "visible": True,
-            "single_samp": False,
             "x2": 0.0,
             "y2": 0.0,
             "xr": 0.0,

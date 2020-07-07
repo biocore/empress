@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from empress.tree import Tree
-from empress.tools import fill_missing_node_names, match_inputs
+from empress.tools import fill_missing_node_names, match_inputs, shifting
 from empress.compression_utils import (
     compress_table, compress_sample_metadata, compress_feature_metadata
 )
@@ -106,7 +106,7 @@ class Empress():
 
         self.base_url = resource_path
         if self.base_url is None:
-            self.base_url = './'
+            self.base_url = 'support_files'
 
         self._validate_and_match_data(
             ignore_missing_samples,
@@ -220,13 +220,11 @@ class Empress():
 
         tree_data = {}
         names_to_keys = {}
+        # Note: tree_data starts with index 1 because the bp tree uses 1 based
+        # indexing
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
             tree_data[i] = {
                 'name': node.name,
-                'color': [0.75, 0.75, 0.75],
-                'sampVal': 1,
-                'visible': True,
-                'single_samp': False
             }
             # Add coordinate data from all layouts for this node
             for layoutsuffix in layout_to_coordsuffix.values():
@@ -272,9 +270,9 @@ class Empress():
         )
 
         data_to_render = {
-            'base_url': './support_files',
+            'base_url': self.base_url,
             # tree info
-            'tree': self._bp_tree,
+            'tree': shifting(self._bp_tree),
             'tree_data': tree_data,
             'names': names,
             'names_to_keys': names_to_keys,

@@ -95,11 +95,6 @@ define([
          */
         this._tree = tree;
         this._numTips = 0;
-        for (var i = 0; i < this._tree.size; i++) {
-            if (this._tree.isleaf(this._tree.postorderselect(i))) {
-                this._numTips++;
-            }
-        }
 
         /**
          * @type {Object}
@@ -110,6 +105,17 @@ define([
          * @private
          */
         this._treeData = treeData;
+
+        // count number of tips and set default color/visible
+        // Note: currently empress tree uses 1-based index since the bp-tree
+        //       bp-tree.js is based off of used 1-based index.
+        for (var i = 1; i <= this._tree.size; i++) {
+            this._treeData[i].color = this.DEFAULT_COLOR;
+            this._treeData[i].visible = true;
+            if (this._tree.isleaf(this._tree.postorderselect(i))) {
+                this._numTips++;
+            }
+        }
 
         /**
          * @type{Object}
@@ -176,7 +182,10 @@ define([
          * Handles user events
          */
         // allow canvas to be null to make testing empress easier
-        if (canvas !== null) {
+        if (
+            canvas !== null &&
+            document.getElementById("quick-search") !== null
+        ) {
             this._events = new CanvasEvents(this, this._drawer, canvas);
         }
     }
@@ -269,7 +278,7 @@ define([
      */
     Empress.prototype.getNodeCoords = function () {
         var tree = this._tree;
-        var coords = new Float32Array(tree.size * 5);
+        var coords = [];
         var coords_index = 0;
 
         for (var i = 1; i <= tree.size; i++) {
@@ -277,12 +286,12 @@ define([
             if (!node.name.startsWith("EmpressNode")) {
                 coords[coords_index++] = this.getX(node);
                 coords[coords_index++] = this.getY(node);
-                coords.set(node.color, coords_index);
+                coords.push(...node.color);
                 coords_index += 3;
             }
         }
 
-        return coords;
+        return new Float32Array(coords);
     };
 
     /**
@@ -772,7 +781,7 @@ define([
     Empress.prototype.colorBySampleCat = function (cat, color) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
-        var categories = util.naturalSort(Object.keys(obs));
+        var categories = Object.keys(obs);
 
         // shared by the following for loops
         var i, j, category;
@@ -787,6 +796,7 @@ define([
         obs = this._projectObservations(obs);
 
         // assign colors to categories
+        categories = util.naturalSort(Object.keys(obs));
         var colorer = new Colorer(color, categories);
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
@@ -968,7 +978,11 @@ define([
     /**
      * Updates the tree based on obs and cm but does not draw a new tree.
      *
-     * @param{Object} obs The mapping from sample category to unique features.
+     * Note: The nodes in each sample category should be unique. The behavior of
+     *       this function is undefined if nodes in each category are not
+     *       unique.
+     *
+     * @param{Object} obs The mapping from sample category to unique nodes.
      * @param{Object} cm The mapping from sample category to color.
      */
     Empress.prototype._colorTree = function (obs, cm) {
