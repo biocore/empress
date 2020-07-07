@@ -179,6 +179,27 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
+     * Returns true if a (sorted) numeric array contains a number.
+     *
+     * It's important that fIndices is sorted in ascending order, because this
+     * lets us use the "isSorted" parameter of _.indexOf(). This will use a
+     * binary search, making this check likely faster than manual iteration.
+     * See https://underscorejs.org/#indexOf.
+     *
+     * @param {Array} arr Array of Numbers sorted in ascending order;
+     *                    in practice, this will be a sorted array of the
+     *                    indices of the features present within a sample
+     *                    in the BIOM table
+     * @param {Number} num Number to look for the presence of in arr; in
+     *                     practice, this will be a feature index to search for
+     *
+     * @return {boolean} true if num is present in arr, false otherwise
+     */
+    BIOMTable.prototype._sortedArrayHasNumber = function(arr, num) {
+        return _.indexOf(arr, num, true) >= 0;
+    };
+
+    /**
      * Returns a list of observations (features) present in the input samples.
      *
      * @param {Array} samples Array of sample IDs
@@ -274,17 +295,8 @@ define(["underscore", "util"], function (_, util) {
             }
             // Now, we check if we need to update the cVal entry by 1
             // (indicating that one more sample with cVal contains the
-            // specified feature). We do this using presentFeatureIndices,
-            // which is an array of the indices of the features within this
-            // sample.
-            //
-            // We know that presentFeatureIndices is sorted in ascending order,
-            // so we can do this check using _.indexOf() while setting the
-            // "isSorted" parameter to true. This will use a binary search,
-            // making this check likely faster than manual iteration.
-            // See https://underscorejs.org/#indexOf.
-            fIdxPos = _.indexOf(presentFeatureIndices, fIdx, true);
-            if (fIdxPos >= 0) {
+            // specified feature).
+            if (scope._sortedArrayHasNumber(presentFeatureIndices, fIdx)) {
                 // This sample actually contains the feature!
                 cVal = scope._sm[sIdx][colIdx];
                 // Update our output Object's count info accordingly.
@@ -397,12 +409,7 @@ define(["underscore", "util"], function (_, util) {
         var containingSampleIDs = [];
         _.each(this._tbl, function (presentFeatureIndices, sIdx) {
             var sampleHasMatch = _.some(fIndices, function (fIdx) {
-                // See getObsCountsBy() documentation above. Briefly, we know
-                // presentFeatureIndices is sorted, so underscore.js can use
-                // a binary search for figuring out if this feature index is
-                // present in this sample.
-                fIdxPos = _.indexOf(presentFeatureIndices, fIdx, true);
-                return fIdxPos >= 0;
+                return scope._sortedArrayHasNumber(presentFeatureIndices, fIdx);
             });
             if (sampleHasMatch) {
                 containingSampleIDs.push(scope._sIDs[sIdx]);
