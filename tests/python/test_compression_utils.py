@@ -234,7 +234,7 @@ class TestCompressionUtils(unittest.TestCase):
             sid2idx, {"Sample1": 0, "Sample2": 1, "Sample3": 2, "Sample4": 3}
         )
         self.assertEqual(fid2idx, {"a": 0, "b": 1, "e": 2, "d": 3})
-        # Every sample contains every feature, so all sample arrays should be
+        # Every sample contains every feature, so all sample lists should be
         # identical.
         self.assertEqual(
             tbl,
@@ -394,6 +394,21 @@ class TestCompressionUtils(unittest.TestCase):
         self.assertEqual(ctm, self.exp_ctm)
         # Int metadata should be an empty dict
         self.assertEqual(cim, {})
+
+    def test_compress_feature_metadata_tip_and_int_nonstr_cols(self):
+        tm_copy = self.tm.copy()
+        im_copy = self.im.copy()
+        tm_copy.columns = im_copy.columns = range(len(tm_copy.columns))
+        fm_cols, ctm, cim = compress_feature_metadata(tm_copy, im_copy)
+
+        # Columns should've been converted to strings
+        self.assertEqual(fm_cols, ["0", "1", "2", "3", "4", "5", "6", "7"])
+
+        # The actual values should be unchanged (fortunately, the nature of
+        # storing values in lists means that no references to the column
+        # names are stored here)
+        self.assertEqual(ctm, self.exp_ctm)
+        self.assertEqual(cim, self.exp_cim)
 
     def test_compress_feature_metadata_both_dfs_nones(self):
         fm_cols, ctm, cim = compress_feature_metadata(None, None)
