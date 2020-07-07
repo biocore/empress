@@ -83,6 +83,13 @@ class TestCompressionUtils(unittest.TestCase):
                 "s__",
                 "0.95"
             ],
+            # The ".0" in "a"'s Confidence value is due to the 0 being treated
+            # as numeric by Pandas, since this was a numeric column in the DF.
+            # We can *try* to prevent this sort of thing from happening, but I
+            # doubt this will make a difference to anyone -- and also it's kind
+            # of dependent on whatever tool is reading the metadata in the
+            # first place (if it was all read with dtype=str, then this
+            # shouldn't be a problem). So, more of a QIIME 2 problem.
             "a": [
                 "k__Bacteria",
                 "p__Bacteroidetes",
@@ -91,13 +98,6 @@ class TestCompressionUtils(unittest.TestCase):
                 "f__Bacteroidaceae",
                 "g__Bacteroides",
                 "s__uniformis",
-                 # The ".0" is due to the 0 being treated as numeric by Pandas,
-                 # since this was a numeric column in the DF. We can *try* to
-                 # prevent this sort of thing from happening, but I doubt this
-                 # will make a difference to anyone -- and also it's kind of
-                 # dependent on whatever tool is reading the metadata in the
-                 # first place (if it was all read with dtype=str, then this
-                 # shouldn't be a problem). So, more of a QIIME 2 problem.
                 "0.0"
             ]
         }
