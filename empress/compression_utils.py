@@ -185,36 +185,27 @@ def compress_sample_metadata(s_ids_to_indices, metadata):
     if sorted(s_ids_to_indices.values()) != list(range(len(sample_ids))):
         raise ValueError("Indices (values) of s_ids_to_indices are invalid.")
 
-    # Produce a dict mapping sample indices to a list of the corresponding
-    # sample's metadata values -- e.g. {1: ["gut", "413", "asdf"],
-    #                                   0: ["tongue", "612", "ghjk"], ...}.
-    # (Note that the indices are not necessarily processed in any particular
-    # order, since we're just following the sample metadata's order.)
-    indices_to_metadata_vals = {}
+    # Filter sample IDs in metadata but not in sample_ids out
+    filtered_metadata = metadata.loc[sample_ids]
 
-    def save_metadata(row):
-        sid = row.name
-        # Skip samples that are in the metadata but not in
-        # s_ids_to_indices: these correspond to empty samples
-        if sid in s_ids_to_indices:
-            indices_to_metadata_vals[s_ids_to_indices[sid]] = list(row)
+    # Rename sample IDs to indices in the metadata
+    indexed_f_metadata = filtered_metadata.rename(index=s_ids_to_indices)
 
-    # Convert the metadata values to strings
-    str_metadata = metadata.astype(str)
+    # Sort the metadata's rows by the sample indices
+    sorted_i_f_metadata = indexed_f_metadata.sort_index(
+        axis="index", ascending=True
+    )
 
-    # Now, generate that dict...
-    str_metadata.apply(save_metadata, axis="columns")
+    # Convert all of the metadata values to strings
+    str_s_i_f_metadata = sorted_i_f_metadata.astype(str)
 
-    # Although the dict we just produced is compressed, we can go further
-    # without much extra effort. We implicitly sort the indices in ascending
-    # and then smoosh the dict into a list which can be accessed the exact
-    # same way (since [0] will now refer to the first element, [1] to the
-    # second, etc.)
-    metadata_vals = []
-    for i in range(len(sample_ids)):
-        metadata_vals.append(indices_to_metadata_vals[i])
+    # Generate a 2-D list of metadata values
+    # Based on https://datatofish.com/convert-pandas-dataframe-to-list
+    sm_vals = str_s_i_f_metadata.values.tolist()
 
-    return [str(c) for c in str_metadata.columns], metadata_vals
+    sm_cols = [str(c) for c in str_s_i_f_metadata.columns]
+
+    return sm_cols, sm_vals
 
 
 def compress_feature_metadata(tip_metadata, int_metadata):
