@@ -17,6 +17,14 @@
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
 
+  <!-- The tree canvas need for use in test-empress-->
+  <div id="tree-container" class="{{ emperor_classes }}">
+    <div class="container {{ emperor_classes }}">
+      <canvas class="tree-surface" id="tree-surface">
+          Your browser does not support HTML5
+      </canvas>
+    </div>
+  </div>
 
   <script>
     QUnit.config.autostart = false;
