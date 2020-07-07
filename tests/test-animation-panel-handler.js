@@ -1,4 +1,23 @@
-require(["AnimationPanel", "Colorer"], function(AnimationPanel, Colorer) {
+require([
+    "jquery",
+    "AnimationPanel",
+    "Animator",
+    "BPTree",
+    "Empress",
+    "BiomTable",
+    "Legend",
+    "util",
+    "Colorer"],
+    function(
+        $,
+        AnimationPanel,
+        Animator,
+        BPTree,
+        Empress,
+        BiomTable,
+        Legend,
+        util,
+        Colorer) {
     module("animation-panel-handler", {
         setup: function() {
             // add test compenents to this div
@@ -19,7 +38,13 @@ require(["AnimationPanel", "Colorer"], function(AnimationPanel, Colorer) {
 
             var hideChk = document.createElement("checkbox");
             hideChk.setAttribute("id", "animate-hide-non-feature");
+            hideChk.setAttribute("value", false);
             div.appendChild(hideChk);
+
+            var lWidth = document.createElement("number");
+            lWidth.setAttribute("id", "animate-line-width");
+            lWidth.setAttribute("value", 1);
+            div.appendChild(lWidth);
 
             var startBtn = document.createElement("button");
             startBtn.setAttribute("id", "animate-start-btn");
@@ -45,14 +70,39 @@ require(["AnimationPanel", "Colorer"], function(AnimationPanel, Colorer) {
             nextFrameBtn.setAttribute("id", "animate-next-btn");
             div.appendChild(nextFrameBtn);
 
-            // create animate-panel
-            this.panel = new AnimationPanel(null);
+            // need one sample so animation-panel-handler can extract the
+            // sample fields
+            var samp = {
+                "s1": {
+                    "f1": "",
+                    "grad": "",
+                    "traj": ""
+                },
+            };
+            var biom = new BiomTable({}, samp, {});
+            var empress = new Empress({}, {}, {},{},{}, biom, [], {}, {}, null);
+            var animator = new Animator(
+                empress,
+                new Legend(
+                    document.createElement("div"),
+                    document.createElement("div"),
+                    document.createElement("div")
+                )
+            );
 
-            // same init as test-empress
+            // Note: we don't tests the click events for each button because we
+            //       are assuming the animator will behave correctly. The only
+            //       thing the click events do are call
+            //       animator/animation-panel-handler functions. Thus, if the
+            //       animation-panel-handler functions are correct, we can be
+            //       sure the click events are correct.
+
+            // create animate-panel
+            this.panel = new AnimationPanel(animator);
         },
 
         teardown: function() {
-
+            this.panel = null;
         }
     });
 
@@ -82,18 +132,47 @@ require(["AnimationPanel", "Colorer"], function(AnimationPanel, Colorer) {
         ok(!this.panel.pauseBtn.classList.contains("hidden"));
     });
 
-    // test("__resumeOptions", function() {
-    //     this.panel.__resumeOptions();
-    //     // the followinng should be hidden
-    //     ok(this.panel.startBtn.classList.contains("hidden"));
-    //     ok(this.panel.resumeBtn.classList.contains("hidden"));
-    //     ok(this.panel.prevFrameBtn.classList.contains("hidden"));
-    //     ok(this.panel.nextFrameBtn.classList.contains("hidden"));
+    test("__resumeOptions", function() {
+        // set up so that animator state machine is on first frame
+        this.panel.animator.totalFrames = 3
+        this.panel.animator.curFrame = 1;
+        this.panel.__resumeOptions();
 
-    //     // show the following buttons
-    //     ok(!this.panel.stopBtn.classList.contains("hidden"));
-    //     ok(!this.panel.pauseBtn.classList.contains("hidden"));
-    // });
+        // the followinng should be hidden
+        ok(this.panel.pauseBtn.classList.contains("hidden"));
+        ok(this.panel.startBtn.classList.contains("hidden"));
+
+        // show the following buttons
+        ok(!this.panel.stopBtn.classList.contains("hidden"));
+        ok(!this.panel.resumeBtn.classList.contains("hidden"));
+        ok(!this.panel.prevFrameBtn.classList.contains("hidden"));
+        ok(!this.panel.nextFrameBtn.classList.contains("hidden"));
+
+        // animator should be on first frame
+
+        // if animator is on first frame then prevFrameBtn should be disabled
+        // and next frame should be enabled
+        ok(this.panel.prevFrameBtn.disabled);
+        ok(!this.panel.nextFrameBtn.disabled);
+
+        // set animator to a middle frame
+        this.panel.animator.curFrame = 2;
+        this.panel.__resumeOptions();
+
+        // if animaotr is on a middle frame then prev/nextFrameBtn should
+        // be enabled
+        ok(!this.panel.prevFrameBtn.disabled);
+        ok(!this.panel.nextFrameBtn.disabled);
+
+        // set animator to last frame
+        this.panel.animator.curFrame = 3;
+        this.panel.__resumeOptions();
+
+        // if animator is on last frame then prevFrameBtn should be enabled
+        // and next frame should be disabled
+        ok(!this.panel.prevFrameBtn.disabled);
+        ok(this.panel.nextFrameBtn.disabled);
+    });
 
     test("__toogleSelects, true", function() {
         this.panel.__toogleSelects(true);
@@ -107,5 +186,43 @@ require(["AnimationPanel", "Colorer"], function(AnimationPanel, Colorer) {
         ok(!this.panel.colorSelect.disabled);
         ok(!this.panel.gradient.disabled);
         ok(!this.panel.trajectory.disabled);
+    });
+
+    test("addAnimationTab", function() {
+        this.panel.addAnimationTab();
+
+        // make sure the events were created
+        ok(this.panel.hideChk.onchange !== null);
+        ok(this.panel.lWidth.onchange !== null);
+        ok(this.panel.startBtn.onclick !== null);
+        ok(this.panel.pauseBtn.onclick !== null);
+        ok(this.panel.resumeBtn.onclick !== null);
+        ok(this.panel.stopBtn.onclick !== null);
+        ok(this.panel.prevFrameBtn.onclick !== null);
+        ok(this.panel.nextFrameBtn !== null);
+
+        // make sure an option was created for each color
+        var expectedColors = Colorer.__Colormaps;
+        var resultColors = this.panel.colorSelect.options;
+        ok(resultColors.length === expectedColors.length);
+        for (var i = 1; i < resultColors.length; i++) {
+            ok(resultColors.name === expectedColors.name)
+        }
+
+        // make sure gradient menu has an option for each sample field
+        var expectedFields = ["f1", "grad", "traj"];
+        var resultFields = this.panel.gradient.options;
+        ok(resultFields.length === expectedFields.length);
+        for (i = 0; i < resultFields.length; i++) {
+            ok(resultFields[i].value === expectedFields[i])
+        }
+
+        // make sure trajectory menu has an option for each sample field
+        expectedFields = ["f1", "grad", "traj"];
+        resultFields = this.panel.trajectory.options;
+        ok(resultFields.length === expectedFields.length);
+        for (i = 0; i < resultFields.length; i++) {
+            ok(resultFields[i].value === expectedFields[i])
+        }
     });
 });
