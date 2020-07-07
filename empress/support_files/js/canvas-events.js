@@ -171,9 +171,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 yDist = e.clientY - nY;
                 var screenDist = Math.sqrt(xDist * xDist + yDist * yDist);
                 if (screenDist < epsilon) {
-                    scope.placeNodeSelectionMenu(
-                        empress.getField(closeNode, "name", false)
-                    );
+                    scope.placeNodeSelectionMenu(closeNode.name, false);
                 }
             }
         };
