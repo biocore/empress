@@ -318,11 +318,23 @@ class TestCompressionUtils(unittest.TestCase):
         ):
             compress_feature_metadata(None, self.im)
 
+    def test_compress_feature_metadata_differing_columns(self):
+        diff_tm = self.tm.copy()
+        diff_tm.columns = range(len(self.tm.columns))
+        with self.assertRaisesRegex(
+            ValueError,
+            "Tip & int. node feature metadata columns differ."
+        ):
+            compress_feature_metadata(diff_tm, self.im)
+
+    def test_compress_feature_metadata_both_dfs_empty(self):
+        empty_tm = self.tm.filter(items=[], axis="index")
+        empty_im = self.im.filter(items=[], axis="index")
+        with self.assertRaisesRegex(
+            ValueError,
+            "Both tip & int. node feature metadata are empty."
+        ):
+            compress_feature_metadata(empty_tm, empty_im)
+
     def test_compress_feature_metadata_outputs_are_strings(self):
-        pass
-
-    def test_compress_feature_metadata_metadata_cols_differ(self):
-        pass
-
-    def test_compress_feature_metadata_both_metadata_dfs_empty(self):
         pass
