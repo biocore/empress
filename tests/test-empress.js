@@ -683,10 +683,8 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
         });
 
         test("Test getFeatureMetadataCategories", function() {
-            var expectedColumns = ["f1", "f2"];
-            var columns = util.naturalSort(
-                this.empress.getFeatureMetadataCategories());
-            deepEqual(columns, expectedColumns);
+            var columns = this.empress.getFeatureMetadataCategories();
+            deepEqual(columns, ["f1", "f2"]);
         });
 
         test("Test centerLayoutAvgPoint", function() {
