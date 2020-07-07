@@ -109,18 +109,18 @@
         var tArr = new Uint8Array({{ tree }});
         var tree = new BPTree(tArr, {{ names }});
 
-        var fmCols = {{ feature_metadata_columns }};
+        var fmCols = {{ feature_metadata_columns | tojson }};
 
         var canvas = document.getElementById('tree-surface');
 
         var biom = new BIOMTable(
-          {{ s_ids }},
-          {{ f_ids }},
-          {{ s_ids_to_indices }},
-          {{ f_ids_to_indices }},
-          {{ compressed_table }},
-          {{ sample_metadata_columns }},
-          {{ compressed_sample_metadata }},
+          {{ s_ids | tojson }},
+          {{ f_ids | tojson }},
+          {{ s_ids_to_indices | tojson }},
+          {{ f_ids_to_indices | tojson }},
+          {{ compressed_table | tojson }},
+          {{ sample_metadata_columns | tojson }},
+          {{ compressed_sample_metadata | tojson }},
         );
         var empress = new Empress(
             tree,
