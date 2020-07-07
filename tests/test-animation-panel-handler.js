@@ -21,54 +21,54 @@ require([
     module("animation-panel-handler", {
         setup: function() {
             // add test compenents to this div
-            var div = document.getElementById("test-div");
+            this.div = document.getElementById("test-div");
 
             // setup all GUI components
             var colorSelect = document.createElement("select");
             colorSelect.setAttribute("id", "animate-color-select");
-            div.appendChild(colorSelect);
+            this.div.appendChild(colorSelect);
 
             var gradient = document.createElement("select");
             gradient.setAttribute("id", "animate-gradient");
-            div.appendChild(gradient);
+            this.div.appendChild(gradient);
 
             var trajectory = document.createElement("select");
             trajectory.setAttribute("id", "animate-trajectory");
-            div.appendChild(trajectory);
+            this.div.appendChild(trajectory);
 
             var hideChk = document.createElement("checkbox");
             hideChk.setAttribute("id", "animate-hide-non-feature");
             hideChk.setAttribute("value", false);
-            div.appendChild(hideChk);
+            this.div.appendChild(hideChk);
 
             var lWidth = document.createElement("number");
             lWidth.setAttribute("id", "animate-line-width");
             lWidth.setAttribute("value", 1);
-            div.appendChild(lWidth);
+            this.div.appendChild(lWidth);
 
             var startBtn = document.createElement("button");
             startBtn.setAttribute("id", "animate-start-btn");
-            div.appendChild(startBtn);
+            this.div.appendChild(startBtn);
 
             var stopBtn = document.createElement("button");
             stopBtn.setAttribute("id", "animate-stop-btn");
-            div.appendChild(stopBtn);
+            this.div.appendChild(stopBtn);
 
             var pauseBtn = document.createElement("button");
             pauseBtn.setAttribute("id", "animate-pause-btn");
-            div.appendChild(pauseBtn);
+            this.div.appendChild(pauseBtn);
 
             var resumeBtn = document.createElement("button");
             resumeBtn.setAttribute("id", "animate-resume-btn");
-            div.appendChild(resumeBtn);
+            this.div.appendChild(resumeBtn);
 
             var prevFrameBtn = document.createElement("button");
             prevFrameBtn.setAttribute("id", "animate-prev-btn");
-            div.appendChild(prevFrameBtn);
+            this.div.appendChild(prevFrameBtn);
 
             var nextFrameBtn = document.createElement("button");
             nextFrameBtn.setAttribute("id", "animate-next-btn");
-            div.appendChild(nextFrameBtn);
+            this.div.appendChild(nextFrameBtn);
 
             // need one sample so animation-panel-handler can extract the
             // sample fields
@@ -103,6 +103,9 @@ require([
 
         teardown: function() {
             this.panel = null;
+            while (this.div.firstChild) {
+                this.div.removeChild(this.div.firstChild);
+            }
         }
     });
 
