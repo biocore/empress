@@ -64,6 +64,7 @@ class TestCompressionUtils(unittest.TestCase):
         )
 
     def test_compress_table_1_empty_sample_and_feature(self):
+        # Test the "basic" case, just looking at our default data.
         table_copy = self.table.copy()
         s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(table_copy)
 
@@ -194,6 +195,7 @@ class TestCompressionUtils(unittest.TestCase):
             compress_table(diff_table)
 
     def test_compress_sample_metadata_1_missing_sm_sample_nonstr_vals(self):
+        # Test the "basic" case, just looking at our default data.
         sm_copy = self.sm.copy()
         sid2idx_copy = deepcopy(self.sid2idx)
         sm_cols, sm_vals = compress_sample_metadata(sid2idx_copy, sm_copy)
@@ -299,6 +301,85 @@ class TestCompressionUtils(unittest.TestCase):
         diff_sid2idx["Sample3"] = 3
         verify_fails_due_to_sid2idx(diff_sid2idx)
 
+    def test_compress_feature_metadata_tip_and_int_nonstr_vals(self):
+        # Test the "basic" case, just looking at our default data.
+        tm_copy = self.tm.copy()
+        im_copy = self.im.copy()
+        fm_cols, ctm, cim = compress_feature_metadata(tm_copy, im_copy)
+
+        # As with compress_table(), verify that the inputs were left untouched.
+        assert_frame_equal(tm_copy, self.tm)
+        assert_frame_equal(im_copy, self.im)
+
+        self.assertEqual(
+            fm_cols,
+            [
+                "Level 1",
+                "Level 2",
+                "Level 3",
+                "Level 4",
+                "Level 5",
+                "Level 6",
+                "Level 7",
+                "Confidence"
+            ]
+        )
+
+        exp_tm = {
+            "e": [
+                "k__Bacteria",
+                "p__Bacteroidetes",
+                "c__Bacteroidia",
+                "o__Bacteroidales",
+                "f__Bacteroidaceae",
+                "g__Bacteroides",
+                "s__",
+                "0.95"
+            ],
+            "a": [
+                "k__Bacteria",
+                "p__Bacteroidetes",
+                "c__Bacteroidia",
+                "o__Bacteroidales",
+                "f__Bacteroidaceae",
+                "g__Bacteroides",
+                "s__uniformis",
+                 # The ".0" is due to the 0 being treated as numeric by Pandas,
+                 # since this was a numeric column in the DF. We can *try* to
+                 # prevent this sort of thing from happening, but I doubt this
+                 # will make a difference to anyone -- and also it's kind of
+                 # dependent on whatever tool is reading the metadata in the
+                 # first place (if it was all read with dtype=str, then this
+                 # shouldn't be a problem). So, more of a QIIME 2 problem.
+                "0.0"
+            ]
+        }
+        self.assertEqual(ctm, exp_tm)
+
+        exp_im = {
+            "h": [
+                "k__Bacteria",
+                "p__Proteobacteria",
+                "c__Gammaproteobacteria",
+                "o__Pasteurellales",
+                "f__Pasteurellaceae",
+                "g__",
+                "s__",
+                "0.8"
+            ],
+            "m": [
+                "k__Archaea",
+                "Unspecified",
+                "Unspecified",
+                "Unspecified",
+                "Unspecified",
+                "Unspecified",
+                "Unspecified",
+                "1.0"
+            ]
+        }
+        self.assertEqual(cim, exp_im)
+
     def test_compress_feature_metadata_both_dfs_nones(self):
         fm_cols, tm, im = compress_feature_metadata(None, None)
         self.assertEqual(fm_cols, [])
@@ -335,6 +416,3 @@ class TestCompressionUtils(unittest.TestCase):
             "Both tip & int. node feature metadata are empty."
         ):
             compress_feature_metadata(empty_tm, empty_im)
-
-    def test_compress_feature_metadata_outputs_are_strings(self):
-        pass

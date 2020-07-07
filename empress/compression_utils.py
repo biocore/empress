@@ -189,11 +189,13 @@ def compress_sample_metadata(s_ids_to_indices, metadata):
         # Skip samples that are in the metadata but not in
         # s_ids_to_indices: these correspond to empty samples
         if sid in s_ids_to_indices:
-            # Convert the metadata values to strings
-            str_vals = [str(v) for v in row]
-            indices_to_metadata_vals[s_ids_to_indices[sid]] = str_vals
+            indices_to_metadata_vals[s_ids_to_indices[sid]] = list(row)
 
-    metadata.apply(save_metadata, axis="columns")
+    # Convert the metadata values to strings
+    str_metadata = metadata.astype(str)
+
+    # Now, generate that dict...
+    str_metadata.apply(save_metadata, axis="columns")
 
     # Although the dict we just produced is compressed, we can go further
     # without much extra effort. We implicitly sort the indices in ascending
@@ -204,7 +206,7 @@ def compress_sample_metadata(s_ids_to_indices, metadata):
     for i in range(len(sample_ids)):
         metadata_vals.append(indices_to_metadata_vals[i])
 
-    return [str(c) for c in metadata.columns], metadata_vals
+    return [str(c) for c in str_metadata.columns], metadata_vals
 
 
 def compress_feature_metadata(tip_metadata, int_metadata):
@@ -288,7 +290,10 @@ def compress_feature_metadata(tip_metadata, int_metadata):
     # orient="list" option -- however, orient="list" uses column-major order,
     # so we transpose the metadata DFs before calling to_dict() in order to
     # make sure our dicts are in row-major order (i.e. feature IDs are keys).
-    compressed_tm = tip_metadata.T.to_dict(orient="list")
-    compressed_im = int_metadata.T.to_dict(orient="list")
+    #
+    # (Also, while we're at it, we make sure that both DFs' values are all
+    # converted to strings.)
+    compressed_tm = tip_metadata.astype(str).T.to_dict(orient="list")
+    compressed_im = int_metadata.astype(str).T.to_dict(orient="list")
 
     return fm_cols, compressed_tm, compressed_im
