@@ -11,6 +11,7 @@ import pandas as pd
 import skbio
 from skbio import TreeNode
 from empress import taxonomy_utils
+from empress.tree import bp_tree_tips, bp_tree_non_tips
 from itertools import zip_longest
 
 
@@ -55,7 +56,7 @@ def read(file_name, file_format='newick'):
 
 
 def match_inputs(
-    tree,
+    bp_tree,
     table,
     sample_metadata,
     feature_metadata=None,
@@ -72,7 +73,7 @@ def match_inputs(
     Parameters
     ----------
 
-    tree: empress.tree.Tree
+    bp_tree: bp.BP
         The tree to be visualized.
     table: pd.DataFrame
         Representation of the feature table. The index should describe feature
@@ -145,7 +146,7 @@ def match_inputs(
     # Match table and tree.
     # (Ignore None-named tips in the tree, which will be replaced later on
     # with "default" names like "EmpressNode0".)
-    tip_names = set([n.name for n in tree.tips() if n.name is not None])
+    tip_names = set(bp_tree_tips(bp_tree))
     tree_and_table_features = table.index.intersection(tip_names)
 
     if len(tree_and_table_features) == 0:
@@ -260,9 +261,7 @@ def match_inputs(
         tip_metadata = ts_feature_metadata.loc[fm_and_tip_features]
 
         # Subset internal node metadata
-        internal_node_names = set([
-            n.name for n in tree.non_tips(include_self=True)
-        ])
+        internal_node_names = set(bp_tree_non_tips(bp_tree))
         fm_and_int_features = fm_ids.intersection(internal_node_names)
         int_metadata = ts_feature_metadata.loc[fm_and_int_features]
 
