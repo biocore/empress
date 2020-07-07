@@ -9,7 +9,9 @@ from copy import deepcopy
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from empress.compression_utils import compress_table, compress_sample_metadata
+from empress.compression_utils import (
+    compress_table, compress_sample_metadata, compress_feature_metadata
+)
 
 
 class TestCompressionUtils(unittest.TestCase):
@@ -297,8 +299,24 @@ class TestCompressionUtils(unittest.TestCase):
         diff_sid2idx["Sample3"] = 3
         verify_fails_due_to_sid2idx(diff_sid2idx)
 
-    def test_compress_feature_metadata_basic(self):
-        pass
+    def test_compress_feature_metadata_both_dfs_nones(self):
+        fm_cols, tm, im = compress_feature_metadata(None, None)
+        self.assertEqual(fm_cols, [])
+        self.assertEqual(tm, {})
+        self.assertEqual(im, {})
+
+    def test_compress_feature_metadata_only_one_df_is_none(self):
+        with self.assertRaisesRegex(
+            ValueError,
+            "Only one of tip & int. node feature metadata is None."
+        ):
+            compress_feature_metadata(self.tm, None)
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "Only one of tip & int. node feature metadata is None."
+        ):
+            compress_feature_metadata(None, self.im)
 
     def test_compress_feature_metadata_outputs_are_strings(self):
         pass

@@ -267,7 +267,7 @@ def compress_feature_metadata(tip_metadata, int_metadata):
     # *This* should never happen. If it did, it's a sign that this function is
     # being misused. (The ^ is a logical XOR; see
     # https://stackoverflow.com/a/432844/10730311.)
-    if tip_metadata is None ^ int_metadata is None:
+    if (tip_metadata is None) ^ (int_metadata is None):
         raise ValueError(
             "Only one of tip & int. node feature metadata is None."
         )
