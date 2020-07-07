@@ -191,7 +191,7 @@ class TestCompressionUtils(unittest.TestCase):
         ):
             compress_table(diff_table)
 
-    def test_compress_sample_metadata_numeric_values_1_missing_sample(self):
+    def test_compress_sample_metadata_1_missing_sm_sample_nonstr_vals(self):
         sm_copy = self.sm.copy()
         sid2idx_copy = deepcopy(self.sid2idx)
         sm_cols, sm_vals = compress_sample_metadata(sid2idx_copy, sm_copy)
@@ -222,16 +222,52 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         )
 
-    def test_compress_sample_metadata_outputs_are_strings(self):
-        pass
+    def test_compress_sample_metadata_nonstr_columns(self):
+        diff_sm = self.sm.copy()
+        diff_sm.columns = [100, 200, 'asdf', 2.5]
+        sm_cols, sm_vals = compress_sample_metadata(self.sid2idx, diff_sm)
+        # Main thing: check that the columns were converted to strings
+        self.assertEqual(sm_cols, ["100", "200", "asdf", "2.5"])
+        # (Also check that this didn't mess up the values for some reason)
+        self.assertEqual(
+            sm_vals,
+            [
+                ["0", "0", "1", "abc"],  # Sample1's metadata
+                ["0", "0", "2", "def"],  # Sample2's metadata
+                ["0", "0", "3", "ghi"]   # Sample3's metadata
+            ]
+        )
 
-    def test_compress_sample_metadata_mapping_missing_samples(self):
-        # shouldn't be a problem
-        pass
+    def test_compress_sample_metadata_no_missing_samples(self):
+        # Simulate an alternate timeline where Sample4 isn't all 0s
+        sid2idx_copy = deepcopy(self.sid2idx)
+        sid2idx_copy["Sample4"] = 3
+        sm_cols, sm_vals = compress_sample_metadata(sid2idx_copy, self.sm)
+        self.assertEqual(
+            sm_cols, ["Metadata1", "Metadata2", "Metadata3", "Metadata4"]
+        )
+        self.assertEqual(
+            sm_vals,
+            [
+                ["0", "0", "1", "abc"],  # Sample1's metadata
+                ["0", "0", "2", "def"],  # Sample2's metadata
+                ["0", "0", "3", "ghi"],  # Sample3's metadata
+                ["1", "0", "4", "jkl"]   # Sample4's metadata :O
+            ]
+        )
 
-    def test_compress_sample_metadata_metadata_missing_samples(self):
-        # is definitely a problem
-        pass
+    def test_compress_sample_metadata_missing_sid2idx_sample(self):
+        # If the metadata is missing samples described in sid2idx, that's bad!
+        # ...And also probably impossible, unless someone messes up the code :P
+
+        # Subset the sample metadata to remove Sample1
+        diff_sm = self.sm.copy()
+        diff_sm = diff_sm.loc[["Sample2", "Sample3", "Sample4"]]
+        with self.assertRaisesRegex(
+            ValueError,
+            "Metadata is missing sample IDs in s_ids_to_indices."
+        ):
+            compress_sample_metadata(self.sid2idx, diff_sm)
 
     def test_compress_feature_metadata_basic(self):
         pass

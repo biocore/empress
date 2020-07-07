@@ -170,7 +170,9 @@ def compress_sample_metadata(s_ids_to_indices, metadata):
         # latter during table compression). If the metadata's samples are
         # instead *missing* samples that are in s_ids_to_indices,
         # something is seriously wrong.
-        raise ValueError("Metadata is missing sample IDs.")
+        raise ValueError(
+            "Metadata is missing sample IDs in s_ids_to_indices."
+        )
 
     if sorted(s_ids_to_indices.values()) != list(range(len(sample_ids))):
         raise ValueError("Values of s_ids_to_indices are invalid.")
