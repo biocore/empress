@@ -174,15 +174,15 @@ require([
         ok(this.panel.nextFrameBtn.disabled);
     });
 
-    test("__toogleSelects, true", function() {
-        this.panel.__toogleSelects(true);
+    test("_toggleSelects, true", function() {
+        this.panel._toggleSelects(true);
         ok(this.panel.colorSelect.disabled);
         ok(this.panel.gradient.disabled);
         ok(this.panel.trajectory.disabled);
     });
 
-    test("__toogleSelects, false", function() {
-        this.panel.__toogleSelects(false);
+    test("_toggleSelects, false", function() {
+        this.panel._toggleSelects(false);
         ok(!this.panel.colorSelect.disabled);
         ok(!this.panel.gradient.disabled);
         ok(!this.panel.trajectory.disabled);
