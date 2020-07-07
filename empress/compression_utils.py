@@ -68,51 +68,35 @@ def compress_table(table):
     # above)
     binarized_table = (filtered_table > 0)
 
-    # We set up the feature ID/index variables in advance of going through the
-    # samples in the table.
+    # We set up the ID/index variables based on whatever the current order of
+    # samples / features in the table's columns / indices is.
     feature_ids = list(binarized_table.index)
     f_ids_to_indices = {fid: idx for idx, fid in enumerate(feature_ids)}
 
-    # We'll populate the sample ID/index variables as we go through the table's
-    # samples. We *could* do this up front, analogously to how we set up the
-    # feature variables, but we don't -- this is a safety net in case the order
-    # of samples visited in binarized_table.apply() would not match up with
-    # the order of binarized_table.columns (I don't *think* that should be the
-    # case, but I don't see any explicit specification of this on pandas'
-    # documentation -- so better to be safe IMO.)
-    sample_ids = []
-    s_ids_to_indices = {}
+    sample_ids = list(binarized_table.columns)
+    s_ids_to_indices = {sid: idx for idx, sid in enumerate(sample_ids)}
+
+    indexed_b_table = binarized_table.rename(
+        index=f_ids_to_indices, columns=s_ids_to_indices
+    )
 
     compressed_table = []
-    sidx = 0
 
-    def save_present_features(sample_column):
-        nonlocal sidx
-        # Get a list of all feature IDs present in this sample
+    def populate_compressed_table(sample_column):
+        # Get a list of all feature indices present in this sample
         # (This works because we've binarized the table, i.e. its entries are
-        # booleans)
-        present_feature_ids = list(sample_column[sample_column].index)
-
-        # Convert this to a list of feature indices. This list should be sorted
-        # so that feature indices are in ascending order by default, since
-        # we assigned feature indices by iterating through the table.
-        present_feature_indices = [
-            f_ids_to_indices[fid] for fid in present_feature_ids
-        ]
+        # booleans; and because we replaced feature IDs with feature indices.)
+        present_feature_indices = list(sample_column[sample_column].index)
 
         # Add this feature presence information to compressed_table.
         compressed_table.append(present_feature_indices)
-        # And update sample_ids and s_ids_to_indices accordingly.
-        sample_ids.append(sample_column.name)
-        s_ids_to_indices[sample_column.name] = sidx
-        sidx += 1
 
         # We don't return anything -- this function's only purpose is to cause
         # side effects within the scope of compress_table(). This is... kind
         # of a cursed way of using df.apply() but it works, and it should be
         # decently efficient since .apply() is faster than most iteration \._./
 
-    binarized_table.apply(save_present_features, axis="index")
+    indexed_b_table.apply(populate_compressed_table, axis="index")
 
     return (
         sample_ids, feature_ids, s_ids_to_indices, f_ids_to_indices,
