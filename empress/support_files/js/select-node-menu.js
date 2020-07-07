@@ -3,11 +3,6 @@ define(["underscore", "util"], function (_, util) {
         this.empress = empress;
         this.drawer = drawer;
         this.fields = [];
-        this.TYPES = {
-            TREE_DATA: "t",
-            SAMPLE_DATA: "s",
-            FEATRUE_DATA: "f",
-        };
         this.smTable = document.getElementById("menu-sm-table");
         this.box = document.getElementById("menu-box");
         this.sel = document.getElementById("menu-select");
