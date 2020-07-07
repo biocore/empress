@@ -298,6 +298,10 @@ def shifting(bitlist, size=51):
     References
     ----------
     Borrowed from https://stackoverflow.com/a/12461400
+
+    Example
+    -------
+    shifting([1, 0, 0, 0, 0, 1], size=3) => [4, 1]
     """
     if not all(x in [0, 1] for x in bitlist):
         raise ValueError('Your list has values other than 0-1s')

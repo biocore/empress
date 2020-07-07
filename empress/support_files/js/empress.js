@@ -89,11 +89,6 @@ define([
          */
         this._tree = tree;
         this._numTips = 0;
-        for (var i = 0; i < this._tree.size; i++) {
-            if (this._tree.isleaf(this._tree.postorderselect(i))) {
-                this._numTips++;
-            }
-        }
 
         /**
          * @type {Object}
@@ -104,6 +99,17 @@ define([
          * @private
          */
         this._treeData = treeData;
+
+        // count number of tips and set default color/visible
+        // Note: currently empress tree uses 1-based index since the bp-tree
+        //       bp-tree.js is based off of used 1-based index.
+        for (var i = 1; i <= this._tree.size; i++) {
+            this._treeData[i].color = this.DEFAULT_COLOR;
+            this._treeData[i].visible = true;
+            if (this._tree.isleaf(this._tree.postorderselect(i))) {
+                this._numTips++;
+            }
+        }
 
         /**
          * @type{Object}

@@ -5,7 +5,7 @@ define(["ByteArray"], function (ByteArray) {
      *
      * Initialzes a new BP tree.
      *
-     * @param {Uint8Array} b The array that represents the tree structure
+     * @param {Array} b The array that represents the tree structure
      * @param {Array} names The names of each node stored in preorder
      * @param {Array} lengths The lengths of each node stored in preorder
      * @param {Number} coding The number of 1/0s coded in the tree, null not coded
@@ -47,7 +47,7 @@ define(["ByteArray"], function (ByteArray) {
         }
 
         /**
-         * @type {Uint8Array}
+         * @type {Array}
          * Used to store the structure of the tree
          * @private
          */
