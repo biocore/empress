@@ -269,6 +269,34 @@ class TestCompressionUtils(unittest.TestCase):
         ):
             compress_sample_metadata(self.sid2idx, diff_sm)
 
+    def test_compress_sample_metadata_sid2idx_indices_invalid(self):
+        # We try a couple different "configurations" of sid2idx, so to simplify
+        # things we use this utility function to test that the compression
+        # errors out as expected.
+        def verify_fails_due_to_sid2idx(sid2idx):
+            with self.assertRaisesRegex(
+                ValueError,
+                r"Indices \(values\) of s_ids_to_indices are invalid."
+            ):
+                compress_sample_metadata(sid2idx, self.sm)
+
+        diff_sid2idx = deepcopy(self.sid2idx)
+
+        diff_sid2idx["Sample1"] = 1
+        verify_fails_due_to_sid2idx(diff_sid2idx)
+
+        diff_sid2idx["Sample1"] = 4
+        verify_fails_due_to_sid2idx(diff_sid2idx)
+
+        diff_sid2idx["Sample1"] = -1
+        verify_fails_due_to_sid2idx(diff_sid2idx)
+
+        # Test that 1-indexing isn't allowed...
+        diff_sid2idx["Sample1"] = 1
+        diff_sid2idx["Sample2"] = 2
+        diff_sid2idx["Sample3"] = 3
+        verify_fails_due_to_sid2idx(diff_sid2idx)
+
     def test_compress_feature_metadata_basic(self):
         pass
 

@@ -175,7 +175,7 @@ def compress_sample_metadata(s_ids_to_indices, metadata):
         )
 
     if sorted(s_ids_to_indices.values()) != list(range(len(sample_ids))):
-        raise ValueError("Values of s_ids_to_indices are invalid.")
+        raise ValueError("Indices (values) of s_ids_to_indices are invalid.")
 
     # Produce a dict mapping sample indices to a list of the corresponding
     # sample's metadata values -- e.g. {1: ["gut", "413", "asdf"],
