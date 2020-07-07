@@ -195,7 +195,7 @@ define(["underscore", "util"], function (_, util) {
      *
      * @return {boolean} true if num is present in arr, false otherwise
      */
-    BIOMTable.prototype._sortedArrayHasNumber = function(arr, num) {
+    BIOMTable.prototype._sortedArrayHasNumber = function (arr, num) {
         return _.indexOf(arr, num, true) >= 0;
     };
 
@@ -405,13 +405,19 @@ define(["underscore", "util"], function (_, util) {
             return scope._getFeatureIndexFromID(fID);
         });
 
+        // Helper function: returns true if there is an intersection
+        // between a sample's present feature indices (a sorted array)
+        // and fIndices.
+        var sampleHasMatch = function (presentFeatureIndices) {
+            return _.some(fIndices, function (fIdx) {
+                return scope._sortedArrayHasNumber(presentFeatureIndices, fIdx);
+            });
+        };
+
         // Now, we can go through the table and find samples with matches
         var containingSampleIDs = [];
         _.each(this._tbl, function (presentFeatureIndices, sIdx) {
-            var sampleHasMatch = _.some(fIndices, function (fIdx) {
-                return scope._sortedArrayHasNumber(presentFeatureIndices, fIdx);
-            });
-            if (sampleHasMatch) {
+            if (sampleHasMatch(presentFeatureIndices)) {
                 containingSampleIDs.push(scope._sIDs[sIdx]);
             }
         });
