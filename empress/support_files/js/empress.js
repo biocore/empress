@@ -90,7 +90,6 @@ define([
         this._tree = tree;
         this._numTips = 0;
 
-
         /**
          * @type {Object}
          * The metadata associated with the tree branches
