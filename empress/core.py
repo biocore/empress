@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from empress.tree import Tree
-from empress.tools import fill_missing_node_names, match_inputs
+from empress.tools import fill_missing_node_names, match_inputs, shifting
 
 import pkg_resources
 import os
@@ -104,7 +104,7 @@ class Empress():
 
         self.base_url = resource_path
         if self.base_url is None:
-            self.base_url = './'
+            self.base_url = 'support_files'
 
         self._validate_and_match_data(
             ignore_missing_samples,
@@ -304,8 +304,8 @@ class Empress():
             obs_data[series.name] = sample_ids
 
         data_to_render = {
-            'base_url': './support_files',
-            'tree': self._bp_tree,
+            'base_url': self.base_url,
+            'tree': shifting(self._bp_tree),
             'tree_data': tree_data,
             'names_to_keys': names_to_keys,
             'sample_data': sample_data,

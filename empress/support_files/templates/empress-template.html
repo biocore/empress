@@ -109,8 +109,7 @@
                  Colorer, VectorOps, SummaryHelper, CanvasEvents,
                  SelectedNodeMenu, util) {
         // initialze the tree and model
-        var tArr = new Uint8Array({{ tree }});
-        var tree = new BPTree(tArr, {{ names }});
+        var tree = new BPTree({{ tree }}, {{ names }});
 
         var fmCols = {{ feature_metadata_columns }};
 

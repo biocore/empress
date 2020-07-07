@@ -8,7 +8,8 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 // tree comes from the following newick string
                 // ((1,(2,3)4)5,6)7;
                 var tree = new BPTree(
-                    new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]));
+                    new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]),
+                    null, null, null);
                 var layoutToCoordSuffix = {
                     "Rectangular": "r",
                     "Circular": "c2",
