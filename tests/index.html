@@ -17,6 +17,9 @@
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
 
+  <!-- add any test GUI components to this div-->
+  <div id="test-div"></div>
+
   <!-- The tree canvas need for use in test-empress-->
   <div id="tree-container" class="{{ emperor_classes }}">
     <div class="container {{ emperor_classes }}">
@@ -42,6 +45,8 @@
           'underscore' : './support_files/vendor/underscore-min',
 
           /* succinct tree paths */
+          'AnimationPanel': './support_files/js/animation-panel-handler',
+          'Animator': './support_files/js/animator',
           'ByteArray': './support_files/js/byte-array',
           'BPTree' : './support_files/js/bp-tree',
           'Camera' : './support_files/js/camera',
@@ -50,6 +55,7 @@
           'SummaryHelper': './support_files/js/summary-helper',
           'util' : './support_files/js/util',
           'Empress' : './support_files/js/empress',
+          'Legend': './support_files/js/legend',
           'Drawer' : './support_files/js/drawer',
           'VectorOps' : './support_files/js/vector-ops',
           'CanvasEvents' : './support_files/js/canvas-events',
@@ -65,23 +71,70 @@
           'testUtil' : './../tests/test-util',
           'testCircularLayoutComputation' : './../tests/test-circular-layout-computation',
           'testVectorOps' : './../tests/test-vector-ops',
-          'testEmpress' : './../tests/test-empress'
+          'testEmpress' : './../tests/test-empress',
+          'testAnimationHandler': './../tests/test-animation-panel-handler'
         }
     });
 
     // load tests
     require(
-        ['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray', 'BPTree',
-         'Camera', 'Colorer', 'BiomTable', 'SummaryHelper', 'util', 'Empress',
-         'testBPTree', 'testByteTree', 'testBIOMTable', 'testCamera',
-         'testColorer', 'testSummaryHelper', 'testUtil',
-         'testCircularLayoutComputation', 'testVectorOps', 'testEmpress'],
+        ['jquery',
+         'glMatrix',
+         'chroma',
+         'underscore',
+         'AnimationPanel',
+         'Animator',
+         'ByteArray',
+         'BPTree',
+         'Camera',
+         'Colorer',
+         'BiomTable',
+         'SummaryHelper',
+         'util',
+         'Empress',
+         'Legend',
+         'testBPTree',
+         'testByteTree',
+         'testBIOMTable',
+         'testCamera',
+         'testColorer',
+         'testSummaryHelper',
+         'testUtil',
+         'testCircularLayoutComputation',
+         'testVectorOps',
+         'testEmpress',
+         'testAnimationHandler'
+         ],
 
         // start tests
-        function ($, gl, chroma, underscore, ByteArray, BPTree, Camera,
-          testBIOMTable, Colorer, BiomTable, SummaryHelper, util, Empress,
-          testBPTree, testByteTree, testCamera, testColorer, testSummaryHelper,
-          testUtil, testCircularLayoutComputation, testVectorOps, testEmpress) {
+        function (
+          $,
+          gl,
+          chroma,
+          underscore,
+          AnimationPanel,
+          Animator,
+          ByteArray,
+          BPTree,
+          Camera,
+          testBIOMTable,
+          Colorer,
+          BiomTable,
+          SummaryHelper,
+          util,
+          Empress,
+          Legend,
+          testBPTree,
+          testByteTree,
+          testCamera,
+          testColorer,
+          testSummaryHelper,
+          testUtil,
+          testCircularLayoutComputation,
+          testVectorOps,
+          testEmpress,
+          testAnimationHandler
+        ) {
             $(document).ready(function() {
                 QUnit.start();
             });
