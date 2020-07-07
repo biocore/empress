@@ -94,8 +94,8 @@ require([
             //       are assuming the animator will behave correctly. The only
             //       thing the click events do are call
             //       animator/animation-panel-handler functions. Thus, if the
-            //       animation-panel-handler functions are correct, we can be
-            //       sure the click events are correct.
+            //       animation-panel-handler functions are correct, we can
+            //       assume the click events are correct.
 
             // create animate-panel
             this.panel = new AnimationPanel(animator);

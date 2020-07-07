@@ -635,3 +635,64 @@ class Tree(TreeNode):
             max_y, min_y = max(max_y, y2), min(min_y, y2)
 
         return (max_x, min_x, max_y, min_y)
+
+
+def bp_tree_tips(bp_tree):
+    """ Extracts tip names in the tree, ignoring unnamed tips.
+
+    Parameters
+    ----------
+    bp_tree : bp.BP
+        Input BP tree
+    Returns
+    -------
+    tips : list of strings
+        list of tip names in the tree
+    """
+    tips = []
+    # Iterate through all open and closing parentheses and extract tip names
+    for i in range(bp_tree.B.size):
+        pos_name = bp_tree.name(i)
+        # Check if this is a leaf node with a label
+        if isleaf(bp_tree, i) and (pos_name is not None):
+            tips.append(pos_name)
+    return tips
+
+
+def bp_tree_non_tips(bp_tree):
+    """ Extracts internal node names in the tree, ignoring unnamed nodes.
+
+       Parameters
+       ----------
+       bp_tree : bp.BP
+           Input BP tree
+       Returns
+       -------
+       non_tips : list of strings
+           list of internal node names in the tree
+    """
+    non_tips = []
+    for i in range(bp_tree.B.size):
+        pos_name = bp_tree.name(i)
+        # Check if this is an opening parenthesis, is not a leaf, and
+        # has a node label
+        if bp_tree.B[i] and not isleaf(bp_tree, i) and pos_name is not None:
+            non_tips.append(pos_name)
+    return non_tips
+
+
+def isleaf(bp_tree, i):
+    """ Checks if node at position i belongs to a leaf node or not
+
+        Parameters
+       ----------
+       bp_tree : bp.BP
+           Input BP tree
+        i : int
+           The query node index
+       Returns
+       -------
+       bool
+           True if this is a leaf node, False otherwise
+    """
+    return bp_tree.B[i] and (not bp_tree.B[i + 1])
