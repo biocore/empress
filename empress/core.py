@@ -216,37 +216,62 @@ class Empress():
         # TODO: figure out implications of screen size
         layout_to_coordsuffix, default_layout = self.tree.coords(4020, 4020)
 
-        tree_data = {}
+        # Note: tree_data starts with index 1 because the bp tree uses 1 based
+        # indexing
+        tree_data = [None] * (self.tree.count() + 1);
         names_to_keys = {}
+
+        # all nodes have everything upto "yc0". non-root internal nodes
+        # have everythin and root node has everything upto lowestchildyr
+        tree_lookup = {
+            "name": 0,
+            "x2": 1, "y2": 2, # unrooted x, y
+            "xr": 3, "yr": 4, # recangular x, y
+            "xc1": 5, "yc1": 6, # circular x, y
+            "xc0": 7, "yc0": 8, # circular start position
+            "highestchildyr": 9, "lowestchildyr": 10, # rectangular info
+            "arcx0": 11, "arcy0": 12, # arc start
+            "arcstartangle": 13, "arcendangle": 14 # arc angle info
+        }
+        tip_node_size = 9
+        non_root_size = tip_node_size + 6
+        root_node_size = tip_node_size + 2
         # Note: tree_data starts with index 1 because the bp tree uses 1 based
         # indexing
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
-            tree_data[i] = {
-                'name': node.name,
-            }
+            # create array for node
+            if not node.is_tip() and not node.is_root():
+                tree_data[i] = [None] * non_root_size
+            elif not node.is_tip():
+                tree_data[i] = [None] * root_node_size
+            else:
+                tree_data[i] = [None] * tip_node_size
+            td = tree_data[i]
+
+            td[tree_lookup["name"]] = node.name
             # Add coordinate data from all layouts for this node
             for layoutsuffix in layout_to_coordsuffix.values():
                 xcoord = "x" + layoutsuffix
                 ycoord = "y" + layoutsuffix
-                tree_data[i][xcoord] = getattr(node, xcoord)
-                tree_data[i][ycoord] = getattr(node, ycoord)
+                td[tree_lookup[xcoord]] = getattr(node, xcoord)
+                td[tree_lookup[ycoord]] = getattr(node, ycoord)
             # Hack: it isn't mentioned above, but we need start pos info for
             # circular layout. The start pos for the other layouts is the
             # parent xy coordinates so we need only need to specify the start
             # for circular layout.
-            tree_data[i]["xc0"] = node.xc0
-            tree_data[i]["yc0"] = node.yc0
+            td[tree_lookup["xc0"]] = node.xc0
+            td[tree_lookup["yc0"]] = node.yc0
 
             # Also add vertical bar coordinate info for the rectangular layout,
             # and start point & arc coordinate info for the circular layout
             if not node.is_tip():
-                tree_data[i]["highestchildyr"] = node.highest_child_yr
-                tree_data[i]["lowestchildyr"] = node.lowest_child_yr
+                td[tree_lookup["highestchildyr"]] = node.highest_child_yr
+                td[tree_lookup["lowestchildyr"]] = node.lowest_child_yr
                 if not node.is_root():
-                    tree_data[i]["arcx0"] = node.arcx0
-                    tree_data[i]["arcy0"] = node.arcy0
-                    tree_data[i]["arcstartangle"] = node.highest_child_clangle
-                    tree_data[i]["arcendangle"] = node.lowest_child_clangle
+                    td[tree_lookup["arcx0"]] = node.arcx0
+                    td[tree_lookup["arcy0"]] = node.arcy0
+                    td[tree_lookup["arcstartangle"]] = node.highest_child_clangle
+                    td[tree_lookup["arcendangle"]] = node.lowest_child_clangle
 
             if node.name in names_to_keys:
                 names_to_keys[node.name].append(i)
@@ -307,6 +332,7 @@ class Empress():
             'base_url': './support_files',
             'tree': self._bp_tree,
             'tree_data': tree_data,
+            'tree_lookup': tree_lookup,
             'names_to_keys': names_to_keys,
             'sample_data': sample_data,
             'sample_data_type': sample_data_type,

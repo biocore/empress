@@ -124,6 +124,7 @@
         var empress = new Empress(
             tree,
             {{ tree_data | tojson }},
+            {{ tree_lookup | tojson}},
             {{ names_to_keys | tojson }},
             {{ layout_to_coordsuffix | tojson }},
             '{{ default_layout }}',
