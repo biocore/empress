@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+
 def compress_table(table):
     """Converts a feature table to a space-saving format.
 
