@@ -148,6 +148,9 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 var closestDist = Infinity;
                 var closestNode = null;
                 var xDist, yDist;
+                var closeNodeKey;
+                // Go through all the nodes in the tree and find the node
+                // closest to the (x, y) point that was clicked
                 for (var i = 1; i <= empress._tree.size; i++) {
                     var node = empress._treeData[i];
                     var nodeX = empress.getX(node);
@@ -158,10 +161,13 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                     if (squareDist < closestDist) {
                         closestDist = squareDist;
                         closeNode = node;
+                        closeNodeKey = i;
                     }
                 }
 
-                // check if node is within epsilon pixels away from mouse click
+                // check if the closest-to-the-click node is within epsilon
+                // pixels away from the mouse click; if so, this node was
+                // "selected," so we can open the menu
                 var nX = empress.getX(closeNode);
                 var nY = empress.getY(closeNode);
                 var screenSpace = drawer.toScreenSpace(nX, nY);
@@ -171,7 +177,16 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 yDist = e.clientY - nY;
                 var screenDist = Math.sqrt(xDist * xDist + yDist * yDist);
                 if (screenDist < epsilon) {
-                    scope.placeNodeSelectionMenu(closeNode.name, false);
+                    // We pass closeNodeKey so that placeNodeSelectionMenu()
+                    // knows which node was selected, even if the selected node
+                    // has a duplicate name.
+                    // (Not all places that call this function will know this
+                    // information, though -- for example, the searching code
+                    // only knows the name of the node the user specified. This
+                    // is why we still have to provide the name here.)
+                    scope.placeNodeSelectionMenu(
+                        closeNode.name, false, closeNodeKey
+                    );
                 }
             }
         };
@@ -205,7 +220,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             quickSearchBar.innerHTML = nodeName;
 
             // show the selected node menu
-            scope.placeNodeSelectionMenu(nodeName);
+            scope.placeNodeSelectionMenu(nodeName, true);
 
             // clear possible words menu
             removeSuggestionMenu();
@@ -282,7 +297,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             // <ENTER> key is pressed
             if (key.keyCode === 13) {
                 removeSuggestionMenu();
-                scope.placeNodeSelectionMenu(this.value);
+                scope.placeNodeSelectionMenu(this.value, true);
             }
         };
 
@@ -309,7 +324,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
          */
         var search = function () {
             var nodeName = quickSearchBar.value;
-            scope.placeNodeSelectionMenu(nodeName);
+            scope.placeNodeSelectionMenu(nodeName, true);
         };
         searchBtn.onclick = search;
     };
@@ -325,37 +340,64 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
      *                         Since internal nodes can have duplicate names,
      *                         it's expected that this name can be non-unique.
      * @param {Boolean} moveTree If true, then this method will center the
-     *                           camera on the node in question.
+     *                           camera on the node in question (for example,
+     *                           if the user searched for a node using the
+     *                           side panel). If false, this won't be done (for
+     *                           example, if the user clicked on a node, there
+     *                           shouldn't be a need for the camera to move).
+     * @param {Number} nodeKey Optional parameter. If specified, this should
+     *                         be an index in this.empress._treeData of the
+     *                         node that this menu is being shown for. This is
+     *                         useful for cases where the selected node was
+     *                         clicked on (so we know exactly which node it
+     *                         is), but where the node in question has a
+     *                         duplicate name (so we can't get its position
+     *                         from just its name alone).
      */
     CanvasEvents.prototype.placeNodeSelectionMenu = function (
         nodeName,
-        moveTree = true
+        moveTree,
+        nodeKey
     ) {
-        // multiple nodes can have the same name
-        var idList = this.empress._nameToKeys[nodeName];
-
-        if (idList !== undefined) {
-            // get first node
-            var node = this.empress._treeData[idList[0]];
-
-            if (idList.length > 1) {
-                node = this.empress._treeData[this.empress._tree.size - 1];
-            }
-
+        var scope = this;
+        var node;
+        var openMenu = function (treeNode, keyList) {
             if (moveTree) {
-                this.drawer.centerCameraOn(
-                    this.empress.getX(node),
-                    this.empress.getY(node)
+                scope.drawer.centerCameraOn(
+                    scope.empress.getX(treeNode),
+                    scope.empress.getY(treeNode)
                 );
             }
 
             // show menu
-            this.selectedNodeMenu.setSelectedNodes(idList);
-            this.selectedNodeMenu.showNodeMenu();
+            scope.selectedNodeMenu.setSelectedNodes(keyList);
+            scope.selectedNodeMenu.showNodeMenu();
 
-            this.empress.drawTree();
+            scope.empress.drawTree();
+        };
+        if (nodeKey !== undefined) {
+            // If this parameter was specified, our job is easy -- we know the
+            // exact node to place the menu at
+            node = this.empress._treeData[nodeKey];
+            openMenu(node, [nodeKey]);
         } else {
-            this.quickSearchBar.classList.add("invalid-search");
+            var keyList = this.empress._nameToKeys[nodeName];
+            if (keyList !== undefined) {
+                // At least one node with this name exists
+                if (keyList.length > 1) {
+                    // Multiple nodes have this name, so just place the menu at
+                    // the root of the tree
+                    node = this.empress._treeData[this.empress._tree.size - 1];
+                } else {
+                    // Only one node has this name; we can place the camera
+                    // unambiguously at this node's position
+                    node = this.empress._treeData[keyList[0]];
+                }
+                openMenu(node, keyList);
+            } else {
+                // No nodes have this name
+                this.quickSearchBar.classList.add("invalid-search");
+            }
         }
     };
 

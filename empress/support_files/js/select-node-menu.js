@@ -261,20 +261,30 @@ define(["underscore", "util"], function (_, util) {
             throw "showInternalNode(): nodeKeys is not set!";
         }
 
+        var name = this.empress._treeData[this.nodeKeys[0]].name;
+
         var isDup = false;
-        if (this.nodeKeys.length > 1) {
+        var isUnambiguous = true;
+        var keysOfNodesWithThisName = this.empress._nameToKeys[name];
+        if (keysOfNodesWithThisName.length > 1) {
             this.warning.textContent =
                 "Warning: " +
-                this.nodeKeys.length +
+                keysOfNodesWithThisName.length +
                 " nodes exist with the " +
                 "above name.";
             isDup = true;
+            // If the user clicked on a node, we should know *exactly* which
+            // node it was, even if its name is not unique. However, if the
+            // user just searched for a node with a not-unique name, we don't
+            // know what node was selected, so we're limited in what we can do.
+            if (this.nodeKeys.length > 1) {
+                isUnambiguous = false;
+            }
         }
 
         // 1. Add feature metadata information (if present) for this node
         // (Note that we allow duplicate-name internal nodes to have
         // feature metadata; this isn't a problem)
-        var name = this.empress._treeData[this.nodeKeys[0]].name;
         SelectedNodeMenu.makeFeatureMetadataTable(
             name,
             this.empress._featureMetadataColumns,
@@ -308,8 +318,9 @@ define(["underscore", "util"], function (_, util) {
         }
 
         // iterate over all keys
-        for (i = 0; i < this.nodeKeys.length; i++) {
-            var nodeKey = this.nodeKeys[i];
+        if (isUnambiguous) {
+            // this.nodeKeys should have a length of 1
+            var nodeKey = this.nodeKeys[0];
 
             // find first and last preorder positions of the subtree spanned
             // by the current internal node
@@ -346,23 +357,20 @@ define(["underscore", "util"], function (_, util) {
                     fieldsMap[field][fieldValue] += result[fieldValue];
                 }
             }
+            SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.smTable);
         }
 
-        SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.smTable);
         if (this.fields.length > 0) {
-            if (isDup) {
+            if (!isUnambiguous) {
                 this.notes.textContent =
                     "This node is an internal node in the tree with a " +
-                    "duplicated name. These values represent the number of " +
-                    "unique samples that contain any of this node's " +
-                    "descendants, aggregated across all nodes with this " +
-                    "name. (This is buggy, so please don't trust these " +
-                    "numbers right now.)";
+                    "duplicated name. Since you searched for this name, " +
+                    "we're showing all nodes with this name in the tree.";
             } else {
                 this.notes.textContent =
                     "This node is an internal node in the tree. These " +
                     "values represent the number of unique samples that " +
-                    "contain any of this node's descendants.";
+                    "contain any of this node's descendant tips.";
             }
         }
     };
