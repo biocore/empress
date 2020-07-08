@@ -4,6 +4,7 @@ define(["underscore", "util"], function (_, util) {
         this.drawer = drawer;
         this.fields = [];
         this.smTable = document.getElementById("menu-sm-table");
+        this.smFooter = document.getElementById("menu-sm-footer");
         this.box = document.getElementById("menu-box");
         this.sel = document.getElementById("menu-select");
         this.addBtn = document.getElementById("menu-add-btn");
@@ -247,6 +248,7 @@ define(["underscore", "util"], function (_, util) {
                 "This node is a tip in the tree. These values represent the " +
                 "number of unique samples that contain this node.";
         }
+        this.smFooter.classList.remove("hidden");
     };
 
     /**
@@ -372,6 +374,11 @@ define(["underscore", "util"], function (_, util) {
                     "values represent the number of unique samples that " +
                     "contain any of this node's descendant tips.";
             }
+        }
+        if (isUnambiguous) {
+            this.smFooter.classList.remove("hidden");
+        } else {
+            this.smFooter.classList.add("hidden");
         }
     };
 
