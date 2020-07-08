@@ -383,13 +383,16 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             node = this.empress._treeData[nodeKey];
             openMenu(node, [nodeKey]);
         } else {
+            // We only know the name of the node to select (due to something
+            // like the user searching for this name). Therefore, if there are
+            // multiple nodes with this same name, things will be ambiguous.
             var keyList = this.empress._nameToKeys[nodeName];
             if (keyList !== undefined) {
                 // At least one node with this name exists
                 if (keyList.length > 1) {
-                    // Multiple nodes have this name, so just place the menu at
+                    // Multiple nodes have this name, so place the camera at
                     // the root of the tree
-                    node = this.empress._treeData[this.empress._tree.size - 1];
+                    node = this.empress._treeData[this.empress._tree.size];
                 } else {
                     // Only one node has this name; we can place the camera
                     // unambiguously at this node's position

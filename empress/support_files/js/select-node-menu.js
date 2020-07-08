@@ -457,7 +457,8 @@ define(["underscore", "util"], function (_, util) {
 
         var node = this.empress._treeData[this.nodeKeys[0]];
         if (this.nodeKeys.length > 1) {
-            node = this.empress._treeData[this.empress._tree.size - 1];
+            // ambiguous, so position the menu at the root of the tree
+            node = this.empress._treeData[this.empress._tree.size];
         }
         // get table coords
         var x = this.empress.getX(node);
