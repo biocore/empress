@@ -333,7 +333,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
 
     /**
      * Creates a node selection menu box for nodeName. If nodeName does
-     * not exist, then this this method will make the background color of the
+     * not exist, then this method will make the background color of the
      * quick search bar red.
      * This method is called both from the quick search button and when the
      * user clicks on the canvas.
