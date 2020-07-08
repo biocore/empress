@@ -318,13 +318,14 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
      * Creates a node selection menu box for nodeName. If nodeName does
      * not exist, then this this method will make the background color of the
      * quick search bar red.
-     * This method is call from the both the quick search btn and when the user
-     * clicks on the canvas.
+     * This method is called both from the quick search button and when the
+     * user clicks on the canvas.
      *
-     * @param{String} nodeName The node name to make a node selection menu box
-     * for.
-     * @param{Boolean} moveTree If true, then this method will move the viewing
-     *                          window of the tree to the node.
+     * @param {String} nodeName The name of the node to make a menu box for.
+     *                         Since internal nodes can have duplicate names,
+     *                         it's expected that this name can be non-unique.
+     * @param {Boolean} moveTree If true, then this method will center the
+     *                           camera on the node in question.
      */
     CanvasEvents.prototype.placeNodeSelectionMenu = function (
         nodeName,

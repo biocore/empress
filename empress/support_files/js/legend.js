@@ -8,10 +8,10 @@ define(["underscore", "util"], function (_, util) {
 
     /**
      * Display a color key in the legend box.
-     * @param {string} name - key name
+     * @param {String} name - key name
      * @param {Object} info - key information
      * @param {Object} container - container DOM
-     * @param {boolean} gradient - gradient or discrete
+     * @param {Boolean} gradient - gradient or discrete
      */
     Legend.prototype.addColorKey = function (name, info, container, gradient) {
         var legendContainer = this.__getLegend(container);

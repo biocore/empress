@@ -373,7 +373,7 @@ define(["ByteArray"], function (ByteArray) {
     /**
      * Return true if i represents a leaf node
      *
-     * @return {boolean}
+     * @return {Boolean}
      */
     BPTree.prototype.isleaf = function (i) {
         return this.b_[i] && !this.b_[i + 1];
