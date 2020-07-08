@@ -1182,8 +1182,8 @@ define([
      *
      * @param {Function} callback Callback to execute.
      */
-    Empress.prototype.setOnNodeMenuVisibleCallback = function(callback) {
-      this._events.selectedNodeMenu.visibleCallback = callback;
+    Empress.prototype.setOnNodeMenuVisibleCallback = function (callback) {
+        this._events.selectedNodeMenu.visibleCallback = callback;
     };
 
     /**
@@ -1194,8 +1194,8 @@ define([
      *
      * @param {Function} callback Callback to execute.
      */
-    Empress.prototype.setOnNodeMenuHiddenCallback = function(callback) {
-      this._events.selectedNodeMenu.hiddenCallback = callback;
+    Empress.prototype.setOnNodeMenuHiddenCallback = function (callback) {
+        this._events.selectedNodeMenu.hiddenCallback = callback;
     };
 
     return Empress;

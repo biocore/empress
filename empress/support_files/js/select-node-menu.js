@@ -25,7 +25,7 @@ define(["underscore", "util"], function (_, util) {
      * menu, and creates the add button click event.
      */
     SelectedNodeMenu.prototype.initialize = function () {
-        var scope = this
+        var scope = this;
 
         // add items to select
         var selOpts = this.empress.getSampleCategories();
@@ -243,8 +243,9 @@ define(["underscore", "util"], function (_, util) {
         var ctData = {};
 
         // 2.1 The samples represented by this tip are sent to Emperor
-        this._samplesInSelection = this.empress._biom.getSamplesByObservations(
-            [name]);
+        this._samplesInSelection = this.empress._biom.getSamplesByObservations([
+            name,
+        ]);
 
         for (var f = 0; f < this.fields.length; f++) {
             var field = this.fields[f];
