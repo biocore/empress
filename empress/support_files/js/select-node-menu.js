@@ -13,10 +13,10 @@ define(["underscore", "util"], function (_, util) {
         this.fmTable = document.getElementById("menu-fm-table");
         this.fmHeader = document.getElementById("menu-fm-header");
         this.smHeader = document.getElementById("menu-sm-header");
-        this.emperorBtn = document.getElementById("menu-box-emperor-btn");
         this.nodeKeys = null;
 
-        this.clickCallback = null;
+        this.hiddenCallback = null;
+        this.visibleCallback = null;
         this._samplesInSelection = [];
     }
 
@@ -46,12 +46,6 @@ define(["underscore", "util"], function (_, util) {
             selectMenu.showNodeMenu();
         };
         this.addBtn.onclick = click;
-
-        this.emperorBtn.onclick = function() {
-          if (scope.clickCallback !== null) {
-            scope.clickCallback(scope._samplesInSelection);
-          }
-        };
     };
 
     /*
@@ -191,10 +185,6 @@ define(["underscore", "util"], function (_, util) {
 
         this.nodeNameLabel.textContent = "Name: " + node.name;
 
-        if (this.clickCallback !== null) {
-            this.emperorBtn.classList.remove("hidden");
-        }
-
         this.notes.textContent = "";
         this.warning.textContent = "";
 
@@ -212,6 +202,10 @@ define(["underscore", "util"], function (_, util) {
 
         // show table
         this.box.classList.remove("hidden");
+
+        if (this.visibleCallback !== null) {
+            this.visibleCallback(this._samplesInSelection);
+        }
     };
 
     /**
@@ -247,9 +241,12 @@ define(["underscore", "util"], function (_, util) {
 
         // 2. Add sample presence information for this tip
         var ctData = {};
+
+        // 2.1 The samples represented by this tip are sent to Emperor
+        this._samplesInSelection = this.empress._biom.getSamplesByObservations(
+            [name]);
+
         for (var f = 0; f < this.fields.length; f++) {
-            // TODO: how do we get the sample list here
-            this._samplesInSelection = [];
             var field = this.fields[f];
             var obs = this.empress._biom.getObsCountsBy(field, name);
             var categories = _.keys(obs);
@@ -353,7 +350,7 @@ define(["underscore", "util"], function (_, util) {
             var samples = emp._biom.getSamplesByObservations(tips);
 
             // used for the emperor callback
-            this._samplesInSelection = samples;
+            this._samplesInSelection = this._samplesInSelection.concat(samples);
 
             // iterate over the samples and extract the field values
             for (j = 0; j < this.fields.length; j++) {
@@ -400,6 +397,11 @@ define(["underscore", "util"], function (_, util) {
         this.fmTable.innerHTML = "";
         this.drawer.loadSelectedNodeBuff([]);
         this.empress.drawTree();
+
+        if (this.hiddenCallback !== null) {
+            this.hiddenCallback(this._samplesInSelection);
+        }
+        this._samplesInSelection = [];
     };
 
     /**

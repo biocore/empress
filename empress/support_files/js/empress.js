@@ -1175,13 +1175,27 @@ define([
     };
 
     /**
-     * Set a callback to get the represented samples for a node
+     * Set a callback when a the node menu is shown on screen
      *
      * The callback will receive a list of samples as the only argument. This
      * is inteded to be used with emperor.
+     *
+     * @param {Function} callback Callback to execute.
      */
-    Empress.prototype.setOnNodeClickCallback = function(callback) {
-      this._events.selectedNodeMenu.clickCallback = callback;
+    Empress.prototype.setOnNodeMenuVisibleCallback = function(callback) {
+      this._events.selectedNodeMenu.visibleCallback = callback;
+    };
+
+    /**
+     * Set a callback when a the node menu is removed from the screen
+     *
+     * The callback will receive a list of samples as the only argument. This
+     * is inteded to be used with emperor.
+     *
+     * @param {Function} callback Callback to execute.
+     */
+    Empress.prototype.setOnNodeMenuHiddenCallback = function(callback) {
+      this._events.selectedNodeMenu.hiddenCallback = callback;
     };
 
     return Empress;
