@@ -185,7 +185,9 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                     // only knows the name of the node the user specified. This
                     // is why we still have to provide the name here.)
                     scope.placeNodeSelectionMenu(
-                        closeNode.name, false, closeNodeKey
+                        closeNode.name,
+                        false,
+                        closeNodeKey
                     );
                 }
             }
