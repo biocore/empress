@@ -776,7 +776,10 @@ define([
      * @param {String} cat The sample category to use
      * @param {String} color - the Color map to use
      *
-     * @return {Object} Maps keys to colors
+     * @return {Object} If there exists at least on group with unique features
+     *                  then an object will be returned that maps groups with
+     *                  unique features to a color. If there doesn't exist a
+     *                  group with unique features then null will be returned.
      */
     Empress.prototype.colorBySampleCat = function (cat, color) {
         var tree = this._tree;
@@ -794,6 +797,9 @@ define([
 
         // assign internal nodes to appropriate category based on its children
         obs = this._projectObservations(obs);
+        if (Object.keys(obs).length === 0) {
+            return null;
+        }
 
         // assign colors to categories
         categories = util.naturalSort(Object.keys(obs));
@@ -804,7 +810,6 @@ define([
         var keyInfo = colorer.getMapHex();
         // color tree
         this._colorTree(obs, cm);
-
         return keyInfo;
     };
 
@@ -916,6 +921,8 @@ define([
      *      2) Assigns each internal node to a group if all of its children belong
      *         to the same group.
      *
+     *      3) Remove empty groups from return object.
+     *
      * Note: All tips that are not passed into obs are considered to belong to
      *       a "not-represented" group, which will be omitted from the
      *       returned version of obs.
@@ -971,6 +978,13 @@ define([
             }
         }
         var result = util.keepUniqueKeys(obs, notRepresented);
+
+        // remove all groups that do not contain unique features
+        categories = Object.keys(result);
+        for (i = 0; i < categories.length; i++) {
+            category = categories[i];
+            if (result[category].size === 0) delete result[category];
+        }
 
         return result;
     };

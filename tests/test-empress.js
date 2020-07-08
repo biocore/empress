@@ -379,21 +379,11 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 "discrete-coloring-qiime"
             );
 
-            // make sure only a and b are valid groups as 'a' and 'b' are
-            // the only values in 'f1'
-            var groups = ["a", "b"];
+            // Group 'a' is the only group that contains unique features. Thus,
+            // group b should be removed by _projectObservations
+            var groups = ["a"];
             var resultGroups = util.naturalSort(Object.keys(cm));
             deepEqual(resultGroups, groups);
-
-            // make sure all three groups have different colors
-
-            // "a" group
-            var groupCm = cm["a"];
-            notDeepEqual(cm["b"], cm);
-
-            // "b" group
-            var groupCm = cm["b"];
-            notDeepEqual(cm["a"], cm);
 
             // make sure nodes where assigned the correct color
             // note that gropu b does not have any unique nodes
@@ -518,12 +508,11 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
             };
             var expectedResult = {
                 "g1" : new Set([2, 3, 4]),
-                "g2" : new Set([]),
                 "g3" : new Set([6])
             };
             var result = this.empress._projectObservations(obs);
 
-            var groups = ["g1", "g2", "g3"];
+            var groups = ["g1", "g3"];
             for (var i = 0; i < groups.length; i++) {
                 var group = groups[i];
                 var expectedArray = Array.from(expectedResult[group]);
@@ -542,11 +531,10 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
             };
             var expectedResult = {
                 "g1": new Set([1, 2, 3, 4, 5, 6, 7]),
-                "g2": new Set([])
             };
             var result = this.empress._projectObservations(obs);
 
-            var groups = ["g1", "g2"];
+            var groups = ["g1"];
             for (var i = 0; i < groups.length; i++) {
                 var group = groups[i];
                 var expectedArray = Array.from(expectedResult[group]);
@@ -564,21 +552,11 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 "g2": new Set([])
             };
             var expectedResult = {
-                "g1": new Set([]),
-                "g2": new Set([])
             };
             var result = this.empress._projectObservations(obs);
-
-            var groups = ["g1", "g2"];
-            for (var i = 0; i < groups.length; i++) {
-                var group = groups[i];
-                var expectedArray = Array.from(expectedResult[group]);
-                var resultArray = util.naturalSort(Array.from(result[group]));
-                deepEqual(resultArray, expectedArray);
-            }
-
+            var expectedResult = [];
             var columns = Object.keys(result);
-            deepEqual(columns, groups);
+            deepEqual(columns, expectedResult);
         });
 
         test("Test _colorTree", function() {
