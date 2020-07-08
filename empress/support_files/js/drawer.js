@@ -217,7 +217,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         const COORD_SIZE = 2;
         const COORD_OFFSET = 0;
         const COLOR_SIZE = 3;
-        const COLOR_OFFEST = 2;
+        const COLOR_OFFSET = 2;
 
         var c = this.contex_;
         var s = this.sProg_;
@@ -240,7 +240,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
             c.FLOAT,
             c.FALSE,
             this.VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
-            COLOR_OFFEST * Float32Array.BYTES_PER_ELEMENT
+            COLOR_OFFSET * Float32Array.BYTES_PER_ELEMENT
         );
     };
 

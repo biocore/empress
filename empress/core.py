@@ -8,10 +8,12 @@
 
 from empress.tree import Tree
 from empress.tools import fill_missing_node_names, match_inputs, shifting
+from empress.compression_utils import (
+    compress_table, compress_sample_metadata, compress_feature_metadata
+)
 
 import pkg_resources
 import os
-import pandas as pd
 
 from shutil import copytree
 from emperor import Emperor
@@ -37,9 +39,9 @@ class Empress():
 
         Parameters
         ----------
-        tree: bp.Tree:
+        tree: bp.Tree
             The phylogenetic tree to visualize.
-        table: pd.DataFrame:
+        table: pd.DataFrame
             The matrix to visualize paired with the phylogenetic tree.
         sample_metadata: pd.DataFrame
             DataFrame object with the metadata associated to the samples in the
@@ -257,66 +259,40 @@ class Empress():
         for node in self.tree.preorder(include_self=True):
             names.append(node.name)
 
-        # Convert sample metadata to a JSON-esque format
-        sample_data = self.samples.to_dict(orient='index')
-
-        # Convert feature metadata, similarly to how we handle sample metadata.
-        # If the user passed in feature metadata, self.features won't be None.
-        # (We don't actually use any data from self.features at this point in
-        # the program since it hasn't had taxonomy splitting / matching / etc.
-        # done.)
-        if self.features is not None:
-            # If we're in this block, we know that self.tip_md and self.int_md
-            # are both DataFrames. They have identical columns, so we can just
-            # use self.tip_md.columns when setting feature_metadata_columns.
-            # (We don't use self.features.columns because stuff like taxonomy
-            # splitting will have changed the columns from what they initially
-            # were in some cases.)
-            feature_metadata_columns = list(self.tip_md.columns)
-            # Calling .to_dict() on an empty DataFrame just gives you {}, so
-            # this is safe even if there is no tip or internal node metadata.
-            # (...At least one of these DFs should be populated, though, since
-            # none of the feature IDs matching up would have caused an error.)
-            tip_md_json = self.tip_md.to_dict(orient='index')
-            int_md_json = self.int_md.to_dict(orient='index')
-        else:
-            feature_metadata_columns = []
-            tip_md_json = {}
-            int_md_json = {}
-
-        # TODO: Empress is currently storing all metadata as strings. This is
-        # memory intensive and won't scale well. We should convert all numeric
-        # data/compress metadata.
-
-        # This is used in biom-table. Currently this is only used to ignore
-        # null data (i.e. NaN and "unknown") and also determines sorting order.
-        # The original intent is to signal what columns are
-        # discrete/continuous. type of sample metadata (n - number, o - object)
-        sample_data_type = self.samples.dtypes.to_dict()
-        sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
-                            for k, v in sample_data_type.items()}
-
-        # create a mapping of observation ids and the samples that contain them
-        obs_data = {}
-        feature_table = (self.table > 0)
-        for _, series in feature_table.iteritems():
-            sample_ids = series[series].index.tolist()
-            obs_data[series.name] = sample_ids
+        s_ids, f_ids, sid2idxs, fid2idxs, compressed_table = compress_table(
+            self.table
+        )
+        sm_cols, compressed_sm = compress_sample_metadata(
+            sid2idxs, self.samples
+        )
+        fm_cols, compressed_tm, compressed_im = compress_feature_metadata(
+            self.tip_md, self.int_md
+        )
 
         data_to_render = {
             'base_url': self.base_url,
+            # tree info
             'tree': shifting(self._bp_tree),
             'tree_data': tree_data,
-            'names_to_keys': names_to_keys,
-            'sample_data': sample_data,
-            'sample_data_type': sample_data_type,
-            'tip_metadata': tip_md_json,
-            'int_metadata': int_md_json,
-            'feature_metadata_columns': feature_metadata_columns,
-            'obs_data': obs_data,
             'names': names,
+            'names_to_keys': names_to_keys,
+            # feature table
+            's_ids': s_ids,
+            'f_ids': f_ids,
+            's_ids_to_indices': sid2idxs,
+            'f_ids_to_indices': fid2idxs,
+            'compressed_table': compressed_table,
+            # sample metadata
+            'sample_metadata_columns': sm_cols,
+            'compressed_sample_metadata': compressed_sm,
+            # feature metadata
+            'feature_metadata_columns': fm_cols,
+            'compressed_tip_metadata': compressed_tm,
+            'compressed_int_metadata': compressed_im,
+            # layout information
             'layout_to_coordsuffix': layout_to_coordsuffix,
             'default_layout': default_layout,
+            # Emperor integration
             'emperor_div': '',
             'emperor_require_logic': '',
             'emperor_style': '',

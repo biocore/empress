@@ -92,7 +92,6 @@
             'Legend' : './js/legend',
             'Colorer' : './js/colorer',
             'VectorOps' : './js/vector-ops',
-            'SummaryHelper' : './js/summary-helper',
             'CanvasEvents' : './js/canvas-events',
             'SelectedNodeMenu' : './js/select-node-menu',
             'util' : './js/util'
@@ -102,23 +101,25 @@
     empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray',
                     'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimationPanel',
                     'Animator', 'BIOMTable', 'Empress', 'Legend', 'Colorer',
-                    'VectorOps', 'SummaryHelper', 'CanvasEvents',
-                    'SelectedNodeMenu', 'util'],
+                    'VectorOps', 'CanvasEvents', 'SelectedNodeMenu', 'util'],
         function($, gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
                  SidePanel, AnimationPanel, Animator, BIOMTable, Empress, Legend,
-                 Colorer, VectorOps, SummaryHelper, CanvasEvents,
-                 SelectedNodeMenu, util) {
+                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util) {
         // initialze the tree and model
         var tree = new BPTree({{ tree }}, {{ names }});
 
-        var fmCols = {{ feature_metadata_columns }};
+        var fmCols = {{ feature_metadata_columns | tojson }};
 
         var canvas = document.getElementById('tree-surface');
 
         var biom = new BIOMTable(
-          {{ obs_data }},
-          {{ sample_data | tojson }},
-          {{ sample_data_type | tojson }}
+          {{ s_ids | tojson }},
+          {{ f_ids | tojson }},
+          {{ s_ids_to_indices | tojson }},
+          {{ f_ids_to_indices | tojson }},
+          {{ compressed_table | tojson }},
+          {{ sample_metadata_columns | tojson }},
+          {{ compressed_sample_metadata | tojson }},
         );
         var empress = new Empress(
             tree,
@@ -128,8 +129,8 @@
             '{{ default_layout }}',
             biom,
             fmCols,
-            {{ tip_metadata | tojson }},
-            {{ int_metadata | tojson }},
+            {{ compressed_tip_metadata | tojson }},
+            {{ compressed_int_metadata | tojson }},
             canvas
         );
         empress.initialize();

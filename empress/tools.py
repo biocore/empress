@@ -72,7 +72,6 @@ def match_inputs(
 
     Parameters
     ----------
-
     bp_tree: bp.BP
         The tree to be visualized.
     table: pd.DataFrame

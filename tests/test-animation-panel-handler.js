@@ -70,17 +70,21 @@ require([
             nextFrameBtn.setAttribute("id", "animate-next-btn");
             this.div.appendChild(nextFrameBtn);
 
-            // need one sample so animation-panel-handler can extract the
-            // sample fields
-            var samp = {
-                "s1": {
-                    "f1": "",
-                    "grad": "",
-                    "traj": ""
-                },
-            };
-            var biom = new BiomTable({}, samp, {});
-            var empress = new Empress({}, {}, {},{},{}, biom, [], {}, {}, null);
+            // need to set up a BIOM table with at least one sample so
+            // animation-panel-handler can extract the sample fields
+            var sIDs = ["s1"];
+            var fIDs = ["o1"];
+            var sID2Idx = {"s1": 0};
+            var fID2Idx = {"o1": 0};
+            var tbl = [[0]];
+            var smCols = ["f1", "grad", "traj"];
+            var sm = [["asdf", "asdf", "asdf"]];
+            var biom = new BiomTable(
+                sIDs, fIDs, sID2Idx, fID2Idx, tbl, smCols, sm
+            );
+            var empress = new Empress(
+                {}, {}, {}, {}, {}, biom, [], {}, {}, null
+            );
             var animator = new Animator(
                 empress,
                 new Legend(

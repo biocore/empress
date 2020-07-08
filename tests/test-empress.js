@@ -120,84 +120,55 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         "visible": true
                     }
 
-                }
-                var obs = {
-                    "s1": ["1", "2", "3"],
-                    "s2": ["2", "3"],
-                    "s3": ["1", "3", "EmpressNode6"],
-                    "s4": ["2"],
-                    "s5": ["1", "2", "3", "EmpressNode6"],
-                    "s6": ["1", "2", "3"],
-                    "s7": ["EmpressNode6"]
                 };
-                var samp = {
-                    "s1": {
-                        "f1": "a",
-                        "grad": 1,
-                        "traj": "t1"
-                    },
-                    "s2": {
-                        "f1": "a",
-                        "grad": 2,
-                        "traj": "t1"
-                    },
-                    "s3": {
-                        "f1": "a",
-                        "grad": 1,
-                        "traj": "t2"
-                    },
-                    "s4": {
-                        "f1": "b",
-                        "grad": 2,
-                        "traj": "t2"
-                    },
-                    "s5": {
-                        "f1": "a",
-                        "grad": 3,
-                        "traj": "t3"
-                    },
-                    "s6": {
-                        "f1": "a",
-                        "grad": 3,
-                        "traj": "t3"
-                    },
-                    "s7": {
-                        "f1": "b",
-                        "grad": 4,
-                        "traj": "t4"
-                    }
+                // data for the BiomTable object
+                // (These IDs / indices aren't assigned in any particular
+                // order; as long as it's consistent it doesn't matter.
+                // However, setting fIDs in this way is convenient b/c it means
+                // the index of feature "1" is 1, of "2" is 2, etc.)
+                var sIDs = ["s1", "s2", "s3", "s4", "s5", "s6", "s7"];
+                var fIDs = ["EmpressNode6", "1", "2", "3"];
+                var sID2Idx = {
+                    "s1": 0, "s2": 1, "s3": 2, "s4": 3, "s5": 4, "s6": 5, "s7": 6
                 };
-                var types = {
-                    "f1": "o",
-                    "grad": "n",
-                    "traj": "o"
-                }
+                var fID2Idx = {
+                     "EmpressNode6": 0, "1": 1, "2": 2, "3": 3
+                };
+                // See test-biom-table.js for details on this format. Briefly,
+                // each inner array describes the feature indices present in a
+                // sample.
+                var tbl = [
+                    [1, 2, 3],
+                    [2, 3],
+                    [0, 1, 3],
+                    [2],
+                    [0, 1, 2, 3],
+                    [1, 2, 3],
+                    [0]
+                ];
+                var smCols = ["f1", "grad", "traj"];
+                var sm = [
+                    ["a", "1", "t1"],
+                    ["a", "2", "t1"],
+                    ["a", "1", "t2"],
+                    ["b", "2", "t2"],
+                    ["a", "3", "t3"],
+                    ["a", "3", "t3"],
+                    ["b", "4", "t4"],
+                ];
                 var featureColumns = ["f1", "f2"];
                 var tipMetadata = {
-                    "1": {
-                        "f1": 2,
-                        "f2": 2
-                    },
-                    "2": {
-                        "f1": 1,
-                        "f2": 2
-                    },
-                    "3": {
-                        "f1": 1,
-                        "f2": 2
-                    },
-                    "EmpressNode6": {
-                        "f1": 2,
-                        "f2": 2
-                    }
-                }
+                    "1": ["2", "2"],
+                    "2": ["1", "2"],
+                    "3": ["1", "2"],
+                    "EmpressNode6": ["2", "2"]
+                };
                 var intMetadata = {
-                    "internal": {
-                        "f1": 1,
-                        "f2": 1
-                    }
+                    "internal": ["1", "1"]
                 }
-                var biom = new BiomTable(obs, samp, types);
+                var biom = new BiomTable(
+                    sIDs, fIDs, sID2Idx, fID2Idx, tbl, smCols, sm
+                );
                 var canvas = document.createElement("canvas");
                 this.empress = new Empress(tree, treeData, nameToKeys,
                     layoutToCoordSuffix, "Unrooted",
@@ -334,25 +305,6 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                     equal(node.visible, true);
                 } else {
                     equal(node.visible, false);
-                }
-            }
-         });
-
-         test("Test colorSampleIDs", function() {
-            var samples = ["s2","s7"];
-            var defaultColor = [0.75, 0.75, 0.75];
-            var color = [0.5, 0.6, 0.7];
-            this.empress.colorSampleIDs(samples, color);
-
-            // Note: 1 does not belong to s2 or s7 so it should not be colored
-            //       which means the color should not be projected up to node 5
-            var cNodes = new Set([2, 3, 4, 6]);
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
-                if (cNodes.has(i)) {
-                    deepEqual(node.color, color);
-                } else {
-                    deepEqual(node.color, defaultColor);
                 }
             }
          });
@@ -703,7 +655,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
             );
             deepEqual(result, f1Values);
 
-            var gradValues = [1, 2, 3, 4];
+            var gradValues = ["1", "2", "3", "4"];
             result = util.naturalSort(
                 this.empress.getUniqueSampleValues("grad")
             );
@@ -721,7 +673,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 "t1": ["1", "2", "3"],
                 "t2": ["EmpressNode6", "1", "3"]
             }
-            var obs = this.empress.getGradientStep("grad", 1, "traj");
+            var obs = this.empress.getGradientStep("grad", "1", "traj");
             var groups = Object.keys(obs);
             for (var i = 0; i < groups.length; i++) {
                 var group = groups[i];
@@ -731,10 +683,8 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
         });
 
         test("Test getFeatureMetadataCategories", function() {
-            var expectedColumns = ["f1", "f2"];
-            var columns = util.naturalSort(
-                this.empress.getFeatureMetadataCategories());
-            deepEqual(columns, expectedColumns);
+            var columns = this.empress.getFeatureMetadataCategories();
+            deepEqual(columns, ["f1", "f2"]);
         });
 
         test("Test centerLayoutAvgPoint", function() {
