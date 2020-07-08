@@ -1,294 +1,460 @@
-define([], function () {
+define(["underscore", "util"], function (_, util) {
     /**
-     * @class BIOM-table
+     * @class BIOMTable
      *
-     * create a BIOM table that contains sample IDs along with the observations
-     * seen in each sample and the metadata associated with each sample.
+     * Create a BIOM table that describes the features contained within each
+     * sample and the metadata associated with each sample.
      *
-     * @param{Object} obs An object whose keys are sampleIds and values are a
-     *                list of observationIDs.
-     * @param{Object} samp An object whose keys are sampleIDs and values are the
-     *                associated metadata.
-     * @param{Object} types Maps sample column to datatype n - num, o - obj
+     * @param{Array} sIDs Array of sample IDs in the table.
+     * @param{Array} fIDs Array of feature (or "observation") IDs in the table.
+     * @param{Object} sID2Idx Mapping of sample IDs (the values in sIDs) to
+     *                        their 0-based indices in sIDs.
+     * @param{Object} fID2Idx Mapping of feature IDs (the values in fIDs) to
+     *                        their 0-based indices in fIDs.
+     * @param{Array} tbl Two-dimensional array where the outermost layer has
+     *                   the same length as sIDs. Each position i within tbl
+     *                   contains an "inner list" of arbitrary (but in the
+     *                   range [1, fIDs.length]) length, containing the fIDs
+     *                   indices of the features present within the sample
+     *                   in sIDs at index i.
+     * @param{Array} smCols Array of sample metadata column names.
+     * @param{Array} sm Two-dimensional array where the outermost layer has the
+     *                  same length as sIDs. Each position i within sm contains
+     *                  an "inner list" of length smCols.length, and sm[i][c]
+     *                  refers to the c-th sample metadata column (in smCols)'s
+     *                  value for the i-th sample (in sIDs).
      *
      * @return {BIOMTable}
      * constructs BIOMTable
      */
-    function BIOMTable(obs, samp, types) {
-        /**
-         * @type {Object}
-         * The observation table format:
-         * {sampleID1: [observationIDs],
-         *  sampleID2: [observationIDs],
-         *   ...}
-         * @private
-         */
-        this._obs = obs;
-
-        /**
-         * @type {Object}
-         * Sample metadata format:
-         * {sampleID1: {cat1: val, cat2: val, ...},
-         *  sampleID2: {cat1: val, cat2: val, ...},
-         *  ...}
-         * @private
-         */
-        this._samp = samp;
-
-        /**
-         * @type {Object}
-         * The datatypes of sample metadata
-         * 'n' => numeric
-         * 'o' => object/string
-         * {categoryName: 'n' or 'o'}
-         */
-        this._types = types;
+    function BIOMTable(sIDs, fIDs, sID2Idx, fID2Idx, tbl, smCols, sm) {
+        // Do some basic validation to make sure that the inputs seem ok.
+        // This is useful to have in case the python code gets messed up.
+        //
+        // NOTE that this is not comprehensive; for example, this doesn't check
+        // that all of the sample indices are exactly unique. The main goal
+        // here is checking that things seem sane where quickly doable (e.g.
+        // length checking) and where things have a reasonable chance of
+        // getting messed up (e.g. checking that feature indices in the table
+        // are sorted)
+        if (sIDs.length !== tbl.length) {
+            throw new Error("Sample IDs and table are uneven lengths.");
+        } else if (sIDs.length !== sm.length) {
+            throw new Error("Sample IDs and metadata are uneven lengths.");
+        } else if (sIDs.length !== _.size(sID2Idx)) {
+            throw new Error("Sample IDs and ID -> index are uneven lengths.");
+        } else if (fIDs.length !== _.size(fID2Idx)) {
+            throw new Error("Feature IDs and ID -> index are uneven lengths.");
+        }
+        _.each(tbl, function (presentFeatureIndices, sIdx) {
+            if (presentFeatureIndices.length === 0) {
+                // Empty samples should have been removed in python
+                throw new Error(
+                    'Sample at index "' + sIdx + '" has no features.'
+                );
+            } else if (presentFeatureIndices.length > fIDs.length) {
+                throw new Error(
+                    'Sample at index "' +
+                        sIdx +
+                        '" has more features than ' +
+                        "are possible."
+                );
+            }
+            // Verify that the entries of each sample in the table are in
+            // strictly increasing order. We rely on this so that we can use
+            // binary search when checking if a feature is in a sample.
+            var prev;
+            _.each(presentFeatureIndices, function (i) {
+                if (_.isUndefined(prev)) {
+                    prev = i;
+                } else {
+                    if (i <= prev) {
+                        throw new Error(
+                            'Sample at index "' +
+                                sIdx +
+                                '" has ' +
+                                "non-strictly-increasing feature indices in table."
+                        );
+                    }
+                }
+            });
+        });
+        this._sIDs = sIDs;
+        this._fIDs = fIDs;
+        this._sID2Idx = sID2Idx;
+        this._fID2Idx = fID2Idx;
+        this._tbl = tbl;
+        this._smCols = smCols;
+        this._sm = sm;
     }
 
     /**
-     * Returns a list of observations in the sample
-     * Example: countArray is [1,0], obsIDs is ['OTU1', 'OTU2'] => returns ['OTU1']
+     * Converts sample ID to sample index.
      *
-     * @param {Array} countArray - Array of counts for different tips
-     * @param {Array} obsIDs - Array of observation IDs for each index of the
-     *                countArray
+     * @param {String} sID
      *
-     * @return {Array}
+     * @return {Number} sIdx
+     *
+     * @throws {Error} If the sample ID is unrecognized.
      */
-    BIOMTable.convertToObs = function (countArray, obsIDs) {
-        var obs = [];
-        for (var i = 0; i < countArray.length; i++) {
-            if (countArray[i] != 0) {
-                obs.push(obsIDs[i]);
-            }
+    BIOMTable.prototype._getSampleIndexFromID = function (sID) {
+        var sIdx = this._sID2Idx[sID];
+        if (_.isUndefined(sIdx)) {
+            throw new Error('Sample ID "' + sID + '" not in BIOM table.');
         }
-        return obs;
+        return sIdx;
     };
 
     /**
-     * Returns a list of observations in the samples
+     * Converts feature ID to feature index.
      *
-     * @param {Array} sIds - Array of sample Ids
+     * @param {String} fID
      *
-     * @return {Array}
+     * @return {Number} fIdx
+     *
+     * @throws {Error} If the feature ID is unrecognized.
      */
-    BIOMTable.prototype.getObjservationUnionForSamples = function (sIds) {
-        var result = new Set();
-        var addToResult = function (ob) {
-            result.add(ob);
+    BIOMTable.prototype._getFeatureIndexFromID = function (fID) {
+        var fIdx = this._fID2Idx[fID];
+        if (_.isUndefined(fIdx)) {
+            throw new Error('Feature ID "' + fID + '" not in BIOM table.');
+        }
+        return fIdx;
+    };
+
+    /**
+     * Converts feature index to feature ID.
+     *
+     * @param {String} fIdx
+     *
+     * @return {Number} fID
+     *
+     * @throws {Error} If the feature index is invalid.
+     */
+    BIOMTable.prototype._getFeatureIDFromIndex = function (fIdx) {
+        var fID = this._fIDs[fIdx];
+        if (_.isUndefined(fID)) {
+            throw new Error('Feature index "' + fIdx + '" invalid.');
+        }
+        return fID;
+    };
+
+    /**
+     * Converts sample metadata column name to index in this._smCols.
+     *
+     * @param {String} col
+     *
+     * @return {Number} colIdx
+     *
+     * @throws {Error} If the column name isn't in this._smCols.
+     */
+    BIOMTable.prototype._getSampleMetadataColIndex = function (col) {
+        var colIdx = _.indexOf(this._smCols, col);
+        if (colIdx < 0) {
+            throw new Error(
+                'Sample metadata column "' + col + '" not in BIOM table.'
+            );
+        }
+        return colIdx;
+    };
+
+    /**
+     * Converts a set of feature indices to an array of feature IDs.
+     *
+     * This is a utility method; this conversion operation is surprisingly
+     * common in this class' methods.
+     *
+     * @param {Set} fIdxSet set of feature indices
+     *
+     * @return {Array} fIDs array of feature IDs
+     *
+     * @throws {Error} If any of the feature indices are unrecognized.
+     */
+    BIOMTable.prototype._featureIndexSetToIDArray = function (fIdxSet) {
+        var scope = this;
+        var fIdxArray = Array.from(fIdxSet);
+        return _.map(fIdxArray, function (idx) {
+            return scope._getFeatureIDFromIndex(idx);
+        });
+    };
+
+    /**
+     * Returns true if a (sorted) numeric array contains a number.
+     *
+     * It's important that fIndices is sorted in ascending order, because this
+     * lets us use the "isSorted" parameter of _.indexOf(). This will use a
+     * binary search, making this check likely faster than manual iteration.
+     * See https://underscorejs.org/#indexOf.
+     *
+     * @param {Array} arr Array of Numbers sorted in ascending order;
+     *                    in practice, this will be a sorted array of the
+     *                    indices of the features present within a sample
+     *                    in the BIOM table
+     * @param {Number} num Number to look for the presence of in arr; in
+     *                     practice, this will be a feature index to search for
+     *
+     * @return {boolean} true if num is present in arr, false otherwise
+     */
+    BIOMTable.prototype._sortedArrayHasNumber = function (arr, num) {
+        return _.indexOf(arr, num, true) >= 0;
+    };
+
+    /**
+     * Returns a list of observations (features) present in the input samples.
+     *
+     * @param {Array} samples Array of sample IDs
+     *
+     * @return {Array} features Array of feature IDs
+     *
+     * @throws {Error} If any of the sample IDs are unrecognized.
+     */
+    BIOMTable.prototype.getObservationUnionForSamples = function (samples) {
+        var scope = this;
+        var totalFeatureIndices = new Set();
+        // For each sample...
+        _.each(samples, function (sID) {
+            // Figure out the indices of the features in this sample.
+            // Add these indices to totalFeatureIndices (which is a set,
+            // so duplicate indices are implicitly ignored)
+            var sampleIdx = scope._getSampleIndexFromID(sID);
+            var featureIndices = scope._tbl[sampleIdx];
+            _.each(featureIndices, function (fIdx) {
+                totalFeatureIndices.add(fIdx);
+            });
+        });
+        // Finally, convert totalFeatureIndices from indices to IDs
+        return this._featureIndexSetToIDArray(totalFeatureIndices);
+    };
+
+    /**
+     * Returns a object mapping all values of a sample metadata column
+     * to an array of all the features present within all samples with each
+     * value.
+     *
+     * @param {String} smCol Sample metadata column (e.g. "body site")
+     *
+     * @return {Object} valueToFeatureIDs
+     *
+     * @throws {Error} If the sample metadata column is unrecognized.
+     */
+    BIOMTable.prototype.getObsBy = function (col) {
+        var scope = this;
+        var colIdx = this._getSampleMetadataColIndex(col);
+        var valueToFeatureIdxs = {};
+        var cVal;
+        var addSampleFeatures = function (sIdx, cVal) {
+            _.each(scope._tbl[sIdx], function (fIdx) {
+                valueToFeatureIdxs[cVal].add(fIdx);
+            });
         };
-        for (var i = 0; i < sIds.length; i++) {
-            var obs = this._obs[sIds[i]];
-            obs.forEach(addToResult);
-        }
-        return Array.from(result);
+        // For each sample...
+        _.each(this._sm, function (smRow, sIdx) {
+            // Figure out what value this sample has for the specified column
+            cVal = smRow[colIdx];
+            // Record this sample's features for the sample's value
+            if (!_.has(valueToFeatureIdxs, cVal)) {
+                valueToFeatureIdxs[cVal] = new Set();
+            }
+            addSampleFeatures(sIdx, cVal);
+        });
+        // Produce a version of valueToFeatureIdxs where
+        // 1) The Sets of feature indices are converted to Arrays
+        // 2) The feature indices are replaced with IDs
+        return _.mapObject(valueToFeatureIdxs, function (fIdxSet) {
+            return scope._featureIndexSetToIDArray(fIdxSet);
+        });
     };
 
     /**
-     * Returns a object of observation ids whose keys are the values of a sample
-     * category.
+     * Returns a object that maps the unique values of a sample metadata column
+     * to the number of samples with that metadata value containing a given
+     * feature.
      *
-     * @param {String} cat The category to return observation
+     * @param {String} col Sample metadata column
+     * @param {String} fID Feature (aka observation) ID
      *
-     * @return {Object}
+     * @return {Object} valueToCountOfSampleWithObs
+     *
+     * @throws {Error} If the sample metadata column is unrecognized.
+     *                 If the feature ID is unrecognized.
      */
-    BIOMTable.prototype.getObsBy = function (cat) {
-        var result = {};
-        var cVal;
-        for (var sample in this._samp) {
-            cVal = this._samp[sample][cat];
-            if (!(cVal in result)) {
-                result[cVal] = new Set();
+    BIOMTable.prototype.getObsCountsBy = function (col, fID) {
+        var scope = this;
+        var colIdx = this._getSampleMetadataColIndex(col);
+        var fIdx = this._getFeatureIndexFromID(fID);
+        var valueToCountOfSampleWithObs = {};
+        var cVal, fIdxPos;
+        // Iterate through each sample of the BIOM table
+        _.each(this._tbl, function (presentFeatureIndices, sIdx) {
+            // Figure out what metadata value this sample has at the column.
+            // If we haven't recorded it as a key in our output Object yet, do
+            // so and set it to default to 0.
+            cVal = scope._sm[sIdx][colIdx];
+            if (!_.has(valueToCountOfSampleWithObs, cVal)) {
+                valueToCountOfSampleWithObs[cVal] = 0;
             }
-            for (var i = 0; i < this._obs[sample].length; i++) {
-                result[cVal].add(this._obs[sample][i]);
+            // Now, we check if we need to update the cVal entry by 1
+            // (indicating that one more sample with cVal contains the
+            // specified feature).
+            if (scope._sortedArrayHasNumber(presentFeatureIndices, fIdx)) {
+                // This sample actually contains the feature!
+                cVal = scope._sm[sIdx][colIdx];
+                // Update our output Object's count info accordingly.
+                valueToCountOfSampleWithObs[cVal] += 1;
             }
-        }
-
-        for (var key in result) {
-            result[key] = Array.from(result[key]);
-        }
-
-        return result;
+        });
+        return valueToCountOfSampleWithObs;
     };
 
     /**
-     * Returns a object that maps values of a sample category to number of
-     * samples obID was seen in.
-     * category.
+     * Returns an array of sample categories, sorted using util.naturalSort().
      *
-     * @param {String} cat The category to return observation
-     * @param {String} obID The observation to count
-     *
-     * @return {Object}
-     */
-    BIOMTable.prototype.getObsCountsBy = function (cat, obID) {
-        var result = {};
-        var cVal;
-        for (var sample in this._samp) {
-            cVal = this._samp[sample][cat];
-            if (!(cVal in result)) {
-                result[cVal] = 0;
-            }
-            for (var i = 0; i < this._obs[sample].length; i++) {
-                if (this._obs[sample][i] === obID) {
-                    result[cVal] += 1;
-                    break;
-                }
-            }
-        }
-
-        return result;
-    };
-
-    /**
-     * Returns the set of unique observations in samples.
-     *
-     * @return {Set}
-     */
-    BIOMTable.prototype.getObservations = function () {
-        var obs = new Set();
-
-        for (var sample in this._samp) {
-            for (var i = 0; i < this._obs[sample].length; i++) {
-                obs.add(this._obs[sample][i]);
-            }
-        }
-
-        return obs;
-    };
-
-    /**
-     * Returns a sorted list of sample categories
-     *
-     * @return{Array}
+     * @return {Array}
      */
     BIOMTable.prototype.getSampleCategories = function () {
-        return Object.keys(Object.values(this._samp)[0]).sort();
+        return util.naturalSort(this._smCols);
     };
 
     /**
-     * Returns an array of unique values in a metadata column. If column is
-     * numeric then the array is sorted in ascending order.
+     * Returns an array of unique values in a metadata column, sorted using
+     * util.naturalSort().
      *
-     * @param{Object} field The column of data
+     * @param {String} col The sample metadata column to find unique values of
      *
-     * @return{Object}
+     * @return {Array}
+     *
+     * @throws {Error} If the sample metadata column is unrecognized.
      */
-    BIOMTable.prototype.getUniqueSampleValues = function (field) {
+    BIOMTable.prototype.getUniqueSampleValues = function (col) {
+        var colIdx = this._getSampleMetadataColIndex(col);
         var values = new Set();
-        var isNumeric = this._types[field] === "n";
-        for (var sample in this._samp) {
-            // grab next value in column
-            var cVal = this._samp[sample][field];
-
-            // ignore missing data
-            values.add(cVal);
-        }
-
-        // convert result to array and sort
-        values = [...values];
-        return isNumeric ? values.sort((a, b) => a - b) : values.sort();
+        _.each(this._sm, function (smRow) {
+            values.add(smRow[colIdx]);
+        });
+        return util.naturalSort(Array.from(values));
     };
 
     /**
-     * Returns a mapping of trajectory values to observations given a gradient
-     * and trajectory. Ignores trajectories which represent missing data. (i.e.
-     * 'unknown' for non-numberic and NaN for numeric)
+     * Given gradient and trajectory information, returns an Object that maps
+     * trajectory values to an array of all of the feature IDs present within
+     * samples with this trajectory value and with the specified gradient
+     * value.
      *
-     * @param{String} cat The column in metadata the gradient belongs to.
-     * @param{String} grad The value for the gradient. observations that have
-     *                this value will only be returned.
-     * @param{Object} traj The column for the trajectory. All observations with
-     *                missing data in this column will be ignored.
+     * Note that this does not filter to feature IDs that are unique to
+     * trajectory values. (In the context of Empress animation, this should be
+     * done later using the output of this function.)
      *
-     * @return{Object} return a mapping of trajectory values to observations.
+     * @param {String} gradCol Sample metadata column for the gradient
+     *                         (e.g. "day")
+     * @param {String} gradVal Value within the gradient column to get
+     *                         information for (e.g. "20")
+     * @param {String} trajCol Sample metadata column for the trajectory
+     *                         (e.g. "subject")
+     *
+     * @return {Object} Maps trajectory values to an array of feature IDs
+     *
+     * @throws {Error} If the gradient or trajectory columns are unrecognized.
+     *                 If no samples' gradient column value is gradVal.
      */
-    BIOMTable.prototype.getGradientStep = function (cat, grad, traj) {
-        var obs = {};
-        var samples = Object.keys(this._samp);
-        var isNumeric = this._types[traj] === "n";
-
-        // add observations to mapping object
-        var addItems = function (items, container) {
-            items.forEach((x) => container.add(x));
-        };
-
-        // for all sample's whose gradient is the same as grad
-        // add sample feature observations to the samples trajectory value
-        for (var i = 0; i < samples.length; i++) {
-            var sId = samples[i];
-            var sample = this._samp[sId];
-            if (grad === sample[cat]) {
-                var cVal = sample[traj];
-
-                // checking if trajectory value is missing
-
-                // add sample observations to the appropriate mapping
-                if (!(sample[traj] in obs)) {
-                    obs[sample[traj]] = new Set();
+    BIOMTable.prototype.getGradientStep = function (gradCol, gradVal, trajCol) {
+        var scope = this;
+        var gcIdx = this._getSampleMetadataColIndex(gradCol);
+        var tcIdx = this._getSampleMetadataColIndex(trajCol);
+        var trajValToFeatureIndexSet = {};
+        _.each(this._sm, function (smRow, sIdx) {
+            if (smRow[gcIdx] === gradVal) {
+                var tVal = smRow[tcIdx];
+                if (!_.has(trajValToFeatureIndexSet, tVal)) {
+                    trajValToFeatureIndexSet[tVal] = new Set();
                 }
-                addItems(this._obs[sId], obs[sample[traj]]);
+                // Add the indices of all of the features in this sample to
+                // trajValToFeatureIndexSet[tVal]
+                _.each(scope._tbl[sIdx], function (fIdx) {
+                    trajValToFeatureIndexSet[tVal].add(fIdx);
+                });
             }
+        });
+        if (_.isEmpty(trajValToFeatureIndexSet)) {
+            throw new Error(
+                'No samples have "' +
+                    gradVal +
+                    '" as their value in the "' +
+                    gradCol +
+                    '" gradient sample metadata column.'
+            );
         }
-
-        // convert sets arrays
-        for (var key in obs) {
-            obs[key] = Array.from(obs[key]);
-        }
-        return obs;
+        return _.mapObject(trajValToFeatureIndexSet, function (fIndexSet) {
+            return scope._featureIndexSetToIDArray(fIndexSet);
+        });
     };
 
     /**
-     * Returns a list of samples that contain an observation in obIDs
+     * Returns an array of samples that contain at least one feature in fIDs
      *
-     * @param{Array} obIDs A list of observationIds (i.e. tip names)
+     * @param {Array} fIDs Array of feature IDs (i.e. tip names)
      *
-     * @return{Array} a list of samples
+     * @return {Array} containingSampleIDs Array of sample IDs
+     *
+     * @throws {Error} If any of the feature IDs are unrecognized.
      */
-    BIOMTable.prototype.getSamplesByObservations = function (obIDs) {
-        var samples = Object.keys(this._obs);
-        var result = [];
+    BIOMTable.prototype.getSamplesByObservations = function (fIDs) {
+        var scope = this;
 
-        var checkSampleForObservations = function (sample, obs) {
-            return obs.some((id) => sample.includes(id));
+        // Convert array of feature IDs to an array of indices
+        var fIndices = _.map(fIDs, function (fID) {
+            return scope._getFeatureIndexFromID(fID);
+        });
+
+        // Helper function: returns true if there is an intersection
+        // between a sample's present feature indices (a sorted array)
+        // and fIndices.
+        var sampleHasMatch = function (presentFeatureIndices) {
+            return _.some(fIndices, function (fIdx) {
+                return scope._sortedArrayHasNumber(presentFeatureIndices, fIdx);
+            });
         };
-        // find all samples that contain at least one observation in obIDs
-        for (var i = 0; i < samples.length; i++) {
-            var sample = samples[i];
-            if (checkSampleForObservations(this._obs[sample], obIDs)) {
-                result.push(sample);
-            }
-        }
 
-        return result;
+        // Now, we can go through the table and find samples with matches
+        var containingSampleIDs = [];
+        _.each(this._tbl, function (presentFeatureIndices, sIdx) {
+            if (sampleHasMatch(presentFeatureIndices)) {
+                containingSampleIDs.push(scope._sIDs[sIdx]);
+            }
+        });
+        return containingSampleIDs;
     };
 
     /**
-     * Returns an Object mapping sample field values to the number of samples
-     * with that value.
+     * Given an array of sample IDs and a sample metadata column,
+     * returns an Object mapping sample metadata values for that column
+     * to the number of samples in the array with that value.
      *
-     * For example if field == 'body_site' then this function will return an
+     * For example, if col == 'body_site', then this function will return an
      * an object that maps each body site (oral, gut,...) to the number of
      * samples in 'samples' labelled as being from that body site.
      *
-     * @param{Array} samples A list of sample ids
-     * @param{String} field The category to count
+     * @param {Array} samples Array of sample IDs
+     * @param {String} col Sample metadata column
      *
-     * @return{Object}
+     * @return {Object} valueToSampleCount
+     *
+     * @throws {Error} If the sample metadata column is unrecognized.
+     *                 If any of the sample IDs are unrecognized.
      */
-    BIOMTable.prototype.getSampleValuesCount = function (samples, field) {
-        var result = {};
-        for (var i = 0; i < samples.length; i++) {
-            var fVal = this._samp[samples[i]][field];
-            if (fVal in result) {
-                result[fVal] += 1;
+    BIOMTable.prototype.getSampleValuesCount = function (samples, col) {
+        var scope = this;
+        var colIdx = this._getSampleMetadataColIndex(col);
+        var valueToSampleCount = {};
+        _.each(samples, function (sID) {
+            var sampleIdx = scope._getSampleIndexFromID(sID);
+            var cVal = scope._sm[sampleIdx][colIdx];
+            if (_.has(valueToSampleCount, cVal)) {
+                valueToSampleCount[cVal] += 1;
             } else {
-                result[fVal] = 1;
+                valueToSampleCount[cVal] = 1;
             }
-        }
-
-        return result;
+        });
+        return valueToSampleCount;
     };
 
     return BIOMTable;

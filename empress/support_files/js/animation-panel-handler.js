@@ -95,7 +95,7 @@ define(["Colorer"], function (Colorer) {
      *
      * @private
      */
-    AnimationPanel.prototype.__toogleSelects = function (disableStatus) {
+    AnimationPanel.prototype._toggleSelects = function (disableStatus) {
         this.colorSelect.disabled = disableStatus;
         this.gradient.disabled = disableStatus;
         this.trajectory.disabled = disableStatus;
@@ -162,7 +162,7 @@ define(["Colorer"], function (Colorer) {
          */
         this.startBtn.onclick = function () {
             // change GUI components
-            scope.__toogleSelects(true);
+            scope._toggleSelects(true);
             scope.__pauseOptions();
 
             // collect starting conditions for the animation
@@ -208,7 +208,7 @@ define(["Colorer"], function (Colorer) {
          * Stops the animation and clears the state machine
          */
         this.stopBtn.onclick = function () {
-            scope.__toogleSelects(false);
+            scope._toggleSelects(false);
             scope.__startOptions();
             scope.animator.stopAnimation();
         };

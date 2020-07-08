@@ -8,7 +8,8 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 // tree comes from the following newick string
                 // ((1,(2,3)4)5,6)7;
                 var tree = new BPTree(
-                    new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]));
+                    new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]),
+                    null, null, null);
                 var layoutToCoordSuffix = {
                     "Rectangular": "r",
                     "Circular": "c2",
@@ -119,84 +120,55 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         "visible": true
                     }
 
-                }
-                var obs = {
-                    "s1": ["1", "2", "3"],
-                    "s2": ["2", "3"],
-                    "s3": ["1", "3", "EmpressNode6"],
-                    "s4": ["2"],
-                    "s5": ["1", "2", "3", "EmpressNode6"],
-                    "s6": ["1", "2", "3"],
-                    "s7": ["EmpressNode6"]
                 };
-                var samp = {
-                    "s1": {
-                        "f1": "a",
-                        "grad": 1,
-                        "traj": "t1"
-                    },
-                    "s2": {
-                        "f1": "a",
-                        "grad": 2,
-                        "traj": "t1"
-                    },
-                    "s3": {
-                        "f1": "a",
-                        "grad": 1,
-                        "traj": "t2"
-                    },
-                    "s4": {
-                        "f1": "b",
-                        "grad": 2,
-                        "traj": "t2"
-                    },
-                    "s5": {
-                        "f1": "a",
-                        "grad": 3,
-                        "traj": "t3"
-                    },
-                    "s6": {
-                        "f1": "a",
-                        "grad": 3,
-                        "traj": "t3"
-                    },
-                    "s7": {
-                        "f1": "b",
-                        "grad": 4,
-                        "traj": "t4"
-                    }
+                // data for the BiomTable object
+                // (These IDs / indices aren't assigned in any particular
+                // order; as long as it's consistent it doesn't matter.
+                // However, setting fIDs in this way is convenient b/c it means
+                // the index of feature "1" is 1, of "2" is 2, etc.)
+                var sIDs = ["s1", "s2", "s3", "s4", "s5", "s6", "s7"];
+                var fIDs = ["EmpressNode6", "1", "2", "3"];
+                var sID2Idx = {
+                    "s1": 0, "s2": 1, "s3": 2, "s4": 3, "s5": 4, "s6": 5, "s7": 6
                 };
-                var types = {
-                    "f1": "o",
-                    "grad": "n",
-                    "traj": "o"
-                }
+                var fID2Idx = {
+                     "EmpressNode6": 0, "1": 1, "2": 2, "3": 3
+                };
+                // See test-biom-table.js for details on this format. Briefly,
+                // each inner array describes the feature indices present in a
+                // sample.
+                var tbl = [
+                    [1, 2, 3],
+                    [2, 3],
+                    [0, 1, 3],
+                    [2],
+                    [0, 1, 2, 3],
+                    [1, 2, 3],
+                    [0]
+                ];
+                var smCols = ["f1", "grad", "traj"];
+                var sm = [
+                    ["a", "1", "t1"],
+                    ["a", "2", "t1"],
+                    ["a", "1", "t2"],
+                    ["b", "2", "t2"],
+                    ["a", "3", "t3"],
+                    ["a", "3", "t3"],
+                    ["b", "4", "t4"],
+                ];
                 var featureColumns = ["f1", "f2"];
                 var tipMetadata = {
-                    "1": {
-                        "f1": 2,
-                        "f2": 2
-                    },
-                    "2": {
-                        "f1": 1,
-                        "f2": 2
-                    },
-                    "3": {
-                        "f1": 1,
-                        "f2": 2
-                    },
-                    "EmpressNode6": {
-                        "f1": 2,
-                        "f2": 2
-                    }
-                }
+                    "1": ["2", "2"],
+                    "2": ["1", "2"],
+                    "3": ["1", "2"],
+                    "EmpressNode6": ["2", "2"]
+                };
                 var intMetadata = {
-                    "internal": {
-                        "f1": 1,
-                        "f2": 1
-                    }
+                    "internal": ["1", "1"]
                 }
-                var biom = new BiomTable(obs, samp, types);
+                var biom = new BiomTable(
+                    sIDs, fIDs, sID2Idx, fID2Idx, tbl, smCols, sm
+                );
                 var canvas = document.createElement("canvas");
                 this.empress = new Empress(tree, treeData, nameToKeys,
                     layoutToCoordSuffix, "Unrooted",
@@ -274,36 +246,36 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
             // Note: node 6's name is EmpressNode6 which means it will not be
             // included in the getNodeCoords()
             var rectCoords = new Float32Array([
-                1, 2, 1.0, 1.0, 1.0,
-                3, 4, 1.0, 1.0, 1.0,
-                5, 6, 1.0, 1.0, 1.0,
-                7, 8, 1.0, 1.0, 1.0,
-                9, 10, 1.0, 1.0, 1.0,
-                13, 14, 1.0, 1.0, 1.0
+                1, 2, 0.75, 0.75, 0.75,
+                3, 4, 0.75, 0.75, 0.75,
+                5, 6, 0.75, 0.75, 0.75,
+                7, 8, 0.75, 0.75, 0.75,
+                9, 10, 0.75, 0.75, 0.75,
+                13, 14, 0.75, 0.75, 0.75,
             ]);
             this.empress._currentLayout = "Rectangular";
             var empressRecCoords = this.empress.getNodeCoords();
             deepEqual(empressRecCoords, rectCoords);
 
             var circCoords = new Float32Array([
-                15, 16, 1.0, 1.0, 1.0,
-                17, 18, 1.0, 1.0, 1.0,
-                19, 20, 1.0, 1.0, 1.0,
-                21, 22, 1.0, 1.0, 1.0,
-                23, 24, 1.0, 1.0, 1.0,
-                27, 28, 1.0, 1.0, 1.0,
+                15, 16, 0.75, 0.75, 0.75,
+                17, 18, 0.75, 0.75, 0.75,
+                19, 20, 0.75, 0.75, 0.75,
+                21, 22, 0.75, 0.75, 0.75,
+                23, 24, 0.75, 0.75, 0.75,
+                27, 28, 0.75, 0.75, 0.75,
             ]);
             this.empress._currentLayout = "Circular";
             var empressCirCoords = this.empress.getNodeCoords();
             deepEqual(empressCirCoords, circCoords);
 
             var unrootCoords = new Float32Array([
-                29, 30, 1.0, 1.0, 1.0,
-                31, 32, 1.0, 1.0, 1.0,
-                33, 34, 1.0, 1.0, 1.0,
-                35, 36, 1.0, 1.0, 1.0,
-                37, 38, 1.0, 1.0, 1.0,
-                41, 42, 1.0, 1.0, 1.0,
+                29, 30, 0.75, 0.75, 0.75,
+                31, 32, 0.75, 0.75, 0.75,
+                33, 34, 0.75, 0.75, 0.75,
+                35, 36, 0.75, 0.75, 0.75,
+                37, 38, 0.75, 0.75, 0.75,
+                41, 42, 0.75, 0.75, 0.75,
             ]);
             this.empress._currentLayout = "Unrooted";
             var empressUnrootCoords = this.empress.getNodeCoords();
@@ -337,25 +309,6 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
             }
          });
 
-         test("Test colorSampleIDs", function() {
-            var samples = ["s2","s7"];
-            var defaultColor = [1.0, 1.0, 1.0];
-            var color = [0.5, 0.6, 0.7];
-            this.empress.colorSampleIDs(samples, color);
-
-            // Note: 1 does not belong to s2 or s7 so it should not be colored
-            //       which means the color should not be projected up to node 5
-            var cNodes = new Set([2, 3, 4, 6]);
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
-                if (cNodes.has(i)) {
-                    deepEqual(node.color, color);
-                } else {
-                    deepEqual(node.color, defaultColor);
-                }
-            }
-         });
-
          test("Test colorSampleGroups, single group", function() {
             // Note: the group names for colorSampleGroup must be a color
             // hex string
@@ -364,8 +317,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
             };
             this.empress.colorSampleGroups(sampleGroup);
 
-            // the entire tree should be colored the samples in sampleGroup
-            // contain all tips
+            // the entire tree should be colored. sampleGroup contain all tips
             for (var i = 1; i <=7; i++) {
                 var node = this.empress._treeData[i];
                 deepEqual(node.color, [1.0, 0, 0]);
@@ -392,7 +344,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 } else if(greeNodes.has(i)) {
                     deepEqual(node.color, [0, 1.0, 0]);
                 } else {
-                    deepEqual(node.color, [1.0, 1.0, 1.0]);
+                    deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
          });
@@ -454,7 +406,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         chroma(cm["a"]).gl().slice(0, 3)
                     );
                 }  else {
-                    deepEqual(node.color, [1.0, 1.0, 1.0]);
+                    deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
 
@@ -496,7 +448,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         chroma(cm["2"]).gl().slice(0, 3)
                     );
                 } else {
-                    deepEqual(node.color, [1.0, 1.0, 1.0]);
+                    deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
 
@@ -527,7 +479,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         chroma(cm["2"]).gl().slice(0, 3)
                     );
                 } else {
-                    deepEqual(node.color, [1.0, 1.0, 1.0]);
+                    deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
 
@@ -703,7 +655,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
             );
             deepEqual(result, f1Values);
 
-            var gradValues = [1, 2, 3, 4];
+            var gradValues = ["1", "2", "3", "4"];
             result = util.naturalSort(
                 this.empress.getUniqueSampleValues("grad")
             );
@@ -721,7 +673,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 "t1": ["1", "2", "3"],
                 "t2": ["EmpressNode6", "1", "3"]
             }
-            var obs = this.empress.getGradientStep("grad", 1, "traj");
+            var obs = this.empress.getGradientStep("grad", "1", "traj");
             var groups = Object.keys(obs);
             for (var i = 0; i < groups.length; i++) {
                 var group = groups[i];
@@ -731,10 +683,8 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
         });
 
         test("Test getFeatureMetadataCategories", function() {
-            var expectedColumns = ["f1", "f2"];
-            var columns = util.naturalSort(
-                this.empress.getFeatureMetadataCategories());
-            deepEqual(columns, expectedColumns);
+            var columns = this.empress.getFeatureMetadataCategories();
+            deepEqual(columns, ["f1", "f2"]);
         });
 
         test("Test centerLayoutAvgPoint", function() {
