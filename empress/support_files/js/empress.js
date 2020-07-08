@@ -980,11 +980,9 @@ define([
         var result = util.keepUniqueKeys(obs, notRepresented);
 
         // remove all groups that do not contain unique features
-        categories = Object.keys(result);
-        for (i = 0; i < categories.length; i++) {
-            category = categories[i];
-            if (result[category].size === 0) delete result[category];
-        }
+        result = _.pick(result, function (value, key) {
+            return value.size > 0;
+        });
 
         return result;
     };
