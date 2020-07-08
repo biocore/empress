@@ -125,9 +125,26 @@ define(["underscore"], function (_) {
         return { numeric: numeric, nonNumeric: nonNumeric };
     }
 
+    /**
+     * Display a message in toast.
+     *
+     * @param {string} msg - message to display
+     * @param {number} duration - milliseconds to keep toast visible
+     */
+    function toastMsg(msg) {
+        var duration = 2000,
+            toast = document.getElementById("toast");
+        toast.innerHTML = msg;
+        toast.classList.remove("hidden");
+        setTimeout(function () {
+            toast.classList.add("hidden");
+        }, duration);
+    }
+
     return {
         keepUniqueKeys: keepUniqueKeys,
         naturalSort: naturalSort,
         splitNumericValues: splitNumericValues,
+        toastMsg: toastMsg,
     };
 });

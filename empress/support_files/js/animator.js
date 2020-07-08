@@ -1,4 +1,4 @@
-define(["Colorer"], function (Colorer) {
+define(["Colorer", "util"], function (Colorer, util) {
     /**
      * @class Animator
      *
@@ -198,17 +198,18 @@ define(["Colorer"], function (Colorer) {
     };
 
     /**
-     * Collects all the frames in the animation. This method is called while
-     * the asynchronous animation loop is running and is respondible for setting
-     * the timeframe ready flag to true once is has been collected.
+     * Collect a frame in the animation and stores it in the
+     * queuedFrames object.
+     *
+     * @param{Number} frame The frame to retrieve. frame must be in the range
+     *                      [0, totalFrames] else an error will be thrown.
      *
      * @private
      */
-    Animator.prototype.__collectFrames = async function () {
-        for (var i = 0; i < this.totalFrames; i++) {
-            this.queuedFrames[i] = this.retriveFrame(i);
-            this.framesRdy[i] = true;
-        }
+    Animator.prototype._collectFrame = function (frame) {
+        if (frame < 0 || frame > this.totalFrames) throw "Invalid Frame";
+        this.queuedFrames[frame] = this.retriveFrame(frame);
+        this.framesRdy[frame] = true;
     };
 
     /**
@@ -219,6 +220,10 @@ define(["Colorer"], function (Colorer) {
         var name = `${frame.name} (${this.curFrame + 1} / ${this.totalFrames})`;
         var keyInfo = frame.keyInfo;
         var obs = frame.obs;
+
+        if (Object.keys(keyInfo).length === 0) {
+            util.toastMsg("No unique branches found for this frame");
+        }
 
         // draw new legend
         this.legend.clearAllLegends();
@@ -236,29 +241,30 @@ define(["Colorer"], function (Colorer) {
     };
 
     /**
-     * The asynchronous animation loop. This method will continously create
-     * timeout events until animation is done or user pauses animation. If a
-     * frame is reached before it is ready, then a new timeout event will be
-     * created.
+     * The animation loop. This method will continously create timeout events
+     * until the animation is done or user pauses/stops the animation.
      */
-    Animator.prototype.playAnimation = async function () {
+    Animator.prototype.playAnimation = function () {
         // used in closure
         var scope = this;
 
         // Animation loop
         setTimeout(function loop() {
-            if (!scope.pause && scope.curFrame != scope.totalFrames) {
-                if (scope.framesRdy[scope.curFrame]) {
-                    scope.drawFrame();
+            if (!scope.pause && scope.curFrame !== scope.totalFrames) {
+                if (!scope.framesRdy[scope.curFrame]) {
+                    scope._collectFrame(scope.curFrame);
                 }
+                scope.drawFrame();
                 setTimeout(loop, scope.timePerFram);
+            } else if (!scope.pause && scope.curFrame === scope.totalFrames) {
+                util.toastMsg("Animation Complete.");
             }
         }, 0);
     };
 
     /**
      * This method is the entry point for the animation. This method will
-     * start the animation loop and collect the timeframes.
+     * start the animation loop.
      */
     Animator.prototype.startAnimation = function () {
         this.curFrame = 0;
@@ -270,9 +276,6 @@ define(["Colorer"], function (Colorer) {
         // Note: This method is async and will create timeout events until
         // animation is complete or user pauses.
         this.playAnimation();
-
-        // create timeframes while the animation loop runs
-        this.__collectFrames();
     };
 
     /**
@@ -327,7 +330,14 @@ define(["Colorer"], function (Colorer) {
         }
         obs = this.empress._projectObservations(obs);
 
-        return { name: name, keyInfo: this.legendInfo, obs: obs };
+        // add non-empty groups to the legend for this frame
+        var legend = {};
+        for (var group in this.legendInfo) {
+            if (obs.hasOwnProperty(group))
+                legend[group] = this.legendInfo[group];
+        }
+
+        return { name: name, keyInfo: legend, obs: obs };
     };
 
     /**
@@ -358,6 +368,7 @@ define(["Colorer"], function (Colorer) {
         if (this.curFrame >= this.totalFrames) {
             this.curFrame = this.totalFrames - 1;
         }
+        if (!this.framesRdy[this.curFrame]) this._collectFrame(this.curFrame);
         this.drawFrame();
     };
 
