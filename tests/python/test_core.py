@@ -237,6 +237,39 @@ class TestCore(unittest.TestCase):
         dict_a_with_fm.pop('tree_data')
         self.assertEqual(obs, dict_a_with_fm)
 
+    def test_to_dict_with_metadata_nans(self):
+        nan_sample_metadata = self.sample_metadata.copy()
+        nan_feature_metadata = self.feature_metadata.copy()
+        nan_sample_metadata.at["Sample2", "Metadata4"] = np.nan
+        nan_feature_metadata.at["h", "fmdcol1"] = np.nan
+        nan_feature_metadata.at["a", "fmdcol2"] = np.nan
+
+        viz = Empress(self.tree, self.table, nan_sample_metadata,
+                      nan_feature_metadata,
+                      filter_unobserved_features_from_phylogeny=False)
+        obs = viz._to_dict()
+        dict_a_nan = copy.deepcopy(DICT_A)
+
+        # [1][3] corresponds to Sample2, Metadata4
+        dict_a_nan["compressed_sample_metadata"][1][3] = str(np.nan)
+
+        dict_a_nan["compressed_tip_metadata"] = {"a": ["asdf", str(np.nan)]}
+        dict_a_nan["compressed_int_metadata"] = {"h": [str(np.nan), "tyui"]}
+        dict_a_nan["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
+
+        tree_data = obs['tree_data']
+        exp = dict_a_nan['tree_data']
+        self.assert_almost_equal_tree_data(tree_data, exp)
+
+        dict_a_nan.pop('tree_data')
+        obs.pop('tree_data')
+        self.assertEqual(obs, dict_a_nan)
+
+        res = viz.make_empress()
+        self.assertTrue('empressRequire' in res)
+        self.assertTrue('empress = new Empress' in res)
+        self.assertTrue('emperor_require_logic' not in res)
+
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.pcoa,
