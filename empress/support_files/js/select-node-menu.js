@@ -249,6 +249,7 @@ define(["underscore", "util"], function (_, util) {
                 "number of unique samples that contain this node.";
         }
         this.smFooter.classList.remove("hidden");
+        this.smTable.classList.remove("hidden");
     };
 
     /**
@@ -360,6 +361,11 @@ define(["underscore", "util"], function (_, util) {
                 }
             }
             SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.smTable);
+            this.smFooter.classList.remove("hidden");
+            this.smTable.classList.remove("hidden");
+        } else {
+            this.smFooter.classList.add("hidden");
+            this.smTable.classList.add("hidden");
         }
 
         if (this.fields.length > 0) {
@@ -374,11 +380,6 @@ define(["underscore", "util"], function (_, util) {
                     "values represent the number of unique samples that " +
                     "contain any of this node's descendant tips.";
             }
-        }
-        if (isUnambiguous) {
-            this.smFooter.classList.remove("hidden");
-        } else {
-            this.smFooter.classList.add("hidden");
         }
     };
 
