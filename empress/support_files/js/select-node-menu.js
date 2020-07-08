@@ -4,7 +4,7 @@ define(["underscore", "util"], function (_, util) {
         this.drawer = drawer;
         this.fields = [];
         this.smTable = document.getElementById("menu-sm-table");
-        this.smFooter = document.getElementById("menu-sm-footer");
+        this.smSection = document.getElementById("menu-sm-section");
         this.box = document.getElementById("menu-box");
         this.sel = document.getElementById("menu-select");
         this.addBtn = document.getElementById("menu-add-btn");
@@ -248,7 +248,7 @@ define(["underscore", "util"], function (_, util) {
                 "This node is a tip in the tree. These values represent the " +
                 "number of unique samples that contain this node.";
         }
-        this.smFooter.classList.remove("hidden");
+        this.smSection.classList.remove("hidden");
         this.smTable.classList.remove("hidden");
     };
 
@@ -266,8 +266,19 @@ define(["underscore", "util"], function (_, util) {
 
         var name = this.empress._treeData[this.nodeKeys[0]].name;
 
-        var isDup = false;
-        var isUnambiguous = true;
+        // Figure out whether or not we know the actual node in the tree (for
+        // example, if the user searched for a node with a duplicate name, then
+        // we don't know which node the user was referring to). This impacts
+        // whether or not we show the sample presence info for this node.
+        var isUnambiguous = (this.nodeKeys.length === 1);
+
+        // This is not necessarily equal to this.nodeKeys. If an internal node
+        // with a duplicate name was clicked on then this.nodeKeys will only
+        // have a single entry (the node that was clicked on): but
+        // keysOfNodesWithThisName will accordingly have multiple entries.
+        // The reason we try to figure this out here is so that we can
+        // determine whether or not to show a warning about duplicate names
+        // in the menu.
         var keysOfNodesWithThisName = this.empress._nameToKeys[name];
         if (keysOfNodesWithThisName.length > 1) {
             this.warning.textContent =
@@ -275,14 +286,6 @@ define(["underscore", "util"], function (_, util) {
                 keysOfNodesWithThisName.length +
                 " nodes exist with the " +
                 "above name.";
-            isDup = true;
-            // If the user clicked on a node, we should know *exactly* which
-            // node it was, even if its name is not unique. However, if the
-            // user just searched for a node with a not-unique name, we don't
-            // know what node was selected, so we're limited in what we can do.
-            if (this.nodeKeys.length > 1) {
-                isUnambiguous = false;
-            }
         }
 
         // 1. Add feature metadata information (if present) for this node
@@ -320,9 +323,8 @@ define(["underscore", "util"], function (_, util) {
             }
         }
 
-        // iterate over all keys
         if (isUnambiguous) {
-            // this.nodeKeys should have a length of 1
+            // this.nodeKeys has a length of 1
             var nodeKey = this.nodeKeys[0];
 
             // find first and last preorder positions of the subtree spanned
@@ -361,25 +363,20 @@ define(["underscore", "util"], function (_, util) {
                 }
             }
             SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.smTable);
-            this.smFooter.classList.remove("hidden");
+            this.smSection.classList.remove("hidden");
             this.smTable.classList.remove("hidden");
         } else {
-            this.smFooter.classList.add("hidden");
+            this.smSection.classList.add("hidden");
             this.smTable.classList.add("hidden");
         }
 
-        if (this.fields.length > 0) {
-            if (!isUnambiguous) {
-                this.notes.textContent =
-                    "This node is an internal node in the tree with a " +
-                    "duplicated name. Since you searched for this name, " +
-                    "we're showing all nodes with this name in the tree.";
-            } else {
-                this.notes.textContent =
-                    "This node is an internal node in the tree. These " +
-                    "values represent the number of unique samples that " +
-                    "contain any of this node's descendant tips.";
-            }
+        // If isUnambiguous is false, no notes will be shown and the sample
+        // presence info (including the table and notes) will be hidden
+        if (this.fields.length > 0 && isUnambiguous) {
+            this.notes.textContent =
+                "This node is an internal node in the tree. These " +
+                "values represent the number of unique samples that " +
+                "contain any of this node's descendant tips.";
         }
     };
 
@@ -401,8 +398,12 @@ define(["underscore", "util"], function (_, util) {
      * Sets the nodeKeys parameter of the state machine. This method will also
      * set the buffer to highlight the selected nodes.
      *
-     * @param{Array} nodeKeys An array of node keys. The keys should be the
-     *                        post order position of the nodes.
+     * @param {Array} nodeKeys An array of node keys representing the
+     *                         nodes to be selected. The keys should be the
+     *                         post order position of the nodes. If this array
+     *                         has multiple entries (i.e. multiple nodes are
+     *                         selected), the node selection menu will be
+     *                         positioned at the first node in this array.
      */
     SelectedNodeMenu.prototype.setSelectedNodes = function (nodeKeys) {
         // test to make sure nodeKeys represents nodes with the same name
@@ -446,27 +447,24 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Set the coordinates of the node menu box. If nodeKeys was set to a
-     * single node, then the box will be placed next to that node.
-     * Otherwise, the box will be placed next to the root of the tree.
+     * Set the coordinates of the node menu box at the first node in nodeKeys.
+     * This means that, if only a single node is selected, the menu will be
+     * placed at this node's position; if multiple nodes are selected, the menu
+     * will be placed at the first node's position.
      */
     SelectedNodeMenu.prototype.updateMenuPosition = function () {
         if (this.nodeKeys === null) {
             return;
         }
 
-        var node = this.empress._treeData[this.nodeKeys[0]];
-        if (this.nodeKeys.length > 1) {
-            // ambiguous, so position the menu at the root of the tree
-            node = this.empress._treeData[this.empress._tree.size];
-        }
+        var nodeToPositionAt = this.empress._treeData[this.nodeKeys[0]];
         // get table coords
-        var x = this.empress.getX(node);
-        var y = this.empress.getY(node);
+        var x = this.empress.getX(nodeToPositionAt);
+        var y = this.empress.getY(nodeToPositionAt);
         var tableLoc = this.drawer.toScreenSpace(x, y);
 
         // set table location. add slight offset to location so menu appears
-        // next to node instead of on top of it.
+        // next to the node instead of on top of it.
         this.box.style.left = Math.floor(tableLoc.x + 23) + "px";
         this.box.style.top = Math.floor(tableLoc.y - 43) + "px";
     };

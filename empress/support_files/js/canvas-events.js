@@ -363,16 +363,26 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
     ) {
         var scope = this;
         var node;
-        var openMenu = function (treeNode, keyList) {
+        /**
+         * This is a utility function that, given an array of node keys,
+         * centers the camera on the first node (if moveTree is truthy) and
+         * then passes the array to this.empress.selectedNodeMenu and opens the
+         * menu / redraws the tree.
+         */
+        var openMenu = function (nodeKeys) {
+            // We'll position the camera at whatever the "first" node in
+            // nodeKeys is. This is an arbitrary decision, but better than
+            // nothing.
             if (moveTree) {
+                var nodeToCenterOn = scope.empress._treeData[nodeKeys[0]];
                 scope.drawer.centerCameraOn(
-                    scope.empress.getX(treeNode),
-                    scope.empress.getY(treeNode)
+                    scope.empress.getX(nodeToCenterOn),
+                    scope.empress.getY(nodeToCenterOn)
                 );
             }
 
             // show menu
-            scope.selectedNodeMenu.setSelectedNodes(keyList);
+            scope.selectedNodeMenu.setSelectedNodes(nodeKeys);
             scope.selectedNodeMenu.showNodeMenu();
 
             scope.empress.drawTree();
@@ -380,25 +390,15 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
         if (nodeKey !== undefined) {
             // If this parameter was specified, our job is easy -- we know the
             // exact node to place the menu at
-            node = this.empress._treeData[nodeKey];
-            openMenu(node, [nodeKey]);
+            openMenu([nodeKey]);
         } else {
             // We only know the name of the node to select (due to something
             // like the user searching for this name). Therefore, if there are
             // multiple nodes with this same name, things will be ambiguous.
-            var keyList = this.empress._nameToKeys[nodeName];
-            if (keyList !== undefined) {
+            var nodeKeys = this.empress._nameToKeys[nodeName];
+            if (nodeKeys !== undefined) {
                 // At least one node with this name exists
-                if (keyList.length > 1) {
-                    // Multiple nodes have this name, so place the camera at
-                    // the root of the tree
-                    node = this.empress._treeData[this.empress._tree.size];
-                } else {
-                    // Only one node has this name; we can place the camera
-                    // unambiguously at this node's position
-                    node = this.empress._treeData[keyList[0]];
-                }
-                openMenu(node, keyList);
+                openMenu(nodeKeys);
             } else {
                 // No nodes have this name
                 this.quickSearchBar.classList.add("invalid-search");
