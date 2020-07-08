@@ -319,6 +319,30 @@ class TestCore(unittest.TestCase):
             Empress(self.tree, self.unrelated_table, self.sample_metadata,
                     filter_unobserved_features_from_phylogeny=True)
 
+    def test_ordination_integration_callbacks(self):
+        viz = Empress(self.tree, self.table, self.sample_metadata,
+                      ordination=self.pcoa)
+
+        # table should be unchanged and be a different id instance
+        assert_frame_equal(self.table, viz.table.T)
+        self.assertNotEqual(id(self.table), id(viz.table))
+
+        # sample metadata should be unchanged and be a different id instance
+        assert_frame_equal(self.sample_metadata, viz.samples)
+        self.assertNotEqual(id(self.sample_metadata), id(viz.samples))
+
+        self.assertIsNone(viz.features)
+
+        assert_ordination_results_equal(viz.ordination, self.pcoa)
+
+        # emperor is instantiated as needed but not yet setup
+        self.assertTrue(isinstance(viz._emperor, Emperor))
+
+        # ensure the rendering works correctly
+        obs = viz.make_empress()
+        self.assertTrue('setOnNodeMenuVisibleCallback' in obs)
+        self.assertTrue('setOnNodeMenuHiddenCallback' in obs)
+
 
 # How data should look like when converted to a dict
 #
