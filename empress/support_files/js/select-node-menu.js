@@ -3,11 +3,6 @@ define(["underscore", "util"], function (_, util) {
         this.empress = empress;
         this.drawer = drawer;
         this.fields = [];
-        this.TYPES = {
-            TREE_DATA: "t",
-            SAMPLE_DATA: "s",
-            FEATRUE_DATA: "f",
-        };
         this.smTable = document.getElementById("menu-sm-table");
         this.box = document.getElementById("menu-box");
         this.sel = document.getElementById("menu-select");
@@ -156,7 +151,7 @@ define(["underscore", "util"], function (_, util) {
                 var colCell = headerRow.insertCell(-1);
                 colCell.innerHTML = "<strong>" + colName + "</strong>";
                 var dataCell = featureRow.insertCell(-1);
-                dataCell.innerHTML = mdObj[nodeName][colName];
+                dataCell.innerHTML = mdObj[nodeName][x];
             }
             fmHeader.classList.remove("hidden");
             fmTable.classList.remove("hidden");

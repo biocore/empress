@@ -6,7 +6,8 @@ require(['jquery', 'BPTree', 'Empress'], function($, BPTree, Empress) {
         module('Circular Layout Computation' , {
             setup: function() {
                 var tree = new BPTree(
-                    new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0]));
+                    new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0]),
+                    null, null, null);
                 var layoutToCoordSuffix = {"Circular": "c1"};
                 var treeData = {
                     1: {

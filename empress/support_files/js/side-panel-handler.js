@@ -1,6 +1,4 @@
 define(["underscore", "Colorer"], function (_, Colorer) {
-    // class name for css tags
-    var COLLAPSE_CLASS = "collapsible";
     /**
      *
      * @class SidePanel
@@ -393,8 +391,8 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         var selOpts = this.empress.getFeatureMetadataCategories();
         for (i = 0; i < selOpts.length; i++) {
             opt = document.createElement("option");
-            opt.value = selOpts[i];
             opt.innerHTML = selOpts[i];
+            opt.value = selOpts[i];
             this.fSel.appendChild(opt);
         }
 
