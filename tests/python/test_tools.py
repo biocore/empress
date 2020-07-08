@@ -8,7 +8,7 @@
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from skbio import TreeNode
+from skbio import TreeNode, OrdinationResults
 from empress import Tree, tools
 from empress.taxonomy_utils import split_taxonomy
 from bp import parse_newick, from_skbio_treenode
@@ -73,6 +73,25 @@ class TestTools(unittest.TestCase):
             "Level 7", "Confidence"
         ]
 
+        eigvals = pd.Series([0.50, 0.25, 0.25],
+                            index=['PC1', 'PC2', 'PC3'])
+        samples = [[0.1, 0.2, 0.3],
+                   [0.2, 0.3, 0.4],
+                   [0.3, 0.4, 0.5],
+                   [0.4, 0.5, 0.6]]
+        proportion_explained = pd.Series([15.5, 12.2, 8.8],
+                                         index=['PC1', 'PC2', 'PC3'])
+        samples_df = pd.DataFrame(samples,
+                                  index=['Sample1', 'Sample2', 'Sample3',
+                                         'Sample4'],
+                                  columns=['PC1', 'PC2', 'PC3'])
+        self.ordination = OrdinationResults(
+                'PCoA',
+                'Principal Coordinate Analysis',
+                eigvals,
+                samples_df,
+                proportion_explained=proportion_explained)
+
     def test_fill_missing_node_names(self):
         t = Tree.from_tree(self.tree)
         tools.fill_missing_node_names(t)
@@ -85,6 +104,20 @@ class TestTools(unittest.TestCase):
         filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
             self.bp_tree, self.table, self.sample_metadata
         )
+        assert_frame_equal(filtered_table, self.table)
+        assert_frame_equal(filtered_sample_md, self.sample_metadata)
+        # We didn't pass in any feature metadata, so we shouldn't get any out
+        self.assertIsNone(t_md)
+        self.assertIsNone(i_md)
+
+    def test_match_inputs_nothing_dropped_with_ordination(self):
+        # everything is the same since the ordination has a 1:1 match to the
+        # feature table
+        filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
+            self.bp_tree, self.table, self.sample_metadata,
+            ordination=self.ordination
+        )
+
         assert_frame_equal(filtered_table, self.table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
         # We didn't pass in any feature metadata, so we shouldn't get any out
@@ -380,6 +413,19 @@ class TestTools(unittest.TestCase):
         # 3) Check that columns on both DFs are identical
         self.assertListEqual(list(t_fm.columns), self.exp_split_fm_cols)
         self.assertListEqual(list(i_fm.columns), self.exp_split_fm_cols)
+
+    def test_failed_match_to_ordination(self):
+        self.ordination.samples.index = pd.Index(['Sample1', 'Zample2',
+                                                  'Sample3', 'Sample4'])
+
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "The feature table does not have exactly the same samples as the "
+            "ordination. These are the problematic sample identifiers: Sample2"
+            ", Zample2"
+        ):
+            tools.match_inputs(self.bp_tree, self.table, self.sample_metadata,
+                               ordination=self.ordination)
 
 
 if __name__ == "__main__":

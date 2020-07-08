@@ -136,7 +136,7 @@ class Empress():
         # table for the rest of this visualizer.
         self.table, self.samples, self.tip_md, self.int_md = match_inputs(
             self.tree, self.table.T, self.samples, self.features,
-            ignore_missing_samples, filter_missing_features
+            self.ordination, ignore_missing_samples, filter_missing_features
         )
         # remove unobserved features from the phylogeny
         if filter_unobserved_features_from_phylogeny:

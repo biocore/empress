@@ -59,6 +59,7 @@ def match_inputs(
     table,
     sample_metadata,
     feature_metadata=None,
+    ordination=None,
     ignore_missing_samples=False,
     filter_missing_features=False
 ):
@@ -87,6 +88,8 @@ def match_inputs(
         IDs and the columns should describe different feature metadata fields'
         names. (Feature IDs here can describe tips or internal nodes in the
         tree.)
+    ordination: skbio.OrdinationResults, optional
+        The ordination to display in a tandem plot.
     ignore_missing_samples: bool
         If True, pads missing samples (i.e. samples in the table but not the
         metadata) with placeholder metadata. If False, raises a
@@ -136,6 +139,8 @@ def match_inputs(
                metadata, AND ignore_missing_samples is False.
             5. The feature metadata was passed, but no features present in it
                are also present as tips or internal nodes in the tree.
+            6. The ordination AND feature table don't have exactly the same
+               samples.
 
     References
     ----------
@@ -269,6 +274,17 @@ def match_inputs(
             raise DataMatchingError(
                 "No features in the feature metadata are present in the tree, "
                 "either as tips or as internal nodes."
+            )
+
+    if ordination is not None:
+        # tandem plots require a 1-1 match between feature table and ordination
+        mismatched = set(ordination.samples.index) ^ set(ff_table.columns)
+
+        if mismatched:
+            raise DataMatchingError(
+                "The feature table does not have exactly the same samples as "
+                "the ordination. These are the problematic sample identifiers:"
+                " %s" % (', '.join(sorted(mismatched)))
             )
 
     return ff_table, sf_sample_metadata, tip_metadata, int_metadata
