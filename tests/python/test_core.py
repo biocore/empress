@@ -249,13 +249,12 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
         dict_a_nan = copy.deepcopy(DICT_A)
-        dict_a_nan["sample_data"]["Sample2"]["Metadata4"] = np.nan
-        dict_a_nan["tip_metadata"] = {
-            "a": {"fmdcol1": "asdf", "fmdcol2": np.nan}
-        }
-        dict_a_nan["int_metadata"] = {
-            "h": {"fmdcol1": np.nan, "fmdcol2": "tyui"}
-        }
+
+        # [1][3] corresponds to Sample2, Metadata4
+        dict_a_nan["compressed_sample_metadata"][1][3] = str(np.nan)
+
+        dict_a_nan["compressed_tip_metadata"] = {"a": ["asdf", str(np.nan)]}
+        dict_a_nan["compressed_int_metadata"] = {"h": [str(np.nan), "tyui"]}
         dict_a_nan["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
 
         tree_data = obs['tree_data']
@@ -266,7 +265,10 @@ class TestCore(unittest.TestCase):
         obs.pop('tree_data')
         self.assertEqual(obs, dict_a_nan)
 
-        viz.make_empress()
+        res = viz.make_empress()
+        self.assertTrue('empressRequire' in res)
+        self.assertTrue('empress = new Empress' in res)
+        self.assertTrue('emperor_require_logic' not in res)
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
