@@ -222,7 +222,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         var obs = frame.obs;
 
         if (Object.keys(keyInfo).length === 0) {
-            util.toastMsg("No unique features found in current frame.");
+            util.toastMsg("No unique branches found for this frame");
         }
 
         // draw new legend

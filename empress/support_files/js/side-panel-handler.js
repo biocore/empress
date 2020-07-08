@@ -207,7 +207,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var hide = this.sHideChk.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col);
         if (keyInfo === null) {
-            util.toastMsg("No unique features were found.");
+            util.toastMsg("No unique branches found for this metadata category");
             this.sUpdateBtn.classList.remove("hidden");
             return;
         }
