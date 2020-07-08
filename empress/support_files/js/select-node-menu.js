@@ -270,7 +270,7 @@ define(["underscore", "util"], function (_, util) {
         // example, if the user searched for a node with a duplicate name, then
         // we don't know which node the user was referring to). This impacts
         // whether or not we show the sample presence info for this node.
-        var isUnambiguous = (this.nodeKeys.length === 1);
+        var isUnambiguous = this.nodeKeys.length === 1;
 
         // This is not necessarily equal to this.nodeKeys. If an internal node
         // with a duplicate name was clicked on then this.nodeKeys will only
