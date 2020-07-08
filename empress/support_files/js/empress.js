@@ -1174,5 +1174,15 @@ define([
         this.drawTree();
     };
 
+    /**
+     * Set a callback to get the represented samples for a node
+     *
+     * The callback will receive a list of samples as the only argument. This
+     * is inteded to be used with emperor.
+     */
+    Empress.prototype.setOnNodeClickCallback = function(callback) {
+      this._events.selectedNodeMenu.clickCallback = callback;
+    };
+
     return Empress;
 });
