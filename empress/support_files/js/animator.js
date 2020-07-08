@@ -207,9 +207,9 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @private
      */
     Animator.prototype._collectFrame = function (frame) {
-            if (!(0 < frame < this.totalFrames)) throw 'Invalid Frame';
-            this.queuedFrames[frame] = this.retriveFrame(frame);
-            this.framesRdy[frame] = true;
+        if (frame < 0 || frame > this.totalFrames) throw "Invalid Frame";
+        this.queuedFrames[frame] = this.retriveFrame(frame);
+        this.framesRdy[frame] = true;
     };
 
     /**
@@ -222,7 +222,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         var obs = frame.obs;
 
         if (Object.keys(keyInfo).length === 0) {
-            util.toastMsg("No unique features found in current frame.")
+            util.toastMsg("No unique features found in current frame.");
         }
 
         // draw new legend
@@ -256,8 +256,8 @@ define(["Colorer", "util"], function (Colorer, util) {
                 }
                 scope.drawFrame();
                 setTimeout(loop, scope.timePerFram);
-            } else if (!scope.pause && scope.curFrame === scope.totalFrames){
-                util.toastMsg("Animation Complete.")
+            } else if (!scope.pause && scope.curFrame === scope.totalFrames) {
+                util.toastMsg("Animation Complete.");
             }
         }, 0);
     };
@@ -333,7 +333,8 @@ define(["Colorer", "util"], function (Colorer, util) {
         // add non-empty groups to the legend for this frame
         var legend = {};
         for (var group in this.legendInfo) {
-            if (obs.hasOwnProperty(group)) legend[group] = this.legendInfo[group];
+            if (obs.hasOwnProperty(group))
+                legend[group] = this.legendInfo[group];
         }
 
         return { name: name, keyInfo: legend, obs: obs };
