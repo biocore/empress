@@ -101,7 +101,7 @@ def match_inputs(
         ignore_missing_samples flag in Emperor.
     filter_extra_samples: bool, optional
         If True, ignores samples in the feature table that are not present in
-        the ordination. If false, raises a DataMatchingerror if such samples
+        the ordination. If False, raises a DataMatchingError if such samples
         exist.
     filter_missing_features: bool
         If True, filters features from the table that aren't present as tips in
@@ -177,14 +177,14 @@ def match_inputs(
                         "The feature table has more samples than the "
                         "ordination. These are the problematic sample "
                         "identifiers: %s. You can override this error by using"
-                        " the --p-filter-extra-samples flag" %
+                        " the --p-filter-extra-samples flag." %
                         (', '.join(sorted(extra)))
                     )
                 ff_table = ff_table[ord_ids]
                 ff_table = ff_table.loc[ff_table.sum(axis=1) > 0]
         else:
             raise DataMatchingError(
-                "The ordination has more samples than the feature table"
+                "The ordination has more samples than the feature table."
             )
 
     tree_and_table_features = ff_table.index.intersection(tip_names)

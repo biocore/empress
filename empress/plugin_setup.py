@@ -80,8 +80,11 @@ plugin.visualizers.register_function(
             'one sample is present in both the feature table and the metadata.'
         ),
         'filter_extra_samples': (
-            'This will supress the error that\'s raised when samples in the '
-            'feature table are not included in the ordination.'
+            'This will suppress the error raised when samples in the feature '
+            'table are not included in the ordination. These samples will be '
+            'will be removed from the visualization if this flag is passed. '
+            'Note that this flag will only be applied if at least one sample '
+            'in the table is also present in the ordination.'
         ),
         'filter_missing_features': (
             'This will suppress the error raised when the feature table '
