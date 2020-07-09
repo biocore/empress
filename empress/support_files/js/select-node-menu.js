@@ -323,6 +323,9 @@ define(["underscore", "util"], function (_, util) {
             }
         }
 
+        // force-reset the selection buffer
+        this._samplesInSelection = [];
+
         // iterate over all keys
         for (i = 0; i < this.nodeKeys.length; i++) {
             var nodeKey = this.nodeKeys[i];
