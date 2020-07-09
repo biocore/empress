@@ -1177,8 +1177,8 @@ define([
     /**
      * Set a callback when a the node menu is shown on screen
      *
-     * The callback will receive a list of samples as the only argument. This
-     * is inteded to be used with emperor.
+     * The callback will receive an array of samples as the only argument. This
+     * is intended to be used with Emperor.
      *
      * @param {Function} callback Callback to execute.
      */
@@ -1187,10 +1187,10 @@ define([
     };
 
     /**
-     * Set a callback when a the node menu is removed from the screen
+     * Set a callback when the node menu is removed from the screen
      *
-     * The callback will receive a list of samples as the only argument. This
-     * is inteded to be used with emperor.
+     * The callback will receive an array of samples as the only argument. This
+     * is intended to be used with Emperor.
      *
      * @param {Function} callback Callback to execute.
      */
