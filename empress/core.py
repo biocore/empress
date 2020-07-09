@@ -65,7 +65,7 @@ class Empress():
             ignore_missing_samples flag in Emperor.
         filter_extra_samples: bool, optional (default False)
             If True, ignores samples in the feature table that are not present
-            in the ordination. If false, raises a DataMatchingerror if such
+            in the ordination. If False, raises a DataMatchingError if such
             samples exist.
         filter_missing_features: bool, optional (default False)
             If True, filters features from the table that aren't present as
