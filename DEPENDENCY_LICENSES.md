@@ -200,6 +200,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ## reset.css
-This file (note that we use a pared-down version of the original file)
+This code (we use a pared-down version of reset.css in `empress.css`)
 is in the public domain, as specified by
 https://meyerweb.com/eric/tools/css/reset as of July 8, 2020.
