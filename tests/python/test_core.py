@@ -276,7 +276,7 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
 
-        self.assertEqual(viz._emperor.width, '48vw')
+        self.assertEqual(viz._emperor.width, '50vw')
         self.assertEqual(viz._emperor.height, '100vh; float: right')
 
         self.assertEqual(viz._emperor.settings['axes']['axesColor'], 'black')

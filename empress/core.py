@@ -325,9 +325,7 @@ class Empress():
         return env.get_template('empress-template.html')
 
     def _scavenge_emperor(self):
-        # can't make this 50vw because one of the plot containers has some
-        # padding that makes the divs stack on top of each other
-        self._emperor.width = '48vw'
+        self._emperor.width = '50vw'
         self._emperor.height = '100vh; float: right'
 
         # make the background white so it matches Empress
