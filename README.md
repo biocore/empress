@@ -78,6 +78,9 @@ of the samples in the ordination (if the ordination was made using a *filtered
 table*). If you'd like to read more about this, there's some informal
 discussion in [pull request 237](https://github.com/biocore/empress/pull/237).
 
+The command below uses the *raw dataset* and removes extra samples not
+represented in the ordination (using the `--p-filter-extra-samples` flag):
+
 ```bash
 qiime empress plot \
     --i-tree docs/moving-pictures/rooted-tree.qza \
@@ -86,6 +89,7 @@ qiime empress plot \
     --m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
     --m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
     --o-visualization docs/moving-pictures/empress-tree-tandem.qzv
+    --p-filter-extra-samples
 ```
 
 This generates a visualization of a phylogenetic tree alongside a visualization
