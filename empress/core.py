@@ -29,8 +29,8 @@ SELECTION_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
 class Empress():
     def __init__(self, tree, table, sample_metadata,
                  feature_metadata=None, ordination=None,
-                 ignore_missing_samples=False, filter_missing_features=False,
-                 resource_path=None,
+                 ignore_missing_samples=False, filter_extra_samples=False,
+                 filter_missing_features=False, resource_path=None,
                  filter_unobserved_features_from_phylogeny=True):
         """Visualize a phylogenetic tree
 
@@ -63,6 +63,10 @@ class Empress():
             out; and if no samples are shared between the table and metadata, a
             DataMatchingError is raised regardless.) This is analogous to the
             ignore_missing_samples flag in Emperor.
+        filter_extra_samples: bool, optional (default False)
+            If True, ignores samples in the feature table that are not present
+            in the ordination. If false, raises a DataMatchingerror if such
+            samples exist.
         filter_missing_features: bool, optional (default False)
             If True, filters features from the table that aren't present as
             tips in the tree. If False, raises a DataMatchingError if any such
@@ -110,6 +114,7 @@ class Empress():
 
         self._validate_and_match_data(
             ignore_missing_samples,
+            filter_extra_samples,
             filter_missing_features,
             filter_unobserved_features_from_phylogeny
         )
@@ -128,6 +133,7 @@ class Empress():
             self._emperor = None
 
     def _validate_and_match_data(self, ignore_missing_samples,
+                                 filter_extra_samples,
                                  filter_missing_features,
                                  filter_unobserved_features_from_phylogeny):
 
@@ -138,7 +144,8 @@ class Empress():
         # table for the rest of this visualizer.
         self.table, self.samples, self.tip_md, self.int_md = match_inputs(
             self.tree, self.table.T, self.samples, self.features,
-            self.ordination, ignore_missing_samples, filter_missing_features
+            self.ordination, ignore_missing_samples, filter_extra_samples,
+            filter_missing_features
         )
         # remove unobserved features from the phylogeny
         if filter_unobserved_features_from_phylogeny:
