@@ -39,6 +39,7 @@ plugin.visualizers.register_function(
         'sample_metadata': Metadata,
         'feature_metadata': Metadata,
         'ignore_missing_samples': Bool,
+        'filter_extra_samples': Bool,
         'filter_missing_features': Bool,
         'number_of_features': Int % Range(1, None),
         'filter_unobserved_features_from_phylogeny': Bool
@@ -77,6 +78,10 @@ plugin.visualizers.register_function(
             'setting all of their metadata values to "This sample has no '
             'metadata". Note that this flag will only be applied if at least '
             'one sample is present in both the feature table and the metadata.'
+        ),
+        'filter_extra_samples': (
+            'This will supress the error that\'s raised when samples in the '
+            'feature table are not included in the ordination.'
         ),
         'filter_missing_features': (
             'This will suppress the error raised when the feature table '

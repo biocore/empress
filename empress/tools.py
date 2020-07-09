@@ -61,6 +61,7 @@ def match_inputs(
     sample_metadata,
     feature_metadata=None,
     ordination=None,
+    filter_extra_samples=False,
     ignore_missing_samples=False,
     filter_missing_features=False
 ):
@@ -98,6 +99,10 @@ def match_inputs(
         no samples are shared between the table and metadata, a
         DataMatchingError is raised regardless.) This is analogous to the
         ignore_missing_samples flag in Emperor.
+    filter_extra_samples: bool, optional
+        If True, ignores samples in the feature table that are not present in
+        the ordination. If false, raises a DataMatchingerror if such samples
+        exist.
     filter_missing_features: bool
         If True, filters features from the table that aren't present as tips in
         the tree. If False, raises a DataMatchingError if any such features
@@ -151,16 +156,45 @@ def match_inputs(
     # (Ignore None-named tips in the tree, which will be replaced later on
     # with "default" names like "EmpressNode0".)
     tip_names = set(bp_tree_tips(bp_tree))
-    tree_and_table_features = table.index.intersection(tip_names)
+    ff_table = table.copy()
 
+    if ordination is not None:
+        table_ids = set(ff_table.columns)
+        ord_ids = set(ordination.samples.index)
+
+        # don't allow for disjoint datasets
+        if not (table_ids & ord_ids):
+            raise DataMatchingError(
+                "No samples in the feature table are present in the "
+                "ordination"
+            )
+
+        if ord_ids.issubset(table_ids):
+            extra = table_ids - ord_ids
+            if extra and not filter_extra_samples:
+                raise DataMatchingError(
+                    "The feature table has more samples than the ordination. "
+                    "These are the problematic sample identifiers: %s. You can"
+                    " override this error by using the "
+                    "--p-filter-extra-samples flag" %
+                    (', '.join(sorted(extra)))
+                )
+            elif extra:
+                ff_table = ff_table[ord_ids]
+                ff_table = ff_table.loc[ff_table.sum(axis=1) > 0]
+        else:
+            raise DataMatchingError(
+                "The ordination has more samples than the feature table"
+            )
+
+    tree_and_table_features = ff_table.index.intersection(tip_names)
     if len(tree_and_table_features) == 0:
         # Error condition 1
         raise DataMatchingError(
             "No features in the feature table are present as tips in the tree."
         )
 
-    ff_table = table.copy()
-    if len(tree_and_table_features) < len(table.index):
+    if len(tree_and_table_features) < len(ff_table.index):
         if filter_missing_features:
             # Filter table to just features that are also present in the tree.
             #
@@ -169,7 +203,7 @@ def match_inputs(
             # (and this is going to be the case in most datasets where the
             # features correspond to tips, since internal nodes aren't
             # explicitly described in the feature table).
-            ff_table = table.loc[tree_and_table_features]
+            ff_table = ff_table.loc[tree_and_table_features]
 
             # Report to user about any dropped features from table.
             dropped_feature_ct = table.shape[0] - ff_table.shape[0]
@@ -274,17 +308,6 @@ def match_inputs(
             raise DataMatchingError(
                 "No features in the feature metadata are present in the tree, "
                 "either as tips or as internal nodes."
-            )
-
-    if ordination is not None:
-        # tandem plots require a 1-1 match between feature table and ordination
-        mismatched = set(ordination.samples.index) ^ set(ff_table.columns)
-
-        if mismatched:
-            raise DataMatchingError(
-                "The feature table does not have exactly the same samples as "
-                "the ordination. These are the problematic sample identifiers:"
-                " %s" % (', '.join(sorted(mismatched)))
             )
 
     return ff_table, sf_sample_metadata, tip_metadata, int_metadata

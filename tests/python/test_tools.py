@@ -414,18 +414,82 @@ class TestTools(unittest.TestCase):
         self.assertListEqual(list(t_fm.columns), self.exp_split_fm_cols)
         self.assertListEqual(list(i_fm.columns), self.exp_split_fm_cols)
 
-    def test_failed_match_to_ordination(self):
-        self.ordination.samples.index = pd.Index(['Sample1', 'Zample2',
-                                                  'Sample3', 'Sample4'])
+    def test_disjoint_table_and_ordination(self):
+        self.ordination.samples.index = pd.Index(['Zample1', 'Zample2',
+                                                  'Zample3', 'Zample4'])
 
         with self.assertRaisesRegex(
             tools.DataMatchingError,
-            "The feature table does not have exactly the same samples as the "
-            "ordination. These are the problematic sample identifiers: Sample2"
-            ", Zample2"
+            "No samples in the feature table are present in the ordination"
         ):
             tools.match_inputs(self.bp_tree, self.table, self.sample_metadata,
                                ordination=self.ordination)
+
+    def test_ordination_is_superset(self):
+        self.table = pd.DataFrame(
+            {
+                "Sample1": [1, 2, 0, 4],
+                "Sample2": [8, 7, 0, 5],
+                "Sample3": [1, 0, 0, 0],
+            },
+            index=["a", "b", "e", "d"]
+        )
+
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "The ordination has more samples than the feature table"
+        ):
+            tools.match_inputs(self.bp_tree, self.table, self.sample_metadata,
+                               ordination=self.ordination)
+
+    def test_table_is_superset_raises(self):
+        self.table = pd.DataFrame(
+            {
+                "Sample1": [1, 2, 0, 4],
+                "Sample2": [8, 7, 0, 5],
+                "Sample3": [1, 0, 0, 0],
+                "Sample4": [1, 0, 0, 0],
+                "Sample5": [1, 0, 4, 0],
+            },
+            index=["a", "b", "e", "d"]
+        )
+
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "The feature table has more samples than the ordination. These are"
+            " the problematic sample identifiers: Sample5. You can override "
+            "this error by using the --p-filter-extra-samples flag"
+        ):
+            tools.match_inputs(self.bp_tree, self.table, self.sample_metadata,
+                               ordination=self.ordination)
+
+    def test_table_is_superset_override_raises(self):
+        self.table = pd.DataFrame(
+            {
+                "Sample1": [1, 2, 0, 4],
+                "Sample2": [8, 7, 0, 5],
+                "Sample3": [1, 0, 0, 0],
+                "Sample4": [1, 0, 0, 0],
+                "Sample5": [1, 0, 4, 0],
+            },
+            index=["a", "b", "e", "d"]
+        )
+
+        filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
+            self.bp_tree, self.table, self.sample_metadata,
+            ordination=self.ordination, filter_extra_samples=True)
+
+        exp = self.table.loc[['a', 'b', 'd'],
+                             ['Sample1', 'Sample2', 'Sample3', 'Sample4']]
+
+        # guarantee the same sample-wise order
+        assert_frame_equal(filtered_table[exp.columns], exp)
+        assert_frame_equal(filtered_sample_md.loc[exp.columns],
+                           self.sample_metadata)
+
+        # We didn't pass in any feature metadata, so we shouldn't get any out
+        self.assertIsNone(t_md)
+        self.assertIsNone(i_md)
 
     def test_shifting(self):
         # helper test function to count number of bits in the number

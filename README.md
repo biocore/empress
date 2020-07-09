@@ -58,6 +58,14 @@ This generates a visualization of a phylogenetic tree at
 
 ### Example 2: Using Empress to visualize a tree in tandem with an ordination
 
+**Note**: In tandem plots we recommend that users carefully consider which
+feature table they would like to visualize. These can either be a *filtered
+table* (rarefied or without low abundance features), or a *raw table*. If you
+select a *filtered table* the tree will include less data than in the *raw
+dataset*. If you select the *raw table*, you might find that some nodes in the
+tree won't be represented by any of the samples in the ordination (if the
+ordination was made using a *filtered table*).
+
 ```bash
 qiime empress plot \
     --i-tree docs/moving-pictures/rooted-tree.qza \
