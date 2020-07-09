@@ -193,7 +193,7 @@ define(["underscore", "util"], function (_, util) {
      * @param {Number} num Number to look for the presence of in arr; in
      *                     practice, this will be a feature index to search for
      *
-     * @return {boolean} true if num is present in arr, false otherwise
+     * @return {Boolean} true if num is present in arr, false otherwise
      */
     BIOMTable.prototype._sortedArrayHasNumber = function (arr, num) {
         return _.indexOf(arr, num, true) >= 0;

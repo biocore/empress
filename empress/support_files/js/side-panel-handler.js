@@ -1,4 +1,4 @@
-define(["underscore", "Colorer"], function (_, Colorer) {
+define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     /**
      *
      * @class SidePanel
@@ -185,6 +185,9 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         // clear legends
         this.legend.clearAllLegends();
 
+        // hide update button
+        updateBtn.classList.add("hidden");
+
         // color tree
         this[colorMethodName]();
 
@@ -193,9 +196,6 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             this.empress.thickenSameSampleLines(lWidth - 1);
         }
         this.empress.drawTree();
-
-        // hide update button
-        updateBtn.classList.add("hidden");
     };
 
     /**
@@ -206,6 +206,13 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         var col = this.sColor.value;
         var hide = this.sHideChk.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col);
+        if (keyInfo === null) {
+            util.toastMsg(
+                "No unique branches found for this metadata category"
+            );
+            this.sUpdateBtn.classList.remove("hidden");
+            return;
+        }
         this.empress.setNonSampleBranchVisibility(hide);
         this.legend.addColorKey(colBy, keyInfo, "node", false);
     };
