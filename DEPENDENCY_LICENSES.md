@@ -198,3 +198,8 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 ```
+
+## reset.css
+This file (note that we use a pared-down version of the original file)
+is in the public domain, as specified by
+https://meyerweb.com/eric/tools/css/reset as of July 8, 2020.

@@ -250,6 +250,7 @@ label:hover .tooltip {
     background-color: lightgray;
     opacity: 0.75;
     padding: 20px;
+    z-index: 1;
 }
 
 #menu-box:hover {
@@ -374,6 +375,11 @@ label:hover .tooltip {
 .combined-plot-container {
   width: 50vw !important;
   float: left;
+  border-right: 2px solid black;
+  /* Having this z-index puts this above the Emperor div, which is useful
+   * because it lets us draw the border-line above over Emperor
+   */
+  z-index: 1;
 }
 
 #dvicontainer {
