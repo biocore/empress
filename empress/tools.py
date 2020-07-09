@@ -171,15 +171,15 @@ def match_inputs(
 
         if ord_ids.issubset(table_ids):
             extra = table_ids - ord_ids
-            if extra and not filter_extra_samples:
-                raise DataMatchingError(
-                    "The feature table has more samples than the ordination. "
-                    "These are the problematic sample identifiers: %s. You can"
-                    " override this error by using the "
-                    "--p-filter-extra-samples flag" %
-                    (', '.join(sorted(extra)))
-                )
-            elif extra:
+            if extra:
+                if not filter_extra_samples:
+                    raise DataMatchingError(
+                        "The feature table has more samples than the "
+                        "ordination. These are the problematic sample "
+                        "identifiers: %s. You can override this error by using"
+                        " the --p-filter-extra-samples flag" %
+                        (', '.join(sorted(extra)))
+                    )
                 ff_table = ff_table[ord_ids]
                 ff_table = ff_table.loc[ff_table.sum(axis=1) > 0]
         else:
