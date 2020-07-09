@@ -58,13 +58,25 @@ This generates a visualization of a phylogenetic tree at
 
 ### Example 2: Using Empress to visualize a tree in tandem with an ordination
 
-**Note**: In tandem plots we recommend that users carefully consider which
-feature table they would like to visualize. These can either be a *filtered
-table* (rarefied or without low abundance features), or a *raw table*. If you
-select a *filtered table* the tree will include less data than in the *raw
-dataset*. If you select the *raw table*, you might find that some nodes in the
-tree won't be represented by any of the samples in the ordination (if the
-ordination was made using a *filtered table*).
+**Note**: When your ordination was created from a subset of your original
+dataset (e.g. the feature table was rarefied, or certain low-frequency features
+or samples were otherwise filtered out), we recommend that you carefully
+consider *which* feature table you would like to visualize in Empress. You can
+use either:
+
+- A *filtered table* that matches the ordination (e.g. with rarefaction done,
+  and/or with low-abundance features/samples removed), or
+- A *raw table* -- that is, the original table before performing
+  rarefaction/filtering for the ordination.
+
+There are some pros and cons for either of these choices. If you use a
+*filtered table*, then the Empress visualization will include less data than in
+the *raw dataset*: this will impact sample presence information, sample
+metadata coloring, and other parts of the visualization. If you select the *raw
+table*, you might find that some nodes in the tree won't be represented by any
+of the samples in the ordination (if the ordination was made using a *filtered
+table*). If you'd like to read more about this, there's some informal
+discussion in [pull request 237](https://github.com/biocore/empress/pull/237).
 
 ```bash
 qiime empress plot \
