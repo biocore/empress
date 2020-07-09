@@ -338,7 +338,7 @@ class TestCore(unittest.TestCase):
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
-        # ensure the rendering works correctly
+        # ensure the callbacks were rendered
         obs = viz.make_empress()
         self.assertTrue('setOnNodeMenuVisibleCallback' in obs)
         self.assertTrue('setOnNodeMenuHiddenCallback' in obs)
