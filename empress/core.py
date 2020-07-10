@@ -25,6 +25,8 @@ SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
 SELECTION_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
                                        'selection-callback.js')
+NODE_CLICK_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
+                                        'node-click-callback.js')
 
 
 class Empress():
@@ -372,8 +374,13 @@ class Empress():
         # once everything is loaded replace the callback tag for custom JS
         with open(SELECTION_CALLBACK_PATH) as f:
             selection_callback = f.read()
+        with open(NODE_CLICK_CALLBACK_PATH) as f:
+            node_click_callback = f.read()
+
         emperor_require_logic = emperor_require_logic.replace(
             '/*__select_callback__*/', selection_callback)
+        emperor_require_logic = emperor_require_logic.replace(
+            '/*__custom_on_ready_code__*/', node_click_callback)
 
         emperor_data = {
             'emperor_div': emperor_div,

@@ -15,6 +15,10 @@ define(["underscore", "util"], function (_, util) {
         this.fmHeader = document.getElementById("menu-fm-header");
         this.smHeader = document.getElementById("menu-sm-header");
         this.nodeKeys = null;
+
+        this.hiddenCallback = null;
+        this.visibleCallback = null;
+        this._samplesInSelection = [];
     }
 
     /**
@@ -22,6 +26,8 @@ define(["underscore", "util"], function (_, util) {
      * menu, and creates the add button click event.
      */
     SelectedNodeMenu.prototype.initialize = function () {
+        var scope = this;
+
         // add items to select
         var selOpts = this.empress.getSampleCategories();
         for (var i = 0; i < selOpts.length; i++) {
@@ -197,6 +203,10 @@ define(["underscore", "util"], function (_, util) {
 
         // show table
         this.box.classList.remove("hidden");
+
+        if (this.visibleCallback !== null) {
+            this.visibleCallback(this._samplesInSelection);
+        }
     };
 
     /**
@@ -232,6 +242,12 @@ define(["underscore", "util"], function (_, util) {
 
         // 2. Add sample presence information for this tip
         var ctData = {};
+
+        // 2.1 The samples represented by this tip are sent to Emperor
+        this._samplesInSelection = this.empress._biom.getSamplesByObservations([
+            name,
+        ]);
+
         for (var f = 0; f < this.fields.length; f++) {
             var field = this.fields[f];
             var obs = this.empress._biom.getObsCountsBy(field, name);
@@ -323,6 +339,9 @@ define(["underscore", "util"], function (_, util) {
             }
         }
 
+        // force-reset the selection buffer
+        this._samplesInSelection = [];
+
         if (isUnambiguous) {
             // this.nodeKeys has a length of 1
             var nodeKey = this.nodeKeys[0];
@@ -349,6 +368,9 @@ define(["underscore", "util"], function (_, util) {
 
             // retrive the sample data for the tips
             var samples = emp._biom.getSamplesByObservations(tips);
+
+            // used for the emperor callback
+            this._samplesInSelection = this._samplesInSelection.concat(samples);
 
             // iterate over the samples and extract the field values
             for (j = 0; j < this.fields.length; j++) {
@@ -392,6 +414,11 @@ define(["underscore", "util"], function (_, util) {
         this.fmTable.innerHTML = "";
         this.drawer.loadSelectedNodeBuff([]);
         this.empress.drawTree();
+
+        if (this.hiddenCallback !== null) {
+            this.hiddenCallback(this._samplesInSelection);
+        }
+        this._samplesInSelection = [];
     };
 
     /**

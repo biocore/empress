@@ -1186,5 +1186,29 @@ define([
         this.drawTree();
     };
 
+    /**
+     * Set a callback when a the node menu is shown on screen
+     *
+     * The callback will receive an array of samples as the only argument. This
+     * is intended to be used with Emperor.
+     *
+     * @param {Function} callback Callback to execute.
+     */
+    Empress.prototype.setOnNodeMenuVisibleCallback = function (callback) {
+        this._events.selectedNodeMenu.visibleCallback = callback;
+    };
+
+    /**
+     * Set a callback when the node menu is removed from the screen
+     *
+     * The callback will receive an array of samples as the only argument. This
+     * is intended to be used with Emperor.
+     *
+     * @param {Function} callback Callback to execute.
+     */
+    Empress.prototype.setOnNodeMenuHiddenCallback = function (callback) {
+        this._events.selectedNodeMenu.hiddenCallback = callback;
+    };
+
     return Empress;
 });
