@@ -213,8 +213,8 @@ class TestCore(unittest.TestCase):
         # "black -l 79 dictcode.py" (while in the same directory as the file)
         # to format it so that it's consistent with how DICT_A is set up at the
         # bottom of this file.
-        with open("dictcode.py", "w") as f:
-            f.write("DICT_A = {}".format(str(obs)))
+        # with open("dictcode.py", "w") as f:
+        #     f.write("DICT_A = {}".format(str(obs)))
 
         tree_data = obs['tree_data']
         exp = dict_a_cp['tree_data']

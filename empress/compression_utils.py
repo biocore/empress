@@ -78,7 +78,7 @@ def remove_empty_samples_and_features(table, sample_metadata, ordination=None):
                 )
         # Note: this has the side effect of, if the dtypes of the sample
         # metadata are not "homogeneous", converting the dtypes all to object.
-        # See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.transpose.html.
+        # See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.transpose.html. # noqa: E501
         # Since we'll eventually convert the sample and feature metadata's
         # values to strings anyway, this shouldn't make a difference, although
         # it would be ideal to do the string conversions before this step so
@@ -95,8 +95,9 @@ def remove_empty_samples_and_features(table, sample_metadata, ordination=None):
             if empty_feats_in_ord:
                 raise ValueError(
                     (
-                        "The ordination contains features that are empty (i.e. "
-                        "all 0s) in the table. Problematic feature IDs: {}"
+                        "The ordination contains features that are empty "
+                        "(i.e. all 0s) in the table. Problematic feature IDs: "
+                        "{}"
                     ).format(", ".join(sorted(empty_feats_in_ord)))
                 )
         print("Removed {} empty feature(s).".format(len(feature_diff)))

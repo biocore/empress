@@ -151,33 +151,44 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         }
         # Ordination info (for testing inputs to remove_empty...())
-        self.eigvals = pd.Series(np.array([0.50, 0.25, 0.25]),
-                            index=["PC1", "PC2", "PC3"])
-        samples = np.array([[0.1, 0.2, 0.3],
-                            [0.2, 0.3, 0.4],
-                            [0.3, 0.4, 0.5],
-                            [0.4, 0.5, 0.6]])
-        self.proportion_explained = pd.Series([15.5, 12.2, 8.8],
-                                         index=["PC1", "PC2", "PC3"])
-        self.samples_df = pd.DataFrame(samples,
-                                  index=["Sample1", "Sample2", "Sample3",
-                                         "Sample4"],
-                                  columns=["PC1", "PC2", "PC3"])
-        features = np.array([[0.9, 0.8, 0.7],
-                             [0.6, 0.5, 0.4],
-                             [0.3, 0.2, 0.1],
-                             [0.0, 0.2, 0.4]])
-        self.features_df = pd.DataFrame(features,
-                                   index=["a", "b", "e", "d"],
-                                   columns=["PC1", "PC2", "PC3"])
+        self.eigvals = pd.Series(
+            np.array([0.50, 0.25, 0.25]),
+            index=["PC1", "PC2", "PC3"]
+        )
+        samples = np.array([
+            [0.1, 0.2, 0.3],
+            [0.2, 0.3, 0.4],
+            [0.3, 0.4, 0.5],
+            [0.4, 0.5, 0.6]
+        ])
+        self.proportion_explained = pd.Series(
+            [15.5, 12.2, 8.8],
+            index=["PC1", "PC2", "PC3"]
+        )
+        self.samples_df = pd.DataFrame(
+            samples,
+            index=["Sample1", "Sample2", "Sample3", "Sample4"],
+            columns=["PC1", "PC2", "PC3"]
+        )
+        features = np.array([
+            [0.9, 0.8, 0.7],
+            [0.6, 0.5, 0.4],
+            [0.3, 0.2, 0.1],
+            [0.0, 0.2, 0.4]
+        ])
+        self.features_df = pd.DataFrame(
+            features,
+            index=["a", "b", "e", "d"],
+            columns=["PC1", "PC2", "PC3"]
+        )
         # self.pcoa is problematic by default, because it contains Sample4
         self.pcoa = skbio.OrdinationResults(
-                "PCoA",
-                "Principal Coordinate Analysis",
-                self.eigvals,
-                self.samples_df,
-                proportion_explained=self.proportion_explained)
-
+            "PCoA",
+            "Principal Coordinate Analysis",
+            self.eigvals,
+            self.samples_df,
+            proportion_explained=self.proportion_explained
+        )
 
     # stdout mocking based on https://stackoverflow.com/a/46307456/10730311
     # and https://docs.python.org/3/library/unittest.mock.html
