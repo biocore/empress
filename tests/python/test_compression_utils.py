@@ -149,7 +149,6 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         }
 
-
     # stdout mocking based on https://stackoverflow.com/a/46307456/10730311
     # and https://docs.python.org/3/library/unittest.mock.html
     @unittest.mock.patch("sys.stdout", new_callable=io.StringIO)
@@ -162,14 +161,12 @@ class TestCompressionUtils(unittest.TestCase):
             "Removed 1 empty sample(s).\nRemoved 1 empty feature(s).\n"
         )
 
-
     @unittest.mock.patch("sys.stdout", new_callable=io.StringIO)
     def test_remove_empty_nothing_to_remove(self, mock_stdout):
         ft, fsm = remove_empty_samples_and_features(self.table_ef, self.sm_ef)
         assert_frame_equal(ft, self.table_ef)
         assert_frame_equal(fsm, self.sm_ef)
         self.assertEqual(mock_stdout.getvalue(), "")
-
 
     def test_remove_empty_table_empty(self):
         diff_table = self.table.copy()
@@ -180,8 +177,7 @@ class TestCompressionUtils(unittest.TestCase):
         ):
             remove_empty_samples_and_features(diff_table, self.sm)
 
-
-    def test_compress_table_1_empty_sample_and_feature(self):
+    def test_compress_table_basic(self):
         # Test the "basic" case, just looking at our default data.
         table_copy = self.table_ef.copy()
         s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(table_copy)
@@ -192,12 +188,10 @@ class TestCompressionUtils(unittest.TestCase):
 
         # Check s_ids, which just be a list of the sample IDs in the same order
         # as they were in the table's columns.
-        # Sample "Sample4" should have been removed due to being empty
         self.assertEqual(s_ids, ["Sample1", "Sample2", "Sample3"])
 
         # Check f_ids, which as with s_ids is a list of feature IDs in the same
         # order as they were in the table's index.
-        # Feature "e" should have been removed due to being empty
         self.assertEqual(f_ids, ["a", "b", "d"])
 
         # Check sid2idx, which maps sample IDs in s_ids to their 0-based index
@@ -219,52 +213,12 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         )
 
-    def test_compress_table_no_empty_samples(self):
-        # Prevent Sample4 from being empty by making it, uh... not empty.
-        diff_table = self.table.copy()
-        diff_table.loc["d", "Sample4"] = 100
-        s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(diff_table)
-        self.assertEqual(s_ids, ["Sample1", "Sample2", "Sample3", "Sample4"])
-        self.assertEqual(f_ids, ["a", "b", "d"])
-        self.assertEqual(
-            sid2idx, {"Sample1": 0, "Sample2": 1, "Sample3": 2, "Sample4": 3}
-        )
-        self.assertEqual(fid2idx, {"a": 0, "b": 1, "d": 2})
-        self.assertEqual(
-            tbl,
-            [
-                [0, 1, 2],  # Sample1 contains features a, b, d
-                [0, 1, 2],  # Sample2 contains features a, b, d
-                [0],        # Sample3 contains feature  a only
-                [2]         # Sample4 contains feature  d only
-            ]
-        )
-
-    def test_compress_table_no_empty_features(self):
-        # Prevent feature "e" from being empty
-        diff_table = self.table.copy()
-        diff_table.loc["e", "Sample3"] = 100
-        s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(diff_table)
-        self.assertEqual(s_ids, ["Sample1", "Sample2", "Sample3"])
-        self.assertEqual(f_ids, ["a", "b", "e", "d"])
-        self.assertEqual(
-            sid2idx, {"Sample1": 0, "Sample2": 1, "Sample3": 2}
-        )
-        self.assertEqual(fid2idx, {"a": 0, "b": 1, "e": 2, "d": 3})
-        self.assertEqual(
-            tbl,
-            [
-                [0, 1, 3],  # Sample1 contains features a, b, d
-                [0, 1, 3],  # Sample2 contains features a, b, d
-                [0, 2]      # Sample3 contains features a, e
-            ]
-        )
-
-    def test_compress_table_no_empty_samples_or_features(self):
-        # Prevent Sample4 and feature "e" from being empty
-        diff_table = self.table.copy()
-        diff_table.loc["e", "Sample4"] = 3
-        s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(diff_table)
+    def test_compress_table_with_empty_things(self):
+        # This should never happen in practice (empty sample/feature removal
+        # should be done before compression to save more space), but this
+        # checks that if this is not the case that the output of compress_table
+        # isn't blatantly incorrect.
+        s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(self.table)
         self.assertEqual(s_ids, ["Sample1", "Sample2", "Sample3", "Sample4"])
         self.assertEqual(f_ids, ["a", "b", "e", "d"])
         self.assertEqual(
@@ -277,7 +231,7 @@ class TestCompressionUtils(unittest.TestCase):
                 [0, 1, 3],  # Sample1 contains features a, b, d
                 [0, 1, 3],  # Sample2 contains features a, b, d
                 [0],        # Sample3 contains feature  a only
-                [2]         # Sample3 contains feature  e only
+                []          # Sample4 contains no features :O
             ]
         )
 
@@ -303,29 +257,26 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         )
 
-    def test_compress_sample_metadata_1_missing_sm_sample_nonstr_vals(self):
+    def test_compress_sample_metadata_nonstr_vals(self):
         # Test the "basic" case, just looking at our default data.
         sm_copy = self.sm_ef.copy()
         sid2idx_copy = deepcopy(self.sid2idx)
         sm_cols, sm_vals = compress_sample_metadata(sid2idx_copy, sm_copy)
 
         # As with compress_table(), verify that the inputs were left untouched.
-        assert_frame_equal(sm_copy, self.sm)
+        assert_frame_equal(sm_copy, self.sm_ef)
         self.assertEqual(sid2idx_copy, self.sid2idx)
 
         self.assertEqual(
             sm_cols, ["Metadata1", "Metadata2", "Metadata3", "Metadata4"]
         )
         # For ease-of-reading, here's the metadata from above:
-        # "Metadata1": [0, 0, 0, 1],
-        # "Metadata2": [0, 0, 0, 0],
-        # "Metadata3": [1, 2, 3, 4],
-        # "Metadata4": ["abc", "def", "ghi", "jkl"]
+        # "Metadata1": [0, 0, 0],
+        # "Metadata2": [0, 0, 0],
+        # "Metadata3": [1, 2, 3],
+        # "Metadata4": ["abc", "def", "ghi"]
         # Check that the metadata values were all converted to strings and are
-        # structured properly. Also, Sample4's metadata should be missing from
-        # sm_vals since it wasn't described in sid2idx (and *that* is because
-        # with this test data, by default, Sample4 is empty and would've been
-        # filtered out by compress_table()).
+        # structured properly.
         self.assertEqual(
             sm_vals,
             [
@@ -336,7 +287,7 @@ class TestCompressionUtils(unittest.TestCase):
         )
 
     def test_compress_sample_metadata_nonstr_columns(self):
-        diff_sm = self.sm.copy()
+        diff_sm = self.sm_ef.copy()
         diff_sm.columns = [100, 200, 'asdf', 2.5]
         sm_cols, sm_vals = compress_sample_metadata(self.sid2idx, diff_sm)
         # Main thing: check that the columns were converted to strings
@@ -351,36 +302,32 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         )
 
-    def test_compress_sample_metadata_no_missing_samples(self):
-        # Simulate an alternate timeline where Sample4 isn't all 0s
-        sid2idx_copy = deepcopy(self.sid2idx)
-        sid2idx_copy["Sample4"] = 3
-        sm_cols, sm_vals = compress_sample_metadata(sid2idx_copy, self.sm)
-        self.assertEqual(
-            sm_cols, ["Metadata1", "Metadata2", "Metadata3", "Metadata4"]
-        )
-        self.assertEqual(
-            sm_vals,
-            [
-                ["0", "0", "1", "abc"],  # Sample1's metadata
-                ["0", "0", "2", "def"],  # Sample2's metadata
-                ["0", "0", "3", "ghi"],  # Sample3's metadata
-                ["1", "0", "4", "jkl"]   # Sample4's metadata :O
-            ]
-        )
-
-    def test_compress_sample_metadata_missing_sid2idx_sample(self):
+    def test_compress_sample_metadata_missing_sample_from_metadata(self):
         # If the metadata is missing samples described in sid2idx, that's bad!
         # ...And also probably impossible, unless someone messes up the code :P
 
         # Subset the sample metadata to remove Sample1
-        diff_sm = self.sm.copy()
+        diff_sm = self.sm_ef.copy()
         diff_sm = diff_sm.loc[["Sample2", "Sample3", "Sample4"]]
         with self.assertRaisesRegex(
             ValueError,
-            "Metadata is missing sample IDs in s_ids_to_indices."
+            "The sample IDs in the metadata's index and s_ids_to_indices are "
+            "not identical."
         ):
             compress_sample_metadata(self.sid2idx, diff_sm)
+
+    def test_compress_sample_metadata_missing_sample_from_sid2idx(self):
+        # And if sid2idx is missing samples that are in the metadata, that's
+        # also not allowed!
+
+        # Subset the sample metadata to remove Sample3
+        diff_sid2idx = {"Sample1": 0, "Sample2": 1}
+        with self.assertRaisesRegex(
+            ValueError,
+            "The sample IDs in the metadata's index and s_ids_to_indices are "
+            "not identical."
+        ):
+            compress_sample_metadata(diff_sid2idx, self.sm_ef)
 
     def test_compress_sample_metadata_sid2idx_indices_invalid(self):
         # We try a couple different "configurations" of sid2idx, so to simplify
@@ -391,7 +338,7 @@ class TestCompressionUtils(unittest.TestCase):
                 ValueError,
                 r"Indices \(values\) of s_ids_to_indices are invalid."
             ):
-                compress_sample_metadata(sid2idx, self.sm)
+                compress_sample_metadata(sid2idx, self.sm_ef)
 
         diff_sid2idx = deepcopy(self.sid2idx)
 

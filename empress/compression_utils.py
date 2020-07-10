@@ -203,6 +203,10 @@ def compress_sample_metadata(s_ids_to_indices, metadata):
         - Inspired by redbiom and Qurro's JSON data models.
     """
     sample_ids = s_ids_to_indices.keys()
+    # NOTE: I think that identically-named samples or metadata columns will
+    # break this check, but I also think that we can assume by this point that
+    # the data is at least that sane. (Checking that should be a responsibility
+    # for earlier in the program.)
     if set(sample_ids) != set(metadata.index):
         raise ValueError(
             "The sample IDs in the metadata's index and s_ids_to_indices are "
