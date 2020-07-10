@@ -60,6 +60,8 @@ def match_inputs(
     table,
     sample_metadata,
     feature_metadata=None,
+    ordination=None,
+    filter_extra_samples=False,
     ignore_missing_samples=False,
     filter_missing_features=False
 ):
@@ -87,6 +89,8 @@ def match_inputs(
         IDs and the columns should describe different feature metadata fields'
         names. (Feature IDs here can describe tips or internal nodes in the
         tree.)
+    ordination: skbio.OrdinationResults, optional
+        The ordination to display in a tandem plot.
     ignore_missing_samples: bool
         If True, pads missing samples (i.e. samples in the table but not the
         metadata) with placeholder metadata. If False, raises a
@@ -95,6 +99,10 @@ def match_inputs(
         no samples are shared between the table and metadata, a
         DataMatchingError is raised regardless.) This is analogous to the
         ignore_missing_samples flag in Emperor.
+    filter_extra_samples: bool, optional
+        If True, ignores samples in the feature table that are not present in
+        the ordination. If False, raises a DataMatchingError if such samples
+        exist.
     filter_missing_features: bool
         If True, filters features from the table that aren't present as tips in
         the tree. If False, raises a DataMatchingError if any such features
@@ -136,6 +144,8 @@ def match_inputs(
                metadata, AND ignore_missing_samples is False.
             5. The feature metadata was passed, but no features present in it
                are also present as tips or internal nodes in the tree.
+            6. The ordination AND feature table don't have exactly the same
+               samples.
 
     References
     ----------
@@ -146,16 +156,46 @@ def match_inputs(
     # (Ignore None-named tips in the tree, which will be replaced later on
     # with "default" names like "EmpressNode0".)
     tip_names = set(bp_tree_tips(bp_tree))
-    tree_and_table_features = table.index.intersection(tip_names)
+    ff_table = table.copy()
 
+    if ordination is not None:
+        table_ids = set(ff_table.columns)
+        ord_ids = set(ordination.samples.index)
+
+        # don't allow for disjoint datasets
+        if not (table_ids & ord_ids):
+            raise DataMatchingError(
+                "No samples in the feature table are present in the "
+                "ordination"
+            )
+
+        if ord_ids.issubset(table_ids):
+            extra = table_ids - ord_ids
+            if extra:
+                if not filter_extra_samples:
+                    raise DataMatchingError(
+                        "The feature table has more samples than the "
+                        "ordination. These are the problematic sample "
+                        "identifiers: %s. You can override this error by using"
+                        " the --p-filter-extra-samples flag." %
+                        (', '.join(sorted(extra)))
+                    )
+                ff_table = ff_table[ord_ids]
+                # remove empty features
+                ff_table = ff_table.loc[ff_table.sum(axis=1) > 0]
+        else:
+            raise DataMatchingError(
+                "The ordination has more samples than the feature table."
+            )
+
+    tree_and_table_features = ff_table.index.intersection(tip_names)
     if len(tree_and_table_features) == 0:
         # Error condition 1
         raise DataMatchingError(
             "No features in the feature table are present as tips in the tree."
         )
 
-    ff_table = table.copy()
-    if len(tree_and_table_features) < len(table.index):
+    if len(tree_and_table_features) < len(ff_table.index):
         if filter_missing_features:
             # Filter table to just features that are also present in the tree.
             #
@@ -164,7 +204,7 @@ def match_inputs(
             # (and this is going to be the case in most datasets where the
             # features correspond to tips, since internal nodes aren't
             # explicitly described in the feature table).
-            ff_table = table.loc[tree_and_table_features]
+            ff_table = ff_table.loc[tree_and_table_features]
 
             # Report to user about any dropped features from table.
             dropped_feature_ct = table.shape[0] - ff_table.shape[0]
