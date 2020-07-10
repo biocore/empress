@@ -349,15 +349,34 @@ def shifting(bitlist, size=51):
     ints = []
     for num in zip_longest(*values):
         out = 0
+        init_zeros = []
+        seen_one = False
         for bit in num:
             if bit is None:
                 continue
+
+            if not seen_one:
+                if bit == 0:
+                    init_zeros.append(0)
+                else:
+                    seen_one = True
+
             out = (out << 1) | bit
 
-        # if out == 0, then everything was zeros so return extend those many
+        # if out == 0, everything was zeros so we can simply add init_zeros
         if out == 0:
-            ints.extend([x for x in num if x is not None])
+            ints.extend(init_zeros)
         else:
             ints.append(out)
+
+    # we need to check init_zeros for the last loop in case the last value
+    # had padded zeros
+    if init_zeros and out != 0:
+        # rm last value
+        ints = ints[:-1]
+        # add zeros
+        ints.extend(init_zeros)
+        # readd last value
+        ints.append(out)
 
     return ints
