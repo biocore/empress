@@ -10,6 +10,8 @@ import io
 import unittest
 import unittest.mock
 import pandas as pd
+import numpy as np
+import skbio
 from pandas.testing import assert_frame_equal
 from empress.compression_utils import (
     remove_empty_samples_and_features, compress_table,
@@ -148,6 +150,34 @@ class TestCompressionUtils(unittest.TestCase):
                 "1.0"
             ]
         }
+        # Ordination info (for testing inputs to remove_empty...())
+        self.eigvals = pd.Series(np.array([0.50, 0.25, 0.25]),
+                            index=["PC1", "PC2", "PC3"])
+        samples = np.array([[0.1, 0.2, 0.3],
+                            [0.2, 0.3, 0.4],
+                            [0.3, 0.4, 0.5],
+                            [0.4, 0.5, 0.6]])
+        self.proportion_explained = pd.Series([15.5, 12.2, 8.8],
+                                         index=["PC1", "PC2", "PC3"])
+        self.samples_df = pd.DataFrame(samples,
+                                  index=["Sample1", "Sample2", "Sample3",
+                                         "Sample4"],
+                                  columns=["PC1", "PC2", "PC3"])
+        features = np.array([[0.9, 0.8, 0.7],
+                             [0.6, 0.5, 0.4],
+                             [0.3, 0.2, 0.1],
+                             [0.0, 0.2, 0.4]])
+        self.features_df = pd.DataFrame(features,
+                                   index=["a", "b", "e", "d"],
+                                   columns=["PC1", "PC2", "PC3"])
+        # self.pcoa is problematic by default, because it contains Sample4
+        self.pcoa = skbio.OrdinationResults(
+                "PCoA",
+                "Principal Coordinate Analysis",
+                self.eigvals,
+                self.samples_df,
+                proportion_explained=self.proportion_explained)
+
 
     # stdout mocking based on https://stackoverflow.com/a/46307456/10730311
     # and https://docs.python.org/3/library/unittest.mock.html
@@ -161,9 +191,93 @@ class TestCompressionUtils(unittest.TestCase):
             "Removed 1 empty sample(s).\nRemoved 1 empty feature(s).\n"
         )
 
+    def test_remove_empty_with_empty_sample_in_ordination(self):
+        with self.assertRaisesRegex(
+            ValueError,
+            (
+                r"The ordination contains samples that are empty \(i.e. all "
+                r"0s\) in the table. Problematic sample IDs: Sample4"
+            )
+        ):
+            remove_empty_samples_and_features(self.table, self.sm, self.pcoa)
+
+    def test_remove_empty_with_multiple_empty_samples_in_ordination(self):
+        bad_table = self.table.copy()
+        bad_table["Sample1"] = 0
+        with self.assertRaisesRegex(
+            ValueError,
+            (
+                r"The ordination contains samples that are empty \(i.e. all "
+                r"0s\) in the table. Problematic sample IDs: Sample1, Sample4"
+            )
+        ):
+            remove_empty_samples_and_features(bad_table, self.sm, self.pcoa)
+
+    def test_remove_empty_with_empty_feature_in_ordination(self):
+        bad_feature_pcoa = skbio.OrdinationResults(
+            'PCoA',
+            'Principal Coordinate Analysis',
+            self.eigvals,
+            self.samples_df.drop(labels="Sample4", axis="index"),
+            features=self.features_df,
+            proportion_explained=self.proportion_explained
+        )
+        with self.assertRaisesRegex(
+            ValueError,
+            (
+                r"The ordination contains features that are empty \(i.e. all "
+                r"0s\) in the table. Problematic feature IDs: e"
+            )
+        ):
+            remove_empty_samples_and_features(
+                self.table, self.sm, bad_feature_pcoa
+            )
+
+    def test_remove_empty_with_empty_sample_and_feature_in_ordination(self):
+        # Checks behavior when both an empty sample and an empty feature are in
+        # the ordination. Currently the code is structured so that empty sample
+        # errors take precedence over empty feature errors -- I imagine this
+        # will be the more common of the two scenarios, which is partially why
+        # I went with this. But this is probably a rare edge case anyway.
+        extremely_funky_pcoa = skbio.OrdinationResults(
+            'PCoA',
+            'Principal Coordinate Analysis',
+            self.eigvals,
+            self.samples_df,
+            features=self.features_df,
+            proportion_explained=self.proportion_explained
+        )
+        with self.assertRaisesRegex(
+            ValueError,
+            (
+                r"The ordination contains samples that are empty \(i.e. all "
+                r"0s\) in the table. Problematic sample IDs: Sample4"
+            )
+        ):
+            remove_empty_samples_and_features(
+                self.table, self.sm, extremely_funky_pcoa
+            )
+
     @unittest.mock.patch("sys.stdout", new_callable=io.StringIO)
     def test_remove_empty_nothing_to_remove(self, mock_stdout):
         ft, fsm = remove_empty_samples_and_features(self.table_ef, self.sm_ef)
+        assert_frame_equal(ft, self.table_ef)
+        assert_frame_equal(fsm, self.sm_ef)
+        self.assertEqual(mock_stdout.getvalue(), "")
+
+    @unittest.mock.patch("sys.stdout", new_callable=io.StringIO)
+    def test_remove_empty_nothing_to_remove_with_ordination(self, mock_stdout):
+        good_pcoa = skbio.OrdinationResults(
+            'PCoA',
+            'Principal Coordinate Analysis',
+            self.eigvals,
+            self.samples_df.drop(labels="Sample4", axis="index"),
+            features=self.features_df.drop(labels="e", axis="index"),
+            proportion_explained=self.proportion_explained
+        )
+        ft, fsm = remove_empty_samples_and_features(
+            self.table_ef, self.sm_ef, good_pcoa
+        )
         assert_frame_equal(ft, self.table_ef)
         assert_frame_equal(fsm, self.sm_ef)
         self.assertEqual(mock_stdout.getvalue(), "")
@@ -176,6 +290,19 @@ class TestCompressionUtils(unittest.TestCase):
             "All samples / features in matched table are empty."
         ):
             remove_empty_samples_and_features(diff_table, self.sm)
+
+    def test_remove_empty_table_empty_and_ordination_funky(self):
+        # Even if the ordination contains empty samples (as is the case for
+        # self.pcoa), the table being completely empty should still take
+        # precedence as an error. (If *both* errors are present for a dataset,
+        # then I recommend consulting a priest.)
+        diff_table = self.table.copy()
+        diff_table.loc[:, :] = 0
+        with self.assertRaisesRegex(
+            ValueError,
+            "All samples / features in matched table are empty."
+        ):
+            remove_empty_samples_and_features(diff_table, self.sm, self.pcoa)
 
     def test_compress_table_basic(self):
         # Test the "basic" case, just looking at our default data.
