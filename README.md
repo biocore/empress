@@ -88,7 +88,7 @@ qiime empress plot \
     --i-feature-table docs/moving-pictures/table.qza \
     --m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
     --m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
-    --o-visualization docs/moving-pictures/empress-tree-tandem.qzv
+    --o-visualization docs/moving-pictures/empress-tree-tandem.qzv \
     --p-filter-extra-samples
 ```
 
