@@ -59,6 +59,13 @@ def remove_empty_samples_and_features(table, sample_metadata):
 
     sample_diff = orig_num_samples - len(filtered_table.columns)
     if sample_diff > 0:
+        # Note: this has the side effect of, if the dtypes of the sample
+        # metadata are not "homogeneous", converting the dtypes all to object.
+        # See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.transpose.html.
+        # Since we'll eventually convert the sample and feature metadata's
+        # values to strings anyway, this shouldn't make a difference, although
+        # it would be ideal to do the string conversions before this step so
+        # there's no ambiguity here.
         filtered_sample_metadata = filtered_table.align(
             filtered_sample_metadata.T, join="inner", axis="columns"
         )[1].T

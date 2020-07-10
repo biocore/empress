@@ -6,11 +6,14 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 from copy import deepcopy
+import io
 import unittest
+import unittest.mock
 import pandas as pd
 from pandas.testing import assert_frame_equal
 from empress.compression_utils import (
-    compress_table, compress_sample_metadata, compress_feature_metadata
+    remove_empty_samples_and_features, compress_table,
+    compress_sample_metadata, compress_feature_metadata
 )
 
 
@@ -26,6 +29,15 @@ class TestCompressionUtils(unittest.TestCase):
             },
             index=["a", "b", "e", "d"]
         )
+        # After filtering out empty samples/features:
+        self.table_ef = pd.DataFrame(
+            {
+                "Sample1": [1, 2, 4],
+                "Sample2": [8, 7, 5],
+                "Sample3": [1, 0, 0]
+            },
+            index=["a", "b", "d"]
+        )
         self.sm = pd.DataFrame(
             {
                 "Metadata1": [0, 0, 0, 1],
@@ -34,6 +46,19 @@ class TestCompressionUtils(unittest.TestCase):
                 "Metadata4": ["abc", "def", "ghi", "jkl"]
             },
             index=list(self.table.columns)[:]
+        )
+        # After filtering out empty samples/features:
+        # (Note that we only care about "emptiness" from the table's
+        # perspective. We don't consider a sample with 0 for all of its
+        # metadata, or a metadata field with 0 for all samples, to be empty.)
+        self.sm_ef = pd.DataFrame(
+            {
+                "Metadata1": [0, 0, 0],
+                "Metadata2": [0, 0, 0],
+                "Metadata3": [1, 2, 3],
+                "Metadata4": ["abc", "def", "ghi"]
+            },
+            index=list(self.table_ef.columns)[:]
         )
         self.sid2idx = {"Sample1": 0, "Sample2": 1, "Sample3": 2}
         self.tm = pd.DataFrame(
@@ -124,14 +149,46 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         }
 
+
+    # stdout mocking based on https://stackoverflow.com/a/46307456/10730311
+    # and https://docs.python.org/3/library/unittest.mock.html
+    @unittest.mock.patch("sys.stdout", new_callable=io.StringIO)
+    def test_remove_empty_1_empty_sample_and_feature(self, mock_stdout):
+        ft, fsm = remove_empty_samples_and_features(self.table, self.sm)
+        assert_frame_equal(ft, self.table_ef)
+        assert_frame_equal(fsm, self.sm_ef.astype("object"))
+        self.assertEqual(
+            mock_stdout.getvalue(),
+            "Removed 1 empty sample(s).\nRemoved 1 empty feature(s).\n"
+        )
+
+
+    @unittest.mock.patch("sys.stdout", new_callable=io.StringIO)
+    def test_remove_empty_nothing_to_remove(self, mock_stdout):
+        ft, fsm = remove_empty_samples_and_features(self.table_ef, self.sm_ef)
+        assert_frame_equal(ft, self.table_ef)
+        assert_frame_equal(fsm, self.sm_ef)
+        self.assertEqual(mock_stdout.getvalue(), "")
+
+
+    def test_remove_empty_table_empty(self):
+        diff_table = self.table.copy()
+        diff_table.loc[:, :] = 0
+        with self.assertRaisesRegex(
+            ValueError,
+            "All samples / features in matched table are empty."
+        ):
+            remove_empty_samples_and_features(diff_table, self.sm)
+
+
     def test_compress_table_1_empty_sample_and_feature(self):
         # Test the "basic" case, just looking at our default data.
-        table_copy = self.table.copy()
+        table_copy = self.table_ef.copy()
         s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(table_copy)
 
         # First off, verify that compress_table() leaves the original table DF
         # untouched.
-        assert_frame_equal(table_copy, self.table)
+        assert_frame_equal(table_copy, self.table_ef)
 
         # Check s_ids, which just be a list of the sample IDs in the same order
         # as they were in the table's columns.
@@ -246,18 +303,9 @@ class TestCompressionUtils(unittest.TestCase):
             ]
         )
 
-    def test_compress_table_fully_empty(self):
-        diff_table = self.table.copy()
-        diff_table.loc[:, :] = 0
-        with self.assertRaisesRegex(
-            ValueError,
-            "All samples / features in matched table are empty."
-        ):
-            compress_table(diff_table)
-
     def test_compress_sample_metadata_1_missing_sm_sample_nonstr_vals(self):
         # Test the "basic" case, just looking at our default data.
-        sm_copy = self.sm.copy()
+        sm_copy = self.sm_ef.copy()
         sid2idx_copy = deepcopy(self.sid2idx)
         sm_cols, sm_vals = compress_sample_metadata(sid2idx_copy, sm_copy)
 
