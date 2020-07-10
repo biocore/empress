@@ -46,18 +46,9 @@ class TestCore(unittest.TestCase):
                 "Sample1": [1, 2, 0, 4],
                 "Sample2": [8, 7, 0, 5],
                 "Sample3": [1, 0, 0, 0],
-                "Sample4": [0, 0, 0, 0]
+                "Sample4": [0, 0, 1, 0]
             },
             index=["a", "b", "e", "d"]
-        ).T
-        # self.table with empty samples and features removed
-        self.table_ef = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 4],
-                "Sample2": [8, 7, 5],
-                "Sample3": [1, 0, 0]
-            },
-            index=["a", "b", "d"]
         ).T
         self.unrelated_table = pd.DataFrame(
             {
@@ -77,17 +68,6 @@ class TestCore(unittest.TestCase):
             },
             index=list(self.table.index)
         )
-        # self.sample_metadata with empty samples (Sample4) removed
-        self.sample_metadata_ef = pd.DataFrame(
-            {
-                "Metadata1": [0, 0, 0],
-                "Metadata2": [0, 0, 0],
-                "Metadata3": [1, 2, 3],
-                "Metadata4": ["abc", "def", "ghi"]
-            },
-            index=list(self.table_ef.index)
-        )
-
         self.feature_metadata = pd.DataFrame(
             {
                 "fmdcol1": ["asdf", "ghjk"],
@@ -100,10 +80,18 @@ class TestCore(unittest.TestCase):
                 "Sample1": [1, 2, 4],
                 "Sample2": [8, 7, 5],
                 "Sample3": [1, 0, 0],
-                "Sample4": [0, 0, 0]
             },
             index=["a", "b", "d"]
         ).T
+        self.filtered_sample_metadata = pd.DataFrame(
+            {
+                "Metadata1": [0, 0, 0],
+                "Metadata2": [0, 0, 0],
+                "Metadata3": [1, 2, 3],
+                "Metadata4": ["abc", "def", "ghi"]
+            },
+            index=["Sample1", "Sample2", "Sample3"]
+        )
 
         eigvals = pd.Series(np.array([0.50, 0.25, 0.25]),
                             index=['PC1', 'PC2', 'PC3'])
@@ -117,13 +105,7 @@ class TestCore(unittest.TestCase):
                                   index=['Sample1', 'Sample2', 'Sample3',
                                          'Sample4'],
                                   columns=['PC1', 'PC2', 'PC3'])
-        self.good_pcoa = skbio.OrdinationResults(
-                'PCoA',
-                'Principal Coordinate Analysis',
-                eigvals,
-                samples_df.drop(labels="Sample4", axis="index"),
-                proportion_explained=proportion_explained)
-        self.bad_pcoa = skbio.OrdinationResults(
+        self.pcoa = skbio.OrdinationResults(
                 'PCoA',
                 'Principal Coordinate Analysis',
                 eigvals,
@@ -152,23 +134,19 @@ class TestCore(unittest.TestCase):
             self.assertEqual(node.name, names[i])
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.table_ef, viz.table.T)
+        assert_frame_equal(self.table, viz.table.T)
         self.assertNotEqual(id(self.table), id(viz.table))
-        self.assertNotEqual(id(self.table_ef), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
-        assert_frame_equal(
-            self.sample_metadata_ef.astype("object"), viz.samples
-        )
+        assert_frame_equal(self.sample_metadata, viz.samples)
         self.assertNotEqual(id(self.sample_metadata), id(viz.samples))
-        self.assertNotEqual(id(self.sample_metadata_ef), id(viz.samples))
 
         self.assertIsNone(viz.features)
         self.assertIsNone(viz.ordination)
 
     def test_init_with_ordination(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      ordination=self.good_pcoa,
+                      ordination=self.pcoa,
                       filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, 'support_files')
@@ -181,7 +159,7 @@ class TestCore(unittest.TestCase):
             self.assertEqual(node.name, names[i])
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.table_ef, viz.table.T)
+        assert_frame_equal(self.table, viz.table.T)
         self.assertNotEqual(id(self.table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
@@ -190,7 +168,7 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.features)
 
-        assert_ordination_results_equal(viz.ordination, self.good_pcoa)
+        assert_ordination_results_equal(viz.ordination, self.pcoa)
 
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
@@ -235,8 +213,8 @@ class TestCore(unittest.TestCase):
         # "black -l 79 dictcode.py" (while in the same directory as the file)
         # to format it so that it's consistent with how DICT_A is set up at the
         # bottom of this file.
-        # with open("dictcode.py", "w") as f:
-        #     f.write("DICT_A = {}".format(str(obs)))
+        with open("dictcode.py", "w") as f:
+            f.write("DICT_A = {}".format(str(obs)))
 
         tree_data = obs['tree_data']
         exp = dict_a_cp['tree_data']
@@ -301,8 +279,9 @@ class TestCore(unittest.TestCase):
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      ordination=self.good_pcoa,
-                      filter_unobserved_features_from_phylogeny=False)
+                      ordination=self.pcoa,
+                      filter_unobserved_features_from_phylogeny=False,
+                      filter_extra_samples=True)
         obs = viz._to_dict()
 
         self.assertEqual(viz._emperor.width, '50vw')
@@ -342,7 +321,8 @@ class TestCore(unittest.TestCase):
 
     def test_filter_unobserved_features_from_phylogeny(self):
 
-        viz = Empress(self.tree, self.filtered_table, self.sample_metadata,
+        viz = Empress(self.tree, self.filtered_table,
+                      self.filtered_sample_metadata,
                       filter_unobserved_features_from_phylogeny=True)
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
                                         0, 0, 0])
@@ -356,8 +336,8 @@ class TestCore(unittest.TestCase):
         self.assertNotEqual(id(self.filtered_table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
-        assert_frame_equal(self.sample_metadata, viz.samples)
-        self.assertNotEqual(id(self.sample_metadata), id(viz.samples))
+        assert_frame_equal(self.filtered_sample_metadata, viz.samples)
+        self.assertNotEqual(id(self.filtered_sample_metadata), id(viz.samples))
 
         self.assertIsNone(viz.features)
         self.assertIsNone(viz.ordination)
@@ -534,11 +514,16 @@ DICT_A = {
         "h": [8],
         "EmpressNode2": [9],
     },
-    "s_ids": ["Sample1", "Sample2", "Sample3"],
-    "f_ids": ["a", "b", "d"],
-    "s_ids_to_indices": {"Sample1": 0, "Sample2": 1, "Sample3": 2},
-    "f_ids_to_indices": {"a": 0, "b": 1, "d": 2},
-    "compressed_table": [[0, 1, 2], [0, 1, 2], [0]],
+    "s_ids": ["Sample1", "Sample2", "Sample3", "Sample4"],
+    "f_ids": ["a", "b", "e", "d"],
+    "s_ids_to_indices": {
+        "Sample1": 0,
+        "Sample2": 1,
+        "Sample3": 2,
+        "Sample4": 3,
+    },
+    "f_ids_to_indices": {"a": 0, "b": 1, "e": 2, "d": 3},
+    "compressed_table": [[0, 1, 3], [0, 1, 3], [0], [2]],
     "sample_metadata_columns": [
         "Metadata1",
         "Metadata2",
@@ -549,6 +534,7 @@ DICT_A = {
         ["0", "0", "1", "abc"],
         ["0", "0", "2", "def"],
         ["0", "0", "3", "ghi"],
+        ["1", "0", "4", "jkl"],
     ],
     "feature_metadata_columns": [],
     "compressed_tip_metadata": {},
@@ -565,7 +551,6 @@ DICT_A = {
     "emperor_base_dependencies": "",
     "emperor_classes": "",
 }
-
 
 if __name__ == "__main__":
     unittest.main()
