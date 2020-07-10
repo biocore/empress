@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 
-def remove_empty_samples_and_features(table, sample_metadata):
+def remove_empty_samples_and_features(table, sample_metadata, ordination=None):
     """Removes empty samples and features from the table and sample metadata.
 
     This should be called *after* matching the table with the sample metadata
@@ -22,6 +22,12 @@ def remove_empty_samples_and_features(table, sample_metadata):
     sample_metadata: pd.DataFrame
         Sample metadata. The index should describe sample IDs, and the columns
         should describe sample metadata fields (e.g. "body site").
+    ordination: skbio.OrdinationResults, optional
+        Ordination information to show in Emperor alongside Empress. If this is
+        passed, this function will check to see if any of the empty samples
+        or features to be removed from the table are included in the
+        ordination; if so, this will raise an error (because these empty
+        items shouldn't be in the ordination in the first place).
 
     Returns
     -------
@@ -35,13 +41,15 @@ def remove_empty_samples_and_features(table, sample_metadata):
     ------
     ValueError
         - If the input table is completely empty (i.e. all zeroes).
+        - If ordination is not None, and the ordination contains empty samples
+          or features.
 
     References
     ----------
         - Adapted from qurro._df_utils.remove_empty_samples_and_features().
     """
-    orig_num_samples = len(table.columns)
-    orig_num_features = len(table.index)
+    orig_tbl_samples = set(table.columns)
+    orig_tbl_features = set(table.index)
 
     # (In Qurro, I used (table != 0) for this, but (table > 0) should also
     # work. Should be able to assume a table won't have negative abundances.)
@@ -57,8 +65,17 @@ def remove_empty_samples_and_features(table, sample_metadata):
     # Also, if we dropped any empty samples, update the sample metadata.
     filtered_sample_metadata = sample_metadata
 
-    sample_diff = orig_num_samples - len(filtered_table.columns)
-    if sample_diff > 0:
+    sample_diff = orig_tbl_samples - set(filtered_table.columns)
+    if sample_diff:
+        if ordination is not None:
+            empty_samples_in_ord = sample_diff & set(ordination.samples.index)
+            if empty_samples_in_ord:
+                raise ValueError(
+                    (
+                        "The ordination contains samples that are empty (i.e. "
+                        "all 0s) in the table. Problematic sample IDs: {}"
+                    ).format(", ".join(sorted(empty_samples_in_ord)))
+                )
         # Note: this has the side effect of, if the dtypes of the sample
         # metadata are not "homogeneous", converting the dtypes all to object.
         # See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.transpose.html.
@@ -69,11 +86,20 @@ def remove_empty_samples_and_features(table, sample_metadata):
         filtered_sample_metadata = filtered_table.align(
             filtered_sample_metadata.T, join="inner", axis="columns"
         )[1].T
-        print("Removed {} empty sample(s).".format(sample_diff))
+        print("Removed {} empty sample(s).".format(len(sample_diff)))
 
-    feature_diff = orig_num_features - len(filtered_table.index)
-    if feature_diff > 0:
-        print("Removed {} empty feature(s).".format(feature_diff))
+    feature_diff = orig_tbl_features - set(filtered_table.index)
+    if feature_diff:
+        if ordination is not None and ordination.features is not None:
+            empty_feats_in_ord = feature_diff & set(ordination.features.index)
+            if empty_feats_in_ord:
+                raise ValueError(
+                    (
+                        "The ordination contains features that are empty (i.e. "
+                        "all 0s) in the table. Problematic feature IDs: {}"
+                    ).format(", ".join(sorted(empty_feats_in_ord)))
+                )
+        print("Removed {} empty feature(s).".format(len(feature_diff)))
 
     return filtered_table, filtered_sample_metadata
 

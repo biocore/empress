@@ -148,12 +148,16 @@ class Empress():
             self.ordination, ignore_missing_samples, filter_extra_samples,
             filter_missing_features
         )
-        # Remove empty samples and features from the table. We purposefully
-        # do this *after* matching (so we know the data inputs match up) and
-        # *before* shearing (so empty features in the table are no longer
-        # included as tips in the tree)
+        # Remove empty samples and features from the table (and remove the
+        # removed samples from the sample metadata). We also pass in the
+        # ordination, if present, to this function -- so we can throw an error
+        # if the ordination actually contains these empty samples/features.
+        #
+        # We purposefully do this removal *after* matching (so we know the
+        # data inputs match up) and *before* shearing (so empty features
+        # in the table are no longer included as tips in the tree).
         self.table, self.samples = remove_empty_samples_and_features(
-            self.table, self.samples
+            self.table, self.samples, self.ordination
         )
         # remove unobserved features from the phylogeny
         if filter_unobserved_features_from_phylogeny:
