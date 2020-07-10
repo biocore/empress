@@ -9,7 +9,8 @@
 from empress.tree import Tree
 from empress.tools import fill_missing_node_names, match_inputs, shifting
 from empress.compression_utils import (
-    compress_table, compress_sample_metadata, compress_feature_metadata
+    remove_empty_samples_and_features, compress_table,
+    compress_sample_metadata, compress_feature_metadata
 )
 
 import pkg_resources
@@ -139,6 +140,13 @@ class Empress():
         self.table, self.samples, self.tip_md, self.int_md = match_inputs(
             self.tree, self.table.T, self.samples, self.features,
             ignore_missing_samples, filter_missing_features
+        )
+        # Remove empty samples and features from the table. We purposefully
+        # do this *after* matching (so we know the data inputs match up) and
+        # *before* shearing (so empty features in the table are no longer
+        # included as tips in the tree)
+        self.table, self.samples = remove_empty_samples_and_features(
+            self.table, self.samples
         )
         # remove unobserved features from the phylogeny
         if filter_unobserved_features_from_phylogeny:

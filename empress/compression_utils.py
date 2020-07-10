@@ -7,27 +7,87 @@
 # ----------------------------------------------------------------------------
 
 
-def compress_table(table):
-    """Converts a feature table to a space-saving format.
+def remove_empty_samples_and_features(table, sample_metadata):
+    """Removes empty samples and features from the table and sample metadata.
 
-    Also removes empty samples and features, while we're at it.
+    This should be called *after* matching the table with the sample metadata
+    and other input artifacts: we assume that the columns of the table
+    DataFrame are equivalent to the indices of the sample metadata DataFrame.
 
     Parameters
     ----------
     table: pd.DataFrame
         Representation of a feature table. The index should describe feature
         IDs; the columns should describe sample IDs.
+    sample_metadata: pd.DataFrame
+        Sample metadata. The index should describe sample IDs, and the columns
+        should describe sample metadata fields (e.g. "body site").
+
+    Returns
+    -------
+    filtered_table: pd.DataFrame
+        Copy of the input feature table with empty samples and features
+        removed.
+    filtered_sample_metadata: pd.DataFrame
+        Copy of the input sample metadata with empty samples removed.
+
+    Raises
+    ------
+    ValueError
+        - If the input table is completely empty (i.e. all zeroes).
+
+    References
+    ----------
+        - Adapted from qurro._df_utils.remove_empty_samples_and_features().
+    """
+    orig_num_samples = len(table.columns)
+    orig_num_features = len(table.index)
+
+    # (In Qurro, I used (table != 0) for this, but (table > 0) should also
+    # work. Should be able to assume a table won't have negative abundances.)
+    # This approach based on https://stackoverflow.com/a/21165116/10730311.
+    gt_0 = (table > 0)
+    filtered_table = table.loc[
+        gt_0.any(axis="columns"), gt_0.any(axis="index")
+    ]
+    if filtered_table.empty:
+        raise ValueError("All samples / features in matched table are empty.")
+
+    # Let user know about which samples/features may have been dropped, if any.
+    # Also, if we dropped any empty samples, update the sample metadata.
+    filtered_sample_metadata = sample_metadata
+
+    sample_diff = orig_num_samples - len(filtered_table.columns)
+    if sample_diff > 0:
+        filtered_sample_metadata = filtered_table.align(
+            filtered_sample_metadata.T, join="inner", axis="columns"
+        )[1].T
+        print("Removed {} empty sample(s).".format(sample_diff))
+
+    feature_diff = orig_num_features - len(filtered_table.index)
+    if feature_diff > 0:
+        print("Removed {} empty feature(s).".format(feature_diff))
+
+    return filtered_table, filtered_sample_metadata
+
+
+def compress_table(table):
+    """Converts a feature table to a space-saving format.
+
+    Parameters
+    ----------
+    table: pd.DataFrame
+        Representation of a feature table. The index should describe feature
+        IDs; the columns should describe sample IDs. It is assumed that empty
+        samples / features have already been removed from the table.
 
     Returns
     -------
     (s_ids, f_ids, s_ids_to_indices, f_ids_to_indices, compressed_table)
         s_ids: list
-            List of the sample IDs in the table. Empty samples (i.e. those that
-            do not contain any features) are omitted.
+            List of the sample IDs in the table.
         f_ids: list
-            List of the feature IDs in the table, analogous to s_ids. Empty
-            features (i.e. those that are not present in any samples) are
-            omitted.
+            List of the feature IDs in the table, analogous to s_ids.
         s_ids_to_indices: dict
             Inverse of s_ids: this maps sample IDs to their indices in s_ids.
             "Indices" refers to a feature or sample's 0-based position in f_ids
@@ -43,30 +103,13 @@ def compress_table(table):
             features present (i.e. at any abundance > 0) within the
             sample with index i. Each inner list is sorted in ascending order.
 
-    Raises
-    ------
-    ValueError
-        - If the input table is completely empty (i.e. all zeroes).
-
     References
     ----------
         - Inspired by redbiom and Qurro's JSON data models.
-        - Removal of empty samples / features based on
-          qurro._df_utils.remove_empty_samples_and_features().
     """
-    # Remove empty samples / features
-    # (In Qurro, I used (table != 0) for this, but (table > 0) should also
-    # work. Should be able to assume a table won't have negative abundances.)
-    gt_0 = (table > 0)
-    filtered_table = table.loc[
-        gt_0.any(axis="columns"), gt_0.any(axis="index")
-    ]
-    if filtered_table.empty:
-        raise ValueError("All samples / features in matched table are empty.")
-
-    # (We do this again because filtered_table might be smaller now than it was
-    # above)
-    binarized_table = (filtered_table > 0)
+    # Convert to a presence/absence table
+    # (hippity hoolean these are now booleans)
+    binarized_table = (table > 0)
 
     # We set up the ID/index variables based on whatever the current order of
     # samples / features in the table's columns / indices is.
@@ -123,11 +166,8 @@ def compress_sample_metadata(s_ids_to_indices, metadata):
     metadata: pd.DataFrame
         Sample metadata. The index should describe sample IDs, and the columns
         should describe sample metadata fields (e.g. "body site").
-        It's ok if there are sample IDs in this DataFrame that are not present
-        as keys in s_ids_to_indices (this will be the case for samples that
-        were removed from the feature table for being empty); however, if there
-        are sample IDs in s_ids_to_indices that are not present in the
-        metadata, an error will be raised.
+        The sample IDs in the index should match one-to-one with the keys in
+        s_ids_to_indices.
 
     Returns
     -------
@@ -145,8 +185,8 @@ def compress_sample_metadata(s_ids_to_indices, metadata):
     Raises
     ------
     ValueError
-        - If the metadata is missing sample IDs that are present as keys in
-          s_ids_to_indices.
+        - If the metadata's index and the keys of s_ids_to_indices do not
+          contain the exact same elements.
         - If the values of s_ids_to_indices are invalid: that is, if sorting
           the values in ascending order does not produce a list of
           [0, 1, 2, 3, ..., len(s_ids_to_indices.keys())].
@@ -156,39 +196,31 @@ def compress_sample_metadata(s_ids_to_indices, metadata):
         - Inspired by redbiom and Qurro's JSON data models.
     """
     sample_ids = s_ids_to_indices.keys()
-    num_shared_samples = len(metadata.index.intersection(sample_ids))
-    if num_shared_samples < len(sample_ids):
-        # Sanity check: metadata's samples should be a superset of the samples
-        # in s_ids_to_indices (empty samples were removed from the
-        # latter during table compression). If the metadata's samples are
-        # instead *missing* samples that are in s_ids_to_indices,
-        # something is seriously wrong.
+    if set(sample_ids) != set(metadata.index):
         raise ValueError(
-            "Metadata is missing sample IDs in s_ids_to_indices."
+            "The sample IDs in the metadata's index and s_ids_to_indices are "
+            "not identical."
         )
 
     if sorted(s_ids_to_indices.values()) != list(range(len(sample_ids))):
         raise ValueError("Indices (values) of s_ids_to_indices are invalid.")
 
-    # Filter sample IDs in metadata but not in sample_ids out
-    filtered_metadata = metadata.loc[sample_ids]
-
     # Rename sample IDs to indices in the metadata
-    indexed_f_metadata = filtered_metadata.rename(index=s_ids_to_indices)
+    indexed_metadata = metadata.rename(index=s_ids_to_indices)
 
     # Sort the metadata's rows by the sample indices
-    sorted_i_f_metadata = indexed_f_metadata.sort_index(
+    sorted_i_metadata = indexed_metadata.sort_index(
         axis="index", ascending=True
     )
 
     # Convert all of the metadata values to strings
-    str_s_i_f_metadata = sorted_i_f_metadata.astype(str)
+    str_s_i_metadata = sorted_i_metadata.astype(str)
 
     # Generate a 2-D list of metadata values
     # Based on https://datatofish.com/convert-pandas-dataframe-to-list
-    sm_vals = str_s_i_f_metadata.values.tolist()
+    sm_vals = str_s_i_metadata.values.tolist()
 
-    sm_cols = [str(c) for c in str_s_i_f_metadata.columns]
+    sm_cols = [str(c) for c in str_s_i_metadata.columns]
 
     return sm_cols, sm_vals
 
