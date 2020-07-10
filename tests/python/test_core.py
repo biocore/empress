@@ -50,6 +50,15 @@ class TestCore(unittest.TestCase):
             },
             index=["a", "b", "e", "d"]
         ).T
+        # self.table with empty samples and features removed
+        self.table_ef = pd.DataFrame(
+            {
+                "Sample1": [1, 2, 4],
+                "Sample2": [8, 7, 5],
+                "Sample3": [1, 0, 0]
+            },
+            index=["a", "b", "d"]
+        ).T
         self.unrelated_table = pd.DataFrame(
             {
                 "Sample1": [5, 2, 0, 2],
@@ -67,6 +76,16 @@ class TestCore(unittest.TestCase):
                 "Metadata4": ["abc", "def", "ghi", "jkl"]
             },
             index=list(self.table.index)
+        )
+        # self.sample_metadata with empty samples (Sample4) removed
+        self.sample_metadata_ef = pd.DataFrame(
+            {
+                "Metadata1": [0, 0, 0],
+                "Metadata2": [0, 0, 0],
+                "Metadata3": [1, 2, 3],
+                "Metadata4": ["abc", "def", "ghi"]
+            },
+            index=list(self.table_ef.index)
         )
 
         self.feature_metadata = pd.DataFrame(
@@ -127,12 +146,16 @@ class TestCore(unittest.TestCase):
             self.assertEqual(node.name, names[i])
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.table, viz.table.T)
+        assert_frame_equal(self.table_ef, viz.table.T)
         self.assertNotEqual(id(self.table), id(viz.table))
+        self.assertNotEqual(id(self.table_ef), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
-        assert_frame_equal(self.sample_metadata, viz.samples)
+        assert_frame_equal(
+            self.sample_metadata_ef.astype("object"), viz.samples
+        )
         self.assertNotEqual(id(self.sample_metadata), id(viz.samples))
+        self.assertNotEqual(id(self.sample_metadata_ef), id(viz.samples))
 
         self.assertIsNone(viz.features)
         self.assertIsNone(viz.ordination)
@@ -152,7 +175,7 @@ class TestCore(unittest.TestCase):
             self.assertEqual(node.name, names[i])
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.table, viz.table.T)
+        assert_frame_equal(self.table_ef, viz.table.T)
         self.assertNotEqual(id(self.table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
