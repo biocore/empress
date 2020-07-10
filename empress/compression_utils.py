@@ -76,16 +76,9 @@ def remove_empty_samples_and_features(table, sample_metadata, ordination=None):
                         "all 0s) in the table. Problematic sample IDs: {}"
                     ).format(", ".join(sorted(empty_samples_in_ord)))
                 )
-        # Note: this has the side effect of, if the dtypes of the sample
-        # metadata are not "homogeneous", converting the dtypes all to object.
-        # See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.transpose.html. # noqa: E501
-        # Since we'll eventually convert the sample and feature metadata's
-        # values to strings anyway, this shouldn't make a difference, although
-        # it would be ideal to do the string conversions before this step so
-        # there's no ambiguity here.
-        filtered_sample_metadata = filtered_table.align(
-            filtered_sample_metadata.T, join="inner", axis="columns"
-        )[1].T
+        filtered_sample_metadata = filtered_sample_metadata.loc[
+            filtered_table.columns
+        ]
         print("Removed {} empty sample(s).".format(len(sample_diff)))
 
     feature_diff = orig_tbl_features - set(filtered_table.index)
