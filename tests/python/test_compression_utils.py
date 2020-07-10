@@ -60,7 +60,7 @@ class TestCompressionUtils(unittest.TestCase):
                 "Metadata3": [1, 2, 3],
                 "Metadata4": ["abc", "def", "ghi"]
             },
-            index=list(self.table_ef.columns)[:]
+            index=self.table_ef.columns.copy()
         )
         self.sid2idx = {"Sample1": 0, "Sample2": 1, "Sample3": 2}
         self.tm = pd.DataFrame(
