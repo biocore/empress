@@ -196,7 +196,7 @@ class TestCompressionUtils(unittest.TestCase):
     def test_remove_empty_1_empty_sample_and_feature(self, mock_stdout):
         ft, fsm = remove_empty_samples_and_features(self.table, self.sm)
         assert_frame_equal(ft, self.table_ef)
-        assert_frame_equal(fsm, self.sm_ef.astype("object"))
+        assert_frame_equal(fsm, self.sm_ef)
         self.assertEqual(
             mock_stdout.getvalue(),
             "Removed 1 empty sample(s).\nRemoved 1 empty feature(s).\n"
