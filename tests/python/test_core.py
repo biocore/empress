@@ -46,7 +46,7 @@ class TestCore(unittest.TestCase):
                 "Sample1": [1, 2, 0, 4],
                 "Sample2": [8, 7, 0, 5],
                 "Sample3": [1, 0, 0, 0],
-                "Sample4": [0, 0, 0, 0]
+                "Sample4": [0, 0, 1, 0]
             },
             index=["a", "b", "e", "d"]
         ).T
@@ -68,7 +68,6 @@ class TestCore(unittest.TestCase):
             },
             index=list(self.table.index)
         )
-
         self.feature_metadata = pd.DataFrame(
             {
                 "fmdcol1": ["asdf", "ghjk"],
@@ -81,10 +80,18 @@ class TestCore(unittest.TestCase):
                 "Sample1": [1, 2, 4],
                 "Sample2": [8, 7, 5],
                 "Sample3": [1, 0, 0],
-                "Sample4": [0, 0, 0]
             },
             index=["a", "b", "d"]
         ).T
+        self.filtered_sample_metadata = pd.DataFrame(
+            {
+                "Metadata1": [0, 0, 0],
+                "Metadata2": [0, 0, 0],
+                "Metadata3": [1, 2, 3],
+                "Metadata4": ["abc", "def", "ghi"]
+            },
+            index=["Sample1", "Sample2", "Sample3"]
+        )
 
         eigvals = pd.Series(np.array([0.50, 0.25, 0.25]),
                             index=['PC1', 'PC2', 'PC3'])
@@ -165,6 +172,22 @@ class TestCore(unittest.TestCase):
 
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
+
+    def test_init_with_ordination_empty_samples_in_pcoa(self):
+        bad_table = self.table.copy()
+        bad_table.loc["Sample4"] = 0
+        bad_table.loc["Sample2"] = 0
+        with self.assertRaisesRegex(
+            ValueError,
+            (
+                r"The ordination contains samples that are empty \(i.e. "
+                r"all 0s\) in the table. Problematic sample IDs: Sample2, "
+                "Sample4"
+            )
+        ):
+            Empress(self.tree, bad_table, self.sample_metadata,
+                    ordination=self.pcoa,
+                    filter_unobserved_features_from_phylogeny=False)
 
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
@@ -273,7 +296,8 @@ class TestCore(unittest.TestCase):
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.pcoa,
-                      filter_unobserved_features_from_phylogeny=False)
+                      filter_unobserved_features_from_phylogeny=False,
+                      filter_extra_samples=True)
         obs = viz._to_dict()
 
         self.assertEqual(viz._emperor.width, '50vw')
@@ -313,7 +337,8 @@ class TestCore(unittest.TestCase):
 
     def test_filter_unobserved_features_from_phylogeny(self):
 
-        viz = Empress(self.tree, self.filtered_table, self.sample_metadata,
+        viz = Empress(self.tree, self.filtered_table,
+                      self.filtered_sample_metadata,
                       filter_unobserved_features_from_phylogeny=True)
         self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
                                         0, 0, 0])
@@ -327,8 +352,8 @@ class TestCore(unittest.TestCase):
         self.assertNotEqual(id(self.filtered_table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
-        assert_frame_equal(self.sample_metadata, viz.samples)
-        self.assertNotEqual(id(self.sample_metadata), id(viz.samples))
+        assert_frame_equal(self.filtered_sample_metadata, viz.samples)
+        self.assertNotEqual(id(self.filtered_sample_metadata), id(viz.samples))
 
         self.assertIsNone(viz.features)
         self.assertIsNone(viz.ordination)
@@ -505,11 +530,16 @@ DICT_A = {
         "h": [8],
         "EmpressNode2": [9],
     },
-    "s_ids": ["Sample1", "Sample2", "Sample3"],
-    "f_ids": ["a", "b", "d"],
-    "s_ids_to_indices": {"Sample1": 0, "Sample2": 1, "Sample3": 2},
-    "f_ids_to_indices": {"a": 0, "b": 1, "d": 2},
-    "compressed_table": [[0, 1, 2], [0, 1, 2], [0]],
+    "s_ids": ["Sample1", "Sample2", "Sample3", "Sample4"],
+    "f_ids": ["a", "b", "e", "d"],
+    "s_ids_to_indices": {
+        "Sample1": 0,
+        "Sample2": 1,
+        "Sample3": 2,
+        "Sample4": 3,
+    },
+    "f_ids_to_indices": {"a": 0, "b": 1, "e": 2, "d": 3},
+    "compressed_table": [[0, 1, 3], [0, 1, 3], [0], [2]],
     "sample_metadata_columns": [
         "Metadata1",
         "Metadata2",
@@ -520,6 +550,7 @@ DICT_A = {
         ["0", "0", "1", "abc"],
         ["0", "0", "2", "def"],
         ["0", "0", "3", "ghi"],
+        ["1", "0", "4", "jkl"],
     ],
     "feature_metadata_columns": [],
     "compressed_tip_metadata": {},
@@ -536,7 +567,6 @@ DICT_A = {
     "emperor_base_dependencies": "",
     "emperor_classes": "",
 }
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -75,7 +75,8 @@ the *raw dataset*: this will impact sample presence information, sample
 metadata coloring, and other parts of the visualization. If you select the *raw
 table*, you might find that some nodes in the tree won't be represented by any
 of the samples in the ordination (if the ordination was made using a *filtered
-table*). If you'd like to read more about this, there's some informal
+table*, and `--p-no-filter-unobserved-features-from-phylogeny` is used).
+If you'd like to read more about this, there's some informal
 discussion in [pull request 237](https://github.com/biocore/empress/pull/237).
 
 The command below uses the *raw dataset* and removes extra samples not

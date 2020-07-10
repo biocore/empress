@@ -61,8 +61,8 @@ def match_inputs(
     sample_metadata,
     feature_metadata=None,
     ordination=None,
-    filter_extra_samples=False,
     ignore_missing_samples=False,
+    filter_extra_samples=False,
     filter_missing_features=False
 ):
     """Matches various input sources.
@@ -181,8 +181,8 @@ def match_inputs(
                         (', '.join(sorted(extra)))
                     )
                 ff_table = ff_table[ord_ids]
-                # remove empty features
-                ff_table = ff_table.loc[ff_table.sum(axis=1) > 0]
+                # We'll remove now-empty features from the table later in
+                # the code
         else:
             raise DataMatchingError(
                 "The ordination has more samples than the feature table."
