@@ -479,7 +479,9 @@ class TestTools(unittest.TestCase):
             self.bp_tree, self.table, self.sample_metadata,
             ordination=self.ordination, filter_extra_samples=True)
 
-        exp = self.table.loc[['a', 'b', 'd'],
+        # NOTE: even though 'e' is now empty, it isn't removed now; it'll be
+        # removed later on, in remove_empty_samples_and_features().
+        exp = self.table.loc[['a', 'b', 'e', 'd'],
                              ['Sample1', 'Sample2', 'Sample3', 'Sample4']]
 
         # guarantee the same sample-wise order
