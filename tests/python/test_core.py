@@ -173,6 +173,22 @@ class TestCore(unittest.TestCase):
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
+    def test_init_with_ordination_empty_samples_in_pcoa(self):
+        bad_table = self.table.copy()
+        bad_table.loc["Sample4"] = 0
+        bad_table.loc["Sample2"] = 0
+        with self.assertRaisesRegex(
+            ValueError,
+            (
+                r"The ordination contains samples that are empty \(i.e. "
+                r"all 0s\) in the table. Problematic sample IDs: Sample2, "
+                "Sample4"
+            )
+        ):
+            Empress(self.tree, bad_table, self.sample_metadata,
+                    ordination=self.pcoa,
+                    filter_unobserved_features_from_phylogeny=False)
+
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
 
