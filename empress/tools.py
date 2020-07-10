@@ -61,8 +61,8 @@ def match_inputs(
     sample_metadata,
     feature_metadata=None,
     ordination=None,
-    filter_extra_samples=False,
     ignore_missing_samples=False,
+    filter_extra_samples=False,
     filter_missing_features=False
 ):
     """Matches various input sources.

@@ -115,8 +115,8 @@ class Empress():
             self.base_url = 'support_files'
 
         self._validate_and_match_data(
-            filter_extra_samples,
             ignore_missing_samples,
+            filter_extra_samples,
             filter_missing_features,
             filter_unobserved_features_from_phylogeny
         )
