@@ -117,7 +117,13 @@ class TestCore(unittest.TestCase):
                                   index=['Sample1', 'Sample2', 'Sample3',
                                          'Sample4'],
                                   columns=['PC1', 'PC2', 'PC3'])
-        self.pcoa = skbio.OrdinationResults(
+        self.good_pcoa = skbio.OrdinationResults(
+                'PCoA',
+                'Principal Coordinate Analysis',
+                eigvals,
+                samples_df.drop(labels="Sample4", axis="index"),
+                proportion_explained=proportion_explained)
+        self.bad_pcoa = skbio.OrdinationResults(
                 'PCoA',
                 'Principal Coordinate Analysis',
                 eigvals,
@@ -162,7 +168,7 @@ class TestCore(unittest.TestCase):
 
     def test_init_with_ordination(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      ordination=self.pcoa,
+                      ordination=self.good_pcoa,
                       filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, 'support_files')
@@ -184,7 +190,7 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.features)
 
-        assert_ordination_results_equal(viz.ordination, self.pcoa)
+        assert_ordination_results_equal(viz.ordination, self.good_pcoa)
 
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
@@ -295,7 +301,7 @@ class TestCore(unittest.TestCase):
 
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      ordination=self.pcoa,
+                      ordination=self.good_pcoa,
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
 
