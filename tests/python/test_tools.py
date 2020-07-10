@@ -8,7 +8,7 @@
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from skbio import TreeNode
+from skbio import TreeNode, OrdinationResults
 from empress import Tree, tools
 from empress.taxonomy_utils import split_taxonomy
 from bp import parse_newick, from_skbio_treenode
@@ -73,6 +73,25 @@ class TestTools(unittest.TestCase):
             "Level 7", "Confidence"
         ]
 
+        eigvals = pd.Series([0.50, 0.25, 0.25],
+                            index=['PC1', 'PC2', 'PC3'])
+        samples = [[0.1, 0.2, 0.3],
+                   [0.2, 0.3, 0.4],
+                   [0.3, 0.4, 0.5],
+                   [0.4, 0.5, 0.6]]
+        proportion_explained = pd.Series([15.5, 12.2, 8.8],
+                                         index=['PC1', 'PC2', 'PC3'])
+        samples_df = pd.DataFrame(samples,
+                                  index=['Sample1', 'Sample2', 'Sample3',
+                                         'Sample4'],
+                                  columns=['PC1', 'PC2', 'PC3'])
+        self.ordination = OrdinationResults(
+                'PCoA',
+                'Principal Coordinate Analysis',
+                eigvals,
+                samples_df,
+                proportion_explained=proportion_explained)
+
     def test_fill_missing_node_names(self):
         t = Tree.from_tree(self.tree)
         tools.fill_missing_node_names(t)
@@ -85,6 +104,20 @@ class TestTools(unittest.TestCase):
         filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
             self.bp_tree, self.table, self.sample_metadata
         )
+        assert_frame_equal(filtered_table, self.table)
+        assert_frame_equal(filtered_sample_md, self.sample_metadata)
+        # We didn't pass in any feature metadata, so we shouldn't get any out
+        self.assertIsNone(t_md)
+        self.assertIsNone(i_md)
+
+    def test_match_inputs_nothing_dropped_with_ordination(self):
+        # everything is the same since the ordination has a 1:1 match to the
+        # feature table
+        filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
+            self.bp_tree, self.table, self.sample_metadata,
+            ordination=self.ordination
+        )
+
         assert_frame_equal(filtered_table, self.table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
         # We didn't pass in any feature metadata, so we shouldn't get any out
@@ -380,6 +413,83 @@ class TestTools(unittest.TestCase):
         # 3) Check that columns on both DFs are identical
         self.assertListEqual(list(t_fm.columns), self.exp_split_fm_cols)
         self.assertListEqual(list(i_fm.columns), self.exp_split_fm_cols)
+
+    def test_disjoint_table_and_ordination(self):
+        self.ordination.samples.index = pd.Index(['Zample1', 'Zample2',
+                                                  'Zample3', 'Zample4'])
+
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "No samples in the feature table are present in the ordination"
+        ):
+            tools.match_inputs(self.bp_tree, self.table, self.sample_metadata,
+                               ordination=self.ordination)
+
+    def test_ordination_is_superset(self):
+        self.table = pd.DataFrame(
+            {
+                "Sample1": [1, 2, 0, 4],
+                "Sample2": [8, 7, 0, 5],
+                "Sample3": [1, 0, 0, 0],
+            },
+            index=["a", "b", "e", "d"]
+        )
+
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "The ordination has more samples than the feature table"
+        ):
+            tools.match_inputs(self.bp_tree, self.table, self.sample_metadata,
+                               ordination=self.ordination)
+
+    def test_table_is_superset_raises(self):
+        self.table = pd.DataFrame(
+            {
+                "Sample1": [1, 2, 0, 4],
+                "Sample2": [8, 7, 0, 5],
+                "Sample3": [1, 0, 0, 0],
+                "Sample4": [1, 0, 0, 0],
+                "Sample5": [1, 0, 4, 0],
+            },
+            index=["a", "b", "e", "d"]
+        )
+
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            "The feature table has more samples than the ordination. These are"
+            " the problematic sample identifiers: Sample5. You can override "
+            "this error by using the --p-filter-extra-samples flag"
+        ):
+            tools.match_inputs(self.bp_tree, self.table, self.sample_metadata,
+                               ordination=self.ordination)
+
+    def test_table_is_superset_override_raises(self):
+        self.table = pd.DataFrame(
+            {
+                "Sample1": [1, 2, 0, 4],
+                "Sample2": [8, 7, 0, 5],
+                "Sample3": [1, 0, 0, 0],
+                "Sample4": [1, 0, 0, 0],
+                "Sample5": [1, 0, 4, 0],
+            },
+            index=["a", "b", "e", "d"]
+        )
+
+        filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
+            self.bp_tree, self.table, self.sample_metadata,
+            ordination=self.ordination, filter_extra_samples=True)
+
+        exp = self.table.loc[['a', 'b', 'd'],
+                             ['Sample1', 'Sample2', 'Sample3', 'Sample4']]
+
+        # guarantee the same sample-wise order
+        assert_frame_equal(filtered_table[exp.columns], exp)
+        assert_frame_equal(filtered_sample_md.loc[exp.columns],
+                           self.sample_metadata)
+
+        # We didn't pass in any feature metadata, so we shouldn't get any out
+        self.assertIsNone(t_md)
+        self.assertIsNone(i_md)
 
     def test_shifting(self):
         # helper test function to count number of bits in the number
