@@ -308,7 +308,7 @@ class TestCompressionUtils(unittest.TestCase):
 
         # Subset the sample metadata to remove Sample1
         diff_sm = self.sm_ef.copy()
-        diff_sm = diff_sm.loc[["Sample2", "Sample3", "Sample4"]]
+        diff_sm = diff_sm.drop(labels="Sample1", axis="index")
         with self.assertRaisesRegex(
             ValueError,
             "The sample IDs in the metadata's index and s_ids_to_indices are "
