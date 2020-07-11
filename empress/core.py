@@ -169,9 +169,12 @@ class Empress():
             self.tree = self.tree.shear(set(self.table.index))
             # Remove features in the feature metadata that are no longer
             # present in the tree, due to being shorn off
-            self.tip_md, self.int_md = filter_feature_metadata_to_tree(
-                self.tip_md, self.int_md, self.tree
-            )
+            if self.tip_md is not None or self.int_md is not None:
+                # (Technically they should always both be None or both be
+                # DataFrames -- there's no in-between)
+                self.tip_md, self.int_md = filter_feature_metadata_to_tree(
+                    self.tip_md, self.int_md, self.tree
+                )
 
         # extract balance parenthesis
         self._bp_tree = list(self.tree.B)
