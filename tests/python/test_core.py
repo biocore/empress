@@ -358,6 +358,38 @@ class TestCore(unittest.TestCase):
         self.assertIsNone(viz.features)
         self.assertIsNone(viz.ordination)
 
+    def test_fm_filtering_post_shearing(self):
+
+        extra_fm = self.feature_metadata.copy()
+        extra_fm.loc["e"] = "i'm going to be filtered :O"
+        viz = Empress(self.tree, self.filtered_table,
+                      self.filtered_sample_metadata, feature_metadata=extra_fm,
+                      filter_unobserved_features_from_phylogeny=True)
+        # Same as with the shearing test above, check that the tree was handled
+        # as expected
+        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
+                                        0, 0, 0])
+
+        names = ['a', 'EmpressNode0', 'b', 'g', 'd', 'h', 'EmpressNode1']
+        for i, node in enumerate(viz.tree.postorder()):
+            self.assertEqual(node.name, names[i])
+
+        # Now, the point of this test: verify that the feature metadata was
+        # filtered to just stuff in the sheared tree ("e" was removed from the
+        # tip metadata)
+        assert_frame_equal(extra_fm.loc[["a"]], viz.tip_md)
+        assert_frame_equal(extra_fm.loc[["h"]], viz.int_md)
+
+        # table should be unchanged and be a different id instance
+        assert_frame_equal(self.filtered_table, viz.table.T)
+        self.assertNotEqual(id(self.filtered_table), id(viz.table))
+
+        # sample metadata should be unchanged and be a different id instance
+        assert_frame_equal(self.filtered_sample_metadata, viz.samples)
+        self.assertNotEqual(id(self.filtered_sample_metadata), id(viz.samples))
+
+        self.assertIsNone(viz.ordination)
+
     def test_no_intersection_between_tree_and_table(self):
         bad_table = self.unrelated_table.copy()
         bad_table.index = range(len(self.unrelated_table.index))
