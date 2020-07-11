@@ -7,7 +7,10 @@
 # ----------------------------------------------------------------------------
 
 from empress.tree import Tree
-from empress.tools import fill_missing_node_names, match_inputs, shifting
+from empress.tools import (
+    fill_missing_node_names, match_inputs, shifting,
+    filter_feature_metadata_to_tree
+)
 from empress.compression_utils import (
     remove_empty_samples_and_features, compress_table,
     compress_sample_metadata, compress_feature_metadata
@@ -164,6 +167,11 @@ class Empress():
         # remove unobserved features from the phylogeny
         if filter_unobserved_features_from_phylogeny:
             self.tree = self.tree.shear(set(self.table.index))
+            # Remove features in the feature metadata that are no longer
+            # present in the tree, due to being shorn off
+            self.tip_md, self.int_md = filter_feature_metadata_to_tree(
+                self.tip_md, self.int_md, self.tree
+            )
 
         # extract balance parenthesis
         self._bp_tree = list(self.tree.B)

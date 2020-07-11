@@ -380,3 +380,18 @@ def shifting(bitlist, size=51):
         ints.append(out)
 
     return ints
+
+
+def filter_feature_metadata_to_tree(tip_md, int_md, bp_tree):
+    shared_tip_names = tip_md.index.intersection(set(bp_tree_tips(bp_tree)))
+    shared_int_names = int_md.index.intersection(set(bp_tree_non_tips(bp_tree)))
+    if len(shared_tip_names) == 0 and len(shared_int_names) == 0:
+        raise DataMatchingError(
+            "After performing empty feature removal from the table and then "
+            "shearing the tree to tips that are also present in the table, "
+            "none of the nodes in the feature metadata are present in the "
+            "tree."
+        )
+    f_tip_md = tip_md.loc[shared_tip_names]
+    f_int_md = int_md.loc[shared_int_names]
+    return f_tip_md, f_int_md
