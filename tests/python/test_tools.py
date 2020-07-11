@@ -592,6 +592,27 @@ class TestTools(unittest.TestCase):
         self.assertTrue(fi.empty)
         self.assertEqual(list(fi.columns), list(self.int_md.columns))
 
+    def test_filter_feature_metadata_to_tree_nothing_left(self):
+        # rename all of the tip / internal node metadata so that none of it
+        # matches the tree
+        diff_int_md = self.int_md.copy()
+        diff_int_md.index = ["according to all known laws of aviation, there"]
+        diff_tip_md = self.tip_md.copy()
+        diff_tip_md.index = ["is no way that a bee", "should be able to fly"]
+
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            (
+                "After performing empty feature removal from the table and "
+                "then shearing the tree to tips that are also present in the "
+                "table, none of the nodes in the feature metadata are present "
+                "in the tree."
+            )
+        ):
+            tools.filter_feature_metadata_to_tree(
+                diff_tip_md, diff_int_md, self.shorn_tree
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
