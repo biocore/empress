@@ -200,6 +200,15 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
+     * Return a set of observation ids
+     *
+     * @return {Array} A set of feature identifiers.
+     */
+    BIOMTable.prototype.getObsIDs = function () {
+        return this._fIDs;
+    };
+
+    /**
      * Returns a list of observations (features) present in the input samples.
      *
      * @param {Array} samples Array of sample IDs

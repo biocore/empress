@@ -277,6 +277,23 @@ require(['jquery','BiomTable'], function($, BiomTable) {
             );
         });
 
+        test('Test getObsIDs', function(assert) {
+          var oids = ['o1', 'o2', 'o3', 'o4', 'o5', 'o6', 'o7', 'o8', 'o9',
+                      'o10'];
+          assert.deepEqual(this.biomTable.getObsIDs(), oids);
+
+          var smallTable = new BiomTable(
+              ['s1'],
+              ['o1'],
+              {'s1': 0},
+              {'o1': 0},
+              [[0]],
+              ['f1', 'f2'],
+              [['x', 'y']]
+          );
+          assert.deepEqual(smallTable.getObsIDs(), ['o1']);
+        });
+
         test('Test getObservationUnionForSamples', function() {
             // converting result to Set makes validation easier since
             // getObservationUnionForSamples uses a Set and then converts the
