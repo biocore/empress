@@ -68,6 +68,13 @@ class TestTools(unittest.TestCase):
             index=["e", "h", "a"]
         )
         self.split_tax_fm = split_taxonomy(self.feature_metadata)
+        self.tip_md = self.split_tax_fm.loc[["a", "e"]]
+        self.int_md = self.split_tax_fm.loc[["h"]]
+        # This is designed to match the shearing that's done in the core test
+        # for --p-filter_unobserved_features_from_phylogeny.
+        self.shorn_tree = parse_newick(
+            "(((a:1)EmpressNode0:1,b:2)g:1,(d:3)h:2)EmpressNode1:1;"
+        )
         self.exp_split_fm_cols = [
             "Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Level 6",
             "Level 7", "Confidence"
@@ -556,6 +563,34 @@ class TestTools(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Your list has values other "
                                     "than 0-1s"):
             tools.shifting([10])
+
+    def test_filter_feature_metadata_to_tree_1_tip_filtered(self):
+        ft, fi = tools.filter_feature_metadata_to_tree(
+            self.tip_md, self.int_md, self.shorn_tree
+        )
+        # Metadata about tip "e" should have been filtered
+        assert_frame_equal(ft, self.tip_md.loc[["a"]])
+        # Internal node metadata shouldn't have changed
+        assert_frame_equal(fi, self.int_md)
+
+    def test_filter_feature_metadata_to_tree_1_int_node_filtered(self):
+        # turn "h" into "harold"
+        diff_int_md = self.int_md.copy()
+        diff_int_md.index = ["harold"]
+        # Remove "e" from tip_md so that the tip metadata won't need filtering
+        diff_tip_md = self.tip_md.loc[["a"]]
+
+        ft, fi = tools.filter_feature_metadata_to_tree(
+            diff_tip_md, diff_int_md, self.shorn_tree
+        )
+
+        # Tip metadata shouldn't have changed
+        assert_frame_equal(ft, diff_tip_md)
+        # "h" was the only internal node in self.int_md, so the internal node
+        # metadata should now be empty. However, it should still be a DataFrame
+        # with the same columns it had before.
+        self.assertTrue(fi.empty)
+        self.assertEqual(list(fi.columns), list(self.int_md.columns))
 
 
 if __name__ == "__main__":
