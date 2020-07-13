@@ -383,6 +383,35 @@ def shifting(bitlist, size=51):
 
 
 def filter_feature_metadata_to_tree(tip_md, int_md, bp_tree):
+    """Filters feature metadata DataFrames to describe the nodes in a tree.
+
+    Parameters
+    ----------
+    tip_md: pd.DataFrame
+        Tip node metadata. Index should describe node names, columns can be
+        arbitrary metadata columns.
+    int_md: pd.DataFrame
+        Internal node metadata, structured analogously to tip_md.
+    bp_tree: bp.BP
+        Tree to filter the metadata objects to.
+
+    Returns
+    -------
+    f_tip_md, f_int_md
+        f_tip_md: pd.DataFrame
+            Version of tip_md filtered to just the node names that describe
+            tips in bp_tree. May be empty, if none of the names in tip_md were
+            present in bp_tree.
+        f_int_md: pd.DataFrame
+            Version of int_md filtered to just the node names that describe
+            internal nodes in bp_tree. May be empty, if none of the names in
+            int_md were present in bp_tree.
+
+    Raises
+    ------
+    DataMatchingError
+        If f_tip_and_md and f_int_md would both be empty.
+    """
     tree_tip_names = set(bp_tree_tips(bp_tree))
     tree_int_names = set(bp_tree_non_tips(bp_tree))
     shared_tip_names = tip_md.index.intersection(tree_tip_names)
