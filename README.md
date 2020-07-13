@@ -96,7 +96,7 @@ qiime empress plot \
 This generates a visualization of a phylogenetic tree alongside a visualization
 of a PCoA plot (using Emperor) at `docs/moving-pictures/empress-tree-tandem.qzv`.
 
-![Empress and Emperor example GIF in q2view](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/empress-emperor-example.gif)
+![Empress and Emperor example GIF in q2view](https://user-images.githubusercontent.com/4177727/87364282-221e5b80-c528-11ea-9aac-383518307a75.gif)
 
 ##### Output Artifacts
 
