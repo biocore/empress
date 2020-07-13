@@ -245,7 +245,7 @@ define(["underscore", "util"], function (_, util) {
 
         // 2.1 The samples represented by this tip are sent to Emperor
         this._samplesInSelection = this.empress._biom.getSamplesByObservations(
-            this._checkTips([name]));
+            this._checkAndFilterTips([name]));
 
         for (var f = 0; f < this.fields.length; f++) {
             var field = this.fields[f];
@@ -367,7 +367,7 @@ define(["underscore", "util"], function (_, util) {
 
             // retrive the sample data for the tips in the table
             var samples = emp._biom.getSamplesByObservations(
-                this._checkTips(tips));
+                this._checkAndFilterTips(tips));
 
             // used for the emperor callback
             this._samplesInSelection = this._samplesInSelection.concat(samples);
@@ -408,19 +408,19 @@ define(["underscore", "util"], function (_, util) {
      *
      * @return {Array} the features represented in the dataset.
      */
-    SelectedNodeMenu.prototype._checkTips = function (tips) {
+    SelectedNodeMenu.prototype._checkAndFilterTips = function (tips) {
         // find the tips that can be used in the UI
-        var tipsForTable = _.intersection(this.empress._biom.getObsIDs(), tips);
+        var intersection = this.empress._biom.getObsIDsIntersection(tips);
+        var diff = this.empress._biom.getObsIDsDifference(tips);
 
-        if (tipsForTable.length !== tips.length &&
+        if (diff.length &&
             (this.visibleCallback !== null || this.hiddenCallback !== null)) {
 
-            var diff = _.difference(tips, tipsForTable);
             util.toastMsg("The following tips are not represented by your "+
                           "feature table and ordination: " + diff.join(', '));
         }
 
-        return tipsForTable;
+        return intersection;
     };
 
     /**
