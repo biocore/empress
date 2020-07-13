@@ -207,7 +207,7 @@ define(["underscore", "util"], function (_, util) {
      * @return {Array[String]} feature ids in the BIOM table and the inputed
      * list.
      */
-    BIOMTable.prototype.getObsIDsIntersection = function(other) {
+    BIOMTable.prototype.getObsIDsIntersection = function (other) {
         return _.intersection(this._fIDs, other);
     };
 
@@ -219,7 +219,7 @@ define(["underscore", "util"], function (_, util) {
      * @return {Array[String]} feature ids in the inputed list but not in the
      * BIOM table.
      */
-    BIOMTable.prototype.getObsIDsDifference = function(other) {
+    BIOMTable.prototype.getObsIDsDifference = function (other) {
         return _.difference(other, this._fIDs);
     };
 
