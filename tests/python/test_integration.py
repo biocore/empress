@@ -13,6 +13,38 @@ from qiime2.sdk import Results, Visualization
 from qiime2.plugin.testing import TestPluginBase
 
 
+PREFIX_DIR = os.path.join("docs", "moving-pictures")
+
+
+def load_mp_data():
+    """Loads data from the QIIME 2 moving pictures tutorial for visualization.
+
+    It's assumed that this data is already stored in docs/moving-pictures/, aka
+    the PREFIX_DIR global variable set above. If this directory or the data
+    files within it cannot be accessed, this function will (probably) break.
+
+    Returns
+    -------
+    (tree, table, md, fmd)
+        tree: Artifact with semantic type Phylogeny[Rooted]
+            Phylogenetic tree.
+        table: Artifact with semantic type FeatureTable[Frequency]
+            Feature table.
+        md: Metadata
+            Sample metadata.
+        fmd: Metadata
+            Feature metadata. (Although this is stored in the repository as a
+            FeatureData[Taxonomy] artifact, we transform it to Metadata.)
+    """
+    tree = Artifact.load(os.path.join(PREFIX_DIR, "rooted-tree.qza"))
+    table = Artifact.load(os.path.join(PREFIX_DIR, "table.qza"))
+    md = Metadata.load(os.path.join(PREFIX_DIR, "sample_metadata.tsv"))
+    # We have to transform the taxonomy QZA to Metadata ourselves
+    taxonomy = Artifact.load(os.path.join(PREFIX_DIR, "taxonomy.qza"))
+    fmd = taxonomy.view(Metadata)
+    return tree, table, md, fmd
+
+
 class TestIntegration(TestPluginBase):
     """Runs an integration test using the moving pictures tutorial data.
 
@@ -34,22 +66,14 @@ class TestIntegration(TestPluginBase):
         # above
         self.plot = self.plugin.visualizers["plot"]
 
-        # Load the various input QZAs/etc. needed to run this test
-        prefixdir = os.path.join("docs", "moving-pictures")
-        self.tree = Artifact.load(os.path.join(prefixdir, "rooted-tree.qza"))
-        self.table = Artifact.load(os.path.join(prefixdir, "table.qza"))
-        self.md = Metadata.load(os.path.join(prefixdir, "sample_metadata.tsv"))
-
-        # We have to transform the taxonomy QZA to Metadata ourselves
-        self.taxonomy = Artifact.load(os.path.join(prefixdir, "taxonomy.qza"))
-        self.fmd = self.taxonomy.view(Metadata)
+        self.tree, self.table, self.md, self.fmd = load_mp_data()
 
         # Helps us distinguish between if the test was successful or not
         self.result = None
 
         # If the test was successful, we'll save the output QZV to this path
         # during tearDown().
-        self.output_path = os.path.join(prefixdir, "empress-tree.qzv")
+        self.output_path = os.path.join(PREFIX_DIR, "empress-tree.qzv")
 
     def test_execution(self):
         """Just checks that the visualizer at least runs without errors."""

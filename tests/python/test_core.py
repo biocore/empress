@@ -17,6 +17,7 @@ from pandas.util.testing import assert_frame_equal
 from os.path import exists
 from shutil import rmtree
 
+from .test_integration import load_mp_data
 from emperor import Emperor
 from empress import tools
 from empress.core import Empress
@@ -389,6 +390,9 @@ class TestCore(unittest.TestCase):
         self.assertNotEqual(id(self.filtered_sample_metadata), id(viz.samples))
 
         self.assertIsNone(viz.ordination)
+
+    def test_fm_filtering_post_shearing_with_moving_pictures_dataset(self):
+        tree, table, md, fmd = load_mp_data()
 
     def test_no_intersection_between_tree_and_table(self):
         bad_table = self.unrelated_table.copy()
