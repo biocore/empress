@@ -380,3 +380,49 @@ def shifting(bitlist, size=51):
         ints.append(out)
 
     return ints
+
+
+def filter_feature_metadata_to_tree(tip_md, int_md, bp_tree):
+    """Filters feature metadata DataFrames to describe the nodes in a tree.
+
+    Parameters
+    ----------
+    tip_md: pd.DataFrame
+        Tip node metadata. Index should describe node names, columns can be
+        arbitrary metadata columns.
+    int_md: pd.DataFrame
+        Internal node metadata, structured analogously to tip_md.
+    bp_tree: bp.BP
+        Tree to filter the metadata objects to.
+
+    Returns
+    -------
+    f_tip_md, f_int_md
+        f_tip_md: pd.DataFrame
+            Version of tip_md filtered to just the node names that describe
+            tips in bp_tree. May be empty, if none of the names in tip_md were
+            present in bp_tree.
+        f_int_md: pd.DataFrame
+            Version of int_md filtered to just the node names that describe
+            internal nodes in bp_tree. May be empty, if none of the names in
+            int_md were present in bp_tree.
+
+    Raises
+    ------
+    DataMatchingError
+        If f_tip_and_md and f_int_md would both be empty.
+    """
+    tree_tip_names = set(bp_tree_tips(bp_tree))
+    tree_int_names = set(bp_tree_non_tips(bp_tree))
+    shared_tip_names = tip_md.index.intersection(tree_tip_names)
+    shared_int_names = int_md.index.intersection(tree_int_names)
+    if len(shared_tip_names) == 0 and len(shared_int_names) == 0:
+        raise DataMatchingError(
+            "After performing empty feature removal from the table and then "
+            "shearing the tree to tips that are also present in the table, "
+            "none of the nodes in the feature metadata are present in the "
+            "tree."
+        )
+    f_tip_md = tip_md.loc[shared_tip_names]
+    f_int_md = int_md.loc[shared_int_names]
+    return f_tip_md, f_int_md

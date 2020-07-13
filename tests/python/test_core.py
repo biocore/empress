@@ -17,10 +17,11 @@ from pandas.util.testing import assert_frame_equal
 from os.path import exists
 from shutil import rmtree
 
+from .test_integration import load_mp_data
 from emperor import Emperor
 from empress import tools
 from empress.core import Empress
-from bp import parse_newick
+from bp import parse_newick, from_skbio_treenode
 from six import StringIO
 from skbio.tree import TreeNode
 
@@ -357,6 +358,67 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.features)
         self.assertIsNone(viz.ordination)
+
+    def test_fm_filtering_post_shearing(self):
+
+        extra_fm = self.feature_metadata.copy()
+        extra_fm.loc["e"] = "i'm going to be filtered :O"
+        viz = Empress(self.tree, self.filtered_table,
+                      self.filtered_sample_metadata, feature_metadata=extra_fm,
+                      filter_unobserved_features_from_phylogeny=True)
+        # Same as with the shearing test above, check that the tree was handled
+        # as expected
+        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
+                                        0, 0, 0])
+
+        names = ['a', 'EmpressNode0', 'b', 'g', 'd', 'h', 'EmpressNode1']
+        for i, node in enumerate(viz.tree.postorder()):
+            self.assertEqual(node.name, names[i])
+
+        # Now, the point of this test: verify that the feature metadata was
+        # filtered to just stuff in the sheared tree ("e" was removed from the
+        # tip metadata)
+        assert_frame_equal(extra_fm.loc[["a"]], viz.tip_md)
+        assert_frame_equal(extra_fm.loc[["h"]], viz.int_md)
+
+        # table should be unchanged and be a different id instance
+        assert_frame_equal(self.filtered_table, viz.table.T)
+        self.assertNotEqual(id(self.filtered_table), id(viz.table))
+
+        # sample metadata should be unchanged and be a different id instance
+        assert_frame_equal(self.filtered_sample_metadata, viz.samples)
+        self.assertNotEqual(id(self.filtered_sample_metadata), id(viz.samples))
+
+        self.assertIsNone(viz.ordination)
+
+    def test_fm_filtering_post_shearing_with_moving_pictures_dataset(self):
+        # This particular tip can be problematic (it was the reason we found
+        # out about https://github.com/biocore/empress/issues/248), so we
+        # observe how it is handled in generating a visualization of the
+        # moving pictures dataset to verify that #248 does not recur.
+        funky_tip = "8406abe6d9a72018bf32d189d1340472"
+        tree, tbl, smd, fmd, pcoa = load_mp_data()
+        # Convert artifacts / metadata objects to "normal" types that we can
+        # pass to Empress
+        bp_tree = from_skbio_treenode(tree.view(TreeNode))
+        tbl_df = tbl.view(pd.DataFrame)
+        pcoa_skbio = pcoa.view(skbio.OrdinationResults)
+        smd_df = smd.to_dataframe()
+        fmd_df = fmd.to_dataframe()
+        # Sanity check -- verify that the funky tip we're looking for is
+        # actually present in the data. (We haven't actually done anything
+        # specific to Empress yet. This just verifies the environment is ok.)
+        # https://stackoverflow.com/a/23549599/10730311
+        self.assertTrue(funky_tip in fmd_df.index)
+        # Generate an Empress visualization using this data
+        viz = Empress(bp_tree, tbl_df, smd_df, feature_metadata=fmd_df,
+                      ordination=pcoa_skbio, filter_extra_samples=True,
+                      filter_unobserved_features_from_phylogeny=True)
+        # Check that tip 8406abe6d9a72018bf32d189d1340472 *isn't* in the tip
+        # metadata. All of the samples this tip is present in are filtered out
+        # when --p-filter-extra-samples is used with this particular PCoA, so
+        # we verify that this tip is removed from the tip metadata.
+        self.assertFalse(funky_tip in viz.tip_md.index)
 
     def test_no_intersection_between_tree_and_table(self):
         bad_table = self.unrelated_table.copy()
