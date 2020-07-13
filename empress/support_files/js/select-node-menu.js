@@ -366,7 +366,7 @@ define(["underscore", "util"], function (_, util) {
                 }
             }
 
-            // retrive the sample data for the tips in the table
+            // retrieve the sample data for the tips in the table
             var samples = emp._biom.getSamplesByObservations(
                 this._checkAndFilterTips(tips)
             );
@@ -405,10 +405,11 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Warn the user when a tip or tips are not present in the feature table
-     * and ordination
+     * Given an array of tip names, warns the user about those that are not
+     * present in the BIOM table (using a toast message) and returns just the
+     * tip names in the array that are present as features in the table.
      *
-     * @return {Array} the features represented in the dataset.
+     * @return {Array} the tip names that are also represented in the table.
      */
     SelectedNodeMenu.prototype._checkAndFilterTips = function (tips) {
         // find the tips that can be used in the UI

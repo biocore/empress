@@ -200,24 +200,23 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Return the feature ids in the BIOM table and inputed list
+     * Return the feature IDs shared by the BIOM table and input array
      *
      * @param {Array[String]} other Array of strings to compute the
      *                              intersection against.
-     * @return {Array[String]} feature ids in the BIOM table and the inputed
-     * list.
+     * @return {Array[String]} feature IDs shared by the BIOM table and other.
      */
     BIOMTable.prototype.getObsIDsIntersection = function (other) {
         return _.intersection(this._fIDs, other);
     };
 
     /**
-     * Return the feature ids in the inputed list but not in the BIOM table.
+     * Return the feature IDs in the input array but not in the BIOM table.
      *
      * @param {Array[String]} other Array of strings to compute the
      *                              set-difference against.
-     * @return {Array[String]} feature ids in the inputed list but not in the
-     * BIOM table.
+     * @return {Array[String]} feature IDs in the input array but not in the
+     *                         BIOM table.
      */
     BIOMTable.prototype.getObsIDsDifference = function (other) {
         return _.difference(other, this._fIDs);
