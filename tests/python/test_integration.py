@@ -20,12 +20,13 @@ def load_mp_data():
     """Loads data from the QIIME 2 moving pictures tutorial for visualization.
 
     It's assumed that this data is already stored in docs/moving-pictures/, aka
-    the PREFIX_DIR global variable set above. If this directory or the data
+    the PREFIX_DIR global variable set above, which should be located relative
+    to where this function is being run from. If this directory or the data
     files within it cannot be accessed, this function will (probably) break.
 
     Returns
     -------
-    (tree, table, md, fmd)
+    (tree, table, md, fmd, ordination)
         tree: Artifact with semantic type Phylogeny[Rooted]
             Phylogenetic tree.
         table: Artifact with semantic type FeatureTable[Frequency]
@@ -35,14 +36,19 @@ def load_mp_data():
         fmd: Metadata
             Feature metadata. (Although this is stored in the repository as a
             FeatureData[Taxonomy] artifact, we transform it to Metadata.)
+        pcoa: Artifact with semantic type PCoAResults
+            Ordination.
     """
     tree = Artifact.load(os.path.join(PREFIX_DIR, "rooted-tree.qza"))
     table = Artifact.load(os.path.join(PREFIX_DIR, "table.qza"))
+    pcoa = Artifact.load(
+        os.path.join(PREFIX_DIR, "unweighted_unifrac_pcoa_results.qza")
+    )
     md = Metadata.load(os.path.join(PREFIX_DIR, "sample_metadata.tsv"))
     # We have to transform the taxonomy QZA to Metadata ourselves
     taxonomy = Artifact.load(os.path.join(PREFIX_DIR, "taxonomy.qza"))
     fmd = taxonomy.view(Metadata)
-    return tree, table, md, fmd
+    return tree, table, md, fmd, pcoa
 
 
 class TestIntegration(TestPluginBase):
@@ -66,7 +72,7 @@ class TestIntegration(TestPluginBase):
         # above
         self.plot = self.plugin.visualizers["plot"]
 
-        self.tree, self.table, self.md, self.fmd = load_mp_data()
+        self.tree, self.table, self.md, self.fmd, _ = load_mp_data()
 
         # Helps us distinguish between if the test was successful or not
         self.result = None
