@@ -200,6 +200,29 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
+     * Return the feature IDs shared by the BIOM table and input array
+     *
+     * @param {Array[String]} other Array of strings to compute the
+     *                              intersection against.
+     * @return {Array[String]} feature IDs shared by the BIOM table and other.
+     */
+    BIOMTable.prototype.getObsIDsIntersection = function (other) {
+        return _.intersection(this._fIDs, other);
+    };
+
+    /**
+     * Return the feature IDs in the input array but not in the BIOM table.
+     *
+     * @param {Array[String]} other Array of strings to compute the
+     *                              set-difference against.
+     * @return {Array[String]} feature IDs in the input array but not in the
+     *                         BIOM table.
+     */
+    BIOMTable.prototype.getObsIDsDifference = function (other) {
+        return _.difference(other, this._fIDs);
+    };
+
+    /**
      * Returns a list of observations (features) present in the input samples.
      *
      * @param {Array} samples Array of sample IDs
