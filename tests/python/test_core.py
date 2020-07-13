@@ -419,7 +419,6 @@ class TestCore(unittest.TestCase):
         # when --p-filter-extra-samples is used with this particular PCoA, so
         # we verify that this tip is removed from the tip metadata.
         self.assertFalse(funky_tip in viz.tip_md.index)
-        
 
     def test_no_intersection_between_tree_and_table(self):
         bad_table = self.unrelated_table.copy()
