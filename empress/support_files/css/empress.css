@@ -158,54 +158,6 @@ input[type=checkbox]:checked::before {
     top: 1px;
 }
 
-/* tooltip */
-
-.infomark {
-    color: steelblue;
-    cursor: pointer;
-    vertical-align: super;
-    font-size: smaller;
-}
-
-.infomark:before {
-    content: "\2139";
-}
-
-.tooltip {
-    visibility: hidden;
-    background-color: black;
-    color: white;
-    font-size: 9pt;
-    padding: 10px 15px;
-    border-radius: 5px;
-    position: absolute;
-    z-index: 2;
-    max-width: 300px;
-    margin-top: 35px;
-    transform: translateX(-50%);
-    line-height: 125%;
-    transition-delay: 0.5s;
-}
-
-.tooltip a:link, .tooltip a:visited {
-    color: steelblue;
-}
-
-label:hover .tooltip {
-    visibility: visible;
-}
-
-.tooltip::after {
-    content: " ";
-    position: absolute;
-    left: calc(50% - 5px);
-    bottom: 100%;
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent transparent black transparent;
-}
-
-
 /* node selection menu box */
 
 #menu-box {
