@@ -287,37 +287,6 @@ input[type=checkbox]:checked::before {
   z-index: 1;
 }
 
-/* dynamic label */
-
-.floating-div {
-    position: absolute;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    border: 1px solid transparent;
-    padding-left: 9px;
-    padding-right: 7px;
-}
-
-.floating-div:hover {
-    background-color: white;
-    border: 1px solid lightgray;
-    box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2);
-}
-
-.floating-div:hover::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    border-top: 8px solid dimgray;
-    border-right: 8px solid transparent;
-    width: 0;
-}
-
-/* end of reference */
-
-
 /* control panel */
 
 #side-panel {
