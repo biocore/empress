@@ -126,19 +126,21 @@ define(["underscore"], function (_) {
     }
 
     /**
-     * Display a message in toast.
+     * Display a message in a toast element.
      *
-     * @param {string} msg - message to display
-     * @param {number} duration - milliseconds to keep toast visible
+     * @param {String} msg - message to display
+     * @param {Number} duration - milliseconds to keep toast visible (optional)
+     *                            If this is undefined, then this will default
+     *                            to 3000 ms (i.e. 3 seconds).
      */
-    function toastMsg(msg) {
-        var duration = 2000,
-            toast = document.getElementById("toast");
+    function toastMsg(msg, duration) {
+        var effectiveDuration = _.isUndefined(duration) ? 3000 : duration;
+        var toast = document.getElementById("toast");
         toast.innerHTML = msg;
         toast.classList.remove("hidden");
         setTimeout(function () {
             toast.classList.add("hidden");
-        }, duration);
+        }, effectiveDuration);
     }
 
     return {
