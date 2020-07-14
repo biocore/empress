@@ -264,17 +264,6 @@ input[type=checkbox]:checked::before {
     pointer-events: none;
 }
 
-.switch-button-container {
-    position: absolute;
-    top: 0vh;
-    left: 0vw;
-}
-#switch-btn {
-    position: absolute;
-    top: 0vh;
-    left: 0vw;
-}
-
 /* referenced from  https://webglfundamentals.org/webgl/lessons/webgl-text-html.html*/
 .container {
     position: absolute;
