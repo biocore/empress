@@ -9,7 +9,9 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 // ((1,(2,3)4)5,6)7;
                 var tree = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]),
-                    null, null, null);
+                    null,
+                    [7, 5, 1, 4, 2, 3, 6],
+                    null);
                 var layoutToCoordSuffix = {
                     "Rectangular": "r",
                     "Circular": "c2",
@@ -400,6 +402,12 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 }
             }
 
+            var currentColorInfo = {
+                "metadata": "sample",
+                "metadataColumn": "f1"
+            };
+            deepEqual(this.empress._currentColorInfo, currentColorInfo);
+
          });
 
         test("Test colorByFeatureMetadata, tip only", function() {
@@ -441,6 +449,11 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                     deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
+            var currentColorInfo = {
+                "metadata": "feature",
+                "metadataColumn": "f1"
+            };
+            deepEqual(this.empress._currentColorInfo, currentColorInfo);
 
             // test 'all' method
 
@@ -472,6 +485,11 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                     deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
+            var currentColorInfo = {
+                "metadata": "feature",
+                "metadataColumn": "f2"
+            };
+            deepEqual(this.empress._currentColorInfo, currentColorInfo);
 
         });
 
@@ -702,5 +720,134 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 <= 1.0e-15)
 
         });
+
+        test("Test isMetadaColumn, column exists", function() {
+            ok(this.empress.isMetadaColumn("f1"));
+        });
+
+        test("Test isMetadaColumn, column doesn't exists", function() {
+            ok(!this.empress.isMetadaColumn("bad_column_name"));
+        });
+
+        test("Test setCurrentColorInfo", function() {
+            var scope = this;
+
+            throws(
+                function() {
+                    scope.empress.setCurrentColorInfo(
+                        "not_a_type",
+                        "f1"
+                    )
+                },
+                /Metadata must be of type 'sample' or 'feature'/,
+                "Test: error thrown if unrecognized metadata type"
+            );
+
+            throws(
+                function() {
+                    scope.empress.setCurrentColorInfo(
+                        "sample",
+                        "not_a_column"
+                    )
+                },
+                /not_a_column is not a valid sample metadata column/,
+                "Test: error thrown if unrecognized metadata column"
+            );
+
+            throws(
+                function() {
+                    scope.empress.setCurrentColorInfo(
+                        "feature",
+                        "not_a_column"
+                    )
+                },
+                /not_a_column is not a valid feature metadata column/,
+                "Test: error thrown if unrecognized metadata column"
+            );
+        });
+
+        test("Test collapseClades", function() {
+            this.empress._inorder = this.empress.inorderNodes();
+
+            // red should be a collapsable clade
+            var obs = {
+                'red': new Set([2,3,4]),
+                'blue': new Set([1, 6])
+            }
+            var cm = {
+                'red': [1, 0, 0],
+                'blue': [0, 0, 1]
+            }
+            this.empress._colorTree(obs, cm);
+            this.empress.collapseClades();
+            var collapsed = new Set([2, 3]);
+            for (var i = 1; i <= this.empress._tree.size; i++) {
+                if (collapsed.has(i)) {
+                    deepEqual(
+                        this.empress._treeData[i].visible,
+                        false,
+                        "Test: node "+ i + " should be invisible"
+                    );
+                } else {
+                    deepEqual(
+                        this.empress._treeData[i].visible,
+                        true,
+                        "Test: node " + i + " should be visible"
+                    )
+                }
+            }
+            var collapseClades = [
+                35, 36, 1, 0, 0,
+                33, 34, 1, 0, 0,
+                31, 32, 1, 0, 0,
+                35, 36, 1, 0, 0,
+                33, 34, 1, 0, 0,
+                33, 34, 1, 0, 0,]
+            deepEqual(this.empress._collapsedCladeBuffer, collapseClades);
+
+            // // nothing should be collapsed.
+            // this.empress.resetTree();
+            // obs = {
+            //     'red': new Set([1, 2, 3]),
+            //     'blue': new Set([])
+            // }
+            // cm = {
+            //     'red': [1, 0, 0],
+            //     'blue': [0, 0, 1]
+            // }
+            // this.empress._colorTree(obs, cm);
+            // this.empress.collapseClades();
+            // for (var i = 1; i <= this.empress._tree.size; i++) {
+            //     deepEqual(
+            //         this.empress._treeData[i].visible,
+            //         true,
+            //         "Test: node belongs to collapsed clade => invisible"
+            //     );
+            // }
+
+        });
+
+        test("Test getTotalLength", function() {
+            equal(this.empress.getTotalLength(2, 5), 6);
+        });
+
+        test("Test inorderNodes", function() {
+            deepEqual(
+                this.empress.inorderNodes(),
+                [7, 5, 6, 1, 4, 2, 3]
+            );
+        });
+
+        test("Test getCladeNodes", function() {
+            deepEqual(
+                this.empress.getCladeNodes(4),
+                [2, 3, 4]
+            );
+
+            deepEqual(
+                this.empress.getCladeNodes(2),
+                [2]
+            );
+        })
     });
 });

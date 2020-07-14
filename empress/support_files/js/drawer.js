@@ -119,6 +119,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
         // buffer object for colored clades
         s.cladeBuff = c.createBuffer();
+        this.cladeVertSize = 0;
 
         // buffer object for triangles (collapse clades)
         s.triBuff = c.createBuffer();
@@ -288,6 +289,12 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.fillBufferData_(this.sProg_.nodeVertBuff, data);
     };
 
+    Drawer.prototype.loadCladeBuff = function(data) {
+        data = new Float32Array(data);
+        this.cladeVertSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.cladeBuff, data);
+    }
+
     /**
      * Display the tree nodes.
      * Note: Currently Empress will only display the nodes that had an assigned
@@ -340,6 +347,9 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
         this.bindBuffer(s.sampleThickBuff);
         c.drawArrays(c.TRIANGLES, 0, this.sampleThickSize);
+
+        this.bindBuffer(s.cladeBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.cladeVertSize);
     };
 
     /**

@@ -18,7 +18,7 @@ define(["Colorer"], function (Colorer) {
         this.colorSelect = document.getElementById("animate-color-select");
         this.gradient = document.getElementById("animate-gradient");
         this.trajectory = document.getElementById("animate-trajectory");
-        this.hideChk = document.getElementById("animate-hide-non-feature");
+        // this.hideChk = document.getElementById("animate-hide-non-feature");
         this.lWidth = document.getElementById("animate-line-width");
         this.startBtn = document.getElementById("animate-start-btn");
         this.stopBtn = document.getElementById("animate-stop-btn");
@@ -133,9 +133,9 @@ define(["Colorer"], function (Colorer) {
          * Event: triggers when user clicks on the hide branch checkbox.
          * Sets hide parameter in animation state machine.
          */
-        this.hideChk.onchange = function () {
-            scope.animator.setHide(scope.hideChk.checked);
-        };
+        // this.hideChk.onchange = function () {
+        //     scope.animator.setHide(scope.hideChk.checked);
+        // };
 
         /**
          * Event: triggers when user changes value of line width.
@@ -169,7 +169,7 @@ define(["Colorer"], function (Colorer) {
             var gradient = scope.gradient.value;
             var trajectory = scope.trajectory.value;
             var cm = scope.colorSelect.value;
-            var hide = scope.hideChk.checked;
+            // var hide = scope.hideChk.checked;
             var lWidth = scope.lWidth.value;
 
             // pass parameters to state machine

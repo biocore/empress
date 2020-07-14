@@ -188,6 +188,34 @@ define([
         ) {
             this._events = new CanvasEvents(this, this._drawer, canvas);
         }
+
+        /**
+         * @type{Object}
+         * Stores the information that describes how the tree is currently being
+         * colored.
+         *
+         * Format {metadata: <sample or feautre>, metadataColumn: <field>}
+         */
+        this._currentColorInfo = null;
+
+        /**
+         * @type{Object}
+         * Stores the information about the collapsed clased. This object is
+         * used to determine if a user clicked on a collapsed clade.
+         *
+         * Format:
+         * {
+         *      node: {
+         *          left: <node_id>,
+         *          right: <node_id>,
+         *          deepest: <node_id>,
+         *          length: <Number>
+         *      }
+         *  }
+         */
+        this._collapsedClades = {};
+        this._collapsedCladeBuffer = [];
+        this._inorder = null;
     }
 
     /**
@@ -201,6 +229,7 @@ define([
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
         this.centerLayoutAvgPoint();
+        this._inorder = this.inorderNodes();
     };
 
     /**
@@ -209,6 +238,7 @@ define([
     Empress.prototype.drawTree = function () {
         this._drawer.loadTreeBuf(this.getCoords());
         this._drawer.loadNodeBuff(this.getNodeCoords());
+        this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
     };
 
@@ -283,6 +313,9 @@ define([
 
         for (var i = 1; i <= tree.size; i++) {
             var node = this._treeData[i];
+            if(!node.visible) {
+                continue;
+            }
             if (!node.name.startsWith("EmpressNode")) {
                 coords[coords_index++] = this.getX(node);
                 coords[coords_index++] = this.getY(node);
@@ -371,6 +404,8 @@ define([
                 coords_index += 3;
                 // 2. Draw vertical line, if this is an internal node
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
+                    // skip if node is root of collapsed clade
+                    if (this._collapsedClades.hasOwnProperty(node)) continue;
                     coords[coords_index++] = this.getX(this._treeData[node]);
                     coords[coords_index++] = this._treeData[
                         node
@@ -773,6 +808,8 @@ define([
     /**
      * Color the tree using sample data
      *
+     * Note: this will also set _currentColorInfo
+     *
      * @param {String} cat The sample category to use
      * @param {String} color - the Color map to use
      *
@@ -810,11 +847,16 @@ define([
         var keyInfo = colorer.getMapHex();
         // color tree
         this._colorTree(obs, cm);
+        // set currentColorInfo
+        this.setCurrentColorInfo("sample", cat);
+
         return keyInfo;
     };
 
     /**
      * Color the tree based on a feature metadata column.
+     *
+     * Note: this will also set _currentColorInfo
      *
      * @param {String} cat The feature metadata column to color nodes by.
      *                     This must be present in this._featureMetadataColumns
@@ -907,6 +949,9 @@ define([
 
         // color tree
         this._colorTree(obs, cm);
+
+        // set currentColorInfo
+        this.setCurrentColorInfo("feature", cat);
 
         return keyInfo;
     };
@@ -1024,6 +1069,7 @@ define([
             this._treeData[key].sampleColored = false;
             this._treeData[key].visible = true;
         }
+        this._collapsedClades = {};
         this._drawer.loadSampleThickBuf([]);
     };
 
@@ -1208,6 +1254,247 @@ define([
      */
     Empress.prototype.setOnNodeMenuHiddenCallback = function (callback) {
         this._events.selectedNodeMenu.hiddenCallback = callback;
+    };
+
+    /**
+     * Determines if column is a valid feature metadata column.
+     *
+     * @param{String} column A potential column name
+     *
+     * @return{Boolean} true if column is a valid feature metadata column.
+     *                  false otherwise.
+     */
+    Empress.prototype.isMetadaColumn = function (column) {
+        return this._featureMetadataColumns.includes(column);
+    };
+
+    /**
+     * Sets the current color info object.
+     *
+     * @param{String} type The type of metadata used. Should be either sample
+     *                     or feature. Anything else will throw an error.
+     * @param{String} column The column in the metadata used. If the column
+     *                       doesn't exist for the type of metadata then an
+     *                       error will be thrown.
+     */
+    Empress.prototype.setCurrentColorInfo = function (type, column) {
+        if (type !== "sample" && type !== "feature") {
+            throw new Error("Metadata must be of type 'sample' or 'feature'");
+        }
+
+        if (type === "sample" && !this._biom.isMetadataColumn(column)) {
+            throw new Error(column + " is not a valid sample metadata column");
+        }
+
+        if (type === "feature" && !this.isMetadaColumn(column)) {
+            throw new Error(column + " is not a valid feature metadata column");
+        }
+        this._currentColorInfo = { metadata: type, metadataColumn: column };
+    };
+
+    /**
+     * Collapses all clades that share the same color into a quadrilateral.
+     *
+     * Note: if a clade contains a node with DEFAULT_COLOR it will not be
+     *       collapsed
+     *
+     * @return{Boolean} true if at least one clade was collapse. false otherwise
+     */
+    Empress.prototype.collapseClades = function () {
+        // assume no clades were collapse
+        var collapsed = false;
+
+        // Alogorithm: once a tip is encounter with a none DEFAULT_COLOR, then
+        // nodes are added to this set until a node is encountered with either
+        // a different color or DEFAULT_COLOR at which point, if a non-tip node
+        // was added to this set then it is considered a collapsed clade and a
+        // quad will be created. This set will be then be reset.
+        // This works because _projectObservations guarentees that internal
+        // nodes are only colored if all descendant share the same color.
+        // Note: _projectObservations is not called when the user colors the
+        // tree using internal feature metadata so it is possible that this
+        // algorithm will fail if the left most tips do not share the same
+        // color as the rest of the clade. As such, we have to make sure all
+        // tips in the clade belong to this set to consider in order to consider
+        // it a collapsed clade.
+        var currentCollapsedClade = new Set();
+
+        // iterate through the tree using inorder
+        for (var i in this._inorder) {
+            var node = this._inorder[i],
+                color = this._treeData[node].color,
+                visible = this._treeData[node].visible,
+                isTip = this._tree.isleaf(this._tree.postorderselect(node));
+
+            if (visible && !isTip && color !== this.DEFAULT_COLOR) {
+                this.createQuad(node);
+            }
+        }
+    };
+
+    Empress.prototype.createQuad = function (node) {
+        console.log("collapse " + node);
+        // step 1: find all nodes in the clade.
+        var cladeNodes = this.getCladeNodes(node);
+
+        var currentCladeInfo = {
+            "left": cladeNodes[0],
+            "right": cladeNodes[0],
+            "deepest": cladeNodes[0],
+            "length": this.getTotalLength(cladeNodes[0], node)
+        };
+        console.log(cladeNodes)
+        // step 2: make all descendants of node invisible
+        // step 3: find the following clade information:
+        //      1) "left" most child.
+        //      2) "right" most child.
+        //      3) "deepest" child
+        // Note: "left" and "right" most children are different for each layout.
+        //       Unrooted:
+        //          left  - the left most child
+        //          right - the right most child
+        //      Rectangular:
+        //          left  - the tip with smallest y-coord
+        //          right - the tip with the largest y-coord
+        //      Circular:
+        //          left  - the tip with the smallest angle
+        //          right - the tip with the largest angle
+        for (var i in cladeNodes) {
+            var cladeNode = cladeNodes[i];
+            if (this._tree.isleaf(this._tree.postorderselect(cladeNode))) {
+                console.log("tip: " + i + " ?")
+                this.updateCladeInfo(currentCladeInfo, cladeNode, node);
+            }
+            this._treeData[cladeNode].visible = false;
+        }
+        this._treeData[node].visible = true;
+
+        // add collapsed clade to drawing buffer
+        var cladeBuffer = [],
+            color = this._treeData[node].color;
+
+        var curNode = this._treeData[node],
+            x = this.getX(curNode),
+            y = this.getY(curNode);
+        cladeBuffer.push(...[x, y, ...color]);
+
+        curNode = this._treeData[currentCladeInfo["deepest"]],
+            x = this.getX(curNode),
+            y = this.getY(curNode);
+        cladeBuffer.push(...[x, y, ...color]);
+
+        curNode = this._treeData[currentCladeInfo["left"]],
+            x = this.getX(curNode),
+            y = this.getY(curNode);
+        cladeBuffer.push(...[x, y, ...color]);
+
+        curNode = this._treeData[node],
+            x = this.getX(curNode),
+            y = this.getY(curNode);
+        cladeBuffer.push(...[x, y, ...color]);
+        curNode = this._treeData[currentCladeInfo["deepest"]],
+            x = this.getX(curNode),
+            y = this.getY(curNode);
+        cladeBuffer.push(...[x, y, ...color]);
+        curNode = this._treeData[currentCladeInfo["right"]],
+            x = this.getX(curNode),
+            y = this.getY(curNode);
+        cladeBuffer.push(...[x, y, ...color]);
+
+
+        this._collapsedCladeBuffer.push(...cladeBuffer);
+        console.log(this._collapsedCladeBuffer)
+        // currentCollapsedClade.delete(r);
+        // var scope = this;
+        // var invisible = function (node) {
+        //     scope._treeData[node].visible = false;
+        // };
+        // _.each([...currentCollapsedClade], invisible);
+
+        this._collapsedClades[node] = currentCladeInfo;
+        this._treeData[node].color = this.DEFAULT_COLOR;
+    };
+
+    Empress.prototype.updateCladeInfo = function(currentCladeInfo, node, r) {
+        var curLeft = currentCladeInfo["left"],
+            curRight = currentCladeInfo["right"],
+            curDeep = currentCladeInfo["deepest"];
+            length = this.getTotalLength(node, r);
+
+        if (length > currentCladeInfo["length"]) {
+            currentCladeInfo["length"] = length;
+            currentCladeInfo["deepest"] = node;
+        }
+
+        if (this._currentLayout === "Unrooted") {
+            currentCladeInfo.right = node;
+        } else if (this._currentLayout === "Rectangular") {
+            curLeftY = this.getY(curLeft);
+            curRightY = this.getY(curRight);
+            y = this.getY(node);
+            currentCladeInfo.left = y < curLeftY ? node : curLeft;
+            currentCladeInfo.right = y > curRightY ? node : curRight;
+        } // need circular layout
+
+    };
+
+    Empress.prototype.getTotalLength = function(start, end) {
+        var curNode = start,
+            totalLength = 0;
+        while(curNode !== end) {
+            totalLength += this._tree.length(
+                this._tree.postorderselect(curNode)
+            );
+            curNode = this._tree.postorder(
+                this._tree.parent(this._tree.postorderselect(curNode))
+            );
+        }
+        return totalLength;
+    };
+
+    Empress.prototype.inorderNodes = function() {
+        // the root node of the tree
+        var curNode = this._tree.preorderselect(1),
+            inorder = [],
+            nodeStack = [curNode];
+        while (nodeStack.length > 0) {
+            // "visit" node
+            curNode = nodeStack.shift();
+            inorder.push(this._tree.postorder(curNode));
+
+            // append children to stack
+            var child = this._tree.fchild(curNode);
+            while (child !== 0) {
+                nodeStack.push(child);
+                child = this._tree.nsibling(child);
+            }
+        }
+        return inorder;
+    };
+
+    Empress.prototype.getCladeNodes = function(node) {
+        // This is done by finding the left most child of the clade and then
+        // performing a post-order traversal until node is reached
+
+        // stores the clade nodes
+        var cladeNodes = [];
+
+
+        // find left most child
+        // Note: initializing lchild as node incase node is a tip
+        lchild = node;
+        var fchild = this._tree.fchild(this._tree.postorderselect(node));
+        while(fchild !== 0) {
+            lchild = this._tree.postorder(fchild);
+            fchild = this._tree.fchild(this._tree.postorderselect(lchild));
+        }
+
+        // perform post order traversal until node is reached.
+        for (var i = lchild; i <= node; i++) {
+            cladeNodes.push(i);
+        }
+
+        return cladeNodes;
     };
 
     return Empress;

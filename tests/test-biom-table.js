@@ -604,5 +604,13 @@ require(['jquery','BiomTable'], function($, BiomTable) {
             );
         });
 
+        test("Test isMetadaColumn, column exists", function() {
+            ok(this.biomTable.isMetadataColumn("f1"));
+        });
+
+        test("Test isMetadaColumn, column doesn't exists", function() {
+            ok(!this.biomTable.isMetadataColumn("bad_column_name"));
+        });
+
     });
 });

@@ -153,6 +153,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 // closest to the (x, y) point that was clicked
                 for (var i = 1; i <= empress._tree.size; i++) {
                     var node = empress._treeData[i];
+                    if (!node.visible) continue;
                     var nodeX = empress.getX(node);
                     var nodeY = empress.getY(node);
                     xDist = x - nodeX;

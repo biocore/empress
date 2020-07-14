@@ -39,7 +39,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.sSel = document.getElementById("sample-options");
         this.sAddOpts = document.getElementById("sample-add");
         this.sColor = document.getElementById("sample-color");
-        this.sHideChk = document.getElementById("sample-hide-non-feature");
+        this.collapseCladesChk = document.getElementById("sample-collapse--chk");
         this.sLineWidth = document.getElementById("sample-line-width");
         this.sUpdateBtn = document.getElementById("sample-update");
 
@@ -57,7 +57,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.layoutDiv = document.getElementById("layout-div");
 
         // uncheck button
-        this.sHideChk.checked = false;
+        this.collapseCladesChk.checked = false;
 
         // used in event closures
         var scope = this;
@@ -123,7 +123,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 sChk: { checked: false },
                 sSel: { disabled: true },
                 sColor: { value: "discrete-coloring-qiime" },
-                sHideChk: { checked: false },
+                collapseCladesChk: { checked: false },
                 sLineWidth: { value: 1 },
             },
             [this.sAddOpts, this.sUpdateBtn]
@@ -204,7 +204,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     SidePanel.prototype._colorSampleTree = function () {
         var colBy = this.sSel.value;
         var col = this.sColor.value;
-        var hide = this.sHideChk.checked;
+        var hide = this.collapseCladesChk.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col);
         if (keyInfo === null) {
             util.toastMsg(
@@ -341,7 +341,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.sLineWidth.onchange = showUpdateBtn;
 
         // deterines whether to show features not in samples
-        this.sHideChk.onclick = function () {
+        this.collapseCladesChk.onclick = function () {
             scope.empress.setNonSampleBranchVisibility(this.checked);
             scope.empress.drawTree();
         };
@@ -370,6 +370,15 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.recenterBtn.onclick = function () {
             scope.empress.centerLayoutAvgPoint();
         };
+        this.collapseCladesChk.onclick = function() {
+            if (this.checked) {
+                scope.empress.collapseClades();
+                scope.empress.drawTree();
+            } else {
+                scope.empress.resetTree();
+                scope.empress.drawTree();
+            }
+        }
     };
 
     SidePanel.prototype.updateFeatureMethodDesc = function () {
