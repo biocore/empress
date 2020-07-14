@@ -277,6 +277,41 @@ require(['jquery','BiomTable'], function($, BiomTable) {
             );
         });
 
+        test('Test getObsIDsIntersection', function(assert) {
+            var obs;
+            var oids = ['o1', 'o2', 'o3', 'o4', 'o5', 'o6', 'o7', 'o8', 'o9',
+                        'o10'];
+            obs = this.biomTable.getObsIDsIntersection(oids);
+            assert.deepEqual(obs, oids);
+
+            obs = this.biomTable.getObsIDsIntersection(['o1']);
+            assert.deepEqual(obs, ['o1']);
+
+            obs = this.biomTable.getObsIDsIntersection(['oh no']);
+            assert.deepEqual(obs, []);
+        });
+
+        test('Test getObsIDsDifference', function(assert) {
+            var obs;
+            var oids = ['o1', 'o2', 'o3', 'o4', 'o5', 'o6', 'o7', 'o8', 'o9',
+                        'o10'];
+            obs = this.biomTable.getObsIDsDifference(oids);
+            assert.deepEqual(obs, []);
+
+            obs = this.biomTable.getObsIDsDifference(['o1']);
+            assert.deepEqual(obs, []);
+
+            obs = this.biomTable.getObsIDsDifference(['oh no']);
+            assert.deepEqual(obs, ['oh no']);
+
+            obs = this.biomTable.getObsIDsDifference([]);
+            assert.deepEqual(obs, []);
+
+            obs = this.biomTable.getObsIDsDifference(['O1', 'o2', 'oh no',
+                                                      ':D']);
+            assert.deepEqual(obs, ['O1', 'oh no', ':D']);
+        });
+
         test('Test getObservationUnionForSamples', function() {
             // converting result to Set makes validation easier since
             // getObservationUnionForSamples uses a Set and then converts the

@@ -244,9 +244,9 @@ define(["underscore", "util"], function (_, util) {
         var ctData = {};
 
         // 2.1 The samples represented by this tip are sent to Emperor
-        this._samplesInSelection = this.empress._biom.getSamplesByObservations([
-            name,
-        ]);
+        this._samplesInSelection = this.empress._biom.getSamplesByObservations(
+            this._checkAndFilterTips([name])
+        );
 
         for (var f = 0; f < this.fields.length; f++) {
             var field = this.fields[f];
@@ -366,8 +366,10 @@ define(["underscore", "util"], function (_, util) {
                 }
             }
 
-            // retrive the sample data for the tips
-            var samples = emp._biom.getSamplesByObservations(tips);
+            // retrieve the sample data for the tips in the table
+            var samples = emp._biom.getSamplesByObservations(
+                this._checkAndFilterTips(tips)
+            );
 
             // used for the emperor callback
             this._samplesInSelection = this._samplesInSelection.concat(samples);
@@ -400,6 +402,32 @@ define(["underscore", "util"], function (_, util) {
                 "values represent the number of unique samples that " +
                 "contain any of this node's descendant tips.";
         }
+    };
+
+    /**
+     * Given an array of tip names, warns the user about those that are not
+     * present in the BIOM table (using a toast message) and returns just the
+     * tip names in the array that are present as features in the table.
+     *
+     * @return {Array} the tip names that are also represented in the table.
+     */
+    SelectedNodeMenu.prototype._checkAndFilterTips = function (tips) {
+        // find the tips that can be used in the UI
+        var intersection = this.empress._biom.getObsIDsIntersection(tips);
+        var diff = this.empress._biom.getObsIDsDifference(tips);
+
+        if (
+            diff.length &&
+            (this.visibleCallback !== null || this.hiddenCallback !== null)
+        ) {
+            util.toastMsg(
+                "The following tips are not represented by your " +
+                    "feature table and ordination: " +
+                    diff.join(", ")
+            );
+        }
+
+        return intersection;
     };
 
     /**
