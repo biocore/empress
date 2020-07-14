@@ -33,14 +33,19 @@ If you just want to run the Python or JavaScript tests, you can run
 ## Front-end development
 
 For convenience, a utility script `./tests/python/make-dev-page.py` is bundled
-in the test suite. If no arguments are set, the script will load the moving
-pictures dataset and create a page `development-page.html`. Using this page
-developers can modify CSS and JS files and simply reload the page on the
-browser to see their changes take effect.
+in the test suite. This script works best if you install the package in
+"editable mode" i.e. by running `pip install -e .` from the base directory.
+
+After installing the package, the script can be run without any arguments. This
+will load the moving pictures dataset and create a page
+`development-page.html`. Using this page developers can modify CSS and JS files
+and simply reload the page on the browser to see their changes take effect.
+Alternatively, you can set the input data for development using the various
+options and arguments in the script. For a full list of options and arguments,
+you can run `./tests/python/make-dev-page.py --help`.
 
 Note, modifications to the Python code, or the template code require that you
-re-run the script. For a full list of options and arguments, you can run
-`./tests/python/make-dev-page.py --help`.
+re-generate `development-page.html`.
 
 ## Linting and style-checking
 
