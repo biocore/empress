@@ -34,7 +34,7 @@ classifiers = [s.strip() for s in classes.split('\n') if s]
 with open('README.md') as f:
     long_description = f.read()
 
-base = ["numpy", "scipy", "pandas",
+base = ["numpy", "scipy", "pandas", "click",
         "jinja2", "scikit-bio", "biom-format", "iow", "emperor"]
 test = ["pep8", "flake8", "nose"]
 all_deps = base + test

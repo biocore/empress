@@ -22,10 +22,10 @@ ARG_TYPE = click.Path(exists=True, dir_okay=False, file_okay=True)
 @click.argument('sample_metadata', required=False, type=ARG_TYPE)
 @click.argument('feature_metadata', required=False, type=ARG_TYPE)
 @click.argument('ordination', required=False, type=ARG_TYPE)
-@click.option('ignore_missing_samples', default=False)
-@click.option('filter_extra_samples', default=False)
-@click.option('filter_missing_features', default=False)
-@click.option('filter_unobserved_features_from_phylogeny', default=False)
+@click.option('--ignore-missing-samples', is_flag=True)
+@click.option('--filter-extra-samples', is_flag=True)
+@click.option('--filter-missing-features', is_flag=True)
+@click.option('--filter-unobserved-features-from-phylogeny', is_flag=True)
 def main(tree, table, sample_metadata, feature_metadata, ordination,
          ignore_missing_samples, filter_extra_samples, filter_missing_features,
          filter_unobserved_features_from_phylogeny):
@@ -40,6 +40,7 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
     if tree is None or table is None or sample_metadata is None:
         tree, table, sample_metadata, feature_metadata, ordination = \
                 load_mp_data()
+        filter_extra_samples = True
     # otherwise require a tree, table and sample meadata
     elif (tree is not None and table is not None
           and sample_metadata is not None):

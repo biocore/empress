@@ -30,6 +30,18 @@ make test
 If you just want to run the Python or JavaScript tests, you can run
 `make pytest` or `make jstest` respectively.
 
+## Front-end development
+
+For convenience, a utility script `./tests/python/make-dev-page.py` is bundled
+in the test suite. If no arguments are set, the script will load the moving
+pictures dataset and create a page `development-page.html`. Using this page
+developers can modify CSS and JS files and simply reload the page on the
+browser to see their changes take effect.
+
+Note, modifications to the Python code, or the template code require that you
+re-run the script. For a full list of options and arguments, you can run
+`./tests/python/make-dev-page.py --help`.
+
 ## Linting and style-checking
 
 Empress' python code is linted/style-checked using `flake8`.
