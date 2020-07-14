@@ -491,7 +491,7 @@ p.side-header button {
 /* loading screen */
 
 #loading-screen {
-    position: fixed;
+    position: absolute;
     z-index: 100;
     left: 0;
     top: 0;
@@ -506,7 +506,7 @@ p.side-header button {
 }
 
 #loading-text {
-    position: fixed;
+    position: absolute;
     top: calc(50% - 8px);
     font-size: 12pt;
     color: dimgray;

@@ -14,6 +14,12 @@
     <!-- The tree -->
     <div class="{{ emperor_classes }}">
       <div id="tree-container" class="container {{ emperor_classes }}">
+        <!-- loading screen -->
+        <div id="loading-screen">
+          <div id="loading-animation"></div>
+          <div id="loading-text">Loading...</div>
+        </div>
+
         <canvas class="tree-surface" id="tree-surface">
             Your browser does not support HTML5
         </canvas>
@@ -62,12 +68,6 @@
       <div id="tip-color-key" class="legend hidden" disabled="true"></div>
       <div id="node-color-key" class="legend hidden" disabled="true"></div>
       <div id="clade-color-key" class="legend hidden" disabled="true"></div>
-    </div>
-
-    <!-- loading screen -->
-    <div id="loading-screen">
-      <div id="loading-animation"></div>
-      <div id="loading-text">Loading...</div>
     </div>
   </body>
 
