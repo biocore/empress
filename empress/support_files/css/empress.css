@@ -488,26 +488,6 @@ p.side-header button {
     opacity: 0.5;
 }
 
-.selected-tree-menu {
-    position: absolute;
-    visibility: hidden;
-}
-
-#label-dropbox {
-    display: grid;
-    grid-template-columns: 1fr;
-}
-
-#toggle-pages {
-    position: absolute;
-    top: 0vh;
-    left: 0vw;
-    height: 12px;
-    width: 60px;
-    border: 2px solid black;
-}
-
-
 /* loading screen */
 
 #loading-screen {
