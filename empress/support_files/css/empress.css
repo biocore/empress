@@ -76,42 +76,6 @@ input[type=number] {
     width: 40px;
 }
 
-select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    -ms-appearance: none;
-    appearance: none;
-    padding-right: 30px;
-    /* ensures other elements are visible if there are long column names */
-    width: 160px;
-}
-
-select::-ms-expand {
-    display: none;
-}
-
-select:-moz-focusring {
-    color: transparent;
-    text-shadow: 0 0 0 black;
-}
-
-.select-container {
-    display: flex;
-    align-items: center;
-    position: relative;
-}
-
-.select-container:after {
-    position: absolute;
-    content: "\203A";
-    transform: rotate(90deg);
-    color: gray;
-    font-size: 13.5pt;
-    right: 12px;
-    top: 1px;
-    pointer-events: none;
-}
-
 input[type=radio], input[type=checkbox] {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -156,6 +120,42 @@ input[type=checkbox]:checked::before {
     font-size: 15px;
     left: 7px;
     top: 1px;
+}
+
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    appearance: none;
+    padding-right: 30px;
+    /* ensures other elements are visible if there are long column names */
+    width: 160px;
+}
+
+select::-ms-expand {
+    display: none;
+}
+
+select:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 black;
+}
+
+.select-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.select-container:after {
+    position: absolute;
+    content: "\203A";
+    transform: rotate(90deg);
+    color: gray;
+    font-size: 13.5pt;
+    right: 12px;
+    top: 1px;
+    pointer-events: none;
 }
 
 /* node selection menu box */
