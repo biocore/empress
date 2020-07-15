@@ -287,6 +287,16 @@ select:-moz-focusring {
   z-index: 1;
 }
 
+/* Convenience class for preventing user selection
+ * https://stackoverflow.com/a/6900392
+ */
+.unselectable-text {
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
+}
+
 /* control panel */
 
 #side-panel {
@@ -296,14 +306,6 @@ select:-moz-focusring {
     width: 450px;
     max-height: 100%;
     overflow-y: auto;
-
-    /* prevent user selection when panning around
-     * https://stackoverflow.com/a/6900392
-     */
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none; /* Firefox */
-    -ms-user-select: none; /* IE10+/Edge */
-    user-select: none; /* Standard */
 }
 
 #show-ctrl {
@@ -312,6 +314,8 @@ select:-moz-focusring {
     right: 0px;
     opacity: 0.5;
     background-color: #777;
+    font-size: 10pt;
+    padding: 0 0 3px 3px;
 }
 
 .panel-active {
@@ -548,14 +552,6 @@ p.side-header button {
     display: flex;
     align-items: flex-start;
     flex-direction: column;
-
-    /* prevent user selection when panning around
-     * https://stackoverflow.com/a/6900392
-     */
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none; /* Firefox */
-    -ms-user-select: none; /* IE10+/Edge */
-    user-select: none; /* Standard */
 }
 
 div.legend {
