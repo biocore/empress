@@ -47,7 +47,7 @@ button::-moz-focus-inner {
     border: 0;
 }
 
-input[type=text], input[type=number], select {
+input[type=text].empress-input, input[type=number].empress-input, select {
     box-sizing: border-box;
     background-color: white;
     height: 28px;
@@ -58,25 +58,25 @@ input[type=text], input[type=number], select {
     margin-right: 5px;
 }
 
-input[type=text]:hover:enabled, input[type=number]:hover:enabled,
-input[type=radio]:hover:enabled, input[type=checkbox]:hover:enabled,
+input[type=text].empress-input:hover:enabled, input[type=number].empress-input:hover:enabled,
+input[type=radio].empress-input:hover:enabled, input[type=checkbox].empress-input:hover:enabled,
 select:hover:enabled {
     background-color: lightgray;
 }
 
-input[type=text] {
+input[type=text].empress-input {
     padding-right: 5px;
 }
 
-input[type=text], select {
+input[type=text].empress-input, select {
     min-width: 120px;
 }
 
-input[type=number] {
+input[type=number].empress-input {
     width: 40px;
 }
 
-input[type=radio], input[type=checkbox] {
+input[type=radio].empress-input, input[type=checkbox].empress-input {
     -webkit-appearance: none;
     -moz-appearance: none;
     -ms-appearance: none;
@@ -92,19 +92,19 @@ input[type=radio], input[type=checkbox] {
     outline: none;
 }
 
-input[type=radio] {
+input[type=radio].empress-input {
     border-radius: 50px;
     height: 25px;
     width: 25px;
 }
 
-input[type=checkbox] {
+input[type=checkbox].empress-input {
     border-radius: 3px;
     height: 20px;
     width: 20px;
 }
 
-input[type=radio]:checked::before {
+input[type=radio].empress-input:checked::before {
     position: absolute;
     content: "\02143";
     transform: rotate(40deg);
@@ -113,7 +113,7 @@ input[type=radio]:checked::before {
     top: 4px;
 }
 
-input[type=checkbox]:checked::before {
+input[type=checkbox].empress-input:checked::before {
     position: absolute;
     content: "\02143";
     transform: rotate(40deg);
@@ -347,7 +347,7 @@ p.side-header {
     justify-content: flex-start;
 }
 
-p.side-header input[type=text]:hover {
+p.side-header input[type=text].empress-input:hover {
     background-color: lightgray;
 }
 
