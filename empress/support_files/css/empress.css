@@ -296,6 +296,14 @@ select:-moz-focusring {
     width: 450px;
     max-height: 100%;
     overflow-y: auto;
+
+    /* prevent user selection when panning around
+     * https://stackoverflow.com/a/6900392
+     */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
 }
 
 #show-ctrl {
@@ -540,6 +548,14 @@ p.side-header button {
     display: flex;
     align-items: flex-start;
     flex-direction: column;
+
+    /* prevent user selection when panning around
+     * https://stackoverflow.com/a/6900392
+     */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
 }
 
 div.legend {
