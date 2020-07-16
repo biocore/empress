@@ -359,10 +359,6 @@ p.side-header {
     justify-content: flex-start;
 }
 
-p.side-header input[type=text].empress-input:hover {
-    background-color: lightgray;
-}
-
 p.side-header button, #show-ctrl {
     height: 40px;
     width: 40px;
