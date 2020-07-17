@@ -119,7 +119,7 @@ require([
                         x2: 29,
                         y2: 30,
                         name: "1",
-                        inSample: true,
+                        inSample: false,
                         visible: true,
                     },
                 };
