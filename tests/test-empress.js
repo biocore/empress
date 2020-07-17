@@ -676,7 +676,7 @@ require([
         });
 
         test("Test resetTree", function () {
-            var e = this.empress; // used to shorten funciton calls
+            var e = this.empress; // used to shorten function calls
             var keys = Object.keys(e._treeData);
             e.resetTree();
             for (var i = 0; i < keys.length; i++) {
