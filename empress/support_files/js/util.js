@@ -114,7 +114,7 @@ define(["underscore"], function (_) {
      * @return {Boolean} true if value represents a finite number, else false
      */
     function isValidNumber(value) {
-        return (!isNaN(parseFloat(value)) && isFinite(value));
+        return !isNaN(parseFloat(value)) && isFinite(value);
     }
 
     /**
