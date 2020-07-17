@@ -59,7 +59,7 @@ require([
                         x2: 39,
                         y2: 40,
                         name: "EmpressNode6",
-                        inSample: true,
+                        inSample: false,
                         visible: true,
                     },
                     5: {
