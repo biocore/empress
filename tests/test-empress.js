@@ -83,7 +83,7 @@ require([
                         x2: 35,
                         y2: 36,
                         name: "internal",
-                        inSample: true,
+                        inSample: false,
                         visible: true,
                     },
                     2: {
