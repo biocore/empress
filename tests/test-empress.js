@@ -47,7 +47,7 @@ require([
                         x2: 41,
                         y2: 42,
                         name: "root",
-                        inSample: true,
+                        inSample: false,
                         visible: true,
                     },
                     6: {
