@@ -107,7 +107,7 @@ require([
                         x2: 33,
                         y2: 34,
                         name: "3",
-                        inSample: true,
+                        inSample: false,
                         visible: true,
                     },
                     1: {
