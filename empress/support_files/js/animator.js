@@ -129,7 +129,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @param {String} gradient Metadata column to user for gradient
      * @param {String} cm The color map to use for the animation
      * @param {Boolean} hide Tells animator to hide uncolored branches
-     * @param {Number} lWidth Tells animator how think to make colored tree
+     * @param {Number} lWidth Tells animator how thick to make colored tree
      *                 branches
      */
     Animator.prototype.setAnimationParameters = function (
