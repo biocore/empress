@@ -216,27 +216,27 @@ require([
 
         test("Test getX/getY", function () {
             // The tree coordinates were defined in such way that, starting at
-            // node 1, rectangular layout, and coord=1, a nodes coords should
+            // node 1, rectangular layout, and coord=1, a node's coords should
             // be (coord++, coord++)
             var coord = 1;
-
+            var node;
             this.empress._currentLayout = "Rectangular";
             for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
+                node = this.empress._treeData[i];
                 equal(this.empress.getX(node), coord++);
                 equal(this.empress.getY(node), coord++);
             }
 
             this.empress._currentLayout = "Circular";
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
+            for (i = 1; i <= 7; i++) {
+                node = this.empress._treeData[i];
                 equal(this.empress.getX(node), coord++);
                 equal(this.empress.getY(node), coord++);
             }
 
             this.empress._currentLayout = "Unrooted";
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
+            for (i = 1; i <= 7; i++) {
+                node = this.empress._treeData[i];
                 equal(this.empress.getX(node), coord++);
                 equal(this.empress.getY(node), coord++);
             }
@@ -393,19 +393,21 @@ require([
             // setNonSampleBranchVisibility
             this.empress._treeData[6].inSample = false;
 
+            var node;
+
             // pass in false
             // Note: this means node 6's visible should be true
             this.empress.setNonSampleBranchVisibility(false);
             for (var i = 1; i < 7; i++) {
-                var node = this.empress._treeData[i];
+                node = this.empress._treeData[i];
                 equal(node.visible, true);
             }
 
             // pass in true
             // Note: this means node 6's visible should be false
             this.empress.setNonSampleBranchVisibility(true);
-            for (var i = 1; i < 7; i++) {
-                var node = this.empress._treeData[i];
+            for (i = 1; i < 7; i++) {
+                node = this.empress._treeData[i];
                 if (i !== 6) {
                     equal(node.visible, true);
                 } else {
@@ -524,10 +526,11 @@ require([
             deepEqual(resultGroups, groups);
 
             // make sure nodes were assigned correct color
+            var node;
             var group1 = new Set([2, 3, 4]);
             var group2 = new Set([1, 6]);
             for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
+                node = this.empress._treeData[i];
                 if (group1.has(i)) {
                     deepEqual(node.color, chroma(cm["1"]).gl().slice(0, 3));
                 } else if (group2.has(i)) {
@@ -639,7 +642,6 @@ require([
                 g1: new Set([]),
                 g2: new Set([]),
             };
-            var expectedResult = {};
             var result = this.empress._projectObservations(obs);
             var expectedResult = [];
             var columns = Object.keys(result);

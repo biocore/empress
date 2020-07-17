@@ -30,7 +30,7 @@ require(["jquery", "VectorOps"], function ($, VectorOps) {
             // arbitrary point
             angle = VectorOps.getAngle([(-5 * Math.sqrt(3)) / 2, -5 / 2]);
             ok(Math.abs(angle.cos - (-1 * Math.sqrt(3)) / 2) < 1.0e-15);
-            ok(Math.abs(angle.sin - -1 / 2) < 1.0e-15);
+            ok(Math.abs(angle.sin + 1 / 2) < 1.0e-15);
         });
 
         test("Test magnitude", function () {
@@ -54,7 +54,7 @@ require(["jquery", "VectorOps"], function ($, VectorOps) {
             };
             var rPoint = VectorOps.rotate([1, 1], angle);
             ok(Math.abs(rPoint[0] - 0.3660254037844386) < 1.0e-15);
-            ok(Math.abs(rPoint[1] - -1.3660254037844386) < 1.0e-15);
+            ok(Math.abs(rPoint[1] + 1.3660254037844386) < 1.0e-15);
         });
 
         test("Test translate", function () {
