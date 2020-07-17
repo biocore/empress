@@ -246,7 +246,7 @@ require([
             // add drawer information to empress
             // the only drawer info needed for computeNecessaryCoordsSize is
             // the size of each vertex which is 5 ([x, y, r, g, b])
-            this.empress._drawer = new Object();
+            this.empress._drawer = {};
             this.empress._drawer.VERTEX_SIZE = 5;
 
             // Note: tree has 1 root, 4 tips, and 2 non-root internal nodes
@@ -496,7 +496,7 @@ require([
             for (var i = 1; i <= 7; i++) {
                 var node = this.empress._treeData[i];
                 if (aGroupNodes.has(i)) {
-                    deepEqual(node.color, chroma(cm["a"]).gl().slice(0, 3));
+                    deepEqual(node.color, chroma(cm.a).gl().slice(0, 3));
                 } else {
                     deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
@@ -765,34 +765,34 @@ require([
 
             // x coord for rectangular layout
             ok(
-                Math.abs(this.empress.layoutAvgPoint["Rectangular"][0] - 7) <=
+                Math.abs(this.empress.layoutAvgPoint.Rectangular[0] - 7) <=
                     1.0e-15
             );
             // y coor for rectangular layout
             ok(
-                Math.abs(this.empress.layoutAvgPoint["Rectangular"][1] - 8) <=
+                Math.abs(this.empress.layoutAvgPoint.Rectangular[1] - 8) <=
                     1.0e-15
             );
 
             // x coord for circular layout
             ok(
-                Math.abs(this.empress.layoutAvgPoint["Circular"][0] - 21) <=
+                Math.abs(this.empress.layoutAvgPoint.Circular[0] - 21) <=
                     1.0e-15
             );
             // y coor for circular layout
             ok(
-                Math.abs(this.empress.layoutAvgPoint["Circular"][1] - 22) <=
+                Math.abs(this.empress.layoutAvgPoint.Circular[1] - 22) <=
                     1.0e-15
             );
 
             // x coord for Unrooted layout
             ok(
-                Math.abs(this.empress.layoutAvgPoint["Unrooted"][0] - 35) <=
+                Math.abs(this.empress.layoutAvgPoint.Unrooted[0] - 35) <=
                     1.0e-15
             );
             // y coor for Unrooted layout
             ok(
-                Math.abs(this.empress.layoutAvgPoint["Unrooted"][1] - 36) <=
+                Math.abs(this.empress.layoutAvgPoint.Unrooted[1] - 36) <=
                     1.0e-15
             );
         });
