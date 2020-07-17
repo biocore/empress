@@ -147,3 +147,6 @@ create-plt.bash
 *.swp
 *.swo
 *~
+
+# ignore dev tree file
+development-page.html
