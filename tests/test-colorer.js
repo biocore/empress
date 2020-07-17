@@ -1,10 +1,4 @@
-require([
-    "jquery",
-    "chroma",
-    "underscore",
-    "Colorer",
-    "util"
-], function (
+require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
     $,
     chroma,
     _,
@@ -12,7 +6,7 @@ require([
     util
 ) {
     $(document).ready(function () {
-        module('Colorer');
+        module("Colorer");
         test("Test that default QIIME colors are correct", function () {
             // I copied this in from https://github.com/biocore/emperor/blob/659b62a9f02a6423b6258c814d0e83dbfd05220e/emperor/support_files/js/color-view-controller.js#L624,
             // so this lets us guarantee that (at least in terms of the default
@@ -50,7 +44,9 @@ require([
         test("Test construction with all discrete color maps", function () {
             // Generate an array with 100 unique elements
             var hundredEles = [];
-            _.times(100, function(n) { hundredEles.push(String(n)); });
+            _.times(100, function (n) {
+                hundredEles.push(String(n));
+            });
             var discreteColorCount = 0;
             var colorer;
             var palette;
@@ -91,10 +87,20 @@ require([
             equal(colorer.__valueToColor["3"], "#f14432");
             equal(colorer.__valueToColor["4"], "#bc141a");
         });
-        test("Test construction with a seq. color map and numeric + non-numeric values", function() {
+        test("Test construction with a seq. color map and numeric + non-numeric values", function () {
             var eles = [
-                "1", "2", "3", "10", "4", "5", "invalidlol", "nan", "NaN",
-                "Infinity", "-Infinity", " "
+                "1",
+                "2",
+                "3",
+                "10",
+                "4",
+                "5",
+                "invalidlol",
+                "nan",
+                "NaN",
+                "Infinity",
+                "-Infinity",
+                " ",
             ];
             var colorer = new Colorer("Viridis", eles);
             var sortedEles = util.naturalSort(eles);
@@ -181,7 +187,7 @@ require([
             // Hack to check that the values here are approximately right.
             // See https://stackoverflow.com/a/12830454/10730311 for details.
             equal(rgbmap["abc"][0].toFixed(2), 0.89);
-            equal(rgbmap["abc"][1].toFixed(2), 0.10);
+            equal(rgbmap["abc"][1].toFixed(2), 0.1);
             equal(rgbmap["abc"][2].toFixed(2), 0.11);
 
             hexmap = colorer.getMapHex();
@@ -200,7 +206,7 @@ require([
             equal(_.keys(rgbmap).length, 1);
             equal(_.keys(rgbmap)[0], "abc");
             equal(rgbmap["abc"][0].toFixed(2), 0.27);
-            equal(rgbmap["abc"][1].toFixed(2), 0.00);
+            equal(rgbmap["abc"][1].toFixed(2), 0.0);
             equal(rgbmap["abc"][2].toFixed(2), 0.33);
 
             hexmap = colorer.getMapHex();
