@@ -40,7 +40,6 @@ require([
                 var treeData = {
                     7: {
                         color: [1.0, 1.0, 1.0],
-                        inSample: false,
                         xr: 13,
                         yr: 14,
                         xc2: 27,
@@ -53,7 +52,6 @@ require([
                     },
                     6: {
                         color: [1.0, 1.0, 1.0],
-                        inSample: false,
                         xr: 11,
                         yr: 12,
                         xc2: 25,
@@ -66,7 +64,6 @@ require([
                     },
                     5: {
                         color: [1.0, 1.0, 1.0],
-                        inSample: false,
                         xr: 9,
                         yr: 10,
                         xc2: 23,
@@ -79,7 +76,6 @@ require([
                     },
                     4: {
                         color: [1.0, 1.0, 1.0],
-                        inSample: false,
                         xr: 7,
                         yr: 8,
                         xc2: 21,
@@ -92,7 +88,6 @@ require([
                     },
                     2: {
                         color: [1.0, 1.0, 1.0],
-                        inSample: false,
                         xr: 3,
                         yr: 4,
                         xc2: 17,
@@ -105,7 +100,6 @@ require([
                     },
                     3: {
                         color: [1.0, 1.0, 1.0],
-                        inSample: false,
                         xr: 5,
                         yr: 6,
                         xc2: 19,
@@ -118,7 +112,6 @@ require([
                     },
                     1: {
                         color: [1.0, 1.0, 1.0],
-                        inSample: false,
                         xr: 1,
                         yr: 2,
                         xc2: 15,
