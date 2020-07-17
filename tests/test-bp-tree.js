@@ -70,12 +70,12 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 );
             }
 
-            //rank 1
-            for (var i = 0; i < this.r1.length; i++) {
+            // rank 1
+            for (var j = 0; j < this.r1.length; j++) {
                 equal(
-                    this.bpObj.rank(1, i),
-                    this.r1[i],
-                    `Rank 1: ${i}-th index`
+                    this.bpObj.rank(1, j),
+                    this.r1[j],
+                    `Rank 1: ${j}-th index`
                 );
             }
         });
@@ -91,11 +91,11 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             }
 
             // select 1
-            for (var k = 0; k < this.s1.length; k++) {
+            for (var kk = 0; kk < this.s1.length; kk++) {
                 equal(
-                    this.bpObj.select(1, k + 1),
-                    this.s1[k],
-                    `Selec 0: ${k}-th node`
+                    this.bpObj.select(1, kk + 1),
+                    this.s1[kk],
+                    `Selec 0: ${kk}-th node`
                 );
             }
         });

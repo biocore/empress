@@ -556,8 +556,8 @@ require(["jquery", "BiomTable"], function ($, BiomTable) {
             // getGradientStep uses Sets and then converts the Sets to arrays.
             // The conversion does not keep order so converting the result back
             // to Sets makes validation easier.
-            for (var i = 0; i < keys.length; i++) {
-                obsReturned[keys[i]] = new Set(obsReturned[keys[i]]);
+            for (var ii = 0; ii < keys.length; ii++) {
+                obsReturned[keys[ii]] = new Set(obsReturned[keys[ii]]);
             }
             deepEqual(
                 obsReturned,
@@ -570,14 +570,14 @@ require(["jquery", "BiomTable"], function ($, BiomTable) {
 
             obsReturned = this.biomTable.getGradientStep("f2", "d", "f3");
             keys = Object.keys(obsReturned);
-            for (var i = 0; i < keys.length; i++) {
-                obsReturned[keys[i]] = new Set(obsReturned[keys[i]]);
+            for (var jj = 0; jj < keys.length; jj++) {
+                obsReturned[keys[jj]] = new Set(obsReturned[keys[jj]]);
             }
             deepEqual(
                 obsReturned,
                 {
                     i: new Set(["o1", "o2", "o4", "o5", "o7", "o10"]),
-                    j: new Set(["o1", "o2", , "o3", "o5", "o6", "o7", "o9"]),
+                    j: new Set(["o1", "o2", "o3", "o5", "o6", "o7", "o9"]),
                 },
                 "Test gradient d trajectory f3"
             );
