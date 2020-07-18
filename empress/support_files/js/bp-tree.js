@@ -539,5 +539,16 @@ define(["ByteArray"], function (ByteArray) {
         return this.select(1, k);
     };
 
+
+    /**
+     * True if name is in the names array for the tree
+     *
+     * @param {String} name The name to search for.
+     * @return {Boolean} If the name is in the tree.
+     */
+    BPTree.prototype.containsNode = function (name) {
+        return this.names_.indexOf(name) !== -1;
+    }
+
     return BPTree;
 });
