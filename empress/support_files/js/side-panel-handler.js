@@ -124,7 +124,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 sSel: { disabled: true },
                 sColor: { value: "discrete-coloring-qiime" },
                 sHideChk: { checked: false },
-                sLineWidth: { value: 1 },
+                sLineWidth: { value: 0 },
             },
             [this.sAddOpts, this.sUpdateBtn]
         );
@@ -137,7 +137,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 fChk: { checked: false },
                 fSel: { disabled: true },
                 fColor: { value: "discrete-coloring-qiime" },
-                fLineWidth: { value: 1 },
+                fLineWidth: { value: 0 },
                 fMethodChk: { checked: true },
             },
             [this.fAddOpts, this.fUpdateBtn]
