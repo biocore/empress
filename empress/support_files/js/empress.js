@@ -86,8 +86,6 @@ define([
         this.DEFAULT_COLOR = [0.75, 0.75, 0.75];
         this.DEFAULT_COLOR_HEX = "#c0c0c0";
 
-        this.DEFAULT_BRANCH_VAL = 1;
-
         /**
          * @type {BPTree}
          * The phylogenetic balance parenthesis tree
