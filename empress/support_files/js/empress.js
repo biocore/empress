@@ -589,6 +589,13 @@ define([
             }
         }
         this._currentLineWidth = level;
+        // TODO:
+        // 1. compute area of tree in given layout (width and height,
+        //    based on min/max x and y coords)
+        // 2. set "effectiveLW" or something to A / 1000.
+        // 3. replace uses of level in this func with effectiveLW.
+        // 4. (for clarity) replace the "level" name in this and
+        //    addThickVerticalLineCoords with lw or something
         var tree = this._tree;
 
         // the coordinates of the tree
