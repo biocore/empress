@@ -161,19 +161,20 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      * and feature metadata coloring settings. (There is definitely more work
      * to be done on removing shared code, but this is a start.)
      *
-     * @param{String} colorMethodName The name of a method of SidePanel to call
-     *                                to re-color the tree: for example,
-     *                                "_colorSampleTree". (Passing the actual
-     *                                method as an argument seems to cause
-     *                                problems due to "this" not working
-     *                                properly. This was the easiest solution.)
-     * @param{HTMLElement} lwInput An <input> with type="number" from which
+     * @param {String} colorMethodName The name of a method of SidePanel to
+     *                                 call to re-color the tree: for example,
+     *                                 "_colorSampleTree". (Passing the actual
+     *                                 method as an argument seems to cause
+     *                                 problems due to "this" not working
+     *                                 properly. This was the easiest
+     *                                 solution.)
+     * @param {HTMLElement} lwInput An <input> with type="number" from which
      *                             we'll get the .value indicating the line
      *                             width to use when thickening lines.
-     * @param{HTMLElement} updateBtn This element will be hidden at the end of
-     *                               this function. It should correspond to the
-     *                               "Update" button for the sample or feature
-     *                               metadata coloring tab.
+     * @param {HTMLElement} updateBtn This element will be hidden at the end of
+     *                                this function. It should correspond to
+     *                                the "Update" button for the sample or
+     *                                feature metadata coloring tab.
      */
     SidePanel.prototype._updateColoring = function (
         colorMethodName,
