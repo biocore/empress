@@ -14,10 +14,10 @@ empress.setOnNodeMenuHiddenCallback(function (samples) {
     ec.sceneViews[0].needsUpdate = true;
 });
 
-ec.sceneViews[0].on('click', function(name, object) {
+ec.sceneViews[0].on("click", function (name, object) {
     // this click callback should only handle arrow objects being clicked
     if (object.parent.type !== "ArrowHelper") {
-      return;
+        return;
     }
 
     empress.showNodeMenuForName(name);

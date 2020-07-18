@@ -1217,8 +1217,8 @@ define([
      */
     Empress.prototype.showNodeMenuForName = function (nodeName) {
         if (!this._tree.containsNode(nodeName)) {
-          // TODO: should we show an error or something?
-          return;
+            // TODO: should we show an error or something?
+            return;
         }
 
         this._events.selectedNodeMenu.clearSelectedNode();
