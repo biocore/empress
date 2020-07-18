@@ -175,7 +175,7 @@ define([
          * @type{Number}
          * The line width used for drawing "thick" lines.
          */
-        this._currentLineWidth = 1;
+        this._currentLineWidth = 0;
 
         /**
          * @type{CanvasEvents}
@@ -566,22 +566,21 @@ define([
     };
 
     /**
-     * Thickens the branches that belong to unique sample categories
-     * (i.e. features that are only in gut)
+     * Thickens the colored branches of the tree.
      *
-     * @param {Number} level - Desired line thickness (note that this will be
-     *                         applied on both sides of the line -- so if
-     *                         level = 1 here then the drawn thick line will
-     *                         have a width of 1 + 1 = 2).
+     * @param {Number} level Amount of thickness to use. If this is <= 0, this
+     *                       function won't do anything.
      */
     Empress.prototype.thickenSameSampleLines = function (level) {
-        // we do this because SidePanel._updateSample() calls this function
-        // with lWidth - 1, so in order to make sure we're setting this
-        // properly we add 1 to this value.
-        this._currentLineWidth = level + 1;
+        // If level isn't > 0, then we don't thicken colored lines at all --
+        // we just leave them at their default width.
+        if (level <= 0) {
+            return;
+        }
+        this._currentLineWidth = level;
         var tree = this._tree;
 
-        // the coordinate of the tree.
+        // the coordinates of the tree
         var coords = [];
         this._drawer.loadSampleThickBuf([]);
 
@@ -1057,10 +1056,7 @@ define([
                 // in drawTree(). Doing these calls out of order (draw tree,
                 // then call thickenSameSampleLines()) causes the thick-line
                 // stuff to only change whenever the tree is redrawn.
-                if (this._currentLineWidth !== 1) {
-                    // The - 1 mimics the behavior of SidePanel._updateSample()
-                    this.thickenSameSampleLines(this._currentLineWidth - 1);
-                }
+                this.thickenSameSampleLines(this._currentLineWidth);
                 // this._drawer.loadNodeBuff(this.getNodeCoords());
                 // this.drawTree();
                 this.centerLayoutAvgPoint();

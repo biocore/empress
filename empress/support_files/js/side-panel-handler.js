@@ -167,10 +167,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      *                                method as an argument seems to cause
      *                                problems due to "this" not working
      *                                properly. This was the easiest solution.)
-     * @param{lwInput} HTMLElement An <input> with type="number" from which
+     * @param{HTMLElement} lwInput An <input> with type="number" from which
      *                             we'll get the .value indicating the line
      *                             width to use when thickening lines.
-     * @param{updateBtn} HTMLElement This element will be hidden at the end of
+     * @param{HTMLElement} updateBtn This element will be hidden at the end of
      *                               this function. It should correspond to the
      *                               "Update" button for the sample or feature
      *                               metadata coloring tab.
@@ -191,10 +191,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // color tree
         this[colorMethodName]();
 
-        var lWidth = parseInt(lwInput.value);
-        if (lWidth !== 1) {
-            this.empress.thickenSameSampleLines(lWidth - 1);
-        }
+        var lw = util.parseAndValidateLineWidth(lwInput);
+        this.empress.thickenSameSampleLines(lw);
         this.empress.drawTree();
     };
 

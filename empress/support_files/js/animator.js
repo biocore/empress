@@ -130,7 +130,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @param {String} cm The color map to use for the animation
      * @param {Boolean} hide Tells animator to hide uncolored branches
      * @param {Number} lWidth Tells animator how thick to make colored tree
-     *                 branches
+     *                        branches
      */
     Animator.prototype.setAnimationParameters = function (
         trajectory,
@@ -229,7 +229,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.legend.clearAllLegends();
         this.legend.addColorKey(name, keyInfo, "node", false);
 
-        //draw tree
+        // draw tree
         this.empress.resetTree();
         this.empress._colorTree(obs, this.cm);
         this.empress.thickenSameSampleLines(this.lWidth);
