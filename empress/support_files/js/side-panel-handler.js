@@ -169,8 +169,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      *                                 properly. This was the easiest
      *                                 solution.)
      * @param {HTMLElement} lwInput An <input> with type="number" from which
-     *                             we'll get the .value indicating the line
-     *                             width to use when thickening lines.
+     *                              we'll get the .value indicating the line
+     *                              width to use when thickening lines.
      * @param {HTMLElement} updateBtn This element will be hidden at the end of
      *                                this function. It should correspond to
      *                                the "Update" button for the sample or
