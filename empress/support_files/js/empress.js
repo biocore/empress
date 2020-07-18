@@ -571,8 +571,22 @@ define([
     Empress.prototype.thickenSameSampleLines = function (level) {
         // If level isn't > 0, then we don't thicken colored lines at all --
         // we just leave them at their default width.
-        if (level <= 0) {
-            return;
+        if (level < 0) {
+            // should never happen because util.parseAndValidateLineWidth()
+            // should've been called in order to obtain "level", but in case
+            // this gets messed up in the future we'll catch it
+            throw "Line width passed to thickenSameSampleLines() is < 0.";
+        } else {
+            // Make sure that, even if level is 0 (i.e. we don't need to
+            // thicken the lines), we still set the current line width
+            // accordingly. This way, when doing things like updating the
+            // layout that'll require re-drawing the tree based on the most
+            // recent settings, we'll have access to the correct line width.
+            this._currentLineWidth = level;
+            if (level === 0) {
+                // But, yeah, if level is 0 we can just return early.
+                return;
+            }
         }
         this._currentLineWidth = level;
         var tree = this._tree;
