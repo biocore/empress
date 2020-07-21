@@ -47,8 +47,6 @@ require([
                         x2: 41,
                         y2: 42,
                         name: "root",
-                        inSample: false,
-                        visible: true,
                     },
                     6: {
                         color: [1.0, 1.0, 1.0],
@@ -59,8 +57,6 @@ require([
                         x2: 39,
                         y2: 40,
                         name: "EmpressNode6",
-                        inSample: false,
-                        visible: true,
                     },
                     5: {
                         color: [1.0, 1.0, 1.0],
@@ -71,8 +67,6 @@ require([
                         x2: 37,
                         y2: 38,
                         name: "internal",
-                        inSample: false,
-                        visible: true,
                     },
                     4: {
                         color: [1.0, 1.0, 1.0],
@@ -83,8 +77,6 @@ require([
                         x2: 35,
                         y2: 36,
                         name: "internal",
-                        inSample: false,
-                        visible: true,
                     },
                     2: {
                         color: [1.0, 1.0, 1.0],
@@ -95,8 +87,6 @@ require([
                         x2: 31,
                         y2: 32,
                         name: "2",
-                        inSample: false,
-                        visible: true,
                     },
                     3: {
                         color: [1.0, 1.0, 1.0],
@@ -107,8 +97,6 @@ require([
                         x2: 33,
                         y2: 34,
                         name: "3",
-                        inSample: false,
-                        visible: true,
                     },
                     1: {
                         color: [1.0, 1.0, 1.0],
@@ -119,8 +107,6 @@ require([
                         x2: 29,
                         y2: 30,
                         name: "1",
-                        inSample: false,
-                        visible: true,
                     },
                 };
                 // data for the BiomTable object
@@ -309,35 +295,6 @@ require([
             this.empress._currentLayout = "Unrooted";
             var empressUnrootCoords = this.empress.getNodeCoords();
             deepEqual(empressUnrootCoords, unrootCoords);
-        });
-
-        test("Test setNonSampleBranchVisibility", function () {
-            // set node 6's inSample=false,  this means node 6's visible
-            // should be the opposite of the input to
-            // setNonSampleBranchVisibility
-            this.empress._treeData[6].inSample = false;
-
-            var node;
-
-            // pass in false
-            // Note: this means node 6's visible should be true
-            this.empress.setNonSampleBranchVisibility(false);
-            for (var i = 1; i < 7; i++) {
-                node = this.empress._treeData[i];
-                equal(node.visible, true);
-            }
-
-            // pass in true
-            // Note: this means node 6's visible should be false
-            this.empress.setNonSampleBranchVisibility(true);
-            for (i = 1; i < 7; i++) {
-                node = this.empress._treeData[i];
-                if (i !== 6) {
-                    equal(node.visible, true);
-                } else {
-                    equal(node.visible, false);
-                }
-            }
         });
 
         test("Test colorSampleGroups, single group", function () {
@@ -606,9 +563,7 @@ require([
             for (var i = 0; i < keys.length; i++) {
                 var key = keys[i];
                 deepEqual(e._treeData[key].color, e.DEFAULT_COLOR);
-                equal(e._treeData[key].inSample, false);
                 equal(e._treeData[key].sampleColored, false);
-                equal(e._treeData[key].visible, true);
             }
         });
 
