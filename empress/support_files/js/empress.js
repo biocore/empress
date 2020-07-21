@@ -604,10 +604,11 @@ define([
         // Scale the line width by (tree area) * EXTRA_LW_AREA_COEFFICIENT,
         // and divide the resulting scaled line width by 2. (The division by 2
         // makes coordinate computation easier.)
-        var coeff = (this.computeTreeArea()*this.EXTRA_LW_AREA_COEFFICIENT)/2;
+        var coeff =
+            (this.computeTreeArea() * this.EXTRA_LW_AREA_COEFFICIENT) / 2;
         var lwScaled = lw * coeff;
         console.log("input LW: " + lw);
-        console.log('tree area: ' + this.computeTreeArea());
+        console.log("tree area: " + this.computeTreeArea());
         console.log("scaled LW: " + lwScaled);
         var tree = this._tree;
 
@@ -1242,7 +1243,7 @@ define([
         }
         console.log(minX, maxX, minY, maxY);
         return (maxX - minX) * (maxY - minY);
-    }
+    };
 
     /**
      * Set a callback when a the node menu is shown on screen
