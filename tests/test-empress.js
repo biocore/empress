@@ -1,9 +1,9 @@
 require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function($, BPTree, Empress, BiomTable, util, chroma) {
     $(document).ready(function() {
         // Setup test variables
-        // Note: This is ran for each test() so tests can modify bpArray without
-        // effecting other test
-        module('Empress' , {
+        // Note: This is ran for each test() so tests can modify bpArray
+        // without affecting other tests.
+        module('Empress', {
             setup: function() {
                 // tree comes from the following newick string
                 // ((1,(2,3)4)5,6)7;
@@ -703,12 +703,34 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
 
         });
         test("Test computeTreeArea", function() {
-            // max X in rect layout is 13, min X is 1 (dx is 12)
-            // max Y in rect layout is 14, min Y is 2 (dx is 12)
-            // 12 * 12 = 144
+            // max X is 13, min X is 1 (dx is 12)
+            // max Y is 14, min Y is 2 (dx is 12)
             this.empress._currentLayout = "Rectangular";
             equal(this.empress.computeTreeArea(), 144);
-            // TODO add other layout tests...
+
+            // max X is 27, min X is 15 (dx is 12)
+            // max Y is 28, min Y is 16 (dy is 12)
+            this.empress._currentLayout = "Circular";
+            equal(this.empress.computeTreeArea(), 144);
+
+            // max X is 41, min X is 29 (dx is 12)
+            // max Y is 42, min Y is 30 (dx is 12)
+            this.empress._currentLayout = "Unrooted";
+            equal(this.empress.computeTreeArea(), 144);
+
+            // All of the layouts in the test data happen to have identical
+            // areas, so ... this test so far would theoretically pass even if
+            // computeTreeArea() just returned 144 every time you called it.
+            // (Although that would be pretty funny.)
+            // To verify that this function actually works, we temporarily
+            // alter the rectangular layout coordinates.
+            this.empress._treeData[1].xr = -1000;
+            this.empress._treeData[1].yr = 10000;
+            // Now, for the rect layout:
+            // max X is 13, min X is -1000 (dx is 1013)
+            // max Y is 10000, min Y is 4 (dy is 9996)
+            this.empress._currentLayout = "Rectangular";
+            equal(this.empress.computeTreeArea(), 10125948);
         });
     });
 });
