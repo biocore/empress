@@ -56,3 +56,12 @@ docs:
 		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
 		--o-visualization docs/moving-pictures/empress-tree-tandem.qzv \
 		--p-filter-extra-samples
+	qiime empress plot \
+		--i-tree docs/moving-pictures/rooted-tree.qza \
+		--i-pcoa docs/moving-pictures/biplot.qza \
+		--i-feature-table docs/moving-pictures/table.qza \
+		--m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
+		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
+		--o-visualization docs/moving-pictures/empress-tree-tandem-biplot.qzv \
+		--p-filter-extra-samples \
+		--p-number-of-features 10
