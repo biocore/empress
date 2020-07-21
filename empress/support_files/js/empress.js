@@ -1215,13 +1215,24 @@ define([
     };
 
     /**
-     * Computes the area of the tree in its current layout. This is done by
-     * finding the maximum and minimum x and y coordinates and then computing
-     * (max X - min X) * (max Y - min Y).
+     * Computes the area of the tree's "minimum bounding box" in its current
+     * layout. This is done by finding the maximum and minimum x and y
+     * coordinates within the current layout and then computing
+     * |(max X - min X) * (max Y - min Y)|.
+     *
+     * See https://en.wikipedia.org/wiki/Minimum_bounding_box for a visual
+     * representation of what this function is finding.
      *
      * @return {Number}
      */
     Empress.prototype.computeTreeArea = function () {
+        // We initialize the minima to Infinity and the maxima to -Infinity so
+        // that any valid number is < the minima and > the maxima. It lets us
+        // avoid special-casing things a bit.
+        // (We *could* also just set the initial minima and maxima to the
+        // first node in the tree's coordinates, and then start the loop at i =
+        // 2. However, this would then probably get subtly broken when we
+        // eventually get around to making the tree data use 0-indexing.)
         var minX = Infinity;
         var maxX = -Infinity;
         var minY = Infinity;
@@ -1241,8 +1252,7 @@ define([
             minY = Math.min(y, minY);
             maxY = Math.max(y, maxY);
         }
-        console.log(minX, maxX, minY, maxY);
-        return (maxX - minX) * (maxY - minY);
+        return Math.abs((maxX - minX) * (maxY - minY));
     };
 
     /**
