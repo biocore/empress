@@ -168,6 +168,16 @@ define([
          * Maps tree layouts to the average point of each layout
          */
         this.layoutAvgPoint = {};
+
+        /**
+         * type {Number}
+         * A constant value that defines how "extra line width" is scaled
+         * relative to the area of a given tree layout.
+         * The user-entered "extra line width" value will be converted to units
+         * of (tree area) multiplied by this constant.
+         */
+        this.EXTRA_LW_AREA_COEFFICIENT = 1 / 10000000;
+
         /**
          * @type{Number}
          * The line width used for drawing "thick" lines.
@@ -530,31 +540,31 @@ define([
      *                        passed to Drawer.loadSampleThickBuf().
      * @param {Number} node   Node index in this._treeData, from which we'll
      *                        retrieve coordinate information.
-     * @param {Number} level Desired line thickness (note that this will be
-     *                       applied on both sides of the line -- so if
-     *                       level = 1 here then the drawn thick line will
-     *                       have a width of 1 + 1 = 2).
+     * @param {Number} lwScaled Desired line thickness (note that this will be
+     *                          applied on both sides of the line -- so if
+     *                          lwScaled = 1 here then the drawn thick line
+     *                          will have a width of 1 + 1 = 2).
      */
     Empress.prototype._addThickVerticalLineCoords = function (
         coords,
         node,
-        level
+        lwScaled
     ) {
         var corners = {
             tL: [
-                this.getX(this._treeData[node]) - level,
+                this.getX(this._treeData[node]) - lwScaled,
                 this._treeData[node].highestchildyr,
             ],
             tR: [
-                this.getX(this._treeData[node]) + level,
+                this.getX(this._treeData[node]) + lwScaled,
                 this._treeData[node].highestchildyr,
             ],
             bL: [
-                this.getX(this._treeData[node]) - level,
+                this.getX(this._treeData[node]) - lwScaled,
                 this._treeData[node].lowestchildyr,
             ],
             bR: [
-                this.getX(this._treeData[node]) + level,
+                this.getX(this._treeData[node]) + lwScaled,
                 this._treeData[node].lowestchildyr,
             ],
         };
@@ -565,37 +575,40 @@ define([
     /**
      * Thickens the colored branches of the tree.
      *
-     * @param {Number} level Amount of thickness to use. If this is <= 0, this
-     *                       function won't do anything.
+     * @param {Number} lw Amount of thickness to use, in the same "units"
+     *                    that the user can enter in one of the line width
+     *                    <input>s. If this is <= 0, this function won't do
+     *                    anything.
      */
-    Empress.prototype.thickenSameSampleLines = function (level) {
-        // If level isn't > 0, then we don't thicken colored lines at all --
+    Empress.prototype.thickenSameSampleLines = function (lw) {
+        // If lw isn't > 0, then we don't thicken colored lines at all --
         // we just leave them at their default width.
-        if (level < 0) {
+        if (lw < 0) {
             // should never happen because util.parseAndValidateLineWidth()
-            // should've been called in order to obtain "level", but in case
+            // should've been called in order to obtain "lw", but in case
             // this gets messed up in the future we'll catch it
             throw "Line width passed to thickenSameSampleLines() is < 0.";
         } else {
-            // Make sure that, even if level is 0 (i.e. we don't need to
+            // Make sure that, even if lw is 0 (i.e. we don't need to
             // thicken the lines), we still set the current line width
             // accordingly. This way, when doing things like updating the
             // layout that'll require re-drawing the tree based on the most
             // recent settings, we'll have access to the correct line width.
-            this._currentLineWidth = level;
-            if (level === 0) {
-                // But, yeah, if level is 0 we can just return early.
+            this._currentLineWidth = lw;
+            if (lw === 0) {
+                // But, yeah, if lw is 0 we can just return early.
                 return;
             }
         }
-        this._currentLineWidth = level;
-        // TODO:
-        // 1. compute area of tree in given layout (width and height,
-        //    based on min/max x and y coords)
-        // 2. set "effectiveLW" or something to A / 1000.
-        // 3. replace uses of level in this func with effectiveLW.
-        // 4. (for clarity) replace the "level" name in this and
-        //    addThickVerticalLineCoords with lw or something
+        this._currentLineWidth = lw;
+        // Scale the line width by (tree area) * EXTRA_LW_AREA_COEFFICIENT,
+        // and divide the resulting scaled line width by 2. (The division by 2
+        // makes coordinate computation easier.)
+        var coeff = (this.computeTreeArea()*this.EXTRA_LW_AREA_COEFFICIENT)/2;
+        var lwScaled = lw * coeff;
+        console.log("input LW: " + lw);
+        console.log('tree area: ' + this.computeTreeArea());
+        console.log("scaled LW: " + lwScaled);
         var tree = this._tree;
 
         // the coordinates of the tree
@@ -612,7 +625,7 @@ define([
             this._currentLayout === "Rectangular" &&
             this._treeData[tree.size].sampleColored
         ) {
-            this._addThickVerticalLineCoords(coords, tree.size, level);
+            this._addThickVerticalLineCoords(coords, tree.size, lwScaled);
         }
         // iterate through the tree in postorder, skip root
         for (var i = 1; i < this._tree.size; i++) {
@@ -628,7 +641,7 @@ define([
             if (this._currentLayout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
-                    this._addThickVerticalLineCoords(coords, node, level);
+                    this._addThickVerticalLineCoords(coords, node, lwScaled);
                 }
                 /* Draw a horizontal thick line for this node -- we can safely
                  * do this for all nodes since this ignores the root, and all
@@ -641,19 +654,19 @@ define([
                 corners = {
                     tL: [
                         this.getX(this._treeData[parent]),
-                        this.getY(this._treeData[node]) + level,
+                        this.getY(this._treeData[node]) + lwScaled,
                     ],
                     tR: [
                         this.getX(this._treeData[node]),
-                        this.getY(this._treeData[node]) + level,
+                        this.getY(this._treeData[node]) + lwScaled,
                     ],
                     bL: [
                         this.getX(this._treeData[parent]),
-                        this.getY(this._treeData[node]) - level,
+                        this.getY(this._treeData[node]) - lwScaled,
                     ],
                     bR: [
                         this.getX(this._treeData[node]),
-                        this.getY(this._treeData[node]) - level,
+                        this.getY(this._treeData[node]) - lwScaled,
                     ],
                 };
                 this._addTriangleCoords(coords, corners, color);
@@ -691,14 +704,14 @@ define([
                             y1,
                             x2,
                             y2,
-                            level
+                            lwScaled
                         );
                         var arc1corners = VectorOps.computeBoxCorners(
                             x1,
                             y1,
                             x2,
                             y2,
-                            level
+                            lwScaled
                         );
                         this._addTriangleCoords(coords, arc0corners, color);
                         this._addTriangleCoords(coords, arc1corners, color);
@@ -710,14 +723,14 @@ define([
                 y1 = this._treeData[node].yc0;
                 x2 = this.getX(this._treeData[node]);
                 y2 = this.getY(this._treeData[node]);
-                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, level);
+                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, lwScaled);
                 this._addTriangleCoords(coords, corners, color);
             } else {
                 x1 = this.getX(this._treeData[parent]);
                 y1 = this.getY(this._treeData[parent]);
                 x2 = this.getX(this._treeData[node]);
                 y2 = this.getY(this._treeData[node]);
-                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, level);
+                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, lwScaled);
                 this._addTriangleCoords(coords, corners, color);
             }
         }
@@ -1199,6 +1212,37 @@ define([
         );
         this.drawTree();
     };
+
+    /**
+     * Computes the area of the tree in its current layout. This is done by
+     * finding the maximum and minimum x and y coordinates and then computing
+     * (max X - min X) * (max Y - min Y).
+     *
+     * @return {Number}
+     */
+    Empress.prototype.computeTreeArea = function () {
+        var minX = Infinity;
+        var maxX = -Infinity;
+        var minY = Infinity;
+        var maxY = -Infinity;
+        var node, x, y;
+        for (var i = 1; i <= this._tree.size; i++) {
+            node = this._treeData[i];
+            // NOTE: It is worth noting that getX() and getY() only consider
+            // the xc1 / yc1 positions of nodes in the circular layout (not
+            // the xc0 / yc0 positions). I don't *think* this should be a
+            // problem, but it is probably worth testing that degenerate cases
+            // like 1-leaf trees are handled properly.
+            x = this.getX(node);
+            y = this.getY(node);
+            minX = Math.min(x, minX);
+            maxX = Math.max(x, maxX);
+            minY = Math.min(y, minY);
+            maxY = Math.max(y, maxY);
+        }
+        console.log(minX, maxX, minY, maxY);
+        return (maxX - minX) * (maxY - minY);
+    }
 
     /**
      * Set a callback when a the node menu is shown on screen
