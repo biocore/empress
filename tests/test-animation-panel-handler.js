@@ -7,19 +7,20 @@ require([
     "BiomTable",
     "Legend",
     "util",
-    "Colorer"],
-    function(
-        $,
-        AnimationPanel,
-        Animator,
-        BPTree,
-        Empress,
-        BiomTable,
-        Legend,
-        util,
-        Colorer) {
+    "Colorer",
+], function (
+    $,
+    AnimationPanel,
+    Animator,
+    BPTree,
+    Empress,
+    BiomTable,
+    Legend,
+    util,
+    Colorer
+) {
     module("animation-panel-handler", {
-        setup: function() {
+        setup: function () {
             // add test compenents to this div
             this.div = document.getElementById("test-div");
 
@@ -74,16 +75,31 @@ require([
             // animation-panel-handler can extract the sample fields
             var sIDs = ["s1"];
             var fIDs = ["o1"];
-            var sID2Idx = {"s1": 0};
-            var fID2Idx = {"o1": 0};
+            var sID2Idx = { s1: 0 };
+            var fID2Idx = { o1: 0 };
             var tbl = [[0]];
             var smCols = ["f1", "grad", "traj"];
             var sm = [["asdf", "asdf", "asdf"]];
             var biom = new BiomTable(
-                sIDs, fIDs, sID2Idx, fID2Idx, tbl, smCols, sm
+                sIDs,
+                fIDs,
+                sID2Idx,
+                fID2Idx,
+                tbl,
+                smCols,
+                sm
             );
             var empress = new Empress(
-                {}, {}, {}, {}, {}, biom, [], {}, {}, null
+                {},
+                {},
+                {},
+                {},
+                {},
+                biom,
+                [],
+                {},
+                {},
+                null
             );
             var animator = new Animator(
                 empress,
@@ -105,15 +121,15 @@ require([
             this.panel = new AnimationPanel(animator);
         },
 
-        teardown: function() {
+        teardown: function () {
             this.panel = null;
             while (this.div.firstChild) {
                 this.div.removeChild(this.div.firstChild);
             }
-        }
+        },
     });
 
-    test("__startOptions", function() {
+    test("__startOptions", function () {
         this.panel.__startOptions();
         // the followinng should be hidden
         ok(this.panel.stopBtn.classList.contains("hidden"));
@@ -126,7 +142,7 @@ require([
         ok(!this.panel.startBtn.classList.contains("hidden"));
     });
 
-    test("__pauseOptions", function() {
+    test("__pauseOptions", function () {
         this.panel.__pauseOptions();
         // the followinng should be hidden
         ok(this.panel.startBtn.classList.contains("hidden"));
@@ -139,9 +155,9 @@ require([
         ok(!this.panel.pauseBtn.classList.contains("hidden"));
     });
 
-    test("__resumeOptions", function() {
+    test("__resumeOptions", function () {
         // set up so that animator state machine is on first frame
-        this.panel.animator.totalFrames = 3
+        this.panel.animator.totalFrames = 3;
         this.panel.animator.curFrame = 1;
         this.panel.__resumeOptions();
 
@@ -181,21 +197,21 @@ require([
         ok(this.panel.nextFrameBtn.disabled);
     });
 
-    test("_toggleSelects, true", function() {
+    test("_toggleSelects, true", function () {
         this.panel._toggleSelects(true);
         ok(this.panel.colorSelect.disabled);
         ok(this.panel.gradient.disabled);
         ok(this.panel.trajectory.disabled);
     });
 
-    test("_toggleSelects, false", function() {
+    test("_toggleSelects, false", function () {
         this.panel._toggleSelects(false);
         ok(!this.panel.colorSelect.disabled);
         ok(!this.panel.gradient.disabled);
         ok(!this.panel.trajectory.disabled);
     });
 
-    test("addAnimationTab", function() {
+    test("addAnimationTab", function () {
         this.panel.addAnimationTab();
 
         // make sure the events were created
@@ -213,7 +229,7 @@ require([
         var resultColors = this.panel.colorSelect.options;
         ok(resultColors.length === expectedColors.length);
         for (var i = 1; i < resultColors.length; i++) {
-            ok(resultColors.name === expectedColors.name)
+            ok(resultColors.name === expectedColors.name);
         }
 
         // make sure gradient menu has an option for each sample field
@@ -221,7 +237,7 @@ require([
         var resultFields = this.panel.gradient.options;
         ok(resultFields.length === expectedFields.length);
         for (i = 0; i < resultFields.length; i++) {
-            ok(resultFields[i].value === expectedFields[i])
+            ok(resultFields[i].value === expectedFields[i]);
         }
 
         // make sure trajectory menu has an option for each sample field
@@ -229,7 +245,7 @@ require([
         resultFields = this.panel.trajectory.options;
         ok(resultFields.length === expectedFields.length);
         for (i = 0; i < resultFields.length; i++) {
-            ok(resultFields[i].value === expectedFields[i])
+            ok(resultFields[i].value === expectedFields[i]);
         }
     });
 });

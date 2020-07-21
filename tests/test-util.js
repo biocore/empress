@@ -202,19 +202,19 @@ require(["jquery", "util"], function ($, util) {
             deepEqual(split.nonNumeric, ["0.0.0", "boaty"]);
         });
 
-        test("Test keepUniqueKeys without removeAll", function() {
-            var keys  = {
-                "a" : new Set([1, 2, 3, 4]),
-                "b" : new Set([3, 4, 5, 6]),
-                "c" : new Set([1, 3, 4, 5, 7]),
-                "d" : new Set([10, 11, 12]),
+        test("Test keepUniqueKeys without removeAll", function () {
+            var keys = {
+                a: new Set([1, 2, 3, 4]),
+                b: new Set([3, 4, 5, 6]),
+                c: new Set([1, 3, 4, 5, 7]),
+                d: new Set([10, 11, 12]),
             };
             var expectedResult = {
-                "a" : new Set([2]),
-                "b" : new Set([6]),
-                "c" : new Set([7]),
-                "d" : new Set([10, 11, 12]),
-            }
+                a: new Set([2]),
+                b: new Set([6]),
+                c: new Set([7]),
+                d: new Set([10, 11, 12]),
+            };
             var result = util.keepUniqueKeys(keys, new Set());
             // qunit does not have a way to directly compare Set. So, first,
             // each set has to be converted into an Array
@@ -227,26 +227,29 @@ require(["jquery", "util"], function ($, util) {
             }
         });
 
-        test("Test keepUniqueKeys with removeAll", function() {
-            var keys  = {
-                "a" : new Set([1, 2, 3, 4]),
-                "b" : new Set([3, 4, 5, 6]),
-                "c" : new Set([1, 3, 4, 5, 7]),
-                "d" : new Set([10, 11, 12]),
+        test("Test keepUniqueKeys with removeAll", function () {
+            var keys = {
+                a: new Set([1, 2, 3, 4]),
+                b: new Set([3, 4, 5, 6]),
+                c: new Set([1, 3, 4, 5, 7]),
+                d: new Set([10, 11, 12]),
             };
             var expectedResult = {
-                "a" : new Set([]),
-                "b" : new Set([]),
-                "c" : new Set([7]),
-                "d" : new Set([11, 12]),
-            }
+                a: new Set([]),
+                b: new Set([]),
+                c: new Set([7]),
+                d: new Set([11, 12]),
+            };
 
-            var result = util.keepUniqueKeys(keys, new Set([1,2,3,4,5,6,10]));
+            var result = util.keepUniqueKeys(
+                keys,
+                new Set([1, 2, 3, 4, 5, 6, 10])
+            );
 
             // qunit does not have a way to directly compare Set. So, first,
             // each set has to be converted into an Array
             var groups = ["a", "b", "c", "d"];
-            for (var i = 0; i  < groups.length; i++) {
+            for (var i = 0; i < groups.length; i++) {
                 var group = groups[i];
                 var expectedArray = Array.from(expectedResult[group]);
                 var resultArray = Array.from(result[group]);
