@@ -702,5 +702,13 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                 <= 1.0e-15)
 
         });
+        test("Test computeTreeArea", function() {
+            // max X in rect layout is 13, min X is 1 (dx is 12)
+            // max Y in rect layout is 14, min Y is 2 (dx is 12)
+            // 12 * 12 = 144
+            this.empress._currentLayout = "Rectangular";
+            equal(this.empress.computeTreeArea(), 144);
+            // TODO add other layout tests...
+        });
     });
 });
