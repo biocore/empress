@@ -38,6 +38,9 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
         # select the top N most important features based on the vector's
         # magnitude (coped from q2-emperor)
         feats = pcoa.features.copy()
+        # in cases where the the axes are all zero there might be all-NA
+        # columns
+        feats.fillna(0, inplace=True)
         origin = np.zeros_like(feats.columns)
         feats['importance'] = feats.apply(euclidean, axis=1, args=(origin,))
         feats.sort_values('importance', inplace=True, ascending=False)
