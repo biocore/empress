@@ -176,7 +176,7 @@ define([
          * The user-entered "extra line width" value will be converted to units
          * of (tree area) multiplied by this constant.
          */
-        this.EXTRA_LW_AREA_COEFFICIENT = 1 / 10000000;
+        this.EXTRA_LW_AREA_COEFFICIENT = 1 / 100000000;
 
         /**
          * @type{Number}
