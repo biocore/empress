@@ -1254,18 +1254,6 @@ define([
     };
 
     /**
-     * Determines if column is a valid feature metadata column.
-     *
-     * @param{String} column A potential column name
-     *
-     * @return{Boolean} true if column is a valid feature metadata column.
-     *                  false otherwise.
-     */
-    Empress.prototype.isMetadaColumn = function (column) {
-        return this._featureMetadataColumns.includes(column);
-    };
-
-    /**
      * Collapses all clades that share the same color into a quadrilateral.
      *
      * Note: if a clade contains a node with DEFAULT_COLOR it will not be
@@ -1309,6 +1297,12 @@ define([
             if (visible && !isTip && color !== this.DEFAULT_COLOR) {
                 this.createCollapsedClade(node);
             }
+        }
+
+        // var group = new Array(this._tree.size + 1);
+        // var color
+        for (var i = 1; i <=this._tree.size; i++) {
+
         }
     };
 

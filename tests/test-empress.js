@@ -704,14 +704,6 @@ require([
             );
         });
 
-        test("Test isMetadaColumn, column exists", function() {
-            ok(this.empress.isMetadaColumn("f1"));
-        });
-
-        test("Test isMetadaColumn, column doesn't exists", function() {
-            ok(!this.empress.isMetadaColumn("bad_column_name"));
-        });
-
         test("Test collapseClades", function() {
             this.empress._inorder = this.empress.inorderNodes();
 
