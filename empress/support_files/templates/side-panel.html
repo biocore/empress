@@ -2,7 +2,7 @@
 <div id="autocomplete-container">
   <p class="side-header">
     <input type="text" id="quick-search" placeholder="Search by node name..."
-           style="flex-grow: 1;">
+           style="flex-grow: 1;" class="empress-input">
     <button id="side-header-search-btn" style="flex-grow: 1;">Search</button>
     <button id="hide-ctrl" title="Hide control panel"
             style="font-size: 10pt; padding: 0 0 3px 3px;">&#9701;</button>
@@ -19,7 +19,7 @@
   </p>
   <p>
     <label for="sample-chk">Color by...</label>
-    <input id="sample-chk" type="checkbox">
+    <input id="sample-chk" type="checkbox" class="empress-input">
     <label class="select-container">
       <select id="sample-options"  disabled="true"></select>
     </label>
@@ -33,15 +33,22 @@
         </label>
       </p>
       <p>
+<<<<<<< HEAD
         <label for="sample-collapse-chk">Collapse Clades</label>
         <input id="sample-collapse-chk" type="checkbox" value="false">
       </p>
       <p class="side-panel-notes indented">
         If checked, Collapse all clades whose members share the same color.
+=======
+        <label for="sample-hide-non-feature">Hide Non-Sample Features</label>
+        <input id="sample-hide-non-feature" type="checkbox" checked="true"
+               class="empress-input">
+>>>>>>> 4987a806ca3ce2d0a5538905f019434f1026ed0b
       </p>
       <p>
         <label for="sample-line-width">Line Width</label>
-        <input id="sample-line-width" type="number" value="1">
+        <input id="sample-line-width" type="number" value="1"
+               class="empress-input">
       </p>
       <p>
         <button id="sample-update" class="hidden">Update</button>
@@ -60,7 +67,7 @@
   </p>
   <p>
     <label for="feature-chk">Color by...</label>
-    <input id="feature-chk" type="checkbox">
+    <input id="feature-chk" type="checkbox" class="empress-input">
     <label class="select-container">
       <select id="feature-options"  disabled="true"></select>
     </label>
@@ -82,11 +89,13 @@
       </p>
       <p>
         <label for="feature-line-width">Line Width</label>
-        <input id="feature-line-width" type="number" value="1">
+        <input id="feature-line-width" type="number" value="1"
+               class="empress-input">
       </p>
       <p>
         <label for="fm-method-chk">Only use tip-level metadata?</label>
-        <input id="fm-method-chk" type="checkbox" checked="true">
+        <input id="fm-method-chk" type="checkbox" checked="true"
+               class="empress-input">
         <!-- We'll fill this in when the feature metadata tab is opened,
              and we'll update it when fm-method-chk is updated.
         -->
@@ -138,15 +147,22 @@
     </label>
   </p>
   <p>
+<<<<<<< HEAD
     <label for="sample-collapse-chk">Collapse Clades</label>
     <input id=sample-collapse-chk" type="checkbox" value="false">
   </p>
   <p class="side-panel-notes indented">
     If checked, Collapse all clades whose members share the same color.
+=======
+    <label for="animate-hide-non-feature">Hide Non-Sample Features</label>
+    <input id="animate-hide-non-feature" type="checkbox" value="false"
+           class="empress-input">
+>>>>>>> 4987a806ca3ce2d0a5538905f019434f1026ed0b
   </p>
   <p>
     <label for="animate-line-width">Line Width</label>
-    <input id="animate-line-width" type="number" value="1">
+    <input id="animate-line-width" type="number" value="1"
+           class="empress-input">
   </p>
   <div>
     <p>
@@ -174,7 +190,12 @@
 <div class="side-content control hidden">
   <p>
     <label for="display-nodes-chk">Show node circles?</label>
+<<<<<<< HEAD
     <input id="display-nodes-chk" type="checkbox" value="true" checked="true">
+=======
+    <input id="display-nodes-chk" type="checkbox" checked="true"
+           class="empress-input">
+>>>>>>> 4987a806ca3ce2d0a5538905f019434f1026ed0b
   </p>
   <p class="side-panel-notes indented">
     If checked, this draws circles at the positions of all tree nodes

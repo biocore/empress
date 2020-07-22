@@ -14,6 +14,12 @@
     <!-- The tree -->
     <div class="{{ emperor_classes }}">
       <div id="tree-container" class="container {{ emperor_classes }}">
+        <!-- loading screen -->
+        <div id="loading-screen">
+          <div id="loading-animation"></div>
+          <div id="loading-text">Loading...</div>
+        </div>
+
         <canvas class="tree-surface" id="tree-surface">
             Your browser does not support HTML5
         </canvas>
@@ -22,7 +28,7 @@
         <div class="square"></div>
 
         <!-- Side panel -->
-        <div id="side-panel">
+        <div id="side-panel" class="unselectable-text">
           {% include 'side-panel.html'%}
         </div>
 
@@ -30,7 +36,7 @@
         <div id="toast" class="hidden"></div>
 
         <!-- show control panel button -->
-        <button id="show-ctrl" title="Show control panel" style="font-size: 10pt; padding: 0 0 3px 3px;" class="hidden">&#9699;</button>
+        <button id="show-ctrl" title="Show control panel" class="hidden unselectable-text">&#9699;</button>
 
       </div>
     </div>
@@ -58,16 +64,10 @@
     </div>
 
     <!-- color keys -->
-    <div id="legend-panel">
+    <div id="legend-panel" class="unselectable-text">
       <div id="tip-color-key" class="legend hidden" disabled="true"></div>
       <div id="node-color-key" class="legend hidden" disabled="true"></div>
       <div id="clade-color-key" class="legend hidden" disabled="true"></div>
-    </div>
-
-    <!-- loading screen -->
-    <div id="loading-screen">
-      <div id="loading-animation"></div>
-      <div id="loading-text">Loading...</div>
     </div>
   </body>
 

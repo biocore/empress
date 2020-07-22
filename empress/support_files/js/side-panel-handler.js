@@ -280,6 +280,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             pele = document.createElement("p");
             lele = document.createElement("label");
             iele = document.createElement("input");
+            iele.classList.add("empress-input");
 
             // Initialize the radio button for this layout
             iele.value = layouts[i];
