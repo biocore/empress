@@ -1210,5 +1210,97 @@ define([
         this._events.selectedNodeMenu.hiddenCallback = callback;
     };
 
+    /**
+     * Calculate the number of samples in which a leaf node appears for each
+     * level of a given metadata field.
+     *
+     * @param {String} nodeName Name of the (leaf) node for which to calculate
+     *                          sample presence.
+     * @param {String} fields Metadata fields for which to calculate leaf
+     *                       sample presence.
+     * @return {Object} ctData returns a mapping of field categories to number of
+     *                  samples in which the given leaf node is present and
+     *                  sample field value equals category.
+     */
+    Empress.prototype.computeLeafSamplePresence = function (nodeName, fields) {
+        var ctData = {};
+
+        for (var f = 0; f < fields.length; f++) {
+            var field = fields[f];
+            var obs = this._biom.getObsCountsBy(field, nodeName);
+            var categories = _.keys(obs);
+            ctData[field] = {};
+            for (var c = 0; c < categories.length; c++) {
+                var cat = categories[c];
+                ctData[field][cat] = obs[cat];
+            }
+        }
+
+        return ctData;
+    };
+
+    /**
+     * Retrieve the tips in the subtree of a given node key.
+     *
+     * @param {Number} nodeKey Key value of node.
+     * @return {Array} tips Tips of the subtree.
+     */
+    Empress.prototype.findTips = function (nodeKey) {
+        // find first and last preorder positions of the subtree spanned
+        // by the current internal node
+        var t = this._tree;
+        var n = t.postorderselect(nodeKey);
+        var start = t.preorder(t.fchild(n));
+        var end = t.preorder(t.lchild(n));
+        while (!t.isleaf(t.preorderselect(end))) {
+            end = t.preorder(t.lchild(t.preorderselect(end)));
+        }
+
+        // find all tips within the subtree
+        var tips = [];
+        for (j = start; j <= end; j++) {
+            var node = t.preorderselect(j);
+            if (t.isleaf(node)) {
+                tips.push(t.name(node));
+            }
+        }
+
+        return tips;
+    };
+
+    /**
+     * Calculate the number of samples in which tips of an internal node
+     * appear for each level of metadata fields.
+     *
+     * @param {String} nodeName Name of the (leaf) node for which to calculate
+     *                          sample presence.
+     * @param {String} fields Metadata fields for which to calculate leaf
+     *                       sample presence.
+     * @param {Object} fieldsMap Object that maps fields to sample presence.
+     * @return {Object} fieldsMap Returns a mapping of field categories to number of
+     *                  samples in which tips of the internal node are present and
+     *                  sample field value equals category.
+     */
+    Empress.prototype.computeIntSamplePresence = function (
+        samples,
+        fields,
+        fieldsMap
+    ) {
+        // iterate over the samples and extract the field values
+        for (j = 0; j < fields.length; j++) {
+            field = fields[j];
+
+            // update fields mapping object
+            var result = this._biom.getSampleValuesCount(samples, field);
+            fieldValues = Object.keys(result);
+            for (k = 0; k < fieldValues.length; k++) {
+                fieldValue = fieldValues[k];
+                fieldsMap[field][fieldValue] += result[fieldValue];
+            }
+        }
+
+        return fieldsMap;
+    };
+
     return Empress;
 });

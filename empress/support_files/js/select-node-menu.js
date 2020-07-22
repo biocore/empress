@@ -241,7 +241,7 @@ define(["underscore", "util"], function (_, util) {
         );
 
         // 2. Add sample presence information for this tip
-        var ctData = {};
+        var ctData = this.empress.computeLeafSamplePresence(name, this.fields);
 
         // 2.1 The samples represented by this tip are sent to Emperor
         this._samplesInSelection = this.empress._biom.getSamplesByObservations(
@@ -345,28 +345,10 @@ define(["underscore", "util"], function (_, util) {
         if (isUnambiguous) {
             // this.nodeKeys has a length of 1
             var nodeKey = this.nodeKeys[0];
-
-            // find first and last preorder positions of the subtree spanned
-            // by the current internal node
-            var emp = this.empress;
-            var t = emp._tree;
-            var n = t.postorderselect(nodeKey);
-            var start = t.preorder(t.fchild(n));
-            var end = t.preorder(t.lchild(n));
-            while (!t.isleaf(t.preorderselect(end))) {
-                end = t.preorder(t.lchild(t.preorderselect(end)));
-            }
-
-            // find all tips within the subtree
-            var tips = [];
-            for (j = start; j <= end; j++) {
-                var node = t.preorderselect(j);
-                if (t.isleaf(node)) {
-                    tips.push(t.name(node));
-                }
-            }
+            var tips = this.empress.findTips(nodeKey);
 
             // retrieve the sample data for the tips in the table
+            var emp = this.empress;
             var samples = emp._biom.getSamplesByObservations(
                 this._checkAndFilterTips(tips)
             );
@@ -374,18 +356,12 @@ define(["underscore", "util"], function (_, util) {
             // used for the emperor callback
             this._samplesInSelection = this._samplesInSelection.concat(samples);
 
-            // iterate over the samples and extract the field values
-            for (j = 0; j < this.fields.length; j++) {
-                field = this.fields[j];
+            fieldsMap = emp.computeIntSamplePresence(
+                samples,
+                this.fields,
+                fieldsMap
+            );
 
-                // update fields mapping object
-                var result = emp._biom.getSampleValuesCount(samples, field);
-                fieldValues = Object.keys(result);
-                for (k = 0; k < fieldValues.length; k++) {
-                    fieldValue = fieldValues[k];
-                    fieldsMap[field][fieldValue] += result[fieldValue];
-                }
-            }
             SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.smTable);
             this.smSection.classList.remove("hidden");
             this.smTable.classList.remove("hidden");
