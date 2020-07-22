@@ -289,11 +289,11 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.fillBufferData_(this.sProg_.nodeVertBuff, data);
     };
 
-    Drawer.prototype.loadCladeBuff = function(data) {
+    Drawer.prototype.loadCladeBuff = function (data) {
         data = new Float32Array(data);
         this.cladeVertSize = data.length / 5;
         this.fillBufferData_(this.sProg_.cladeBuff, data);
-    }
+    };
 
     /**
      * Display the tree nodes.

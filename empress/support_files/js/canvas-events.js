@@ -149,6 +149,19 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 var closestNode = null;
                 var xDist, yDist;
                 var closeNodeKey;
+
+                //**************************************************************
+                for (var clade in empress._collapsedClades) {
+                    if (empress.isPointInClade(clade, x, y)) {
+                        var cladeNode = empress._treeData[clade];
+                        scope.placeNodeSelectionMenu(
+                            cladeNode.name,
+                            false,
+                            clade
+                        );
+                    }
+                }
+                //**************************************************************
                 // Go through all the nodes in the tree and find the node
                 // closest to the (x, y) point that was clicked
                 for (var i = 1; i <= empress._tree.size; i++) {

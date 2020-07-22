@@ -199,7 +199,7 @@ require([
         this.panel.addAnimationTab();
 
         // make sure the events were created
-        ok(this.panel.hideChk.onchange !== null);
+        // ok(this.panel.hideChk.onchange !== null);
         ok(this.panel.lWidth.onchange !== null);
         ok(this.panel.startBtn.onclick !== null);
         ok(this.panel.pauseBtn.onclick !== null);

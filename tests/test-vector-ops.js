@@ -89,5 +89,16 @@ require(["jquery", "VectorOps"], function($, VectorOps) {
                     "tR" : [2, 3]
                 });
         });
+
+        test("Test triangleArea", function() {
+            equal(
+                VectorOps.triangleArea(
+                    [0, 0],
+                    [20, 0],
+                    [0, 12],
+                ),
+                120
+            );
+        })
     });
 });

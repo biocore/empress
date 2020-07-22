@@ -40,7 +40,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         "x2": 41,
                         "y2": 42,
                         "name": "root",
-                        "inSample": true,
+                        // "inSample": true,
                         "visible": true
                     },
                     6: {
@@ -53,7 +53,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         "x2": 39,
                         "y2": 40,
                         "name": "EmpressNode6",
-                        "inSample": true,
+                        // "inSample": true,
                         "visible": true
                     },
                     5: {
@@ -66,7 +66,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         "x2": 37,
                         "y2": 38,
                         "name": "internal",
-                        "inSample": true,
+                        // "inSample": true,
                         "visible": true
                     },
                     4: {
@@ -79,7 +79,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         "x2": 35,
                         "y2": 36,
                         "name": "internal",
-                        "inSample": true,
+                        // "inSample": true,
                         "visible": true
                     },
                     2: {
@@ -92,7 +92,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         "x2": 31,
                         "y2": 32,
                         "name": "2",
-                        "inSample": true,
+                        // "inSample": true,
                         "visible": true
                     },
                     3: {
@@ -105,7 +105,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         "x2": 33,
                         "y2": 34,
                         "name": "3",
-                        "inSample": true,
+                        // "inSample": true,
                         "visible": true
                     },
                     1: {
@@ -118,7 +118,7 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
                         "x2": 29,
                         "y2": 30,
                         "name": "1",
-                        "inSample": true,
+                        // "inSample": true,
                         "visible": true
                     }
 
@@ -282,33 +282,6 @@ require(["jquery", "BPTree", "Empress", "BiomTable", "util", "chroma"], function
             this.empress._currentLayout = "Unrooted";
             var empressUnrootCoords = this.empress.getNodeCoords();
             deepEqual(empressUnrootCoords, unrootCoords);
-         });
-
-         test("Test setNonSampleBranchVisibility", function() {
-            // set node 6's inSample=false,  this means node 6's visible
-            // should be the opposite of the input to
-            // setNonSampleBranchVisibility
-            this.empress._treeData[6].inSample=false;
-
-            // pass in false
-            // Note: this means node 6's visible should be true
-            this.empress.setNonSampleBranchVisibility(false);
-            for(var i = 1; i <7; i++) {
-                var node = this.empress._treeData[i];
-                equal(node.visible, true);
-            }
-
-            // pass in true
-            // Note: this means node 6's visible should be false
-            this.empress.setNonSampleBranchVisibility(true);
-            for(var i = 1; i <7; i++) {
-                var node = this.empress._treeData[i];
-                if (i !== 6) {
-                    equal(node.visible, true);
-                } else {
-                    equal(node.visible, false);
-                }
-            }
          });
 
          test("Test colorSampleGroups, single group", function() {
