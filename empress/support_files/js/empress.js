@@ -585,7 +585,7 @@ define([
         // we just leave them at their default width.
         if (lw < 0) {
             // should never happen because util.parseAndValidateLineWidth()
-            // should've been called in order to obtain "lw", but in case
+            // should've been called in order to obtain lw, but in case
             // this gets messed up in the future we'll catch it
             throw "Line width passed to thickenSameSampleLines() is < 0.";
         } else {
