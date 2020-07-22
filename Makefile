@@ -8,7 +8,7 @@
 
 .PHONY: test pytest jstest stylecheck jsstyle githook docs
 
-JSLOCS = empress/support_files/js/*.js
+JSLOCS = empress/support_files/js/*.js tests/*.js
 
 test: pytest jstest
 
