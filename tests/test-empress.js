@@ -677,7 +677,7 @@ require([
                     1.0e-15
             );
         });
-        test("Test computeTreeArea", function() {
+        test("Test computeTreeArea", function () {
             // max X is 13, min X is 1 (dx is 12)
             // max Y is 14, min Y is 2 (dx is 12)
             this.empress._currentLayout = "Rectangular";

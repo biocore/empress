@@ -257,7 +257,7 @@ require(["jquery", "util"], function ($, util) {
             }
         });
 
-        test("Test parseAndValidateLineWidth (invalid case)", function() {
+        test("Test parseAndValidateLineWidth (invalid case)", function () {
             var tni = document.getElementById("test-num-input");
             // force the test input's value to be -2
             // (In practice, min="0" should prevent the values of Empress' line
@@ -272,7 +272,7 @@ require(["jquery", "util"], function ($, util) {
             deepEqual(tni.value, "0");
         });
 
-        test("Test parseAndValidateLineWidth (valid case)", function() {
+        test("Test parseAndValidateLineWidth (valid case)", function () {
             var tni = document.getElementById("test-num-input");
             tni.value = "2.5";
             deepEqual(tni.value, "2.5");
