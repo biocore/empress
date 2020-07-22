@@ -170,17 +170,9 @@ define([
         this.layoutAvgPoint = {};
 
         /**
-         * type {Number}
-         * A constant value that defines how "extra line width" is scaled
-         * relative to the area of a given tree layout.
-         * The user-entered "extra line width" value will be converted to units
-         * of (tree area) multiplied by this constant.
-         */
-        this.EXTRA_LW_AREA_COEFFICIENT = 1 / 100000000;
-
-        /**
          * @type{Number}
-         * The line width used for drawing "thick" lines.
+         * The (not-yet-scaled) line width used for drawing "thick" lines.
+         * Can be passed as input to this.thickenSameSampleLines().
          */
         this._currentLineWidth = 0;
 
@@ -253,7 +245,7 @@ define([
             // |   +-
             // |
             // +--------
-            var leafAndRootCt = this._tree.numleafs() + 1;
+            var leafAndRootCt = this._tree.numleaves() + 1;
             numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
         } else if (this._currentLayout === "Circular") {
             // All internal nodes (except root which is just a point) have an
@@ -264,7 +256,7 @@ define([
             // i.e. 3 lines for the leaves and 16 * (5 - 3 - 1) lines for the
             // internal nodes. The -1 is there because we do not draw a line
             // for the root.
-            var leafCt = this._tree.numleafs();
+            var leafCt = this._tree.numleaves();
             numLines = leafCt + 16 * (this._tree.size - leafCt - 1);
         } else {
             // the root is not drawn in the unrooted layout
@@ -601,15 +593,12 @@ define([
             }
         }
         this._currentLineWidth = lw;
-        // Scale the line width by (tree area) * EXTRA_LW_AREA_COEFFICIENT,
-        // and divide the resulting scaled line width by 2. (The division by 2
-        // makes coordinate computation easier.)
-        var coeff =
-            (this.computeTreeArea() * this.EXTRA_LW_AREA_COEFFICIENT) / 2;
-        var lwScaled = lw * coeff;
-        console.log("input LW: " + lw);
-        console.log("tree area: " + this.computeTreeArea());
-        console.log("scaled LW: " + lwScaled);
+        // Scale the line width in such a way that trees with more leaves have
+        // "smaller" line width values than trees with less leaves. This is a
+        // pretty arbitrary equation based on messing around and seeing what
+        // looked nice on mid- and small-sized trees; as a TODO for the future,
+        // there is almost certainly a better way to do this.
+        var lwScaled = (2 * lw) / Math.pow(Math.log10(this._tree.numleaves()), 2);
         var tree = this._tree;
 
         // the coordinates of the tree
