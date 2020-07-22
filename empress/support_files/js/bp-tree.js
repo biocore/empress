@@ -144,6 +144,21 @@ define(["ByteArray"], function (ByteArray) {
                 this.ocCache_[i] = openInx;
             }
         }
+
+        /**
+         * @type{Array}
+         * @private
+         *
+         * Stores the order of nodes in an in-order traversal. Elements in this
+         * array are node ids
+         *
+         * Note: In-order is stored because this bp-tree doesn't not have
+         *       an efficient way of convert a nodes in-order position to tree
+         *       index and vice versa like it does with post order through
+         *       this use of postorderselect() and postorder(). So it is more
+         *       efficient to cache an in-order tree traversal.
+         */
+        this._inorder = null;
     }
 
     /**
@@ -537,6 +552,31 @@ define(["ByteArray"], function (ByteArray) {
      */
     BPTree.prototype.preorderselect = function (k) {
         return this.select(1, k);
+    };
+
+    // TODO: move to bp-tree
+    BPTree.prototype.inorderNodes = function () {
+        if (this._inorder !== null) {
+            return this._inorder;
+        }
+
+        // the root node of the tree
+        var curNode = this.preorderselect(1),
+            inorder = [],
+            nodeStack = [curNode];
+        while (nodeStack.length > 0) {
+            // "visit" node
+            curNode = nodeStack.shift();
+            inorder.push(this.postorder(curNode));
+
+            // append children to stack
+            var child = this.fchild(curNode);
+            while (child !== 0) {
+                nodeStack.push(child);
+                child = this.nsibling(child);
+            }
+        }
+        return inorder;
     };
 
     return BPTree;

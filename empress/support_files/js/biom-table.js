@@ -480,17 +480,5 @@ define(["underscore", "util"], function (_, util) {
         return valueToSampleCount;
     };
 
-    /**
-     * Determines if column is a valid column in the BIOMTable
-     *
-     * @param{String} column A potential column name
-     *
-     * @return{Boolean} true if column is a valid column in the BIOMTable.
-     *                  false otherwise.
-     */
-    BIOMTable.prototype.isMetadataColumn = function (column) {
-        return this._smCols.includes(column);
-    };
-
     return BIOMTable;
 });

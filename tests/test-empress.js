@@ -712,43 +712,6 @@ require([
             ok(!this.empress.isMetadaColumn("bad_column_name"));
         });
 
-        test("Test setCurrentColorInfo", function() {
-            var scope = this;
-
-            throws(
-                function() {
-                    scope.empress.setCurrentColorInfo(
-                        "not_a_type",
-                        "f1"
-                    )
-                },
-                /Metadata must be of type 'sample' or 'feature'/,
-                "Test: error thrown if unrecognized metadata type"
-            );
-
-            throws(
-                function() {
-                    scope.empress.setCurrentColorInfo(
-                        "sample",
-                        "not_a_column"
-                    )
-                },
-                /not_a_column is not a valid sample metadata column/,
-                "Test: error thrown if unrecognized metadata column"
-            );
-
-            throws(
-                function() {
-                    scope.empress.setCurrentColorInfo(
-                        "feature",
-                        "not_a_column"
-                    )
-                },
-                /not_a_column is not a valid feature metadata column/,
-                "Test: error thrown if unrecognized metadata column"
-            );
-        });
-
         test("Test collapseClades", function() {
             this.empress._inorder = this.empress.inorderNodes();
 

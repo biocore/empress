@@ -191,32 +191,40 @@ define([
 
         /**
          * @type{Object}
-         * Stores the information that describes how the tree is currently being
-         * colored.
-         *
-         * Format {metadata: <sample or feautre>, metadataColumn: <field>}
-         */
-        this._currentColorInfo = null;
-
-        /**
-         * @type{Object}
+         * @private
          * Stores the information about the collapsed clased. This object is
          * used to determine if a user clicked on a collapsed clade.
          *
+         * Note: <node_key> refers to the key in _treeData
          * Format:
          * {
-         *      node: {
-         *          left: <node_id>,
-         *          right: <node_id>,
-         *          deepest: <node_id>,
+         *      <node_key>: {
+         *          left: <node_key>,
+         *          right: <node_key>,
+         *          deepest: <node_key>,
          *          length: <Number>
          *      }
          *  }
          */
         this._collapsedClades = {};
+
+        /**
+         * @type{Array}
+         * @private
+         *
+         * Stores the vertex information that is passed to WebGl
+         *
+         * Format: [x, y, r, g, b, ...]
+         */
         this._collapsedCladeBuffer = [];
+
+        /**
+         * @type{String}
+         * @private
+         *
+         * The method used to collapsed the tree
+         */
         this._collapseMethod = "normal";
-        this._inorder = null;
     }
 
     /**
@@ -230,7 +238,6 @@ define([
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
         this.centerLayoutAvgPoint();
-        this._inorder = this.inorderNodes();
     };
 
     /**
@@ -799,8 +806,6 @@ define([
     /**
      * Color the tree using sample data
      *
-     * Note: this will also set _currentColorInfo
-     *
      * @param {String} cat The sample category to use
      * @param {String} color - the Color map to use
      *
@@ -838,16 +843,12 @@ define([
         var keyInfo = colorer.getMapHex();
         // color tree
         this._colorTree(obs, cm);
-        // set currentColorInfo
-        this.setCurrentColorInfo("sample", cat);
 
         return keyInfo;
     };
 
     /**
      * Color the tree based on a feature metadata column.
-     *
-     * Note: this will also set _currentColorInfo
      *
      * @param {String} cat The feature metadata column to color nodes by.
      *                     This must be present in this._featureMetadataColumns
@@ -940,9 +941,6 @@ define([
 
         // color tree
         this._colorTree(obs, cm);
-
-        // set currentColorInfo
-        this.setCurrentColorInfo("feature", cat);
 
         return keyInfo;
     };
@@ -1060,7 +1058,6 @@ define([
             this._treeData[key].sampleColored = false;
             this._treeData[key].visible = true;
         }
-        this._currentColorInfo = null;
         this._collapsedClades = {};
         this._collapsedCladeBuffer = [];
         this._drawer.loadSampleThickBuf([]);
@@ -1269,30 +1266,6 @@ define([
     };
 
     /**
-     * Sets the current color info object.
-     *
-     * @param{String} type The type of metadata used. Should be either sample
-     *                     or feature. Anything else will throw an error.
-     * @param{String} column The column in the metadata used. If the column
-     *                       doesn't exist for the type of metadata then an
-     *                       error will be thrown.
-     */
-    Empress.prototype.setCurrentColorInfo = function (type, column) {
-        if (type !== "sample" && type !== "feature") {
-            throw new Error("Metadata must be of type 'sample' or 'feature'");
-        }
-
-        if (type === "sample" && !this._biom.isMetadataColumn(column)) {
-            throw new Error(column + " is not a valid sample metadata column");
-        }
-
-        if (type === "feature" && !this.isMetadaColumn(column)) {
-            throw new Error(column + " is not a valid feature metadata column");
-        }
-        this._currentColorInfo = { metadata: type, metadataColumn: column };
-    };
-
-    /**
      * Collapses all clades that share the same color into a quadrilateral.
      *
      * Note: if a clade contains a node with DEFAULT_COLOR it will not be
@@ -1325,9 +1298,10 @@ define([
         // it a collapsed clade.
         var currentCollapsedClade = new Set();
 
+        var inorder = this._tree.inorderNodes();
         // iterate through the tree using inorder
-        for (var i in this._inorder) {
-            var node = this._inorder[i],
+        for (var i in inorder) {
+            var node = inorder[i],
                 color = this._treeData[node].color,
                 visible = this._treeData[node].visible,
                 isTip = this._tree.isleaf(this._tree.postorderselect(node));
@@ -1337,6 +1311,7 @@ define([
             }
         }
     };
+
     Empress.prototype.createCollapsedCladeShape = function(rootNode) {
         // add collapsed clade to drawing buffer
         // this._addClade(currentCladeInfo);
@@ -1540,13 +1515,6 @@ define([
         this._treeData[rootNode].visible = true;
         this.createCollapsedCladeShape(rootNode);
 
-        // currentCollapsedClade.delete(r);
-        // var scope = this;
-        // var invisible = function (rootNode) {
-        //     scope._treeData[rootNode].visible = false;
-        // };
-        // _.each([...currentCollapsedClade], invisible);
-
         this._treeData[rootNode].color = this.DEFAULT_COLOR;
     };
 
@@ -1582,27 +1550,6 @@ define([
             );
         }
         return totalLength;
-    };
-
-    // TODO: move to bp-tree
-    Empress.prototype.inorderNodes = function () {
-        // the root node of the tree
-        var curNode = this._tree.preorderselect(1),
-            inorder = [],
-            nodeStack = [curNode];
-        while (nodeStack.length > 0) {
-            // "visit" node
-            curNode = nodeStack.shift();
-            inorder.push(this._tree.postorder(curNode));
-
-            // append children to stack
-            var child = this._tree.fchild(curNode);
-            while (child !== 0) {
-                nodeStack.push(child);
-                child = this._tree.nsibling(child);
-            }
-        }
-        return inorder;
     };
 
     Empress.prototype.getCladeNodes = function(node) {
