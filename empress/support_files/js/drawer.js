@@ -289,6 +289,11 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.fillBufferData_(this.sProg_.nodeVertBuff, data);
     };
 
+    /**
+     * Fills the buffer used to draw collapsed clades.
+     *
+     * @param {Array} data The coordinates and colors to fill clade buffer
+     */
     Drawer.prototype.loadCladeBuff = function (data) {
         data = new Float32Array(data);
         this.cladeVertSize = data.length / 5;
