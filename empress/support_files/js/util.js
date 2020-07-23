@@ -145,8 +145,7 @@ define(["underscore"], function (_) {
      *
      * @param {String} msg - message to display
      * @param {Number} duration - milliseconds to keep toast visible (optional)
-     *                            If this is undefined, then this will default
-     *                            to 3000 ms (i.e. 3 seconds).
+     *                            Defaults to 3000 ms (i.e. 3 seconds).
      */
     function toastMsg(msg, duration=3000) {
         var toast = document.getElementById("toast");
@@ -154,7 +153,7 @@ define(["underscore"], function (_) {
         toast.classList.remove("hidden");
         setTimeout(function () {
             toast.classList.add("hidden");
-        }, effectiveDuration);
+        }, duration);
     }
 
     /**
