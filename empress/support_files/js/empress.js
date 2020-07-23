@@ -1211,95 +1211,86 @@ define([
     };
 
     /**
-     * Calculate the number of samples in which a leaf node appears for each
-     * level of a given metadata field.
+     * Calculate the number of samples in which a tip appears for the
+     * unique values of a metadata field across a list of metadata fields.
      *
-     * @param {String} nodeName Name of the (leaf) node for which to calculate
+     * @param {String} nodeName Name of the (tip) node for which to calculate
      *                          sample presence.
-     * @param {String} fields Metadata fields for which to calculate leaf
+     * @param {Array} fields Metadata fields for which to calculate tip
      *                       sample presence.
-     * @return {Object} ctData returns a mapping of field categories to number of
-     *                  samples in which the given leaf node is present and
-     *                  sample field value equals category.
+     * @return {Object} ctData Maps metadata field names to another Object,
+     *                         which in turn maps unique metadata values to
+     *                         the number of samples with this metadata value
+     *                         in this field that contain the given tip.
      */
-    Empress.prototype.computeLeafSamplePresence = function (nodeName, fields) {
+    Empress.prototype.computeTipSamplePresence = function (nodeName, fields) {
         var ctData = {};
 
         for (var f = 0; f < fields.length; f++) {
             var field = fields[f];
-            var obs = this._biom.getObsCountsBy(field, nodeName);
-            var categories = _.keys(obs);
-            ctData[field] = {};
-            for (var c = 0; c < categories.length; c++) {
-                var cat = categories[c];
-                ctData[field][cat] = obs[cat];
-            }
+            ctData[field] = this._biom.getObsCountsBy(field, nodeName);
         }
 
         return ctData;
     };
 
     /**
-     * Retrieve the tips in the subtree of a given node key.
+     * Calculate the number of samples in which at least one tip of an internal
+     * node appears for the unique values of a metadata field across a list of
+     * metadata fields.
      *
-     * @param {Number} nodeKey Key value of node.
-     * @return {Array} tips Tips of the subtree.
+     * @param {String} nodeKey Key of the (internal) node to calculate
+     *                         sample presence for.
+     * @param {Array} fields Metadata fields for which to calculate internal
+     *                       node sample presence.
+     * @return {Object} samplePresence Returns a mapping of three entries:
+     *                                 (1) fieldsMap Maps metadata field names
+     *                                 to Object mapping unique metadata values
+     *                                 to the number of samples with this metadata
+     *                                 value in this field containing at least one
+     *                                 tip in the subtree of the given nodeKey.
+     *                                 (2) diff Array of tip names not present
+     *                                 as features in the table
+     *                                 (3) samples Array of samples represented by
+     *                                 tips present in the table.
      */
-    Empress.prototype.findTips = function (nodeKey) {
-        // find first and last preorder positions of the subtree spanned
-        // by the current internal node
-        var t = this._tree;
-        var n = t.postorderselect(nodeKey);
-        var start = t.preorder(t.fchild(n));
-        var end = t.preorder(t.lchild(n));
-        while (!t.isleaf(t.preorderselect(end))) {
-            end = t.preorder(t.lchild(t.preorderselect(end)));
-        }
+    Empress.prototype.computeIntSamplePresence = function (nodeKey, fields) {
+        // retrieve the sample data for the tips in the table
+        var tips = this._tree.findTips(nodeKey);
+        var diff = this._biom.getObsIDsDifference(tips);
+        var intersection = this._biom.getObsIDsIntersection(tips);
+        var samples = this._biom.getSamplesByObservations(intersection);
 
-        // find all tips within the subtree
-        var tips = [];
-        for (j = start; j <= end; j++) {
-            var node = t.preorderselect(j);
-            if (t.isleaf(node)) {
-                tips.push(t.name(node));
+        var fieldsMap = {};
+        for (var i = 0; i < fields.length; i++) {
+            field = fields[i];
+            var possibleValues = this._biom.getUniqueSampleValues(field);
+            for (var j = 0; j < possibleValues.length; j++) {
+                var possibleValue = possibleValues[j];
+                if (!(field in fieldsMap)) fieldsMap[field] = {};
+                fieldsMap[field][possibleValue] = 0;
             }
         }
 
-        return tips;
-    };
-
-    /**
-     * Calculate the number of samples in which tips of an internal node
-     * appear for each level of metadata fields.
-     *
-     * @param {String} nodeName Name of the (leaf) node for which to calculate
-     *                          sample presence.
-     * @param {String} fields Metadata fields for which to calculate leaf
-     *                       sample presence.
-     * @param {Object} fieldsMap Object that maps fields to sample presence.
-     * @return {Object} fieldsMap Returns a mapping of field categories to number of
-     *                  samples in which tips of the internal node are present and
-     *                  sample field value equals category.
-     */
-    Empress.prototype.computeIntSamplePresence = function (
-        samples,
-        fields,
-        fieldsMap
-    ) {
         // iterate over the samples and extract the field values
-        for (j = 0; j < fields.length; j++) {
-            field = fields[j];
+        for (var k = 0; k < fields.length; k++) {
+            field = fields[k];
 
             // update fields mapping object
             var result = this._biom.getSampleValuesCount(samples, field);
             fieldValues = Object.keys(result);
-            for (k = 0; k < fieldValues.length; k++) {
-                fieldValue = fieldValues[k];
+            for (var m = 0; m < fieldValues.length; m++) {
+                fieldValue = fieldValues[m];
                 fieldsMap[field][fieldValue] += result[fieldValue];
             }
         }
 
-        return fieldsMap;
+        var samplePresence = {
+            fieldsMap: fieldsMap,
+            diff: diff,
+            samples: samples,
+        };
+        return samplePresence;
     };
 
     return Empress;

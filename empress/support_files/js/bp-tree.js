@@ -539,5 +539,33 @@ define(["ByteArray"], function (ByteArray) {
         return this.select(1, k);
     };
 
+    /**
+     * Retrieve the tips in the subtree of a given node key.
+     *
+     * @param {Number} nodeKey Key value of node.
+     * @return {Array} tips Tips of the subtree.
+     */
+    BPTree.prototype.findTips = function (nodeKey) {
+        // find first and last preorder positions of the subtree spanned
+        // by the current internal node
+        var n = this.postorderselect(nodeKey);
+        var start = this.preorder(this.fchild(n));
+        var end = this.preorder(this.lchild(n));
+        while (!this.isleaf(this.preorderselect(end))) {
+            end = this.preorder(this.lchild(this.preorderselect(end)));
+        }
+
+        // find all tips within the subtree
+        var tips = [];
+        for (var j = start; j <= end; j++) {
+            var node = this.preorderselect(j);
+            if (this.isleaf(node)) {
+                tips.push(this.name(node));
+            }
+        }
+
+        return tips;
+    };
+
     return BPTree;
 });

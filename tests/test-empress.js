@@ -16,7 +16,15 @@ require([
                 // ((1,(2,3)4)5,6)7;
                 var tree = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]),
-                    null,
+                    [
+                        "root",
+                        "internal",
+                        "1",
+                        "internal",
+                        "2",
+                        "3",
+                        "EmpressNode6",
+                    ],
                     null,
                     null
                 );
@@ -678,52 +686,30 @@ require([
             );
         });
 
-        test("Test computeLeafSamplePresence", function() {
+        test("Test computeTipSamplePresence", function () {
             var e = this.empress;
             var fields = e._biom._smCols;
-            var ctData = e.computeLeafSamplePresence("2", fields);
+            var ctData = e.computeTipSamplePresence("2", fields);
 
             var lf2presence = {
-                "f1": {"a": 4, "b": 1},
-                "grad": {"1": 1, "2": 2, "3": 2, "4": 0},
-                "traj": {"t1": 2, "t2": 1, "t3": 2, "t4": 0}
+                f1: { a: 4, b: 1 },
+                grad: { "1": 1, "2": 2, "3": 2, "4": 0 },
+                traj: { t1: 2, t2: 1, t3: 2, t4: 0 },
             };
             deepEqual(ctData, lf2presence);
         });
 
-        test("Test computeIntSamplePresence", function() {
+        test("Test computeIntSamplePresence", function () {
             var e = this.empress;
-            e._tree.names_ = ["root", "internal", "1", "internal",
-                              "2", "3", "6"];
-
-            var fieldsMap = {};
             var fields = e._biom._smCols;
-            for (i = 0; i < fields.length; i++) {
-                field = fields[i];
-                var possibleValues = e._biom.getUniqueSampleValues(field);
-                for (j = 0; j < possibleValues.length; j++) {
-                    var possibleValue = possibleValues[j];
-                    if (!(field in fieldsMap)) fieldsMap[field] = {};
-                    fieldsMap[field][possibleValue] = 0;
-                }
-            }
-
-            var nodeKey = 4;
-            var tips = e.findTips(nodeKey);
-            deepEqual(tips, ["2", "3"]);
-
-            var intersection = e._biom.getObsIDsIntersection(tips);
-            var diff = e._biom.getObsIDsDifference(tips);
-            var samples = e._biom.getSamplesByObservations(intersection);
-
-            var ctData = e.computeIntSamplePresence(samples, fields, fieldsMap);
+            var values = e.computeIntSamplePresence(4, fields);
 
             var int4presence = {
-                "f1": {"a": 5, "b": 1},
-                "grad": {"1": 2, "2": 2, "3": 2, "4": 0},
-                "traj": {"t1": 2, "t2": 2, "t3": 2, "t4": 0}
+                f1: { a: 5, b: 1 },
+                grad: { "1": 2, "2": 2, "3": 2, "4": 0 },
+                traj: { t1: 2, t2: 2, t3: 2, t4: 0 },
             };
-            deepEqual(ctData, int4presence);
+            deepEqual(values.fieldsMap, int4presence);
         });
     });
 });
