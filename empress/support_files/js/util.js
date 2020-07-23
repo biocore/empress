@@ -192,6 +192,7 @@ define(["underscore"], function (_) {
         keepUniqueKeys: keepUniqueKeys,
         naturalSort: naturalSort,
         splitNumericValues: splitNumericValues,
+        isValidNumber: isValidNumber,
         parseAndValidateLineWidth: parseAndValidateLineWidth,
         toastMsg: toastMsg,
     };
