@@ -595,7 +595,6 @@ define([
                 return;
             }
         }
-        this._currentLineWidth = lw;
         // Scale the line width in such a way that trees with more leaves have
         // "smaller" line width values than trees with less leaves. This is a
         // pretty arbitrary equation based on messing around and seeing what
