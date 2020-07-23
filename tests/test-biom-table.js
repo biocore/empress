@@ -407,6 +407,7 @@ require(["jquery", "BiomTable"], function ($, BiomTable) {
                 },
                 "Test: find observations in f1 "
             );
+            console.log(obsReturned)
 
             obsReturned = this.biomTable.getObsBy("f3");
             keys = Object.keys(obsReturned);

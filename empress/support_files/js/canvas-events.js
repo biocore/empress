@@ -150,16 +150,14 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 var xDist, yDist;
                 var closeNodeKey;
 
-                //**************************************************************
-                for (var clade in empress._collapsedClades) {
-                    if (empress.isPointInClade(clade, [x, y])) {
-                        var cladeNode = empress._treeData[clade];
-                        scope.placeNodeSelectionMenu(
-                            cladeNode.name,
+                var clade = empress.isInClade(x, y);
+                if (clade !== -1) {
+                    scope.placeNodeSelectionMenu(
+                            empress._treeData[clade].name,
                             false,
                             clade
                         );
-                    }
+                    return;
                 }
                 //**************************************************************
                 // Go through all the nodes in the tree and find the node

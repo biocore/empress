@@ -1828,5 +1828,15 @@ define([
 
     }
 
+    Empress.prototype.isInClade = function(x, y) {
+        for (var clade in this._collapsedClades) {
+            if (this.isPointInClade(clade, [x, y])) {
+                var cladeNode = this._treeData[clade];
+                return clade;
+            }
+        }
+        return -1;
+    }
+
     return Empress;
 });
