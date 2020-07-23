@@ -148,8 +148,7 @@ define(["underscore"], function (_) {
      *                            If this is undefined, then this will default
      *                            to 3000 ms (i.e. 3 seconds).
      */
-    function toastMsg(msg, duration) {
-        var effectiveDuration = _.isUndefined(duration) ? 3000 : duration;
+    function toastMsg(msg, duration=3000) {
         var toast = document.getElementById("toast");
         toast.innerHTML = msg;
         toast.classList.remove("hidden");
