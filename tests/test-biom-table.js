@@ -379,34 +379,52 @@ require(["jquery", "underscore", "BiomTable"], function ($, _, BiomTable) {
         });
 
         test("Test getObsBy", function () {
-            // Sorts the array values in obs, since we don't care about order.
-            // (Note that this is alphabetical order, so e.g. "o10" will come
-            // after "o1" instead of "o2".)
-            // Approach based on https://stackoverflow.com/a/38632424/10730311.
-            var sortObs = function (obs) {
+            // Convert the array values of getObsBy()'s output to Sets, since
+            // we don't care about order.
+            var settifyObs = function (obs) {
                 return _.mapObject(obs, function (arr) {
-                    return arr.sort();
+                    return new Set(arr);
                 });
             };
 
             var obsReturned = this.biomTable.getObsBy("f1");
             deepEqual(
-                sortObs(obsReturned),
+                settifyObs(obsReturned),
                 {
-                    a: ["o1", "o10", "o2", "o3", "o4", "o5", "o6", "o7", "o9"],
-                    b: ["o4", "o5", "o8"],
-                    c: ["o2", "o3", "o6"],
+                    a: new Set([
+                        "o1",
+                        "o10",
+                        "o2",
+                        "o3",
+                        "o4",
+                        "o5",
+                        "o6",
+                        "o7",
+                        "o9",
+                    ]),
+                    b: new Set(["o4", "o5", "o8"]),
+                    c: new Set(["o2", "o3", "o6"]),
                 },
                 "Test: find observations in f1"
             );
 
             obsReturned = this.biomTable.getObsBy("f3");
             deepEqual(
-                sortObs(obsReturned),
+                settifyObs(obsReturned),
                 {
-                    h: ["o5", "o8"],
-                    i: ["o1", "o10", "o2", "o4", "o5", "o7"],
-                    j: ["o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9"],
+                    h: new Set(["o5", "o8"]),
+                    i: new Set(["o1", "o10", "o2", "o4", "o5", "o7"]),
+                    j: new Set([
+                        "o1",
+                        "o2",
+                        "o3",
+                        "o4",
+                        "o5",
+                        "o6",
+                        "o7",
+                        "o8",
+                        "o9",
+                    ]),
                 },
                 "Test: find observations in f3"
             );
