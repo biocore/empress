@@ -1204,68 +1204,6 @@ define([
     };
 
     /**
-     * Computes the area of the tree's "minimum bounding box" in its current
-     * layout. This is done by finding the maximum and minimum x and y
-     * coordinates within the current layout and then computing
-     * |(max X - min X) * (max Y - min Y)|.
-     *
-     * See https://en.wikipedia.org/wiki/Minimum_bounding_box for a visual
-     * representation of what this function is finding.
-     *
-     * @return {Number}
-     */
-    Empress.prototype.computeTreeArea = function () {
-        // We initialize the minima to Infinity and the maxima to -Infinity so
-        // that any valid number is < the minima and > the maxima. It lets us
-        // avoid special-casing things a bit.
-        // (We *could* also just set the initial minima and maxima to the
-        // first node in the tree's coordinates, and then start the loop at i =
-        // 2. However, this would then probably get subtly broken when we
-        // eventually get around to making the tree data use 0-indexing.)
-        var minX = Infinity;
-        var maxX = -Infinity;
-        var minY = Infinity;
-        var maxY = -Infinity;
-        var node, x, y;
-        for (var i = 1; i <= this._tree.size; i++) {
-            node = this._treeData[i];
-            // NOTE: It is worth noting that getX() and getY() only consider
-            // the xc1 / yc1 positions of nodes in the circular layout (not
-            // the xc0 / yc0 positions). The c1 coordinates for a node in the
-            // circular layout are the "endpoints" of the node, while the c0
-            // coordinates are the start points (occuring closer to the root of
-            // the tree, which is centered at (0, 0). Zooming in on the top
-            // part of a circular layout, these coordinates (for two nodes, say
-            // n and n') would look something like:
-            //
-            //   c1     c1'
-            //   |       |
-            //   |       |
-            //   c0-----c0'
-            //       |
-            //       |
-            //
-            // I *think* we can always infer the exact minimum bounding box of
-            // the tree by only considering c1 coordinates, since the c0
-            // coordinates should always be closer to (0, 0) than the c1
-            // coordinates. However, it's conceivable that there are degenerate
-            // cases I'm not aware of that would break this -- or,
-            // alternatively, that changes to the circular layout in the future
-            // could break this. However, I imagine the vast majority of trees
-            // should be fine with this as is. (Even if things are messed up,
-            // the only consequence will be the bounding box here (and
-            // centerLayoutAvgPoint(), I suppose) being slightly off.)
-            x = this.getX(node);
-            y = this.getY(node);
-            minX = Math.min(x, minX);
-            maxX = Math.max(x, maxX);
-            minY = Math.min(y, minY);
-            maxY = Math.max(y, maxY);
-        }
-        return Math.abs((maxX - minX) * (maxY - minY));
-    };
-
-    /**
      * Set a callback when a the node menu is shown on screen
      *
      * The callback will receive an array of samples as the only argument. This
