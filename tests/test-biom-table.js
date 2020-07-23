@@ -384,7 +384,7 @@ require(["jquery", "underscore", "BiomTable"], function ($, _, BiomTable) {
             // after "o1" instead of "o2".)
             // Approach based on https://stackoverflow.com/a/38632424/10730311.
             var sortObs = function (obs) {
-                return _.mapObject(obs, function(arr) {
+                return _.mapObject(obs, function (arr) {
                     return arr.sort();
                 });
             };
@@ -395,7 +395,7 @@ require(["jquery", "underscore", "BiomTable"], function ($, _, BiomTable) {
                 {
                     a: ["o1", "o10", "o2", "o3", "o4", "o5", "o6", "o7", "o9"],
                     b: ["o4", "o5", "o8"],
-                    c: ["o2", "o3", "o6"]
+                    c: ["o2", "o3", "o6"],
                 },
                 "Test: find observations in f1"
             );
@@ -406,7 +406,7 @@ require(["jquery", "underscore", "BiomTable"], function ($, _, BiomTable) {
                 {
                     h: ["o5", "o8"],
                     i: ["o1", "o10", "o2", "o4", "o5", "o7"],
-                    j: ["o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9"]
+                    j: ["o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9"],
                 },
                 "Test: find observations in f3"
             );
