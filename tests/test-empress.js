@@ -435,11 +435,6 @@ require([
                     deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
-            var currentColorInfo = {
-                "metadata": "feature",
-                "metadataColumn": "f1"
-            };
-            deepEqual(this.empress._currentColorInfo, currentColorInfo);
 
             // test 'all' method
 
@@ -465,12 +460,6 @@ require([
                     deepEqual(node.color, [0.75, 0.75, 0.75]);
                 }
             }
-            var currentColorInfo = {
-                "metadata": "feature",
-                "metadataColumn": "f2"
-            };
-            deepEqual(this.empress._currentColorInfo, currentColorInfo);
-
         });
 
         test("Test _projectObservations, all tips in obs", function () {
@@ -705,8 +694,6 @@ require([
         });
 
         test("Test collapseClades", function() {
-            this.empress._inorder = this.empress.inorderNodes();
-
             // red should be a collapsable clade
             var obs = {
                 'red': new Set([2,3,4]),
@@ -763,17 +750,6 @@ require([
             //     );
             // }
 
-        });
-
-        test("Test getTotalLength", function() {
-            equal(this.empress.getTotalLength(2, 5), 6);
-        });
-
-        test("Test inorderNodes", function() {
-            deepEqual(
-                this.empress.inorderNodes(),
-                [7, 5, 6, 1, 4, 2, 3]
-            );
         });
 
         test("Test getCladeNodes", function() {

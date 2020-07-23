@@ -1262,198 +1262,104 @@ define([
      * @return{Boolean} true if at least one clade was collapse. false otherwise
      */
     Empress.prototype.collapseClades = function () {
-        // assume no clades were collapse
-        var collapsed = false;
-
+        // first check if any collapsed clades have been cached
         if (Object.keys(this._collapsedClades).length != 0) {
             for (var cladeRoot in this._collapsedClades) {
                 this.createCollapsedCladeShape(cladeRoot);
             }
+            return;
         }
 
-        // Alogorithm: once a tip is encounter with a none DEFAULT_COLOR, then
-        // nodes are added to this set until a node is encountered with either
-        // a different color or DEFAULT_COLOR at which point, if a non-tip node
-        // was added to this set then it is considered a collapsed clade and a
-        // quad will be created. This set will be then be reset.
-        // This works because _projectObservations guarentees that internal
-        // nodes are only colored if all descendant share the same color.
-        // Note: _projectObservations is not called when the user colors the
-        // tree using internal feature metadata so it is possible that this
-        // algorithm will fail if the left most tips do not share the same
-        // color as the rest of the clade. As such, we have to make sure all
-        // tips in the clade belong to this set to consider in order to consider
-        // it a collapsed clade.
-        var currentCollapsedClade = new Set();
+        // The following algorithm consists of two parts: 1) find all clades
+        // whose member nodes have the same color, 2) collapse the clades
 
+        // 1) Find all cldades
+        // The group array will be used to determine what color group a node
+        // belongs to. During each iteration of the bellow array will update
+        // both the current node's group membership as well as its parent's.
+        // Since the group array is created in a postorder fashion, it is
+        // guaranteed that if an internal node belongs to a particular group
+        // than all of its children will also belong to that group. Finally,
+        // collapsable clades are defined as the internal nodes closest to the
+        // root that belong to a particular group.
+        // Note: groups are defined in colorToNum. Basically each unique color
+        // is assigned a unique number and that number is then used to mark
+        // which group a node belongs to. If an internal node has children that
+        // belong to different groups than it is assigned a -1.
+        var group = new Array(this._tree.size + 1);
+        var numGroup = 0;
+        var colorToNum = {};
+        for (var i = 1; i <=this._tree.size; i++) {
+            var parent = this._tree.postorder(
+                this._tree.parent(this._tree.postorderselect(i))
+            );
+            var color = this._treeData[i].color;
+            if (!colorToNum.hasOwnProperty(color)) {
+                colorToNum[color] = numGroup++;
+            }
+
+            var findGroup = function(node) {
+                if (group[node] === undefined) {
+                    group[node] = colorToNum[color];
+                } else if (group[node] !== colorToNum[color]) {
+                    group[node] = -1;
+                }
+            }
+            findGroup(i);
+            findGroup(parent);
+        }
+
+        // 2) Collapse the clades
+        // To accomplish this, we will iterate the tree in a inorder fashion.
+        // Once a internal node is reached that belongs to a group (i.e. not -1)
+        // than that node will be marked as the root of the clade and then
+        // collaped.
+        // Collapsing a clade will set the .visible property of members to
+        // false and will then be skipped in the for loop.
+        // Note: if the root of a clade has DEFUALT_COLOR then it will not be
+        // collapsed (since all of its children will also have DEFAULT_COLOR)
         var inorder = this._tree.inorderNodes();
-        // iterate through the tree using inorder
         for (var i in inorder) {
             var node = inorder[i],
-                color = this._treeData[node].color,
                 visible = this._treeData[node].visible,
+                color = this._treeData[node].color,
                 isTip = this._tree.isleaf(this._tree.postorderselect(node));
 
-            if (visible && !isTip && color !== this.DEFAULT_COLOR) {
-                this.createCollapsedClade(node);
+            if (
+                visible &&
+                !isTip &&
+                group[node] !== -1 &&
+                color !== this.DEFAULT_COLOR
+            ) {
+                this.collapsedClade(node);
             }
-        }
-
-        // var group = new Array(this._tree.size + 1);
-        // var color
-        for (var i = 1; i <=this._tree.size; i++) {
-
         }
     };
 
+    /**
+     * Creates a special shape for WebGl to draw in place of a clade. Each
+     * layout has its own unique shape. Furthermore, Rectangular and Circular
+     * layuots will get two versions of their shape. The shape that will be
+     * drawn will be determined by this._currentLayout and this._collapseMethod.
+     * Before calling this method, the .visible property of all nodes in the
+     * clade (besides the root) should be set to false.
+     *
+     * Note: This method will modify this._collapsedCladeBuffer and also add
+     *       sX, sY, and totalAngle to each clade in this_collapsedClades if
+     *       this._currentLayou === "Circular"
+     *
+     * @param {Number} rootNode The root of the clade
+     */
     Empress.prototype.createCollapsedCladeShape = function(rootNode) {
         // add collapsed clade to drawing buffer
-        // this._addClade(currentCladeInfo);
         var cladeBuffer = [],
             curNode,
             color = this._collapsedClades[rootNode].color,
-            currentCladeInfo = this._collapsedClades[rootNode],
+            cladeInfo = this._collapsedClades[rootNode],
             x,
-            y;
+            y,
+            scope = this;
 
-        if (this._currentLayout === "Unrooted") {
-            // Unrooted collasped clade is a quadrilateral whose vertices are
-            // 1) root of clade, 2) "left" most node, 3) "right" most node, and
-            // 4) deepest node. However, WebGl requires that we approximate the
-            // quadrilateral with triangles. Thus, the quad is made out of two
-            // triangles. One triangle is formed from 1, 4, 2 and the other
-            // triangle from 1, 4, 3
-
-            // triangle from 1, 4, 2
-            curNode = this._treeData[rootNode],
-            x = this.getX(curNode),
-            y = this.getY(curNode);
-            cladeBuffer.push(...[x, y, ...color]);
-            curNode = this._treeData[currentCladeInfo["deepest"]],
-            x = this.getX(curNode),
-            y = this.getY(curNode);
-            cladeBuffer.push(...[x, y, ...color]);
-            curNode = this._treeData[currentCladeInfo["left"]],
-            x = this.getX(curNode),
-            y = this.getY(curNode);
-            cladeBuffer.push(...[x, y, ...color]);
-
-            // triangle from 1, 4, 3
-            curNode = this._treeData[rootNode],
-            x = this.getX(curNode),
-            y = this.getY(curNode);
-            cladeBuffer.push(...[x, y, ...color]);
-            curNode = this._treeData[currentCladeInfo["deepest"]],
-            x = this.getX(curNode),
-            y = this.getY(curNode);
-            cladeBuffer.push(...[x, y, ...color]);
-            curNode = this._treeData[currentCladeInfo["right"]],
-            x = this.getX(curNode),
-            y = this.getY(curNode);
-            cladeBuffer.push(...[x, y, ...color]);
-        } else if (this._currentLayout === "Rectangular") {
-            // Rectangular (Symmetric version)
-            // A collapse clade is represented by a triangle. First, the
-            // y-values of the "left" and "right" most branches are compared
-            // to the y-value of the root of the clade. Next the branch whose
-            // y-value is closest to the branch is selected. Then a triangle
-            // is created by projecting a ray from the root of the clade in the
-            // direction of the select branch until the ray reaches the x-value
-            // of the deepest branch. Finally, ray created in the last step is
-            // reflected about the x-axis that passes throught the root of the
-            // clade
-
-            // root of the clade
-            curNode = this._treeData[rootNode],
-            x = this.getX(curNode),
-            y = this.getY(curNode);
-            cladeBuffer.push(...[x, y, ...color]);
-
-            var dx = this.getX(this._treeData[currentCladeInfo["deepest"]]),
-                ly = this.getY(this._treeData[currentCladeInfo["left"]]),
-                ry = this.getY(this._treeData[currentCladeInfo["right"]]);
-
-            if (this._collapseMethod === "symmetric") {
-                if (Math.abs(y - ly) < Math.abs(y - ry)) {
-                    ry = y + Math.abs(y - ly);
-                } else {
-                    ly = y - Math.abs(y - ry);
-                }
-            }
-
-            cladeBuffer.push(...[dx, ly, ...color]);
-            cladeBuffer.push(...[dx, ry, ...color]);
-        } else {
-            var dangle = this._treeData[currentCladeInfo["deepest"]].angle;
-            var langle = this._treeData[currentCladeInfo["left"]].angle;
-            var rangle = this._treeData[currentCladeInfo["right"]].angle;
-            var totalAngle;
-            if (this._collapseMethod === "symmetric") {
-                var nangle = this._treeData[rootNode].angle;
-                var minAngle = Math.min((nangle - langle), (rangle - nangle));
-                totalAngle = 2 * minAngle;
-                x = this.getX(this._treeData[currentCladeInfo["deepest"]]);
-                y = this.getY(this._treeData[currentCladeInfo["deepest"]]);
-                sX =
-                    x * Math.cos(nangle - minAngle - dangle) -
-                    y * Math.sin(nangle - minAngle - dangle);
-                sY =
-                    x * Math.sin(nangle - minAngle - dangle) +
-                    y * Math.cos(nangle - minAngle - dangle);
-            } else {
-                totalAngle = rangle - langle;
-                x = this.getX(this._treeData[currentCladeInfo["deepest"]]);
-                y = this.getY(this._treeData[currentCladeInfo["deepest"]]);
-                sX =
-                    x * Math.cos(langle - dangle) - y * Math.sin(langle - dangle);
-                sY =
-                    x * Math.sin(langle - dangle) + y * Math.cos(langle - dangle);
-            }
-            var deltaAngle = totalAngle / 15;
-            for (var line = 0; line < 15; line++) {
-                cladeBuffer.push(
-                    ...[
-                        this.getX(this._treeData[rootNode]),
-                        this.getY(this._treeData[rootNode]),
-                        ...color,
-                    ]
-                );
-                x =
-                    sX * Math.cos(line * deltaAngle) -
-                    sY * Math.sin(line * deltaAngle);
-                y =
-                    sX * Math.sin(line * deltaAngle) +
-                    sY * Math.cos(line * deltaAngle);
-                cladeBuffer.push(...[x, y, ...color]);
-
-                x =
-                    sX * Math.cos((line + 1) * deltaAngle) -
-                    sY * Math.sin((line + 1) * deltaAngle);
-                y =
-                    sX * Math.sin((line + 1) * deltaAngle) +
-                    sY * Math.cos((line + 1) * deltaAngle);
-                cladeBuffer.push(...[x, y, ...color]);
-            }
-        }
-
-        this._collapsedCladeBuffer.push(...cladeBuffer);
-    }
-    Empress.prototype.createCollapsedClade = function (rootNode) {
-        // step 1: find all nodes in the clade.
-        var scope = this;
-        var cladeNodes = this.getCladeNodes(rootNode);
-
-        var currentCladeInfo = {
-            left: cladeNodes[0],
-            right: cladeNodes[0],
-            deepest: cladeNodes[0],
-            length: this.getTotalLength(cladeNodes[0], rootNode),
-            color: this._treeData[rootNode].color,
-        };
-        // step 2: find the following clade information:
-        //      1) "left" most child.
-        //      2) "right" most child.
-        //      3) "deepest" child
         // Note: "left" and "right" most children are different for each layout.
         //       Unrooted:
         //          left  - the left most child
@@ -1464,54 +1370,253 @@ define([
         //      Circular:
         //          left  - the tip with the smallest angle
         //          right - the tip with the largest angle
+        var addPoint = function(point) {
+            cladeBuffer.push(...point, ...color);
+        }
+        var getCoords = function(node) {
+            node = scope._treeData[node],
+            x = scope.getX(node),
+            y = scope.getY(node);
+            return [x,y];
+        }
+        if (this._currentLayout === "Unrooted") {
+            // Unrooted collasped clade is a quadrilateral whose vertices are
+            // 1) root of clade, 2) "left" most node, 3) "right" most node, and
+            // 4) deepest node. However, WebGl requires that we approximate the
+            // quadrilateral with triangles. Thus, the quad is made out of two
+            // triangles. One triangle is formed from 1, 4, 2 and the other
+            // triangle from 1, 4, 3
+
+            // input is either "left" most or "right" most child
+            var addTriangle = function(child) {
+                // cladeBuffer.push(...getCoords(rootNode), ...color);
+                // cladeBuffer.push(...getCoords(cladeInfo["deepest"]), ...color);
+                // cladeBuffer.push(...getCoords(child), ...color);
+                addPoint(getCoords(rootNode));
+                addPoint(getCoords(cladeInfo["deepest"]));
+                addPoint(getCoords(child));
+            }
+
+            // triangle from 1, 4, 2
+            addTriangle(cladeInfo["left"]);
+
+            // triangle from 1, 4, 3
+            addTriangle(cladeInfo["right"]);
+        } else if (this._currentLayout === "Rectangular") {
+            // Rectangular layou is a triangle. Symmetric version is used if
+            // this._collapseMethod === "symmetric"
+            //
+            // Unsymmetric version
+            // The vertices of the triangle are 1) the root of the clade,
+            // 2) "left" most child, 3) "right" most child
+            //
+            // Symmetric version
+            // The vertices of the triangle are 1) the root of the clade,
+            // 2) The "left" or "right" most child whose y-coordinate is closest
+            // in value to the root, 3) The ray from the 1) to 2) will refected
+            // across the horizontal axis that touches the root of the clade.
+
+            // root of the clade
+            addPoint(getCoords(rootNode));
+
+            // The x coordinate of 2) and 3) will be set to the x-coordinate of
+            // the "deepest" node.
+            var dx = this.getX(this._treeData[cladeInfo["deepest"]]);
+
+            // y-coordinate of 2) and 3)
+            var ly = this.getY(this._treeData[cladeInfo["left"]]),
+                ry = this.getY(this._treeData[cladeInfo["right"]]);
+            if (this._collapseMethod === "symmetric") {
+                if (Math.abs(y - ly) < Math.abs(y - ry)) {
+                    ry = y + Math.abs(y - ly);
+                } else {
+                    ly = y - Math.abs(y - ry);
+                }
+            }
+            addPoint([dx, ly]);
+            addPoint([dx, ry]);
+        } else {
+            // Circular layout is a wedge. The wedge can be thought of a sector
+            // of a circle whose center is at the root of the tree (note clade)
+            // and whose radius is equal to the distance from the root of the
+            // tree to the "deepest" node in the clade. The sector starts at the
+            // root of the clade. Symmetric version is used if
+            // this._collapseMethod === "symmetric"
+            //
+            // Note: The wedge is approximated by 15 triangles.
+            //
+            // Unsymmetric version
+            // The angle of the sector is the angle between the "left" most and
+            // "right" most children.
+            //
+            // Symmetric version
+            // The angle of the sector is determined by taking the angle of the
+            // "left" or "right" most child that is closest to the root of the
+            // clade and doubling it.
+            var dangle = this._treeData[cladeInfo["deepest"]].angle,
+                langle = this._treeData[cladeInfo["left"]].angle,
+                rangle = this._treeData[cladeInfo["right"]].angle,
+                totalAngle, cos, sin, sX, sY;
+
+            // This block finds (sX, sY) start point and total angle of the
+            // sector
+            x = this.getX(this._treeData[cladeInfo["deepest"]]);
+            y = this.getY(this._treeData[cladeInfo["deepest"]]);
+            if (this._collapseMethod === "symmetric") {
+                var nangle = this._treeData[rootNode].angle,
+                    minAngle = Math.min((nangle - langle), (rangle - nangle)),
+                totalAngle = 2 * minAngle;
+                cos = Math.cos(nangle - minAngle - dangle);
+                sin = Math.sin(nangle - minAngle - dangle);
+                sX = x * cos - y * sin;
+                sY = x * sin + y * cos;
+            } else {
+                totalAngle = rangle - langle;
+                cos = Math.cos(langle - dangle);
+                sin = Math.sin(langle - dangle);
+                sX = x * cos - y * sin;
+                sY =
+                    x * Math.sin(langle - dangle) + y * Math.cos(langle - dangle);
+            }
+            cladeInfo.sX = sX;
+            cladeInfo.sY = sY;
+            cladeInfo.totalAngle = totalAngle;
+
+
+            // create 15 triangles to approximate sector
+            var deltaAngle = totalAngle / 15;
+            cos = Math.cos(deltaAngle);
+            sin = Math.sin(deltaAngle);
+            for (var line = 0; line < 15; line++) {
+                addPoint(getCoords(rootNode));
+
+                x = sX * cos - sY * sin;
+                y = sX * sin + sY * cos;
+                addPoint([x, y])
+
+                cos = Math.cos((line + 1) * deltaAngle);
+                sin = Math.sin((line + 1) * deltaAngle);
+                x = sX * cos - sY * sin;
+                y = sX * sin + sY * cos;
+                addPoint([x, y]);
+            }
+        }
+
+        this._collapsedCladeBuffer.push(...cladeBuffer);
+    }
+
+    /**
+     * Collapse the clade at rootNode
+     *
+     * This method will set the .visible property for all nodes in the clade
+     * (execpt the root) to false. Also, the color of rootNode will be set to
+     * DEFAULT_COLOR and this._collapsedCladeBuffer will be modified.
+     *
+     * Note: This method will cache the clade information. So, as long as
+     *       the collapsed clades aren't changed, you do not need to call this
+     *       method again. Instead, just use createCollapsedCladeShape(). For
+     *       example if the layout is switch, simply iterate through
+     *       this._collapsedClades and call createCollapsedCladeShape() on each
+     *       element.
+     *
+     * @param {Number} rootNode The root of the clade. Note: This is the key
+     *                          in _treeData.
+     */
+    Empress.prototype.collapsedClade = function (rootNode) {
+        // There are four steps to collapse the clade. 1) find all nodes in the
+        // clade, 2) find the "left", "right" and deepest node in the clade,
+        // 3) set the .visible property of all nodes in the clade (except
+        // rootNode) to false, 4) create the collapsed clade shape.
+        // Note: "left" and "right" most children are different for each layout.
+        //       Unrooted:
+        //          left  - the left most child
+        //          right - the right most child
+        //      Rectangular:
+        //          left  - the tip with smallest y-coord
+        //          right - the tip with the largest y-coord
+        //      Circular:
+        //          left  - the tip with the smallest angle
+        //          right - the tip with the largest angle
+
+
+        // step 1: find all nodes in the clade.
+        // Note: cladeNodes is an array of nodes arranged in postorder fashion
+        var cladeNodes = this.getCladeNodes(rootNode);
+
+        // use the left most child in the clade to initialize currentCladeInfo
+        var currentCladeInfo = {
+            left: cladeNodes[0],
+            right: cladeNodes[0],
+            deepest: cladeNodes[0],
+            length: this._tree.getTotalLength(cladeNodes[0], rootNode),
+            color: this._treeData[rootNode].color,
+        };
+
+        // step 2: find the following clade information and
         // step 3: make all descendants of rootNode invisible
-        var updateCladeInfo = function(node) {
+        for (var i in cladeNodes) {
+            var cladeNode = cladeNodes[i];
+            this._treeData[cladeNode].visible = false;
+
+            // internal nodes do not effect clade information
+            if (!this._tree.isleaf(this._tree.postorderselect(cladeNode))) {
+                continue;
+            }
+
             var curLeft = currentCladeInfo.left,
                 curRight = currentCladeInfo.right,
                 curDeep = currentCladeInfo.deepest,
-                length = scope.getTotalLength(node, rootNode);
+                length = this._tree.getTotalLength(cladeNode, rootNode);
 
             // update deepest node
             if (length > currentCladeInfo.length) {
                 currentCladeInfo.length = length;
-                currentCladeInfo.deepest = node;
+                currentCladeInfo.deepest = cladeNode;
             }
 
             // update "left" and "right" most nodes
-            if (scope._currentLayout === "Unrooted") {
-                // Note: leaf sorting is not applied to unrooted layout. Thus
-                // the left most node is the left most child of the clade and
-                // the right most node is the right most child of the clade.
-                currentCladeInfo.right = node;
-            } else if (scope._currentLayout === "Rectangular") {
-                curLeftY = scope.getY(scope._treeData[curLeft]);
-                curRightY = scope.getY(scope._treeData[curRight]);
-                y = scope.getY(scope._treeData[node]);
-                currentCladeInfo.left = y < curLeftY ? node : curLeft;
-                currentCladeInfo.right = y > curRightY ? node : curRight;
+            if (this._currentLayout === "Unrooted") {
+                // currentCladeInfo.left is initially set to be the "left" most
+                // node in Unrooted layout so we only need to update "right".
+                // Since cladeNodes arranges nodes in postorder, "right" is the
+                // last tip in cladeNodes
+                currentCladeInfo.right = cladeNode;
+            } else if (this._currentLayout === "Rectangular") {
+                curLeftY = this.getY(this._treeData[curLeft]);
+                curRightY = this.getY(this._treeData[curRight]);
+                y = this.getY(this._treeData[cladeNode]);
+                currentCladeInfo.left = y < curLeftY ? cladeNode : curLeft;
+                currentCladeInfo.right = y > curRightY ? cladeNode : curRight;
             } else {
-                curLAngle = scope._treeData[curLeft].angle;
-                curRAngle = scope._treeData[curRight].angle;
-                angle = scope._treeData[node].angle;
-                currentCladeInfo.left = angle < curLAngle ? node : curLeft;
-                currentCladeInfo.right = angle > curRAngle ? node : curRight;
+                curLAng = this._treeData[curLeft].angle;
+                curRAng = this._treeData[curRight].angle;
+                angle = this._treeData[cladeNode].angle;
+                currentCladeInfo.left = angle < curLAng ? cladeNode : curLeft;
+                currentCladeInfo.right = angle > curRAng ? cladeNode : curRight;
             }
         }
         this._collapsedClades[rootNode] = currentCladeInfo;
 
-        for (var i in cladeNodes) {
-            var cladeNode = cladeNodes[i];
-            if (this._tree.isleaf(this._tree.postorderselect(cladeNode))) {
-                updateCladeInfo(cladeNode);
-            }
-            this._treeData[cladeNode].visible = false;
-        }
+        // the root of the clade should be visible
         this._treeData[rootNode].visible = true;
+
+        // step 4)
         this.createCollapsedCladeShape(rootNode);
 
+        // We set the root of the clade to default otherwise, the branch that
+        // connects the root clade to its parent will still be colored
         this._treeData[rootNode].color = this.DEFAULT_COLOR;
     };
 
+    /**
+     * Update the collapse method. The collapse method can be changed to either
+     * 'symmetric' or 'normal'.
+     *
+     * Note: this method will recreate the collapsed clades and call drawTree()
+     *
+     * @param{String} method The collapse method. An error will be thrown if
+     *                       this is not either 'symmetric' or 'normal'
+     */
     Empress.prototype.updateCollapseMethod = function(method) {
         // do nothing
         if (method === this._collapseMethod) {
@@ -1530,40 +1635,34 @@ define([
         this.drawTree();
     }
 
-
-    // TODO: move to bp-tree
-    Empress.prototype.getTotalLength = function (start, end) {
-        var curNode = start,
-            totalLength = 0;
-        while (curNode !== end) {
-            totalLength += this._tree.length(
-                this._tree.postorderselect(curNode)
-            );
-            curNode = this._tree.postorder(
-                this._tree.parent(this._tree.postorderselect(curNode))
-            );
-        }
-        return totalLength;
-    };
-
-    Empress.prototype.getCladeNodes = function(node) {
-        // This is done by finding the left most child of the clade and then
-        // performing a post-order traversal until node is reached
-
+    /**
+     * Returns all nodes in the clade whose root is node.
+     *
+     * Note: elements in the returned array are keys in this._treeData
+     *       also, the returned array is sorted in a postorder fashion
+     *
+     * @param {Number} cladeRoot The root of the clade
+     *
+     * @return {Array} The nodes in the clade
+     */
+    Empress.prototype.getCladeNodes = function(cladeRoot) {
         // stores the clade nodes
         var cladeNodes = [];
 
+        // Nodes in the clade are found by performing a postorder traversal
+        // starting at the left most child of the clade and ending on cladeRoot
+
         // find left most child
-        // Note: initializing lchild as node incase node is a tip
-        lchild = node;
-        var fchild = this._tree.fchild(this._tree.postorderselect(node));
+        // Note: initializing lchild as cladeRoot incase cladeRoot is a tip
+        lchild = cladeRoot;
+        var fchild = this._tree.fchild(this._tree.postorderselect(cladeRoot));
         while (fchild !== 0) {
             lchild = this._tree.postorder(fchild);
             fchild = this._tree.fchild(this._tree.postorderselect(lchild));
         }
 
-        // perform post order traversal until node is reached.
-        for (var i = lchild; i <= node; i++) {
+        // perform post order traversal until cladeRoot is reached.
+        for (var i = lchild; i <= cladeRoot; i++) {
             cladeNodes.push(i);
         }
 
@@ -1630,38 +1729,13 @@ define([
                                                  [deep[0], right[1]]);
             return Math.abs(netArea) < 1.0e-5;
         } else {
-            var dangle = this._treeData[clade.deepest].angle;
-            var langle = this._treeData[clade.left].angle;
-            var rangle = this._treeData[clade.right].angle;
-            var totalAngle;
-            var dx, dy;
-            if (this._collapseMethod === "symmetric") {
-                var nangle = this._treeData[cladeRoot].angle;
-                var minAngle = Math.min((nangle - langle), (rangle - nangle));
-                totalAngle = 2 * minAngle;
-                dx = this.getX(this._treeData[clade.deepest]);
-                dy = this.getY(this._treeData[clade.deepest]);
-                left[0] =
-                    dx * Math.cos(nangle - minAngle - dangle) -
-                    dy * Math.sin(nangle - minAngle - dangle);
-                left[1] =
-                    dx * Math.sin(nangle - minAngle - dangle) +
-                    dy * Math.cos(nangle - minAngle - dangle);
-            } else {
-                totalAngle = rangle - langle;
-                dx = this.getX(this._treeData[clade.deepest]);
-                dy = this.getY(this._treeData[clade.deepest]);
-                left[0] =
-                    dx * Math.cos(langle - dangle) -
-                    dy * Math.sin(langle - dangle);
-                left[1] =
-                    dx * Math.sin(langle - dangle) +
-                    dy * Math.cos(langle - dangle);
-            }
-            right[0] =
-                    left[0] * Math.cos(totalAngle) - left[1] * Math.sin(totalAngle);
-            right[1] =
-                    left[0] * Math.sin(totalAngle) + left[1] * Math.cos(totalAngle);
+            var totalAngle = clade.totalAngle,
+                cos = Math.cos(totalAngle),
+                sin = Math.sin(totalAngle);
+
+            left = [clade.sX, clade.sY];
+            right[0] = left[0] * cos - left[1] * sin;
+            right[1] = left[0] * sin + left[1] * cos;
             var getAngleAndMagnitude = function(p) {
                 var angle = VectorOps.getAngle([
                     p[0] - cRoot[0],
@@ -1679,9 +1753,9 @@ define([
                 };
             }
 
-            var leftPoint = getAngleAndMagnitude(left);
-            var rightPoint = getAngleAndMagnitude(right);
-            var point = getAngleAndMagnitude([x, y]);
+            var leftPoint = getAngleAndMagnitude(left),
+                rightPoint = getAngleAndMagnitude(right),
+                point = getAngleAndMagnitude([x, y]);
             if (leftPoint.radian > rightPoint.radian) {
                 rightPoint.radian += 2 * Math.PI;
                 if (leftPoint.radian > point.radian) {

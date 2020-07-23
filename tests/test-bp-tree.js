@@ -29,7 +29,11 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                     0,
                     0,
                 ]);
-                this.bpObj = new BPTree(this.bpArray, null, null, null);
+                this.bpObj = new BPTree(
+                    this.bpArray,
+                     null,
+                     [11, 5, 1, 2, 4, 3, 6, 10, 9, 7, 8],
+                     null);
 
                 // rank caches
                 this.r0 = ByteArray.sumVal(this.bpArray, Uint32Array, 0);
@@ -191,9 +195,8 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             }
         });
 
-        test("Test name/length unset", function () {
+        test("Test name unset", function () {
             equal(this.bpObj.names_, null, "Name");
-            equal(this.bpObj.lengths_, null, "Length");
         });
 
         test("Test name/lenth set", function () {
@@ -616,6 +619,10 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             ];
             obj = new BPTree(exp);
             equal(obj.b_.length, 51 + 51 + 4);
+        });
+
+        test("Test getTotalLength", function() {
+            equal(this.bpObj.getTotalLength(3, 11), 12);
         });
     });
 });

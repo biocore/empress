@@ -579,5 +579,20 @@ define(["ByteArray"], function (ByteArray) {
         return inorder;
     };
 
+    // TODO: move to bp-tree
+    BPTree.prototype.getTotalLength = function (start, end) {
+        var curNode = start,
+            totalLength = 0;
+        while (curNode !== end) {
+            totalLength += this.length(
+                this.postorderselect(curNode)
+            );
+            curNode = this.postorder(
+                this.parent(this.postorderselect(curNode))
+            );
+        }
+        return totalLength;
+    };
+
     return BPTree;
 });
