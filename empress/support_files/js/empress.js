@@ -598,7 +598,8 @@ define([
         // pretty arbitrary equation based on messing around and seeing what
         // looked nice on mid- and small-sized trees; as a TODO for the future,
         // there is almost certainly a better way to do this.
-        var lwScaled = (2 * lw) / Math.pow(Math.log10(this._tree.numleaves()), 2);
+        var lwScaled =
+            (2 * lw) / Math.pow(Math.log10(this._tree.numleaves()), 2);
         var tree = this._tree;
 
         // the coordinates of the tree
