@@ -105,6 +105,87 @@
   </p>
 </div>
 
+<!-- Barplot options -->
+<button class="side-header collapsible">Barplots</button>
+<div class="side-content control hidden" id="barplot-div">
+  <p class="side-panel-notes">
+    Annotate tips by feature metadata. (Sample metadata barplots coming soon.)
+  </p>
+  <p style="margin-block-end: 0 !important; padding: 0 !important; margin: 0 !important;">
+    <label for="barplot-chk">Draw barplots?</label>
+    <input id="barplot-chk" type="checkbox" class="empress-input">
+  </p>
+  <p class="nothidden">
+    <div id="barplot-layer-1" class="indented">
+      <h3 class="barplot-layer-title" style="margin-block-end: 0 !important; padding: 0 !important; margin: 0 !important;">Layer 1</h3>
+      <!-- Color stuff -->
+      <p>
+        <label for="barplot-layer-1-dflt-color">Default color</label>
+        <input id="barplot-layer-1-dflt-color" type="checkbox" class="empress-input" style="background-color: #f00;">
+      </p>
+      <p>
+        <label for="barplot-layer-1-chg-color">Change color by metadata?</label>
+        <input id="barplot-layer-1-chg-color" type="checkbox" class="empress-input">
+      </p>
+      <div class="indented">
+        <p>
+          <label for="barplot-layer-1-fm-color-map">Color Map</label>
+          <label class="select-container">
+            <select id="barplot-layer-1-fm-color-map">
+                <option>Classic QIIME Colors</option>
+            </select>
+          </label>
+        </p>
+        <p>
+          <label for="barplot-layer-1-fm-color-field">Feature Metadata Field</label>
+          <label class="select-container">
+            <select id="barplot-layer-1-fm-color-field">
+              <option>Level 1</option>
+              <option>Level 2</option>
+            </select>
+          </label>
+        </p>
+        <p>
+          <label for="barplot-layer-1-fm-color-stype">Scale type</label>
+          <label class="select-container">
+            <select id="barplot-layer-1-fm-color-stype">
+              <option>Categorical</option>
+              <option>Quantitative</option>
+            </select>
+          </label>
+        </p>
+      </div>
+      <!-- length stuff -->
+      <p>
+        <label for="barplot-layer-1-dflt-len">Default length</label>
+        <input id="barplot-layer-1-dflt-len" type="number" class="empress-input" value="1">
+      </p>
+      <p>
+        <label for="barplot-layer-1-chg-len">Change length by metadata?</label>
+        <input id="barplot-layer-1-chg-len" type="checkbox" class="empress-input">
+      </p>
+      <div class="indented">
+        <p>
+          <label for="barplot-layer-1-fm-len-field">Feature Metadata Field</label>
+          <label class="select-container">
+            <select id="barplot-layer-1-fm-len-field">
+              <option>Confidence</option>
+              <option>Level 2</option>
+            </select>
+          </label>
+        </p>
+      </div>
+      <p>
+        <label for="add-layer">Add another layer</label>
+        <button id="add-layer">+</button>
+      </p>
+    </div>
+  </p>
+  <p>
+    <button id="feature-update" class="hidden">Update</button>
+  </p>
+</div>
+
 <!-- animate Options -->
 <button class="side-header collapsible">Animation</button>
 <div class="side-content control hidden">
