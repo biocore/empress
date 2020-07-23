@@ -180,7 +180,7 @@ define(["underscore"], function (_) {
         if (isValidNumber(inputEle.value)) {
             var pfVal = parseFloat(inputEle.value);
             if (pfVal >= 0) {
-                return parseFloat(inputEle.value);
+                return pfVal;
             }
         }
         // If we're still here, the number was invalid.
