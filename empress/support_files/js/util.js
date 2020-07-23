@@ -76,12 +76,11 @@ define(["underscore"], function (_) {
         // separate the numeric and the alpha elements of the array
         // Note that NaN and +/- Infinity are not considered numeric elements
         for (var index = 0; index < list.length; index++) {
-            var origVal = list[index];
-            var pfVal = parseFloat(origVal);
-            if (isNaN(pfVal) || !isFinite(pfVal)) {
-                alphaPart.push(origVal);
+            var element = list[index];
+            if (!isValidNumber(element)) {
+                alphaPart.push(element);
             } else {
-                numericPart.push(origVal);
+                numericPart.push(element);
             }
         }
 
