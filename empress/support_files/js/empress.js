@@ -1828,14 +1828,34 @@ define([
 
     }
 
-    Empress.prototype.isInClade = function(x, y) {
+    /**
+     * Checks if (x, y) is within the bounds of a collapsed clade
+     *
+     * @param {Array} point (x, y) coordinates of a point
+     *
+     * @return {Number} if point is in a collapsed clade then root of the
+     *                  the collapse clade will be returned otherwise -1 is
+     *                  returned.
+     */
+    Empress.prototype.isInClade = function(point) {
         for (var clade in this._collapsedClades) {
-            if (this.isPointInClade(clade, [x, y])) {
+            if (this.isPointInClade(clade, point)) {
                 var cladeNode = this._treeData[clade];
                 return clade;
             }
         }
         return -1;
+    }
+
+    /**
+     * Returns the name of node
+     *
+     * @param {Number} node The node key in this._treeData
+     *
+     * @return {String} The name of the node
+     */
+    Empress.prototype.getName = function(node) {
+        return this._treeData[node].name;
     }
 
     return Empress;

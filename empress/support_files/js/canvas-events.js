@@ -142,24 +142,23 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 var x = treeSpace.x;
                 var y = treeSpace.y;
 
-                // margin of error for mouse click to still register a node sel
-                var epsilon = 10;
-
-                var closestDist = Infinity;
-                var closestNode = null;
-                var xDist, yDist;
-                var closeNodeKey;
-
-                var clade = empress.isInClade(x, y);
+                // check is mouse is in a clade
+                var clade = empress.isInClade([x, y]);
                 if (clade !== -1) {
                     scope.placeNodeSelectionMenu(
-                            empress._treeData[clade].name,
+                            scope.empress.getName(clade),
                             false,
                             clade
                         );
                     return;
                 }
-                //**************************************************************
+
+                // margin of error for mouse click to still register a node sel
+                var epsilon = 10;
+                var closestDist = Infinity;
+                var closestNode = null;
+                var xDist, yDist, closeNodeKey;
+
                 // Go through all the nodes in the tree and find the node
                 // closest to the (x, y) point that was clicked
                 for (var i = 1; i <= empress._tree.size; i++) {
