@@ -569,8 +569,11 @@ define([
      *
      * @param {Number} lw Amount of thickness to use, in the same "units"
      *                    that the user can enter in one of the line width
-     *                    <input>s. If this is <= 0, this function won't do
-     *                    anything.
+     *                    <input>s. If this is 0, this function won't do
+     *                    anything. (If this is < 0, this will throw an error.
+     *                    But this really shouldn't happen, since this
+     *                    parameter should be the output from
+     *                    util.parseAndValidateLineWidth().)
      */
     Empress.prototype.thickenSameSampleLines = function (lw) {
         // If lw isn't > 0, then we don't thicken colored lines at all --
