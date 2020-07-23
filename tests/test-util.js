@@ -202,6 +202,19 @@ require(["jquery", "util"], function ($, util) {
             deepEqual(split.nonNumeric, ["0.0.0", "boaty"]);
         });
 
+        test("Test isValidNumber", function () {
+            ok(util.isValidNumber("2.123"));
+            ok(util.isValidNumber("0"));
+            ok(util.isValidNumber("-0"));
+            ok(util.isValidNumber("-0"));
+            notOk(util.isValidNumber("Infinity"));
+            notOk(util.isValidNumber("-Infinity"));
+            notOk(util.isValidNumber("+Infinity"));
+            // See https://github.com/biocore/empress/pull/275#discussion_r459632660
+            notOk(util.isValidNumber("1/3"));
+            ok(util.isValidNumber("0.3333333333333"));
+        });
+
         test("Test keepUniqueKeys without removeAll", function () {
             var keys = {
                 a: new Set([1, 2, 3, 4]),
