@@ -152,7 +152,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
 
                 //**************************************************************
                 for (var clade in empress._collapsedClades) {
-                    if (empress.isPointInClade(clade, x, y)) {
+                    if (empress.isPointInClade(clade, [x, y])) {
                         var cladeNode = empress._treeData[clade];
                         scope.placeNodeSelectionMenu(
                             cladeNode.name,

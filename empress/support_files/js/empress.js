@@ -1320,10 +1320,10 @@ define([
         // collapsed (since all of its children will also have DEFAULT_COLOR)
         var inorder = this._tree.inorderNodes();
         for (var i in inorder) {
-            var node = inorder[i],
-                visible = this._treeData[node].visible,
-                color = this._treeData[node].color,
-                isTip = this._tree.isleaf(this._tree.postorderselect(node));
+            var node = inorder[i];
+            var visible = this._treeData[node].visible;
+            var color = this._treeData[node].color;
+            var isTip = this._tree.isleaf(this._tree.postorderselect(node));
 
             if (
                 visible &&
@@ -1352,13 +1352,12 @@ define([
      */
     Empress.prototype.createCollapsedCladeShape = function(rootNode) {
         // add collapsed clade to drawing buffer
-        var cladeBuffer = [],
-            curNode,
-            color = this._collapsedClades[rootNode].color,
-            cladeInfo = this._collapsedClades[rootNode],
-            x,
-            y,
-            scope = this;
+        var cladeBuffer = [];
+        var color = this._collapsedClades[rootNode].color;
+        var cladeInfo = this._collapsedClades[rootNode];
+        var scope = this;
+        var curNode, x, y;
+
 
         // Note: "left" and "right" most children are different for each layout.
         //       Unrooted:
@@ -1424,8 +1423,8 @@ define([
             var dx = this.getX(this._treeData[cladeInfo["deepest"]]);
 
             // y-coordinate of 2) and 3)
-            var ly = this.getY(this._treeData[cladeInfo["left"]]),
-                ry = this.getY(this._treeData[cladeInfo["right"]]);
+            var ly = this.getY(this._treeData[cladeInfo["left"]]);
+            var ry = this.getY(this._treeData[cladeInfo["right"]]);
             if (this._collapseMethod === "symmetric") {
                 if (Math.abs(y - ly) < Math.abs(y - ry)) {
                     ry = y + Math.abs(y - ly);
@@ -1453,18 +1452,18 @@ define([
             // The angle of the sector is determined by taking the angle of the
             // "left" or "right" most child that is closest to the root of the
             // clade and doubling it.
-            var dangle = this._treeData[cladeInfo["deepest"]].angle,
-                langle = this._treeData[cladeInfo["left"]].angle,
-                rangle = this._treeData[cladeInfo["right"]].angle,
-                totalAngle, cos, sin, sX, sY;
+            var dangle = this._treeData[cladeInfo["deepest"]].angle;
+            var langle = this._treeData[cladeInfo["left"]].angle;
+            var rangle = this._treeData[cladeInfo["right"]].angle;
+            var totalAngle, cos, sin, sX, sY;
 
             // This block finds (sX, sY) start point and total angle of the
             // sector
             x = this.getX(this._treeData[cladeInfo["deepest"]]);
             y = this.getY(this._treeData[cladeInfo["deepest"]]);
             if (this._collapseMethod === "symmetric") {
-                var nangle = this._treeData[rootNode].angle,
-                    minAngle = Math.min((nangle - langle), (rangle - nangle)),
+                var nangle = this._treeData[rootNode].angle;
+                var minAngle = Math.min((nangle - langle), (rangle - nangle)),
                 totalAngle = 2 * minAngle;
                 cos = Math.cos(nangle - minAngle - dangle);
                 sin = Math.sin(nangle - minAngle - dangle);
@@ -1563,10 +1562,10 @@ define([
                 continue;
             }
 
-            var curLeft = currentCladeInfo.left,
-                curRight = currentCladeInfo.right,
-                curDeep = currentCladeInfo.deepest,
-                length = this._tree.getTotalLength(cladeNode, rootNode);
+            var curLeft = currentCladeInfo.left;
+            var curRight = currentCladeInfo.right;
+            var curDeep = currentCladeInfo.deepest;
+            var length = this._tree.getTotalLength(cladeNode, rootNode);
 
             // update deepest node
             if (length > currentCladeInfo.length) {
@@ -1669,36 +1668,84 @@ define([
         return cladeNodes;
     };
 
-    Empress.prototype.isPointInClade = function(cladeRoot, x, y) {
+    /**
+     * Checks if the point (x, y) is within the bounds of the collapsed clade.
+     *
+     * Note: if cladeRoot is not the root of a collapsed clade then this method
+     *       will return false.
+     *
+     * @param {Number} cladeRoot The root of the clade. Note: cladeRoot should
+     *                           be a key in this._treeData
+     * @param {Array} point The x, y coordinate of the point
+     *
+     * @return {Boolean} true if point is within the bounds of the collapsed
+     *                   clade, false otherwise
+     */
+    Empress.prototype.isPointInClade = function(cladeRoot, point) {
+        // check if cladeRoot is the root of a collapsed clade
         if (!this._collapsedClades.hasOwnProperty(cladeRoot)) {
             return false;
         }
+
         var scope = this;
         var getCoords = function(node) {
             node = scope._treeData[node];
             return [scope.getX(node), scope.getY(node)];
         }
         var clade = this._collapsedClades[cladeRoot];
-        var cRoot = getCoords(cladeRoot),
-            left = getCoords(clade.left),
-            right = getCoords(clade.right),
-            deep = getCoords(clade.deepest);
+        var cRoot = getCoords(cladeRoot);
+        var left = getCoords(clade.left);
+        var right = getCoords(clade.right);
+        var deep = getCoords(clade.deepest);
         if (this._currentLayout === "Unrooted") {
+            // In Unrooted layout, to check if point is within in the collapsed
+            // clade, we first calculate the area of the collapsed clade.
+            // (The shape of the collapsed clade is a quad whose vertices are
+            // (1) root, (2) "left" most child, (3) "right" most child, and
+            // (4) "deepest" child). Next, we form four triangls whose vertices
+            // are:
+            // 1) point, (3), (4)
+            // 2) point, (4), (2)
+            // 3) point, (2), (1)
+            // 4) point, (1), (3)
+            // and sum there areas. Next, we take the difference of quad area
+            // and triangle areas. If the difference is ~0, then point is in the
+            // collapsed clade.
+            // Note: this works because the only way for the difference in areas
+            //       to be zero is if the triangles exactly overlap the
+            //       collapsed clade.
             var cladeArea = VectorOps.triangleArea(cRoot, left, right) +
                             VectorOps.triangleArea(deep, left, right);
 
             // can happen if clade has children with 0-length or clade
-            // only has a single child
+            // only has a single child. If cladeArea is 0, then the area of the
+            // four trianges will also be 0 regardless of the location of point
+            // (this is because the quad is either a point or a line). So, with
+            // out this check, if cladeArea is 0 then this funtion will always
+            // return 0
             if (cladeArea == 0) {
                 return false;
             }
             var netArea = cladeArea -
-                          VectorOps.triangleArea([x, y], right, deep) -
-                          VectorOps.triangleArea([x, y], deep, left) -
-                          VectorOps.triangleArea([x, y], left, cRoot) -
-                          VectorOps.triangleArea([x, y], cRoot, right);
+                          VectorOps.triangleArea(point, right, deep) -
+                          VectorOps.triangleArea(point, deep, left) -
+                          VectorOps.triangleArea(point, left, cRoot) -
+                          VectorOps.triangleArea(point, cRoot, right);
             return Math.abs(netArea) < 1.0e-5;
         } else if (this._currentLayout == "Rectangular") {
+            // The procedure is pretty much the same as Unrooted layout.
+            // However, since, the Rectangular layout has two different version,
+            // we need to first calculate the three vertices of the collapsed
+            // clade (denoted (1), (2), (3)). Then, similar to the Unrooted
+            // layout, we calculate the area of the collapsed clade. Next,
+            // we form three triangle whose vertices are:
+            // 1) point, (2), (3)
+            // 2) point, (3), (1)
+            // 3) point, (1), (2)
+            // and take the difference of the areas. If the difference is 0,
+            // then the point is within the collapsed clade.
+
+            // find vertices of clade
             if (this._collapseMethod === "symmetric") {
                 if (Math.abs(cRoot[1] - left[1]) <
                     Math.abs(cRoot[1] - right[1])
@@ -1708,9 +1755,11 @@ define([
                     left[1] = cRoot[1] - Math.abs(cRoot[1] - right[1]);
                 }
             }
-            var cladeArea = VectorOps.triangleArea(cRoot,
-                                                   [deep[0], left[1]],
-                                                   [deep[0], right[1]]);
+            var cladeArea = VectorOps.triangleArea(
+                cRoot,
+                [deep[0], left[1]],
+                [deep[0], right[1]]
+            );
 
             // can happen if clade has children with 0-length or clade
             // only has a single child
@@ -1718,20 +1767,30 @@ define([
                 return false;
             }
             var netArea = cladeArea -
-                          VectorOps.triangleArea([x, y],
+                          VectorOps.triangleArea(point,
                                                  [deep[0], right[1]],
                                                  [deep[0], left[1]]) -
-                          VectorOps.triangleArea([x, y],
+                          VectorOps.triangleArea(point,
                                                  [deep[0], left[1]],
                                                  cRoot) -
-                          VectorOps.triangleArea([x, y],
+                          VectorOps.triangleArea(point,
                                                  cRoot,
                                                  [deep[0], right[1]]);
             return Math.abs(netArea) < 1.0e-5;
         } else {
-            var totalAngle = clade.totalAngle,
-                cos = Math.cos(totalAngle),
-                sin = Math.sin(totalAngle);
+            // For Circular layou, we "use" Polar coordinates to determine if
+            // point is in the clade. The idea behind this method is to
+            // calculate the angle of the "left" and "right" most children in
+            // the clade (we consider the root of the clade to be thec origin)
+            // and also calculate the distance from the root of the tree
+            // to the "deepest" node in the clade. Then we calculate the angle
+            // of point and its distance to the root of the tree. if the angle
+            // of point is within the range of the "left" and "right" and its
+            // distance is less than the distance to the "deepest" node then,
+            // point is within the bounds of the collapsed clade.
+            var totalAngle = clade.totalAngle;
+            var cos = Math.cos(totalAngle);
+            var sin = Math.sin(totalAngle);
 
             left = [clade.sX, clade.sY];
             right[0] = left[0] * cos - left[1] * sin;
@@ -1751,11 +1810,11 @@ define([
                     radian: radian,
                     mag: VectorOps.magnitude(p),
                 };
-            }
+            };
 
-            var leftPoint = getAngleAndMagnitude(left),
-                rightPoint = getAngleAndMagnitude(right),
-                point = getAngleAndMagnitude([x, y]);
+            var leftPoint = getAngleAndMagnitude(left);
+            var rightPoint = getAngleAndMagnitude(right);
+            var point = getAngleAndMagnitude(point);
             if (leftPoint.radian > rightPoint.radian) {
                 rightPoint.radian += 2 * Math.PI;
                 if (leftPoint.radian > point.radian) {
