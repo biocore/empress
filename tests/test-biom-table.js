@@ -1,4 +1,4 @@
-require(["jquery", "BiomTable"], function ($, BiomTable) {
+require(["jquery", "underscore", "BiomTable"], function ($, _, BiomTable) {
     $(document).ready(function () {
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray without
@@ -379,46 +379,34 @@ require(["jquery", "BiomTable"], function ($, BiomTable) {
         });
 
         test("Test getObsBy", function () {
-            var obsReturned = this.biomTable.getObsBy("f1");
-            var keys = Object.keys(obsReturned);
+            // Sorts the array values in obs, since we don't care about order.
+            // (Note that this is alphabetical order, so e.g. "o10" will come
+            // after "o1" instead of "o2".)
+            // Approach based on https://stackoverflow.com/a/38632424/10730311.
+            var sortObs = function (obs) {
+                return _.mapObject(obs, function(arr) {
+                    return arr.sort();
+                });
+            };
 
-            // convert obsReturned elements (which are arrays) to Set since
-            // getObsBy uses Sets and then converts the Sets to arrays.
-            // The conversion does not keep order so converting the result back
-            // to Sets makes validation easier.
-            for (var i = 0; i < keys.length; i++) {
-                obsReturned[keys[i]] = new Set(obsReturned[keys[i]]);
-            }
+            var obsReturned = this.biomTable.getObsBy("f1");
             deepEqual(
-                obsReturned,
+                sortObs(obsReturned),
                 {
-                    a: new Set([
-                        "o1",
-                        "o2",
-                        "o3",
-                        "o4",
-                        "o5",
-                        "o6",
-                        "o7",
-                        "o10",
-                    ]),
-                    b: new Set(["o4", "o5", "o8"]),
-                    c: new Set(["o2", "o3", "o6"]),
+                    a: ["o1", "o10", "o2", "o3", "o4", "o5", "o6", "o7", "o9"],
+                    b: ["o4", "o5", "o8"],
+                    c: ["o2", "o3", "o6"]
                 },
-                "Test: find observations in f1 "
+                "Test: find observations in f1"
             );
 
             obsReturned = this.biomTable.getObsBy("f3");
-            keys = Object.keys(obsReturned);
-            for (i = 0; i < keys.length; i++) {
-                obsReturned[keys[i]] = new Set(obsReturned[keys[i]]);
-            }
             deepEqual(
-                obsReturned,
+                sortObs(obsReturned),
                 {
-                    h: new Set([["o5", "o8"]]),
-                    i: new Set(),
-                    j: new Set(),
+                    h: ["o5", "o8"],
+                    i: ["o1", "o10", "o2", "o4", "o5", "o7"],
+                    j: ["o1", "o2", "o3", "o4", "o5", "o6", "o7", "o8", "o9"]
                 },
                 "Test: find observations in f3"
             );
@@ -562,7 +550,7 @@ require(["jquery", "BiomTable"], function ($, BiomTable) {
             deepEqual(
                 obsReturned,
                 {
-                    3: new Set([["o1", "o3", "o5", "o6", "o7", "o9"]]),
+                    3: new Set(["o1", "o3", "o5", "o6", "o7", "o9"]),
                     4: new Set(["o1", "o2", "o4", "o5", "o7", "o10"]),
                 },
                 "Test gradient a trajectory f4"
