@@ -131,7 +131,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 sColor: { value: "discrete-coloring-qiime" },
                 sCollapseCladesChk: { checked: false },
                 sLineWidth: { value: 0 },
-                sCollapseCladesChk: { checked: false},
+                sCollapseCladesChk: { checked: false },
             },
             [this.sAddOpts, this.sUpdateBtn]
         );
@@ -146,7 +146,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 fColor: { value: "discrete-coloring-qiime" },
                 fLineWidth: { value: 0 },
                 fMethodChk: { checked: true },
-                fCollapseCladesChk: { checked: false},
+                fCollapseCladesChk: { checked: false },
             },
             [this.fAddOpts, this.fUpdateBtn]
         );
@@ -379,9 +379,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.recenterBtn.onclick = function () {
             scope.empress.centerLayoutAvgPoint();
         };
-        var updateCladeCollapseMethod = function() {
+        var updateCladeCollapseMethod = function () {
             scope.empress.updateCollapseMethod(this.value);
-        }
+        };
         this.normalCladeMethod.onclick = updateCladeCollapseMethod;
         this.symmetricCladeMethod.onclick = updateCladeCollapseMethod;
     };

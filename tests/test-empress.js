@@ -39,92 +39,6 @@ require([
                 // make testing easier.
                 var treeData = {
                     7: {
-<<<<<<< HEAD
-                        "color":[1.0, 1.0, 1.0],
-                        "inSample": false,
-                        "xr": 13,
-                        "yr": 14,
-                        "xc2": 27,
-                        "yc2": 28,
-                        "x2": 41,
-                        "y2": 42,
-                        "name": "root",
-                        "visible": true
-                    },
-                    6: {
-                        "color":[1.0, 1.0, 1.0],
-                        "inSample": false,
-                        "xr": 11,
-                        "yr": 12,
-                        "xc2": 25,
-                        "yc2": 26,
-                        "x2": 39,
-                        "y2": 40,
-                        "name": "EmpressNode6",
-                        "visible": true
-                    },
-                    5: {
-                        "color":[1.0, 1.0, 1.0],
-                        "inSample": false,
-                        "xr": 9,
-                        "yr": 10,
-                        "xc2": 23,
-                        "yc2": 24,
-                        "x2": 37,
-                        "y2": 38,
-                        "name": "internal",
-                        "visible": true
-                    },
-                    4: {
-                        "color":[1.0, 1.0, 1.0],
-                        "inSample": false,
-                        "xr": 7,
-                        "yr": 8,
-                        "xc2": 21,
-                        "yc2": 22,
-                        "x2": 35,
-                        "y2": 36,
-                        "name": "internal",
-                        "visible": true
-                    },
-                    2: {
-                        "color":[1.0, 1.0, 1.0],
-                        "inSample": false,
-                        "xr": 3,
-                        "yr": 4,
-                        "xc2": 17,
-                        "yc2": 18,
-                        "x2": 31,
-                        "y2": 32,
-                        "name": "2",
-                        "visible": true
-                    },
-                    3: {
-                        "color":[1.0, 1.0, 1.0],
-                        "inSample": false,
-                        "xr": 5,
-                        "yr": 6,
-                        "xc2": 19,
-                        "yc2": 20,
-                        "x2": 33,
-                        "y2": 34,
-                        "name": "3",
-                        "visible": true
-                    },
-                    1: {
-                        "color":[1.0, 1.0, 1.0],
-                        "inSample": false,
-                        "xr": 1,
-                        "yr": 2,
-                        "xc2": 15,
-                        "yc2": 16,
-                        "x2": 29,
-                        "y2": 30,
-                        "name": "1",
-                        "visible": true
-                    }
-
-=======
                         color: [1.0, 1.0, 1.0],
                         xr: 13,
                         yr: 14,
@@ -133,6 +47,7 @@ require([
                         x2: 41,
                         y2: 42,
                         name: "root",
+                        visible: true,
                     },
                     6: {
                         color: [1.0, 1.0, 1.0],
@@ -143,6 +58,7 @@ require([
                         x2: 39,
                         y2: 40,
                         name: "EmpressNode6",
+                        visible: true,
                     },
                     5: {
                         color: [1.0, 1.0, 1.0],
@@ -153,6 +69,7 @@ require([
                         x2: 37,
                         y2: 38,
                         name: "internal",
+                        visible: true,
                     },
                     4: {
                         color: [1.0, 1.0, 1.0],
@@ -163,6 +80,7 @@ require([
                         x2: 35,
                         y2: 36,
                         name: "internal",
+                        visible: true,
                     },
                     2: {
                         color: [1.0, 1.0, 1.0],
@@ -173,6 +91,7 @@ require([
                         x2: 31,
                         y2: 32,
                         name: "2",
+                        visible: true,
                     },
                     3: {
                         color: [1.0, 1.0, 1.0],
@@ -183,6 +102,7 @@ require([
                         x2: 33,
                         y2: 34,
                         name: "3",
+                        visible: true,
                     },
                     1: {
                         color: [1.0, 1.0, 1.0],
@@ -193,8 +113,8 @@ require([
                         x2: 29,
                         y2: 30,
                         name: "1",
+                        visible: true,
                     },
->>>>>>> 3a6bf88211621e7b4fd11c99568bac8fe25a715b
                 };
                 // data for the BiomTable object
                 // (These IDs / indices aren't assigned in any particular
@@ -651,6 +571,7 @@ require([
                 var key = keys[i];
                 deepEqual(e._treeData[key].color, e.DEFAULT_COLOR);
                 equal(e._treeData[key].sampleColored, false);
+                equal(e._treeData[key].visible, true);
             }
         });
 
@@ -765,75 +686,114 @@ require([
             );
         });
 
-        test("Test collapseClades", function() {
-            // red should be a collapsable clade
+        test("Test collapseClades", function () {
+            // red should be the only collapsable clade
             var obs = {
-                'red': new Set([2,3,4]),
-                'blue': new Set([1, 6])
-            }
+                red: new Set([2, 3, 4]),
+                blue: new Set([1, 5, 6, 7]),
+            };
             var cm = {
-                'red': [1, 0, 0],
-                'blue': [0, 0, 1]
-            }
+                red: [1, 0, 0],
+                blue: [0, 0, 1],
+            };
             this.empress._colorTree(obs, cm);
             this.empress.collapseClades();
+
+            // make sure .visible property of nodes in the collapsed is false
             var collapsed = new Set([2, 3]);
             for (var i = 1; i <= this.empress._tree.size; i++) {
                 if (collapsed.has(i)) {
                     deepEqual(
                         this.empress._treeData[i].visible,
                         false,
-                        "Test: node "+ i + " should be invisible"
+                        "Test: node " + i + " should be invisible"
                     );
                 } else {
                     deepEqual(
                         this.empress._treeData[i].visible,
                         true,
                         "Test: node " + i + " should be visible"
-                    )
+                    );
                 }
             }
+
+            // make sure the correct the correct collapsed clade buffer has the
+            // correct shape.
             var collapseClades = [
-                35, 36, 1, 0, 0,
-                33, 34, 1, 0, 0,
-                31, 32, 1, 0, 0,
-                35, 36, 1, 0, 0,
-                33, 34, 1, 0, 0,
-                33, 34, 1, 0, 0,]
+                35,
+                36,
+                1,
+                0,
+                0,
+                33,
+                34,
+                1,
+                0,
+                0,
+                31,
+                32,
+                1,
+                0,
+                0,
+                35,
+                36,
+                1,
+                0,
+                0,
+                33,
+                34,
+                1,
+                0,
+                0,
+                33,
+                34,
+                1,
+                0,
+                0,
+            ];
             deepEqual(this.empress._collapsedCladeBuffer, collapseClades);
 
-            // // nothing should be collapsed.
-            // this.empress.resetTree();
-            // obs = {
-            //     'red': new Set([1, 2, 3]),
-            //     'blue': new Set([])
-            // }
-            // cm = {
-            //     'red': [1, 0, 0],
-            //     'blue': [0, 0, 1]
-            // }
-            // this.empress._colorTree(obs, cm);
-            // this.empress.collapseClades();
-            // for (var i = 1; i <= this.empress._tree.size; i++) {
-            //     deepEqual(
-            //         this.empress._treeData[i].visible,
-            //         true,
-            //         "Test: node belongs to collapsed clade => invisible"
-            //     );
-            // }
+            // nothing should be collapsed.
+            this.empress.resetTree();
+            obs = {
+                red: new Set([1, 2, 3]),
+                blue: new Set([]),
+            };
+            cm = {
+                red: [1, 0, 0],
+                blue: [0, 0, 1],
+            };
+            this.empress._colorTree(obs, cm);
+            this.empress.collapseClades();
+            for (var i = 1; i <= this.empress._tree.size; i++) {
+                deepEqual(
+                    this.empress._treeData[i].visible,
+                    true,
+                    "Test: node belongs to collapsed clade => invisible"
+                );
+            }
 
+            // make sure nothing is in the buffer
+            ok(this.empress._collapsedCladeBuffer.length == 0);
         });
 
-        test("Test getCladeNodes", function() {
+        test("Test getCladeNodes", function () {
             deepEqual(
-                this.empress.getCladeNodes(4),
-                [2, 3, 4]
+                this.empress.getCladeNodes(5),
+                [1, 2, 3, 4, 5],
+                "valid node"
             );
 
-            deepEqual(
-                this.empress.getCladeNodes(2),
-                [2]
-            );
-        })
+            throws(function () {
+                this.empress.getCladeNodes(-1);
+            });
+        });
+
+        test("Test getName", function () {
+            deepEqual(this.empress.getName(7), "root", "Should be root");
+            throws(function () {
+                this.empress.getName(-1);
+            });
+        });
     });
 });

@@ -589,10 +589,10 @@ define(["ByteArray"], function (ByteArray) {
     /**
      * Finds the sum of lengths from start to end.
      *
-     * Note: start must be a descendant of end but this function does not
-     *       verify this. Also, this method does not take into account the
-     *       length of end since that length would represent the length of end
-     *       to its parent.
+     * Note: start must be a descendant of end. An error will be thrown if start
+     *       is not a descendant of end. Also, this method does not take into
+     *       account the length of end since that length would represent the
+     *       length of end to its parent.
      *
      * @param {Number} start The postorder position of a node
      * @param {Number} end The postorder position of a node
@@ -600,15 +600,16 @@ define(["ByteArray"], function (ByteArray) {
      * @return {Number} the sum of length from start to end
      */
     BPTree.prototype.getTotalLength = function (start, end) {
-        var curNode = start,
-            totalLength = 0;
+        var curNode = start;
+        var totalLength = 0;
         while (curNode !== end) {
-            totalLength += this.length(
-                this.postorderselect(curNode)
-            );
+            totalLength += this.length(this.postorderselect(curNode));
             curNode = this.postorder(
                 this.parent(this.postorderselect(curNode))
             );
+            if (curNode === -1) {
+                throw "Node " + start + " must be a descendant of " + end;
+            }
         }
         return totalLength;
     };

@@ -18,6 +18,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.colorSelect = document.getElementById("animate-color-select");
         this.gradient = document.getElementById("animate-gradient");
         this.trajectory = document.getElementById("animate-trajectory");
+        this.collapseChk = document.getElementById("animate-collapse-chk");
         this.lWidth = document.getElementById("animate-line-width");
         this.startBtn = document.getElementById("animate-start-btn");
         this.stopBtn = document.getElementById("animate-stop-btn");
@@ -129,6 +130,15 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.trajectory.innerHTML = options;
 
         /**
+         * Event: triggers when user changes value of collapse check box
+         * Sets collapse parameter in the animation state machine
+         */
+        this.collapseChk.onclick = function () {
+            scope.animator.setCollapse(this.checked);
+            scope.animator.drawFrame();
+        };
+
+        /**
          * Event: triggers when user changes value of line width.
          * Sets line width parameter in animation state machine.
          */
@@ -136,6 +146,7 @@ define(["Colorer", "util"], function (Colorer, util) {
             var lw = util.parseAndValidateLineWidth(scope.lWidth);
             // pass line width to state machine
             scope.animator.setLineWidth(lw);
+            scope.animator.drawFrame();
         };
 
         /**
@@ -153,6 +164,7 @@ define(["Colorer", "util"], function (Colorer, util) {
             var gradient = scope.gradient.value;
             var trajectory = scope.trajectory.value;
             var cm = scope.colorSelect.value;
+            var collapse = scope.collapseChk.checked;
             var lWidth = scope.lWidth.value;
 
             // pass parameters to state machine
@@ -160,7 +172,7 @@ define(["Colorer", "util"], function (Colorer, util) {
                 trajectory,
                 gradient,
                 cm,
-                hide,
+                collapse,
                 lWidth
             );
 

@@ -949,15 +949,6 @@ define([
         var keyInfo = colorer.getMapHex();
 
         // Do upwards propagation only if the coloring method is "tip"
-        // TODO / NOTE: _projectObservations() sets the .inSample property of
-        // features that are colored with metadata. This is "wrong," in the
-        // sense that samples don't really have anything to do with feature
-        // metadata coloring, but I don't *think* this will impact things
-        // because I think resetTree() should be called before any other
-        // coloring operations would be done. However, would be good to test
-        // things -- or at least to rename a lot of these coloring utilities
-        // to talk about "groups" rather than "samples", esp. since I think
-        // animation has the same problem...
         if (method === "tip") {
             obs = this._projectObservations(obs);
         }
@@ -1026,7 +1017,6 @@ define([
 
                 // add internal nodes to groups
                 if (obs[category].has(node)) {
-                    // this._treeData[node].inSample = true;
                     obs[category].add(parent);
                 }
                 if (notRepresented.has(node)) {
@@ -1077,7 +1067,6 @@ define([
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
             this._treeData[key].color = this.DEFAULT_COLOR;
-            // this._treeData[key].inSample = false;
             this._treeData[key].sampleColored = false;
             this._treeData[key].visible = true;
         }
@@ -1311,26 +1300,30 @@ define([
         var group = new Array(this._tree.size + 1);
         var numGroup = 0;
         var colorToNum = {};
-        for (var i = 1; i <=this._tree.size; i++) {
+        var color;
+        for (var i = 1; i <= this._tree.size; i++) {
             var parent = this._tree.postorder(
                 this._tree.parent(this._tree.postorderselect(i))
             );
-            var color = this._treeData[i].color;
+            color = this._treeData[i].color;
             if (!colorToNum.hasOwnProperty(color)) {
                 colorToNum[color] = numGroup++;
             }
 
-            var findGroup = function(node) {
-                if (group[node] === undefined) {
-                    group[node] = colorToNum[color];
-                } else if (group[node] !== colorToNum[color]) {
-                    group[node] = -1;
-                }
+            if (group[i] === undefined) {
+                group[i] = colorToNum[color];
+            } else if (group[i] !== colorToNum[color]) {
+                group[i] = -1;
             }
-            findGroup(i);
-            findGroup(parent);
-        }
 
+            if (group[i] === -1) {
+                group[parent] = -1;
+            } else if (group[parent] === undefined) {
+                group[parent] = colorToNum[color];
+            } else if (group[parent] !== group[i]) {
+                group[parent] = -1;
+            }
+        }
         // 2) Collapse the clades
         // To accomplish this, we will iterate the tree in a inorder fashion.
         // Once a internal node is reached that belongs to a group (i.e. not -1)
@@ -1341,10 +1334,10 @@ define([
         // Note: if the root of a clade has DEFUALT_COLOR then it will not be
         // collapsed (since all of its children will also have DEFAULT_COLOR)
         var inorder = this._tree.inorderNodes();
-        for (var i in inorder) {
-            var node = inorder[i];
+        for (var node in inorder) {
+            node = inorder[node];
             var visible = this._treeData[node].visible;
-            var color = this._treeData[node].color;
+            color = this._treeData[node].color;
             var isTip = this._tree.isleaf(this._tree.postorderselect(node));
 
             if (
@@ -1353,7 +1346,7 @@ define([
                 group[node] !== -1 &&
                 color !== this.DEFAULT_COLOR
             ) {
-                this.collapsedClade(node);
+                this._collapseClade(node);
             }
         }
     };
@@ -1372,14 +1365,13 @@ define([
      *
      * @param {Number} rootNode The root of the clade
      */
-    Empress.prototype.createCollapsedCladeShape = function(rootNode) {
+    Empress.prototype.createCollapsedCladeShape = function (rootNode) {
         // add collapsed clade to drawing buffer
         var cladeBuffer = [];
         var color = this._collapsedClades[rootNode].color;
         var cladeInfo = this._collapsedClades[rootNode];
         var scope = this;
         var curNode, x, y;
-
 
         // Note: "left" and "right" most children are different for each layout.
         //       Unrooted:
@@ -1391,15 +1383,13 @@ define([
         //      Circular:
         //          left  - the tip with the smallest angle
         //          right - the tip with the largest angle
-        var addPoint = function(point) {
+        var addPoint = function (point) {
             cladeBuffer.push(...point, ...color);
-        }
-        var getCoords = function(node) {
-            node = scope._treeData[node],
-            x = scope.getX(node),
-            y = scope.getY(node);
-            return [x,y];
-        }
+        };
+        var getCoords = function (node) {
+            node = scope._treeData[node];
+            return [scope.getX(node), scope.getY(node)];
+        };
         if (this._currentLayout === "Unrooted") {
             // Unrooted collasped clade is a quadrilateral whose vertices are
             // 1) root of clade, 2) "left" most node, 3) "right" most node, and
@@ -1409,20 +1399,20 @@ define([
             // triangle from 1, 4, 3
 
             // input is either "left" most or "right" most child
-            var addTriangle = function(child) {
+            var addTriangle = function (child) {
                 // cladeBuffer.push(...getCoords(rootNode), ...color);
                 // cladeBuffer.push(...getCoords(cladeInfo["deepest"]), ...color);
                 // cladeBuffer.push(...getCoords(child), ...color);
                 addPoint(getCoords(rootNode));
-                addPoint(getCoords(cladeInfo["deepest"]));
+                addPoint(getCoords(cladeInfo.deepest));
                 addPoint(getCoords(child));
-            }
+            };
 
             // triangle from 1, 4, 2
-            addTriangle(cladeInfo["left"]);
+            addTriangle(cladeInfo.left);
 
             // triangle from 1, 4, 3
-            addTriangle(cladeInfo["right"]);
+            addTriangle(cladeInfo.right);
         } else if (this._currentLayout === "Rectangular") {
             // Rectangular layou is a triangle. Symmetric version is used if
             // this._collapseMethod === "symmetric"
@@ -1439,6 +1429,7 @@ define([
 
             // root of the clade
             addPoint(getCoords(rootNode));
+            y = this.getY(this._treeData[rootNode]);
 
             // The x coordinate of 2) and 3) will be set to the x-coordinate of
             // the "deepest" node.
@@ -1485,8 +1476,8 @@ define([
             y = this.getY(this._treeData[cladeInfo["deepest"]]);
             if (this._collapseMethod === "symmetric") {
                 var nangle = this._treeData[rootNode].angle;
-                var minAngle = Math.min((nangle - langle), (rangle - nangle)),
-                totalAngle = 2 * minAngle;
+                var minAngle = Math.min(nangle - langle, rangle - nangle),
+                    totalAngle = 2 * minAngle;
                 cos = Math.cos(nangle - minAngle - dangle);
                 sin = Math.sin(nangle - minAngle - dangle);
                 sX = x * cos - y * sin;
@@ -1497,12 +1488,12 @@ define([
                 sin = Math.sin(langle - dangle);
                 sX = x * cos - y * sin;
                 sY =
-                    x * Math.sin(langle - dangle) + y * Math.cos(langle - dangle);
+                    x * Math.sin(langle - dangle) +
+                    y * Math.cos(langle - dangle);
             }
             cladeInfo.sX = sX;
             cladeInfo.sY = sY;
             cladeInfo.totalAngle = totalAngle;
-
 
             // create 15 triangles to approximate sector
             var deltaAngle = totalAngle / 15;
@@ -1513,7 +1504,7 @@ define([
 
                 x = sX * cos - sY * sin;
                 y = sX * sin + sY * cos;
-                addPoint([x, y])
+                addPoint([x, y]);
 
                 cos = Math.cos((line + 1) * deltaAngle);
                 sin = Math.sin((line + 1) * deltaAngle);
@@ -1524,7 +1515,7 @@ define([
         }
 
         this._collapsedCladeBuffer.push(...cladeBuffer);
-    }
+    };
 
     /**
      * Collapse the clade at rootNode
@@ -1543,7 +1534,7 @@ define([
      * @param {Number} rootNode The root of the clade. Note: This is the key
      *                          in _treeData.
      */
-    Empress.prototype.collapsedClade = function (rootNode) {
+    Empress.prototype._collapseClade = function (rootNode) {
         // There are four steps to collapse the clade. 1) find all nodes in the
         // clade, 2) find the "left", "right" and deepest node in the clade,
         // 3) set the .visible property of all nodes in the clade (except
@@ -1558,7 +1549,6 @@ define([
         //      Circular:
         //          left  - the tip with the smallest angle
         //          right - the tip with the largest angle
-
 
         // step 1: find all nodes in the clade.
         // Note: cladeNodes is an array of nodes arranged in postorder fashion
@@ -1638,14 +1628,14 @@ define([
      * @param{String} method The collapse method. An error will be thrown if
      *                       this is not either 'symmetric' or 'normal'
      */
-    Empress.prototype.updateCollapseMethod = function(method) {
+    Empress.prototype.updateCollapseMethod = function (method) {
         // do nothing
         if (method === this._collapseMethod) {
             return;
         }
 
         if (method !== "normal" && method !== "symmetric") {
-            throw method + " is not a clade collapse method."
+            throw method + " is not a clade collapse method.";
         }
 
         this._collapseMethod = method;
@@ -1654,7 +1644,7 @@ define([
             this.createCollapsedCladeShape(cladeRoot);
         }
         this.drawTree();
-    }
+    };
 
     /**
      * Returns all nodes in the clade whose root is node.
@@ -1662,11 +1652,15 @@ define([
      * Note: elements in the returned array are keys in this._treeData
      *       also, the returned array is sorted in a postorder fashion
      *
-     * @param {Number} cladeRoot The root of the clade
+     * @param {Number} cladeRoot The root of the clade. An error is thrown if
+     *                           cladeRoot is not a valid node.
      *
      * @return {Array} The nodes in the clade
      */
-    Empress.prototype.getCladeNodes = function(cladeRoot) {
+    Empress.prototype.getCladeNodes = function (cladeRoot) {
+        if (!this._treeData.hasOwnProperty(cladeRoot)) {
+            throw cladeRoot + " is not a valid node.";
+        }
         // stores the clade nodes
         var cladeNodes = [];
 
@@ -1703,17 +1697,17 @@ define([
      * @return {Boolean} true if point is within the bounds of the collapsed
      *                   clade, false otherwise
      */
-    Empress.prototype.isPointInClade = function(cladeRoot, point) {
+    Empress.prototype._isPointInClade = function (cladeRoot, point) {
         // check if cladeRoot is the root of a collapsed clade
         if (!this._collapsedClades.hasOwnProperty(cladeRoot)) {
             return false;
         }
 
         var scope = this;
-        var getCoords = function(node) {
+        var getCoords = function (node) {
             node = scope._treeData[node];
             return [scope.getX(node), scope.getY(node)];
-        }
+        };
         var clade = this._collapsedClades[cladeRoot];
         var cRoot = getCoords(cladeRoot);
         var left = getCoords(clade.left);
@@ -1736,8 +1730,9 @@ define([
             // Note: this works because the only way for the difference in areas
             //       to be zero is if the triangles exactly overlap the
             //       collapsed clade.
-            var cladeArea = VectorOps.triangleArea(cRoot, left, right) +
-                            VectorOps.triangleArea(deep, left, right);
+            var cladeArea =
+                VectorOps.triangleArea(cRoot, left, right) +
+                VectorOps.triangleArea(deep, left, right);
 
             // can happen if clade has children with 0-length or clade
             // only has a single child. If cladeArea is 0, then the area of the
@@ -1748,11 +1743,12 @@ define([
             if (cladeArea == 0) {
                 return false;
             }
-            var netArea = cladeArea -
-                          VectorOps.triangleArea(point, right, deep) -
-                          VectorOps.triangleArea(point, deep, left) -
-                          VectorOps.triangleArea(point, left, cRoot) -
-                          VectorOps.triangleArea(point, cRoot, right);
+            var netArea =
+                cladeArea -
+                VectorOps.triangleArea(point, right, deep) -
+                VectorOps.triangleArea(point, deep, left) -
+                VectorOps.triangleArea(point, left, cRoot) -
+                VectorOps.triangleArea(point, cRoot, right);
             return Math.abs(netArea) < 1.0e-5;
         } else if (this._currentLayout == "Rectangular") {
             // The procedure is pretty much the same as Unrooted layout.
@@ -1769,8 +1765,8 @@ define([
 
             // find vertices of clade
             if (this._collapseMethod === "symmetric") {
-                if (Math.abs(cRoot[1] - left[1]) <
-                    Math.abs(cRoot[1] - right[1])
+                if (
+                    Math.abs(cRoot[1] - left[1]) < Math.abs(cRoot[1] - right[1])
                 ) {
                     right[1] = cRoot[1] + Math.abs(cRoot[1] - left[1]);
                 } else {
@@ -1788,16 +1784,15 @@ define([
             if (cladeArea == 0) {
                 return false;
             }
-            var netArea = cladeArea -
-                          VectorOps.triangleArea(point,
-                                                 [deep[0], right[1]],
-                                                 [deep[0], left[1]]) -
-                          VectorOps.triangleArea(point,
-                                                 [deep[0], left[1]],
-                                                 cRoot) -
-                          VectorOps.triangleArea(point,
-                                                 cRoot,
-                                                 [deep[0], right[1]]);
+            var netArea =
+                cladeArea -
+                VectorOps.triangleArea(
+                    point,
+                    [deep[0], right[1]],
+                    [deep[0], left[1]]
+                ) -
+                VectorOps.triangleArea(point, [deep[0], left[1]], cRoot) -
+                VectorOps.triangleArea(point, cRoot, [deep[0], right[1]]);
             return Math.abs(netArea) < 1.0e-5;
         } else {
             // For Circular layou, we "use" Polar coordinates to determine if
@@ -1817,10 +1812,10 @@ define([
             left = [clade.sX, clade.sY];
             right[0] = left[0] * cos - left[1] * sin;
             right[1] = left[0] * sin + left[1] * cos;
-            var getAngleAndMagnitude = function(p) {
+            var getAngleAndMagnitude = function (p) {
                 var angle = VectorOps.getAngle([
                     p[0] - cRoot[0],
-                    p[1] - cRoot[1]
+                    p[1] - cRoot[1],
                 ]);
                 var radian = Math.asin(angle.sin);
                 if (angle.cos < 0) {
@@ -1843,12 +1838,13 @@ define([
                     point.radian += 2 * Math.PI;
                 }
             }
-            return point.radian >= leftPoint.radian &&
-                   point.radian <= rightPoint.radian &&
-                   point.mag <= leftPoint.mag;
+            return (
+                point.radian >= leftPoint.radian &&
+                point.radian <= rightPoint.radian &&
+                point.mag <= leftPoint.mag
+            );
         }
-
-    }
+    };
 
     /**
      * Checks if (x, y) is within the bounds of a collapsed clade
@@ -1859,26 +1855,30 @@ define([
      *                  the collapse clade will be returned otherwise -1 is
      *                  returned.
      */
-    Empress.prototype.isInClade = function(point) {
+    Empress.prototype.isInAClade = function (point) {
         for (var clade in this._collapsedClades) {
-            if (this.isPointInClade(clade, point)) {
+            if (this._isPointInClade(clade, point)) {
                 var cladeNode = this._treeData[clade];
                 return clade;
             }
         }
         return -1;
-    }
+    };
 
     /**
      * Returns the name of node
      *
-     * @param {Number} node The node key in this._treeData
+     * @param {Number} node The node key in this._treeData. An error will be
+     *                      thrown if it is not a key in this._treeData
      *
      * @return {String} The name of the node
      */
-    Empress.prototype.getName = function(node) {
+    Empress.prototype.getName = function (node) {
+        if (!this._treeData.hasOwnProperty(node)) {
+            throw node + " is not a key in _treeData";
+        }
         return this._treeData[node].name;
-    }
+    };
 
     return Empress;
 });
