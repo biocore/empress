@@ -4,10 +4,10 @@
 
   <title>Test suite</title>
 
-   <link rel="stylesheet" href="vendor/qunit-min.css">
+   <link rel="stylesheet" href="vendor/qunit-1.23.1.css">
 
   <!-- Use qunit to help run tests -->
-  <script src="vendor/qunit-min.js"></script>
+  <script src="vendor/qunit-1.23.1.js"></script>
 
   <!-- Use requireJS to help make test modular -->
   <script src="../empress/support_files/vendor/require-2.1.22.min.js"></script>
@@ -19,6 +19,7 @@
 
   <!-- add any test GUI components to this div-->
   <div id="test-div"></div>
+  <input id="test-num-input" type="number">
 
   <!-- The tree canvas need for use in test-empress-->
   <div id="tree-container" class="{{ emperor_classes }}">
@@ -39,7 +40,7 @@
         // not be used
         'paths' : {
           /* vendor paths */
-          'jquery' : './support_files/vendor/jquery-2.2.4.min',
+          'jquery' : './../tests/vendor/jquery-2.2.4.min',
           'glMatrix' : './support_files/vendor/gl-matrix.min',
           'chroma' : './support_files/vendor/chroma.min',
           'underscore' : './support_files/vendor/underscore-min',
