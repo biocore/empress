@@ -84,9 +84,6 @@ define([
          * The default color of the tree
          */
         this.DEFAULT_COLOR = [0.75, 0.75, 0.75];
-        this.DEFAULT_COLOR_HEX = "#c0c0c0";
-
-        this.DEFAULT_BRANCH_VAL = 1;
 
         /**
          * @type {BPTree}
@@ -171,11 +168,13 @@ define([
          * Maps tree layouts to the average point of each layout
          */
         this.layoutAvgPoint = {};
+
         /**
          * @type{Number}
-         * The line width used for drawing "thick" lines.
+         * The (not-yet-scaled) line width used for drawing "thick" lines.
+         * Can be passed as input to this.thickenSameSampleLines().
          */
-        this._currentLineWidth = 1;
+        this._currentLineWidth = 0;
 
         /**
          * @type{CanvasEvents}
@@ -284,7 +283,7 @@ define([
             // |   +-
             // |
             // +--------
-            var leafAndRootCt = this._tree.numleafs() + 1;
+            var leafAndRootCt = this._tree.numleaves() + 1;
             numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
         } else if (this._currentLayout === "Circular") {
             // All internal nodes (except root which is just a point) have an
@@ -295,7 +294,7 @@ define([
             // i.e. 3 lines for the leaves and 16 * (5 - 3 - 1) lines for the
             // internal nodes. The -1 is there because we do not draw a line
             // for the root.
-            var leafCt = this._tree.numleafs();
+            var leafCt = this._tree.numleaves();
             numLines = leafCt + 16 * (this._tree.size - leafCt - 1);
         } else {
             // the root is not drawn in the unrooted layout
@@ -562,31 +561,31 @@ define([
      *                        passed to Drawer.loadSampleThickBuf().
      * @param {Number} node   Node index in this._treeData, from which we'll
      *                        retrieve coordinate information.
-     * @param {Number} level Desired line thickness (note that this will be
-     *                       applied on both sides of the line -- so if
-     *                       level = 1 here then the drawn thick line will
-     *                       have a width of 1 + 1 = 2).
+     * @param {Number} lwScaled Desired line thickness (note that this will be
+     *                          applied on both sides of the line -- so if
+     *                          lwScaled = 1 here then the drawn thick line
+     *                          will have a width of 1 + 1 = 2).
      */
     Empress.prototype._addThickVerticalLineCoords = function (
         coords,
         node,
-        level
+        lwScaled
     ) {
         var corners = {
             tL: [
-                this.getX(this._treeData[node]) - level,
+                this.getX(this._treeData[node]) - lwScaled,
                 this._treeData[node].highestchildyr,
             ],
             tR: [
-                this.getX(this._treeData[node]) + level,
+                this.getX(this._treeData[node]) + lwScaled,
                 this._treeData[node].highestchildyr,
             ],
             bL: [
-                this.getX(this._treeData[node]) - level,
+                this.getX(this._treeData[node]) - lwScaled,
                 this._treeData[node].lowestchildyr,
             ],
             bR: [
-                this.getX(this._treeData[node]) + level,
+                this.getX(this._treeData[node]) + lwScaled,
                 this._treeData[node].lowestchildyr,
             ],
         };
@@ -595,22 +594,46 @@ define([
     };
 
     /**
-     * Thickens the branches that belong to unique sample categories
-     * (i.e. features that are only in gut)
+     * Thickens the colored branches of the tree.
      *
-     * @param {Number} level - Desired line thickness (note that this will be
-     *                         applied on both sides of the line -- so if
-     *                         level = 1 here then the drawn thick line will
-     *                         have a width of 1 + 1 = 2).
+     * @param {Number} lw Amount of thickness to use, in the same "units"
+     *                    that the user can enter in one of the line width
+     *                    <input>s. If this is 0, this function won't do
+     *                    anything. (If this is < 0, this will throw an error.
+     *                    But this really shouldn't happen, since this
+     *                    parameter should be the output from
+     *                    util.parseAndValidateLineWidth().)
      */
-    Empress.prototype.thickenSameSampleLines = function (level) {
-        // we do this because SidePanel._updateSample() calls this function
-        // with lWidth - 1, so in order to make sure we're setting this
-        // properly we add 1 to this value.
-        this._currentLineWidth = level + 1;
+    Empress.prototype.thickenSameSampleLines = function (lw) {
+        // If lw isn't > 0, then we don't thicken colored lines at all --
+        // we just leave them at their default width.
+        if (lw < 0) {
+            // should never happen because util.parseAndValidateLineWidth()
+            // should've been called in order to obtain lw, but in case
+            // this gets messed up in the future we'll catch it
+            throw "Line width passed to thickenSameSampleLines() is < 0.";
+        } else {
+            // Make sure that, even if lw is 0 (i.e. we don't need to
+            // thicken the lines), we still set the current line width
+            // accordingly. This way, when doing things like updating the
+            // layout that'll require re-drawing the tree based on the most
+            // recent settings, we'll have access to the correct line width.
+            this._currentLineWidth = lw;
+            if (lw === 0) {
+                // But, yeah, if lw is 0 we can just return early.
+                return;
+            }
+        }
+        // Scale the line width in such a way that trees with more leaves have
+        // "smaller" line width values than trees with less leaves. This is a
+        // pretty arbitrary equation based on messing around and seeing what
+        // looked nice on mid- and small-sized trees; as a TODO for the future,
+        // there is almost certainly a better way to do this.
+        var lwScaled =
+            (2 * lw) / Math.pow(Math.log10(this._tree.numleaves()), 2);
         var tree = this._tree;
 
-        // the coordinate of the tree.
+        // the coordinates of the tree
         var coords = [];
         this._drawer.loadSampleThickBuf([]);
 
@@ -624,7 +647,7 @@ define([
             this._currentLayout === "Rectangular" &&
             this._treeData[tree.size].sampleColored
         ) {
-            this._addThickVerticalLineCoords(coords, tree.size, level);
+            this._addThickVerticalLineCoords(coords, tree.size, lwScaled);
         }
         // iterate through the tree in postorder, skip root
         for (var i = 1; i < this._tree.size; i++) {
@@ -644,7 +667,7 @@ define([
             if (this._currentLayout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
-                    this._addThickVerticalLineCoords(coords, node, level);
+                    this._addThickVerticalLineCoords(coords, node, lwScaled);
                 }
                 /* Draw a horizontal thick line for this node -- we can safely
                  * do this for all nodes since this ignores the root, and all
@@ -657,19 +680,19 @@ define([
                 corners = {
                     tL: [
                         this.getX(this._treeData[parent]),
-                        this.getY(this._treeData[node]) + level,
+                        this.getY(this._treeData[node]) + lwScaled,
                     ],
                     tR: [
                         this.getX(this._treeData[node]),
-                        this.getY(this._treeData[node]) + level,
+                        this.getY(this._treeData[node]) + lwScaled,
                     ],
                     bL: [
                         this.getX(this._treeData[parent]),
-                        this.getY(this._treeData[node]) - level,
+                        this.getY(this._treeData[node]) - lwScaled,
                     ],
                     bR: [
                         this.getX(this._treeData[node]),
-                        this.getY(this._treeData[node]) - level,
+                        this.getY(this._treeData[node]) - lwScaled,
                     ],
                 };
                 this._addTriangleCoords(coords, corners, color);
@@ -707,14 +730,14 @@ define([
                             y1,
                             x2,
                             y2,
-                            level
+                            lwScaled
                         );
                         var arc1corners = VectorOps.computeBoxCorners(
                             x1,
                             y1,
                             x2,
                             y2,
-                            level
+                            lwScaled
                         );
                         this._addTriangleCoords(coords, arc0corners, color);
                         this._addTriangleCoords(coords, arc1corners, color);
@@ -726,14 +749,14 @@ define([
                 y1 = this._treeData[node].yc0;
                 x2 = this.getX(this._treeData[node]);
                 y2 = this.getY(this._treeData[node]);
-                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, level);
+                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, lwScaled);
                 this._addTriangleCoords(coords, corners, color);
             } else {
                 x1 = this.getX(this._treeData[parent]);
                 y1 = this.getY(this._treeData[parent]);
                 x2 = this.getX(this._treeData[node]);
                 y2 = this.getY(this._treeData[node]);
-                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, level);
+                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, lwScaled);
                 this._addTriangleCoords(coords, corners, color);
             }
         }
@@ -1003,7 +1026,7 @@ define([
 
                 // add internal nodes to groups
                 if (obs[category].has(node)) {
-                    this._treeData[node].inSample = true;
+                    // this._treeData[node].inSample = true;
                     obs[category].add(parent);
                 }
                 if (notRepresented.has(node)) {
@@ -1054,7 +1077,7 @@ define([
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
             this._treeData[key].color = this.DEFAULT_COLOR;
-            this._treeData[key].inSample = false;
+            // this._treeData[key].inSample = false;
             this._treeData[key].sampleColored = false;
             this._treeData[key].visible = true;
         }
@@ -1089,15 +1112,6 @@ define([
         if (this._currentLayout !== newLayout) {
             if (this._layoutToCoordSuffix.hasOwnProperty(newLayout)) {
                 this._currentLayout = newLayout;
-                // Adjust the thick-line stuff before calling drawTree() --
-                // this will get the buffer set up before it's actually drawn
-                // in drawTree(). Doing these calls out of order (draw tree,
-                // then call thickenSameSampleLines()) causes the thick-line
-                // stuff to only change whenever the tree is redrawn.
-                if (this._currentLineWidth !== 1) {
-                    // The - 1 mimics the behavior of SidePanel._updateSample()
-                    this.thickenSameSampleLines(this._currentLineWidth - 1);
-                }
 
                 // recollapse clades
                 if (Object.keys(this._collapsedClades).length != 0) {
@@ -1105,7 +1119,15 @@ define([
                     this.collapseClades();
                 }
 
+                // Adjust the thick-line stuff before calling drawTree() --
+                // this will get the buffer set up before it's actually drawn
+                // in drawTree(). Doing these calls out of order (draw tree,
+                // then call thickenSameSampleLines()) causes the thick-line
+                // stuff to only change whenever the tree is redrawn.
+                this.thickenSameSampleLines(this._currentLineWidth);
+
                 // recenter viewing window
+                // Note: this function calls drawTree()
                 this.centerLayoutAvgPoint();
             } else {
                 // This should never happen under normal circumstances (the

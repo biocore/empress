@@ -8,8 +8,8 @@ require([
 ], function ($, BPTree, Empress, BiomTable, util, chroma) {
     $(document).ready(function () {
         // Setup test variables
-        // Note: This is ran for each test() so tests can modify bpArray without
-        // effecting other test
+        // Note: This is ran for each test() so tests can modify bpArray
+        // without affecting other tests.
         module("Empress", {
             setup: function () {
                 // tree comes from the following newick string
@@ -22,7 +22,7 @@ require([
                 );
                 var layoutToCoordSuffix = {
                     Rectangular: "r",
-                    Circular: "c2",
+                    Circular: "c1",
                     Unrooted: "2",
                 };
 
@@ -39,6 +39,7 @@ require([
                 // make testing easier.
                 var treeData = {
                     7: {
+<<<<<<< HEAD
                         "color":[1.0, 1.0, 1.0],
                         "inSample": false,
                         "xr": 13,
@@ -123,6 +124,77 @@ require([
                         "visible": true
                     }
 
+=======
+                        color: [1.0, 1.0, 1.0],
+                        xr: 13,
+                        yr: 14,
+                        xc1: 27,
+                        yc1: 28,
+                        x2: 41,
+                        y2: 42,
+                        name: "root",
+                    },
+                    6: {
+                        color: [1.0, 1.0, 1.0],
+                        xr: 11,
+                        yr: 12,
+                        xc1: 25,
+                        yc1: 26,
+                        x2: 39,
+                        y2: 40,
+                        name: "EmpressNode6",
+                    },
+                    5: {
+                        color: [1.0, 1.0, 1.0],
+                        xr: 9,
+                        yr: 10,
+                        xc1: 23,
+                        yc1: 24,
+                        x2: 37,
+                        y2: 38,
+                        name: "internal",
+                    },
+                    4: {
+                        color: [1.0, 1.0, 1.0],
+                        xr: 7,
+                        yr: 8,
+                        xc1: 21,
+                        yc1: 22,
+                        x2: 35,
+                        y2: 36,
+                        name: "internal",
+                    },
+                    2: {
+                        color: [1.0, 1.0, 1.0],
+                        xr: 3,
+                        yr: 4,
+                        xc1: 17,
+                        yc1: 18,
+                        x2: 31,
+                        y2: 32,
+                        name: "2",
+                    },
+                    3: {
+                        color: [1.0, 1.0, 1.0],
+                        xr: 5,
+                        yr: 6,
+                        xc1: 19,
+                        yc1: 20,
+                        x2: 33,
+                        y2: 34,
+                        name: "3",
+                    },
+                    1: {
+                        color: [1.0, 1.0, 1.0],
+                        xr: 1,
+                        yr: 2,
+                        xc1: 15,
+                        yc1: 16,
+                        x2: 29,
+                        y2: 30,
+                        name: "1",
+                    },
+>>>>>>> 3a6bf88211621e7b4fd11c99568bac8fe25a715b
                 };
                 // data for the BiomTable object
                 // (These IDs / indices aren't assigned in any particular

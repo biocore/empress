@@ -130,7 +130,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 sSel: { disabled: true },
                 sColor: { value: "discrete-coloring-qiime" },
                 sCollapseCladesChk: { checked: false },
-                sLineWidth: { value: 1 },
+                sLineWidth: { value: 0 },
                 sCollapseCladesChk: { checked: false},
             },
             [this.sAddOpts, this.sUpdateBtn]
@@ -144,7 +144,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 fChk: { checked: false },
                 fSel: { disabled: true },
                 fColor: { value: "discrete-coloring-qiime" },
-                fLineWidth: { value: 1 },
+                fLineWidth: { value: 0 },
                 fMethodChk: { checked: true },
                 fCollapseCladesChk: { checked: false},
             },
@@ -169,19 +169,20 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      * and feature metadata coloring settings. (There is definitely more work
      * to be done on removing shared code, but this is a start.)
      *
-     * @param{String} colorMethodName The name of a method of SidePanel to call
-     *                                to re-color the tree: for example,
-     *                                "_colorSampleTree". (Passing the actual
-     *                                method as an argument seems to cause
-     *                                problems due to "this" not working
-     *                                properly. This was the easiest solution.)
-     * @param{lwInput} HTMLElement An <input> with type="number" from which
-     *                             we'll get the .value indicating the line
-     *                             width to use when thickening lines.
-     * @param{updateBtn} HTMLElement This element will be hidden at the end of
-     *                               this function. It should correspond to the
-     *                               "Update" button for the sample or feature
-     *                               metadata coloring tab.
+     * @param {String} colorMethodName The name of a method of SidePanel to
+     *                                 call to re-color the tree: for example,
+     *                                 "_colorSampleTree". (Passing the actual
+     *                                 method as an argument seems to cause
+     *                                 problems due to "this" not working
+     *                                 properly. This was the easiest
+     *                                 solution.)
+     * @param {HTMLElement} lwInput An <input> with type="number" from which
+     *                              we'll get the .value indicating the line
+     *                              width to use when thickening lines.
+     * @param {HTMLElement} updateBtn This element will be hidden at the end of
+     *                                this function. It should correspond to
+     *                                the "Update" button for the sample or
+     *                                feature metadata coloring tab.
      */
     SidePanel.prototype._updateColoring = function (
         colorMethodName,
@@ -203,11 +204,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         if (collapseChk.checked) {
             this.empress.collapseClades();
         }
-
-        var lWidth = parseInt(lwInput.value);
-        if (lWidth !== 1) {
-            this.empress.thickenSameSampleLines(lWidth - 1);
-        }
+        var lw = util.parseAndValidateLineWidth(lwInput);
+        this.empress.thickenSameSampleLines(lw);
         this.empress.drawTree();
     };
 

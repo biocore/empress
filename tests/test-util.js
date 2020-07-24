@@ -202,6 +202,19 @@ require(["jquery", "util"], function ($, util) {
             deepEqual(split.nonNumeric, ["0.0.0", "boaty"]);
         });
 
+        test("Test isValidNumber", function () {
+            ok(util.isValidNumber("2.123"));
+            ok(util.isValidNumber("0"));
+            ok(util.isValidNumber("-0"));
+            ok(util.isValidNumber("-0"));
+            notOk(util.isValidNumber("Infinity"));
+            notOk(util.isValidNumber("-Infinity"));
+            notOk(util.isValidNumber("+Infinity"));
+            // See https://github.com/biocore/empress/pull/275#discussion_r459632660
+            notOk(util.isValidNumber("1/3"));
+            ok(util.isValidNumber("0.3333333333333"));
+        });
+
         test("Test keepUniqueKeys without removeAll", function () {
             var keys = {
                 a: new Set([1, 2, 3, 4]),
@@ -255,6 +268,30 @@ require(["jquery", "util"], function ($, util) {
                 var resultArray = Array.from(result[group]);
                 deepEqual(resultArray, expectedArray);
             }
+        });
+
+        test("Test parseAndValidateLineWidth (invalid case)", function () {
+            var tni = document.getElementById("test-num-input");
+            // force the test input's value to be -2
+            // (In practice, min="0" should prevent the values of Empress' line
+            // width inputs from being less than 0, but I don't really trust
+            // those to be perfect safeguards. Hence the paranoia.)
+            tni.value = "-2";
+            // Double-check that the value is -2 (so that we can verify that
+            // parseAndValidateLineWidth() actually *changed* this value)
+            deepEqual(tni.value, "-2");
+            var lw = util.parseAndValidateLineWidth(tni);
+            deepEqual(lw, 0);
+            deepEqual(tni.value, "0");
+        });
+
+        test("Test parseAndValidateLineWidth (valid case)", function () {
+            var tni = document.getElementById("test-num-input");
+            tni.value = "2.5";
+            deepEqual(tni.value, "2.5");
+            var lw = util.parseAndValidateLineWidth(tni);
+            deepEqual(lw, 2.5);
+            deepEqual(tni.value, "2.5");
         });
     });
 });

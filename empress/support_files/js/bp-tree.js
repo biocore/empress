@@ -234,11 +234,11 @@ define(["ByteArray"], function (ByteArray) {
 
     /**
      *
-     * The number of leaf noes in tree
+     * The number of leaf nodes in tree
      *
      * @return {Number}
      */
-    BPTree.prototype.numleafs = function () {
+    BPTree.prototype.numleaves = function () {
         var total = 0;
         for (var i = 0; i < this.b_.length - 1; i++) {
             total = this.isleaf(i) ? total + 1 : total;
