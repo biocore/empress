@@ -1217,8 +1217,12 @@ define([
      */
     Empress.prototype.showNodeMenuForName = function (nodeName) {
         if (!this._tree.containsNode(nodeName)) {
-            util.toastMsg("The node '" + nodeName + "' is not present in the" +
-                          " phylogeny");
+            util.toastMsg(
+                "The node '" +
+                    nodeName +
+                    "' is not present in the" +
+                    " phylogeny"
+            );
             return;
         }
 

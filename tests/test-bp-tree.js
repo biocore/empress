@@ -618,18 +618,38 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             equal(obj.b_.length, 51 + 51 + 4);
         });
 
-        test('Test containsNode', function(assert) {
-            var names = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-                         'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-                         'q', 'r', 's', 't', 'u', 'v'];
+        test("Test containsNode", function (assert) {
+            var names = [
+                "a",
+                "b",
+                "c",
+                "d",
+                "e",
+                "f",
+                "g",
+                "h",
+                "i",
+                "j",
+                "k",
+                "l",
+                "m",
+                "n",
+                "o",
+                "p",
+                "q",
+                "r",
+                "s",
+                "t",
+                "u",
+                "v",
+            ];
 
             var tree = new BPTree(this.bpArray, names, null, null);
 
-            assert.ok(tree.containsNode('a'));
-            assert.ok(!tree.containsNode('x'));
-            assert.ok(!tree.containsNode('hello'));
+            assert.ok(tree.containsNode("a"));
+            assert.ok(!tree.containsNode("x"));
+            assert.ok(!tree.containsNode("hello"));
             assert.ok(!tree.containsNode(0xa));
         });
-
     });
 });
