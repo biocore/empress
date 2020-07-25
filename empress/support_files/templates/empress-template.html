@@ -90,6 +90,7 @@
             'SidePanel' : './js/side-panel-handler',
             'AnimationPanel' : './js/animation-panel-handler',
             'Animator' : './js/animator',
+            'BarplotPanel' : './js/barplot-panel-handler',
             'BIOMTable' : './js/biom-table',
             'Empress' : './js/empress',
             'Legend' : './js/legend',
@@ -103,11 +104,13 @@
 
     empressRequire(['glMatrix', 'chroma', 'underscore', 'ByteArray',
                     'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimationPanel',
-                    'Animator', 'BIOMTable', 'Empress', 'Legend', 'Colorer',
-                    'VectorOps', 'CanvasEvents', 'SelectedNodeMenu', 'util'],
+                    'Animator', 'BarplotPanel', 'BIOMTable', 'Empress',
+                    'Legend', 'Colorer', 'VectorOps', 'CanvasEvents',
+                    'SelectedNodeMenu', 'util'],
         function(gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
-                 SidePanel, AnimationPanel, Animator, BIOMTable, Empress, Legend,
-                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util) {
+                 SidePanel, AnimationPanel, Animator, BarplotPanel, BIOMTable,
+                 Empress, Legend, Colorer, VectorOps, CanvasEvents,
+                 SelectedNodeMenu, util) {
         // initialze the tree and model
         var tree = new BPTree({{ tree }}, {{ names }});
 
@@ -153,14 +156,17 @@
         }
         sPanel.addLayoutTab();
 
-        // create animator state machine
+        // Create animator state machine
         var animator = new Animator(empress, legend);
 
-        // add animator gui components
+        // Add animator GUI components
         var animationPanel = new AnimationPanel(animator);
         animationPanel.addAnimationTab();
 
-        // make all tabs collapsable
+        // Add barplot GUI components (including a first "layer")
+        var barplotPanel = new BarplotPanel(empress);
+
+        // Make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {
             btn.addEventListener("click", function() {
             this.classList.toggle("active");
