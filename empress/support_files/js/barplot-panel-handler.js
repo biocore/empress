@@ -12,21 +12,28 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      * construct BarplotPanel
      */
     function BarplotPanel(empress) {
+        var scope = this;
         this.empress = empress;
         this.layerDivEles = [];
-        var scope = this;
         this.barplotCheckbox = document.getElementById("barplot-chk");
+        this.addOptions = document.getElementById("barplot-add-options");
+        this.addButton = document.getElementById("barplot-add-btn");
         this.layerContainer = document.getElementById(
             "barplot-layer-container"
         );
         this.barplotCheckbox.onclick = function () {
             if (scope.barplotCheckbox.checked) {
                 scope.layerContainer.classList.remove("hidden");
+                scope.addOptions.classList.remove("hidden");
             } else {
                 scope.layerContainer.classList.add("hidden");
+                scope.addOptions.classList.add("hidden");
                 // TODO: do something to un-draw barplots here
             }
         };
+        this.addButton.onclick = function () {
+            scope.addLayer();
+        }
         this.addLayer();
     }
 
@@ -146,8 +153,10 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         chgColorCheckbox.onclick = function () {
             if (chgColorCheckbox.checked) {
                 colorDetailsDiv.classList.remove("hidden");
+                chgColorFMFieldSelector.disabled = false;
             } else {
                 colorDetailsDiv.classList.add("hidden");
+                chgColorFMFieldSelector.disabled = true;
                 // TODO: set all barplots in this layer back to the default
                 // color here
             }
