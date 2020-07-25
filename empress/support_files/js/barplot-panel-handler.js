@@ -33,7 +33,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         };
         this.addButton.onclick = function () {
             scope.addLayer();
-        }
+        };
         this.addLayer();
     }
 
@@ -171,12 +171,8 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         // TODO: abstract ^^most of this stuff^^ into sep. functions rather
         // than one god function lol
 
-        var rmP = innerDiv.appendChild(
-            document.createElement("p")
-        );
-        var rmLbl = rmP.appendChild(
-            document.createElement("label")
-        );
+        var rmP = innerDiv.appendChild(document.createElement("p"));
+        var rmLbl = rmP.appendChild(document.createElement("label"));
         rmLbl.innerText = "Remove this layer";
         var rmBtn = rmP.appendChild(document.createElement("button"));
         rmBtn.innerText = "-";
@@ -184,7 +180,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             // TODO: un-draw this layer; alter the numbers of the other layers
             // "below" it
             newDiv.remove();
-        }
+        };
     };
 
     return BarplotPanel;
