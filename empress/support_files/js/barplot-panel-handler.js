@@ -14,6 +14,17 @@ define(["underscore", "Colorer"], function (_, Colorer) {
     function BarplotPanel(empress) {
         this.empress = empress;
         this.layerDivEles = [];
+        var scope = this;
+        this.barplotCheckbox = document.getElementById("barplot-chk");
+        this.layerContainer = document.getElementById("barplot-layer-container");
+        this.barplotCheckbox.onclick = function () {
+            if (scope.barplotCheckbox.checked) {
+                scope.layerContainer.classList.remove("hidden");
+            } else {
+                scope.layerContainer.classList.add("hidden");
+                // TODO: do something to un-draw barplots here
+            }
+        };
         this.addLayer();
     }
 
@@ -23,10 +34,8 @@ define(["underscore", "Colorer"], function (_, Colorer) {
     BarplotPanel.prototype.addLayer = function () {
 
         var layerNum = this.layerDivEles.length + 1;
-        // TODO: set newDiv's class to "hidden" and un-hide when Draw barplots?
-        // is checked
         var newDiv = document.createElement("div");
-        document.getElementById("barplot-div").appendChild(newDiv);
+        this.layerContainer.appendChild(newDiv);
         this.layerDivEles.push(newDiv);
 
         // Add a <hr /> at the top of each layer. This is a nice way of
@@ -92,6 +101,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         // (this is indented another level)
         var colorDetailsDiv = innerDiv.appendChild(document.createElement("div"));
         colorDetailsDiv.classList.add("indented");
+        colorDetailsDiv.classList.add("hidden");
 
         // Add a row for choosing the color map
         var colormapP = colorDetailsDiv.appendChild(document.createElement("p"));
@@ -120,11 +130,25 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         scaletypeSelector.appendChild(qOpt);
         scaletypeSC.appendChild(scaletypeSelector);
 
+        // Alter visibility of the color-changing details when the "Color
+        // by..." checkbox is clicked
+        chgColorCheckbox.onclick = function () {
+            if (chgColorCheckbox.checked) {
+                colorDetailsDiv.classList.remove("hidden");
+            } else {
+                colorDetailsDiv.classList.add("hidden");
+                // TODO: set all barplots in this layer back to the default
+                // color here
+            }
+        };
+
         // TODO: create dflt length stuff
         // TODO: create length-changing row
         // TODO: create length-changing details div and UI stuff
         // TODO: create "add another layer" row and + btn.
         // TODO: create "remove this layer" row if layerNum > 1
+        // TODO: abstract ^^most of this stuff^^ into sep. functions rather
+        // than one god function lol
     };
 
     return BarplotPanel;
