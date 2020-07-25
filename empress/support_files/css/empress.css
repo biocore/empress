@@ -482,12 +482,6 @@ p.side-header button {
     justify-items: center;
 }
 
-.control hr {
-    border-top: 1px solid darkgray;
-    border-bottom: none;
-    margin-bottom: 20px;
-}
-
 .square {
     position: absolute;
     height: 0px;
@@ -651,4 +645,8 @@ div.legend:hover {
 
 .indented {
   margin-left: 2em;
+}
+
+.empress-hr {
+    border-color: #aaa;
 }
