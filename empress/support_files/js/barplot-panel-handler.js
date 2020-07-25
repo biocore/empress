@@ -14,7 +14,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
     function BarplotPanel(empress) {
         var scope = this;
         this.empress = empress;
-        this.layerDivEles = [];
+        this.numLayers = 0;
         this.barplotCheckbox = document.getElementById("barplot-chk");
         this.addOptions = document.getElementById("barplot-add-options");
         this.addButton = document.getElementById("barplot-add-btn");
@@ -41,10 +41,11 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      * Adds a new set of GUI components for a new barplot layer
      */
     BarplotPanel.prototype.addLayer = function () {
-        var layerNum = this.layerDivEles.length + 1;
+        var scope = this;
+        this.numLayers++;
+        var layerNum = this.numLayers;
         var newDiv = document.createElement("div");
         this.layerContainer.appendChild(newDiv);
-        this.layerDivEles.push(newDiv);
 
         // Add a <hr /> at the top of each layer. This is a nice way of
         // visually distinguishing layer UI elements.
@@ -169,6 +170,21 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         // TODO: create "remove this layer" row if layerNum > 1
         // TODO: abstract ^^most of this stuff^^ into sep. functions rather
         // than one god function lol
+
+        var rmP = innerDiv.appendChild(
+            document.createElement("p")
+        );
+        var rmLbl = rmP.appendChild(
+            document.createElement("label")
+        );
+        rmLbl.innerText = "Remove this layer";
+        var rmBtn = rmP.appendChild(document.createElement("button"));
+        rmBtn.innerText = "-";
+        rmBtn.onclick = function () {
+            // TODO: un-draw this layer; alter the numbers of the other layers
+            // "below" it
+            newDiv.remove();
+        }
     };
 
     return BarplotPanel;
