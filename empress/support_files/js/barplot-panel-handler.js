@@ -16,7 +16,9 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         this.layerDivEles = [];
         var scope = this;
         this.barplotCheckbox = document.getElementById("barplot-chk");
-        this.layerContainer = document.getElementById("barplot-layer-container");
+        this.layerContainer = document.getElementById(
+            "barplot-layer-container"
+        );
         this.barplotCheckbox.onclick = function () {
             if (scope.barplotCheckbox.checked) {
                 scope.layerContainer.classList.remove("hidden");
@@ -32,7 +34,6 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      * Adds a new set of GUI components for a new barplot layer
      */
     BarplotPanel.prototype.addLayer = function () {
-
         var layerNum = this.layerDivEles.length + 1;
         var newDiv = document.createElement("div");
         this.layerContainer.appendChild(newDiv);
@@ -82,14 +83,12 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         // Finally, add a selector. To match the other selectors in Empress, we
         // create this as a <select> within a <label> with
         // class="select-container".
-        var chgColorSC = chgColorP.appendChild(
-            document.createElement("label")
-        );
+        var chgColorSC = chgColorP.appendChild(document.createElement("label"));
         chgColorSC.classList.add("select-container");
         var chgColorFMFieldSelector = document.createElement("select");
         // Populate the selector with all of the feature metadata columns
         var fmCols = this.empress.getFeatureMetadataCategories();
-        _.each(fmCols, function(c) {
+        _.each(fmCols, function (c) {
             var opt = document.createElement("option");
             opt.innerText = opt.value = c;
             chgColorFMFieldSelector.appendChild(opt);
@@ -99,13 +98,19 @@ define(["underscore", "Colorer"], function (_, Colorer) {
 
         // Create color-changing details div
         // (this is indented another level)
-        var colorDetailsDiv = innerDiv.appendChild(document.createElement("div"));
+        var colorDetailsDiv = innerDiv.appendChild(
+            document.createElement("div")
+        );
         colorDetailsDiv.classList.add("indented");
         colorDetailsDiv.classList.add("hidden");
 
         // Add a row for choosing the color map
-        var colormapP = colorDetailsDiv.appendChild(document.createElement("p"));
-        var colormapLbl = colormapP.appendChild(document.createElement("label"));
+        var colormapP = colorDetailsDiv.appendChild(
+            document.createElement("p")
+        );
+        var colormapLbl = colormapP.appendChild(
+            document.createElement("label")
+        );
         colormapLbl.innerText = "Color Map";
         var colormapSC = colormapP.appendChild(document.createElement("label"));
         colormapSC.classList.add("select-container");
@@ -114,10 +119,16 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         colormapSC.appendChild(colormapSelector);
 
         // Add a row for choosing the scale type
-        var scaletypeP = colorDetailsDiv.appendChild(document.createElement("p"));
-        var scaletypeLbl = scaletypeP.appendChild(document.createElement("label"));
+        var scaletypeP = colorDetailsDiv.appendChild(
+            document.createElement("p")
+        );
+        var scaletypeLbl = scaletypeP.appendChild(
+            document.createElement("label")
+        );
         scaletypeLbl.innerText = "Scale Type";
-        var scaletypeSC = scaletypeP.appendChild(document.createElement("label"));
+        var scaletypeSC = scaletypeP.appendChild(
+            document.createElement("label")
+        );
         scaletypeSC.classList.add("select-container");
         var scaletypeSelector = document.createElement("select");
         // add categorical option
