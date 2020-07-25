@@ -169,7 +169,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             "Default length";
         var dfltLenInput = document.createElement("input");
         dfltLenInput.setAttribute("type", "number");
-        dfltLenInput.value = 1
+        dfltLenInput.value = 1;
         dfltLenP.appendChild(dfltLenInput);
 
         // create length-changing-by-metadata settings
