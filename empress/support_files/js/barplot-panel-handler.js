@@ -163,11 +163,55 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             }
         };
 
-        // TODO: create dflt length stuff
-        // TODO: create length-changing row
-        // TODO: create length-changing details div and UI stuff
-        // TODO: create "add another layer" row and + btn.
-        // TODO: create "remove this layer" row if layerNum > 1
+        // create default length settings
+        var dfltLenP = innerDiv.appendChild(document.createElement("p"));
+        dfltLenP.appendChild(document.createElement("label")).innerText =
+            "Default length";
+        var dfltLenInput = document.createElement("input");
+        dfltLenInput.setAttribute("type", "number");
+        dfltLenInput.value = 1
+        dfltLenP.appendChild(dfltLenInput);
+
+        // create length-changing-by-metadata settings
+        var chgLenP = innerDiv.appendChild(document.createElement("p"));
+        // Add a label
+        var chgLenLbl = document.createElement("label");
+        chgLenLbl.innerText = "Scale length by...";
+        chgLenP.appendChild(chgLenLbl);
+        // Add the checkbox, taking care to use a certain ID
+        var chgLenCheckbox = document.createElement("input");
+        var chgLenCheckboxID = "barplot-layer-" + layerNum + "-chglen-chk";
+        chgLenCheckbox.id = chgLenCheckboxID;
+        chgLenCheckbox.setAttribute("type", "checkbox");
+        chgLenCheckbox.classList.add("empress-input");
+        chgLenP.appendChild(chgLenCheckbox);
+        // Assign the label's "for" attribute to point to the checkbox input
+        chgLenLbl.setAttribute("for", chgLenCheckboxID);
+        // Finally, add a selector. To match the other selectors in Empress, we
+        // create this as a <select> within a <label> with
+        // class="select-container".
+        var chgLenSC = chgLenP.appendChild(document.createElement("label"));
+        chgLenSC.classList.add("select-container");
+        var chgLenFMFieldSelector = document.createElement("select");
+        // Populate the selector with all of the feature metadata columns
+        var fmCols = this.empress.getFeatureMetadataCategories();
+        _.each(fmCols, function (c) {
+            var opt = document.createElement("option");
+            opt.innerText = opt.value = c;
+            chgLenFMFieldSelector.appendChild(opt);
+        });
+        chgLenFMFieldSelector.disabled = true;
+        chgLenSC.appendChild(chgLenFMFieldSelector);
+        chgLenCheckbox.onclick = function () {
+            if (chgLenCheckbox.checked) {
+                chgLenFMFieldSelector.disabled = false;
+            } else {
+                chgLenFMFieldSelector.disabled = true;
+                // TODO: set all barplots in this layer back to the default
+                // length here
+            }
+        };
+
         // TODO: abstract ^^most of this stuff^^ into sep. functions rather
         // than one god function lol
 
