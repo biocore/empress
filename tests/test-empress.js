@@ -8,8 +8,8 @@ require([
 ], function ($, BPTree, Empress, BiomTable, util, chroma) {
     $(document).ready(function () {
         // Setup test variables
-        // Note: This is ran for each test() so tests can modify bpArray without
-        // effecting other test
+        // Note: This is ran for each test() so tests can modify bpArray
+        // without affecting other tests.
         module("Empress", {
             setup: function () {
                 // tree comes from the following newick string
@@ -30,7 +30,7 @@ require([
                 );
                 var layoutToCoordSuffix = {
                     Rectangular: "r",
-                    Circular: "c2",
+                    Circular: "c1",
                     Unrooted: "2",
                 };
 
@@ -50,8 +50,8 @@ require([
                         color: [1.0, 1.0, 1.0],
                         xr: 13,
                         yr: 14,
-                        xc2: 27,
-                        yc2: 28,
+                        xc1: 27,
+                        yc1: 28,
                         x2: 41,
                         y2: 42,
                         name: "root",
@@ -60,8 +60,8 @@ require([
                         color: [1.0, 1.0, 1.0],
                         xr: 11,
                         yr: 12,
-                        xc2: 25,
-                        yc2: 26,
+                        xc1: 25,
+                        yc1: 26,
                         x2: 39,
                         y2: 40,
                         name: "EmpressNode6",
@@ -70,8 +70,8 @@ require([
                         color: [1.0, 1.0, 1.0],
                         xr: 9,
                         yr: 10,
-                        xc2: 23,
-                        yc2: 24,
+                        xc1: 23,
+                        yc1: 24,
                         x2: 37,
                         y2: 38,
                         name: "internal",
@@ -80,8 +80,8 @@ require([
                         color: [1.0, 1.0, 1.0],
                         xr: 7,
                         yr: 8,
-                        xc2: 21,
-                        yc2: 22,
+                        xc1: 21,
+                        yc1: 22,
                         x2: 35,
                         y2: 36,
                         name: "internal",
@@ -90,8 +90,8 @@ require([
                         color: [1.0, 1.0, 1.0],
                         xr: 3,
                         yr: 4,
-                        xc2: 17,
-                        yc2: 18,
+                        xc1: 17,
+                        yc1: 18,
                         x2: 31,
                         y2: 32,
                         name: "2",
@@ -100,8 +100,8 @@ require([
                         color: [1.0, 1.0, 1.0],
                         xr: 5,
                         yr: 6,
-                        xc2: 19,
-                        yc2: 20,
+                        xc1: 19,
+                        yc1: 20,
                         x2: 33,
                         y2: 34,
                         name: "3",
@@ -110,8 +110,8 @@ require([
                         color: [1.0, 1.0, 1.0],
                         xr: 1,
                         yr: 2,
-                        xc2: 15,
-                        yc2: 16,
+                        xc1: 15,
+                        yc1: 16,
                         x2: 29,
                         y2: 30,
                         name: "1",

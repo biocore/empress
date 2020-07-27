@@ -219,11 +219,11 @@ define(["ByteArray"], function (ByteArray) {
 
     /**
      *
-     * The number of leaf noes in tree
+     * The number of leaf nodes in tree
      *
      * @return {Number}
      */
-    BPTree.prototype.numleafs = function () {
+    BPTree.prototype.numleaves = function () {
         var total = 0;
         for (var i = 0; i < this.b_.length - 1; i++) {
             total = this.isleaf(i) ? total + 1 : total;
@@ -565,6 +565,15 @@ define(["ByteArray"], function (ByteArray) {
         }
 
         return tips;
+    };
+
+     * True if name is in the names array for the tree
+     *
+     * @param {String} name The name to search for.
+     * @return {Boolean} If the name is in the tree.
+     */
+    BPTree.prototype.containsNode = function (name) {
+        return this.names_.indexOf(name) !== -1;
     };
 
     return BPTree;

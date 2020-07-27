@@ -100,8 +100,8 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             }
         });
 
-        test("Test number of leafs", function () {
-            equal(this.bpObj.numleafs(), 6);
+        test("Test number of leaves", function () {
+            equal(this.bpObj.numleaves(), 6);
         });
 
         test("Test rank property", function () {
@@ -196,7 +196,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             equal(this.bpObj.lengths_, null, "Length");
         });
 
-        test("Test name/lenth set", function () {
+        test("Test name/length set", function () {
             var names = [...Array(this.bpObj.size).keys()];
             var lengths = names.map((k) => parseInt(k));
             var resBP = new BPTree(this.bpArray, names, lengths, null);
@@ -635,6 +635,40 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 var i = index[node];
                 deepEqual(resBP.findTips(i), intNodes[node]);
             }
+        });
+
+        test("Test containsNode", function (assert) {
+            var names = [
+                "a",
+                "b",
+                "c",
+                "d",
+                "e",
+                "f",
+                "g",
+                "h",
+                "i",
+                "j",
+                "k",
+                "l",
+                "m",
+                "n",
+                "o",
+                "p",
+                "q",
+                "r",
+                "s",
+                "t",
+                "u",
+                "v",
+            ];
+
+            var tree = new BPTree(this.bpArray, names, null, null);
+
+            assert.ok(tree.containsNode("a"));
+            assert.ok(!tree.containsNode("x"));
+            assert.ok(!tree.containsNode("hello"));
+            assert.ok(!tree.containsNode(0xa));
         });
     });
 });

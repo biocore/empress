@@ -76,13 +76,11 @@ define(["underscore"], function (_) {
         // separate the numeric and the alpha elements of the array
         // Note that NaN and +/- Infinity are not considered numeric elements
         for (var index = 0; index < list.length; index++) {
-            if (
-                isNaN(parseFloat(list[index])) ||
-                !isFinite(parseFloat(list[index]))
-            ) {
-                alphaPart.push(list[index]);
+            var element = list[index];
+            if (!isValidNumber(element)) {
+                alphaPart.push(element);
             } else {
-                numericPart.push(list[index]);
+                numericPart.push(element);
             }
         }
 
@@ -101,6 +99,24 @@ define(["underscore"], function (_) {
     }
 
     /**
+     * Returns true if a string represents a finite number, false otherwise.
+     *
+     * Note that number parsing / type conversions in general are extremely
+     * hairy in JS. This function seems to work well for a wide range of cases,
+     * but it may not be perfect.
+     *
+     * This function was created from code that was originally in
+     * splitNumericValues() in Emperor's codebase. That code, in turn, was
+     * based on http://stackoverflow.com/a/9716488.
+     *
+     * @param {String} value Value to check for validity
+     * @return {Boolean} true if value represents a finite number, else false
+     */
+    function isValidNumber(value) {
+        return !isNaN(parseFloat(value)) && isFinite(value);
+    }
+
+    /**
      * Split list of string values into numeric and non-numeric values
      *
      * This function was taken from Emperor's code:
@@ -115,8 +131,7 @@ define(["underscore"], function (_) {
         var numeric = [];
         var nonNumeric = [];
         _.each(values, function (element) {
-            // http://stackoverflow.com/a/9716488
-            if (!isNaN(parseFloat(element)) && isFinite(element)) {
+            if (isValidNumber(element)) {
                 numeric.push(element);
             } else {
                 nonNumeric.push(element);
@@ -126,14 +141,14 @@ define(["underscore"], function (_) {
     }
 
     /**
-     * Display a message in toast.
+     * Display a message in a toast element.
      *
-     * @param {string} msg - message to display
-     * @param {number} duration - milliseconds to keep toast visible
+     * @param {String} msg - message to display
+     * @param {Number} duration - milliseconds to keep toast visible (optional)
+     *                            Defaults to 3000 ms (i.e. 3 seconds).
      */
-    function toastMsg(msg) {
-        var duration = 2000,
-            toast = document.getElementById("toast");
+    function toastMsg(msg, duration = 3000) {
+        var toast = document.getElementById("toast");
         toast.innerHTML = msg;
         toast.classList.remove("hidden");
         setTimeout(function () {
@@ -141,10 +156,42 @@ define(["underscore"], function (_) {
         }, duration);
     }
 
+    /**
+     * Returns a numeric representation of a line width <input> element.
+     *
+     * If the value of the input is in some way "invalid" (i.e. isValidNumber()
+     * is false for this value, or the number is less than 0) then we will
+     * 1) set the value of the <input> to 0 ourselves, and
+     * 2) return 0.
+     *
+     * @param {HTMLElement} inputEle A reference to an <input> element
+     *                               describing a line width to use in coloring
+     *                               the tree. This should ideally have
+     *                               type="number" and min="0" set so that the
+     *                               user experience is consistent, but none of
+     *                               these things are checked for here -- we
+     *                               only look at the value of this element.
+     * @return {Number} Sanitized number that can be used as input to
+     *                  Empress.thickenSameSampleLines().
+     */
+    function parseAndValidateLineWidth(inputEle) {
+        if (isValidNumber(inputEle.value)) {
+            var pfVal = parseFloat(inputEle.value);
+            if (pfVal >= 0) {
+                return pfVal;
+            }
+        }
+        // If we're still here, the number was invalid.
+        inputEle.value = 0;
+        return 0;
+    }
+
     return {
         keepUniqueKeys: keepUniqueKeys,
         naturalSort: naturalSort,
         splitNumericValues: splitNumericValues,
+        isValidNumber: isValidNumber,
+        parseAndValidateLineWidth: parseAndValidateLineWidth,
         toastMsg: toastMsg,
     };
 });

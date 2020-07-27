@@ -116,15 +116,5 @@ define(["glMatrix"], function (gl) {
         if (upDir !== null) this.upDir_ = upDir;
     };
 
-    /**
-     * Returns the virtical position of the camera. This can be used to convert
-     * screen coordinates to world coordinates.
-     *
-     * @return {Number} The virtical position of the camera
-     */
-    Camera.prototype.getVirticalPos = function () {
-        return this.pos_[2];
-    };
-
     return Camera;
 });
