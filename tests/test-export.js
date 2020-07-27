@@ -11,17 +11,27 @@ require(["jquery", "BPTree", "Empress", "util", "BiomTable"], function (
         // effecting other test
         module('Empress' , {
             setup: function() {
-                var tArr = new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0]);
-                var tree = new BPTree(tArr, ['EmpressNode2', 'EmpressNode0', 'featA', 'featB', 'EmpressNode1', 'featC', 'featD']);
+                var tree = new BPTree([14952], ['EmpressNode2', 'EmpressNode0', 'featA', 'featB', 'EmpressNode1', 'featC', 'featD']);
 
                 var fmCols = [];
 
                 var canvas = document.getElementById('tree-surface');
 
                 var biom = new BIOMTable(
-                  {'sample1': ['featA', 'featB'], 'sample2': ['featA', 'featB'], 'sample3': ['featA', 'featC', 'featD'], 'sample4': ['featA', 'featC', 'featD']},
-                  {"sample1": {"collection_timestamp": "sample4", "diseased": "not applicable", "facility": "spf", "genotype": "pax5", "host_body_habitat": "not applicable", "host_scientific_name": "not applicable", "host_subject_id": "not applicable", "start_cohousing_timestamp": "not applicable", "timepoint_title": "1 month together in the same cage and condition"}, "sample2": {"collection_timestamp": "2017-08-07", "diseased": "not applicable", "facility": "cf", "genotype": "pax5", "host_body_habitat": "not applicable", "host_scientific_name": "not applicable", "host_subject_id": "not applicable", "start_cohousing_timestamp": "not applicable", "timepoint_title": "1 month together in the same cage and condition"}, "sample3": {"collection_timestamp": "2017-03-06", "diseased": "not provided", "facility": "spf", "genotype": "wt", "host_body_habitat": "UBERON:feces", "host_scientific_name": "Mus musculus", "host_subject_id": "V155", "start_cohousing_timestamp": "2017-01-23 00:00:00", "timepoint_title": "1 month together in the same cage and condition"}, "sample4": {"collection_timestamp": "2017-07-13", "diseased": "not provided", "facility": "cf", "genotype": "wt", "host_body_habitat": "UBERON:feces", "host_scientific_name": "Mus musculus", "host_subject_id": "V155", "start_cohousing_timestamp": "2017-01-23 00:00:00", "timepoint_title": "10 month together"}},
-                  {"collection_timestamp": "o", "diseased": "o", "facility": "o", "genotype": "o", "host_body_habitat": "o", "host_scientific_name": "o", "host_subject_id": "o", "start_cohousing_timestamp": "o", "timepoint_title": "o"}
+                  ['sample1', 'sample2', 'sample3','sample4'],
+                  ['featA', 'featB', 'featC', 'featD'],
+                  {sample1: 0, sample2: 1, sample3: 2, sample4: 3},
+                  {featA: 0, featB: 1, featC: 2, featD: 3},
+                  [[0,1],[0,1],[0,2,3],[0,2,3]],
+                  ["collection_timestamp", "diseased", "facility", "genotype",
+                   "host_body_habitat", "host_scientific_name",
+                   "host_subject_id", "start_cohousing_timestamp",
+                   "timepoint_title"],
+                  [["sample4", "not applicable", "spf", "pax5", "not applicable", "not applicable", "not applicable", "not applicable", "1 month together in the same cage and condition"],
+                   ["2017-08-07","not applicable","cf","pax5","not applicable","not applicable","not applicable","not applicable","1 month together in the same cage and condition"],
+                   ["2017-03-06","not provided","spf","wt","UBERON:feces","Mus musculus","V155","2017-01-23 00:00:00","1 month together in the same cage and condition"],
+                   ["2017-07-13","not provided","cf","wt","UBERON:feces","Mus musculus","V155","2017-01-23 00:00:00","10 month together"],
+                  ]
                 );
                 this.empress = new Empress(
                     tree,
