@@ -4,10 +4,10 @@
 
   <title>Test suite</title>
 
-   <link rel="stylesheet" href="vendor/qunit-min.css">
+   <link rel="stylesheet" href="vendor/qunit-1.23.1.css">
 
   <!-- Use qunit to help run tests -->
-  <script src="vendor/qunit-min.js"></script>
+  <script src="vendor/qunit-1.23.1.js"></script>
 
   <!-- Use requireJS to help make test modular -->
   <script src="../empress/support_files/vendor/require-2.1.22.min.js"></script>
@@ -17,6 +17,18 @@
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
 
+  <!-- add any test GUI components to this div-->
+  <div id="test-div"></div>
+  <input id="test-num-input" type="number">
+
+  <!-- The tree canvas need for use in test-empress-->
+  <div id="tree-container" class="{{ emperor_classes }}">
+    <div class="container {{ emperor_classes }}">
+      <canvas class="tree-surface" id="tree-surface">
+          Your browser does not support HTML5
+      </canvas>
+    </div>
+  </div>
 
   <script>
     QUnit.config.autostart = false;
@@ -28,21 +40,23 @@
         // not be used
         'paths' : {
           /* vendor paths */
-          'jquery' : './support_files/vendor/jquery-2.2.4.min',
+          'jquery' : './../tests/vendor/jquery-2.2.4.min',
           'glMatrix' : './support_files/vendor/gl-matrix.min',
           'chroma' : './support_files/vendor/chroma.min',
           'underscore' : './support_files/vendor/underscore-min',
           'filesaver': './support_files/vendor/FileSaver.min',
 
           /* succinct tree paths */
+          'AnimationPanel': './support_files/js/animation-panel-handler',
+          'Animator': './support_files/js/animator',
           'ByteArray': './support_files/js/byte-array',
           'BPTree' : './support_files/js/bp-tree',
           'Camera' : './support_files/js/camera',
           'Colorer' : './support_files/js/colorer',
           'BiomTable': './support_files/js/biom-table',
-          'SummaryHelper': './support_files/js/summary-helper',
           'util' : './support_files/js/util',
           'Empress' : './support_files/js/empress',
+          'Legend': './support_files/js/legend',
           'Drawer' : './support_files/js/drawer',
           'VectorOps' : './support_files/js/vector-ops',
           'CanvasEvents' : './support_files/js/canvas-events',
@@ -54,30 +68,72 @@
           'testCamera' : './../tests/test-camera',
           'testBIOMTable' : './../tests/test-biom-table',
           'testColorer' : './../tests/test-colorer',
-          'testSummaryHelper': './../tests/test-summary-helper',
           'testUtil' : './../tests/test-util',
           'testCircularLayoutComputation' : './../tests/test-circular-layout-computation',
           'testVectorOps' : './../tests/test-vector-ops',
           'testEmpress' : './../tests/test-empress',
-          'testExport': './../tests/test-export'
+          'testExport': './../tests/test-export',
+          'testAnimationHandler': './../tests/test-animation-panel-handler'
         }
     });
 
     // load tests
     require(
-        ['jquery', 'glMatrix', 'chroma', 'underscore', 'ByteArray', 'BPTree',
-         'Camera', 'Colorer', 'BiomTable', 'SummaryHelper', 'util', 'Empress',
-         'testBPTree', 'testByteTree', 'testBIOMTable', 'testCamera',
-         'testColorer', 'testSummaryHelper', 'testUtil',
-         'testCircularLayoutComputation', 'testVectorOps', 'testEmpress',
-         'testExport'],
+        ['jquery',
+         'glMatrix',
+         'chroma',
+         'underscore',
+         'AnimationPanel',
+         'Animator',
+         'ByteArray',
+         'BPTree',
+         'Camera',
+         'Colorer',
+         'BiomTable',
+         'util',
+         'Empress',
+         'Legend',
+         'testBPTree',
+         'testByteTree',
+         'testBIOMTable',
+         'testCamera',
+         'testColorer',
+         'testUtil',
+         'testCircularLayoutComputation',
+         'testVectorOps',
+         'testEmpress',
+         'testAnimationHandler',
+         'testExport'
+         ],
 
         // start tests
-        function ($, gl, chroma, underscore, ByteArray, BPTree, Camera,
-          testBIOMTable, Colorer, BiomTable, SummaryHelper, util, Empress,
-          testBPTree, testByteTree, testCamera, testColorer, testSummaryHelper,
-          testUtil, testCircularLayoutComputation, testVectorOps, testEmpress,
-          testExport) {
+        function (
+          $,
+          gl,
+          chroma,
+          underscore,
+          AnimationPanel,
+          Animator,
+          ByteArray,
+          BPTree,
+          Camera,
+          testBIOMTable,
+          Colorer,
+          BiomTable,
+          util,
+          Empress,
+          Legend,
+          testBPTree,
+          testByteTree,
+          testCamera,
+          testColorer,
+          testUtil,
+          testCircularLayoutComputation,
+          testVectorOps,
+          testEmpress,
+          testAnimationHandler,
+          testExport
+        ) {
             $(document).ready(function() {
                 QUnit.start();
             });

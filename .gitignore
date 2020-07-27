@@ -142,3 +142,11 @@ dmypy.json
 # dev scripts/data
 inf/
 create-plt.bash
+
+# vi swap and temp files
+*.swp
+*.swo
+*~
+
+# ignore dev tree file
+development-page.html

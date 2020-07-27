@@ -29,6 +29,7 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
          sample_metadata: qiime2.Metadata, pcoa: OrdinationResults = None,
          feature_metadata: qiime2.Metadata = None,
          ignore_missing_samples: bool = False,
+         filter_extra_samples: bool = False,
          filter_missing_features: bool = False,
          number_of_features: int = 5,
          filter_unobserved_features_from_phylogeny: bool = True) -> None:
@@ -37,6 +38,9 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
         # select the top N most important features based on the vector's
         # magnitude (coped from q2-emperor)
         feats = pcoa.features.copy()
+        # in cases where the axes are all zero there might be all-NA
+        # columns
+        feats.fillna(0, inplace=True)
         origin = np.zeros_like(feats.columns)
         feats['importance'] = feats.apply(euclidean, axis=1, args=(origin,))
         feats.sort_values('importance', inplace=True, ascending=False)
@@ -56,6 +60,7 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
                   sample_metadata=sample_metadata,
                   feature_metadata=feature_metadata, ordination=pcoa,
                   ignore_missing_samples=ignore_missing_samples,
+                  filter_extra_samples=filter_extra_samples,
                   filter_missing_features=filter_missing_features,
                   filter_unobserved_features_from_phylogeny=trim_tree)
 

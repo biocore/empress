@@ -11,6 +11,8 @@ import pandas as pd
 import skbio
 from skbio import TreeNode
 from empress import taxonomy_utils
+from empress.tree import bp_tree_tips, bp_tree_non_tips
+from itertools import zip_longest
 
 
 class DataMatchingError(Exception):
@@ -54,11 +56,13 @@ def read(file_name, file_format='newick'):
 
 
 def match_inputs(
-    tree,
+    bp_tree,
     table,
     sample_metadata,
     feature_metadata=None,
+    ordination=None,
     ignore_missing_samples=False,
+    filter_extra_samples=False,
     filter_missing_features=False
 ):
     """Matches various input sources.
@@ -70,8 +74,7 @@ def match_inputs(
 
     Parameters
     ----------
-
-    tree: empress.tree.Tree
+    bp_tree: bp.BP
         The tree to be visualized.
     table: pd.DataFrame
         Representation of the feature table. The index should describe feature
@@ -86,6 +89,8 @@ def match_inputs(
         IDs and the columns should describe different feature metadata fields'
         names. (Feature IDs here can describe tips or internal nodes in the
         tree.)
+    ordination: skbio.OrdinationResults, optional
+        The ordination to display in a tandem plot.
     ignore_missing_samples: bool
         If True, pads missing samples (i.e. samples in the table but not the
         metadata) with placeholder metadata. If False, raises a
@@ -94,6 +99,10 @@ def match_inputs(
         no samples are shared between the table and metadata, a
         DataMatchingError is raised regardless.) This is analogous to the
         ignore_missing_samples flag in Emperor.
+    filter_extra_samples: bool, optional
+        If True, ignores samples in the feature table that are not present in
+        the ordination. If False, raises a DataMatchingError if such samples
+        exist.
     filter_missing_features: bool
         If True, filters features from the table that aren't present as tips in
         the tree. If False, raises a DataMatchingError if any such features
@@ -135,6 +144,8 @@ def match_inputs(
                metadata, AND ignore_missing_samples is False.
             5. The feature metadata was passed, but no features present in it
                are also present as tips or internal nodes in the tree.
+            6. The ordination AND feature table don't have exactly the same
+               samples.
 
     References
     ----------
@@ -144,17 +155,47 @@ def match_inputs(
     # Match table and tree.
     # (Ignore None-named tips in the tree, which will be replaced later on
     # with "default" names like "EmpressNode0".)
-    tip_names = set([n.name for n in tree.tips() if n.name is not None])
-    tree_and_table_features = table.index.intersection(tip_names)
+    tip_names = set(bp_tree_tips(bp_tree))
+    ff_table = table.copy()
 
+    if ordination is not None:
+        table_ids = set(ff_table.columns)
+        ord_ids = set(ordination.samples.index)
+
+        # don't allow for disjoint datasets
+        if not (table_ids & ord_ids):
+            raise DataMatchingError(
+                "No samples in the feature table are present in the "
+                "ordination"
+            )
+
+        if ord_ids.issubset(table_ids):
+            extra = table_ids - ord_ids
+            if extra:
+                if not filter_extra_samples:
+                    raise DataMatchingError(
+                        "The feature table has more samples than the "
+                        "ordination. These are the problematic sample "
+                        "identifiers: %s. You can override this error by using"
+                        " the --p-filter-extra-samples flag." %
+                        (', '.join(sorted(extra)))
+                    )
+                ff_table = ff_table[ord_ids]
+                # We'll remove now-empty features from the table later in
+                # the code
+        else:
+            raise DataMatchingError(
+                "The ordination has more samples than the feature table."
+            )
+
+    tree_and_table_features = ff_table.index.intersection(tip_names)
     if len(tree_and_table_features) == 0:
         # Error condition 1
         raise DataMatchingError(
             "No features in the feature table are present as tips in the tree."
         )
 
-    ff_table = table.copy()
-    if len(tree_and_table_features) < len(table.index):
+    if len(tree_and_table_features) < len(ff_table.index):
         if filter_missing_features:
             # Filter table to just features that are also present in the tree.
             #
@@ -163,7 +204,7 @@ def match_inputs(
             # (and this is going to be the case in most datasets where the
             # features correspond to tips, since internal nodes aren't
             # explicitly described in the feature table).
-            ff_table = table.loc[tree_and_table_features]
+            ff_table = ff_table.loc[tree_and_table_features]
 
             # Report to user about any dropped features from table.
             dropped_feature_ct = table.shape[0] - ff_table.shape[0]
@@ -259,9 +300,7 @@ def match_inputs(
         tip_metadata = ts_feature_metadata.loc[fm_and_tip_features]
 
         # Subset internal node metadata
-        internal_node_names = set([
-            n.name for n in tree.non_tips(include_self=True)
-        ])
+        internal_node_names = set(bp_tree_non_tips(bp_tree))
         fm_and_int_features = fm_ids.intersection(internal_node_names)
         int_metadata = ts_feature_metadata.loc[fm_and_int_features]
 
@@ -273,3 +312,117 @@ def match_inputs(
             )
 
     return ff_table, sf_sample_metadata, tip_metadata, int_metadata
+
+
+def shifting(bitlist, size=51):
+    """Takes a list of 0-1s, splits in size and converts it to a list of int
+
+    Parameters
+    ----------
+    bitlist: list of int
+        The input list of 0-1
+    size: int
+        The size of the buffer
+
+    Returns
+    -------
+    list of int
+        Representation of the 0-1s as a list of int
+
+    Raises
+    ------
+    ValueError
+        If any of the list values is different than 0 or 1
+
+    References
+    ----------
+    Borrowed from https://stackoverflow.com/a/12461400
+
+    Example
+    -------
+    shifting([1, 0, 0, 0, 0, 1], size=3) => [4, 1]
+    """
+    if not all(x in [0, 1] for x in bitlist):
+        raise ValueError('Your list has values other than 0-1s')
+
+    values = [iter(bitlist)] * size
+    ints = []
+    for num in zip_longest(*values):
+        out = 0
+        init_zeros = []
+        seen_one = False
+        for bit in num:
+            if bit is None:
+                continue
+
+            if not seen_one:
+                if bit == 0:
+                    init_zeros.append(0)
+                else:
+                    seen_one = True
+
+            out = (out << 1) | bit
+
+        # if out == 0, everything was zeros so we can simply add init_zeros
+        if out == 0:
+            ints.extend(init_zeros)
+        else:
+            ints.append(out)
+
+    # we need to check init_zeros for the last loop in case the last value
+    # had padded zeros
+    if init_zeros and out != 0:
+        # rm last value
+        ints = ints[:-1]
+        # add zeros
+        ints.extend(init_zeros)
+        # readd last value
+        ints.append(out)
+
+    return ints
+
+
+def filter_feature_metadata_to_tree(tip_md, int_md, bp_tree):
+    """Filters feature metadata DataFrames to describe the nodes in a tree.
+
+    Parameters
+    ----------
+    tip_md: pd.DataFrame
+        Tip node metadata. Index should describe node names, columns can be
+        arbitrary metadata columns.
+    int_md: pd.DataFrame
+        Internal node metadata, structured analogously to tip_md.
+    bp_tree: bp.BP
+        Tree to filter the metadata objects to.
+
+    Returns
+    -------
+    f_tip_md, f_int_md
+        f_tip_md: pd.DataFrame
+            Version of tip_md filtered to just the node names that describe
+            tips in bp_tree. May be empty, if none of the names in tip_md were
+            present in bp_tree.
+        f_int_md: pd.DataFrame
+            Version of int_md filtered to just the node names that describe
+            internal nodes in bp_tree. May be empty, if none of the names in
+            int_md were present in bp_tree.
+
+    Raises
+    ------
+    DataMatchingError
+        If f_tip_and_md and f_int_md would both be empty.
+    """
+    tree_tip_names = set(bp_tree_tips(bp_tree))
+    tree_int_names = set(bp_tree_non_tips(bp_tree))
+    shared_tip_names = tip_md.index.intersection(tree_tip_names)
+    shared_int_names = int_md.index.intersection(tree_int_names)
+    if len(shared_tip_names) == 0 and len(shared_int_names) == 0:
+        raise DataMatchingError(
+            "After performing empty feature removal from the table and then "
+            "shearing the tree to tips that are also present in the table, "
+            "none of the nodes in the feature metadata are present in the "
+            "tree."
+        )
+    f_tip_md = tip_md.loc[shared_tip_names]
+    f_int_md = int_md.loc[shared_int_names]
+    return f_tip_md, f_int_md

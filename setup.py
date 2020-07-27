@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # ----------------------------------------------------------------------------
-# Copyright (c) 2013--, empress development team.
+# Copyright (c) 2016-2020, empress development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,13 +9,13 @@
 
 from setuptools import setup, find_packages
 
-__version__ = "0.1.0-dev"
+__version__ = "0.2.0-dev"
 __maintainer__ = "Empress development team"
 __email__ = "kcantrel@ucsd.edu"
 
 # based on the text found in github.com/qiime/pynast
 classes = """
-    Development Status :: 4 - Beta
+    Development Status :: 5 - Alpha
     License :: OSI Approved :: BSD License
     Topic :: Software Development :: Libraries :: Application Frameworks
     Topic :: Software Development :: User Interfaces
@@ -34,8 +34,8 @@ classifiers = [s.strip() for s in classes.split('\n') if s]
 with open('README.md') as f:
     long_description = f.read()
 
-base = ["numpy", "scipy", "pandas",
-        "jinja2", "scikit-bio", "biom-format", "iow", "emperor"]
+base = ["numpy", "scipy", "pandas", "click",
+        "jinja2", "scikit-bio", "biom-format", "iow", "emperor>=1.0.1"]
 test = ["pep8", "flake8", "nose"]
 all_deps = base + test
 

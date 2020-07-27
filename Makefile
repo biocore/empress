@@ -8,7 +8,7 @@
 
 .PHONY: test pytest jstest stylecheck jsstyle githook docs
 
-JSLOCS = empress/support_files/js/*.js
+JSLOCS = empress/support_files/js/*.js tests/*.js
 
 test: pytest jstest
 
@@ -54,4 +54,14 @@ docs:
 		--i-pcoa docs/moving-pictures/unweighted_unifrac_pcoa_results.qza \
 		--m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
 		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
-		--o-visualization docs/moving-pictures/empress-tree-tandem.qzv
+		--o-visualization docs/moving-pictures/empress-tree-tandem.qzv \
+		--p-filter-extra-samples
+	qiime empress plot \
+		--i-tree docs/moving-pictures/rooted-tree.qza \
+		--i-pcoa docs/moving-pictures/biplot.qza \
+		--i-feature-table docs/moving-pictures/table.qza \
+		--m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
+		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
+		--o-visualization docs/moving-pictures/empress-tree-tandem-biplot.qzv \
+		--p-filter-extra-samples \
+		--p-number-of-features 10

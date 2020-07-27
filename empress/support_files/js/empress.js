@@ -17,11 +17,6 @@ define([
     util,
     chroma
 ) {
-    // The index position of the color array
-    const RED = 0;
-    const GREEN = 1;
-    const BLUE = 2;
-
     /**
      * @class EmpressTree
      *
@@ -38,9 +33,20 @@ define([
      *                       by a node's x2 and y2 coordinates in the data.
      * @param {String} defaultLayout The default layout to draw the tree with
      * @param {BIOMTable} biom The BIOM table used to color the tree
-     * @param {Array} featureMetadataColumns Columns of the feature metadata
+     * @param {Array} featureMetadataColumns Columns of the feature metadata.
+     *                Note: The order of this array should match the order of
+     *                      the arrays which are the values of tipMetadata and
+     *                      intMetadata. If no feature metadata was provided
+     *                      when generating an Empress visualization, this
+     *                      parameter should be [] (and tipMetadata and
+     *                      intMetadata should be {}s).
      * @param {Object} tipMetadata Feature metadata for tips in the tree
+     *                 Note: This should map tip names to an array of feature
+     *                       metadata values. Each array should have the same
+     *                       length as featureMetadataColumns.
      * @param {Object} intMetadata Feature metadata for internal nodes in tree
+     *                 Note: Should be formatted analogously to tipMetadata.
+     *                       Note that internal node names can be non-unique.
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
      */
     function Empress(
@@ -78,9 +84,6 @@ define([
          * The default color of the tree
          */
         this.DEFAULT_COLOR = [0.75, 0.75, 0.75];
-        this.DEFAULT_COLOR_HEX = "#c0c0c0";
-
-        this.DEFAULT_BRANCH_VAL = 1;
 
         /**
          * @type {BPTree}
@@ -89,11 +92,6 @@ define([
          */
         this._tree = tree;
         this._numTips = 0;
-        for (var i = 0; i < this._tree.size; i++) {
-            if (this._tree.isleaf(this._tree.postorderselect(i))) {
-                this._numTips++;
-            }
-        }
 
         /**
          * @type {Object}
@@ -105,6 +103,17 @@ define([
          */
         this._treeData = treeData;
 
+        // count number of tips and set default color/visible
+        // Note: currently empress tree uses 1-based index since the bp-tree
+        //       bp-tree.js is based off of used 1-based index.
+        for (var i = 1; i <= this._tree.size; i++) {
+            this._treeData[i].color = this.DEFAULT_COLOR;
+            this._treeData[i].visible = true;
+            if (this._tree.isleaf(this._tree.postorderselect(i))) {
+                this._numTips++;
+            }
+        }
+
         /**
          * @type{Object}
          * Converts tree node names to an array of _treeData keys.
@@ -114,7 +123,8 @@ define([
 
         /**
          * @type {BiomTable}
-         * Sample metadata
+         * BIOM table: includes feature presence information and sample-level
+         * metadata.
          * @private
          */
         this._biom = biom;
@@ -128,10 +138,10 @@ define([
 
         /**
          * @type{Object}
-         * Feature metadata: keys are tree node names, and values are objects
-         * mapping feature metadata column names to the metadata value for that
-         * feature. We split this up into tip and internal node feature
-         * metadata objects.
+         * Feature metadata: keys are tree node names, and values are arrays
+         * of length equal to this._featureMetadataColumns.length.
+         * For the sake of simplicity, we split this up into tip and internal
+         * node feature metadata objects.
          * @private
          */
         this._tipMetadata = tipMetadata;
@@ -158,18 +168,23 @@ define([
          * Maps tree layouts to the average point of each layout
          */
         this.layoutAvgPoint = {};
+
         /**
          * @type{Number}
-         * The line width used for drawing "thick" lines.
+         * The (not-yet-scaled) line width used for drawing "thick" lines.
+         * Can be passed as input to this.thickenSameSampleLines().
          */
-        this._currentLineWidth = 1;
+        this._currentLineWidth = 0;
 
         /**
          * @type{CanvasEvents}
          * Handles user events
          */
         // allow canvas to be null to make testing empress easier
-        if (canvas !== null) {
+        if (
+            canvas !== null &&
+            document.getElementById("quick-search") !== null
+        ) {
             this._events = new CanvasEvents(this, this._drawer, canvas);
         }
     }
@@ -479,7 +494,7 @@ define([
             // |   +-
             // |
             // +--------
-            var leafAndRootCt = this._tree.numleafs() + 1;
+            var leafAndRootCt = this._tree.numleaves() + 1;
             numLines = leafAndRootCt + 2 * (this._tree.size - leafAndRootCt);
         } else if (this._currentLayout === "Circular") {
             // All internal nodes (except root which is just a point) have an
@@ -490,7 +505,7 @@ define([
             // i.e. 3 lines for the leaves and 16 * (5 - 3 - 1) lines for the
             // internal nodes. The -1 is there because we do not draw a line
             // for the root.
-            var leafCt = this._tree.numleafs();
+            var leafCt = this._tree.numleaves();
             numLines = leafCt + 16 * (this._tree.size - leafCt - 1);
         } else {
             // the root is not drawn in the unrooted layout
@@ -511,7 +526,7 @@ define([
      */
     Empress.prototype.getNodeCoords = function () {
         var tree = this._tree;
-        var coords = new Float32Array(tree.size * 5);
+        var coords = [];
         var coords_index = 0;
 
         for (var i = 1; i <= tree.size; i++) {
@@ -519,12 +534,12 @@ define([
             if (!node.name.startsWith("EmpressNode")) {
                 coords[coords_index++] = this.getX(node);
                 coords[coords_index++] = this.getY(node);
-                coords.set(node.color, coords_index);
+                coords.push(...node.color);
                 coords_index += 3;
             }
         }
 
-        return coords;
+        return new Float32Array(coords);
     };
 
     /**
@@ -766,31 +781,31 @@ define([
      *                        passed to Drawer.loadSampleThickBuf().
      * @param {Number} node   Node index in this._treeData, from which we'll
      *                        retrieve coordinate information.
-     * @param {Number} level Desired line thickness (note that this will be
-     *                       applied on both sides of the line -- so if
-     *                       level = 1 here then the drawn thick line will
-     *                       have a width of 1 + 1 = 2).
+     * @param {Number} lwScaled Desired line thickness (note that this will be
+     *                          applied on both sides of the line -- so if
+     *                          lwScaled = 1 here then the drawn thick line
+     *                          will have a width of 1 + 1 = 2).
      */
     Empress.prototype._addThickVerticalLineCoords = function (
         coords,
         node,
-        level
+        lwScaled
     ) {
         var corners = {
             tL: [
-                this.getX(this._treeData[node]) - level,
+                this.getX(this._treeData[node]) - lwScaled,
                 this._treeData[node].highestchildyr,
             ],
             tR: [
-                this.getX(this._treeData[node]) + level,
+                this.getX(this._treeData[node]) + lwScaled,
                 this._treeData[node].highestchildyr,
             ],
             bL: [
-                this.getX(this._treeData[node]) - level,
+                this.getX(this._treeData[node]) - lwScaled,
                 this._treeData[node].lowestchildyr,
             ],
             bR: [
-                this.getX(this._treeData[node]) + level,
+                this.getX(this._treeData[node]) + lwScaled,
                 this._treeData[node].lowestchildyr,
             ],
         };
@@ -799,22 +814,46 @@ define([
     };
 
     /**
-     * Thickens the branches that belong to unique sample categories
-     * (i.e. features that are only in gut)
+     * Thickens the colored branches of the tree.
      *
-     * @param {Number} level - Desired line thickness (note that this will be
-     *                         applied on both sides of the line -- so if
-     *                         level = 1 here then the drawn thick line will
-     *                         have a width of 1 + 1 = 2).
+     * @param {Number} lw Amount of thickness to use, in the same "units"
+     *                    that the user can enter in one of the line width
+     *                    <input>s. If this is 0, this function won't do
+     *                    anything. (If this is < 0, this will throw an error.
+     *                    But this really shouldn't happen, since this
+     *                    parameter should be the output from
+     *                    util.parseAndValidateLineWidth().)
      */
-    Empress.prototype.thickenSameSampleLines = function (level) {
-        // we do this because SidePanel._updateSample() calls this function
-        // with lWidth - 1, so in order to make sure we're setting this
-        // properly we add 1 to this value.
-        this._currentLineWidth = level + 1;
+    Empress.prototype.thickenSameSampleLines = function (lw) {
+        // If lw isn't > 0, then we don't thicken colored lines at all --
+        // we just leave them at their default width.
+        if (lw < 0) {
+            // should never happen because util.parseAndValidateLineWidth()
+            // should've been called in order to obtain lw, but in case
+            // this gets messed up in the future we'll catch it
+            throw "Line width passed to thickenSameSampleLines() is < 0.";
+        } else {
+            // Make sure that, even if lw is 0 (i.e. we don't need to
+            // thicken the lines), we still set the current line width
+            // accordingly. This way, when doing things like updating the
+            // layout that'll require re-drawing the tree based on the most
+            // recent settings, we'll have access to the correct line width.
+            this._currentLineWidth = lw;
+            if (lw === 0) {
+                // But, yeah, if lw is 0 we can just return early.
+                return;
+            }
+        }
+        // Scale the line width in such a way that trees with more leaves have
+        // "smaller" line width values than trees with less leaves. This is a
+        // pretty arbitrary equation based on messing around and seeing what
+        // looked nice on mid- and small-sized trees; as a TODO for the future,
+        // there is almost certainly a better way to do this.
+        var lwScaled =
+            (2 * lw) / Math.pow(Math.log10(this._tree.numleaves()), 2);
         var tree = this._tree;
 
-        // the coordinate of the tree.
+        // the coordinates of the tree
         var coords = [];
         this._drawer.loadSampleThickBuf([]);
 
@@ -828,7 +867,7 @@ define([
             this._currentLayout === "Rectangular" &&
             this._treeData[tree.size].sampleColored
         ) {
-            this._addThickVerticalLineCoords(coords, tree.size, level);
+            this._addThickVerticalLineCoords(coords, tree.size, lwScaled);
         }
         // iterate through the tree in postorder, skip root
         for (var i = 1; i < this._tree.size; i++) {
@@ -844,7 +883,7 @@ define([
             if (this._currentLayout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this._treeData[node].hasOwnProperty("lowestchildyr")) {
-                    this._addThickVerticalLineCoords(coords, node, level);
+                    this._addThickVerticalLineCoords(coords, node, lwScaled);
                 }
                 /* Draw a horizontal thick line for this node -- we can safely
                  * do this for all nodes since this ignores the root, and all
@@ -857,19 +896,19 @@ define([
                 corners = {
                     tL: [
                         this.getX(this._treeData[parent]),
-                        this.getY(this._treeData[node]) + level,
+                        this.getY(this._treeData[node]) + lwScaled,
                     ],
                     tR: [
                         this.getX(this._treeData[node]),
-                        this.getY(this._treeData[node]) + level,
+                        this.getY(this._treeData[node]) + lwScaled,
                     ],
                     bL: [
                         this.getX(this._treeData[parent]),
-                        this.getY(this._treeData[node]) - level,
+                        this.getY(this._treeData[node]) - lwScaled,
                     ],
                     bR: [
                         this.getX(this._treeData[node]),
-                        this.getY(this._treeData[node]) - level,
+                        this.getY(this._treeData[node]) - lwScaled,
                     ],
                 };
                 this._addTriangleCoords(coords, corners, color);
@@ -907,14 +946,14 @@ define([
                             y1,
                             x2,
                             y2,
-                            level
+                            lwScaled
                         );
                         var arc1corners = VectorOps.computeBoxCorners(
                             x1,
                             y1,
                             x2,
                             y2,
-                            level
+                            lwScaled
                         );
                         this._addTriangleCoords(coords, arc0corners, color);
                         this._addTriangleCoords(coords, arc1corners, color);
@@ -926,38 +965,19 @@ define([
                 y1 = this._treeData[node].yc0;
                 x2 = this.getX(this._treeData[node]);
                 y2 = this.getY(this._treeData[node]);
-                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, level);
+                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, lwScaled);
                 this._addTriangleCoords(coords, corners, color);
             } else {
                 x1 = this.getX(this._treeData[parent]);
                 y1 = this.getY(this._treeData[parent]);
                 x2 = this.getX(this._treeData[node]);
                 y2 = this.getY(this._treeData[node]);
-                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, level);
+                corners = VectorOps.computeBoxCorners(x1, y1, x2, y2, lwScaled);
                 this._addTriangleCoords(coords, corners, color);
             }
         }
 
         this._drawer.loadSampleThickBuf(coords);
-    };
-
-    /**
-     * Color the tree by sample IDs
-     *
-     * @param {Array} sID - The sample IDs
-     * @param {Array} rgb - The rgb array which defines the color
-     */
-    Empress.prototype.colorSampleIDs = function (sIds, rgb) {
-        var tree = this._tree;
-        var obs = this._biom.getObjservationUnionForSamples(sIds);
-        obs = Array.from(this._namesToKeys(obs));
-        obs = this._projectObservations({ samples: new Set(obs) });
-        obs = Array.from(obs.samples);
-
-        for (var i = 0; i < obs.length; i++) {
-            this._treeData[obs[i]].color = rgb;
-        }
-        this.drawTree();
     };
 
     /**
@@ -975,9 +995,7 @@ define([
 
         // get a group of observations per color
         for (var group in sampleGroups) {
-            obs = this._biom.getObjservationUnionForSamples(
-                sampleGroups[group]
-            );
+            obs = this._biom.getObservationUnionForSamples(sampleGroups[group]);
             obs = Array.from(this._namesToKeys(obs));
             observationsPerGroup[group] = new Set(obs);
         }
@@ -1030,12 +1048,15 @@ define([
      * @param {String} cat The sample category to use
      * @param {String} color - the Color map to use
      *
-     * @return {Object} Maps keys to colors
+     * @return {Object} If there exists at least on group with unique features
+     *                  then an object will be returned that maps groups with
+     *                  unique features to a color. If there doesn't exist a
+     *                  group with unique features then null will be returned.
      */
     Empress.prototype.colorBySampleCat = function (cat, color) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
-        var categories = util.naturalSort(Object.keys(obs));
+        var categories = Object.keys(obs);
 
         // shared by the following for loops
         var i, j, category;
@@ -1048,8 +1069,12 @@ define([
 
         // assign internal nodes to appropriate category based on its children
         obs = this._projectObservations(obs);
+        if (Object.keys(obs).length === 0) {
+            return null;
+        }
 
         // assign colors to categories
+        categories = util.naturalSort(Object.keys(obs));
         var colorer = new Colorer(color, categories);
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
@@ -1057,7 +1082,6 @@ define([
         var keyInfo = colorer.getMapHex();
         // color tree
         this._colorTree(obs, cm);
-
         return keyInfo;
     };
 
@@ -1065,8 +1089,8 @@ define([
      * Color the tree based on a feature metadata column.
      *
      * @param {String} cat The feature metadata column to color nodes by.
-     *                     It's assumed that this is present in
-     *                     this._featureMetadataColumns.
+     *                     This must be present in this._featureMetadataColumns
+     *                     or an error will be thrown.
      * @param {String} color The name of the color map to use.
      * @param {String} method Defines how coloring is done. If this is "tip",
      *                        then only tip-level feature metadata will be
@@ -1081,8 +1105,17 @@ define([
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
     Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
-        // Produce a mapping of unique values in this feature metadata
-        // column to an array of the feature(s) with each value.
+        // In order to access feature metadata for a given node, we need to
+        // find the 0-based index in this._featureMetadataColumns that the
+        // specified f.m. column corresponds to. (We *could* get around this by
+        // generating a mapping of f.m. column name -> index in Python, but I
+        // don't expect that f.m. columns will be very large and this is only
+        // done once per coloring operation so this shouldn't be a bottleneck.)
+        var fmIdx = _.indexOf(this._featureMetadataColumns, cat);
+        if (fmIdx < 0) {
+            throw "Feature metadata column " + cat + " not present in data.";
+        }
+
         // The coloring method influences how much of the feature metadata
         // we'll look at. (While we're at it, validate the coloring method.)
         var fmObjs;
@@ -1094,26 +1127,28 @@ define([
             throw 'F. metadata coloring method "' + method + '" unrecognized.';
         }
 
+        // Produce a mapping of unique values in this feature metadata
+        // column to an array of the node name(s) with each value.
         var uniqueValueToFeatures = {};
         _.each(fmObjs, function (mObj) {
-            _.mapObject(mObj, function (fmRow, nodeID) {
+            _.mapObject(mObj, function (fmRow, nodeName) {
                 // This is loosely based on how BIOMTable.getObsBy() works.
-                var fmVal = fmRow[cat];
+                var fmVal = fmRow[fmIdx];
                 if (_.has(uniqueValueToFeatures, fmVal)) {
-                    uniqueValueToFeatures[fmVal].push(nodeID);
+                    uniqueValueToFeatures[fmVal].push(nodeName);
                 } else {
-                    uniqueValueToFeatures[fmVal] = [nodeID];
+                    uniqueValueToFeatures[fmVal] = [nodeName];
                 }
             });
         });
 
-        var scope = this;
         var sortedUniqueValues = util.naturalSort(
             Object.keys(uniqueValueToFeatures)
         );
         // convert observation IDs to _treeData keys. Notably, this includes
         // converting the values of uniqueValueToFeatures from Arrays to Sets.
         var obs = {};
+        var scope = this;
         _.each(sortedUniqueValues, function (uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
             obs[uniqueVal] = scope._namesToKeys(
@@ -1157,6 +1192,8 @@ define([
      *
      *      2) Assigns each internal node to a group if all of its children belong
      *         to the same group.
+     *
+     *      3) Remove empty groups from return object.
      *
      * Note: All tips that are not passed into obs are considered to belong to
      *       a "not-represented" group, which will be omitted from the
@@ -1214,13 +1251,22 @@ define([
         }
         var result = util.keepUniqueKeys(obs, notRepresented);
 
+        // remove all groups that do not contain unique features
+        result = _.pick(result, function (value, key) {
+            return value.size > 0;
+        });
+
         return result;
     };
 
     /**
      * Updates the tree based on obs and cm but does not draw a new tree.
      *
-     * @param{Object} obs The mapping from sample category to unique features.
+     * Note: The nodes in each sample category should be unique. The behavior of
+     *       this function is undefined if nodes in each category are not
+     *       unique.
+     *
+     * @param{Object} obs The mapping from sample category to unique nodes.
      * @param{Object} cm The mapping from sample category to color.
      */
     Empress.prototype._colorTree = function (obs, cm) {
@@ -1283,10 +1329,7 @@ define([
                 // in drawTree(). Doing these calls out of order (draw tree,
                 // then call thickenSameSampleLines()) causes the thick-line
                 // stuff to only change whenever the tree is redrawn.
-                if (this._currentLineWidth !== 1) {
-                    // The - 1 mimics the behavior of SidePanel._updateSample()
-                    this.thickenSameSampleLines(this._currentLineWidth - 1);
-                }
+                this.thickenSameSampleLines(this._currentLineWidth);
                 // this._drawer.loadNodeBuff(this.getNodeCoords());
                 // this.drawTree();
                 this.centerLayoutAvgPoint();
@@ -1322,19 +1365,20 @@ define([
 
     /**
      * Returns a mapping of trajectory values to observations given a gradient
-     * and trajectory. Ignores trajectories which represent missing data. (i.e.
-     * 'unknown' for non-numberic and NaN for numeric)
+     * and trajectory. See BIOMTable.getGradientStep()'s docs for details.
      *
-     * @param{Object} col The column in metadata the gradient belongs to.
-     * @param{Object} grad The value for the gradient. observations that have
-     *                this value will only be returned.
-     * @param{Object} traj The column for the trajectory. All observations with
-     *                missing data in this column will be ignored.
+     * @param {String} gradCol Sample metadata column for the gradient
+     * @param {String} gradVal Value within the gradient column to get
+     *                         information for
+     * @param {String} trajCol Sample metadata column for the trajectory
      *
-     * @return{Object} return a mapping of trajectory values to observations.
+     * @return {Object} Maps trajectory values to an array of feature IDs
+     *
+     * @throws {Error} If the gradient or trajectory columns are unrecognized.
+     *                 If no samples' gradient column value is gradVal.
      */
-    Empress.prototype.getGradientStep = function (cat, grad, traj) {
-        return this._biom.getGradientStep(cat, grad, traj);
+    Empress.prototype.getGradientStep = function (gradCol, gradVal, trajCol) {
+        return this._biom.getGradientStep(gradCol, gradVal, trajCol);
     };
 
     /**
@@ -1409,6 +1453,47 @@ define([
             this.layoutAvgPoint[this._currentLayout][2]
         );
         this.drawTree();
+    };
+
+    /**
+     * Set a callback when a the node menu is shown on screen
+     *
+     * The callback will receive an array of samples as the only argument. This
+     * is intended to be used with Emperor.
+     *
+     * @param {Function} callback Callback to execute.
+     */
+    Empress.prototype.setOnNodeMenuVisibleCallback = function (callback) {
+        this._events.selectedNodeMenu.visibleCallback = callback;
+    };
+
+    /**
+     * Set a callback when the node menu is removed from the screen
+     *
+     * The callback will receive an array of samples as the only argument. This
+     * is intended to be used with Emperor.
+     *
+     * @param {Function} callback Callback to execute.
+     */
+    Empress.prototype.setOnNodeMenuHiddenCallback = function (callback) {
+        this._events.selectedNodeMenu.hiddenCallback = callback;
+    };
+
+    /**
+     * Show the node menu for a node name
+     *
+     * @param {String} nodeName The name of the node to show.
+     */
+    Empress.prototype.showNodeMenuForName = function (nodeName) {
+        if (!this._tree.containsNode(nodeName)) {
+            util.toastMsg(
+                "The node '" + nodeName + "' is not present in the phylogeny"
+            );
+            return;
+        }
+
+        this._events.selectedNodeMenu.clearSelectedNode();
+        this._events.placeNodeSelectionMenu(nodeName, false);
     };
 
     return Empress;

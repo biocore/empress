@@ -1,6 +1,4 @@
-define(["underscore", "Colorer"], function (_, Colorer) {
-    // class name for css tags
-    var COLLAPSE_CLASS = "collapsible";
+define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     /**
      *
      * @class SidePanel
@@ -129,7 +127,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
                 sSel: { disabled: true },
                 sColor: { value: "discrete-coloring-qiime" },
                 sHideChk: { checked: false },
-                sLineWidth: { value: 1 },
+                sLineWidth: { value: 0 },
             },
             [this.sAddOpts, this.sUpdateBtn]
         );
@@ -142,7 +140,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
                 fChk: { checked: false },
                 fSel: { disabled: true },
                 fColor: { value: "discrete-coloring-qiime" },
-                fLineWidth: { value: 1 },
+                fLineWidth: { value: 0 },
                 fMethodChk: { checked: true },
             },
             [this.fAddOpts, this.fUpdateBtn]
@@ -166,19 +164,20 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      * and feature metadata coloring settings. (There is definitely more work
      * to be done on removing shared code, but this is a start.)
      *
-     * @param{String} colorMethodName The name of a method of SidePanel to call
-     *                                to re-color the tree: for example,
-     *                                "_colorSampleTree". (Passing the actual
-     *                                method as an argument seems to cause
-     *                                problems due to "this" not working
-     *                                properly. This was the easiest solution.)
-     * @param{lwInput} HTMLElement An <input> with type="number" from which
-     *                             we'll get the .value indicating the line
-     *                             width to use when thickening lines.
-     * @param{updateBtn} HTMLElement This element will be hidden at the end of
-     *                               this function. It should correspond to the
-     *                               "Update" button for the sample or feature
-     *                               metadata coloring tab.
+     * @param {String} colorMethodName The name of a method of SidePanel to
+     *                                 call to re-color the tree: for example,
+     *                                 "_colorSampleTree". (Passing the actual
+     *                                 method as an argument seems to cause
+     *                                 problems due to "this" not working
+     *                                 properly. This was the easiest
+     *                                 solution.)
+     * @param {HTMLElement} lwInput An <input> with type="number" from which
+     *                              we'll get the .value indicating the line
+     *                              width to use when thickening lines.
+     * @param {HTMLElement} updateBtn This element will be hidden at the end of
+     *                                this function. It should correspond to
+     *                                the "Update" button for the sample or
+     *                                feature metadata coloring tab.
      */
     SidePanel.prototype._updateColoring = function (
         colorMethodName,
@@ -190,17 +189,15 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         // clear legends
         this.legend.clearAllLegends();
 
+        // hide update button
+        updateBtn.classList.add("hidden");
+
         // color tree
         this[colorMethodName]();
 
-        var lWidth = parseInt(lwInput.value);
-        if (lWidth !== 1) {
-            this.empress.thickenSameSampleLines(lWidth - 1);
-        }
+        var lw = util.parseAndValidateLineWidth(lwInput);
+        this.empress.thickenSameSampleLines(lw);
         this.empress.drawTree();
-
-        // hide update button
-        updateBtn.classList.add("hidden");
     };
 
     /**
@@ -211,6 +208,13 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         var col = this.sColor.value;
         var hide = this.sHideChk.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col);
+        if (keyInfo === null) {
+            util.toastMsg(
+                "No unique branches found for this metadata category"
+            );
+            this.sUpdateBtn.classList.remove("hidden");
+            return;
+        }
         this.empress.setNonSampleBranchVisibility(hide);
         this.legend.addColorKey(colBy, keyInfo, "node", false);
     };
@@ -267,6 +271,7 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             pele = document.createElement("p");
             lele = document.createElement("label");
             iele = document.createElement("input");
+            iele.classList.add("empress-input");
 
             // Initialize the radio button for this layout
             iele.value = layouts[i];
@@ -423,8 +428,8 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         var selOpts = this.empress.getFeatureMetadataCategories();
         for (i = 0; i < selOpts.length; i++) {
             opt = document.createElement("option");
-            opt.value = selOpts[i];
             opt.innerHTML = selOpts[i];
+            opt.value = selOpts[i];
             this.fSel.appendChild(opt);
         }
 

@@ -3,12 +3,8 @@ define(["underscore", "util"], function (_, util) {
         this.empress = empress;
         this.drawer = drawer;
         this.fields = [];
-        this.TYPES = {
-            TREE_DATA: "t",
-            SAMPLE_DATA: "s",
-            FEATRUE_DATA: "f",
-        };
         this.smTable = document.getElementById("menu-sm-table");
+        this.smSection = document.getElementById("menu-sm-section");
         this.box = document.getElementById("menu-box");
         this.sel = document.getElementById("menu-select");
         this.addBtn = document.getElementById("menu-add-btn");
@@ -19,6 +15,10 @@ define(["underscore", "util"], function (_, util) {
         this.fmHeader = document.getElementById("menu-fm-header");
         this.smHeader = document.getElementById("menu-sm-header");
         this.nodeKeys = null;
+
+        this.hiddenCallback = null;
+        this.visibleCallback = null;
+        this._samplesInSelection = [];
     }
 
     /**
@@ -26,6 +26,8 @@ define(["underscore", "util"], function (_, util) {
      * menu, and creates the add button click event.
      */
     SelectedNodeMenu.prototype.initialize = function () {
+        var scope = this;
+
         // add items to select
         var selOpts = this.empress.getSampleCategories();
         for (var i = 0; i < selOpts.length; i++) {
@@ -156,7 +158,7 @@ define(["underscore", "util"], function (_, util) {
                 var colCell = headerRow.insertCell(-1);
                 colCell.innerHTML = "<strong>" + colName + "</strong>";
                 var dataCell = featureRow.insertCell(-1);
-                dataCell.innerHTML = mdObj[nodeName][colName];
+                dataCell.innerHTML = mdObj[nodeName][x];
             }
             fmHeader.classList.remove("hidden");
             fmTable.classList.remove("hidden");
@@ -201,6 +203,10 @@ define(["underscore", "util"], function (_, util) {
 
         // show table
         this.box.classList.remove("hidden");
+
+        if (this.visibleCallback !== null) {
+            this.visibleCallback(this._samplesInSelection);
+        }
     };
 
     /**
@@ -236,6 +242,12 @@ define(["underscore", "util"], function (_, util) {
 
         // 2. Add sample presence information for this tip
         var ctData = {};
+
+        // 2.1 The samples represented by this tip are sent to Emperor
+        this._samplesInSelection = this.empress._biom.getSamplesByObservations(
+            this._checkAndFilterTips([name])
+        );
+
         for (var f = 0; f < this.fields.length; f++) {
             var field = this.fields[f];
             var obs = this.empress._biom.getObsCountsBy(field, name);
@@ -252,6 +264,8 @@ define(["underscore", "util"], function (_, util) {
                 "This node is a tip in the tree. These values represent the " +
                 "number of unique samples that contain this node.";
         }
+        this.smSection.classList.remove("hidden");
+        this.smTable.classList.remove("hidden");
     };
 
     /**
@@ -266,20 +280,33 @@ define(["underscore", "util"], function (_, util) {
             throw "showInternalNode(): nodeKeys is not set!";
         }
 
-        var isDup = false;
-        if (this.nodeKeys.length > 1) {
+        var name = this.empress._treeData[this.nodeKeys[0]].name;
+
+        // Figure out whether or not we know the actual node in the tree (for
+        // example, if the user searched for a node with a duplicate name, then
+        // we don't know which node the user was referring to). This impacts
+        // whether or not we show the sample presence info for this node.
+        var isUnambiguous = this.nodeKeys.length === 1;
+
+        // This is not necessarily equal to this.nodeKeys. If an internal node
+        // with a duplicate name was clicked on then this.nodeKeys will only
+        // have a single entry (the node that was clicked on): but
+        // keysOfNodesWithThisName will accordingly have multiple entries.
+        // The reason we try to figure this out here is so that we can
+        // determine whether or not to show a warning about duplicate names
+        // in the menu.
+        var keysOfNodesWithThisName = this.empress._nameToKeys[name];
+        if (keysOfNodesWithThisName.length > 1) {
             this.warning.textContent =
                 "Warning: " +
-                this.nodeKeys.length +
+                keysOfNodesWithThisName.length +
                 " nodes exist with the " +
                 "above name.";
-            isDup = true;
         }
 
         // 1. Add feature metadata information (if present) for this node
         // (Note that we allow duplicate-name internal nodes to have
         // feature metadata; this isn't a problem)
-        var name = this.empress._treeData[this.nodeKeys[0]].name;
         SelectedNodeMenu.makeFeatureMetadataTable(
             name,
             this.empress._featureMetadataColumns,
@@ -312,9 +339,12 @@ define(["underscore", "util"], function (_, util) {
             }
         }
 
-        // iterate over all keys
-        for (i = 0; i < this.nodeKeys.length; i++) {
-            var nodeKey = this.nodeKeys[i];
+        // force-reset the selection buffer
+        this._samplesInSelection = [];
+
+        if (isUnambiguous) {
+            // this.nodeKeys has a length of 1
+            var nodeKey = this.nodeKeys[0];
 
             // find first and last preorder positions of the subtree spanned
             // by the current internal node
@@ -336,8 +366,13 @@ define(["underscore", "util"], function (_, util) {
                 }
             }
 
-            // retrive the sample data for the tips
-            var samples = emp._biom.getSamplesByObservations(tips);
+            // retrieve the sample data for the tips in the table
+            var samples = emp._biom.getSamplesByObservations(
+                this._checkAndFilterTips(tips)
+            );
+
+            // used for the emperor callback
+            this._samplesInSelection = this._samplesInSelection.concat(samples);
 
             // iterate over the samples and extract the field values
             for (j = 0; j < this.fields.length; j++) {
@@ -351,25 +386,48 @@ define(["underscore", "util"], function (_, util) {
                     fieldsMap[field][fieldValue] += result[fieldValue];
                 }
             }
+            SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.smTable);
+            this.smSection.classList.remove("hidden");
+            this.smTable.classList.remove("hidden");
+        } else {
+            this.smSection.classList.add("hidden");
+            this.smTable.classList.add("hidden");
         }
 
-        SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.smTable);
-        if (this.fields.length > 0) {
-            if (isDup) {
-                this.notes.textContent =
-                    "This node is an internal node in the tree with a " +
-                    "duplicated name. These values represent the number of " +
-                    "unique samples that contain any of this node's " +
-                    "descendants, aggregated across all nodes with this " +
-                    "name. (This is buggy, so please don't trust these " +
-                    "numbers right now.)";
-            } else {
-                this.notes.textContent =
-                    "This node is an internal node in the tree. These " +
-                    "values represent the number of unique samples that " +
-                    "contain any of this node's descendants.";
-            }
+        // If isUnambiguous is false, no notes will be shown and the sample
+        // presence info (including the table and notes) will be hidden
+        if (this.fields.length > 0 && isUnambiguous) {
+            this.notes.textContent =
+                "This node is an internal node in the tree. These " +
+                "values represent the number of unique samples that " +
+                "contain any of this node's descendant tips.";
         }
+    };
+
+    /**
+     * Given an array of tip names, warns the user about those that are not
+     * present in the BIOM table (using a toast message) and returns just the
+     * tip names in the array that are present as features in the table.
+     *
+     * @return {Array} the tip names that are also represented in the table.
+     */
+    SelectedNodeMenu.prototype._checkAndFilterTips = function (tips) {
+        // find the tips that can be used in the UI
+        var intersection = this.empress._biom.getObsIDsIntersection(tips);
+        var diff = this.empress._biom.getObsIDsDifference(tips);
+
+        if (
+            diff.length &&
+            (this.visibleCallback !== null || this.hiddenCallback !== null)
+        ) {
+            util.toastMsg(
+                "The following tips are not represented by your " +
+                    "feature table and ordination: " +
+                    diff.join(", ")
+            );
+        }
+
+        return intersection;
     };
 
     /**
@@ -384,14 +442,23 @@ define(["underscore", "util"], function (_, util) {
         this.fmTable.innerHTML = "";
         this.drawer.loadSelectedNodeBuff([]);
         this.empress.drawTree();
+
+        if (this.hiddenCallback !== null) {
+            this.hiddenCallback(this._samplesInSelection);
+        }
+        this._samplesInSelection = [];
     };
 
     /**
      * Sets the nodeKeys parameter of the state machine. This method will also
      * set the buffer to highlight the selected nodes.
      *
-     * @param{Array} nodeKeys An array of node keys. The keys should be the
-     *                        post order position of the nodes.
+     * @param {Array} nodeKeys An array of node keys representing the
+     *                         nodes to be selected. The keys should be the
+     *                         post order position of the nodes. If this array
+     *                         has multiple entries (i.e. multiple nodes are
+     *                         selected), the node selection menu will be
+     *                         positioned at the first node in this array.
      */
     SelectedNodeMenu.prototype.setSelectedNodes = function (nodeKeys) {
         // test to make sure nodeKeys represents nodes with the same name
@@ -435,26 +502,24 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Set the coordinates of the node menu box. If nodeKeys was set to a
-     * single node, then the box will be placed next to that node.
-     * Otherwise, the box will be placed next to the root of the tree.
+     * Set the coordinates of the node menu box at the first node in nodeKeys.
+     * This means that, if only a single node is selected, the menu will be
+     * placed at this node's position; if multiple nodes are selected, the menu
+     * will be placed at the first node's position.
      */
     SelectedNodeMenu.prototype.updateMenuPosition = function () {
         if (this.nodeKeys === null) {
             return;
         }
 
-        var node = this.empress._treeData[this.nodeKeys[0]];
-        if (this.nodeKeys.length > 1) {
-            node = this.empress._treeData[this.empress._tree.size - 1];
-        }
+        var nodeToPositionAt = this.empress._treeData[this.nodeKeys[0]];
         // get table coords
-        var x = this.empress.getX(node);
-        var y = this.empress.getY(node);
+        var x = this.empress.getX(nodeToPositionAt);
+        var y = this.empress.getY(nodeToPositionAt);
         var tableLoc = this.drawer.toScreenSpace(x, y);
 
         // set table location. add slight offset to location so menu appears
-        // next to node instead of on top of it.
+        // next to the node instead of on top of it.
         this.box.style.left = Math.floor(tableLoc.x + 23) + "px";
         this.box.style.top = Math.floor(tableLoc.y - 43) + "px";
     };
