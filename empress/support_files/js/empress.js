@@ -1313,7 +1313,7 @@ define([
         return samplePresence;
     };
 
-     * Show the node menu for a node name
+    /** Show the node menu for a node name
      *
      * @param {String} nodeName The name of the node to show.
      */
@@ -1327,7 +1327,6 @@ define([
 
         this._events.selectedNodeMenu.clearSelectedNode();
         this._events.placeNodeSelectionMenu(nodeName, false);
-
     };
 
     return Empress;

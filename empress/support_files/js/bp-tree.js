@@ -567,7 +567,7 @@ define(["ByteArray"], function (ByteArray) {
         return tips;
     };
 
-     * True if name is in the names array for the tree
+    /** True if name is in the names array for the tree
      *
      * @param {String} name The name to search for.
      * @return {Boolean} If the name is in the tree.
