@@ -1230,5 +1230,22 @@ define([
         this._events.selectedNodeMenu.hiddenCallback = callback;
     };
 
+    /**
+     * Show the node menu for a node name
+     *
+     * @param {String} nodeName The name of the node to show.
+     */
+    Empress.prototype.showNodeMenuForName = function (nodeName) {
+        if (!this._tree.containsNode(nodeName)) {
+            util.toastMsg(
+                "The node '" + nodeName + "' is not present in the phylogeny"
+            );
+            return;
+        }
+
+        this._events.selectedNodeMenu.clearSelectedNode();
+        this._events.placeNodeSelectionMenu(nodeName, false);
+    };
+
     return Empress;
 });
