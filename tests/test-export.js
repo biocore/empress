@@ -45,7 +45,7 @@ require(["jquery", "BPTree", "Empress", "util", "BiomTable"], function (
                     null,
                     null
                 );
-                this.empress._drawer = new Object();
+                this.empress._drawer = {};
                 // without the below line, I get a out of bounds exception
                 // is this the intended behavior? Wired if you have to set
                 // this parameter
