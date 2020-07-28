@@ -56,6 +56,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
 
+        // export GUI components
+        this.eExportSvgBtn = document.getElementById("export-btn-svg");
+
         // uncheck button
         this.sHideChk.checked = false;
 
@@ -299,6 +302,33 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             pele.appendChild(iele);
             this.layoutDiv.appendChild(pele);
         }
+    };
+
+    /**
+     * Initializes export components
+     */
+    SidePanel.prototype.addExportTab = function () {
+        // for use in closures
+        var scope = this;
+
+        this.eExportSvgBtn.onclick = function () {
+            // create SVG tags to draw the tree and determine viewbox for whole figure
+            [svg_tree, svg_viewbox] = scope.empress.exportSvg();
+            // create SVG tags for legend, collected from the HTML document
+            svg_legend = scope.empress.exportSVG_legend(document);
+            // add all SVG elements into one string ...
+            svg =
+                '<svg xmlns="http://www.w3.org/2000/svg" ' +
+                svg_viewbox +
+                " >\n" +
+                svg_tree +
+                "\n" +
+                svg_legend +
+                "</svg>\n";
+            // ... and present user as a downloadable file
+            var blob = new Blob([svg], { type: "image/svg+xml" });
+            saveAs(blob, "empress-tree.svg");
+        };
     };
 
     /**

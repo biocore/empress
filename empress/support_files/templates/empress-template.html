@@ -82,6 +82,7 @@
             'glMatrix' : './vendor/gl-matrix.min',
             'chroma' : './vendor/chroma.min',
             'underscore' : './vendor/underscore-min',
+            'filesaver': './vendor/FileSaver.min',
 
             'ByteArray' : './js/byte-array',
             'BPTree' : './js/bp-tree',
@@ -104,10 +105,12 @@
     empressRequire(['glMatrix', 'chroma', 'underscore', 'ByteArray',
                     'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimationPanel',
                     'Animator', 'BIOMTable', 'Empress', 'Legend', 'Colorer',
-                    'VectorOps', 'CanvasEvents', 'SelectedNodeMenu', 'util'],
+                    'VectorOps', 'CanvasEvents', 'SelectedNodeMenu', 'util',
+                    'filesaver'],
         function(gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
                  SidePanel, AnimationPanel, Animator, BIOMTable, Empress, Legend,
-                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util) {
+                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util,
+                 filesaver) {
         // initialze the tree and model
         var tree = new BPTree({{ tree }}, {{ names }});
 
@@ -159,6 +162,9 @@
         // add animator gui components
         var animationPanel = new AnimationPanel(animator);
         animationPanel.addAnimationTab();
+
+        // add export drawing tab
+        sPanel.addExportTab();
 
         // make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {
