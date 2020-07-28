@@ -734,7 +734,7 @@ define([
     Empress.prototype.undrawBarplots = function () {
         this._drawer.loadBarplotBuf([]);
         this.drawTree();
-    }
+    };
 
     Empress.prototype.drawBarplots = function (layers) {
         var scope = this;
@@ -979,7 +979,7 @@ define([
         );
         return {
             sortedUniqueValues: sortedUniqueValues,
-            uniqueValueToFeatures: uniqueValueToFeatures
+            uniqueValueToFeatures: uniqueValueToFeatures,
         };
     };
 
@@ -1003,10 +1003,7 @@ define([
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
     Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
-        var fmInfo = this.getUniqueFeatureMetadataInfo(
-            cat,
-            method
-        );
+        var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
         // convert observation IDs to _treeData keys. Notably, this includes
