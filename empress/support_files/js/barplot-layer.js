@@ -195,7 +195,6 @@ define(["jquery", "underscore", "spectrum", "Colorer"], function (
         chgLenSC.classList.add("select-container");
         var chgLenFMFieldSelector = document.createElement("select");
         // Populate the selector with all of the feature metadata columns
-        var fmCols = this.empress.getFeatureMetadataCategories();
         _.each(fmCols, function (c) {
             var opt = document.createElement("option");
             opt.innerText = opt.value = c;
