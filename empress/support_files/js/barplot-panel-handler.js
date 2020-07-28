@@ -23,6 +23,7 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
         this.barplotCheckbox = document.getElementById("barplot-chk");
         this.addOptions = document.getElementById("barplot-add-options");
         this.addButton = document.getElementById("barplot-add-btn");
+        this.updateButton = document.getElementById("barplot-update");
         this.layerContainer = document.getElementById(
             "barplot-layer-container"
         );
@@ -36,9 +37,11 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
             if (scope.barplotCheckbox.checked) {
                 scope.layerContainer.classList.remove("hidden");
                 scope.addOptions.classList.remove("hidden");
+                scope.updateButton.classList.remove("hidden");
             } else {
                 scope.layerContainer.classList.add("hidden");
                 scope.addOptions.classList.add("hidden");
+                scope.updateButton.classList.add("hidden");
                 // TODO: do something to un-draw barplots here
             }
         };
@@ -46,6 +49,11 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
         // Define behavior for adding a new layer
         this.addButton.onclick = function () {
             scope.addLayer();
+        };
+
+        // And define behavior for how to add in barplots
+        this.updateButton.onclick = function () {
+            scope.draw();
         };
 
         // To get things started off with, let's add a layer
@@ -82,6 +90,12 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
         }
         this.layers.splice(layerNum - 1, 1);
         // TODO: actually un-draw this layer...
+    };
+
+    /**
+     * Draws the barplots. You know. on the screen. it's great. this is great.
+     */
+    BarplotPanel.prototype.draw = function () {
     };
 
     return BarplotPanel;
