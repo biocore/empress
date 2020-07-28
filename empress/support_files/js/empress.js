@@ -785,6 +785,7 @@ define([
                     } else {
                         color = defaultColor;
                     }
+                    // TODO do length-scaling if requested
                     var corners = {
                         tL: [
                             maxX + 10 + layerNum * 100,
