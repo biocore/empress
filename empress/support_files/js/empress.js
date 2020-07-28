@@ -753,24 +753,24 @@ define([
         for (i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 for (var j = 1; j <= layers.length; j++) {
-                    var color = chroma(
-                        layers[j - 1].defaultColor
-                    ).gl().slice(0, 3);
+                    var color = chroma(layers[j - 1].defaultColor)
+                        .gl()
+                        .slice(0, 3);
                     var corners = {
                         tL: [
-                            maxX + 10 + (j * 100),
+                            maxX + 10 + j * 100,
                             this.getY(this._treeData[i]) + 3,
                         ],
                         tR: [
-                            maxX + 10 + (j * 100) + 100,
+                            maxX + 10 + j * 100 + 100,
                             this.getY(this._treeData[i]) + 3,
                         ],
                         bL: [
-                            maxX + 10 + (j * 100),
+                            maxX + 10 + j * 100,
                             this.getY(this._treeData[i]) - 3,
                         ],
                         bR: [
-                            maxX + 10 + (j * 100) + 100,
+                            maxX + 10 + j * 100 + 100,
                             this.getY(this._treeData[i]) - 3,
                         ],
                     };

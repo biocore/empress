@@ -61,14 +61,12 @@ define(["jquery", "underscore", "spectrum", "Colorer"], function (
         dfltColorInput.setAttribute("type", "text");
         dfltColorP.appendChild(dfltColorInput);
         // Register dfltColorInput as a color selector with spectrum.js
-        $(dfltColorInput).spectrum(
-            {
-                color: this.defaultColor,
-                change: function (c) {
-                    scope.defaultColor = c.toHexString();
-                }
-            }
-        );
+        $(dfltColorInput).spectrum({
+            color: this.defaultColor,
+            change: function (c) {
+                scope.defaultColor = c.toHexString();
+            },
+        });
 
         // Add a row containing a label, a checkbox, and a selector which opens
         // up a UI for coloring this layer's bars by feature metadata.
