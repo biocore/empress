@@ -169,6 +169,7 @@ define(["jquery", "underscore", "spectrum", "Colorer"], function (
             "Default length";
         var dfltLenInput = document.createElement("input");
         dfltLenInput.setAttribute("type", "number");
+        dfltLenInput.classList.add("empress-input");
         dfltLenInput.value = 1;
         dfltLenP.appendChild(dfltLenInput);
 
