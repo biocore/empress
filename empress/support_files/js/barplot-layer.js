@@ -200,7 +200,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         dfltLenInput.value = this.defaultLength;
         $(dfltLenInput).change(function () {
             scope.defaultLength = util.parseAndValidateNum(
-                dfltLenInput, BarplotLayer.MIN_LENGTH
+                dfltLenInput,
+                BarplotLayer.MIN_LENGTH
             );
         });
         dfltLenP.appendChild(dfltLenInput);

@@ -732,8 +732,7 @@ define([
     };
 
     Empress.prototype.drawBarplots = function (layers) {
-        // TODO: Inspect each layer's state and use that to inform how tips are
-        // colored / scaled :D
+        var scope = this;
         var l1 = layers[0];
         this._drawer.loadBarplotBuf([]);
         // TODO: check current layout and alter behavior accordingly.
@@ -750,35 +749,59 @@ define([
                 }
             }
         }
-        for (i = 1; i < this._tree.size; i++) {
-            if (this._tree.isleaf(this._tree.postorderselect(i))) {
-                for (var j = 1; j <= layers.length; j++) {
-                    var color = chroma(layers[j - 1].defaultColor)
-                        .gl()
-                        .slice(0, 3);
+
+        _.each(layers, function (layer, layerNum) {
+            var cm, fmIdx;
+            var defaultColor = chroma(layer.defaultColor).gl().slice(0, 3);
+            if (layer.colorByFM) {
+                var sortedUniqueValues = scope.getUniqueFeatureMetadataValues(
+                    layer.colorByFMField,
+                    "tip"
+                );
+                // if this field is invalid then we'd find that out in
+                // scope.getUniqueFeatureMetadataValues(). (but it really
+                // shouldn't be.)
+                fmIdx = _.indexOf(
+                    scope._featureMetadataColumns,
+                    layer.colorByFMField
+                );
+                var colorer = new Colorer(
+                    layer.colorByFMColorMap,
+                    sortedUniqueValues
+                );
+                cm = colorer.getMapRGB();
+            }
+            for (i = 1; i < scope._tree.size; i++) {
+                if (scope._tree.isleaf(scope._tree.postorderselect(i))) {
+                    var color;
+                    var name = scope._treeData[i].name;
+                    if (layer.colorByFM && _.has(scope._tipMetadata, name)) {
+                        color = cm[scope._tipMetadata[name][fmIdx]];
+                    } else {
+                        color = defaultColor;
+                    }
                     var corners = {
                         tL: [
-                            maxX + 10 + j * 100,
-                            this.getY(this._treeData[i]) + 3,
+                            maxX + 10 + layerNum * 100,
+                            scope.getY(scope._treeData[i]) + 3,
                         ],
                         tR: [
-                            maxX + 10 + j * 100 + 100,
-                            this.getY(this._treeData[i]) + 3,
+                            maxX + 10 + layerNum * 100 + 100,
+                            scope.getY(scope._treeData[i]) + 3,
                         ],
                         bL: [
-                            maxX + 10 + j * 100,
-                            this.getY(this._treeData[i]) - 3,
+                            maxX + 10 + layerNum * 100,
+                            scope.getY(scope._treeData[i]) - 3,
                         ],
                         bR: [
-                            maxX + 10 + j * 100 + 100,
-                            this.getY(this._treeData[i]) - 3,
+                            maxX + 10 + layerNum * 100 + 100,
+                            scope.getY(scope._treeData[i]) - 3,
                         ],
                     };
-                    this._addTriangleCoords(coords, corners, color);
+                    scope._addTriangleCoords(coords, corners, color);
                 }
-                throw "butt";
             }
-        }
+        });
         this._drawer.loadBarplotBuf(coords);
         this.drawTree();
     };
@@ -889,25 +912,19 @@ define([
     };
 
     /**
-     * Color the tree based on a feature metadata column.
+     * Retrieve unique values for a feature metadata field.
      *
-     * @param {String} cat The feature metadata column to color nodes by.
-     *                     This must be present in this._featureMetadataColumns
+     * @param {String} cat The feature metadata column to find unique values
+     *                     for. Must be present in this._featureMetadataColumns
      *                     or an error will be thrown.
-     * @param {String} color The name of the color map to use.
-     * @param {String} method Defines how coloring is done. If this is "tip",
-     *                        then only tip-level feature metadata will be
-     *                        used, and (similar to sample coloring) upwards
-     *                        propagation of unique values will be done in
-     *                        order to color internal nodes where applicable.
-     *                        If this is "all", then this will use both tip and
-     *                        internal node feature metadata without doing any
-     *                        propagation. If this is anything else, this will
+     * @param {String} method Defines what feature metadata to check.
+     *                        If this is "tip", then only tip-level feature
+     *                        metadata will be used. If this is "all", then
+     *                        this will use both tip and internal node feature
+     *                        metadata. If this is anything else, this will
      *                        throw an error.
-     *
-     * @return {Object} Maps unique values in this f. metadata column to colors
      */
-    Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+    Empress.prototype.getUniqueFeatureMetadataValues = function (cat, method) {
         // In order to access feature metadata for a given node, we need to
         // find the 0-based index in this._featureMetadataColumns that the
         // specified f.m. column corresponds to. (We *could* get around this by
@@ -945,8 +962,32 @@ define([
             });
         });
 
-        var sortedUniqueValues = util.naturalSort(
-            Object.keys(uniqueValueToFeatures)
+        return util.naturalSort(Object.keys(uniqueValueToFeatures));
+    };
+
+    /**
+     * Color the tree based on a feature metadata column.
+     *
+     * @param {String} cat The feature metadata column to color nodes by.
+     *                     This must be present in this._featureMetadataColumns
+     *                     or an error will be thrown.
+     * @param {String} color The name of the color map to use.
+     * @param {String} method Defines how coloring is done. If this is "tip",
+     *                        then only tip-level feature metadata will be
+     *                        used, and (similar to sample coloring) upwards
+     *                        propagation of unique values will be done in
+     *                        order to color internal nodes where applicable.
+     *                        If this is "all", then this will use both tip and
+     *                        internal node feature metadata without doing any
+     *                        propagation. If this is anything else, this will
+     *                        throw an error.
+     *
+     * @return {Object} Maps unique values in this f. metadata column to colors
+     */
+    Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+        var sortedUniqueValues = this.getUniqueFeatureMetadataValues(
+            cat,
+            method
         );
         // convert observation IDs to _treeData keys. Notably, this includes
         // converting the values of uniqueValueToFeatures from Arrays to Sets.
