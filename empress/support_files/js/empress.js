@@ -241,7 +241,7 @@ define([
             // So, if coords[i+2] == DEFAULT_COLOR then coords[i+2+5] will
             // also be equal to DEFAULT_COLOR. Thus, we can save checking three
             // array elements here.
-            linewidth = this._currentLineWidth;
+            linewidth = 1 + this._currentLineWidth;
             if (
                 coords[i + 2] == this.DEFAULT_COLOR[0] &&
                 coords[i + 3] == this.DEFAULT_COLOR[1] &&
@@ -258,13 +258,9 @@ define([
                 coords[i + this._drawer.VERTEX_SIZE] +
                 '" y2="' +
                 coords[i + 1 + this._drawer.VERTEX_SIZE] +
-                '" stroke="rgb(' +
-                255 * coords[i + 2] +
-                "," +
-                255 * coords[i + 3] +
-                "," +
-                255 * coords[i + 4] +
-                ')" style="stroke-width:' +
+                '" stroke="' +
+                chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css() +
+                '" style="stroke-width:' +
                 linewidth +
                 '" />\n';
 
@@ -301,9 +297,10 @@ define([
                 i + this._drawer.VERTEX_SIZE <= coords.length;
                 i += this._drawer.VERTEX_SIZE
             ) {
-                // getNodeCoords array seem to be larger than necessary and elements are initialized with 0.
-                // Thus, nodes at (0, 0) will be skipped (root will always be positioned at 0,0 and drawn below)
-                // This is a known issue and will be resolved with #142
+                // getNodeCoords array seem to be larger than necessary and
+                // elements are initialized with 0.  Thus, nodes at (0, 0) will
+                // be skipped (root will always be positioned at 0,0 and drawn
+                // below) This is a known issue and will be resolved with #142
                 if (coords[i] == 0 && coords[i + 1] == 0) {
                     continue;
                 }
@@ -314,13 +311,9 @@ define([
                     coords[i + 1] +
                     '" r="' +
                     NODE_RADIUS +
-                    '" style="fill:rgb(' +
-                    255 * coords[i + 2] +
-                    "," +
-                    255 * coords[i + 3] +
-                    "," +
-                    255 * coords[i + 4] +
-                    ')"/>\n';
+                    '" style="fill:' +
+                    chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css() +
+                    '"/>\n';
             }
         }
 
