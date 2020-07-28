@@ -312,7 +312,9 @@ define([
                     '" r="' +
                     NODE_RADIUS +
                     '" style="fill:' +
-                    chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css() +
+                    chroma
+                        .gl(coords[i + 2], coords[i + 3], coords[i + 4])
+                        .css() +
                     '"/>\n';
             }
         }
