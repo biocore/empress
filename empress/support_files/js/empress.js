@@ -731,6 +731,11 @@ define([
         this._drawer.loadSampleThickBuf(coords);
     };
 
+    Empress.prototype.undrawBarplots = function () {
+        this._drawer.loadBarplotBuf([]);
+        this.drawTree();
+    }
+
     Empress.prototype.drawBarplots = function (layers) {
         var scope = this;
         var l1 = layers[0];
@@ -754,12 +759,12 @@ define([
             var cm, fmIdx;
             var defaultColor = chroma(layer.defaultColor).gl().slice(0, 3);
             if (layer.colorByFM) {
-                var sortedUniqueValues = scope.getUniqueFeatureMetadataValues(
+                var sortedUniqueValues = scope.getUniqueFeatureMetadataInfo(
                     layer.colorByFMField,
                     "tip"
-                );
+                ).sortedUniqueValues;
                 // if this field is invalid then we'd find that out in
-                // scope.getUniqueFeatureMetadataValues(). (but it really
+                // scope.getUniqueFeatureMetadataInfo(). (but it really
                 // shouldn't be.)
                 fmIdx = _.indexOf(
                     scope._featureMetadataColumns,
@@ -912,19 +917,26 @@ define([
     };
 
     /**
-     * Retrieve unique values for a feature metadata field.
+     * Retrieve unique value information for a feature metadata field.
      *
-     * @param {String} cat The feature metadata column to find unique values
-     *                     for. Must be present in this._featureMetadataColumns
-     *                     or an error will be thrown.
+     * @param {String} cat The feature metadata column to find information for.
+     *                     Must be present in this._featureMetadataColumns or
+     *                     an error will be thrown.
      * @param {String} method Defines what feature metadata to check.
      *                        If this is "tip", then only tip-level feature
      *                        metadata will be used. If this is "all", then
      *                        this will use both tip and internal node feature
      *                        metadata. If this is anything else, this will
      *                        throw an error.
+     * @return {Object} An object with two keys:
+     *                  -sortedUniqueValues: maps to an Array of the unique
+     *                   values in this feature metadata field, sorted using
+     *                   util.naturalSort().
+     *                  -uniqueValueToFeatures: maps to an Object which maps
+     *                   the unique values in this feature metadata column to
+     *                   an array of the node name(s) with each value.
      */
-    Empress.prototype.getUniqueFeatureMetadataValues = function (cat, method) {
+    Empress.prototype.getUniqueFeatureMetadataInfo = function (cat, method) {
         // In order to access feature metadata for a given node, we need to
         // find the 0-based index in this._featureMetadataColumns that the
         // specified f.m. column corresponds to. (We *could* get around this by
@@ -962,7 +974,13 @@ define([
             });
         });
 
-        return util.naturalSort(Object.keys(uniqueValueToFeatures));
+        var sortedUniqueValues = util.naturalSort(
+            Object.keys(uniqueValueToFeatures)
+        );
+        return {
+            sortedUniqueValues: sortedUniqueValues,
+            uniqueValueToFeatures: uniqueValueToFeatures
+        };
     };
 
     /**
@@ -985,10 +1003,12 @@ define([
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
     Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
-        var sortedUniqueValues = this.getUniqueFeatureMetadataValues(
+        var fmInfo = this.getUniqueFeatureMetadataInfo(
             cat,
             method
         );
+        var sortedUniqueValues = fmInfo.sortedUniqueValues;
+        var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
         // convert observation IDs to _treeData keys. Notably, this includes
         // converting the values of uniqueValueToFeatures from Arrays to Sets.
         var obs = {};

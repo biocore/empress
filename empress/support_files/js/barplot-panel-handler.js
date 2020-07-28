@@ -38,11 +38,12 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
                 scope.layerContainer.classList.remove("hidden");
                 scope.addOptions.classList.remove("hidden");
                 scope.updateButton.classList.remove("hidden");
+                scope.draw();
             } else {
                 scope.layerContainer.classList.add("hidden");
                 scope.addOptions.classList.add("hidden");
                 scope.updateButton.classList.add("hidden");
-                // TODO: do something to un-draw barplots here
+                scope.empress.undrawBarplots();
             }
         };
 
