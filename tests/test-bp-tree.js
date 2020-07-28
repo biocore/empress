@@ -635,6 +635,12 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 var i = index[node];
                 deepEqual(resBP.findTips(i), intNodes[node]);
             }
+
+            // ensure error is thrown if leaf node is passed to findTips
+            var leafNode = index[2];
+            throws(function () {
+                resBP.findTips(leafNode);
+            });
         });
 
         test("Test containsNode", function (assert) {

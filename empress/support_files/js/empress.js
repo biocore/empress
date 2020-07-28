@@ -1263,14 +1263,14 @@ define([
      *                         sample presence for.
      * @param {Array} fields Metadata fields for which to calculate internal
      *                       node sample presence.
-     * @return {Object} samplePresence Returns a mapping of three entries:
+     * @return {Object} samplePresence A mapping with three entries:
      *                                 (1) fieldsMap Maps metadata field names
      *                                 to Object mapping unique metadata values
      *                                 to the number of samples with this metadata
      *                                 value in this field containing at least one
      *                                 tip in the subtree of the given nodeKey.
      *                                 (2) diff Array of tip names not present
-     *                                 as features in the table
+     *                                 as features in the table.
      *                                 (3) samples Array of samples represented by
      *                                 tips present in the table.
      */

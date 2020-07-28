@@ -310,9 +310,6 @@ define(["underscore", "util"], function (_, util) {
         // (NOTE: this does not prevent "double-counting" samples, so the
         // aggregation for duplicate names should be fixed.)
 
-        // create object that will map fields to all of their possible values
-        var field, fieldValues, fieldValue, i, j, k;
-
         // force-reset the selection buffer
         this._samplesInSelection = [];
 
@@ -356,8 +353,8 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Given an array of tip names, warns the user about those that are not
-     * present in the BIOM table (using a toast message)
+     * Given an array of tip names that are not present in the BIOM table,
+     * warns the user about them using a toast message.
      */
     SelectedNodeMenu.prototype._checkTips = function (diff) {
         if (

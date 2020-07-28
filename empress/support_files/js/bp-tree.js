@@ -540,15 +540,18 @@ define(["ByteArray"], function (ByteArray) {
     };
 
     /**
-     * Retrieve the tips in the subtree of a given node key.
+     * Retrieve the tips in the subtree of a given (internal) node key.
      *
-     * @param {Number} nodeKey Key value of node.
+     * @param {Number} nodeKey Key value of internal node.
      * @return {Array} tips Tips of the subtree.
      */
     BPTree.prototype.findTips = function (nodeKey) {
         // find first and last preorder positions of the subtree spanned
         // by the current internal node
         var n = this.postorderselect(nodeKey);
+        if (this.isleaf(n)) {
+            throw "Node must be internal!";
+        }
         var start = this.preorder(this.fchild(n));
         var end = this.preorder(this.lchild(n));
         while (!this.isleaf(this.preorderselect(end))) {

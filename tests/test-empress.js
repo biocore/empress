@@ -710,6 +710,15 @@ require([
                 traj: { t1: 2, t2: 2, t3: 2, t4: 0 },
             };
             deepEqual(values.fieldsMap, int4presence);
+
+            //also testing root which should have all tips -> all samples
+            var rootPresence = {
+                f1: { a: 5, b: 2 },
+                grad: { "1": 2, "2": 2, "3": 2, "4": 1 },
+                traj: { t1: 2, t2: 2, t3: 2, t4: 1 },
+            };
+            var rootValues = e.computeIntSamplePresence(7, fields);
+            deepEqual(rootValues.fieldsMap, rootPresence);
         });
     });
 });
