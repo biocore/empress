@@ -755,19 +755,19 @@ define([
                 var corners = {
                     tL: [
                         maxX + 10,
-                        this.getY(this._treeData[i]) + 1,
+                        this.getY(this._treeData[i]) + 3,
                     ],
                     tR: [
                         maxX + 100,
-                        this.getY(this._treeData[i]) + 1,
+                        this.getY(this._treeData[i]) + 3,
                     ],
                     bL: [
                         maxX + 10,
-                        this.getY(this._treeData[i]) - 1,
+                        this.getY(this._treeData[i]) - 3,
                     ],
                     bR: [
                         maxX + 100,
-                        this.getY(this._treeData[i]) - 1,
+                        this.getY(this._treeData[i]) - 3,
                     ],
                 };
                 this._addTriangleCoords(coords, corners, color);
