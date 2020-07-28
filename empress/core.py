@@ -7,7 +7,14 @@
 # ----------------------------------------------------------------------------
 
 from empress.tree import Tree
-from empress.tools import fill_missing_node_names, match_inputs
+from empress.tools import (
+    fill_missing_node_names, match_inputs, shifting,
+    filter_feature_metadata_to_tree
+)
+from empress.compression_utils import (
+    remove_empty_samples_and_features, compress_table,
+    compress_sample_metadata, compress_feature_metadata
+)
 
 import pkg_resources
 import os
@@ -22,13 +29,15 @@ SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
 SELECTION_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
                                        'selection-callback.js')
+NODE_CLICK_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
+                                        'node-click-callback.js')
 
 
 class Empress():
     def __init__(self, tree, table, sample_metadata,
                  feature_metadata=None, ordination=None,
-                 ignore_missing_samples=False, filter_missing_features=False,
-                 resource_path=None,
+                 ignore_missing_samples=False, filter_extra_samples=False,
+                 filter_missing_features=False, resource_path=None,
                  filter_unobserved_features_from_phylogeny=True):
         """Visualize a phylogenetic tree
 
@@ -37,9 +46,9 @@ class Empress():
 
         Parameters
         ----------
-        tree: bp.Tree:
+        tree: bp.Tree
             The phylogenetic tree to visualize.
-        table: pd.DataFrame:
+        table: pd.DataFrame
             The matrix to visualize paired with the phylogenetic tree.
         sample_metadata: pd.DataFrame
             DataFrame object with the metadata associated to the samples in the
@@ -61,6 +70,10 @@ class Empress():
             out; and if no samples are shared between the table and metadata, a
             DataMatchingError is raised regardless.) This is analogous to the
             ignore_missing_samples flag in Emperor.
+        filter_extra_samples: bool, optional (default False)
+            If True, ignores samples in the feature table that are not present
+            in the ordination. If False, raises a DataMatchingError if such
+            samples exist.
         filter_missing_features: bool, optional (default False)
             If True, filters features from the table that aren't present as
             tips in the tree. If False, raises a DataMatchingError if any such
@@ -104,39 +117,45 @@ class Empress():
 
         self.base_url = resource_path
         if self.base_url is None:
-            self.base_url = './'
+            self.base_url = 'support_files'
 
         self._validate_and_match_data(
             ignore_missing_samples,
+            filter_extra_samples,
             filter_missing_features,
             filter_unobserved_features_from_phylogeny
         )
 
         if self.ordination is not None:
-            # Note that tip-level metadata is the only "feature metadata" we
-            # send to Emperor, because internal nodes in the tree should not
-            # correspond to features in the table (and thus to arrows in a
-            # biplot).
+
+            # biplot arrows can optionally have metadata, think for example
+            # a study where the arrows represent pH, Alkalinity, etc.
+            # Therefore, check if there are matches in the metadata, if
+            # there aren't additional errors can be overriden with the
+            # ignore_missing_samples flag
+            feature_metadata = None
+            if self.ordination.features is not None:
+
+                # if there are no matches set to None so Emperor can ignore
+                # the feature metadata
+                feature_metadata = pd.concat([self.tip_md, self.int_md])
+                arrows = self.ordination.features.index
+                if (feature_metadata.index.intersection(arrows).empty or
+                   feature_metadata.empty):
+                    feature_metadata = None
+
             self._emperor = Emperor(
                 self.ordination, mapping_file=self.samples,
-                feature_mapping_file=self.tip_md,
+                feature_mapping_file=feature_metadata,
                 ignore_missing_samples=ignore_missing_samples,
                 remote='./emperor-resources')
         else:
             self._emperor = None
 
     def _validate_and_match_data(self, ignore_missing_samples,
+                                 filter_extra_samples,
                                  filter_missing_features,
                                  filter_unobserved_features_from_phylogeny):
-        # remove unobserved features from the phylogeny
-        if filter_unobserved_features_from_phylogeny:
-            self.tree = self.tree.shear(set(self.table.columns))
-
-        # extract balance parenthesis
-        self._bp_tree = list(self.tree.B)
-
-        self.tree = Tree.from_tree(to_skbio_treenode(self.tree))
-        fill_missing_node_names(self.tree)
 
         # Note that the feature_table we get from QIIME 2 (as an argument to
         # this function) is set up such that the index describes sample IDs and
@@ -145,8 +164,37 @@ class Empress():
         # table for the rest of this visualizer.
         self.table, self.samples, self.tip_md, self.int_md = match_inputs(
             self.tree, self.table.T, self.samples, self.features,
-            ignore_missing_samples, filter_missing_features
+            self.ordination, ignore_missing_samples, filter_extra_samples,
+            filter_missing_features
         )
+        # Remove empty samples and features from the table (and remove the
+        # removed samples from the sample metadata). We also pass in the
+        # ordination, if present, to this function -- so we can throw an error
+        # if the ordination actually contains these empty samples/features.
+        #
+        # We purposefully do this removal *after* matching (so we know the
+        # data inputs match up) and *before* shearing (so empty features
+        # in the table are no longer included as tips in the tree).
+        self.table, self.samples = remove_empty_samples_and_features(
+            self.table, self.samples, self.ordination
+        )
+        # remove unobserved features from the phylogeny
+        if filter_unobserved_features_from_phylogeny:
+            self.tree = self.tree.shear(set(self.table.index))
+            # Remove features in the feature metadata that are no longer
+            # present in the tree, due to being shorn off
+            if self.tip_md is not None or self.int_md is not None:
+                # (Technically they should always both be None or both be
+                # DataFrames -- there's no in-between)
+                self.tip_md, self.int_md = filter_feature_metadata_to_tree(
+                    self.tip_md, self.int_md, self.tree
+                )
+
+        # extract balance parenthesis
+        self._bp_tree = list(self.tree.B)
+
+        self.tree = Tree.from_tree(to_skbio_treenode(self.tree))
+        fill_missing_node_names(self.tree)
 
     def copy_support_files(self, target=None):
         """Copies the support files to a target directory
@@ -218,13 +266,11 @@ class Empress():
 
         tree_data = {}
         names_to_keys = {}
+        # Note: tree_data starts with index 1 because the bp tree uses 1 based
+        # indexing
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
             tree_data[i] = {
                 'name': node.name,
-                'color': [0.75, 0.75, 0.75],
-                'sampVal': 1,
-                'visible': True,
-                'single_samp': False
             }
             # Add coordinate data from all layouts for this node
             for layoutsuffix in layout_to_coordsuffix.values():
@@ -259,66 +305,40 @@ class Empress():
         for node in self.tree.preorder(include_self=True):
             names.append(node.name)
 
-        # Convert sample metadata to a JSON-esque format
-        sample_data = self.samples.to_dict(orient='index')
-
-        # Convert feature metadata, similarly to how we handle sample metadata.
-        # If the user passed in feature metadata, self.features won't be None.
-        # (We don't actually use any data from self.features at this point in
-        # the program since it hasn't had taxonomy splitting / matching / etc.
-        # done.)
-        if self.features is not None:
-            # If we're in this block, we know that self.tip_md and self.int_md
-            # are both DataFrames. They have identical columns, so we can just
-            # use self.tip_md.columns when setting feature_metadata_columns.
-            # (We don't use self.features.columns because stuff like taxonomy
-            # splitting will have changed the columns from what they initially
-            # were in some cases.)
-            feature_metadata_columns = list(self.tip_md.columns)
-            # Calling .to_dict() on an empty DataFrame just gives you {}, so
-            # this is safe even if there is no tip or internal node metadata.
-            # (...At least one of these DFs should be populated, though, since
-            # none of the feature IDs matching up would have caused an error.)
-            tip_md_json = self.tip_md.to_dict(orient='index')
-            int_md_json = self.int_md.to_dict(orient='index')
-        else:
-            feature_metadata_columns = []
-            tip_md_json = {}
-            int_md_json = {}
-
-        # TODO: Empress is currently storing all metadata as strings. This is
-        # memory intensive and won't scale well. We should convert all numeric
-        # data/compress metadata.
-
-        # This is used in biom-table. Currently this is only used to ignore
-        # null data (i.e. NaN and "unknown") and also determines sorting order.
-        # The original intent is to signal what columns are
-        # discrete/continuous. type of sample metadata (n - number, o - object)
-        sample_data_type = self.samples.dtypes.to_dict()
-        sample_data_type = {k: 'n' if pd.api.types.is_numeric_dtype(v) else 'o'
-                            for k, v in sample_data_type.items()}
-
-        # create a mapping of observation ids and the samples that contain them
-        obs_data = {}
-        feature_table = (self.table > 0)
-        for _, series in feature_table.iteritems():
-            sample_ids = series[series].index.tolist()
-            obs_data[series.name] = sample_ids
+        s_ids, f_ids, sid2idxs, fid2idxs, compressed_table = compress_table(
+            self.table
+        )
+        sm_cols, compressed_sm = compress_sample_metadata(
+            sid2idxs, self.samples
+        )
+        fm_cols, compressed_tm, compressed_im = compress_feature_metadata(
+            self.tip_md, self.int_md
+        )
 
         data_to_render = {
-            'base_url': './support_files',
-            'tree': self._bp_tree,
+            'base_url': self.base_url,
+            # tree info
+            'tree': shifting(self._bp_tree),
             'tree_data': tree_data,
-            'names_to_keys': names_to_keys,
-            'sample_data': sample_data,
-            'sample_data_type': sample_data_type,
-            'tip_metadata': tip_md_json,
-            'int_metadata': int_md_json,
-            'feature_metadata_columns': feature_metadata_columns,
-            'obs_data': obs_data,
             'names': names,
+            'names_to_keys': names_to_keys,
+            # feature table
+            's_ids': s_ids,
+            'f_ids': f_ids,
+            's_ids_to_indices': sid2idxs,
+            'f_ids_to_indices': fid2idxs,
+            'compressed_table': compressed_table,
+            # sample metadata
+            'sample_metadata_columns': sm_cols,
+            'compressed_sample_metadata': compressed_sm,
+            # feature metadata
+            'feature_metadata_columns': fm_cols,
+            'compressed_tip_metadata': compressed_tm,
+            'compressed_int_metadata': compressed_im,
+            # layout information
             'layout_to_coordsuffix': layout_to_coordsuffix,
             'default_layout': default_layout,
+            # Emperor integration
             'emperor_div': '',
             'emperor_require_logic': '',
             'emperor_style': '',
@@ -351,9 +371,7 @@ class Empress():
         return env.get_template('empress-template.html')
 
     def _scavenge_emperor(self):
-        # can't make this 50vw because one of the plot containers has some
-        # padding that makes the divs stack on top of each other
-        self._emperor.width = '48vw'
+        self._emperor.width = '50vw'
         self._emperor.height = '100vh; float: right'
 
         # make the background white so it matches Empress
@@ -381,8 +399,13 @@ class Empress():
         # once everything is loaded replace the callback tag for custom JS
         with open(SELECTION_CALLBACK_PATH) as f:
             selection_callback = f.read()
+        with open(NODE_CLICK_CALLBACK_PATH) as f:
+            node_click_callback = f.read()
+
         emperor_require_logic = emperor_require_logic.replace(
             '/*__select_callback__*/', selection_callback)
+        emperor_require_logic = emperor_require_logic.replace(
+            '/*__custom_on_ready_code__*/', node_click_callback)
 
         emperor_data = {
             'emperor_div': emperor_div,

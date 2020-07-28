@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - "10"
+  - "14"
 dist: trusty
 # Note: if you switch to sudo: false, you'll need to launch Chrome with --no-sandbox.
 # See https://github.com/travis-ci/travis-ci/issues/8836
@@ -25,3 +25,9 @@ script:
   - qiime dev refresh-cache
   - make test
   - make stylecheck
+  # check the development script works in the 3 possible modes (no inputs, tree
+  # plot inputs, and tandem plot inputs)
+  - ./tests/python/make-dev-page.py
+  - ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza
+  - ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/unweighted_unifrac_pcoa_results.qza --filter-extra-samples
+  - ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/biplot.qza --filter-extra-samples

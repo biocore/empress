@@ -14,6 +14,12 @@
     <!-- The tree -->
     <div class="{{ emperor_classes }}">
       <div id="tree-container" class="container {{ emperor_classes }}">
+        <!-- loading screen -->
+        <div id="loading-screen">
+          <div id="loading-animation"></div>
+          <div id="loading-text">Loading...</div>
+        </div>
+
         <canvas class="tree-surface" id="tree-surface">
             Your browser does not support HTML5
         </canvas>
@@ -22,12 +28,15 @@
         <div class="square"></div>
 
         <!-- Side panel -->
-        <div id="side-panel">
+        <div id="side-panel" class="unselectable-text">
           {% include 'side-panel.html'%}
         </div>
 
+        <!-- toast -->
+        <div id="toast" class="hidden"></div>
+
         <!-- show control panel button -->
-        <button id="show-ctrl" title="Show control panel" style="font-size: 10pt; padding: 0 0 3px 3px;" class="hidden">&#9699;</button>
+        <button id="show-ctrl" title="Show control panel" class="hidden unselectable-text">&#9699;</button>
 
       </div>
     </div>
@@ -41,30 +50,24 @@
       <p id="menu-box-warning"></p>
       <h3 class="hidden" id="menu-fm-header">Feature Metadata</h3>
       <table class="menu-table hidden" id="menu-fm-table"></table>
-      <h3 class="hidden" id="menu-sm-header">Sample Presence Information</h3>
-      <p id="menu-box-notes"></p>
-      <table class="menu-table" id="menu-sm-table"></table>
-      <br><strong>Select a metadata column to summarize</strong>
-      <label class="menu-select-container">
-        <select id="menu-select"></select>
-      </label>
-      <button id="menu-add-btn">Add</button>
+      <div id="menu-sm-section">
+        <h3 class="hidden" id="menu-sm-header">Sample Presence Information</h3>
+        <p id="menu-box-notes"></p>
+        <table class="menu-table" id="menu-sm-table"></table>
+        <br>
+        <strong>Select a metadata column to summarize</strong>
+        <label class="menu-select-container">
+          <select id="menu-select"></select>
+        </label>
+        <button id="menu-add-btn">Add</button>
+      </div>
     </div>
 
     <!-- color keys -->
-    <div id="legend-panel">
+    <div id="legend-panel" class="unselectable-text">
       <div id="tip-color-key" class="legend hidden" disabled="true"></div>
       <div id="node-color-key" class="legend hidden" disabled="true"></div>
       <div id="clade-color-key" class="legend hidden" disabled="true"></div>
-    </div>
-
-    <!-- toast -->
-    <div id="toast" class="hidden"></div>
-
-    <!-- loading screen -->
-    <div id="loading-screen">
-      <div id="loading-animation"></div>
-      <div id="loading-text">Loading...</div>
     </div>
   </body>
 
@@ -93,34 +96,36 @@
             'Legend' : './js/legend',
             'Colorer' : './js/colorer',
             'VectorOps' : './js/vector-ops',
-            'SummaryHelper' : './js/summary-helper',
             'CanvasEvents' : './js/canvas-events',
             'SelectedNodeMenu' : './js/select-node-menu',
             'util' : './js/util'
         }
     });
 
-    empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'filesaver',
-                    'ByteArray', 'BPTree', 'Camera', 'Drawer', 'SidePanel',
-                    'AnimationPanel', 'Animator', 'BIOMTable', 'Empress',
-                    'Legend', 'Colorer', 'VectorOps', 'SummaryHelper',
-                    'CanvasEvents', 'SelectedNodeMenu', 'util'],
-        function($, gl, chroma, underscore, ByteArray, filesaver, BPTree,
-                 Camera, Drawer, SidePanel, AnimationPanel, Animator, BIOMTable,
-                 Empress, Legend, Colorer, VectorOps, SummaryHelper,
-                 CanvasEvents, SelectedNodeMenu, util) {
+    empressRequire(['glMatrix', 'chroma', 'underscore', 'ByteArray',
+                    'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimationPanel',
+                    'Animator', 'BIOMTable', 'Empress', 'Legend', 'Colorer',
+                    'VectorOps', 'CanvasEvents', 'SelectedNodeMenu', 'util',
+                    'filesaver'],
+        function(gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
+                 SidePanel, AnimationPanel, Animator, BIOMTable, Empress, Legend,
+                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util,
+                 filesaver) {
         // initialze the tree and model
-        var tArr = new Uint8Array({{ tree }});
-        var tree = new BPTree(tArr, {{ names }});
+        var tree = new BPTree({{ tree }}, {{ names }});
 
-        var fmCols = {{ feature_metadata_columns }};
+        var fmCols = {{ feature_metadata_columns | tojson }};
 
         var canvas = document.getElementById('tree-surface');
 
         var biom = new BIOMTable(
-          {{ obs_data }},
-          {{ sample_data | tojson }},
-          {{ sample_data_type | tojson }}
+          {{ s_ids | tojson }},
+          {{ f_ids | tojson }},
+          {{ s_ids_to_indices | tojson }},
+          {{ f_ids_to_indices | tojson }},
+          {{ compressed_table | tojson }},
+          {{ sample_metadata_columns | tojson }},
+          {{ compressed_sample_metadata | tojson }},
         );
         var empress = new Empress(
             tree,
@@ -130,8 +135,8 @@
             '{{ default_layout }}',
             biom,
             fmCols,
-            {{ tip_metadata | tojson }},
-            {{ int_metadata | tojson }},
+            {{ compressed_tip_metadata | tojson }},
+            {{ compressed_int_metadata | tojson }},
             canvas
         );
         empress.initialize();

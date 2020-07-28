@@ -1,4 +1,4 @@
-define(["Colorer"], function (Colorer) {
+define(["Colorer", "util"], function (Colorer, util) {
     /**
      *
      * @class AnimationPanel
@@ -95,7 +95,7 @@ define(["Colorer"], function (Colorer) {
      *
      * @private
      */
-    AnimationPanel.prototype.__toogleSelects = function (disableStatus) {
+    AnimationPanel.prototype._toggleSelects = function (disableStatus) {
         this.colorSelect.disabled = disableStatus;
         this.gradient.disabled = disableStatus;
         this.trajectory.disabled = disableStatus;
@@ -142,16 +142,9 @@ define(["Colorer"], function (Colorer) {
          * Sets line width parameter in animation state machine.
          */
         this.lWidth.onchange = function () {
-            var val = scope.lWidth.value;
-
-            // make sure line width is positve
-            if (val < 1) {
-                val = 1;
-                scope.lWidth = val;
-            }
-
+            var lw = util.parseAndValidateLineWidth(scope.lWidth);
             // pass line width to state machine
-            scope.animator.setLineWidth(val);
+            scope.animator.setLineWidth(lw);
         };
 
         /**
@@ -162,7 +155,7 @@ define(["Colorer"], function (Colorer) {
          */
         this.startBtn.onclick = function () {
             // change GUI components
-            scope.__toogleSelects(true);
+            scope._toggleSelects(true);
             scope.__pauseOptions();
 
             // collect starting conditions for the animation
@@ -178,7 +171,7 @@ define(["Colorer"], function (Colorer) {
                 gradient,
                 cm,
                 hide,
-                lWidth - 1
+                lWidth
             );
 
             // start animation
@@ -208,7 +201,7 @@ define(["Colorer"], function (Colorer) {
          * Stops the animation and clears the state machine
          */
         this.stopBtn.onclick = function () {
-            scope.__toogleSelects(false);
+            scope._toggleSelects(false);
             scope.__startOptions();
             scope.animator.stopAnimation();
         };

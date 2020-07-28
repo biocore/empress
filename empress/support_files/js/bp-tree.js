@@ -5,16 +5,49 @@ define(["ByteArray"], function (ByteArray) {
      *
      * Initialzes a new BP tree.
      *
-     * @param {Uint8Array} b The array that represents the tree structure
+     * @param {Array} b The array that represents the tree structure
      * @param {Array} names The names of each node stored in preorder
      * @param {Array} lengths The lengths of each node stored in preorder
+     * @param {Number} coding The number of 1/0s coded in the tree, null not coded
      *
      * @return {BPTree}
      * @constructs BPTree
      */
-    function BPTree(b, names = null, lengths = null) {
+    function BPTree(b, names = null, lengths = null, coding = 51) {
+        if (coding !== null) {
+            var b_len = b.length - 1;
+            var decoded_b = [];
+
+            const _helper_decode = function (s) {
+                return s === "1" ? 1 : 0;
+            };
+
+            _.each(b, function (value, i) {
+                if (value === 0) {
+                    decoded_b.push.apply(decoded_b, [0]);
+                } else {
+                    var element = value
+                        .toString(2)
+                        .split("")
+                        .map(_helper_decode);
+
+                    // We need to pad the number if we are not in the last number of the list
+                    // Note that we ae padding with 51, which should match the python code
+                    if (i < b_len && element.length < 51) {
+                        var padding = new Array(coding - element.length).fill(
+                            0
+                        );
+                        decoded_b.push.apply(decoded_b, padding);
+                    }
+                    decoded_b.push.apply(decoded_b, element);
+                }
+            });
+
+            b = decoded_b;
+        }
+
         /**
-         * @type {Uint8Array}
+         * @type {Array}
          * Used to store the structure of the tree
          * @private
          */
@@ -186,11 +219,11 @@ define(["ByteArray"], function (ByteArray) {
 
     /**
      *
-     * The number of leaf noes in tree
+     * The number of leaf nodes in tree
      *
      * @return {Number}
      */
-    BPTree.prototype.numleafs = function () {
+    BPTree.prototype.numleaves = function () {
         var total = 0;
         for (var i = 0; i < this.b_.length - 1; i++) {
             total = this.isleaf(i) ? total + 1 : total;
@@ -340,7 +373,7 @@ define(["ByteArray"], function (ByteArray) {
     /**
      * Return true if i represents a leaf node
      *
-     * @return {boolean}
+     * @return {Boolean}
      */
     BPTree.prototype.isleaf = function (i) {
         return this.b_[i] && !this.b_[i + 1];
@@ -504,6 +537,16 @@ define(["ByteArray"], function (ByteArray) {
      */
     BPTree.prototype.preorderselect = function (k) {
         return this.select(1, k);
+    };
+
+    /**
+     * True if name is in the names array for the tree
+     *
+     * @param {String} name The name to search for.
+     * @return {Boolean} If the name is in the tree.
+     */
+    BPTree.prototype.containsNode = function (name) {
+        return this.names_.indexOf(name) !== -1;
     };
 
     return BPTree;
