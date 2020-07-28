@@ -732,13 +732,14 @@ define([
     };
 
     Empress.prototype.drawBarplots = function (layers) {
-        // for now just draws one layer bc life
         // TODO: Inspect each layer's state and use that to inform how tips are
         // colored / scaled :D
         var l1 = layers[0];
         this._drawer.loadBarplotBuf([]);
         // TODO: check current layout and alter behavior accordingly.
-        // for now this just assumes the rectangular layout.
+        // for now this just assumes the rectangular layout, but we should
+        // support circular layout as well. (unrooted layout is incompatible
+        // with barplots.)
         var coords = [];
         var maxX = -Infinity;
         for (var i = 1; i < this._tree.size; i++) {
@@ -751,26 +752,30 @@ define([
         }
         for (i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
-                var color = this._treeData[i].color;
-                var corners = {
-                    tL: [
-                        maxX + 10,
-                        this.getY(this._treeData[i]) + 3,
-                    ],
-                    tR: [
-                        maxX + 100,
-                        this.getY(this._treeData[i]) + 3,
-                    ],
-                    bL: [
-                        maxX + 10,
-                        this.getY(this._treeData[i]) - 3,
-                    ],
-                    bR: [
-                        maxX + 100,
-                        this.getY(this._treeData[i]) - 3,
-                    ],
-                };
-                this._addTriangleCoords(coords, corners, color);
+                for (var j = 1; j <= layers.length; j++) {
+                    var color = chroma(
+                        layers[j - 1].defaultColor
+                    ).gl().slice(0, 3);
+                    var corners = {
+                        tL: [
+                            maxX + 10 + (j * 100),
+                            this.getY(this._treeData[i]) + 3,
+                        ],
+                        tR: [
+                            maxX + 10 + (j * 100) + 100,
+                            this.getY(this._treeData[i]) + 3,
+                        ],
+                        bL: [
+                            maxX + 10 + (j * 100),
+                            this.getY(this._treeData[i]) - 3,
+                        ],
+                        bR: [
+                            maxX + 10 + (j * 100) + 100,
+                            this.getY(this._treeData[i]) - 3,
+                        ],
+                    };
+                    this._addTriangleCoords(coords, corners, color);
+                }
             }
         }
         this._drawer.loadBarplotBuf(coords);
