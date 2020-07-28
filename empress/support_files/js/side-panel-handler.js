@@ -192,7 +192,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // color tree
         this[colorMethodName]();
 
-        var lw = util.parseAndValidateLineWidth(lwInput);
+        var lw = util.parseAndValidateNum(lwInput);
         this.empress.thickenSameSampleLines(lw);
         this.empress.drawTree();
     };

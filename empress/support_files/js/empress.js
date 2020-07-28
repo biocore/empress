@@ -573,13 +573,13 @@ define([
      *                    anything. (If this is < 0, this will throw an error.
      *                    But this really shouldn't happen, since this
      *                    parameter should be the output from
-     *                    util.parseAndValidateLineWidth().)
+     *                    util.parseAndValidateNum().)
      */
     Empress.prototype.thickenSameSampleLines = function (lw) {
         // If lw isn't > 0, then we don't thicken colored lines at all --
         // we just leave them at their default width.
         if (lw < 0) {
-            // should never happen because util.parseAndValidateLineWidth()
+            // should never happen because util.parseAndValidateNum()
             // should've been called in order to obtain lw, but in case
             // this gets messed up in the future we'll catch it
             throw "Line width passed to thickenSameSampleLines() is < 0.";
@@ -776,6 +776,7 @@ define([
                     };
                     this._addTriangleCoords(coords, corners, color);
                 }
+                throw "butt";
             }
         }
         this._drawer.loadBarplotBuf(coords);

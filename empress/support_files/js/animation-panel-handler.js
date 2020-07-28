@@ -142,7 +142,7 @@ define(["Colorer", "util"], function (Colorer, util) {
          * Sets line width parameter in animation state machine.
          */
         this.lWidth.onchange = function () {
-            var lw = util.parseAndValidateLineWidth(scope.lWidth);
+            var lw = util.parseAndValidateNum(scope.lWidth);
             // pass line width to state machine
             scope.animator.setLineWidth(lw);
         };

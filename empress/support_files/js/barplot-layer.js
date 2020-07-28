@@ -1,8 +1,9 @@
-define(["jquery", "underscore", "spectrum", "Colorer"], function (
+define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
     $,
     _,
     spectrum,
-    Colorer
+    Colorer,
+    util
 ) {
     /**
      *
@@ -30,7 +31,19 @@ define(["jquery", "underscore", "spectrum", "Colorer"], function (
         this.barplotPanel = barplotPanel;
         this.layerContainer = layerContainer;
         this.num = num;
+
+        // various properties of the barplot layer state
         this.defaultColor = Colorer.getQIIMEColor(this.num - 1);
+        this.colorByFM = false;
+        this.colorByFMField = null;
+        this.colorByFMColorMap = null;
+        this.colorByFMScaleType = null;
+        this.defaultLength = BarplotLayer.MIN_LENGTH;
+        this.scaleLengthByFM = false;
+        this.scaleLengthByFMField = null;
+
+        // Initialize the HTML elements of this barplot layer
+        this.headerElement = null;
         this.initHTML();
     }
 
@@ -149,17 +162,32 @@ define(["jquery", "underscore", "spectrum", "Colorer"], function (
 
         // Alter visibility of the color-changing details when the "Color
         // by..." checkbox is clicked
-        chgColorCheckbox.onclick = function () {
+        $(chgColorCheckbox).change(function () {
             if (chgColorCheckbox.checked) {
                 colorDetailsDiv.classList.remove("hidden");
                 chgColorFMFieldSelector.disabled = false;
+                scope.colorByFM = true;
+                scope.colorByFMField = chgColorFMFieldSelector.value;
+                scope.colorByFMColorMap = colormapSelector.value;
+                scope.colorByFMScaleType = scaletypeSelector.value;
             } else {
                 colorDetailsDiv.classList.add("hidden");
                 chgColorFMFieldSelector.disabled = true;
+                scope.colorByFM = false;
                 // TODO: set all barplots in this layer back to the default
                 // color here
             }
-        };
+        });
+
+        $(chgColorFMFieldSelector).change(function () {
+            scope.colorByFMField = chgColorFMFieldSelector.value;
+        });
+        $(colormapSelector).change(function () {
+            scope.colorByFMColorMap = colormapSelector.value;
+        });
+        $(scaletypeSelector).change(function () {
+            scope.colorByFMScaleType = scaletypeSelector.value;
+        });
 
         // create default length settings
         var dfltLenP = innerDiv.appendChild(document.createElement("p"));
@@ -167,8 +195,14 @@ define(["jquery", "underscore", "spectrum", "Colorer"], function (
             "Default length";
         var dfltLenInput = document.createElement("input");
         dfltLenInput.setAttribute("type", "number");
+        dfltLenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
         dfltLenInput.classList.add("empress-input");
-        dfltLenInput.value = 1;
+        dfltLenInput.value = this.defaultLength;
+        $(dfltLenInput).change(function () {
+            scope.defaultLength = util.parseAndValidateNum(
+                dfltLenInput, BarplotLayer.MIN_LENGTH
+            );
+        });
         dfltLenP.appendChild(dfltLenInput);
 
         // create length-changing-by-metadata settings
@@ -200,15 +234,23 @@ define(["jquery", "underscore", "spectrum", "Colorer"], function (
         });
         chgLenFMFieldSelector.disabled = true;
         chgLenSC.appendChild(chgLenFMFieldSelector);
-        chgLenCheckbox.onclick = function () {
+        $(chgLenCheckbox).change(function () {
             if (chgLenCheckbox.checked) {
                 chgLenFMFieldSelector.disabled = false;
+                scope.scaleLengthByFM = true;
+                // TODO rather than setting this here, have it be set to the
+                // first value in the selector on initialization
+                scope.scaleLengthByFMField = chgLenFMFieldSelector.value;
             } else {
                 chgLenFMFieldSelector.disabled = true;
+                scope.scaleLengthByFM = false;
                 // TODO: set all barplots in this layer back to the default
                 // length here
             }
-        };
+        });
+        $(chgLenFMFieldSelector).change(function () {
+            scope.scaleLengthByFMField = chgLenFMFieldSelector.value;
+        });
 
         // TODO: abstract ^^most of this stuff^^ into sep. functions rather
         // than one god function lol
@@ -235,6 +277,8 @@ define(["jquery", "underscore", "spectrum", "Colorer"], function (
         this.num--;
         this.updateHeader();
     };
+
+    BarplotLayer.MIN_LENGTH = 1;
 
     return BarplotLayer;
 });
