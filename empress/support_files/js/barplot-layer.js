@@ -1,12 +1,16 @@
 define(["underscore", "Colorer"], function (_, Colorer) {
     /**
      *
-     * @class BarPlotPanel
+     * @class BarplotLayer
      *
-     * Creates a tab for the barplot panel.
+     * Creates a layer in the barplot panel.
      *
      * @param {Empress} empress Instance of Empress, used to handle various
      *                          state things.
+     * @param {BarplotPanel} barplotPanel Instance of BarplotPanel. A reference
+     *                                    to this is kept around so we can
+     *                                    notify the BarplotPanel if this layer
+     *                                    is removed.
      * @param {HTMLElement} layerContainer DOM element to which the new layer's
      *                                     HTML should be added.
      * @param {Number} num The "number" of this layer. Layer 1 should be
@@ -16,15 +20,16 @@ define(["underscore", "Colorer"], function (_, Colorer) {
      * @return {BarplotLayer}
      * construct BarplotLayer
      */
-    function BarplotLayer(empress, layerContainer, num) {
-        var scope = this;
+    function BarplotLayer(empress, barplotPanel, layerContainer, num) {
         this.empress = empress;
+        this.barplotPanel = barplotPanel;
         this.layerContainer = layerContainer;
         this.num = num;
         this.initHTML();
     }
 
     BarplotLayer.prototype.initHTML = function () {
+        var scope = this;
         var newDiv = document.createElement("div");
         this.layerContainer.appendChild(newDiv);
 
@@ -34,8 +39,8 @@ define(["underscore", "Colorer"], function (_, Colorer) {
 
         // Add a header to the layer -- it's named "Layer 1" if this is the
         // first layer, "Layer 2" if this is the second, etc.
-        newDiv.appendChild(document.createElement("h3")).innerText =
-            "Layer " + this.num;
+        this.headerElement = newDiv.appendChild(document.createElement("h3"));
+        this.updateHeader();
 
         // We're going to indent the remainder of the elements within this
         // layer.
@@ -202,10 +207,19 @@ define(["underscore", "Colorer"], function (_, Colorer) {
         var rmBtn = rmP.appendChild(document.createElement("button"));
         rmBtn.innerText = "-";
         rmBtn.onclick = function () {
-            // TODO: un-draw this layer; alter the numbers of the other layers
-            // "below" it
+            scope.barplotPanel.removeLayer(scope.num);
+            // Remove this layer's HTML
             newDiv.remove();
         };
+    };
+
+    BarplotLayer.prototype.updateHeader = function () {
+        this.headerElement.innerText = "Layer " + this.num;
+    };
+
+    BarplotLayer.prototype.decrement = function () {
+        this.num--;
+        this.updateHeader();
     };
 
     return BarplotLayer;
