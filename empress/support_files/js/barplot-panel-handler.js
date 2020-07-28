@@ -96,6 +96,7 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
      * Draws the barplots. You know. on the screen. it's great. this is great.
      */
     BarplotPanel.prototype.draw = function () {
+        this.empress.drawBarplots(this.layers);
     };
 
     return BarplotPanel;

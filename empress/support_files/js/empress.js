@@ -731,6 +731,52 @@ define([
         this._drawer.loadSampleThickBuf(coords);
     };
 
+    Empress.prototype.drawBarplots = function (layers) {
+        // for now just draws one layer bc life
+        // TODO: Inspect each layer's state and use that to inform how tips are
+        // colored / scaled :D
+        var l1 = layers[0];
+        this._drawer.loadBarplotBuf([]);
+        // TODO: check current layout and alter behavior accordingly.
+        // for now this just assumes the rectangular layout.
+        var coords = [];
+        var maxX = -Infinity;
+        for (var i = 1; i < this._tree.size; i++) {
+            if (this._tree.isleaf(this._tree.postorderselect(i))) {
+                var x = this.getX(this._treeData[i]);
+                if (x > maxX) {
+                    maxX = x;
+                }
+            }
+        }
+        for (i = 1; i < this._tree.size; i++) {
+            if (this._tree.isleaf(this._tree.postorderselect(i))) {
+                var color = this._treeData[i].color;
+                var corners = {
+                    tL: [
+                        maxX + 10,
+                        this.getY(this._treeData[i]) + 1,
+                    ],
+                    tR: [
+                        maxX + 100,
+                        this.getY(this._treeData[i]) + 1,
+                    ],
+                    bL: [
+                        maxX + 10,
+                        this.getY(this._treeData[i]) - 1,
+                    ],
+                    bR: [
+                        maxX + 100,
+                        this.getY(this._treeData[i]) - 1,
+                    ],
+                };
+                this._addTriangleCoords(coords, corners, color);
+            }
+        }
+        this._drawer.loadBarplotBuf(coords);
+        this.drawTree();
+    };
+
     /**
      *
      * Color the tree by sample groups

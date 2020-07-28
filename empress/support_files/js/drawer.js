@@ -123,6 +123,10 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // buffer object for triangles (collapse clades)
         s.triBuff = c.createBuffer();
 
+        // buffer object for barplots
+        s.barplotBuff = c.createBuffer();
+        this.barplotSize = 0;
+
         // world matrix
         this.worldMat = gl.mat4.create();
 
@@ -267,6 +271,18 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
+     * Fills the buffer used to draw barplots. This is done using triangles,
+     * analogously to how thick lines for samples are (currently) drawn.
+     *
+     * @param {Array} data The coordinate and color data to fill the buffer
+     */
+    Drawer.prototype.loadBarplotBuf = function (data) {
+        data = new Float32Array(data);
+        this.barplotSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.barplotBuff, data);
+    };
+
+    /**
      * Fills the selected node buffer
      *
      * @param {Array} data The coordinate and color of selected node
@@ -340,6 +356,9 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
         this.bindBuffer(s.sampleThickBuff);
         c.drawArrays(c.TRIANGLES, 0, this.sampleThickSize);
+
+        this.bindBuffer(s.barplotBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.barplotSize);
     };
 
     /**
