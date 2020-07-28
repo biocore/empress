@@ -212,6 +212,8 @@ define(["jquery", "underscore", "spectrum", "Colorer"], function (
 
         // TODO: abstract ^^most of this stuff^^ into sep. functions rather
         // than one god function lol
+        // Also TODO: reuse code, e.g. for adding feature metadata col
+        // info to a selector (duplicated btwn color and length stuff)
 
         var rmP = innerDiv.appendChild(document.createElement("p"));
         var rmLbl = rmP.appendChild(document.createElement("label"));
