@@ -157,6 +157,19 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         }
     };
 
+    /**
+     * Returns the i-th hex color from the "Classic QIIME Colors" map, looping
+     * around as needed.
+     *
+     * @param {Number} i nonnegative integer
+     */
+    Colorer.getQIIMEColor = function (i) {
+        if (i < 0) {
+            throw new Error("i must be nonnegative");
+        }
+        return Colorer.__qiimeDiscrete[i % Colorer.__qiimeDiscrete.length];
+    };
+
     Colorer.DISCRETE = "Discrete";
     Colorer.SEQUENTIAL = "Sequential";
     Colorer.DIVERGING = "Diverging";

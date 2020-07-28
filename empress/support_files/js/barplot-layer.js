@@ -1,4 +1,9 @@
-define(["underscore", "Colorer"], function (_, Colorer) {
+define(["jquery", "underscore", "spectrum", "Colorer"], function (
+    $,
+    _,
+    spectrum,
+    Colorer
+) {
     /**
      *
      * @class BarplotLayer
@@ -53,8 +58,11 @@ define(["underscore", "Colorer"], function (_, Colorer) {
             "Default color";
         var dfltColorInput = document.createElement("input");
         dfltColorInput.setAttribute("type", "text");
-        // TODO: register dfltColorInput as color selector with spectrum.js
         dfltColorP.appendChild(dfltColorInput);
+        // Register dfltColorInput as a color selector with spectrum.js
+        $(dfltColorInput).spectrum({
+            color: Colorer.getQIIMEColor(this.num - 1),
+        });
 
         // Add a row containing a label, a checkbox, and a selector which opens
         // up a UI for coloring this layer's bars by feature metadata.

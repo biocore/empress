@@ -3,6 +3,7 @@
   <head>
     <title>Empress</title>
     <link rel='stylesheet' type="text/css" href='{{ base_url }}/css/empress.css'>
+    <link rel='stylesheet' type="text/css" href='{{ base_url }}/vendor/spectrum.min.css'>
     {{ emperor_style }}
 
     <script src='{{ base_url }}/vendor/require-2.1.22.min.js'></script>
@@ -82,6 +83,7 @@
             'glMatrix' : './vendor/gl-matrix.min',
             'chroma' : './vendor/chroma.min',
             'underscore' : './vendor/underscore-min',
+            'spectrum' : './vendor/spectrum.min',
 
             'ByteArray' : './js/byte-array',
             'BPTree' : './js/bp-tree',
@@ -103,13 +105,14 @@
         }
     });
 
-    empressRequire(['glMatrix', 'chroma', 'underscore', 'ByteArray',
-                    'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimationPanel',
-                    'Animator', 'BarplotLayer', 'BarplotPanel', 'BIOMTable',
-                    'Empress', 'Legend', 'Colorer', 'VectorOps', 'CanvasEvents',
-                    'SelectedNodeMenu', 'util'],
-        function(gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
-                 SidePanel, AnimationPanel, Animator, BarplotLayer,
+    empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'spectrum',
+                    'ByteArray', 'BPTree', 'Camera', 'Drawer', 'SidePanel',
+                    'AnimationPanel', 'Animator', 'BarplotLayer',
+                    'BarplotPanel', 'BIOMTable', 'Empress', 'Legend',
+                    'Colorer', 'VectorOps', 'CanvasEvents', 'SelectedNodeMenu',
+                    'util'],
+        function($, gl, chroma, underscore, spectrum, ByteArray, BPTree, Camera,
+                 Drawer, SidePanel, AnimationPanel, Animator, BarplotLayer,
                  BarplotPanel, BIOMTable, Empress, Legend, Colorer,
                  VectorOps, CanvasEvents, SelectedNodeMenu, util) {
         // initialze the tree and model
