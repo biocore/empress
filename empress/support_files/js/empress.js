@@ -387,8 +387,10 @@ define([
         // each other.
         top_left_x = 0;
         top_left_y = 0;
-        unit = 30; // all distances are based on this variable, thus "zooming" can be realised by just increasing this single value
-        factor_lineheight = 1.8; // distance between two text lines as a multiplication factor of unit
+        unit = 30; // all distances are based on this variable, thus "zooming"
+                   // can be realised by just increasing this single value
+        factor_lineheight = 1.8; // distance between two text lines as a
+                                 // multiplication factor of unit
         svg = ""; // the svg string to be generated
 
         // used as a rough estimate about the consumed width by text strings
@@ -396,7 +398,9 @@ define([
         var context = myCanvas.getContext("2d");
         context.font = "bold " + unit + "pt verdana";
 
-        // the document can have up to three legends, of which at most one shall be visible at any given timepoint. This might change and thus this method can draw multiple legends
+        // the document can have up to three legends, of which at most one shall
+        // be visible at any given timepoint. This might change and thus this
+        // method can draw multiple legends
         row = 1; // count the number of used rows
         for (let legend of dom.getElementsByClassName("legend")) {
             max_line_width = 0;
@@ -463,8 +467,12 @@ define([
                         "</text>\n";
                     row++;
                 }
-                // draw a rect behind, i.e. lower z-order, the legend title and colored keys to visually group the legend. Also acutally put these elements into a group for easier manual editing
-                // rect shall have a certain padding, its height must exceed number of used text rows and width must be larger than longest key text and/or legend title
+                // draw a rect behind, i.e. lower z-order, the legend title and
+                // colored keys to visually group the legend. Also acutally put
+                // these elements into a group for easier manual editing
+                // rect shall have a certain padding, its height must exceed
+                //number of used text rows and width must be larger than longest
+                // key text and/or legend title
                 svg +=
                     '<g>\n<rect x="' +
                     top_left_x +
@@ -1509,7 +1517,6 @@ define([
     };
 
     /**
-<<<<<<< HEAD
      * Collapses all clades that share the same color into a quadrilateral.
      *
      * Note: if a clade contains a node with DEFAULT_COLOR it will not be
@@ -1678,11 +1685,11 @@ define([
 
             // The x coordinate of 2) and 3) will be set to the x-coordinate of
             // the "deepest" node.
-            var dx = this.getX(this._treeData[cladeInfo["deepest"]]);
+            var dx = this.getX(this._treeData[cladeInfo.deepest]);
 
             // y-coordinate of 2) and 3)
-            var ly = this.getY(this._treeData[cladeInfo["left"]]);
-            var ry = this.getY(this._treeData[cladeInfo["right"]]);
+            var ly = this.getY(this._treeData[cladeInfo.left]);
+            var ry = this.getY(this._treeData[cladeInfo.right]);
             if (this._collapseMethod === "symmetric") {
                 if (Math.abs(y - ly) < Math.abs(y - ry)) {
                     ry = y + Math.abs(y - ly);
@@ -1710,19 +1717,19 @@ define([
             // The angle of the sector is determined by taking the angle of the
             // "left" or "right" most child that is closest to the root of the
             // clade and doubling it.
-            var dangle = this._treeData[cladeInfo["deepest"]].angle;
-            var langle = this._treeData[cladeInfo["left"]].angle;
-            var rangle = this._treeData[cladeInfo["right"]].angle;
+            var dangle = this._treeData[cladeInfo.deepest].angle;
+            var langle = this._treeData[cladeInfo.left].angle;
+            var rangle = this._treeData[cladeInfo.right].angle;
             var totalAngle, cos, sin, sX, sY;
 
             // This block finds (sX, sY) start point and total angle of the
             // sector
-            x = this.getX(this._treeData[cladeInfo["deepest"]]);
-            y = this.getY(this._treeData[cladeInfo["deepest"]]);
+            x = this.getX(this._treeData[cladeInfo.deepest]);
+            y = this.getY(this._treeData[cladeInfo.deepest]);
             if (this._collapseMethod === "symmetric") {
                 var nangle = this._treeData[rootNode].angle;
-                var minAngle = Math.min(nangle - langle, rangle - nangle),
-                    totalAngle = 2 * minAngle;
+                var minAngle = Math.min(nangle - langle, rangle - nangle);
+                totalAngle = 2 * minAngle;
                 cos = Math.cos(nangle - minAngle - dangle);
                 sin = Math.sin(nangle - minAngle - dangle);
                 sX = x * cos - y * sin;
@@ -1958,6 +1965,7 @@ define([
         var left = getCoords(clade.left);
         var right = getCoords(clade.right);
         var deep = getCoords(clade.deepest);
+        var cladeArea, netArea;
         if (this._currentLayout === "Unrooted") {
             // In Unrooted layout, to check if point is within in the collapsed
             // clade, we first calculate the area of the collapsed clade.
@@ -1975,7 +1983,7 @@ define([
             // Note: this works because the only way for the difference in areas
             //       to be zero is if the triangles exactly overlap the
             //       collapsed clade.
-            var cladeArea =
+            cladeArea =
                 VectorOps.triangleArea(cRoot, left, right) +
                 VectorOps.triangleArea(deep, left, right);
 
@@ -1988,7 +1996,7 @@ define([
             if (cladeArea == 0) {
                 return false;
             }
-            var netArea =
+            netArea =
                 cladeArea -
                 VectorOps.triangleArea(point, right, deep) -
                 VectorOps.triangleArea(point, deep, left) -
@@ -2018,7 +2026,7 @@ define([
                     left[1] = cRoot[1] - Math.abs(cRoot[1] - right[1]);
                 }
             }
-            var cladeArea = VectorOps.triangleArea(
+            cladeArea = VectorOps.triangleArea(
                 cRoot,
                 [deep[0], left[1]],
                 [deep[0], right[1]]
@@ -2029,7 +2037,7 @@ define([
             if (cladeArea == 0) {
                 return false;
             }
-            var netArea =
+            netArea =
                 cladeArea -
                 VectorOps.triangleArea(
                     point,
@@ -2076,17 +2084,17 @@ define([
 
             var leftPoint = getAngleAndMagnitude(left);
             var rightPoint = getAngleAndMagnitude(right);
-            var point = getAngleAndMagnitude(point);
+            var p = getAngleAndMagnitude(point);
             if (leftPoint.radian > rightPoint.radian) {
                 rightPoint.radian += 2 * Math.PI;
-                if (leftPoint.radian > point.radian) {
-                    point.radian += 2 * Math.PI;
+                if (leftPoint.radian > p.radian) {
+                    p.radian += 2 * Math.PI;
                 }
             }
             return (
-                point.radian >= leftPoint.radian &&
-                point.radian <= rightPoint.radian &&
-                point.mag <= leftPoint.mag
+                p.radian >= leftPoint.radian &&
+                p.radian <= rightPoint.radian &&
+                p.mag <= leftPoint.mag
             );
         }
     };

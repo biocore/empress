@@ -132,7 +132,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 sChk: { checked: false },
                 sSel: { disabled: true },
                 sColor: { value: "discrete-coloring-qiime" },
-                sCollapseCladesChk: { checked: false },
                 sLineWidth: { value: 0 },
                 sCollapseCladesChk: { checked: false },
             },
