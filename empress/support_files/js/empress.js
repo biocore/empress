@@ -1188,7 +1188,7 @@ define([
         // this will soon no longer be an issue and this comment block will be
         // removeable.
         if (method === "tip") {
-            obs = this._projectObservations(obs);
+            obs = this._projectObservations(obs, false);
         }
 
         // color tree

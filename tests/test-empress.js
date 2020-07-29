@@ -458,7 +458,7 @@ require([
                 g2: new Set([1]),
                 g3: new Set([6]),
             };
-            var result = this.empress._projectObservations(obs);
+            var result = this.empress._projectObservations(obs, false);
 
             var groups = ["g1", "g2", "g3"];
             for (var i = 0; i < groups.length; i++) {
@@ -482,7 +482,7 @@ require([
                 g1: new Set([2, 3, 4]),
                 g3: new Set([6]),
             };
-            var result = this.empress._projectObservations(obs);
+            var result = this.empress._projectObservations(obs, false);
 
             var groups = ["g1", "g3"];
             for (var i = 0; i < groups.length; i++) {
