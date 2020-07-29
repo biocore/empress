@@ -11,7 +11,6 @@ following commands:
 
 ```bash
 pip install git+https://github.com/biocore/empress.git
-pip install git+https://github.com/biocore/emperor.git
 qiime dev refresh-cache
 qiime empress
 ```
