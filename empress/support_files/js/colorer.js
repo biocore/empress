@@ -19,7 +19,12 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * @return{Colorer}
      * constructs Colorer
      */
-    function Colorer(color, values, useQuantScale = false, nanColor = "#64655d") {
+    function Colorer(
+        color,
+        values,
+        useQuantScale = false,
+        nanColor = "#64655d"
+    ) {
         // Remove duplicate values and sort the values sanely
         this.sortedUniqueValues = util.naturalSort(_.uniq(values));
 
