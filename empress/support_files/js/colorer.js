@@ -9,11 +9,17 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *                      This should be an id in Colorer.__Colormaps.
      * @param{Array} values The values in a metadata field for which colors
      *                      will be generated.
-     *
+     * @param{Boolean} useQuantScale Defaults to false. If true, this'll
+     *                               attempt to scale colors linearly based on
+     *                               their numeric values.
+     * @param{String} nanColor Hex color string for the color to assign
+     *                         non-numeric values (only used if useQuantScale
+     *                         is truthy). Our particular default value for
+     *                         this is the same as Emperor's default.
      * @return{Colorer}
      * constructs Colorer
      */
-    function Colorer(color, values) {
+    function Colorer(color, values, useQuantScale = false, nanColor = "#64655d") {
         // Remove duplicate values and sort the values sanely
         this.sortedUniqueValues = util.naturalSort(_.uniq(values));
 
@@ -162,6 +168,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * around as needed.
      *
      * @param {Number} i nonnegative integer
+     * @classmethod
      */
     Colorer.getQIIMEColor = function (i) {
         if (i < 0) {
@@ -204,10 +211,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         "#808000",
         "#008080",
     ];
-
-    // This is also the default "nanColor" for Emperor. (We could make this
-    // configurable if desired.)
-    Colorer.NANCOLOR = "#64655d";
 
     // Used to create color select option and chroma.brewer
     //Modified from:
