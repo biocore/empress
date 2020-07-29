@@ -172,7 +172,7 @@ define([
         /**
          * @type{Number}
          * The (not-yet-scaled) line width used for drawing "thick" lines.
-         * Can be passed as input to this.thickenSameSampleLines().
+         * Can be passed as input to this.thickenColoredNodes().
          */
         this._currentLineWidth = 0;
 
@@ -206,7 +206,7 @@ define([
      * Draws the tree
      */
     Empress.prototype.drawTree = function () {
-        this._drawer.loadTreeBuf(this.getCoords());
+        this._drawer.loadTreeBuff(this.getCoords());
         this._drawer.loadNodeBuff(this.getNodeCoords());
         this._drawer.draw();
     };
@@ -742,7 +742,7 @@ define([
      * for Arrays/Objects; see http://jasonjl.me/blog/2014/10/15/javascript.)
      *
      * @param {Array} coords Array containing coordinate + color data, to be
-     *                       passed to Drawer.loadSampleThickBuf().
+     *                       passed to Drawer.loadThickNodeBuff().
      * @param {Object} corners Object with tL, tR, bL, and bR entries (each
      *                         mapping to an array of the format [x, y]
      *                         indicating this position).
@@ -773,7 +773,7 @@ define([
      * bL |-bR---
      *
      * @param {Array} coords  Array containing coordinate + color data, to be
-     *                        passed to Drawer.loadSampleThickBuf().
+     *                        passed to Drawer.loadThickNodeBuff().
      * @param {Number} node   Node index in this._treeData, from which we'll
      *                        retrieve coordinate information.
      * @param {Number} lwScaled Desired line thickness (note that this will be
@@ -819,14 +819,14 @@ define([
      *                    parameter should be the output from
      *                    util.parseAndValidateNum().)
      */
-    Empress.prototype.thickenSameSampleLines = function (lw) {
+    Empress.prototype.thickenColoredNodes = function (lw) {
         // If lw isn't > 0, then we don't thicken colored lines at all --
         // we just leave them at their default width.
         if (lw < 0) {
             // should never happen because util.parseAndValidateNum()
             // should've been called in order to obtain lw, but in case
             // this gets messed up in the future we'll catch it
-            throw "Line width passed to thickenSameSampleLines() is < 0.";
+            throw "Line width passed to thickenColoredNodes() is < 0.";
         } else {
             // Make sure that, even if lw is 0 (i.e. we don't need to
             // thicken the lines), we still set the current line width
@@ -850,7 +850,7 @@ define([
 
         // the coordinates of the tree
         var coords = [];
-        this._drawer.loadSampleThickBuf([]);
+        this._drawer.loadThickNodeBuff([]);
 
         // define these variables so jslint does not complain
         var x1, y1, x2, y2, corners;
@@ -860,7 +860,7 @@ define([
         // drawing the tree in Rectangular layout mode
         if (
             this._currentLayout === "Rectangular" &&
-            this._treeData[tree.size].sampleColored
+            this._treeData[tree.size].isColored
         ) {
             this._addThickVerticalLineCoords(coords, tree.size, lwScaled);
         }
@@ -870,7 +870,7 @@ define([
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
 
-            if (!this._treeData[node].sampleColored) {
+            if (!this._treeData[node].isColored) {
                 continue;
             }
 
@@ -972,7 +972,7 @@ define([
             }
         }
 
-        this._drawer.loadSampleThickBuf(coords);
+        this._drawer.loadThickNodeBuff(coords);
     };
 
     Empress.prototype.undrawBarplots = function () {
@@ -1119,12 +1119,12 @@ define([
     };
 
     /**
-     * Color the tree using sample data
+     * Color the tree using sample metadata
      *
-     * @param {String} cat The sample category to use
-     * @param {String} color - the Color map to use
+     * @param {String} cat Sample metadata category to use
+     * @param {String} color Color map to use
      *
-     * @return {Object} If there exists at least on group with unique features
+     * @return {Object} If there exists at least one group with unique features
      *                  then an object will be returned that maps groups with
      *                  unique features to a color. If there doesn't exist a
      *                  group with unique features then null will be returned.
@@ -1279,6 +1279,9 @@ define([
         // things -- or at least to rename a lot of these coloring utilities
         // to talk about "groups" rather than "samples", esp. since I think
         // animation has the same problem...
+        // UPDATE: Since .inSample and related stuff will be removed shortly,
+        // this will soon no longer be an issue and this comment block will be
+        // removeable.
         if (method === "tip") {
             obs = this._projectObservations(obs);
         }
@@ -1368,12 +1371,16 @@ define([
     /**
      * Updates the tree based on obs and cm but does not draw a new tree.
      *
-     * Note: The nodes in each sample category should be unique. The behavior of
+     * NOTE: The nodes in each category should be unique. The behavior of
      *       this function is undefined if nodes in each category are not
      *       unique.
      *
-     * @param{Object} obs The mapping from sample category to unique nodes.
-     * @param{Object} cm The mapping from sample category to color.
+     * @param{Object} obs Maps categories to the unique nodes to be colored for
+     *                    each category.
+     * @param{Object} cm Maps categories to the colors to color their nodes
+     *                   with. Colors should be represented as RGB arrays, for
+     *                   example as is done in the color values of the output
+     *                   of Colorer.getMapRGB().
      */
     Empress.prototype._colorTree = function (obs, cm) {
         var categories = util.naturalSort(Object.keys(obs));
@@ -1385,7 +1392,7 @@ define([
             for (var j = 0; j < keys.length; j++) {
                 var key = keys[j];
                 this._treeData[key].color = cm[category];
-                this._treeData[key].sampleColored = true;
+                this._treeData[key].isColored = true;
             }
         }
     };
@@ -1399,10 +1406,10 @@ define([
             var key = keys[i];
             this._treeData[key].color = this.DEFAULT_COLOR;
             this._treeData[key].inSample = false;
-            this._treeData[key].sampleColored = false;
+            this._treeData[key].isColored = false;
             this._treeData[key].visible = true;
         }
-        this._drawer.loadSampleThickBuf([]);
+        this._drawer.loadThickNodeBuff([]);
     };
 
     /**
@@ -1433,9 +1440,9 @@ define([
                 // Adjust the thick-line stuff before calling drawTree() --
                 // this will get the buffer set up before it's actually drawn
                 // in drawTree(). Doing these calls out of order (draw tree,
-                // then call thickenSameSampleLines()) causes the thick-line
+                // then call thickenColoredNodes()) causes the thick-line
                 // stuff to only change whenever the tree is redrawn.
-                this.thickenSameSampleLines(this._currentLineWidth);
+                this.thickenColoredNodes(this._currentLineWidth);
                 // this._drawer.loadNodeBuff(this.getNodeCoords());
                 // this.drawTree();
                 this.centerLayoutAvgPoint();
@@ -1599,7 +1606,7 @@ define([
         }
 
         this._events.selectedNodeMenu.clearSelectedNode();
-        this._events.placeNodeSelectionMenu(nodeName, false);
+        this._events.placeNodeSelectionMenu(nodeName, true);
     };
 
     return Empress;

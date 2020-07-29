@@ -563,7 +563,7 @@ require([
             for (var i = 0; i < keys.length; i++) {
                 var key = keys[i];
                 deepEqual(e._treeData[key].color, e.DEFAULT_COLOR);
-                equal(e._treeData[key].sampleColored, false);
+                equal(e._treeData[key].isColored, false);
             }
         });
 

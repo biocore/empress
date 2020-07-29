@@ -107,9 +107,9 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         s.treeVertBuff = c.createBuffer();
         this.treeVertSize = 0;
 
-        // buffer object used to thicken sampleLines
-        s.sampleThickBuff = c.createBuffer();
-        this.sampleThickSize = 0;
+        // buffer object used to thicken node lines
+        s.thickNodeBuff = c.createBuffer();
+        this.thickNodeSize = 0;
 
         // buffer object for tree nodes
         s.nodeVertBuff = c.createBuffer();
@@ -253,26 +253,26 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      *
      * @param {Array} data The coordinate and color data to fill tree buffer
      */
-    Drawer.prototype.loadTreeBuf = function (data) {
+    Drawer.prototype.loadTreeBuff = function (data) {
         data = new Float32Array(data);
         this.treeVertSize = data.length / 5;
         this.fillBufferData_(this.sProg_.treeVertBuff, data);
     };
 
     /**
-     * Fills the buffer used to thicken sample lines
+     * Fills the buffer used to thicken node lines
      *
-     * @param {Array} data The coordinate and color data to fill sampleThink
+     * @param {Array} data Coordinate and color data to fill the buffer with
      */
-    Drawer.prototype.loadSampleThickBuf = function (data) {
+    Drawer.prototype.loadThickNodeBuff = function (data) {
         data = new Float32Array(data);
-        this.sampleThickSize = data.length / 5;
-        this.fillBufferData_(this.sProg_.sampleThickBuff, data);
+        this.thickNodeSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.thickNodeBuff, data);
     };
 
     /**
      * Fills the buffer used to draw barplots. This is done using triangles,
-     * analogously to how thick lines for samples are (currently) drawn.
+     * analogously to how thick lines for colored nodes are (currently) drawn.
      *
      * @param {Array} data The coordinate and color data to fill the buffer
      */
@@ -354,8 +354,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.bindBuffer(s.treeVertBuff);
         c.drawArrays(c.LINES, 0, this.treeVertSize);
 
-        this.bindBuffer(s.sampleThickBuff);
-        c.drawArrays(c.TRIANGLES, 0, this.sampleThickSize);
+        this.bindBuffer(s.thickNodeBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.thickNodeSize);
 
         this.bindBuffer(s.barplotBuff);
         c.drawArrays(c.TRIANGLES, 0, this.barplotSize);

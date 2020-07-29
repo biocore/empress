@@ -232,7 +232,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         // draw tree
         this.empress.resetTree();
         this.empress._colorTree(obs, this.cm);
-        this.empress.thickenSameSampleLines(this.lWidth);
+        this.empress.thickenColoredNodes(this.lWidth);
 
         // TODO: hide should be taken care of in empress state machine
         this.empress.setNonSampleBranchVisibility(this.hide);
