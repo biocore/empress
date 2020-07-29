@@ -1495,7 +1495,7 @@ define([
         }
 
         this._events.selectedNodeMenu.clearSelectedNode();
-        this._events.placeNodeSelectionMenu(nodeName, false);
+        this._events.placeNodeSelectionMenu(nodeName, true);
     };
 
     return Empress;
