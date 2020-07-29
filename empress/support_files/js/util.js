@@ -172,7 +172,7 @@ define(["underscore"], function (_) {
      *                               these things are checked for here -- we
      *                               only look at the value of this element.
      * @return {Number} Sanitized number that can be used as input to
-     *                  Empress.thickenSameSampleLines().
+     *                  Empress.thickenColoredNodes().
      */
     function parseAndValidateLineWidth(inputEle) {
         if (isValidNumber(inputEle.value)) {
