@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import click
+import numpy as np
 import pandas as pd
 import qiime2 as q2
 import pkg_resources
@@ -11,6 +12,7 @@ from bp import parse_newick
 from empress.core import Empress
 from emperor.util import get_emperor_support_files_dir
 from skbio import OrdinationResults
+from scipy.spatial.distance import euclidean
 from q2_types.tree import NewickFormat
 
 ARG_TYPE = click.Path(exists=True, dir_okay=False, file_okay=True)
@@ -26,9 +28,11 @@ ARG_TYPE = click.Path(exists=True, dir_okay=False, file_okay=True)
 @click.option('--filter-extra-samples', is_flag=True)
 @click.option('--filter-missing-features', is_flag=True)
 @click.option('--filter-unobserved-features-from-phylogeny', is_flag=True)
+@click.option('--number-of-features', default=10, type=click.IntRange(0, None),
+              show_default=True)
 def main(tree, table, sample_metadata, feature_metadata, ordination,
          ignore_missing_samples, filter_extra_samples, filter_missing_features,
-         filter_unobserved_features_from_phylogeny):
+         filter_unobserved_features_from_phylogeny, number_of_features):
     """Generate a development plot
 
     If no arguments are provided the moving pictures dataset will be loaded,
@@ -66,6 +70,20 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
 
     if ordination is not None:
         ordination = ordination.view(OrdinationResults)
+
+        if ordination.features is not None:
+            # select the top N most important features based on the vector's
+            # magnitude (coped from q2-emperor)
+            feats = ordination.features.copy()
+            # in cases where the the axes are all zero there might be all-NA
+            # columns
+            feats.fillna(0, inplace=True)
+            origin = np.zeros_like(feats.columns)
+            feats['importance'] = feats.apply(euclidean, axis=1,
+                                              args=(origin,))
+            feats.sort_values('importance', inplace=True, ascending=False)
+            feats.drop(['importance'], inplace=True, axis=1)
+            ordination.features = feats[:number_of_features].copy()
 
     # These two lines fetch the JS files for both apps directly from the
     # installation directory - this makes testing/developing easier
