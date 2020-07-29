@@ -1008,7 +1008,10 @@ define([
         }
 
         // project to ancestors
-        observationsPerGroup = this._projectObservations(observationsPerGroup, this.ignoreAbsentTips);
+        observationsPerGroup = this._projectObservations(
+            observationsPerGroup,
+            this.ignoreAbsentTips
+        );
 
         for (group in observationsPerGroup) {
             obs = Array.from(observationsPerGroup[group]);

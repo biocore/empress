@@ -33,15 +33,15 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // tree properties components
         this.treeNodesChk = document.getElementById("display-nodes-chk");
         this.recenterBtn = document.getElementById("center-tree-btn");
-        this.focusOnNodeChk = document.getElementById('focus-on-node-chk');
-        this.absentTipChk = document.getElementById('absent-tip-chk');
+        this.focusOnNodeChk = document.getElementById("focus-on-node-chk");
+        this.absentTipChk = document.getElementById("absent-tip-chk");
 
-        this.focusOnNodeChk.onclick = function() {
+        this.focusOnNodeChk.onclick = function () {
             empress.focusOnSelectedNode = this.checked;
         };
-        this.absentTipChk.onclick = function() {
+        this.absentTipChk.onclick = function () {
             empress.ignoreAbsentTips = this.checked;
-        }
+        };
 
         // sample GUI components
         this.sChk = document.getElementById("sample-chk");
