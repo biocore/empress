@@ -38,7 +38,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.colorByFMField = null;
         this.colorByFMColorMap = null;
         this.colorByFMScaleType = null;
-        this.defaultLength = BarplotLayer.MIN_LENGTH;
+        this.defaultLength = BarplotLayer.DEFAULT_LENGTH;
         this.scaleLengthByFM = false;
         this.scaleLengthByFMField = null;
 
@@ -67,7 +67,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         innerDiv.classList.add("indented");
 
         // Add default color stuff
-        var dfltColorP = innerDiv.appendChild(document.createElement("p"));
+        var dfltColorP = document.createElement("p");
         dfltColorP.appendChild(document.createElement("label")).innerText =
             "Default color";
         var dfltColorInput = document.createElement("input");
@@ -183,6 +183,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             }
         });
 
+        innerDiv.appendChild(dfltColorP);
+
         $(chgColorFMFieldSelector).change(function () {
             scope.colorByFMField = chgColorFMFieldSelector.value;
         });
@@ -194,7 +196,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         });
 
         // create default length settings
-        var dfltLenP = innerDiv.appendChild(document.createElement("p"));
+        var dfltLenP = document.createElement("p");
         dfltLenP.appendChild(document.createElement("label")).innerText =
             "Default length";
         var dfltLenInput = document.createElement("input");
@@ -246,9 +248,11 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
                 // TODO rather than setting this here, have it be set to the
                 // first value in the selector on initialization
                 scope.scaleLengthByFMField = chgLenFMFieldSelector.value;
+                dfltLenP.classList.add("hidden")
             } else {
                 chgLenFMFieldSelector.disabled = true;
                 scope.scaleLengthByFM = false;
+                dfltLenP.classList.remove("hidden")
                 // TODO: set all barplots in this layer back to the default
                 // length here
             }
@@ -256,6 +260,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         $(chgLenFMFieldSelector).change(function () {
             scope.scaleLengthByFMField = chgLenFMFieldSelector.value;
         });
+
+        innerDiv.appendChild(dfltLenP);
 
         // TODO: abstract ^^most of this stuff^^ into sep. functions rather
         // than one god function lol
@@ -284,6 +290,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
     };
 
     BarplotLayer.MIN_LENGTH = 1;
+    BarplotLayer.DEFAULT_LENGTH = 10;
 
     return BarplotLayer;
 });
