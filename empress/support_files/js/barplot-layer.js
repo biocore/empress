@@ -170,10 +170,14 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
                 scope.colorByFMField = chgColorFMFieldSelector.value;
                 scope.colorByFMColorMap = colormapSelector.value;
                 scope.colorByFMScaleType = scaletypeSelector.value;
+                // Hide the default color row (since default colors
+                // aren't used when f.m. coloring is enabled)
+                dfltColorP.classList.add("hidden")
             } else {
                 colorDetailsDiv.classList.add("hidden");
                 chgColorFMFieldSelector.disabled = true;
                 scope.colorByFM = false;
+                dfltColorP.classList.remove("hidden")
                 // TODO: set all barplots in this layer back to the default
                 // color here
             }
