@@ -113,6 +113,37 @@ class TestCore(unittest.TestCase):
                 samples_df,
                 proportion_explained=proportion_explained)
 
+        features = np.abs(samples_df.copy() / 2.0).iloc[:2, :]
+        features.index = 'f.' + features.index
+        self.biplot_no_matches = skbio.OrdinationResults(
+                'PCoA',
+                'Principal Coordinate Analysis',
+                eigvals,
+                samples_df,
+                features=features,
+                proportion_explained=proportion_explained)
+
+        features = np.abs(samples_df / 2.0).iloc[:2, :]
+        features.index = pd.Index(['a', 'h'])
+        self.biplot = skbio.OrdinationResults(
+                'PCoA',
+                'Principal Coordinate Analysis',
+                eigvals,
+                samples_df,
+                features=features,
+                proportion_explained=proportion_explained)
+        self.biplot_tree = parse_newick(
+            '(((y:1,z:2):1,b:2)g:1,(:1,d:3)h:2):1;')
+        self.biplot_table = pd.DataFrame(
+            {
+                "Sample1": [1, 2],
+                "Sample2": [8, 7],
+                "Sample3": [1, 0],
+                "Sample4": [0, 3]
+            },
+            index=["y", "z"]
+        ).T
+
         self.files_to_remove = []
         self.maxDiff = None
 
@@ -390,6 +421,62 @@ class TestCore(unittest.TestCase):
         self.assertNotEqual(id(self.filtered_sample_metadata), id(viz.samples))
 
         self.assertIsNone(viz.ordination)
+
+    def test_biplot(self):
+        exp = self.feature_metadata.copy()
+        viz = Empress(self.tree, self.table,
+                      self.sample_metadata,
+                      feature_metadata=self.feature_metadata,
+                      ordination=self.biplot,
+                      filter_unobserved_features_from_phylogeny=True)
+
+        obs = str(viz)
+
+        # check that emperor didn't pad the metadata
+        self.assertTrue('All elements' not in obs)
+
+        # metadata should have been trickled down as expected
+        assert_frame_equal(viz._emperor.feature_mf, exp)
+
+    def test_biplot_no_matching(self):
+        self.feature_metadata.index = ['z', 'y']
+        viz = Empress(self.biplot_tree, self.biplot_table,
+                      self.sample_metadata,
+                      feature_metadata=self.feature_metadata,
+                      ordination=self.biplot_no_matches,
+                      filter_unobserved_features_from_phylogeny=True)
+
+        obs = str(viz)
+        self.assertTrue('All elements' in obs)
+
+    def test_biplot_partial_match(self):
+        fm = self.feature_metadata.copy()
+        fm.index = ['a', 'x']
+
+        with self.assertRaisesRegex(KeyError, 'There are features not '
+                                    'included in the feature mapping file. '
+                                    'Override this error by using the '
+                                    '`ignore_missing_samples` argument. '
+                                    'Offending features: h'):
+            Empress(self.tree, self.table,
+                    self.sample_metadata,
+                    feature_metadata=fm,
+                    ordination=self.biplot,
+                    filter_unobserved_features_from_phylogeny=True)
+
+    def test_biplot_partial_match_override(self):
+        fm = self.feature_metadata.copy()
+        fm.index = ['a', 'x']
+
+        viz = Empress(self.tree, self.table,
+                      self.sample_metadata,
+                      feature_metadata=fm,
+                      ordination=self.biplot,
+                      ignore_missing_samples=True,
+                      filter_unobserved_features_from_phylogeny=True)
+
+        obs = str(viz)
+        self.assertTrue('This element has no metadata' in obs)
 
     def test_fm_filtering_post_shearing_with_moving_pictures_dataset(self):
         # This particular tip can be problematic (it was the reason we found

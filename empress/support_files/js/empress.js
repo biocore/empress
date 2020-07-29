@@ -211,6 +211,250 @@ define([
         this._drawer.draw();
     };
 
+    /**
+     * Creates an SVG string to export the current drawing
+     */
+    Empress.prototype.exportSvg = function () {
+        // TODO: use the same value as the actual WebGL drawing engine, but
+        // right now this value is hard coded on line 327 of drawer.js
+        NODE_RADIUS = 4;
+
+        minX = 0;
+        maxX = 0;
+        minY = 0;
+        maxY = 0;
+        svg = "";
+
+        // create a line from x1,y1 to x2,y2 for every two consecutive coordinates
+        // 5 array elements encode one coordinate:
+        // i=x, i+1=y, i+2=red, i+3=green, i+4=blue
+        svg += "<!-- tree branches -->\n";
+        coords = this.getCoords();
+        for (
+            i = 0;
+            i + 2 * this._drawer.VERTEX_SIZE <= coords.length;
+            i += 2 * this._drawer.VERTEX_SIZE
+        ) {
+            // "normal" lines have a default color,
+            // all other lines have a user defined thickness
+            // All lines are defined using the information from the child node.
+            // So, if coords[i+2] == DEFAULT_COLOR then coords[i+2+5] will
+            // also be equal to DEFAULT_COLOR. Thus, we can save checking three
+            // array elements here.
+            linewidth = 1 + this._currentLineWidth;
+            if (
+                coords[i + 2] == this.DEFAULT_COLOR[0] &&
+                coords[i + 3] == this.DEFAULT_COLOR[1] &&
+                coords[i + 4] == this.DEFAULT_COLOR[2]
+            ) {
+                linewidth = 1;
+            }
+            svg +=
+                '<line x1="' +
+                coords[i] +
+                '" y1="' +
+                coords[i + 1] +
+                '" x2="' +
+                coords[i + this._drawer.VERTEX_SIZE] +
+                '" y2="' +
+                coords[i + 1 + this._drawer.VERTEX_SIZE] +
+                '" stroke="' +
+                chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css() +
+                '" style="stroke-width:' +
+                linewidth +
+                '" />\n';
+
+            // obtain viewport from tree coordinates
+            minX = Math.min(
+                minX,
+                coords[i],
+                coords[i + this._drawer.VERTEX_SIZE]
+            );
+            maxX = Math.max(
+                maxX,
+                coords[i],
+                coords[i + this._drawer.VERTEX_SIZE]
+            );
+
+            minY = Math.min(
+                minY,
+                coords[i + 1],
+                coords[i + 1 + this._drawer.VERTEX_SIZE]
+            );
+            maxY = Math.max(
+                maxY,
+                coords[i + 1],
+                coords[i + 1 + this._drawer.VERTEX_SIZE]
+            );
+        }
+
+        // create a circle for each node
+        if (this._drawer.showTreeNodes) {
+            svg += "<!-- tree nodes -->\n";
+            coords = this.getNodeCoords();
+            for (
+                i = 0;
+                i + this._drawer.VERTEX_SIZE <= coords.length;
+                i += this._drawer.VERTEX_SIZE
+            ) {
+                // getNodeCoords array seem to be larger than necessary and
+                // elements are initialized with 0.  Thus, nodes at (0, 0) will
+                // be skipped (root will always be positioned at 0,0 and drawn
+                // below) This is a known issue and will be resolved with #142
+                if (coords[i] == 0 && coords[i + 1] == 0) {
+                    continue;
+                }
+                svg +=
+                    '<circle cx="' +
+                    coords[i] +
+                    '" cy="' +
+                    coords[i + 1] +
+                    '" r="' +
+                    NODE_RADIUS +
+                    '" style="fill:' +
+                    chroma
+                        .gl(coords[i + 2], coords[i + 3], coords[i + 4])
+                        .css() +
+                    '"/>\n';
+            }
+        }
+
+        // add one black circle to indicate the root
+        // Not sure if this speacial treatment for root is necessary once #142 is merged.
+        svg += "<!-- root node -->\n";
+        svg +=
+            '<circle cx="0" cy="0" r="' +
+            NODE_RADIUS +
+            '" fill="rgb(0,0,0)"/>\n';
+
+        return [
+            svg,
+            'viewBox="' +
+                (minX - NODE_RADIUS) +
+                " " +
+                (minY - NODE_RADIUS) +
+                " " +
+                (maxX - minX + 2 * NODE_RADIUS) +
+                " " +
+                (maxY - minY + 2 * NODE_RADIUS) +
+                '"',
+        ];
+    };
+
+    /**
+     * Creates an SVG string to export legends
+     */
+    Empress.prototype.exportSVG_legend = function (dom) {
+        // top left position of legends, multiple legends are placed below
+        // each other.
+        top_left_x = 0;
+        top_left_y = 0;
+        unit = 30; // all distances are based on this variable, thus "zooming" can be realised by just increasing this single value
+        factor_lineheight = 1.8; // distance between two text lines as a multiplication factor of unit
+        svg = ""; // the svg string to be generated
+
+        // used as a rough estimate about the consumed width by text strings
+        var myCanvas = document.createElement("canvas");
+        var context = myCanvas.getContext("2d");
+        context.font = "bold " + unit + "pt verdana";
+
+        // the document can have up to three legends, of which at most one shall be visible at any given timepoint. This might change and thus this method can draw multiple legends
+        row = 1; // count the number of used rows
+        for (let legend of dom.getElementsByClassName("legend")) {
+            max_line_width = 0;
+            title = legend.getElementsByClassName("legend-title");
+            svg_legend = "";
+            if (title.length > 0) {
+                titlelabel = title.item(0).innerHTML;
+                max_line_width = Math.max(
+                    max_line_width,
+                    context.measureText(titlelabel).width
+                );
+                svg_legend +=
+                    '<text x="' +
+                    (top_left_x + unit) +
+                    '" y="' +
+                    (top_left_y + row * (unit * factor_lineheight)) +
+                    '" style="font-weight:bold;font-size:' +
+                    unit +
+                    'pt;">' +
+                    titlelabel +
+                    "</text>\n";
+                row++;
+                for (let item of legend.getElementsByClassName(
+                    "gradient-bar"
+                )) {
+                    color = item
+                        .getElementsByClassName("category-color")
+                        .item(0)
+                        .getAttribute("style")
+                        .split(":")[1]
+                        .split(";")[0];
+                    itemlabel = item
+                        .getElementsByClassName("gradient-label")
+                        .item(0)
+                        .getAttribute("title");
+                    max_line_width = Math.max(
+                        max_line_width,
+                        context.measureText(itemlabel).width
+                    );
+
+                    // a rect left of the label to indicate the used color
+                    svg_legend +=
+                        '<rect x="' +
+                        (top_left_x + unit) +
+                        '" y="' +
+                        (top_left_y + row * (unit * factor_lineheight) - unit) +
+                        '" width="' +
+                        unit +
+                        '" height="' +
+                        unit +
+                        '" style="fill:' +
+                        color +
+                        '"/>\n';
+                    // the key label
+                    svg_legend +=
+                        '<text x="' +
+                        (top_left_x + 2.5 * unit) +
+                        '" y="' +
+                        (top_left_y + row * (unit * factor_lineheight)) +
+                        '" style="font-size:' +
+                        unit +
+                        'pt;">' +
+                        itemlabel +
+                        "</text>\n";
+                    row++;
+                }
+                // draw a rect behind, i.e. lower z-order, the legend title and colored keys to visually group the legend. Also acutally put these elements into a group for easier manual editing
+                // rect shall have a certain padding, its height must exceed number of used text rows and width must be larger than longest key text and/or legend title
+                svg +=
+                    '<g>\n<rect x="' +
+                    top_left_x +
+                    '" y="' +
+                    (top_left_y +
+                        (row -
+                            legend.getElementsByClassName("gradient-bar")
+                                .length -
+                            2) *
+                            (unit * factor_lineheight)) +
+                    '" width="' +
+                    (max_line_width + 2 * unit) +
+                    '" height="' +
+                    ((legend.getElementsByClassName("gradient-bar").length +
+                        1) *
+                        unit *
+                        factor_lineheight +
+                        unit) +
+                    '" style="fill:#eeeeee;stroke:#000000;stroke-width:1" ry="30" />\n' +
+                    svg_legend +
+                    "</g>\n";
+                row += 2; // one blank row between two legends
+            }
+        }
+
+        return svg;
+    };
+
     Empress.prototype.getX = function (nodeObj) {
         var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
         return nodeObj[xname];
@@ -1339,6 +1583,23 @@ define([
      */
     Empress.prototype.setOnNodeMenuHiddenCallback = function (callback) {
         this._events.selectedNodeMenu.hiddenCallback = callback;
+    };
+
+    /**
+     * Show the node menu for a node name
+     *
+     * @param {String} nodeName The name of the node to show.
+     */
+    Empress.prototype.showNodeMenuForName = function (nodeName) {
+        if (!this._tree.containsNode(nodeName)) {
+            util.toastMsg(
+                "The node '" + nodeName + "' is not present in the phylogeny"
+            );
+            return;
+        }
+
+        this._events.selectedNodeMenu.clearSelectedNode();
+        this._events.placeNodeSelectionMenu(nodeName, false);
     };
 
     return Empress;

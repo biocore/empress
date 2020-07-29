@@ -18,6 +18,7 @@ from empress.compression_utils import (
 
 import pkg_resources
 import os
+import pandas as pd
 
 from shutil import copytree
 from emperor import Emperor
@@ -126,13 +127,26 @@ class Empress():
         )
 
         if self.ordination is not None:
-            # Note that tip-level metadata is the only "feature metadata" we
-            # send to Emperor, because internal nodes in the tree should not
-            # correspond to features in the table (and thus to arrows in a
-            # biplot).
+
+            # biplot arrows can optionally have metadata, think for example
+            # a study where the arrows represent pH, Alkalinity, etc.
+            # Therefore, check if there are matches in the metadata, if
+            # there aren't additional errors can be overriden with the
+            # ignore_missing_samples flag
+            feature_metadata = None
+            if self.ordination.features is not None:
+
+                # if there are no matches set to None so Emperor can ignore
+                # the feature metadata
+                feature_metadata = pd.concat([self.tip_md, self.int_md])
+                arrows = self.ordination.features.index
+                if (feature_metadata.index.intersection(arrows).empty or
+                   feature_metadata.empty):
+                    feature_metadata = None
+
             self._emperor = Emperor(
                 self.ordination, mapping_file=self.samples,
-                feature_mapping_file=self.tip_md,
+                feature_mapping_file=feature_metadata,
                 ignore_missing_samples=ignore_missing_samples,
                 remote='./emperor-resources')
         else:
