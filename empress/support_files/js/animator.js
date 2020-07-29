@@ -328,7 +328,8 @@ define(["Colorer", "util"], function (Colorer, util) {
             category = categories[i];
             obs[category] = this.empress._namesToKeys(obs[category]);
         }
-        obs = this.empress._projectObservations(obs);
+        obs = this.empress._projectObservations(obs,
+                                                this.empress.ignoreAbsentTips);
 
         // add non-empty groups to the legend for this frame
         var legend = {};
