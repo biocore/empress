@@ -1024,8 +1024,17 @@ define([
                 if (scope._tree.isleaf(scope._tree.postorderselect(i))) {
                     var color;
                     var name = scope._treeData[i].name;
-                    if (layer.colorByFM && _.has(scope._tipMetadata, name)) {
-                        color = cm[scope._tipMetadata[name][fmIdx]];
+                    if (layer.colorByFM) {
+                        if (_.has(scope._tipMetadata, name)) {
+                            color = cm[scope._tipMetadata[name][fmIdx]];
+                        } else {
+                            // Don't draw a bar if this tip doesn't have
+                            // feature metadata
+                            // (TODO, when we add in sample metadata barplots
+                            // we should still draw bars for these tips if
+                            // possible)
+                            continue;
+                        }
                     } else {
                         color = defaultColor;
                     }
