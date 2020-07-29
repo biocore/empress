@@ -196,7 +196,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this[colorMethodName]();
 
         var lw = util.parseAndValidateLineWidth(lwInput);
-        this.empress.thickenSameSampleLines(lw);
+        this.empress.thickenColoredNodes(lw);
         this.empress.drawTree();
     };
 
