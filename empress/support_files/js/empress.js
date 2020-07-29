@@ -1211,20 +1211,20 @@ define([
      *       returned version of obs.
      *
      * @param {Object} obs Maps categories to a set of observations (i.e. tips)
-     * @param {Bool} ignoreAbsent Wheter absent branches should be ignored
+     * @param {Bool} ignoreAbsentTips Wheter absent tips should be ignored
      * during color propagation.
      * @return {Object} returns A Map with the same group names that maps groups
                         to a set of keys (i.e. tree nodes) that are unique to
                         each group.
      */
-    Empress.prototype._projectObservations = function (obs, ignoreAbsent) {
+    Empress.prototype._projectObservations = function (obs, ignoreAbsentTips) {
         var tree = this._tree,
             categories = Object.keys(obs),
             notRepresented = new Set(),
             i,
             j;
 
-        if (!ignoreAbsent) {
+        if (!ignoreAbsentTips) {
             // find "non-represented" tips
             // Note: the following uses postorder traversal
             for (i = 1; i < tree.size; i++) {
