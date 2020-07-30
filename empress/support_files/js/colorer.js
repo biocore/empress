@@ -34,21 +34,20 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         this.__valueToColor = {};
 
         // Figure out what "type" of color map has been selected (should be one
-        // of discrete, sequential, or diverging)
-        this.selectedColorMap = _.find(Colorer.__Colormaps, function (cm) {
-            return cm.id === color;
-        });
+        // of discrete, sequential, or diverging; other unexpected results
+        // would trigger an error for Colorer.getColorMapType())
+        var cmType = Colorer.getColorMapType(this.color);
 
-        // Based on the determined color map type, assign colors accordingly
-        if (this.selectedColorMap.type === Colorer.DISCRETE) {
+        // Based on the determined color map type and the value of
+        // useQuantScale, assign colors accordingly
+        if (cmType === Colorer.DISCRETE) {
             this.assignDiscreteColors();
-        } else if (
-            this.selectedColorMap.type === Colorer.SEQUENTIAL ||
-            this.selectedColorMap.type === Colorer.DIVERGING
-        ) {
-            this.assignOrdinalScaledColors();
         } else {
-            throw new Error("Invalid color map " + this.color + " specified");
+            if (useQuantScale) {
+                this.assignContinuousScaledColors();
+            } else {
+                this.assignOrdinalScaledColors();
+            }
         }
     }
 
@@ -168,7 +167,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * Returns the i-th hex color from the "Classic QIIME Colors" map, looping
      * around as needed.
      *
-     * @param {Number} i nonnegative integer
+     * @param {Number} i Nonnegative integer
+     * @return {String} Corresponding hex color
+     * @throws {Error} If i is negative
      * @classmethod
      */
     Colorer.getQIIMEColor = function (i) {
@@ -177,6 +178,33 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         }
         return Colorer.__qiimeDiscrete[i % Colorer.__qiimeDiscrete.length];
     };
+
+    /**
+     * Given a color map's "ID", returns its type.
+     *
+     * The ID should match the "id" property of one of the colormap objects
+     * within Colorer.__Colormaps.
+     *
+     * @param {String} colorMapID
+     * @return {String} The type of the corresponding colormap. Should be equal
+     *                  to one of Colorer.DISCRETE, Colorer.SEQUENTIAL, or
+     *                  Colorer.DIVERGING.
+     * @throws {Error} If no color map
+     * @classmethod
+     */
+    Colorer.getColorMapType = function (colorMapID) {
+        var colorMapObj = _.find(Colorer.__Colormaps, function (cm) {
+            return cm.id === colorMapID;
+        });
+        // If no color map has the requested ID -- or if the user somehow
+        // managed to select one of the "header" elements in the colorer select
+        // (e.g. "-- Discrete --"), then throw an error.
+        if (_.isUndefined(colorMapObj) || colorMapObj.type === Colorer.HEADER) {
+            throw new Error("Invalid color map ID " + colorMapID + "specified");
+        }
+        return colorMapObj.type;
+    };
+
 
     Colorer.DISCRETE = "Discrete";
     Colorer.SEQUENTIAL = "Sequential";
