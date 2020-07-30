@@ -33,14 +33,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
 
-        // Figure out what "type" of color map has been selected (should be one
-        // of discrete, sequential, or diverging; other unexpected results
-        // would trigger an error for Colorer.getColorMapType())
-        var cmType = Colorer.getColorMapType(this.color);
-
-        // Based on the determined color map type and the value of
-        // useQuantScale, assign colors accordingly
-        if (cmType === Colorer.DISCRETE) {
+        // Based on the color map type and the value of useQuantScale, assign
+        // colors accordingly
+        if (Colorer.isColorMapDiscrete(this.color)) {
             this.assignDiscreteColors();
         } else {
             if (useQuantScale) {
@@ -94,8 +89,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             this.__valueToColor[onlyVal] = chroma.brewer[this.color][0];
         } else {
             // ... Otherwise, do normal interpolation -- the first value gets
-            // the "first" color in the colormap, the last value gets the
-            // "last" color in the colormap, and things in between are
+            // the "first" color in the color map, the last value gets the
+            // "last" color in the color map, and things in between are
             // interpolated. Chroma takes care of all of the hard work.
             var interpolator = chroma
                 .scale(chroma.brewer[this.color])
@@ -180,19 +175,19 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     };
 
     /**
-     * Given a color map's "ID", returns its type.
+     * Given a color map's ID, determines if it's a discrete color map or not.
      *
-     * The ID should match the "id" property of one of the colormap objects
+     * The ID should match the "id" property of one of the color map objects
      * within Colorer.__Colormaps.
      *
      * @param {String} colorMapID
-     * @return {String} The type of the corresponding colormap. Should be equal
-     *                  to one of Colorer.DISCRETE, Colorer.SEQUENTIAL, or
-     *                  Colorer.DIVERGING.
-     * @throws {Error} If no color map
+     * @return {Boolean} true if the color map with a matching ID is discrete;
+     *                   false otherwise.
+     * @throws {Error} If no color map matches the ID, or if the color map
+     *                 matching the ID has the type Colorer.HEADER.
      * @classmethod
      */
-    Colorer.getColorMapType = function (colorMapID) {
+    Colorer.isColorMapDiscrete = function (colorMapID) {
         var colorMapObj = _.find(Colorer.__Colormaps, function (cm) {
             return cm.id === colorMapID;
         });
@@ -202,7 +197,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         if (_.isUndefined(colorMapObj) || colorMapObj.type === Colorer.HEADER) {
             throw new Error("Invalid color map ID " + colorMapID + "specified");
         }
-        return colorMapObj.type;
+        return colorMapObj.type === Colorer.DISCRETE;
     };
 
     Colorer.DISCRETE = "Discrete";

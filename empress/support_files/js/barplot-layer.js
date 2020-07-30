@@ -199,10 +199,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             // Hide the "Continuous values?" row based on the selected
             // colormap's type. This matches how Emperor's ColorViewController
             // hides/shows its "Continuous values" elements.
-            if (
-                Colorer.getColorMapType(scope.colorByFMColorMap) ===
-                Colorer.DISCRETE
-            ) {
+            if (Colorer.isColorMapDiscrete(scope.colorByFMColorMap)) {
                 continuousValP.classList.add("hidden");
             } else {
                 continuousValP.classList.remove("hidden");
