@@ -16,6 +16,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      * @constructs SidePanel
      */
     function SidePanel(container, empress, legend) {
+        var scope = this;
+
         // the container for the side menu
         this.container = container;
         this.SIDE_PANEL_ID = container.id;
@@ -41,6 +43,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         };
         this.absentTipChk.onclick = function () {
             empress.ignoreAbsentTips = this.checked;
+
+            // only update the tree if sample selection is enabled
+            if (scope.sChk.checked) {
+                scope.sUpdateBtn.click();
+            }
         };
 
         // sample GUI components
