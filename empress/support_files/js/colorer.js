@@ -111,6 +111,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * account the magnitudes/etc. of the numeric values in
      * this.sortedUniqueValues. This will populate this.__valueToColor with
      * this information.
+     *
+     * This code was based on ColorViewController.getScaledColors() in Emperor: 
+     * https://github.com/biocore/emperor/blob/b959aed7ffcb9fa3e4d019c6e93a1af3850564d9/emperor/support_files/js/color-view-controller.js#L398
      */
     Colorer.prototype.assignContinuousScaledColors = function () {
         var scope = this;
