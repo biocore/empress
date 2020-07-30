@@ -275,7 +275,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             "Maximum length";
         var maxLenInput = document.createElement("input");
         maxLenInput.setAttribute("type", "number");
-        maxLenInput.setAttribute("max", BarplotLayer.MIN_LENGTH);
+        maxLenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
         maxLenInput.classList.add("empress-input");
         maxLenInput.value = BarplotLayer.DEFAULT_MAX_LENGTH;
         $(maxLenInput).change(function () {
