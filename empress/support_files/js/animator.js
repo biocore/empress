@@ -215,7 +215,7 @@ define(["Colorer", "util"], function (Colorer, util) {
     /**
      * Draws the current frame and updates the legend.
      */
-    Animator.prototype.drawFrame = function () {
+    Animator.prototype.drawFrame = function (showLegend) {
         var frame = this.queuedFrames[this.curFrame];
         var name = `${frame.name} (${this.curFrame + 1} / ${this.totalFrames})`;
         var keyInfo = frame.keyInfo;
@@ -226,8 +226,10 @@ define(["Colorer", "util"], function (Colorer, util) {
         }
 
         // draw new legend
-        this.legend.clearAllLegends();
-        this.legend.addColorKey(name, keyInfo, "node", false);
+        if (showLegend) {
+          this.legend.clearAllLegends();
+          this.legend.addColorKey(name, keyInfo, "node", false);
+        }
 
         // draw tree
         this.empress.resetTree();
@@ -238,6 +240,14 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.empress.setNonSampleBranchVisibility(this.hide);
         this.empress.drawTree();
         this.curFrame += 1;
+    };
+
+    Animator.prototype.showAnimationFrameAtIndex = function (index) {
+        if (!this.framesRdy[index]) {
+            this._collectFrame(index);
+        }
+
+        this.drawFrame(false);
     };
 
     /**
@@ -254,7 +264,7 @@ define(["Colorer", "util"], function (Colorer, util) {
                 if (!scope.framesRdy[scope.curFrame]) {
                     scope._collectFrame(scope.curFrame);
                 }
-                scope.drawFrame();
+                scope.drawFrame(true);
                 setTimeout(loop, scope.timePerFram);
             } else if (!scope.pause && scope.curFrame === scope.totalFrames) {
                 util.toastMsg("Animation Complete.");
@@ -262,15 +272,19 @@ define(["Colorer", "util"], function (Colorer, util) {
         }, 0);
     };
 
+    Animator.prototype.setupAnimation = function () {
+        this.curFrame = 0;
+        this.pause = false;
+        this.framesRdy = new Array(this.totalFrames).fill(false);
+        this.queuedFrames = [];
+    };
+
     /**
      * This method is the entry point for the animation. This method will
      * start the animation loop.
      */
     Animator.prototype.startAnimation = function () {
-        this.curFrame = 0;
-        this.pause = false;
-        this.framesRdy = new Array(this.totalFrames).fill(false);
-        this.queuedFrames = [];
+        this.setupAnimation();
 
         // start animation loop
         // Note: This method is async and will create timeout events until
