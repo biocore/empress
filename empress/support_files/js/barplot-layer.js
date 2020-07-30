@@ -144,28 +144,23 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         Colorer.addColorsToSelect(colormapSelector);
         colormapSC.appendChild(colormapSelector);
 
-        // Add a row for choosing the scale type
-        var scaletypeP = colorDetailsDiv.appendChild(
+        // Add a row for choosing the scale type (i.e. whether to use
+        // continuous coloring or not)
+        // This mimics Emperor's "Continuous values" checkbox
+        var continuousValP = colorDetailsDiv.appendChild(
             document.createElement("p")
         );
-        var scaletypeLbl = scaletypeP.appendChild(
+        var continuousValLbl = continuousValP.appendChild(
             document.createElement("label")
         );
-        scaletypeLbl.innerText = "Scale Type";
-        var scaletypeSC = scaletypeP.appendChild(
-            document.createElement("label")
+        continuousValLbl.innerText = "Continuous values?";
+        var continuousValCheckbox = continuousValP.appendChild(
+            document.createElement("input")
         );
-        scaletypeSC.classList.add("select-container");
-        var scaletypeSelector = document.createElement("select");
-        // add categorical option
-        var cOpt = document.createElement("option");
-        cOpt.innerText = cOpt.value = "Categorical";
-        scaletypeSelector.appendChild(cOpt);
-        // add quantitative option
-        var qOpt = document.createElement("option");
-        qOpt.innerText = qOpt.value = "Quantitative";
-        scaletypeSelector.appendChild(qOpt);
-        scaletypeSC.appendChild(scaletypeSelector);
+        continuousValCheckbox.id = "barplot-layer-" + this.num + "-fmcolor-continuous-chk";
+        continuousValCheckbox.setAttribute("type", "checkbox");
+        continuousValCheckbox.classList.add("empress-input");
+        continuousValLbl.setAttribute("for", continuousValCheckbox.id);
 
         // Alter visibility of the color-changing details when the "Color
         // by..." checkbox is clicked
@@ -176,7 +171,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
                 scope.colorByFM = true;
                 scope.colorByFMField = chgColorFMFieldSelector.value;
                 scope.colorByFMColorMap = colormapSelector.value;
-                scope.colorByFMScaleType = scaletypeSelector.value;
+                scope.colorByFMContinuous = continuousValCheckbox.checked;
                 // Hide the default color row (since default colors
                 // aren't used when f.m. coloring is enabled)
                 dfltColorP.classList.add("hidden");
@@ -198,8 +193,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         $(colormapSelector).change(function () {
             scope.colorByFMColorMap = colormapSelector.value;
         });
-        $(scaletypeSelector).change(function () {
-            scope.colorByFMScaleType = scaletypeSelector.value;
+        $(continuousValCheckbox).change(function () {
+            scope.colorByFMContinuous = continuousValCheckbox.checked;
         });
 
         // create default length settings
