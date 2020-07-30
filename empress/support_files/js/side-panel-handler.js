@@ -16,6 +16,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      * @constructs SidePanel
      */
     function SidePanel(container, empress, legend) {
+        // used in event closures
         var scope = this;
 
         // the container for the side menu
@@ -77,9 +78,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         // uncheck button
         this.sHideChk.checked = false;
-
-        // used in event closures
-        var scope = this;
 
         // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
