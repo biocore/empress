@@ -157,7 +157,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         var continuousValCheckbox = continuousValP.appendChild(
             document.createElement("input")
         );
-        continuousValCheckbox.id = "barplot-layer-" + this.num + "-fmcolor-continuous-chk";
+        continuousValCheckbox.id =
+            "barplot-layer-" + this.num + "-fmcolor-continuous-chk";
         continuousValCheckbox.setAttribute("type", "checkbox");
         continuousValCheckbox.classList.add("empress-input");
         continuousValLbl.setAttribute("for", continuousValCheckbox.id);
