@@ -998,37 +998,90 @@ define([
                 }
             }
         }
+        // Add on a gap between the rightmost node and the leftmost point of
+        // the first barplot layer
+        maxX += 100;
+
+        // As we iterate through the layers, we'll store the "previous layer
+        // max X" as a separate variable. This will help us easily work with
+        // layers of varying lengths.
+        var prevLayerMaxX = maxX;
 
         _.each(layers, function (layer, layerNum) {
-            var cm, fmIdx;
-            var defaultColor = chroma(layer.defaultColor).gl().slice(0, 3);
+            var fm2color, colorFMIdx;
+            var defaultColor;
+
+            var fm2length, lengthFMIdx;
+
+            // Map feature metadata values to colors, if requested
             if (layer.colorByFM) {
-                var sortedUniqueValues = scope.getUniqueFeatureMetadataInfo(
+                var sortedUniqueColorValues = scope.getUniqueFeatureMetadataInfo(
                     layer.colorByFMField,
                     "tip"
                 ).sortedUniqueValues;
-                // if this field is invalid then we'd find that out in
-                // scope.getUniqueFeatureMetadataInfo(). (but it really
-                // shouldn't be.)
-                fmIdx = _.indexOf(
+                // If this field is invalid then an error would have been
+                // raised in scope.getUniqueFeatureMetadataInfo().
+                // (But it really shouldn't be.)
+                colorFMIdx = _.indexOf(
                     scope._featureMetadataColumns,
                     layer.colorByFMField
                 );
                 var colorer = new Colorer(
                     layer.colorByFMColorMap,
-                    sortedUniqueValues
+                    sortedUniqueColorValues
                 );
-                cm = colorer.getMapRGB();
+                fm2color = colorer.getMapRGB();
+            } else {
+                // TODO just compute this in BarplotLayer so that we can access
+                // layer.defaultColor below easily
+                defaultColor = chroma(layer.defaultColor).gl().slice(0, 3);
             }
+
+            // Next, map feature metadata values to lengths if requested
+            if (layer.scaleLengthByFM) {
+                var sortedUniqueLengthValues = scope.getUniqueFeatureMetadataInfo(
+                    layer.scaleLengthByFMField,
+                    "tip"
+                ).sortedUniqueValues;
+                lengthFMIdx = _.indexOf(
+                    scope._featureMetadataColumns,
+                    layer.scaleLengthByFMField
+                );
+                // Taken from ColorViewController.getScaledColors() in Emperor
+                var split = util.splitNumericValues(sortedUniqueLengthValues);
+                if (split.numeric.length < 2) {
+                    throw "Field " + layer.scaleLengthByFMField + " has < 2 numeric values.";
+                }
+                fm2length = {};
+                // TODO should be user-configurable
+                var MAX_LENGTH = 100;
+                var nums = _.map(split.numeric, parseFloat);
+                var min = _.min(nums);
+                var max = _.max(nums);
+                var range = max - min;
+                if (range === 0) {
+                    fm2length[max] = 100;
+                }
+                _.each(split.numeric, function(n) {
+                    var fn = parseFloat(n);
+                    // use basic linear interpolation (we could add fancier
+                    // scaling methods in the future as options if desired)
+                    fm2length[fn] = ((fn - min) / range) * MAX_LENGTH;
+                });
+            }
+
             for (i = 1; i < scope._tree.size; i++) {
                 if (scope._tree.isleaf(scope._tree.postorderselect(i))) {
-                    var color;
                     var name = scope._treeData[i].name;
+
+                    // Assign this tip's bar a color
+                    var color;
                     if (layer.colorByFM) {
                         if (_.has(scope._tipMetadata, name)) {
-                            color = cm[scope._tipMetadata[name][fmIdx]];
+                            color = fm2color[scope._tipMetadata[name][colorFMIdx]];
                         } else {
                             // Don't draw a bar if this tip doesn't have
+                            // feature metadata and we're coloring bars by
                             // feature metadata
                             // (TODO, when we add in sample metadata barplots
                             // we should still draw bars for these tips if
@@ -1038,28 +1091,55 @@ define([
                     } else {
                         color = defaultColor;
                     }
-                    // TODO do length-scaling if requested
+
+                    // Assign this tip's bar a length
+                    var length;
+                    if (layer.scaleLengthByFM) {
+                        if (_.has(scope._tipMetadata, name)) {
+                            var fm = scope._tipMetadata[name][lengthFMIdx];
+                            if (_.has(fm2length, fm)) {
+                                length = fm2length[fm];
+                            } else {
+                                // This tip has metadata, but its value for
+                                // this field is non-numeric
+                                continue;
+                            }
+                        } else {
+                            // This tip has no metadata
+                            continue;
+                        }
+                    } else {
+                        length = layer.defaultLength;
+                    }
+                    // Update maxX if needed
+                    if (length + prevLayerMaxX > maxX) {
+                        maxX = length + prevLayerMaxX;
+                    }
+
+                    // Finally, add this tip's bar data to to an array of data
+                    // describing the bars to draw
                     var corners = {
                         tL: [
-                            maxX + 10 + layerNum * 100,
-                            scope.getY(scope._treeData[i]) + 3,
+                            prevLayerMaxX,
+                            scope.getY(scope._treeData[i]) + 2.5
                         ],
                         tR: [
-                            maxX + 10 + layerNum * 100 + 100,
-                            scope.getY(scope._treeData[i]) + 3,
+                            prevLayerMaxX + length,
+                            scope.getY(scope._treeData[i]) + 2.5,
                         ],
                         bL: [
-                            maxX + 10 + layerNum * 100,
-                            scope.getY(scope._treeData[i]) - 3,
+                            prevLayerMaxX,
+                            scope.getY(scope._treeData[i]) - 2.5,
                         ],
                         bR: [
-                            maxX + 10 + layerNum * 100 + 100,
-                            scope.getY(scope._treeData[i]) - 3,
+                            prevLayerMaxX + length,
+                            scope.getY(scope._treeData[i]) - 2.5,
                         ],
                     };
                     scope._addTriangleCoords(coords, corners, color);
                 }
             }
+            prevLayerMaxX = maxX;
         });
         this._drawer.loadBarplotBuf(coords);
         this.drawTree();
