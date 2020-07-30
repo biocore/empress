@@ -249,9 +249,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         chgLenFMFieldSelector.disabled = true;
         chgLenSC.appendChild(chgLenFMFieldSelector);
 
-        var lenDetailsDiv = innerDiv.appendChild(
-            document.createElement("div")
-        );
+        var lenDetailsDiv = innerDiv.appendChild(document.createElement("div"));
         lenDetailsDiv.classList.add("indented");
         lenDetailsDiv.classList.add("hidden");
         // Add min len stuff

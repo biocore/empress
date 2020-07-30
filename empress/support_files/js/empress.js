@@ -1043,10 +1043,12 @@ define([
                 var split = util.splitNumericValues(sortedUniqueLengthValues);
                 if (split.numeric.length < 2) {
                     var msg =
-                        "Error with barplot layer " + layer.num + ": " +
-                        "the feature metadata field \"" +
+                        "Error with barplot layer " +
+                        layer.num +
+                        ": " +
+                        'the feature metadata field "' +
                         layer.scaleLengthByFMField +
-                        "\" has < 2 numeric values."
+                        '" has < 2 numeric values.';
                     util.toastMsg(msg, 5000);
                     throw msg;
                 }
@@ -1058,10 +1060,13 @@ define([
                 if (range === 0) {
                     fm2length[max] = layer.scaleLengthByFMMax;
                 }
-                var lengthRange = layer.scaleLengthByFMMax - layer.scaleLengthByFMMin;
+                var lengthRange =
+                    layer.scaleLengthByFMMax - layer.scaleLengthByFMMin;
                 if (lengthRange < 0) {
                     var msg =
-                        "Error with barplot layer " + layer.num + ": " +
+                        "Error with barplot layer " +
+                        layer.num +
+                        ": " +
                         "Maximum length is greater than minimum length.";
                     util.toastMsg(msg, 5000);
                     throw msg;
@@ -1073,7 +1078,9 @@ define([
                     // TODO for consideration: does this make sense
                     // mathematically? Whoever reviews this PR, I'm asking you
                     // to consider this because IDK right now LOL
-                    fm2length[fn] = (((fn - min) / range) * lengthRange) + layer.scaleLengthByFMMin;
+                    fm2length[fn] =
+                        ((fn - min) / range) * lengthRange +
+                        layer.scaleLengthByFMMin;
                 });
             }
 
