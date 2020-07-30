@@ -224,6 +224,14 @@ define([
          * The method used to collapsed the tree
          */
         this._collapseMethod = "normal";
+
+        /**
+         * @type {Object}
+         * @private
+         *
+         * This stores what metadata field was used to color the tree
+         */
+        this._treeColoringInfo = {};
     }
 
     /**
@@ -1322,6 +1330,7 @@ define([
             this._treeData[key].sampleColored = false;
             this._treeData[key].visible = true;
         }
+        this._treeColoringInfo = {};
         this._collapsedClades = {};
         this._collapsedCladeBuffer = [];
         this._drawer.loadSampleThickBuf([]);
