@@ -172,12 +172,12 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
                 scope.colorByFMScaleType = scaletypeSelector.value;
                 // Hide the default color row (since default colors
                 // aren't used when f.m. coloring is enabled)
-                dfltColorP.classList.add("hidden")
+                dfltColorP.classList.add("hidden");
             } else {
                 colorDetailsDiv.classList.add("hidden");
                 chgColorFMFieldSelector.disabled = true;
                 scope.colorByFM = false;
-                dfltColorP.classList.remove("hidden")
+                dfltColorP.classList.remove("hidden");
                 // TODO: set all barplots in this layer back to the default
                 // color here
             }
@@ -248,11 +248,11 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
                 // TODO rather than setting this here, have it be set to the
                 // first value in the selector on initialization
                 scope.scaleLengthByFMField = chgLenFMFieldSelector.value;
-                dfltLenP.classList.add("hidden")
+                dfltLenP.classList.add("hidden");
             } else {
                 chgLenFMFieldSelector.disabled = true;
                 scope.scaleLengthByFM = false;
-                dfltLenP.classList.remove("hidden")
+                dfltLenP.classList.remove("hidden");
                 // TODO: set all barplots in this layer back to the default
                 // length here
             }

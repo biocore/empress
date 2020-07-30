@@ -1050,7 +1050,11 @@ define([
                 // Taken from ColorViewController.getScaledColors() in Emperor
                 var split = util.splitNumericValues(sortedUniqueLengthValues);
                 if (split.numeric.length < 2) {
-                    throw "Field " + layer.scaleLengthByFMField + " has < 2 numeric values.";
+                    throw (
+                        "Field " +
+                        layer.scaleLengthByFMField +
+                        " has < 2 numeric values."
+                    );
                 }
                 fm2length = {};
                 // TODO should be user-configurable
@@ -1062,7 +1066,7 @@ define([
                 if (range === 0) {
                     fm2length[max] = 100;
                 }
-                _.each(split.numeric, function(n) {
+                _.each(split.numeric, function (n) {
                     var fn = parseFloat(n);
                     // use basic linear interpolation (we could add fancier
                     // scaling methods in the future as options if desired)
@@ -1078,7 +1082,8 @@ define([
                     var color;
                     if (layer.colorByFM) {
                         if (_.has(scope._tipMetadata, name)) {
-                            color = fm2color[scope._tipMetadata[name][colorFMIdx]];
+                            color =
+                                fm2color[scope._tipMetadata[name][colorFMIdx]];
                         } else {
                             // Don't draw a bar if this tip doesn't have
                             // feature metadata and we're coloring bars by
@@ -1121,7 +1126,7 @@ define([
                     var corners = {
                         tL: [
                             prevLayerMaxX,
-                            scope.getY(scope._treeData[i]) + 2.5
+                            scope.getY(scope._treeData[i]) + 2.5,
                         ],
                         tR: [
                             prevLayerMaxX + length,
