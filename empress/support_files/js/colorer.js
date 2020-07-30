@@ -143,9 +143,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *                 G, B are all floats scaled to within the range [0, 1].
      */
     Colorer.prototype.getMapRGB = function () {
-        return _.mapObject(this.__valueToColor, function (color) {
-            return util.hex2rgb(color);
-        });
+        return _.mapObject(this.__valueToColor, util.hex2rgb);
     };
 
     /**
