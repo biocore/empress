@@ -241,23 +241,14 @@ define(["underscore", "util"], function (_, util) {
         );
 
         // 2. Add sample presence information for this tip
-        var ctData = {};
+        var ctData = this.empress.computeTipSamplePresence(name, this.fields);
 
         // 2.1 The samples represented by this tip are sent to Emperor
-        this._samplesInSelection = this.empress._biom.getSamplesByObservations(
-            this._checkAndFilterTips([name])
-        );
+        this._samplesInSelection = this.empress._biom.getObsIDsIntersection([
+            name,
+        ]);
+        this._checkTips(this.empress._biom.getObsIDsDifference([name]));
 
-        for (var f = 0; f < this.fields.length; f++) {
-            var field = this.fields[f];
-            var obs = this.empress._biom.getObsCountsBy(field, name);
-            var categories = _.keys(obs);
-            ctData[field] = {};
-            for (var c = 0; c < categories.length; c++) {
-                var cat = categories[c];
-                ctData[field][cat] = obs[cat];
-            }
-        }
         SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
         if (this.fields.length > 0) {
             this.notes.textContent =
@@ -319,74 +310,31 @@ define(["underscore", "util"], function (_, util) {
         // (NOTE: this does not prevent "double-counting" samples, so the
         // aggregation for duplicate names should be fixed.)
 
-        // create object that will map fields to all of their possible values
-        var field,
-            fieldValues,
-            fieldValue,
-            fieldsMap = {},
-            i,
-            j,
-            k;
-        for (i = 0; i < this.fields.length; i++) {
-            field = this.fields[i];
-            var possibleValues = this.empress._biom.getUniqueSampleValues(
-                field
-            );
-            for (j = 0; j < possibleValues.length; j++) {
-                var possibleValue = possibleValues[j];
-                if (!(field in fieldsMap)) fieldsMap[field] = {};
-                fieldsMap[field][possibleValue] = 0;
-            }
-        }
-
         // force-reset the selection buffer
         this._samplesInSelection = [];
 
         if (isUnambiguous) {
             // this.nodeKeys has a length of 1
             var nodeKey = this.nodeKeys[0];
+            var tips = this.empress._tree.findTips(nodeKey);
 
-            // find first and last preorder positions of the subtree spanned
-            // by the current internal node
             var emp = this.empress;
-            var t = emp._tree;
-            var n = t.postorderselect(nodeKey);
-            var start = t.preorder(t.fchild(n));
-            var end = t.preorder(t.lchild(n));
-            while (!t.isleaf(t.preorderselect(end))) {
-                end = t.preorder(t.lchild(t.preorderselect(end)));
-            }
-
-            // find all tips within the subtree
-            var tips = [];
-            for (j = start; j <= end; j++) {
-                var node = t.preorderselect(j);
-                if (t.isleaf(node)) {
-                    tips.push(t.name(node));
-                }
-            }
-
-            // retrieve the sample data for the tips in the table
-            var samples = emp._biom.getSamplesByObservations(
-                this._checkAndFilterTips(tips)
+            var samplePresence = emp.computeIntSamplePresence(
+                nodeKey,
+                this.fields
             );
 
             // used for the emperor callback
-            this._samplesInSelection = this._samplesInSelection.concat(samples);
+            this._samplesInSelection = this._samplesInSelection.concat(
+                samplePresence.samples
+            );
 
-            // iterate over the samples and extract the field values
-            for (j = 0; j < this.fields.length; j++) {
-                field = this.fields[j];
+            this._checkTips(samplePresence.diff);
 
-                // update fields mapping object
-                var result = emp._biom.getSampleValuesCount(samples, field);
-                fieldValues = Object.keys(result);
-                for (k = 0; k < fieldValues.length; k++) {
-                    fieldValue = fieldValues[k];
-                    fieldsMap[field][fieldValue] += result[fieldValue];
-                }
-            }
-            SelectedNodeMenu.makeSampleMetadataTable(fieldsMap, this.smTable);
+            SelectedNodeMenu.makeSampleMetadataTable(
+                samplePresence.fieldsMap,
+                this.smTable
+            );
             this.smSection.classList.remove("hidden");
             this.smTable.classList.remove("hidden");
         } else {
@@ -405,17 +353,10 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Given an array of tip names, warns the user about those that are not
-     * present in the BIOM table (using a toast message) and returns just the
-     * tip names in the array that are present as features in the table.
-     *
-     * @return {Array} the tip names that are also represented in the table.
+     * Given an array of tip names that are not present in the BIOM table,
+     * warns the user about them using a toast message.
      */
-    SelectedNodeMenu.prototype._checkAndFilterTips = function (tips) {
-        // find the tips that can be used in the UI
-        var intersection = this.empress._biom.getObsIDsIntersection(tips);
-        var diff = this.empress._biom.getObsIDsDifference(tips);
-
+    SelectedNodeMenu.prototype._checkTips = function (diff) {
         if (
             diff.length &&
             (this.visibleCallback !== null || this.hiddenCallback !== null)
@@ -426,8 +367,6 @@ define(["underscore", "util"], function (_, util) {
                     diff.join(", ")
             );
         }
-
-        return intersection;
     };
 
     /**

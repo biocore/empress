@@ -177,6 +177,18 @@ define([
         this._currentLineWidth = 0;
 
         /**
+         * @type{Bool}
+         * Whether the camera is focused on a selected node.
+         */
+        this.focusOnSelectedNode = true;
+
+        /**
+         * @type{Bool}
+         * Whether unrepresented tips are ignored when propagating colors.
+         */
+        this.ignoreAbsentTips = true;
+
+        /**
          * @type{CanvasEvents}
          * Handles user events
          */
@@ -1192,7 +1204,10 @@ define([
         }
 
         // project to ancestors
-        observationsPerGroup = this._projectObservations(observationsPerGroup);
+        observationsPerGroup = this._projectObservations(
+            observationsPerGroup,
+            this.ignoreAbsentTips
+        );
 
         for (group in observationsPerGroup) {
             obs = Array.from(observationsPerGroup[group]);
@@ -1259,7 +1274,8 @@ define([
         }
 
         // assign internal nodes to appropriate category based on its children
-        obs = this._projectObservations(obs);
+        obs = this._projectObservations(obs, this.ignoreAbsentTips);
+
         if (Object.keys(obs).length === 0) {
             return null;
         }
@@ -1398,7 +1414,7 @@ define([
         // this will soon no longer be an issue and this comment block will be
         // removeable.
         if (method === "tip") {
-            obs = this._projectObservations(obs);
+            obs = this._projectObservations(obs, false);
         }
 
         // color tree
@@ -1424,29 +1440,33 @@ define([
      *       returned version of obs.
      *
      * @param {Object} obs Maps categories to a set of observations (i.e. tips)
+     * @param {Bool} ignoreAbsentTips Whether absent tips should be ignored
+     * during color propagation.
      * @return {Object} returns A Map with the same group names that maps groups
                         to a set of keys (i.e. tree nodes) that are unique to
                         each group.
      */
-    Empress.prototype._projectObservations = function (obs) {
+    Empress.prototype._projectObservations = function (obs, ignoreAbsentTips) {
         var tree = this._tree,
             categories = Object.keys(obs),
             notRepresented = new Set(),
             i,
             j;
 
-        // find "non-represented" tips
-        // Note: the following uses postorder traversal
-        for (i = 1; i < tree.size; i++) {
-            if (tree.isleaf(tree.postorderselect(i))) {
-                var represented = false;
-                for (j = 0; j < categories.length; j++) {
-                    if (obs[categories[j]].has(i)) {
-                        represented = true;
-                        break;
+        if (!ignoreAbsentTips) {
+            // find "non-represented" tips
+            // Note: the following uses postorder traversal
+            for (i = 1; i < tree.size; i++) {
+                if (tree.isleaf(tree.postorderselect(i))) {
+                    var represented = false;
+                    for (j = 0; j < categories.length; j++) {
+                        if (obs[categories[j]].has(i)) {
+                            represented = true;
+                            break;
+                        }
                     }
+                    if (!represented) notRepresented.add(i);
                 }
-                if (!represented) notRepresented.add(i);
             }
         }
 
@@ -1708,7 +1728,89 @@ define([
     };
 
     /**
-     * Show the node menu for a node name
+     * Calculate the number of samples in which a tip appears for the
+     * unique values of a metadata field across a list of metadata fields.
+     *
+     * @param {String} nodeName Name of the (tip) node for which to calculate
+     *                          sample presence.
+     * @param {Array} fields Metadata fields for which to calculate tip
+     *                       sample presence.
+     * @return {Object} ctData Maps metadata field names to another Object,
+     *                         which in turn maps unique metadata values to
+     *                         the number of samples with this metadata value
+     *                         in this field that contain the given tip.
+     */
+    Empress.prototype.computeTipSamplePresence = function (nodeName, fields) {
+        var ctData = {};
+
+        for (var f = 0; f < fields.length; f++) {
+            var field = fields[f];
+            ctData[field] = this._biom.getObsCountsBy(field, nodeName);
+        }
+
+        return ctData;
+    };
+
+    /**
+     * Calculate the number of samples in which at least one tip of an internal
+     * node appears for the unique values of a metadata field across a list of
+     * metadata fields.
+     *
+     * @param {String} nodeKey Key of the (internal) node to calculate
+     *                         sample presence for.
+     * @param {Array} fields Metadata fields for which to calculate internal
+     *                       node sample presence.
+     * @return {Object} samplePresence A mapping with three entries:
+     *                                 (1) fieldsMap Maps metadata field names
+     *                                 to Object mapping unique metadata values
+     *                                 to the number of samples with this metadata
+     *                                 value in this field containing at least one
+     *                                 tip in the subtree of the given nodeKey.
+     *                                 (2) diff Array of tip names not present
+     *                                 as features in the table.
+     *                                 (3) samples Array of samples represented by
+     *                                 tips present in the table.
+     */
+    Empress.prototype.computeIntSamplePresence = function (nodeKey, fields) {
+        // retrieve the sample data for the tips in the table
+        var tips = this._tree.findTips(nodeKey);
+        var diff = this._biom.getObsIDsDifference(tips);
+        var intersection = this._biom.getObsIDsIntersection(tips);
+        var samples = this._biom.getSamplesByObservations(intersection);
+
+        var fieldsMap = {};
+        for (var i = 0; i < fields.length; i++) {
+            field = fields[i];
+            var possibleValues = this._biom.getUniqueSampleValues(field);
+            for (var j = 0; j < possibleValues.length; j++) {
+                var possibleValue = possibleValues[j];
+                if (!(field in fieldsMap)) fieldsMap[field] = {};
+                fieldsMap[field][possibleValue] = 0;
+            }
+        }
+
+        // iterate over the samples and extract the field values
+        for (var k = 0; k < fields.length; k++) {
+            field = fields[k];
+
+            // update fields mapping object
+            var result = this._biom.getSampleValuesCount(samples, field);
+            fieldValues = Object.keys(result);
+            for (var m = 0; m < fieldValues.length; m++) {
+                fieldValue = fieldValues[m];
+                fieldsMap[field][fieldValue] += result[fieldValue];
+            }
+        }
+
+        var samplePresence = {
+            fieldsMap: fieldsMap,
+            diff: diff,
+            samples: samples,
+        };
+        return samplePresence;
+    };
+
+    /** Show the node menu for a node name
      *
      * @param {String} nodeName The name of the node to show.
      */
@@ -1721,7 +1823,7 @@ define([
         }
 
         this._events.selectedNodeMenu.clearSelectedNode();
-        this._events.placeNodeSelectionMenu(nodeName, true);
+        this._events.placeNodeSelectionMenu(nodeName, this.focusOnSelectedNode);
     };
 
     return Empress;

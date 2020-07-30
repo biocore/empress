@@ -5,8 +5,8 @@
 You should be able to install Empress as described in the README. However,
 instead of running `pip install .`, please run `pip install -e .[all]`. This
 will install some various dependencies needed to test Empress' python code. In
-addition, make sure you install the latest development version of Emperor using
-`pip install git+https://github.com/biocore/emperor.git`.
+addition, make sure to periodically update to the latest development version of
+Emperor using `pip install git+https://github.com/biocore/emperor.git`.
 
 You will also need to install a few Node.js packages in order to test Empress'
 JavaScript code. The `.travis.yml` file (under the `install` section) shows

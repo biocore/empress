@@ -618,6 +618,31 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             equal(obj.b_.length, 51 + 51 + 4);
         });
 
+        test("Test findTips", function () {
+            var names = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"];
+            var resBP = new BPTree(this.bpArray, names, null, null);
+
+            // postorder positions
+            var index = [11, 5, 1, 2, 4, 3, 6, 10, 9, 7, 8];
+            var intNodes = {
+                1: ["c", "d", "f"],
+                4: ["f"],
+                7: ["j", "k"],
+                8: ["j", "k"],
+            };
+
+            for (var node in intNodes) {
+                var i = index[node];
+                deepEqual(resBP.findTips(i), intNodes[node]);
+            }
+
+            // ensure error is thrown if leaf node is passed to findTips
+            var leafNode = index[2];
+            throws(function () {
+                resBP.findTips(leafNode);
+            });
+        });
+
         test("Test containsNode", function (assert) {
             var names = [
                 "a",
