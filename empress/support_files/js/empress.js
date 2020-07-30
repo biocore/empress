@@ -1009,7 +1009,6 @@ define([
 
         _.each(layers, function (layer, layerNum) {
             var fm2color, colorFMIdx;
-            var defaultColor;
 
             var fm2length, lengthFMIdx;
 
@@ -1031,10 +1030,6 @@ define([
                     sortedUniqueColorValues
                 );
                 fm2color = colorer.getMapRGB();
-            } else {
-                // TODO just compute this in BarplotLayer so that we can access
-                // layer.defaultColor below easily
-                defaultColor = chroma(layer.defaultColor).gl().slice(0, 3);
             }
 
             // Next, map feature metadata values to lengths if requested
@@ -1094,7 +1089,7 @@ define([
                             continue;
                         }
                     } else {
-                        color = defaultColor;
+                        color = layer.defaultColor;
                     }
 
                     // Assign this tip's bar a length
@@ -1177,7 +1172,7 @@ define([
             obs = Array.from(observationsPerGroup[group]);
 
             // convert hex string to rgb array
-            var rgb = chroma(group).gl().slice(0, 3);
+            var rgb = util.hex2rgb(group);
 
             for (var i = 0; i < obs.length; i++) {
                 this._treeData[obs[i]].color = rgb;

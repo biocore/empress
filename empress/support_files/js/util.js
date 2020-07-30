@@ -1,4 +1,4 @@
-define(["underscore"], function (_) {
+define(["underscore", "chroma"], function (_, chroma) {
     /**
      * Remove all non unique keys
      * Note: keys are referring to empress._treeData (i.e. postorder position of
@@ -190,6 +190,19 @@ define(["underscore"], function (_) {
         return min;
     }
 
+    /**
+     * Converts a hex color to an RGB array suitable for WebGL.
+     *
+     * @param {String} hexString
+     * @return {Array} rgbArray
+     */
+    function hex2rgb(hexString) {
+        // chroma(hexString).gl() returns an array with four components (RGBA
+        // instead of RGB). The slice() here strips off the final (alpha)
+        // element, which causes problems with Empress' drawing code.
+        return chroma(hexString).gl().slice(0, 3);
+    }
+
     return {
         keepUniqueKeys: keepUniqueKeys,
         naturalSort: naturalSort,
@@ -197,5 +210,6 @@ define(["underscore"], function (_) {
         isValidNumber: isValidNumber,
         parseAndValidateNum: parseAndValidateNum,
         toastMsg: toastMsg,
+        hex2rgb: hex2rgb,
     };
 });

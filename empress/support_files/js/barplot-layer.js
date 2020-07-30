@@ -33,7 +33,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.num = num;
 
         // various properties of the barplot layer state
-        this.defaultColor = Colorer.getQIIMEColor(this.num - 1);
+        this.initialDefaultColorHex = Colorer.getQIIMEColor(this.num - 1);
+        this.defaultColor = util.hex2rgb(this.initialDefaultColorHex);
         this.colorByFM = false;
         this.colorByFMField = null;
         this.colorByFMColorMap = null;
@@ -75,9 +76,13 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         dfltColorP.appendChild(dfltColorInput);
         // Register dfltColorInput as a color selector with spectrum.js
         $(dfltColorInput).spectrum({
-            color: this.defaultColor,
-            change: function (c) {
-                scope.defaultColor = c.toHexString();
+            color: this.initialDefaultColorHex,
+            change: function (newColor) {
+                // To my knowledge, there isn't a straightforward way of
+                // getting an RGB array out of the "TinyColor" values passed in
+                // by Spectrum: see
+                // https://bgrins.github.io/spectrum#details-acceptedColorInputs
+                scope.defaultColor = util.hex2rgb(newColor.toHexString());
             },
         });
 

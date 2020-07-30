@@ -120,11 +120,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      */
     Colorer.prototype.getMapRGB = function () {
         return _.mapObject(this.__valueToColor, function (color) {
-            // chroma(color).gl() returns an array with four components (RGBA
-            // instead of RGB). The slice() here strips off the final
-            // (transparency) element, which causes problems with Empress'
-            // drawing code
-            return chroma(color).gl().slice(0, 3);
+            return util.hex2rgb(color);
         });
     };
 
