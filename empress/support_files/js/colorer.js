@@ -29,6 +29,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         this.sortedUniqueValues = util.naturalSort(_.uniq(values));
 
         this.color = color;
+        this.nanColor = nanColor;
 
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
@@ -71,8 +72,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
     /**
      * Assigns colors from a sequential or diverging color palette (specified
-     * by this.color) for every value in this.sortedUniqueValues. This will
-     * populate this.__valueToColor with this information.
+     * by this.color) for every value in this.sortedUniqueValues, taking into
+     * account only the relative positions of the values. This will populate
+     * this.__valueToColor with this information.
      *
      * Note the "ordinal" in the function name. This does not take into account
      * the actual magnitudes of numbers in the data -- all that matters is the
@@ -93,7 +95,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             // "last" color in the color map, and things in between are
             // interpolated. Chroma takes care of all of the hard work.
             var interpolator = chroma
-                .scale(chroma.brewer[this.color])
+                .scale(this.color)
                 .domain([0, this.sortedUniqueValues.length - 1]);
 
             for (var i = 0; i < this.sortedUniqueValues.length; i++) {
@@ -101,6 +103,31 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
                 this.__valueToColor[val] = interpolator(i);
             }
         }
+    };
+
+    /**
+     * Assigns colors from a sequential or diverging color palette (specified
+     * by this.color) for every value in this.sortedUniqueValues, taking into
+     * account the magnitudes/etc. of the numeric values in
+     * this.sortedUniqueValues. This will populate this.__valueToColor with
+     * this information.
+     */
+    Colorer.prototype.assignContinuousScaledColors = function () {
+        var scope = this;
+        var split = util.splitNumericValues(this.sortedUniqueValues);
+        if (split.numeric.length < 2) {
+            throw new Error("Category has < 2 numeric values.");
+        }
+        var nums = _.map(split.numeric, parseFloat);
+        var min = _.min(nums);
+        var max = _.max(nums);
+        var interpolator = chroma.scale(this.color).domain([min, max]);
+        _.each(split.numeric, function (n) {
+            scope.__valueToColor[n] = interpolator(parseFloat(n));
+        });
+        _.each(split.nonNumeric, function (nn) {
+            scope.__valueToColor[nn] = scope.nanColor;
+        });
     };
 
     /**

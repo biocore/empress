@@ -126,6 +126,25 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             equal(colorer.__valueToColor["3"], "#e6f5d0");
             equal(colorer.__valueToColor["4"], "#7fbc41");
         });
+        test("Test construction with a div. color map, all numeric values, and useQuantScale = true", function () {
+            var eles = ["5", "2", "3", "1", "4", "0", "-5"];
+            var colorer = new Colorer("PiYG", eles, true);
+
+            // Expected colors determined by trying
+            // chroma.scale("PiYG").domain([-5,5])(n); where n = 0, 1, 2, etc.
+            // (see the interactive docs at https://gka.github.io/chroma.js/ --
+            // super useful for testing this)
+
+            // Test extreme numeric values
+            equal(colorer.__valueToColor["-5"], "#8e0152");
+            equal(colorer.__valueToColor["5"], "#276419");
+            // Test intermediate numeric values
+            equal(colorer.__valueToColor["0"], "#f7f7f7");
+            equal(colorer.__valueToColor["1"], "#e6f5d0");
+            equal(colorer.__valueToColor["2"], "#b8e186");
+            equal(colorer.__valueToColor["3"], "#7fbc41");
+            equal(colorer.__valueToColor["4"], "#4d9221");
+        });
         test("Test Colorer.getMapRGB()", function () {
             var eles = ["abc", "def", "ghi"];
             var dark2palette = [
