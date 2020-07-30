@@ -1039,10 +1039,11 @@ define([
                     scope._featureMetadataColumns,
                     layer.scaleLengthByFMField
                 );
+                var msg;
                 // Taken from ColorViewController.getScaledColors() in Emperor
                 var split = util.splitNumericValues(sortedUniqueLengthValues);
                 if (split.numeric.length < 2) {
-                    var msg =
+                    msg =
                         "Error with barplot layer " +
                         layer.num +
                         ": " +
@@ -1063,7 +1064,7 @@ define([
                 var lengthRange =
                     layer.scaleLengthByFMMax - layer.scaleLengthByFMMin;
                 if (lengthRange < 0) {
-                    var msg =
+                    msg =
                         "Error with barplot layer " +
                         layer.num +
                         ": " +
