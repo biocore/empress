@@ -205,7 +205,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         return colorMapObj.type;
     };
 
-
     Colorer.DISCRETE = "Discrete";
     Colorer.SEQUENTIAL = "Sequential";
     Colorer.DIVERGING = "Diverging";
