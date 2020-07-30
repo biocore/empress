@@ -73,7 +73,7 @@ input[type=text].empress-input, select {
 }
 
 input[type=number].empress-input {
-    width: 40px;
+    width: 60px;
 }
 
 input[type=radio].empress-input, input[type=checkbox].empress-input {
