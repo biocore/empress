@@ -1035,10 +1035,22 @@ define([
                     scope._featureMetadataColumns,
                     layer.colorByFMField
                 );
-                var colorer = new Colorer(
-                    layer.colorByFMColorMap,
-                    sortedUniqueColorValues
-                );
+                var colorer;
+                if (layer.colorByFMContinuous) {
+                    // Using quantitative coloring.
+                    colorer = new Colorer(
+                        layer.colorByFMColorMap,
+                        sortedUniqueColorValues,
+                        true
+                    );
+                } else {
+                    // Using discrete / ordinal coloring (depends on the
+                    // selected color map).
+                    colorer = new Colorer(
+                        layer.colorByFMColorMap,
+                        sortedUniqueColorValues
+                    );
+                }
                 fm2color = colorer.getMapRGB();
             }
 

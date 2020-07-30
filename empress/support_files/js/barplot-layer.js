@@ -162,6 +162,9 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         continuousValCheckbox.setAttribute("type", "checkbox");
         continuousValCheckbox.classList.add("empress-input");
         continuousValLbl.setAttribute("for", continuousValCheckbox.id);
+        // Hide the "Continuous values?" stuff by default, since the default
+        // colormap is discrete
+        continuousValP.classList.add("hidden");
 
         // Alter visibility of the color-changing details when the "Color
         // by..." checkbox is clicked
@@ -193,6 +196,15 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         });
         $(colormapSelector).change(function () {
             scope.colorByFMColorMap = colormapSelector.value;
+            // Hide the "Continuous values?" row based on the selected
+            // colormap's type. This matches how Emperor's ColorViewController
+            // hides/shows its "Continuous values" elements.
+            if (Colorer.getColorMapType(scope.colorByFMColorMap) === Colorer.DISCRETE) {
+                continuousValP.classList.add("hidden");
+            } else {
+                continuousValP.classList.remove("hidden");
+            }
+
         });
         $(continuousValCheckbox).change(function () {
             scope.colorByFMContinuous = continuousValCheckbox.checked;
