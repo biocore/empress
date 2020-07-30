@@ -997,7 +997,8 @@ define([
             }
         }
         // Add on a gap between the rightmost node and the leftmost point of
-        // the first barplot layer
+        // the first barplot layer. This could be made into a
+        // barplot-panel-level configurable thing if desired.
         maxX += 100;
 
         // As we iterate through the layers, we'll store the "previous layer
