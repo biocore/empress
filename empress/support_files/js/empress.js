@@ -988,7 +988,7 @@ define([
     };
 
     Empress.prototype.undrawBarplots = function () {
-        this._drawer.loadBarplotBuf([]);
+        this._drawer.loadBarplotBuff([]);
         this.drawTree();
     };
 
@@ -1184,14 +1184,14 @@ define([
         });
         // NOTE that we purposefuly don't clear the barplot buffer until we
         // know all of the barplots are valid. If we were to call
-        // this.loadBarplotBuf([]) at the start of this function, then if we'd
+        // this.loadBarplotBuff([]) at the start of this function, then if we'd
         // error out in the middle, the barplot buffer would be cleared without
         // the tree being redrawn; this would result in the barplots
         // disappearing the next time the user did something that prompted a
         // redrawing of the tree (e.g. zooming or panning), which would be
         // confusing.
-        this._drawer.loadBarplotBuf([]);
-        this._drawer.loadBarplotBuf(coords);
+        this._drawer.loadBarplotBuff([]);
+        this._drawer.loadBarplotBuff(coords);
         this.drawTree();
     };
 

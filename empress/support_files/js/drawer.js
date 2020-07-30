@@ -276,7 +276,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      *
      * @param {Array} data The coordinate and color data to fill the buffer
      */
-    Drawer.prototype.loadBarplotBuf = function (data) {
+    Drawer.prototype.loadBarplotBuff = function (data) {
         data = new Float32Array(data);
         this.barplotSize = data.length / 5;
         this.fillBufferData_(this.sProg_.barplotBuff, data);
