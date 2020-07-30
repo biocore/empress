@@ -177,6 +177,18 @@ define([
         this._currentLineWidth = 0;
 
         /**
+         * @type{Bool}
+         * Whether the camera is focused on a selected node.
+         */
+        this.focusOnSelectedNode = true;
+
+        /**
+         * @type{Bool}
+         * Whether unrepresented tips are ignored when propagating colors.
+         */
+        this.ignoreAbsentTips = true;
+
+        /**
          * @type{CanvasEvents}
          * Handles user events
          */
@@ -996,7 +1008,10 @@ define([
         }
 
         // project to ancestors
-        observationsPerGroup = this._projectObservations(observationsPerGroup);
+        observationsPerGroup = this._projectObservations(
+            observationsPerGroup,
+            this.ignoreAbsentTips
+        );
 
         for (group in observationsPerGroup) {
             obs = Array.from(observationsPerGroup[group]);
@@ -1063,7 +1078,8 @@ define([
         }
 
         // assign internal nodes to appropriate category based on its children
-        obs = this._projectObservations(obs);
+        obs = this._projectObservations(obs, this.ignoreAbsentTips);
+
         if (Object.keys(obs).length === 0) {
             return null;
         }
@@ -1172,7 +1188,7 @@ define([
         // this will soon no longer be an issue and this comment block will be
         // removeable.
         if (method === "tip") {
-            obs = this._projectObservations(obs);
+            obs = this._projectObservations(obs, false);
         }
 
         // color tree
@@ -1198,29 +1214,33 @@ define([
      *       returned version of obs.
      *
      * @param {Object} obs Maps categories to a set of observations (i.e. tips)
+     * @param {Bool} ignoreAbsentTips Whether absent tips should be ignored
+     * during color propagation.
      * @return {Object} returns A Map with the same group names that maps groups
                         to a set of keys (i.e. tree nodes) that are unique to
                         each group.
      */
-    Empress.prototype._projectObservations = function (obs) {
+    Empress.prototype._projectObservations = function (obs, ignoreAbsentTips) {
         var tree = this._tree,
             categories = Object.keys(obs),
             notRepresented = new Set(),
             i,
             j;
 
-        // find "non-represented" tips
-        // Note: the following uses postorder traversal
-        for (i = 1; i < tree.size; i++) {
-            if (tree.isleaf(tree.postorderselect(i))) {
-                var represented = false;
-                for (j = 0; j < categories.length; j++) {
-                    if (obs[categories[j]].has(i)) {
-                        represented = true;
-                        break;
+        if (!ignoreAbsentTips) {
+            // find "non-represented" tips
+            // Note: the following uses postorder traversal
+            for (i = 1; i < tree.size; i++) {
+                if (tree.isleaf(tree.postorderselect(i))) {
+                    var represented = false;
+                    for (j = 0; j < categories.length; j++) {
+                        if (obs[categories[j]].has(i)) {
+                            represented = true;
+                            break;
+                        }
                     }
+                    if (!represented) notRepresented.add(i);
                 }
-                if (!represented) notRepresented.add(i);
             }
         }
 
@@ -1495,7 +1515,7 @@ define([
         }
 
         this._events.selectedNodeMenu.clearSelectedNode();
-        this._events.placeNodeSelectionMenu(nodeName, true);
+        this._events.placeNodeSelectionMenu(nodeName, this.focusOnSelectedNode);
     };
 
     return Empress;

@@ -458,7 +458,7 @@ require([
                 g2: new Set([1]),
                 g3: new Set([6]),
             };
-            var result = this.empress._projectObservations(obs);
+            var result = this.empress._projectObservations(obs, false);
 
             var groups = ["g1", "g2", "g3"];
             for (var i = 0; i < groups.length; i++) {
@@ -482,7 +482,7 @@ require([
                 g1: new Set([2, 3, 4]),
                 g3: new Set([6]),
             };
-            var result = this.empress._projectObservations(obs);
+            var result = this.empress._projectObservations(obs, false);
 
             var groups = ["g1", "g3"];
             for (var i = 0; i < groups.length; i++) {
@@ -504,7 +504,51 @@ require([
             var expectedResult = {
                 g1: new Set([1, 2, 3, 4, 5, 6, 7]),
             };
-            var result = this.empress._projectObservations(obs);
+            var result = this.empress._projectObservations(obs, false);
+
+            var groups = ["g1"];
+            for (var i = 0; i < groups.length; i++) {
+                var group = groups[i];
+                var expectedArray = Array.from(expectedResult[group]);
+                var resultArray = util.naturalSort(Array.from(result[group]));
+                deepEqual(resultArray, expectedArray);
+            }
+
+            var columns = Object.keys(result);
+            deepEqual(columns, groups);
+        });
+
+        test("Test _projectObservations ingore absent tips", function () {
+            var obs = {
+                g1: new Set([2]),
+                g2: new Set([6]),
+            };
+            var expectedResult = {
+                g1: new Set([2, 4, 5]),
+                g2: new Set([6]),
+            };
+            var result = this.empress._projectObservations(obs, true);
+
+            var groups = ["g1", "g2"];
+            for (var i = 0; i < groups.length; i++) {
+                var group = groups[i];
+                var expectedArray = Array.from(expectedResult[group]);
+                var resultArray = util.naturalSort(Array.from(result[group]));
+                deepEqual(resultArray, expectedArray);
+            }
+
+            var columns = Object.keys(result);
+            deepEqual(columns, groups);
+        });
+
+        test("Test _projectObservations nothing is absent", function () {
+            var obs = {
+                g1: new Set([1, 2, 3]),
+            };
+            var expectedResult = {
+                g1: new Set([1, 2, 3, 4, 5, 7]),
+            };
+            var result = this.empress._projectObservations(obs, true);
 
             var groups = ["g1"];
             for (var i = 0; i < groups.length; i++) {
@@ -523,7 +567,7 @@ require([
                 g1: new Set([]),
                 g2: new Set([]),
             };
-            var result = this.empress._projectObservations(obs);
+            var result = this.empress._projectObservations(obs, false);
             var expectedResult = [];
             var columns = Object.keys(result);
             deepEqual(columns, expectedResult);

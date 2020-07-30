@@ -16,6 +16,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      * @constructs SidePanel
      */
     function SidePanel(container, empress, legend) {
+        // used in event closures
+        var scope = this;
+
         // the container for the side menu
         this.container = container;
         this.SIDE_PANEL_ID = container.id;
@@ -33,6 +36,20 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // tree properties components
         this.treeNodesChk = document.getElementById("display-nodes-chk");
         this.recenterBtn = document.getElementById("center-tree-btn");
+        this.focusOnNodeChk = document.getElementById("focus-on-node-chk");
+        this.absentTipChk = document.getElementById("absent-tip-chk");
+
+        this.focusOnNodeChk.onclick = function () {
+            empress.focusOnSelectedNode = this.checked;
+        };
+        this.absentTipChk.onclick = function () {
+            empress.ignoreAbsentTips = this.checked;
+
+            // only update the tree if sample selection is enabled
+            if (scope.sChk.checked) {
+                scope.sUpdateBtn.click();
+            }
+        };
 
         // sample GUI components
         this.sChk = document.getElementById("sample-chk");
@@ -61,9 +78,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         // uncheck button
         this.sHideChk.checked = false;
-
-        // used in event closures
-        var scope = this;
 
         // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
@@ -370,7 +384,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.sColor.onchange = showUpdateBtn;
         this.sLineWidth.onchange = showUpdateBtn;
 
-        // deterines whether to show features not in samples
+        // determines whether to show features not in samples
         this.sHideChk.onclick = function () {
             scope.empress.setNonSampleBranchVisibility(this.checked);
             scope.empress.drawTree();
