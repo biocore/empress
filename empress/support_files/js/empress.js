@@ -1502,7 +1502,89 @@ define([
     };
 
     /**
-     * Show the node menu for a node name
+     * Calculate the number of samples in which a tip appears for the
+     * unique values of a metadata field across a list of metadata fields.
+     *
+     * @param {String} nodeName Name of the (tip) node for which to calculate
+     *                          sample presence.
+     * @param {Array} fields Metadata fields for which to calculate tip
+     *                       sample presence.
+     * @return {Object} ctData Maps metadata field names to another Object,
+     *                         which in turn maps unique metadata values to
+     *                         the number of samples with this metadata value
+     *                         in this field that contain the given tip.
+     */
+    Empress.prototype.computeTipSamplePresence = function (nodeName, fields) {
+        var ctData = {};
+
+        for (var f = 0; f < fields.length; f++) {
+            var field = fields[f];
+            ctData[field] = this._biom.getObsCountsBy(field, nodeName);
+        }
+
+        return ctData;
+    };
+
+    /**
+     * Calculate the number of samples in which at least one tip of an internal
+     * node appears for the unique values of a metadata field across a list of
+     * metadata fields.
+     *
+     * @param {String} nodeKey Key of the (internal) node to calculate
+     *                         sample presence for.
+     * @param {Array} fields Metadata fields for which to calculate internal
+     *                       node sample presence.
+     * @return {Object} samplePresence A mapping with three entries:
+     *                                 (1) fieldsMap Maps metadata field names
+     *                                 to Object mapping unique metadata values
+     *                                 to the number of samples with this metadata
+     *                                 value in this field containing at least one
+     *                                 tip in the subtree of the given nodeKey.
+     *                                 (2) diff Array of tip names not present
+     *                                 as features in the table.
+     *                                 (3) samples Array of samples represented by
+     *                                 tips present in the table.
+     */
+    Empress.prototype.computeIntSamplePresence = function (nodeKey, fields) {
+        // retrieve the sample data for the tips in the table
+        var tips = this._tree.findTips(nodeKey);
+        var diff = this._biom.getObsIDsDifference(tips);
+        var intersection = this._biom.getObsIDsIntersection(tips);
+        var samples = this._biom.getSamplesByObservations(intersection);
+
+        var fieldsMap = {};
+        for (var i = 0; i < fields.length; i++) {
+            field = fields[i];
+            var possibleValues = this._biom.getUniqueSampleValues(field);
+            for (var j = 0; j < possibleValues.length; j++) {
+                var possibleValue = possibleValues[j];
+                if (!(field in fieldsMap)) fieldsMap[field] = {};
+                fieldsMap[field][possibleValue] = 0;
+            }
+        }
+
+        // iterate over the samples and extract the field values
+        for (var k = 0; k < fields.length; k++) {
+            field = fields[k];
+
+            // update fields mapping object
+            var result = this._biom.getSampleValuesCount(samples, field);
+            fieldValues = Object.keys(result);
+            for (var m = 0; m < fieldValues.length; m++) {
+                fieldValue = fieldValues[m];
+                fieldsMap[field][fieldValue] += result[fieldValue];
+            }
+        }
+
+        var samplePresence = {
+            fieldsMap: fieldsMap,
+            diff: diff,
+            samples: samples,
+        };
+        return samplePresence;
+    };
+
+    /** Show the node menu for a node name
      *
      * @param {String} nodeName The name of the node to show.
      */
