@@ -982,8 +982,6 @@ define([
 
     Empress.prototype.drawBarplots = function (layers) {
         var scope = this;
-        var l1 = layers[0];
-        this._drawer.loadBarplotBuf([]);
         // TODO: check current layout and alter behavior accordingly.
         // for now this just assumes the rectangular layout, but we should
         // support circular layout as well. (unrooted layout is incompatible
@@ -1009,7 +1007,6 @@ define([
 
         _.each(layers, function (layer, layerNum) {
             var fm2color, colorFMIdx;
-
             var fm2length, lengthFMIdx;
 
             // Map feature metadata values to colors, if requested
@@ -1045,11 +1042,13 @@ define([
                 // Taken from ColorViewController.getScaledColors() in Emperor
                 var split = util.splitNumericValues(sortedUniqueLengthValues);
                 if (split.numeric.length < 2) {
-                    throw (
-                        "Field " +
+                    var msg =
+                        "Error with barplot layer " + layer.num + ": " +
+                        "the feature metadata field \"" +
                         layer.scaleLengthByFMField +
-                        " has < 2 numeric values."
-                    );
+                        "\" has < 2 numeric values."
+                    util.toastMsg(msg, 5000);
+                    throw msg;
                 }
                 fm2length = {};
                 var nums = _.map(split.numeric, parseFloat);
@@ -1060,6 +1059,13 @@ define([
                     fm2length[max] = layer.scaleLengthByFMMax;
                 }
                 var lengthRange = layer.scaleLengthByFMMax - layer.scaleLengthByFMMin;
+                if (lengthRange < 0) {
+                    var msg =
+                        "Error with barplot layer " + layer.num + ": " +
+                        "Maximum length is greater than minimum length.";
+                    util.toastMsg(msg, 5000);
+                    throw msg;
+                }
                 _.each(split.numeric, function (n) {
                     var fn = parseFloat(n);
                     // uses linear interpolation (we could add fancier
@@ -1143,6 +1149,15 @@ define([
             }
             prevLayerMaxX = maxX;
         });
+        // NOTE that we purposefuly don't clear the barplot buffer until we
+        // know all of the barplots are valid. If we were to call
+        // this.loadBarplotBuf([]) at the start of this function, then if we'd
+        // error out in the middle, the barplot buffer would be cleared without
+        // the tree being redrawn; this would result in the barplots
+        // disappearing the next time the user did something that prompted a
+        // redrawing of the tree (e.g. zooming or panning), which would be
+        // confusing.
+        this._drawer.loadBarplotBuf([]);
         this._drawer.loadBarplotBuf(coords);
         this.drawTree();
     };
