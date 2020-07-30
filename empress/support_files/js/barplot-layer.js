@@ -42,6 +42,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.defaultLength = BarplotLayer.DEFAULT_LENGTH;
         this.scaleLengthByFM = false;
         this.scaleLengthByFMField = null;
+        this.scaleLengthByFMMin = BarplotLayer.DEFAULT_MIN_LENGTH;
+        this.scaleLengthByFMMax = BarplotLayer.DEFAULT_MAX_LENGTH;
 
         // Initialize the HTML elements of this barplot layer
         this.headerElement = null;
@@ -246,6 +248,49 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         });
         chgLenFMFieldSelector.disabled = true;
         chgLenSC.appendChild(chgLenFMFieldSelector);
+
+        var lenDetailsDiv = innerDiv.appendChild(
+            document.createElement("div")
+        );
+        lenDetailsDiv.classList.add("indented");
+        lenDetailsDiv.classList.add("hidden");
+        // Add min len stuff
+        var minLenP = document.createElement("p");
+        minLenP.appendChild(document.createElement("label")).innerText =
+            "Minimum length";
+        var minLenInput = document.createElement("input");
+        minLenInput.setAttribute("type", "number");
+        minLenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
+        minLenInput.classList.add("empress-input");
+        minLenInput.value = BarplotLayer.DEFAULT_MIN_LENGTH;
+        $(minLenInput).change(function () {
+            scope.scaleLengthByFMMin = util.parseAndValidateNum(
+                minLenInput,
+                BarplotLayer.MIN_LENGTH
+            );
+        });
+        minLenP.appendChild(minLenInput);
+
+        // Add max len stuff
+        var maxLenP = document.createElement("p");
+        maxLenP.appendChild(document.createElement("label")).innerText =
+            "Maximum length";
+        var maxLenInput = document.createElement("input");
+        maxLenInput.setAttribute("type", "number");
+        maxLenInput.setAttribute("max", BarplotLayer.MIN_LENGTH);
+        maxLenInput.classList.add("empress-input");
+        maxLenInput.value = BarplotLayer.DEFAULT_MAX_LENGTH;
+        $(maxLenInput).change(function () {
+            scope.scaleLengthByFMMax = util.parseAndValidateNum(
+                maxLenInput,
+                BarplotLayer.MIN_LENGTH
+            );
+        });
+        maxLenP.appendChild(maxLenInput);
+
+        lenDetailsDiv.appendChild(minLenP);
+        lenDetailsDiv.appendChild(maxLenP);
+
         $(chgLenCheckbox).change(function () {
             if (chgLenCheckbox.checked) {
                 chgLenFMFieldSelector.disabled = false;
@@ -254,10 +299,12 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
                 // first value in the selector on initialization
                 scope.scaleLengthByFMField = chgLenFMFieldSelector.value;
                 dfltLenP.classList.add("hidden");
+                lenDetailsDiv.classList.remove("hidden");
             } else {
                 chgLenFMFieldSelector.disabled = true;
                 scope.scaleLengthByFM = false;
                 dfltLenP.classList.remove("hidden");
+                lenDetailsDiv.classList.add("hidden");
                 // TODO: set all barplots in this layer back to the default
                 // length here
             }
@@ -294,8 +341,10 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.updateHeader();
     };
 
-    BarplotLayer.MIN_LENGTH = 1;
-    BarplotLayer.DEFAULT_LENGTH = 10;
+    BarplotLayer.MIN_LENGTH = 0;
+    BarplotLayer.DEFAULT_LENGTH = 100;
+    BarplotLayer.DEFAULT_MIN_LENGTH = 1;
+    BarplotLayer.DEFAULT_MAX_LENGTH = 100;
 
     return BarplotLayer;
 });

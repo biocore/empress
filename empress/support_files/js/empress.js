@@ -1052,20 +1052,22 @@ define([
                     );
                 }
                 fm2length = {};
-                // TODO should be user-configurable
-                var MAX_LENGTH = 100;
                 var nums = _.map(split.numeric, parseFloat);
                 var min = _.min(nums);
                 var max = _.max(nums);
                 var range = max - min;
                 if (range === 0) {
-                    fm2length[max] = 100;
+                    fm2length[max] = layer.scaleLengthByFMMax;
                 }
+                var lengthRange = layer.scaleLengthByFMMax - layer.scaleLengthByFMMin;
                 _.each(split.numeric, function (n) {
                     var fn = parseFloat(n);
-                    // use basic linear interpolation (we could add fancier
+                    // uses linear interpolation (we could add fancier
                     // scaling methods in the future as options if desired)
-                    fm2length[fn] = ((fn - min) / range) * MAX_LENGTH;
+                    // TODO for consideration: does this make sense
+                    // mathematically? Whoever reviews this PR, I'm asking you
+                    // to consider this because IDK right now LOL
+                    fm2length[fn] = (((fn - min) / range) * lengthRange) + layer.scaleLengthByFMMin;
                 });
             }
 
