@@ -39,8 +39,8 @@ define(["underscore", "util"], function (_, util) {
 
         // add event to add button
         var click = function () {
-            var val = selectMenu.sel.value;
-            scope.sel.options[selectMenu.sel.selectedIndex].remove();
+            var val = scope.sel.value;
+            scope.sel.options[scope.sel.selectedIndex].remove();
             scope.fields.push(val);
             scope.smHeader.classList.remove("hidden");
             scope.showNodeMenu();
