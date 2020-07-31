@@ -146,7 +146,9 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
 
         // Add default color stuff
         var dfltColorP = document.createElement("p");
-        var dfltColorLbl = dfltColorP.appendChild(document.createElement("label"));
+        var dfltColorLbl = dfltColorP.appendChild(
+            document.createElement("label")
+        );
         dfltColorLbl.innerText = "Default color";
         var dfltColorInput = document.createElement("input");
         dfltColorInput.setAttribute("type", "text");
@@ -290,7 +292,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
 
         // create default length settings
         var dfltLenP = document.createElement("p");
-        var dfltLenLbl = dfltLenP.appendChild(document.createElement("label"))
+        var dfltLenLbl = dfltLenP.appendChild(document.createElement("label"));
         dfltLenLbl.innerText = "Default length";
         var dfltLenInput = document.createElement("input");
         dfltLenInput.setAttribute("type", "number");
@@ -299,7 +301,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         dfltLenInput.value = this.defaultLength;
         dfltLenInput.id = "barplot-layer-" + this.num + "-dfltlen-input";
         dfltLenLbl.setAttribute("for", dfltLenInput.id);
-        $(dfltLenInput).change(function () { scope.defaultLength = util.parseAndValidateNum(
+        $(dfltLenInput).change(function () {
+            scope.defaultLength = util.parseAndValidateNum(
                 dfltLenInput,
                 BarplotLayer.MIN_LENGTH
             );
@@ -433,14 +436,13 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             opt.innerText = opt.value = c;
             chgFieldSMFieldSelector.appendChild(opt);
         });
-        chgFieldSMFieldSelector.id = "barplot-layer-" + this.num + "-chgsmfield";
+        chgFieldSMFieldSelector.id =
+            "barplot-layer-" + this.num + "-chgsmfield";
         chgFieldLbl.setAttribute("for", chgFieldSMFieldSelector.id);
         chgFieldSC.appendChild(chgFieldSMFieldSelector);
 
         // Add a row for choosing the color map
-        var colormapP = this.smDiv.appendChild(
-            document.createElement("p")
-        );
+        var colormapP = this.smDiv.appendChild(document.createElement("p"));
         var colormapLbl = colormapP.appendChild(
             document.createElement("label")
         );
