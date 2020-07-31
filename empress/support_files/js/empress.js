@@ -1364,6 +1364,13 @@ define([
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
 
+        // Assign colors to categories
+        var colorer = new Colorer(color, categories);
+        // colors for drawing the tree
+        var cm = colorer.getMapRGB();
+        // colors for the legend
+        var keyInfo = colorer.getMapHex();
+
         // shared by the following for loops
         var i, j, category;
 
@@ -1373,20 +1380,19 @@ define([
             obs[category] = this._namesToKeys(obs[category]);
         }
 
-        // assign internal nodes to appropriate category based on its children
+        // Assign internal nodes to appropriate category based on their
+        // children. Note that _projectObservations()'s returned obs will
+        // not contain categories that aren't unique to any tips. This is why
+        // we created a Colorer above, so that we can include all unique sample
+        // metadata values in the color map / legend.
         obs = this._projectObservations(obs, this.ignoreAbsentTips);
 
+        // If there aren't *any* sample metadata values unique to any tips,
+        // then return null so that the caller can warn the user.
         if (Object.keys(obs).length === 0) {
             return null;
         }
 
-        // assign colors to categories
-        categories = util.naturalSort(Object.keys(obs));
-        var colorer = new Colorer(color, categories);
-        // colors for drawing the tree
-        var cm = colorer.getMapRGB();
-        // colors for the legend
-        var keyInfo = colorer.getMapHex();
         // color tree
         this._colorTree(obs, cm);
         return keyInfo;
