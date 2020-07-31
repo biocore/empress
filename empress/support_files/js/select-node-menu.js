@@ -244,7 +244,7 @@ define(["underscore", "util"], function (_, util) {
         var ctData = this.empress.computeTipSamplePresence(name, this.fields);
 
         // 2.1 The samples represented by this tip are sent to Emperor
-        this._samplesInSelection = this.empress._biom.getObsIDsIntersection([
+        this._samplesInSelection = this.empress._biom.getSamplesByObservations([
             name,
         ]);
         this._checkTips(this.empress._biom.getObsIDsDifference([name]));
