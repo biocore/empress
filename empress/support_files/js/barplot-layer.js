@@ -414,6 +414,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
     };
 
     BarplotLayer.prototype.initSMDiv = function () {
+        var scope = this;
         this.smDiv = this.layerDiv.appendChild(document.createElement("div"));
         // Hide this div by default
         this.smDiv.classList.add("hidden");
@@ -466,8 +467,11 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         lenInput.id = "barplot-layer-" + this.num + "-smlength-input";
         lenLbl.setAttribute("for", lenInput.id);
 
+        // TODO initialize defaults more sanely
+        this.colorBySMField = chgFieldSMFieldSelector.value;
+        this.colorBySMColorMap = colormapSelector.value;
         $(chgFieldSMFieldSelector).change(function () {
-            scope.colorbySMField = chgFieldSMFieldSelector.value;
+            scope.colorBySMField = chgFieldSMFieldSelector.value;
         });
         $(colormapSelector).change(function () {
             scope.colorBySMColorMap = colormapSelector.value;

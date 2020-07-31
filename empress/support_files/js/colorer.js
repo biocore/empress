@@ -11,7 +11,10 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *                      will be generated.
      * @param{Boolean} useQuantScale Defaults to false. If true, this'll
      *                               attempt to scale colors linearly based on
-     *                               their numeric values.
+     *                               their numeric values. (This will only be
+     *                               used if the input color map is sequential
+     *                               or diverging; if the color map is
+     *                               discrete, then this will be ignored.)
      * @param{String} nanColor Hex color string for the color to assign
      *                         non-numeric values (only used if useQuantScale
      *                         is truthy). Our particular default value for
