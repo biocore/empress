@@ -38,13 +38,12 @@ define(["underscore", "util"], function (_, util) {
         }
 
         // add event to add button
-        var selectMenu = this;
         var click = function () {
             var val = selectMenu.sel.value;
-            selectMenu.sel.options[selectMenu.sel.selectedIndex].remove();
-            selectMenu.fields.push(val);
-            selectMenu.smHeader.classList.remove("hidden");
-            selectMenu.showNodeMenu();
+            scope.sel.options[selectMenu.sel.selectedIndex].remove();
+            scope.fields.push(val);
+            scope.smHeader.classList.remove("hidden");
+            scope.showNodeMenu();
         };
         this.addBtn.onclick = click;
     };
