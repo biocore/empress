@@ -127,6 +127,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         rmLbl.innerText = "Remove this layer";
         var rmBtn = rmP.appendChild(document.createElement("button"));
         rmBtn.innerText = "-";
+        rmBtn.id = "barplot-layer-" + this.num + "-remove-button";
+        rmLbl.setAttribute("for", rmBtn.id);
         rmBtn.onclick = function () {
             scope.barplotPanel.removeLayer(scope.num);
             // Remove this layer's HTML
@@ -144,10 +146,12 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
 
         // Add default color stuff
         var dfltColorP = document.createElement("p");
-        dfltColorP.appendChild(document.createElement("label")).innerText =
-            "Default color";
+        var dfltColorLbl = dfltColorP.appendChild(document.createElement("label"));
+        dfltColorLbl.innerText = "Default color";
         var dfltColorInput = document.createElement("input");
         dfltColorInput.setAttribute("type", "text");
+        dfltColorInput.id = "barplot-layer-" + this.num + "-dfltcolor-input";
+        dfltColorLbl.setAttribute("for", dfltColorInput.id);
         dfltColorP.appendChild(dfltColorInput);
         // Register dfltColorInput as a color selector with spectrum.js
         $(dfltColorInput).spectrum({
@@ -216,6 +220,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         var colormapSelector = document.createElement("select");
         Colorer.addColorsToSelect(colormapSelector);
         colormapSC.appendChild(colormapSelector);
+        colormapSelector.id = "barplot-layer-" + this.num + "fm-colormap";
+        colormapLbl.setAttribute("for", colormapSelector.id);
 
         // Add a row for choosing the scale type (i.e. whether to use
         // continuous coloring or not)
@@ -284,15 +290,16 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
 
         // create default length settings
         var dfltLenP = document.createElement("p");
-        dfltLenP.appendChild(document.createElement("label")).innerText =
-            "Default length";
+        var dfltLenLbl = dfltLenP.appendChild(document.createElement("label"))
+        dfltLenLbl.innerText = "Default length";
         var dfltLenInput = document.createElement("input");
         dfltLenInput.setAttribute("type", "number");
         dfltLenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
         dfltLenInput.classList.add("empress-input");
         dfltLenInput.value = this.defaultLength;
-        $(dfltLenInput).change(function () {
-            scope.defaultLength = util.parseAndValidateNum(
+        dfltLenInput.id = "barplot-layer-" + this.num + "-dfltlen-input";
+        dfltLenLbl.setAttribute("for", dfltLenInput.id);
+        $(dfltLenInput).change(function () { scope.defaultLength = util.parseAndValidateNum(
                 dfltLenInput,
                 BarplotLayer.MIN_LENGTH
             );
@@ -336,8 +343,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         lenDetailsDiv.classList.add("hidden");
         // Add min len stuff
         var minLenP = document.createElement("p");
-        minLenP.appendChild(document.createElement("label")).innerText =
-            "Minimum length";
+        var minLenLbl = minLenP.appendChild(document.createElement("label"));
+        minLenLbl.innerText = "Minimum length";
         var minLenInput = document.createElement("input");
         minLenInput.setAttribute("type", "number");
         minLenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
@@ -350,11 +357,13 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             );
         });
         minLenP.appendChild(minLenInput);
+        minLenInput.id = "barplot-layer-" + this.num + "fm-minlen-input";
+        minLenLbl.setAttribute("for", minLenInput.id);
 
         // Add max len stuff
         var maxLenP = document.createElement("p");
-        maxLenP.appendChild(document.createElement("label")).innerText =
-            "Maximum length";
+        var maxLenLbl = maxLenP.appendChild(document.createElement("label"));
+        maxLenLbl.innerText = "Maximum length";
         var maxLenInput = document.createElement("input");
         maxLenInput.setAttribute("type", "number");
         maxLenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
@@ -367,6 +376,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             );
         });
         maxLenP.appendChild(maxLenInput);
+        maxLenInput.id = "barplot-layer-" + this.num + "fm-maxlen-input";
+        maxLenLbl.setAttribute("for", maxLenInput.id);
 
         lenDetailsDiv.appendChild(minLenP);
         lenDetailsDiv.appendChild(maxLenP);
@@ -401,7 +412,57 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
 
     BarplotLayer.prototype.initSMDiv = function () {
         this.smDiv = this.layerDiv.appendChild(document.createElement("div"));
-        this.smDiv.innerText = "sample metadata stuff goes here";
+        // Hide this div by default
+        this.smDiv.classList.add("hidden");
+
+        var chgFieldP = this.smDiv.appendChild(document.createElement("p"));
+        // Add a label
+        var chgFieldLbl = document.createElement("label");
+        chgFieldLbl.innerText = "Show sample info for...";
+        chgFieldP.appendChild(chgFieldLbl);
+        // Finally, add a selector. To match the other selectors in Empress, we
+        // create this as a <select> within a <label> with
+        // class="select-container".
+        var chgFieldSC = chgFieldP.appendChild(document.createElement("label"));
+        chgFieldSC.classList.add("select-container");
+        var chgFieldSMFieldSelector = document.createElement("select");
+        // Populate the selector with all of the sample metadata columns
+        var smCols = this.empress.getSampleCategories();
+        _.each(smCols, function (c) {
+            var opt = document.createElement("option");
+            opt.innerText = opt.value = c;
+            chgFieldSMFieldSelector.appendChild(opt);
+        });
+        chgFieldSMFieldSelector.id = "barplot-layer-" + this.num + "-chgsmfield";
+        chgFieldLbl.setAttribute("for", chgFieldSMFieldSelector.id);
+        chgFieldSC.appendChild(chgFieldSMFieldSelector);
+
+        // Add a row for choosing the color map
+        var colormapP = this.smDiv.appendChild(
+            document.createElement("p")
+        );
+        var colormapLbl = colormapP.appendChild(
+            document.createElement("label")
+        );
+        colormapLbl.innerText = "Color Map";
+        var colormapSC = colormapP.appendChild(document.createElement("label"));
+        colormapSC.classList.add("select-container");
+        var colormapSelector = document.createElement("select");
+        Colorer.addColorsToSelect(colormapSelector);
+        colormapSC.appendChild(colormapSelector);
+        colormapSelector.id = "barplot-layer-" + this.num + "sm-colormap";
+        colormapLbl.setAttribute("for", colormapSelector.id);
+
+        var lenP = this.smDiv.appendChild(document.createElement("p"));
+        var lenLbl = lenP.appendChild(document.createElement("label"));
+        lenLbl.innerText = "Length";
+        var lenInput = lenP.appendChild(document.createElement("input"));
+        lenInput.setAttribute("type", "number");
+        lenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
+        lenInput.classList.add("empress-input");
+        lenInput.value = this.defaultLength;
+        lenInput.id = "barplot-layer-" + this.num + "-smlength-input";
+        lenLbl.setAttribute("for", lenInput.id);
     };
 
     BarplotLayer.prototype.updateHeader = function () {
