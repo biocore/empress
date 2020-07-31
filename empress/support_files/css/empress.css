@@ -647,6 +647,6 @@ div.legend:hover {
   margin-left: 2em;
 }
 
-.empress-hr {
-    border-color: #aaa;
+.selected-metadata-choice {
+  background-color: #333 !important;
 }

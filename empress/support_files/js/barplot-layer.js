@@ -32,7 +32,11 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.layerContainer = layerContainer;
         this.num = num;
 
-        // various properties of the barplot layer state
+        // This should be "fm" if the barplot is for feature metadata; "sm" if
+        // the barplot is for sample metadata
+        this.barplotType = "fm";
+
+        // Various properties of the barplot layer state for feature metadata
         this.initialDefaultColorHex = Colorer.getQIIMEColor(this.num - 1);
         this.defaultColor = util.hex2rgb(this.initialDefaultColorHex);
         this.colorByFM = false;
@@ -45,29 +49,98 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.scaleLengthByFMMin = BarplotLayer.DEFAULT_MIN_LENGTH;
         this.scaleLengthByFMMax = BarplotLayer.DEFAULT_MAX_LENGTH;
 
+        // Various properties of the barplot layer state for sample metadata
+        this.colorBySMField = null;
+        this.colorBySMColorMap = null;
+        this.lengthSM = BarplotLayer.DEFAULT_LENGTH;
+
         // Initialize the HTML elements of this barplot layer
         this.headerElement = null;
+        this.layerDiv = null;
+        this.fmDiv = null;
+        this.smDiv = null;
         this.initHTML();
     }
 
     BarplotLayer.prototype.initHTML = function () {
         var scope = this;
-        var newDiv = document.createElement("div");
-        this.layerContainer.appendChild(newDiv);
-
-        // Add a <hr /> at the top of each layer. This is a nice way of
-        // visually distinguishing layer UI elements.
-        newDiv.appendChild(document.createElement("hr"));
+        this.layerDiv = document.createElement("div");
+        this.layerContainer.appendChild(this.layerDiv);
 
         // Add a header to the layer -- it's named "Layer 1" if this is the
         // first layer, "Layer 2" if this is the second, etc.
-        this.headerElement = newDiv.appendChild(document.createElement("h3"));
+        this.headerElement = this.layerDiv.appendChild(
+            document.createElement("h3")
+        );
+
+        // Use of "text-align: center;" based on
+        // https://stackoverflow.com/q/23663527/10730311.
+        // (I forgot that was a thing.)
+        this.headerElement.setAttribute("style", "text-align: center;");
         this.updateHeader();
 
-        // We're going to indent the remainder of the elements within this
-        // layer.
-        var innerDiv = newDiv.appendChild(document.createElement("div"));
-        innerDiv.classList.add("indented");
+        // Add UI elements for switching between feature and sample metadata
+        // barplots for this layer
+        var metadataChoiceP = this.layerDiv.appendChild(
+            document.createElement("p")
+        );
+        var fmBtn = metadataChoiceP.appendChild(
+            document.createElement("button")
+        );
+        var smBtn = metadataChoiceP.appendChild(
+            document.createElement("button")
+        );
+        fmBtn.innerText = "Feature Metadata";
+        smBtn.innerText = "Sample Metadata";
+        // Center the feature and sample metadata buttons
+        fmBtn.setAttribute("style", "margin: 0 auto;");
+        smBtn.setAttribute("style", "margin: 0 auto;");
+        // Since we default to feature metadata barplot layers, we mark the
+        // feature metadata button as "selected" (a.k.a. we darken it a bit)
+        fmBtn.classList.add("selected-metadata-choice");
+
+        this.initFMDiv();
+        this.initSMDiv();
+
+        fmBtn.onclick = function () {
+            if (scope.barplotType !== "fm") {
+                scope.smDiv.classList.add("hidden");
+                scope.fmDiv.classList.remove("hidden");
+                fmBtn.classList.add("selected-metadata-choice");
+                smBtn.classList.remove("selected-metadata-choice");
+                scope.barplotType = "fm";
+            }
+        };
+        smBtn.onclick = function () {
+            if (scope.barplotType !== "sm") {
+                scope.fmDiv.classList.add("hidden");
+                scope.smDiv.classList.remove("hidden");
+                smBtn.classList.add("selected-metadata-choice");
+                fmBtn.classList.remove("selected-metadata-choice");
+                scope.barplotType = "sm";
+            }
+        };
+
+        // Add a row of UI elements that supports removing this layer
+        var rmP = this.layerDiv.appendChild(document.createElement("p"));
+        var rmLbl = rmP.appendChild(document.createElement("label"));
+        rmLbl.innerText = "Remove this layer";
+        var rmBtn = rmP.appendChild(document.createElement("button"));
+        rmBtn.innerText = "-";
+        rmBtn.onclick = function () {
+            scope.barplotPanel.removeLayer(scope.num);
+            // Remove this layer's HTML
+            scope.layerDiv.remove();
+        };
+
+        // Add a <hr /> at the bottom of each layer. This is a nice way of
+        // visually distinguishing layer UI elements.
+        this.layerDiv.appendChild(document.createElement("hr"));
+    };
+
+    BarplotLayer.prototype.initFMDiv = function () {
+        var scope = this;
+        this.fmDiv = this.layerDiv.appendChild(document.createElement("div"));
 
         // Add default color stuff
         var dfltColorP = document.createElement("p");
@@ -92,7 +165,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         // up a UI for coloring this layer's bars by feature metadata.
         //
         // Create the <p> within which this row will be contained
-        var chgColorP = innerDiv.appendChild(document.createElement("p"));
+        var chgColorP = this.fmDiv.appendChild(document.createElement("p"));
         // Add a label
         var chgColorLbl = document.createElement("label");
         chgColorLbl.innerText = "Color by...";
@@ -124,7 +197,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
 
         // Create color-changing details div
         // (this is indented another level)
-        var colorDetailsDiv = innerDiv.appendChild(
+        var colorDetailsDiv = this.fmDiv.appendChild(
             document.createElement("div")
         );
         colorDetailsDiv.classList.add("indented");
@@ -189,7 +262,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             }
         });
 
-        innerDiv.appendChild(dfltColorP);
+        this.fmDiv.appendChild(dfltColorP);
 
         $(chgColorFMFieldSelector).change(function () {
             scope.colorByFMField = chgColorFMFieldSelector.value;
@@ -227,7 +300,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         dfltLenP.appendChild(dfltLenInput);
 
         // create length-changing-by-metadata settings
-        var chgLenP = innerDiv.appendChild(document.createElement("p"));
+        var chgLenP = this.fmDiv.appendChild(document.createElement("p"));
         // Add a label
         var chgLenLbl = document.createElement("label");
         chgLenLbl.innerText = "Scale length by...";
@@ -256,7 +329,9 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         chgLenFMFieldSelector.disabled = true;
         chgLenSC.appendChild(chgLenFMFieldSelector);
 
-        var lenDetailsDiv = innerDiv.appendChild(document.createElement("div"));
+        var lenDetailsDiv = this.fmDiv.appendChild(
+            document.createElement("div")
+        );
         lenDetailsDiv.classList.add("indented");
         lenDetailsDiv.classList.add("hidden");
         // Add min len stuff
@@ -318,23 +393,15 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             scope.scaleLengthByFMField = chgLenFMFieldSelector.value;
         });
 
-        innerDiv.appendChild(dfltLenP);
+        this.fmDiv.appendChild(dfltLenP);
 
-        // TODO: abstract ^^most of this stuff^^ into sep. functions rather
-        // than one god function lol
-        // Also TODO: reuse code, e.g. for adding feature metadata col
+        // TODO: reuse code, e.g. for adding feature metadata col
         // info to a selector (duplicated btwn color and length stuff)
+    };
 
-        var rmP = innerDiv.appendChild(document.createElement("p"));
-        var rmLbl = rmP.appendChild(document.createElement("label"));
-        rmLbl.innerText = "Remove this layer";
-        var rmBtn = rmP.appendChild(document.createElement("button"));
-        rmBtn.innerText = "-";
-        rmBtn.onclick = function () {
-            scope.barplotPanel.removeLayer(scope.num);
-            // Remove this layer's HTML
-            newDiv.remove();
-        };
+    BarplotLayer.prototype.initSMDiv = function () {
+        this.smDiv = this.layerDiv.appendChild(document.createElement("div"));
+        this.smDiv.innerText = "sample metadata stuff goes here";
     };
 
     BarplotLayer.prototype.updateHeader = function () {
