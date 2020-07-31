@@ -90,7 +90,7 @@ require([
                 sm
             );
             var empress = new Empress(
-                {},
+                { size: 0 },
                 {},
                 {},
                 {},

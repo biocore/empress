@@ -562,7 +562,7 @@ define(["ByteArray"], function (ByteArray) {
      *       it in the resulting array.
      *       This method will also cache the resulting array.
      */
-    BPTree.prototype.inorderNodes = function () {
+    BPTree.prototype.inOrderNodes = function () {
         if (this._inorder !== null) {
             return this._inorder;
         }

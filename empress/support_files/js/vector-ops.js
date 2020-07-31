@@ -135,7 +135,7 @@ define([], function () {
      * @param {Array} b The second vertex of the triangle
      * @param {Array} c The thrid vertex of the triangle
      *
-     * @returns The area of the triangle
+     * @returns {Number} The area of the triangle
      */
     function triangleArea(a, b, c) {
         return Math.abs(

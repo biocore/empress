@@ -622,9 +622,9 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             equal(obj.b_.length, 51 + 51 + 4);
         });
 
-        test("Test inorderNodes", function () {
+        test("Test inOrderNodes", function () {
             var expect = [11, 5, 6, 10, 1, 2, 4, 9, 3, 7, 8];
-            deepEqual(this.bpObj.inorderNodes(), expect);
+            deepEqual(this.bpObj.inOrderNodes(), expect);
         });
 
         test("Test getTotalLength", function () {

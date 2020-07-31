@@ -226,12 +226,14 @@ define([
         this._collapseMethod = "normal";
 
         /**
-         * @type {Object}
+         * @type{Array}
          * @private
          *
-         * This stores what metadata field was used to color the tree
+         * This stores the group membership of a node. -1 means the node doesn't
+         * belong to a group. This array is used to collapse clades by search
+         * for clades in this array that share the same group membershi[.
          */
-        this._treeColoringInfo = {};
+        this._group = new Array(this._tree.size + 1).fill(-1);
     }
 
     /**
@@ -366,7 +368,8 @@ define([
         }
 
         // add one black circle to indicate the root
-        // Not sure if this speacial treatment for root is necessary once #142 is merged.
+        // Not sure if this speacial treatment for root is necessary once #142
+        // is merged.
         svg += "<!-- root node -->\n";
         svg +=
             '<circle cx="0" cy="0" r="' +
@@ -396,9 +399,9 @@ define([
         top_left_x = 0;
         top_left_y = 0;
         unit = 30; // all distances are based on this variable, thus "zooming"
-                   // can be realised by just increasing this single value
+        // can be realised by just increasing this single value
         factor_lineheight = 1.8; // distance between two text lines as a
-                                 // multiplication factor of unit
+        // multiplication factor of unit
         svg = ""; // the svg string to be generated
 
         // used as a rough estimate about the consumed width by text strings
@@ -1117,6 +1120,9 @@ define([
             return null;
         }
 
+        // assigns node in obs to groups in this._groups
+        this.assignGroups(obs);
+
         // assign colors to categories
         categories = util.naturalSort(Object.keys(obs));
         var colorer = new Colorer(color, categories);
@@ -1212,6 +1218,9 @@ define([
         if (method === "tip") {
             obs = this._projectObservations(obs);
         }
+
+        // assigns nodes in to a group in this._group array
+        this.assignGroups(obs);
 
         // color tree
         this._colorTree(obs, cm);
@@ -1330,11 +1339,11 @@ define([
             this._treeData[key].sampleColored = false;
             this._treeData[key].visible = true;
         }
-        this._treeColoringInfo = {};
         this._collapsedClades = {};
         this._collapsedCladeBuffer = [];
         this._drawer.loadSampleThickBuf([]);
         this._drawer.loadCladeBuff([]);
+        this._group = new Array(this._tree.size + 1).fill(-1);
     };
 
     /**
@@ -1525,6 +1534,16 @@ define([
         this._events.selectedNodeMenu.hiddenCallback = callback;
     };
 
+    Empress.prototype.assignGroups = function (obs) {
+        var groupNum = 0;
+        for (var cat in obs) {
+            var nodes = [...obs[cat]];
+            for (var i in nodes) {
+                this._group[nodes[i]] = groupNum;
+            }
+            groupNum++;
+        }
+    };
     /**
      * Collapses all clades that share the same color into a quadrilateral.
      *
@@ -1541,7 +1560,6 @@ define([
             }
             return;
         }
-
         // The following algorithm consists of two parts: 1) find all clades
         // whose member nodes have the same color, 2) collapse the clades
 
@@ -1558,33 +1576,17 @@ define([
         // is assigned a unique number and that number is then used to mark
         // which group a node belongs to. If an internal node has children that
         // belong to different groups than it is assigned a -1.
-        var group = new Array(this._tree.size + 1);
-        var numGroup = 0;
-        var colorToNum = {};
-        var color;
+
+        // project groups up tree
         for (var i = 1; i <= this._tree.size; i++) {
             var parent = this._tree.postorder(
                 this._tree.parent(this._tree.postorderselect(i))
             );
-            color = this._treeData[i].color;
-            if (!colorToNum.hasOwnProperty(color)) {
-                colorToNum[color] = numGroup++;
-            }
-
-            if (group[i] === undefined) {
-                group[i] = colorToNum[color];
-            } else if (group[i] !== colorToNum[color]) {
-                group[i] = -1;
-            }
-
-            if (group[i] === -1) {
-                group[parent] = -1;
-            } else if (group[parent] === undefined) {
-                group[parent] = colorToNum[color];
-            } else if (group[parent] !== group[i]) {
-                group[parent] = -1;
+            if (this._group[i] !== this._group[parent]) {
+                this._group[parent] = -1;
             }
         }
+
         // 2) Collapse the clades
         // To accomplish this, we will iterate the tree in a inorder fashion.
         // Once a internal node is reached that belongs to a group (i.e. not -1)
@@ -1594,19 +1596,13 @@ define([
         // false and will then be skipped in the for loop.
         // Note: if the root of a clade has DEFUALT_COLOR then it will not be
         // collapsed (since all of its children will also have DEFAULT_COLOR)
-        var inorder = this._tree.inorderNodes();
+        var inorder = this._tree.inOrderNodes();
         for (var node in inorder) {
             node = inorder[node];
             var visible = this._treeData[node].visible;
-            color = this._treeData[node].color;
             var isTip = this._tree.isleaf(this._tree.postorderselect(node));
 
-            if (
-                visible &&
-                !isTip &&
-                group[node] !== -1 &&
-                color !== this.DEFAULT_COLOR
-            ) {
+            if (visible && !isTip && this._group[node] !== -1) {
                 this._collapseClade(node);
             }
         }

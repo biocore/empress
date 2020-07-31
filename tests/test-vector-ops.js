@@ -86,6 +86,7 @@ require(["jquery", "VectorOps"], function ($, VectorOps) {
             equal(VectorOps.triangleArea([0, 0], [20, 0], [0, 12]), 120);
 
             equal(VectorOps.triangleArea([0, 0], [-20, 0], [0, -12]), 120);
+            equal(VectorOps.triangleArea([1, -1], [-19, -1], [1, -13]), 120);
 
             equal(
                 VectorOps.triangleArea([0, 0], [0, 0], [0, 12]),

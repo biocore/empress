@@ -687,21 +687,18 @@ require([
         });
 
         test("Test collapseClades", function () {
-            // red should be the only collapsable clade
+            // red should be the only collapsible clade
             var obs = {
                 red: new Set([2, 3, 4]),
                 blue: new Set([1, 5, 6, 7]),
             };
-            var cm = {
-                red: [1, 0, 0],
-                blue: [0, 0, 1],
-            };
-            this.empress._colorTree(obs, cm);
+            this.empress.assignGroups(obs);
             this.empress.collapseClades();
 
             // make sure .visible property of nodes in the collapsed is false
             var collapsed = new Set([2, 3]);
-            for (var i = 1; i <= this.empress._tree.size; i++) {
+            var i;
+            for (i = 1; i <= this.empress._tree.size; i++) {
                 if (collapsed.has(i)) {
                     deepEqual(
                         this.empress._treeData[i].visible,
@@ -722,34 +719,34 @@ require([
             var collapseClades = [
                 35,
                 36,
-                1,
-                0,
-                0,
+                0.75,
+                0.75,
+                0.75,
                 33,
                 34,
-                1,
-                0,
-                0,
+                0.75,
+                0.75,
+                0.75,
                 31,
                 32,
-                1,
-                0,
-                0,
+                0.75,
+                0.75,
+                0.75,
                 35,
                 36,
-                1,
-                0,
-                0,
+                0.75,
+                0.75,
+                0.75,
                 33,
                 34,
-                1,
-                0,
-                0,
+                0.75,
+                0.75,
+                0.75,
                 33,
                 34,
-                1,
-                0,
-                0,
+                0.75,
+                0.75,
+                0.75,
             ];
             deepEqual(this.empress._collapsedCladeBuffer, collapseClades);
 
@@ -765,7 +762,7 @@ require([
             };
             this.empress._colorTree(obs, cm);
             this.empress.collapseClades();
-            for (var i = 1; i <= this.empress._tree.size; i++) {
+            for (i = 1; i <= this.empress._tree.size; i++) {
                 deepEqual(
                     this.empress._treeData[i].visible,
                     true,

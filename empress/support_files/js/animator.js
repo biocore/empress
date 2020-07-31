@@ -191,7 +191,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      *
      * @param {Boolean} collapse If true, then Animator will collapse clades
      */
-    Animator.prototype.setHide = function (collapse) {
+    Animator.prototype.setCollapse = function (collapse) {
         this.collapse = collapse;
     };
 
@@ -233,6 +233,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         // draw tree
         this.empress.resetTree();
         this.empress._colorTree(obs, this.cm);
+        this.empress.assignGroups(obs);
         if (this.collapse) {
             this.empress.collapseClades();
         }
@@ -352,6 +353,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * is paused and user presses the previous button.
      */
     Animator.prototype.prevFrame = function () {
+        this.curFrame -= 1;
         if (this.curFrame < 0) {
             this.curFrame = 0;
         }
@@ -390,15 +392,6 @@ define(["Colorer", "util"], function (Colorer, util) {
         // curFrame is always the next frame to draw so if curFrame is
         // equal to totalFrames, the last frame was just drawn
         return this.curFrame == this.totalFrames;
-    };
-
-    /**
-     * Sets the collapse status of the state machine
-     *
-     * @param {Boolean} collapse If true, empress will collapse clades
-     */
-    Animator.prototype.setCollapse = function (collapse) {
-        this.collapse = collapse;
     };
 
     return Animator;
