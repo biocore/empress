@@ -172,9 +172,21 @@ define([
         /**
          * @type{Number}
          * The (not-yet-scaled) line width used for drawing "thick" lines.
-         * Can be passed as input to this.thickenSameSampleLines().
+         * Can be passed as input to this.thickenColoredNodes().
          */
         this._currentLineWidth = 0;
+
+        /**
+         * @type{Bool}
+         * Whether the camera is focused on a selected node.
+         */
+        this.focusOnSelectedNode = true;
+
+        /**
+         * @type{Bool}
+         * Whether unrepresented tips are ignored when propagating colors.
+         */
+        this.ignoreAbsentTips = true;
 
         /**
          * @type{CanvasEvents}
@@ -253,7 +265,7 @@ define([
      * Draws the tree
      */
     Empress.prototype.drawTree = function () {
-        this._drawer.loadTreeBuf(this.getCoords());
+        this._drawer.loadTreeBuff(this.getCoords());
         this._drawer.loadNodeBuff(this.getNodeCoords());
         this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
@@ -790,7 +802,7 @@ define([
      * for Arrays/Objects; see http://jasonjl.me/blog/2014/10/15/javascript.)
      *
      * @param {Array} coords Array containing coordinate + color data, to be
-     *                       passed to Drawer.loadSampleThickBuf().
+     *                       passed to Drawer.loadThickNodeBuff().
      * @param {Object} corners Object with tL, tR, bL, and bR entries (each
      *                         mapping to an array of the format [x, y]
      *                         indicating this position).
@@ -821,7 +833,7 @@ define([
      * bL |-bR---
      *
      * @param {Array} coords  Array containing coordinate + color data, to be
-     *                        passed to Drawer.loadSampleThickBuf().
+     *                        passed to Drawer.loadThickNodeBuff().
      * @param {Number} node   Node index in this._treeData, from which we'll
      *                        retrieve coordinate information.
      * @param {Number} lwScaled Desired line thickness (note that this will be
@@ -867,14 +879,14 @@ define([
      *                    parameter should be the output from
      *                    util.parseAndValidateLineWidth().)
      */
-    Empress.prototype.thickenSameSampleLines = function (lw) {
+    Empress.prototype.thickenColoredNodes = function (lw) {
         // If lw isn't > 0, then we don't thicken colored lines at all --
         // we just leave them at their default width.
         if (lw < 0) {
             // should never happen because util.parseAndValidateLineWidth()
             // should've been called in order to obtain lw, but in case
             // this gets messed up in the future we'll catch it
-            throw "Line width passed to thickenSameSampleLines() is < 0.";
+            throw "Line width passed to thickenColoredNodes() is < 0.";
         } else {
             // Make sure that, even if lw is 0 (i.e. we don't need to
             // thicken the lines), we still set the current line width
@@ -898,7 +910,7 @@ define([
 
         // the coordinates of the tree
         var coords = [];
-        this._drawer.loadSampleThickBuf([]);
+        this._drawer.loadThickNodeBuff([]);
 
         // define these variables so jslint does not complain
         var x1, y1, x2, y2, corners;
@@ -908,7 +920,7 @@ define([
         // drawing the tree in Rectangular layout mode
         if (
             this._currentLayout === "Rectangular" &&
-            this._treeData[tree.size].sampleColored
+            this._treeData[tree.size].isColored
         ) {
             this._addThickVerticalLineCoords(coords, tree.size, lwScaled);
         }
@@ -921,7 +933,7 @@ define([
             if (
                 this._collapsedClades.hasOwnProperty(i) ||
                 !this._treeData[node].visible ||
-                !this._treeData[node].sampleColored
+                !this._treeData[node].isColored
             ) {
                 continue;
             }
@@ -1024,7 +1036,7 @@ define([
             }
         }
 
-        this._drawer.loadSampleThickBuf(coords);
+        this._drawer.loadThickNodeBuff(coords);
     };
 
     /**
@@ -1048,7 +1060,10 @@ define([
         }
 
         // project to ancestors
-        observationsPerGroup = this._projectObservations(observationsPerGroup);
+        observationsPerGroup = this._projectObservations(
+            observationsPerGroup,
+            this.ignoreAbsentTips
+        );
 
         for (group in observationsPerGroup) {
             obs = Array.from(observationsPerGroup[group]);
@@ -1090,12 +1105,12 @@ define([
     };
 
     /**
-     * Color the tree using sample data
+     * Color the tree using sample metadata
      *
-     * @param {String} cat The sample category to use
-     * @param {String} color - the Color map to use
+     * @param {String} cat Sample metadata category to use
+     * @param {String} color Color map to use
      *
-     * @return {Object} If there exists at least on group with unique features
+     * @return {Object} If there exists at least one group with unique features
      *                  then an object will be returned that maps groups with
      *                  unique features to a color. If there doesn't exist a
      *                  group with unique features then null will be returned.
@@ -1115,7 +1130,8 @@ define([
         }
 
         // assign internal nodes to appropriate category based on its children
-        obs = this._projectObservations(obs);
+        obs = this._projectObservations(obs, this.ignoreAbsentTips);
+
         if (Object.keys(obs).length === 0) {
             return null;
         }
@@ -1216,7 +1232,7 @@ define([
 
         // Do upwards propagation only if the coloring method is "tip"
         if (method === "tip") {
-            obs = this._projectObservations(obs);
+            obs = this._projectObservations(obs, false);
         }
 
         // assigns nodes in to a group in this._group array
@@ -1245,29 +1261,33 @@ define([
      *       returned version of obs.
      *
      * @param {Object} obs Maps categories to a set of observations (i.e. tips)
+     * @param {Bool} ignoreAbsentTips Whether absent tips should be ignored
+     * during color propagation.
      * @return {Object} returns A Map with the same group names that maps groups
                         to a set of keys (i.e. tree nodes) that are unique to
                         each group.
      */
-    Empress.prototype._projectObservations = function (obs) {
+    Empress.prototype._projectObservations = function (obs, ignoreAbsentTips) {
         var tree = this._tree,
             categories = Object.keys(obs),
             notRepresented = new Set(),
             i,
             j;
 
-        // find "non-represented" tips
-        // Note: the following uses postorder traversal
-        for (i = 1; i < tree.size; i++) {
-            if (tree.isleaf(tree.postorderselect(i))) {
-                var represented = false;
-                for (j = 0; j < categories.length; j++) {
-                    if (obs[categories[j]].has(i)) {
-                        represented = true;
-                        break;
+        if (!ignoreAbsentTips) {
+            // find "non-represented" tips
+            // Note: the following uses postorder traversal
+            for (i = 1; i < tree.size; i++) {
+                if (tree.isleaf(tree.postorderselect(i))) {
+                    var represented = false;
+                    for (j = 0; j < categories.length; j++) {
+                        if (obs[categories[j]].has(i)) {
+                            represented = true;
+                            break;
+                        }
                     }
+                    if (!represented) notRepresented.add(i);
                 }
-                if (!represented) notRepresented.add(i);
             }
         }
 
@@ -1286,6 +1306,7 @@ define([
 
                 // add internal nodes to groups
                 if (obs[category].has(node)) {
+                    this._treeData[node].inSample = true;
                     obs[category].add(parent);
                 }
                 if (notRepresented.has(node)) {
@@ -1300,18 +1321,23 @@ define([
             return value.size > 0;
         });
 
+
         return result;
     };
 
     /**
      * Updates the tree based on obs and cm but does not draw a new tree.
      *
-     * Note: The nodes in each sample category should be unique. The behavior of
+     * NOTE: The nodes in each category should be unique. The behavior of
      *       this function is undefined if nodes in each category are not
      *       unique.
      *
-     * @param{Object} obs The mapping from sample category to unique nodes.
-     * @param{Object} cm The mapping from sample category to color.
+     * @param{Object} obs Maps categories to the unique nodes to be colored for
+     *                    each category.
+     * @param{Object} cm Maps categories to the colors to color their nodes
+     *                   with. Colors should be represented as RGB arrays, for
+     *                   example as is done in the color values of the output
+     *                   of Colorer.getMapRGB().
      */
     Empress.prototype._colorTree = function (obs, cm) {
         var categories = util.naturalSort(Object.keys(obs));
@@ -1323,7 +1349,7 @@ define([
             for (var j = 0; j < keys.length; j++) {
                 var key = keys[j];
                 this._treeData[key].color = cm[category];
-                this._treeData[key].sampleColored = true;
+                this._treeData[key].isColored = true;
             }
         }
     };
@@ -1336,12 +1362,12 @@ define([
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
             this._treeData[key].color = this.DEFAULT_COLOR;
-            this._treeData[key].sampleColored = false;
+            this._treeData[key].isColored = false;
             this._treeData[key].visible = true;
         }
         this._collapsedClades = {};
         this._collapsedCladeBuffer = [];
-        this._drawer.loadSampleThickBuf([]);
+        this._drawer.loadThickNodeBuff([]);
         this._drawer.loadCladeBuff([]);
         this._group = new Array(this._tree.size + 1).fill(-1);
     };
@@ -1381,9 +1407,9 @@ define([
                 // Adjust the thick-line stuff before calling drawTree() --
                 // this will get the buffer set up before it's actually drawn
                 // in drawTree(). Doing these calls out of order (draw tree,
-                // then call thickenSameSampleLines()) causes the thick-line
+                // then call thickenColoredNodes()) causes the thick-line
                 // stuff to only change whenever the tree is redrawn.
-                this.thickenSameSampleLines(this._currentLineWidth);
+                this.thickenColoredNodes(this._currentLineWidth);
 
                 // recenter viewing window
                 // Note: this function calls drawTree()
@@ -1543,6 +1569,7 @@ define([
             }
             groupNum++;
         }
+        
     };
     /**
      * Collapses all clades that share the same color into a quadrilateral.
@@ -2140,6 +2167,90 @@ define([
     /*
      * Show the node menu for a node name
      *
+     * Calculate the number of samples in which a tip appears for the
+     * unique values of a metadata field across a list of metadata fields.
+     *
+     * @param {String} nodeName Name of the (tip) node for which to calculate
+     *                          sample presence.
+     * @param {Array} fields Metadata fields for which to calculate tip
+     *                       sample presence.
+     * @return {Object} ctData Maps metadata field names to another Object,
+     *                         which in turn maps unique metadata values to
+     *                         the number of samples with this metadata value
+     *                         in this field that contain the given tip.
+     */
+    Empress.prototype.computeTipSamplePresence = function (nodeName, fields) {
+        var ctData = {};
+
+        for (var f = 0; f < fields.length; f++) {
+            var field = fields[f];
+            ctData[field] = this._biom.getObsCountsBy(field, nodeName);
+        }
+
+        return ctData;
+    };
+
+    /**
+     * Calculate the number of samples in which at least one tip of an internal
+     * node appears for the unique values of a metadata field across a list of
+     * metadata fields.
+     *
+     * @param {String} nodeKey Key of the (internal) node to calculate
+     *                         sample presence for.
+     * @param {Array} fields Metadata fields for which to calculate internal
+     *                       node sample presence.
+     * @return {Object} samplePresence A mapping with three entries:
+     *                                 (1) fieldsMap Maps metadata field names
+     *                                 to Object mapping unique metadata values
+     *                                 to the number of samples with this metadata
+     *                                 value in this field containing at least one
+     *                                 tip in the subtree of the given nodeKey.
+     *                                 (2) diff Array of tip names not present
+     *                                 as features in the table.
+     *                                 (3) samples Array of samples represented by
+     *                                 tips present in the table.
+     */
+    Empress.prototype.computeIntSamplePresence = function (nodeKey, fields) {
+        // retrieve the sample data for the tips in the table
+        var tips = this._tree.findTips(nodeKey);
+        var diff = this._biom.getObsIDsDifference(tips);
+        var intersection = this._biom.getObsIDsIntersection(tips);
+        var samples = this._biom.getSamplesByObservations(intersection);
+
+        var fieldsMap = {};
+        for (var i = 0; i < fields.length; i++) {
+            field = fields[i];
+            var possibleValues = this._biom.getUniqueSampleValues(field);
+            for (var j = 0; j < possibleValues.length; j++) {
+                var possibleValue = possibleValues[j];
+                if (!(field in fieldsMap)) fieldsMap[field] = {};
+                fieldsMap[field][possibleValue] = 0;
+            }
+        }
+
+        // iterate over the samples and extract the field values
+        for (var k = 0; k < fields.length; k++) {
+            field = fields[k];
+
+            // update fields mapping object
+            var result = this._biom.getSampleValuesCount(samples, field);
+            fieldValues = Object.keys(result);
+            for (var m = 0; m < fieldValues.length; m++) {
+                fieldValue = fieldValues[m];
+                fieldsMap[field][fieldValue] += result[fieldValue];
+            }
+        }
+
+        var samplePresence = {
+            fieldsMap: fieldsMap,
+            diff: diff,
+            samples: samples,
+        };
+        return samplePresence;
+    };
+
+    /** Show the node menu for a node name
+     *
      * @param {String} nodeName The name of the node to show.
      */
     Empress.prototype.showNodeMenuForName = function (nodeName) {
@@ -2151,7 +2262,7 @@ define([
         }
 
         this._events.selectedNodeMenu.clearSelectedNode();
-        this._events.placeNodeSelectionMenu(nodeName, false);
+        this._events.placeNodeSelectionMenu(nodeName, this.focusOnSelectedNode);
     };
 
     return Empress;

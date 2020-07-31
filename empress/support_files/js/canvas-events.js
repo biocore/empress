@@ -384,7 +384,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             // We'll position the camera at whatever the "first" node in
             // nodeKeys is. This is an arbitrary decision, but better than
             // nothing.
-            if (moveTree) {
+            if (moveTree && scope.empress.focusOnSelectedNode) {
                 var nodeToCenterOn = scope.empress._treeData[nodeKeys[0]];
                 scope.drawer.centerCameraOn(
                     scope.empress.getX(nodeToCenterOn),

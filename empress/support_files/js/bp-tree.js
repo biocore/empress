@@ -615,7 +615,37 @@ define(["ByteArray"], function (ByteArray) {
     };
 
     /**
-     * True if name is in the names array for the tree
+     * Retrieve the tips in the subtree of a given (internal) node key.
+     *
+     * @param {Number} nodeKey Key value of internal node.
+     * @return {Array} tips Tips of the subtree.
+     */
+    BPTree.prototype.findTips = function (nodeKey) {
+        // find first and last preorder positions of the subtree spanned
+        // by the current internal node
+        var n = this.postorderselect(nodeKey);
+        if (this.isleaf(n)) {
+            throw "Node must be internal!";
+        }
+        var start = this.preorder(this.fchild(n));
+        var end = this.preorder(this.lchild(n));
+        while (!this.isleaf(this.preorderselect(end))) {
+            end = this.preorder(this.lchild(this.preorderselect(end)));
+        }
+
+        // find all tips within the subtree
+        var tips = [];
+        for (var j = start; j <= end; j++) {
+            var node = this.preorderselect(j);
+            if (this.isleaf(node)) {
+                tips.push(this.name(node));
+            }
+        }
+
+        return tips;
+    };
+
+    /** True if name is in the names array for the tree
      *
      * @param {String} name The name to search for.
      * @return {Boolean} If the name is in the tree.

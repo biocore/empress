@@ -237,7 +237,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         if (this.collapse) {
             this.empress.collapseClades();
         }
-        this.empress.thickenSameSampleLines(this.lWidth);
+        this.empress.thickenColoredNodes(this.lWidth);
         this.empress.drawTree();
     };
 
@@ -329,7 +329,10 @@ define(["Colorer", "util"], function (Colorer, util) {
             category = categories[i];
             obs[category] = this.empress._namesToKeys(obs[category]);
         }
-        obs = this.empress._projectObservations(obs);
+        obs = this.empress._projectObservations(
+            obs,
+            this.empress.ignoreAbsentTips
+        );
 
         // add non-empty groups to the legend for this frame
         var legend = {};

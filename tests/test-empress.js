@@ -16,7 +16,15 @@ require([
                 // ((1,(2,3)4)5,6)7;
                 var tree = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]),
-                    null,
+                    [
+                        "root",
+                        "internal",
+                        "1",
+                        "internal",
+                        "2",
+                        "3",
+                        "EmpressNode6",
+                    ],
                     [7, 5, 1, 4, 2, 3, 6],
                     null
                 );
@@ -465,7 +473,7 @@ require([
                 g2: new Set([1]),
                 g3: new Set([6]),
             };
-            var result = this.empress._projectObservations(obs);
+            var result = this.empress._projectObservations(obs, false);
 
             var groups = ["g1", "g2", "g3"];
             for (var i = 0; i < groups.length; i++) {
@@ -489,7 +497,7 @@ require([
                 g1: new Set([2, 3, 4]),
                 g3: new Set([6]),
             };
-            var result = this.empress._projectObservations(obs);
+            var result = this.empress._projectObservations(obs, false);
 
             var groups = ["g1", "g3"];
             for (var i = 0; i < groups.length; i++) {
@@ -511,7 +519,51 @@ require([
             var expectedResult = {
                 g1: new Set([1, 2, 3, 4, 5, 6, 7]),
             };
-            var result = this.empress._projectObservations(obs);
+            var result = this.empress._projectObservations(obs, false);
+
+            var groups = ["g1"];
+            for (var i = 0; i < groups.length; i++) {
+                var group = groups[i];
+                var expectedArray = Array.from(expectedResult[group]);
+                var resultArray = util.naturalSort(Array.from(result[group]));
+                deepEqual(resultArray, expectedArray);
+            }
+
+            var columns = Object.keys(result);
+            deepEqual(columns, groups);
+        });
+
+        test("Test _projectObservations ingore absent tips", function () {
+            var obs = {
+                g1: new Set([2]),
+                g2: new Set([6]),
+            };
+            var expectedResult = {
+                g1: new Set([2, 4, 5]),
+                g2: new Set([6]),
+            };
+            var result = this.empress._projectObservations(obs, true);
+
+            var groups = ["g1", "g2"];
+            for (var i = 0; i < groups.length; i++) {
+                var group = groups[i];
+                var expectedArray = Array.from(expectedResult[group]);
+                var resultArray = util.naturalSort(Array.from(result[group]));
+                deepEqual(resultArray, expectedArray);
+            }
+
+            var columns = Object.keys(result);
+            deepEqual(columns, groups);
+        });
+
+        test("Test _projectObservations nothing is absent", function () {
+            var obs = {
+                g1: new Set([1, 2, 3]),
+            };
+            var expectedResult = {
+                g1: new Set([1, 2, 3, 4, 5, 7]),
+            };
+            var result = this.empress._projectObservations(obs, true);
 
             var groups = ["g1"];
             for (var i = 0; i < groups.length; i++) {
@@ -530,7 +582,7 @@ require([
                 g1: new Set([]),
                 g2: new Set([]),
             };
-            var result = this.empress._projectObservations(obs);
+            var result = this.empress._projectObservations(obs, false);
             var expectedResult = [];
             var columns = Object.keys(result);
             deepEqual(columns, expectedResult);
@@ -570,7 +622,7 @@ require([
             for (var i = 0; i < keys.length; i++) {
                 var key = keys[i];
                 deepEqual(e._treeData[key].color, e.DEFAULT_COLOR);
-                equal(e._treeData[key].sampleColored, false);
+                equal(e._treeData[key].isColored, false);
                 equal(e._treeData[key].visible, true);
             }
         });
@@ -791,6 +843,41 @@ require([
             throws(function () {
                 this.empress.getName(-1);
             });
+        });
+
+        test("Test computeTipSamplePresence", function () {
+            var e = this.empress;
+            var fields = e._biom._smCols;
+            var ctData = e.computeTipSamplePresence("2", fields);
+
+            var lf2presence = {
+                f1: { a: 4, b: 1 },
+                grad: { "1": 1, "2": 2, "3": 2, "4": 0 },
+                traj: { t1: 2, t2: 1, t3: 2, t4: 0 },
+            };
+            deepEqual(ctData, lf2presence);
+        });
+
+        test("Test computeIntSamplePresence", function () {
+            var e = this.empress;
+            var fields = e._biom._smCols;
+            var values = e.computeIntSamplePresence(4, fields);
+
+            var int4presence = {
+                f1: { a: 5, b: 1 },
+                grad: { "1": 2, "2": 2, "3": 2, "4": 0 },
+                traj: { t1: 2, t2: 2, t3: 2, t4: 0 },
+            };
+            deepEqual(values.fieldsMap, int4presence);
+
+            //also testing root which should have all tips -> all samples
+            var rootPresence = {
+                f1: { a: 5, b: 2 },
+                grad: { "1": 2, "2": 2, "3": 2, "4": 1 },
+                traj: { t1: 2, t2: 2, t3: 2, t4: 1 },
+            };
+            var rootValues = e.computeIntSamplePresence(7, fields);
+            deepEqual(rootValues.fieldsMap, rootPresence);
         });
     });
 });
