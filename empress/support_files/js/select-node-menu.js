@@ -244,9 +244,15 @@ define(["underscore", "util"], function (_, util) {
         var ctData = this.empress.computeTipSamplePresence(name, this.fields);
 
         // 2.1 The samples represented by this tip are sent to Emperor
-        this._samplesInSelection = this.empress._biom.getSamplesByObservations([
-            name,
-        ]);
+        // check if name if a feature in the biom table if the length is 0
+        if (this.empress._biom.getObsIDsDifference([name]).length == 0) {
+            this._samplesInSelection =
+                this.empress._biom.getSamplesByObservations([
+                    name,
+                ]);
+        } else {
+            this._samplesInSelection = [];
+        }
         this._checkTips(this.empress._biom.getObsIDsDifference([name]));
 
         SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
