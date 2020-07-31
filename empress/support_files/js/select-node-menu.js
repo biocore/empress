@@ -246,10 +246,9 @@ define(["underscore", "util"], function (_, util) {
         // 2.1 The samples represented by this tip are sent to Emperor
         // check if name if a feature in the biom table if the length is 0
         if (this.empress._biom.getObsIDsDifference([name]).length == 0) {
-            this._samplesInSelection =
-                this.empress._biom.getSamplesByObservations([
-                    name,
-                ]);
+            this._samplesInSelection = this.empress._biom.getSamplesByObservations(
+                [name]
+            );
         } else {
             this._samplesInSelection = [];
         }
