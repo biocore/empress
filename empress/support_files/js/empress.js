@@ -1081,7 +1081,8 @@ define([
                     0
                 );
                 var prevSectionMaxX = prevLayerMaxX;
-                _.each(sortedUniqueValues, function (smVal) {
+                for (var v = 0; v < sortedUniqueValues.length; v++) {
+                    var smVal = sortedUniqueValues[v];
                     var ct = spi[smVal];
                     if (ct > 0) {
                         var sectionColor = sm2color[smVal];
@@ -1094,25 +1095,25 @@ define([
                         var corners = {
                             tL: [
                                 prevSectionMaxX,
-                                scope.getY(scope._treeData[i]) + 2.5,
+                                this.getY(this._treeData[i]) + 2.5,
                             ],
                             tR: [
                                 thisSectionMaxX,
-                                scope.getY(scope._treeData[i]) + 2.5,
+                                this.getY(this._treeData[i]) + 2.5,
                             ],
                             bL: [
                                 prevSectionMaxX,
-                                scope.getY(scope._treeData[i]) - 2.5,
+                                this.getY(this._treeData[i]) - 2.5,
                             ],
                             bR: [
                                 thisSectionMaxX,
-                                scope.getY(scope._treeData[i]) - 2.5,
+                                this.getY(this._treeData[i]) - 2.5,
                             ],
                         };
-                        scope._addTriangleCoords(coords, corners, sectionColor);
+                        this._addTriangleCoords(coords, corners, sectionColor);
                         prevSectionMaxX = thisSectionMaxX;
                     }
-                });
+                }
             }
         }
         // The bar lengths are identical for all tips in this layer, so no need
