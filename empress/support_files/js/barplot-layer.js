@@ -465,6 +465,19 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         lenInput.value = this.defaultLength;
         lenInput.id = "barplot-layer-" + this.num + "-smlength-input";
         lenLbl.setAttribute("for", lenInput.id);
+
+        $(chgFieldSMFieldSelector).change(function () {
+            scope.colorbySMField = chgFieldSMFieldSelector.value;
+        });
+        $(colormapSelector).change(function () {
+            scope.colorBySMColorMap = colormapSelector.value;
+        });
+        $(lenInput).change(function () {
+            scope.lengthSM = util.parseAndValidateNum(
+                lenInput,
+                BarplotLayer.MIN_LENGTH
+            );
+        });
     };
 
     BarplotLayer.prototype.updateHeader = function () {
