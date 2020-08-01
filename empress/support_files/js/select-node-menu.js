@@ -248,14 +248,15 @@ define(["underscore", "util"], function (_, util) {
         // by BIOMTable.getObsIDsDifference() contains the feature IDs present
         // in the input array but not in the BIOM table -- so if the length of
         // this array is zero, this feature is present in the table.
-        if (this.empress._biom.getObsIDsDifference([name]).length == 0) {
+        var diff = this.empress._biom.getObsIDsDifference([name]);
+        if (diff.length == 0) {
             this._samplesInSelection = this.empress._biom.getSamplesByObservations(
                 [name]
             );
         } else {
             this._samplesInSelection = [];
         }
-        this._checkTips(this.empress._biom.getObsIDsDifference([name]));
+        this._checkTips(diff);
 
         SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
         if (this.fields.length > 0) {
