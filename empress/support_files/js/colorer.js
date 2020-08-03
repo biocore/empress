@@ -15,24 +15,18 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *                               used if the input color map is sequential
      *                               or diverging; if the color map is
      *                               discrete, then this will be ignored.)
-     * @param{String} nanColor Hex color string for the color to assign
-     *                         non-numeric values (only used if useQuantScale
-     *                         is truthy). Our particular default value for
-     *                         this is the same as Emperor's default.
      * @return{Colorer}
      * constructs Colorer
      */
     function Colorer(
         color,
         values,
-        useQuantScale = false,
-        nanColor = "#64655d"
+        useQuantScale = false
     ) {
         // Remove duplicate values and sort the values sanely
         this.sortedUniqueValues = util.naturalSort(_.uniq(values));
 
         this.color = color;
-        this.nanColor = nanColor;
 
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
@@ -115,6 +109,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * this.sortedUniqueValues. This will populate this.__valueToColor with
      * this information.
      *
+     * Non-numeric values will not be assigned a color.
+     *
      * This code was based on ColorViewController.getScaledColors() in Emperor:
      * https://github.com/biocore/emperor/blob/b959aed7ffcb9fa3e4d019c6e93a1af3850564d9/emperor/support_files/js/color-view-controller.js#L398
      */
@@ -130,9 +126,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         var interpolator = chroma.scale(this.color).domain([min, max]);
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
-        });
-        _.each(split.nonNumeric, function (nn) {
-            scope.__valueToColor[nn] = scope.nanColor;
         });
     };
 

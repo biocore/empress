@@ -996,11 +996,33 @@ define([
         this._drawer.loadThickNodeBuff(coords);
     };
 
+    /**
+     * Clears the barplot buffer and re-draws the tree.
+     *
+     * This is useful for immediately disabling barplots, for example if the
+     * layout is switched to one that doesn't support barplots (e.g. unrooted)
+     * or if the user unchecks the "Draw barplots?" checkbox.
+     */
     Empress.prototype.undrawBarplots = function () {
         this._drawer.loadBarplotBuff([]);
         this.drawTree();
     };
 
+    /**
+     * Draws barplots on the tree.
+     *
+     * @param {Array} layers An array of BarplotLayer objects. This can just be
+     *                       the "layers" attribute of a BarplotPanel object.
+     * @throws {Error} If any of the following conditions are met:
+     *                 -One of the layers is of barplot type "fm" and:
+     *                    -A field with < 2 unique numeric values is used to
+     *                     scale colors
+     *                    -A field with < 2 unique numeric values is used to
+     *                     scale lengths
+     *                    -Length scaling is attempted, and the layer's
+     *                     scaleLengthByFMMax attribute is smaller than its
+     *                     scaleLengthByFMMin attribute
+     */
     Empress.prototype.drawBarplots = function (layers) {
         var scope = this;
         // TODO: check current layout and alter behavior accordingly.
@@ -1072,6 +1094,13 @@ define([
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 var node = this._treeData[i];
                 var name = node.name;
+                // Don't draw bars for tips that aren't in the BIOM table
+                // (Note that this is only for the sample metadata barplots --
+                // these tips could still ostensibly have associated
+                // feature metadata)
+                if (this._biom.getObsIDsDifference([name]).length > 0) {
+                    continue;
+                }
                 // Figure how many samples across each unique value in the
                 // selected sample metadata field contain this tip. (This is
                 // computed the same way as the information shown in the
@@ -1132,7 +1161,7 @@ define([
         var maxX = prevLayerMaxX;
         var fm2color, colorFMIdx;
         var fm2length, lengthFMIdx;
-
+        var msg;
         // Map feature metadata values to colors, if requested (i.e. if
         // layer.colorByFM is true). If not requested, we'll just use the
         // layer's default color.
@@ -1152,13 +1181,35 @@ define([
             // checkbox to Colorer regardless of if the selected color map
             // is discrete or sequential/diverging. This is because the Colorer
             // class constructor is smart enough to ignore useQuantScale = true
-            // if the color map is discrete in the first place. (TODO: test
-            // this behavior in the colorer tests.)
-            var colorer = new Colorer(
-                layer.colorByFMColorMap,
-                sortedUniqueColorValues,
-                layer.colorByFMContinuous
-            );
+            // if the color map is discrete in the first place. (This is tested
+            // in the Colorer tests; ctrl-F for "CVALDISCRETETEST" in
+            // tests/test-colorer.js to see this.)
+            var colorer;
+            try {
+                colorer = new Colorer(
+                    layer.colorByFMColorMap,
+                    sortedUniqueColorValues,
+                    layer.colorByFMContinuous
+                );
+            } catch (err) {
+                // If the Colorer construction failed (should only have
+                // happened if the user asked for continuous values but the
+                // selected field doesn't have at least 2 unique numeric
+                // values), then we open a toast message about this error and
+                // then raise it again (with some more context, e.g. the field
+                // name / barplot layer number). This lets us bail out of
+                // drawing barplots while still keeping the user aware of why
+                // nothing just got drawn/updated.
+                msg =
+                    "Error with assigning colors in barplot layer " +
+                    layer.num +
+                    ": " +
+                    'the feature metadata field "' +
+                    layer.colorByFMField +
+                    '" has less than 2 unique numeric values.';
+                util.toastMsg(msg, 5000);
+                throw msg;
+            }
             fm2color = colorer.getMapRGB();
         }
 
@@ -1172,12 +1223,11 @@ define([
                 this._featureMetadataColumns,
                 layer.scaleLengthByFMField
             );
-            var msg;
             // Taken from ColorViewController.getScaledColors() in Emperor
             var split = util.splitNumericValues(sortedUniqueLengthValues);
             if (split.numeric.length < 2) {
                 msg =
-                    "Error with barplot layer " +
+                    "Error with scaling lengths in barplot layer " +
                     layer.num +
                     ": " +
                     'the feature metadata field "' +
@@ -1198,7 +1248,7 @@ define([
                 layer.scaleLengthByFMMax - layer.scaleLengthByFMMin;
             if (lengthRange < 0) {
                 msg =
-                    "Error with barplot layer " +
+                    "Error with scaling lengths in barplot layer " +
                     layer.num +
                     ": " +
                     "Maximum length is greater than minimum length.";
@@ -1225,19 +1275,25 @@ define([
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 var node = this._treeData[i];
                 var name = node.name;
-
+                var fm;
                 // Assign this tip's bar a color
                 var color;
                 if (layer.colorByFM) {
                     if (_.has(this._tipMetadata, name)) {
-                        color = fm2color[this._tipMetadata[name][colorFMIdx]];
+                        fm = this._tipMetadata[name][colorFMIdx];
+                        if (_.has(fm2color, fm)) {
+                            color = fm2color[fm];
+                        } else {
+                            // This tip has metadata, but its value for this
+                            // field is non-numeric. Unlike Emperor, we don't
+                            // assign a "NaN color" for these non-numeric vals.
+                            // We could change this if requested.
+                            continue;
+                        }
                     } else {
                         // Don't draw a bar if this tip doesn't have
                         // feature metadata and we're coloring bars by
                         // feature metadata
-                        // (TODO, when we add in sample metadata barplots
-                        // we should still draw bars for these tips if
-                        // possible)
                         continue;
                     }
                 } else {
@@ -1248,7 +1304,7 @@ define([
                 var length;
                 if (layer.scaleLengthByFM) {
                     if (_.has(this._tipMetadata, name)) {
-                        var fm = this._tipMetadata[name][lengthFMIdx];
+                        fm = this._tipMetadata[name][lengthFMIdx];
                         if (_.has(fm2length, fm)) {
                             length = fm2length[fm];
                         } else {
