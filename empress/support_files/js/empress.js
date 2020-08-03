@@ -1321,7 +1321,6 @@ define([
             return value.size > 0;
         });
 
-
         return result;
     };
 
