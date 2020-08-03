@@ -1066,9 +1066,12 @@ define([
         );
         var colorer = new Colorer(layer.colorBySMColorMap, sortedUniqueValues);
         var sm2color = colorer.getMapRGB();
+        // Bar thickness
+        var halfyrscf = this._yrscf / 2;
         for (i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
-                var name = this._treeData[i].name;
+                var node = this._treeData[i];
+                var name = node.name;
                 // Figure how many samples across each unique value in the
                 // selected sample metadata field contain this tip. (This is
                 // computed the same way as the information shown in the
@@ -1101,9 +1104,9 @@ define([
                         var barSectionLen =
                             layer.lengthSM * (ct / totalSampleCt);
                         var thisSectionMaxX = prevSectionMaxX + barSectionLen;
-                        var y = this.getY(this._treeData[i]);
-                        var ty = y + this._yrscf / 2;
-                        var by = y - this._yrscf / 2;
+                        var y = this.getY(node);
+                        var ty = y + halfyrscf;
+                        var by = y - halfyrscf;
                         var corners = {
                             tL: [prevSectionMaxX, ty],
                             tR: [thisSectionMaxX, ty],
@@ -1217,9 +1220,11 @@ define([
 
         // Now that we know how to encode each tip's bar, we can finally go
         // iterate through the tree and create bars for the tips.
+        var halfyrscf = this._yrscf / 2;
         for (i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
-                var name = this._treeData[i].name;
+                var node = this._treeData[i];
+                var name = node.name;
 
                 // Assign this tip's bar a color
                 var color;
@@ -1265,9 +1270,9 @@ define([
 
                 // Finally, add this tip's bar data to to an array of data
                 // describing the bars to draw
-                var y = this.getY(this._treeData[i]);
-                var ty = y + this._yrscf / 2;
-                var by = y - this._yrscf / 2;
+                var y = this.getY(node);
+                var ty = y + halfyrscf;
+                var by = y - halfyrscf;
                 var corners = {
                     tL: [prevLayerMaxX, ty],
                     tR: [prevLayerMaxX + length, ty],
