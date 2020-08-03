@@ -302,5 +302,39 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             equal(hexmap["1"], chroma.brewer.Viridis[0]);
             equal(hexmap["2"], chroma.brewer.Viridis[chroma.brewer.Viridis.length - 1]);
         });
+        test("Test Colorer.getQIIMEColor", function () {
+            // Check the first 3 colors
+            deepEqual(Colorer.getQIIMEColor(0), "#ff0000");
+            deepEqual(Colorer.getQIIMEColor(1), "#0000ff");
+            deepEqual(Colorer.getQIIMEColor(2), "#f27304");
+            // Check the last 3 colors
+            deepEqual(Colorer.getQIIMEColor(21), "#a54700");
+            deepEqual(Colorer.getQIIMEColor(22), "#808000");
+            deepEqual(Colorer.getQIIMEColor(23), "#008080");
+            // Check that it loops around as expected for a while
+            // (it is definitely possible to test this more thoroughly /
+            // elegantly but this should be fine)
+            deepEqual(Colorer.getQIIMEColor(24), "#ff0000");
+            deepEqual(Colorer.getQIIMEColor(25), "#0000ff");
+            deepEqual(Colorer.getQIIMEColor(48), "#ff0000");
+            deepEqual(Colorer.getQIIMEColor(49), "#0000ff");
+            deepEqual(Colorer.getQIIMEColor(72), "#ff0000");
+            deepEqual(Colorer.getQIIMEColor(73), "#0000ff");
+            // Check that negative inputs cause problems
+            throws(
+                function () {
+                    Colorer.getQIIMEColor(-1);
+                },
+                /i must be nonnegative/
+            );
+            // ... even negative inputs where (if it wasn't negative) something
+            // would get "looped" around
+            throws(
+                function () {
+                    Colorer.getQIIMEColor(-24);
+                },
+                /i must be nonnegative/
+            );
+        });
     });
 });
