@@ -338,13 +338,17 @@ require(["jquery", "util"], function ($, util) {
                 }
             };
             // QIIME orange (third value in the Classic QIIME Colors map)
-            checkColorApprox(
-                util.hex2rgb("#f27304"), [0.949019, 0.450980, 0.015686]
-            );
+            checkColorApprox(util.hex2rgb("#f27304"), [
+                0.949019,
+                0.45098,
+                0.015686,
+            ]);
             // QIIME purple (fifth color in the Classic QIIME Colors map)
-            checkColorApprox(
-                util.hex2rgb("#91278d"), [0.568627, 0.152941, 0.552941]
-            );
+            checkColorApprox(util.hex2rgb("#91278d"), [
+                0.568627,
+                0.152941,
+                0.552941,
+            ]);
         });
     });
 });
