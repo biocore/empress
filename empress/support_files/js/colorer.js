@@ -146,7 +146,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *                 G, B are all floats scaled to within the range [0, 1].
      */
     Colorer.prototype.getMapRGB = function () {
-        return _.mapObject(this.__valueToColor, util.hex2rgb);
+        return _.mapObject(this.__valueToColor, Colorer.hex2RGB);
     };
 
     /**
@@ -188,6 +188,20 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             sel.appendChild(opt);
         }
     };
+
+    /**
+     * Converts a hex color to an RGB array suitable for use with WebGL.
+     *
+     * @param {String} hexString
+     * @return {Array} rgbArray
+     * @classmethod
+     */
+    Colorer.hex2RGB = function (hexString) {
+        // chroma(hexString).gl() returns an array with four components (RGBA
+        // instead of RGB). The slice() here strips off the final (alpha)
+        // element, which causes problems with Empress' drawing code.
+        return chroma(hexString).gl().slice(0, 3);
+    }
 
     /**
      * Returns the i-th hex color from the "Classic QIIME Colors" map, looping

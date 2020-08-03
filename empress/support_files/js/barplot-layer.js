@@ -38,7 +38,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
 
         // Various properties of the barplot layer state for feature metadata
         this.initialDefaultColorHex = Colorer.getQIIMEColor(this.num - 1);
-        this.defaultColor = util.hex2rgb(this.initialDefaultColorHex);
+        this.defaultColor = Colorer.hex2RGB(this.initialDefaultColorHex);
         this.colorByFM = false;
         this.colorByFMField = null;
         this.colorByFMColorMap = null;
@@ -163,7 +163,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
                 // getting an RGB array out of the "TinyColor" values passed in
                 // by Spectrum: see
                 // https://bgrins.github.io/spectrum#details-acceptedColorInputs
-                scope.defaultColor = util.hex2rgb(newColor.toHexString());
+                scope.defaultColor = Colorer.hex2RGB(newColor.toHexString());
             },
         });
 

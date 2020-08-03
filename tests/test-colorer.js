@@ -387,5 +387,50 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
                 /Invalid color map ID "birds-arent-real" specified/
             );
         });
+        test("Test Colorer.hex2RGB", function () {
+            // Red
+            deepEqual(Colorer.hex2RGB("#ff0000"), [1, 0, 0]);
+            deepEqual(Colorer.hex2RGB("#f00"), [1, 0, 0]);
+            // Green
+            deepEqual(Colorer.hex2RGB("#00ff00"), [0, 1, 0]);
+            deepEqual(Colorer.hex2RGB("#0f0"), [0, 1, 0]);
+            // Blue
+            deepEqual(Colorer.hex2RGB("#0000ff"), [0, 0, 1]);
+            deepEqual(Colorer.hex2RGB("#00f"), [0, 0, 1]);
+            // Ugly fuchsia
+            deepEqual(Colorer.hex2RGB("#f0f"), [1, 0, 1]);
+            // Black
+            deepEqual(Colorer.hex2RGB("#000"), [0, 0, 0]);
+            deepEqual(Colorer.hex2RGB("#000000"), [0, 0, 0]);
+            // White
+            deepEqual(Colorer.hex2RGB("#fff"), [1, 1, 1]);
+            deepEqual(Colorer.hex2RGB("#ffffff"), [1, 1, 1]);
+
+            // For checking less "easy" colors, we round off both
+            // the observed and expected color channels to a reasonable
+            // precision (4 places after the decimal point).
+            // For reference, Chroma.js' docs -- when showing GL color arrays
+            // -- only seem to use 2 places after the decimal point, so this
+            // should be fine.
+            var checkColorApprox = function (obsColorArray, expColorArray) {
+                for (var i = 0; i < 3; i++) {
+                    var obsChannel = obsColorArray[0].toFixed(4);
+                    var expChannel = expColorArray[0].toFixed(4);
+                    deepEqual(obsChannel, expChannel);
+                }
+            };
+            // QIIME orange (third value in the Classic QIIME Colors map)
+            checkColorApprox(Colorer.hex2RGB("#f27304"), [
+                0.949019,
+                0.45098,
+                0.015686,
+            ]);
+            // QIIME purple (fifth color in the Classic QIIME Colors map)
+            checkColorApprox(Colorer.hex2RGB("#91278d"), [
+                0.568627,
+                0.152941,
+                0.552941,
+            ]);
+        });
     });
 });

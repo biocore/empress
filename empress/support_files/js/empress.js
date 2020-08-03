@@ -1315,7 +1315,7 @@ define([
             obs = Array.from(observationsPerGroup[group]);
 
             // convert hex string to rgb array
-            var rgb = util.hex2rgb(group);
+            var rgb = Colorer.hex2RGB(group);
 
             for (var i = 0; i < obs.length; i++) {
                 this._treeData[obs[i]].color = rgb;
