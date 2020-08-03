@@ -294,5 +294,57 @@ require(["jquery", "util"], function ($, util) {
             deepEqual(lw, 2.5);
             deepEqual(tni.value, "2.5");
         });
+        test("Test parseAndValidateNum (custom minimum)", function () {
+            // Tests that using a custom minimum parameter works
+            var tni = document.getElementById("test-num-input");
+            tni.value = "0.5";
+            deepEqual(tni.value, "0.5");
+            // Use a minimum of 1 instead of 0 -- so now things under that
+            // should get bumped up to 1
+            var n = util.parseAndValidateNum(tni, 1);
+            deepEqual(n, 1);
+            deepEqual(tni.value, "1");
+        });
+        test("Test hex2rgb", function () {
+            // Red
+            deepEqual(util.hex2rgb("#ff0000"), [1, 0, 0]);
+            deepEqual(util.hex2rgb("#f00"), [1, 0, 0]);
+            // Green
+            deepEqual(util.hex2rgb("#00ff00"), [0, 1, 0]);
+            deepEqual(util.hex2rgb("#0f0"), [0, 1, 0]);
+            // Blue
+            deepEqual(util.hex2rgb("#0000ff"), [0, 0, 1]);
+            deepEqual(util.hex2rgb("#00f"), [0, 0, 1]);
+            // Ugly fuchsia
+            deepEqual(util.hex2rgb("#f0f"), [1, 0, 1]);
+            // Black
+            deepEqual(util.hex2rgb("#000"), [0, 0, 0]);
+            deepEqual(util.hex2rgb("#000000"), [0, 0, 0]);
+            // White
+            deepEqual(util.hex2rgb("#fff"), [1, 1, 1]);
+            deepEqual(util.hex2rgb("#ffffff"), [1, 1, 1]);
+
+            // For checking less "easy" colors, we round off both
+            // the observed and expected color channels to a reasonable
+            // precision (4 places after the decimal point).
+            // For reference, Chroma.js' docs -- when showing GL color arrays
+            // -- only seem to use 2 places after the decimal point, so this
+            // should be fine.
+            var checkColorApprox = function (obsColorArray, expColorArray) {
+                for (var i = 0; i < 3; i++) {
+                    var obsChannel = obsColorArray[0].toFixed(4);
+                    var expChannel = expColorArray[0].toFixed(4);
+                    deepEqual(obsChannel, expChannel);
+                }
+            };
+            // QIIME orange (third value in the Classic QIIME Colors map)
+            checkColorApprox(
+                util.hex2rgb("#f27304"), [0.949019, 0.450980, 0.015686]
+            );
+            // QIIME purple (fifth color in the Classic QIIME Colors map)
+            checkColorApprox(
+                util.hex2rgb("#91278d"), [0.568627, 0.152941, 0.552941]
+            );
+        });
     });
 });
