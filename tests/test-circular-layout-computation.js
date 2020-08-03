@@ -68,6 +68,7 @@ require(["jquery", "BPTree", "Empress"], function ($, BPTree, Empress) {
                     null,
                     layoutToCoordSuffix,
                     "Circular",
+                    2010,
                     null,
                     [],
                     {},

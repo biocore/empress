@@ -187,6 +187,9 @@ require([
                     nameToKeys,
                     layoutToCoordSuffix,
                     "Unrooted",
+                    // Rectangular layout y scaling factor
+                    // equal to 4020 / (# leaves - 1) = 4020 / 3 = 1,340.0
+                    1340.0,
                     biom,
                     featureColumns,
                     tipMetadata,
@@ -375,9 +378,14 @@ require([
                 "discrete-coloring-qiime"
             );
 
-            // Group 'a' is the only group that contains unique features. Thus,
-            // group b should be removed by _projectObservations
-            var groups = ["a"];
+            // Although Group "b" doesn't contain any unique features, we now
+            // include all groups (regardless of whether or not they contain
+            // unique features) in the color map and legend. Therefore, we
+            // should see both "a" and "b" in the output of colorBySampleCat().
+            // (_projectObservations() will still remove group "b", but this
+            // shouldn't actually impact the display -- it'll just reduce the
+            // size of its output slightly.)
+            var groups = ["a", "b"];
             var resultGroups = util.naturalSort(Object.keys(cm));
             deepEqual(resultGroups, groups);
 
