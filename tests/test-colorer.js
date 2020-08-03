@@ -145,6 +145,32 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             equal(colorer.__valueToColor["3"], "#7fbc41");
             equal(colorer.__valueToColor["4"], "#4d9221");
         });
+        test("Test construction with a seq. color map, all numeric values, and useQuantScale = true", function () {
+            var colorer = new Colorer("Viridis", ["1", "0", "100", "3", "2"], true);
+            hexmap = colorer.getMapHex();
+            equal(_.keys(hexmap).length, 5);
+            // As with above, expected colors determined by trying
+            // chroma.scale(chroma.brewer.Viridis).domain([0, 100])(n);
+            equal(hexmap["0"], "#440154");
+            equal(hexmap["1"], "#440457");
+            equal(hexmap["2"], "#45075a");
+            equal(hexmap["3"], "#450a5c");
+            equal(hexmap["100"], "#fee825");
+        });
+        test("Test construction with a seq. color map, numeric + non-numeric values, and useQuantScale = true", function () {
+            // Same as the above test but with an extra non-numeric thing
+            // tossed in
+            var colorer = new Colorer("Viridis", ["1", "problematic", "0", "100", "3", "2"], true);
+            hexmap = colorer.getMapHex();
+            equal(_.keys(hexmap).length, 6);
+            // Check that the default "NaN color" matches Emperor's
+            equal(hexmap["problematic"], "#64655d");
+            equal(hexmap["0"], "#440154");
+            equal(hexmap["1"], "#440457");
+            equal(hexmap["2"], "#45075a");
+            equal(hexmap["3"], "#450a5c");
+            equal(hexmap["100"], "#fee825");
+        });
         test("Test Colorer.getMapRGB()", function () {
             var eles = ["abc", "def", "ghi"];
             var dark2palette = [
@@ -231,6 +257,50 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             equal(_.keys(hexmap).length, 1);
             equal(_.keys(hexmap)[0], "abc");
             equal(hexmap.abc, "#440154");
+        });
+        test("Test that using a sequential / diverging color map with useQuantScale = true throws an error when there are < 2 unique numeric values", function () {
+            throws(
+                function () {
+                    new Colorer("RdBu", ["abc"], true);
+                },
+                /Category has less than 2 unique numeric values./
+            );
+            throws(
+                function () {
+                    new Colorer("Greys", ["0", "0", "0", "0", "0"], true);
+                },
+                /Category has less than 2 unique numeric values./
+            );
+            throws(
+                function () {
+                    new Colorer("Viridis", ["one", "two", "three"], true);
+                },
+                /Category has less than 2 unique numeric values./
+            );
+        });
+        test("Test that useQuantScale = true doesn't do anything if the color map is discrete", function () {
+            var colorer = new Colorer("Paired", ["1", "2", "100", "abc"], true);
+            hexmap = colorer.getMapHex();
+            equal(_.keys(hexmap).length, 4);
+            // Note that although "abc" is non-numeric it still doesn't get
+            // assigned the NaN color
+            equal(hexmap["abc"], "#a6cee3");
+            equal(hexmap["1"], "#1f78b4");
+            equal(hexmap["2"], "#b2df8a");
+            equal(hexmap["100"], "#33a02c");
+        });
+        test("Test that useQuantScale = true works if only 2 numeric values", function () {
+            var colorer = new Colorer("Viridis", ["1", "2", "abc", "def", "ghi"], true);
+            hexmap = colorer.getMapHex();
+            equal(_.keys(hexmap).length, 5);
+            // Non-numeric stuff gets the NaN color
+            equal(hexmap["abc"], "#64655d");
+            equal(hexmap["abc"], "#64655d");
+            equal(hexmap["abc"], "#64655d");
+            // And the 2 numeric values get the extreme colors from the color
+            // map
+            equal(hexmap["1"], chroma.brewer.Viridis[0]);
+            equal(hexmap["2"], chroma.brewer.Viridis[chroma.brewer.Viridis.length - 1]);
         });
     });
 });
