@@ -178,7 +178,7 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 6);
             // Check that the default "NaN color" matches Emperor's
-            equal(hexmap["problematic"], "#64655d");
+            equal(hexmap.problematic, "#64655d");
             equal(hexmap["0"], "#440154");
             equal(hexmap["1"], "#440457");
             equal(hexmap["2"], "#45075a");
@@ -289,7 +289,7 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             equal(_.keys(hexmap).length, 4);
             // Note that although "abc" is non-numeric it still doesn't get
             // assigned the NaN color
-            equal(hexmap["abc"], "#a6cee3");
+            equal(hexmap.abc, "#a6cee3");
             equal(hexmap["1"], "#1f78b4");
             equal(hexmap["2"], "#b2df8a");
             equal(hexmap["100"], "#33a02c");
@@ -303,9 +303,9 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 5);
             // Non-numeric stuff gets the NaN color
-            equal(hexmap["abc"], "#64655d");
-            equal(hexmap["abc"], "#64655d");
-            equal(hexmap["abc"], "#64655d");
+            equal(hexmap.abc, "#64655d");
+            equal(hexmap.abc, "#64655d");
+            equal(hexmap.abc, "#64655d");
             // And the 2 numeric values get the extreme colors from the color
             // map
             equal(hexmap["1"], chroma.brewer.Viridis[0]);
