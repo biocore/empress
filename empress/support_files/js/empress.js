@@ -1182,7 +1182,7 @@ define([
                     ": " +
                     'the feature metadata field "' +
                     layer.scaleLengthByFMField +
-                    '" has < 2 numeric values.';
+                    '" has less than 2 unique numeric values.';
                 util.toastMsg(msg, 5000);
                 throw msg;
             }
