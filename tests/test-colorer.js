@@ -151,6 +151,12 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             equal(_.keys(hexmap).length, 5);
             // As with above, expected colors determined by trying
             // chroma.scale(chroma.brewer.Viridis).domain([0, 100])(n);
+            // Since we're using useQuantScale = true, the 100 value should
+            // cause the "small" values' colors to be much closer to the start
+            // of the color map (purple-ish) than if the 100 was a "4".
+            // This differs from the scaling done when useQuantScale is false,
+            // in which the magnitudes of numeric values are not used for
+            // anything besides sorting.
             equal(hexmap["0"], "#440154");
             equal(hexmap["1"], "#440457");
             equal(hexmap["2"], "#45075a");
