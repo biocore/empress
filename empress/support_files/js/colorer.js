@@ -122,7 +122,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         var scope = this;
         var split = util.splitNumericValues(this.sortedUniqueValues);
         if (split.numeric.length < 2) {
-            throw new Error("Category has < 2 numeric values.");
+            throw new Error("Category has less than 2 unique numeric values.");
         }
         var nums = _.map(split.numeric, parseFloat);
         var min = _.min(nums);
@@ -169,7 +169,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     };
 
     /**
-     * Adds all available color maps to the select object.
+     * Adds all available color maps to a select object.
      *
      * @param{Object} sel The select object to add color map options to.
      * @classmethod
