@@ -244,15 +244,20 @@ define(["underscore", "util"], function (_, util) {
         var ctData = this.empress.computeTipSamplePresence(name, this.fields);
 
         // 2.1 The samples represented by this tip are sent to Emperor
-        if (this.empress._biom.getObsIDsDifference([name]).length == 0) {
-            this._samplesInSelection =
-                this.empress._biom.getSamplesByObservations([
-                    name,
-                ]);
+
+        // check if this tip is present in the BIOM table. The array returned
+        // by BIOMTable.getObsIDsDifference() contains the feature IDs present
+        // in the input array but not in the BIOM table -- so if the length of
+        // this array is zero, this feature is present in the table.
+        var diff = this.empress._biom.getObsIDsDifference([name]);
+        if (diff.length == 0) {
+            this._samplesInSelection = this.empress._biom.getSamplesByObservations(
+                [name]
+            );
         } else {
             this._samplesInSelection = [];
         }
-        this._checkTips(this.empress._biom.getObsIDsDifference([name]));
+        this._checkTips(diff);
 
         SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
         if (this.fields.length > 0) {
