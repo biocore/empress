@@ -55,6 +55,7 @@ define([
         nameToKeys,
         layoutToCoordSuffix,
         defaultLayout,
+        yrScalingFactor,
         biom,
         featureMetadataColumns,
         tipMetadata,
@@ -162,6 +163,14 @@ define([
          */
         this._defaultLayout = defaultLayout;
         this._currentLayout = defaultLayout;
+
+        /**
+         * @type {Number}
+         * The y scaling factor for the rectangular layout. This is used to
+         * adjust the thickness of barplot bars.
+         * @private
+         */
+        this._yrscf = yrScalingFactor;
 
         /**
          * type {Object}
@@ -1092,23 +1101,14 @@ define([
                         var barSectionLen =
                             layer.lengthSM * (ct / totalSampleCt);
                         var thisSectionMaxX = prevSectionMaxX + barSectionLen;
+                        var y = this.getY(this._treeData[i]);
+                        var ty = y + this._yrscf / 2;
+                        var by = y - this._yrscf / 2;
                         var corners = {
-                            tL: [
-                                prevSectionMaxX,
-                                this.getY(this._treeData[i]) + 2.5,
-                            ],
-                            tR: [
-                                thisSectionMaxX,
-                                this.getY(this._treeData[i]) + 2.5,
-                            ],
-                            bL: [
-                                prevSectionMaxX,
-                                this.getY(this._treeData[i]) - 2.5,
-                            ],
-                            bR: [
-                                thisSectionMaxX,
-                                this.getY(this._treeData[i]) - 2.5,
-                            ],
+                            tL: [prevSectionMaxX, ty],
+                            tR: [thisSectionMaxX, ty],
+                            bL: [prevSectionMaxX, by],
+                            bR: [thisSectionMaxX, by],
                         };
                         this._addTriangleCoords(coords, corners, sectionColor);
                         prevSectionMaxX = thisSectionMaxX;
@@ -1265,17 +1265,14 @@ define([
 
                 // Finally, add this tip's bar data to to an array of data
                 // describing the bars to draw
+                var y = this.getY(this._treeData[i]);
+                var ty = y + this._yrscf / 2;
+                var by = y - this._yrscf / 2;
                 var corners = {
-                    tL: [prevLayerMaxX, this.getY(this._treeData[i]) + 2.5],
-                    tR: [
-                        prevLayerMaxX + length,
-                        this.getY(this._treeData[i]) + 2.5,
-                    ],
-                    bL: [prevLayerMaxX, this.getY(this._treeData[i]) - 2.5],
-                    bR: [
-                        prevLayerMaxX + length,
-                        this.getY(this._treeData[i]) - 2.5,
-                    ],
+                    tL: [prevLayerMaxX, ty],
+                    tR: [prevLayerMaxX + length, ty],
+                    bL: [prevLayerMaxX, by],
+                    bR: [prevLayerMaxX + length, by],
                 };
                 this._addTriangleCoords(coords, corners, color);
             }

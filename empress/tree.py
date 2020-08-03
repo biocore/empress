@@ -206,8 +206,16 @@ class Tree(TreeNode):
         # We set the default layout to whatever the first layout in
         # layout_algs is, but this behavior is of course modifiable
         default_layout = None
+        # Also, we retrieve the y scaling factor from the rectangular layout so
+        # that we can use it to scale the bars in the barplots to be
+        # consistently thick. A tree with just a few nodes will seem to have
+        # bigger vertical gaps between tips, and will thus need thicker bars.
+        yr_scaling_factor = 1
         for alg in layout_algs:
-            name, suffix = alg(width, height)
+            if alg == self.layout_rectangular:
+                name, suffix, yr_scaling_factor = alg(width, height)
+            else:
+                name, suffix = alg(width, height)
             layout_to_coordsuffix[name] = suffix
             self.alter_coordinates_relative_to_root(suffix)
             if name == "Circular":
@@ -235,7 +243,7 @@ class Tree(TreeNode):
                     if c.yr < n.lowest_child_yr:
                         n.lowest_child_yr = c.yr
 
-        return layout_to_coordsuffix, default_layout
+        return layout_to_coordsuffix, default_layout, yr_scaling_factor
 
     def alter_coordinates_relative_to_root(self, suffix):
         """ Subtracts the root node's x- and y- coords from all nodes' coords.
@@ -354,7 +362,7 @@ class Tree(TreeNode):
         # its highest child y-position, and then draw horizontal lines from
         # this line to all of its child nodes (where the length of the
         # horizontal line is proportional to the node length in question).
-        return "Rectangular", "r"
+        return "Rectangular", "r", y_scaling_factor
 
     def layout_circular(self, width, height):
         """ Circular layout version of the rectangular layout.
