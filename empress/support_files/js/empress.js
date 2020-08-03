@@ -1560,6 +1560,15 @@ define([
         this._events.selectedNodeMenu.hiddenCallback = callback;
     };
 
+    /**
+     * Sets the group state value for all tree nodes. Assigns all nodes in obs
+     * to their repsect group. All other nodes will be set to the null group.
+     *
+     * Note: this will effect this._groups
+     *
+     * @param {Object} obs An object whose keys are group values and elements
+     *                     are the nodes that belong to that group.
+     */
     Empress.prototype.assignGroups = function (obs) {
         var groupNum = 0;
         for (var cat in obs) {
@@ -1569,7 +1578,6 @@ define([
             }
             groupNum++;
         }
-        
     };
     /**
      * Collapses all clades that share the same color into a quadrilateral.
@@ -1590,21 +1598,22 @@ define([
         // The following algorithm consists of two parts: 1) find all clades
         // whose member nodes have the same color, 2) collapse the clades
 
-        // 1) Find all cldades
-        // The group array will be used to determine what color group a node
-        // belongs to. During each iteration of the bellow array will update
-        // both the current node's group membership as well as its parent's.
-        // Since the group array is created in a postorder fashion, it is
-        // guaranteed that if an internal node belongs to a particular group
-        // than all of its children will also belong to that group. Finally,
-        // collapsable clades are defined as the internal nodes closest to the
-        // root that belong to a particular group.
-        // Note: groups are defined in colorToNum. Basically each unique color
-        // is assigned a unique number and that number is then used to mark
-        // which group a node belongs to. If an internal node has children that
-        // belong to different groups than it is assigned a -1.
+        // 1) Find all clades
+        // this._group array will be used to determine what color group a node
+        // belongs to. At this point, this._group has been initialized by either
+        // colorBySampleCat, colorByFeatureMetadata, or the animator. Each index
+        // of this._group refers to a node's postorder position and the value at
+        // that index refers to the group a node belongs to. The values of group
+        // are in the range [-1, inf). -1 means the node either is
+        // "non-represented" or "non-unique".
 
         // project groups up tree
+        // Note: if _projectObservations was called, if an internal node
+        // belongs to a group, then all of its descendants will belong to the
+        // same group. However, this is not guaranteed if _projectOBservations
+        // was not called. Thus, this loop is used to guarantee that if an
+        // internal node belongs to a group then all of its descendants belong
+        // to the same group.
         for (var i = 1; i <= this._tree.size; i++) {
             var parent = this._tree.postorder(
                 this._tree.parent(this._tree.postorderselect(i))
