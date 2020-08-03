@@ -201,7 +201,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // instead of RGB). The slice() here strips off the final (alpha)
         // element, which causes problems with Empress' drawing code.
         return chroma(hexString).gl().slice(0, 3);
-    }
+    };
 
     /**
      * Returns the i-th hex color from the "Classic QIIME Colors" map, looping
@@ -238,7 +238,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // If no color map has the requested ID, then throw an error.
         // (e.g. "-- Discrete --"), then throw an error.
         if (_.isUndefined(colorMapObj)) {
-            throw new Error("Invalid color map ID \"" + colorMapID + "\" specified");
+            throw new Error(
+                'Invalid color map ID "' + colorMapID + '" specified'
+            );
         }
         return colorMapObj.type === Colorer.DISCRETE;
     };

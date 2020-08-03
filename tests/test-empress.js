@@ -772,5 +772,52 @@ require([
             var rootValues = e.computeIntSamplePresence(7, fields);
             deepEqual(rootValues.fieldsMap, rootPresence);
         });
+
+        test("Test getUniqueFeatureMetadataInfo (method = tip)", function () {
+            var f1UniqueValues = ["1", "2"];
+            var f1Info = this.empress.getUniqueFeatureMetadataInfo("f1", "tip");
+            deepEqual(f1Info.sortedUniqueValues, ["1", "2"]);
+            // Tips 2 and 3 have a f1 value of 1
+            deepEqual(
+                new Set(f1Info.uniqueValueToFeatures["1"]),
+                new Set(["2", "3"])
+            );
+            // Tips 1 and EmpressNode6 have a f1 value of 2
+            deepEqual(
+                new Set(f1Info.uniqueValueToFeatures["2"]),
+                new Set(["1", "EmpressNode6"])
+            );
+        });
+        test("Test getUniqueFeatureMetadataInfo (method = all)", function () {
+            var f1UniqueValues = ["1", "2"];
+            var f1Info = this.empress.getUniqueFeatureMetadataInfo("f1", "all");
+            deepEqual(f1Info.sortedUniqueValues, ["1", "2"]);
+            // Tips 2 and 3, and the internal node(s) named "internal",
+            // have a f1 value of 1
+            deepEqual(
+                new Set(f1Info.uniqueValueToFeatures["1"]),
+                new Set(["internal", "2", "3"])
+            );
+            // Tips 1 and EmpressNode6 have a f1 value of 2
+            deepEqual(
+                new Set(f1Info.uniqueValueToFeatures["2"]),
+                new Set(["1", "EmpressNode6"])
+            );
+        });
+        test("Test getUniqueFeatureMetadataInfo (invalid fm column)", function () {
+            var scope = this;
+            throws(function () {
+                scope.empress.getUniqueFeatureMetadataInfo("f3", "tip");
+            }, /Feature metadata column "f3" not present in data./);
+        });
+        test("Test getUniqueFeatureMetadataInfo (invalid method)", function () {
+            var scope = this;
+            throws(function () {
+                scope.empress.getUniqueFeatureMetadataInfo(
+                    "f1",
+                    "i'm invalid!"
+                );
+            }, /F. metadata coloring method "i'm invalid!" unrecognized./);
+        });
     });
 });

@@ -1330,7 +1330,7 @@ define([
      *
      * @param {Array} names Array of tree node names
      *
-     * @return {Set} A set of keys cooresponding to entries in _treeData
+     * @return {Set} A set of keys corresponding to entries in _treeData
      */
     Empress.prototype._namesToKeys = function (names) {
         var keys = new Set();
@@ -1429,7 +1429,7 @@ define([
         // done once per coloring operation so this shouldn't be a bottleneck.)
         var fmIdx = _.indexOf(this._featureMetadataColumns, cat);
         if (fmIdx < 0) {
-            throw "Feature metadata column " + cat + " not present in data.";
+            throw 'Feature metadata column "' + cat + '" not present in data.';
         }
 
         // The coloring method influences how much of the feature metadata

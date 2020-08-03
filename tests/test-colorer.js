@@ -146,7 +146,11 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             equal(colorer.__valueToColor["4"], "#4d9221");
         });
         test("Test construction with a seq. color map, all numeric values, and useQuantScale = true", function () {
-            var colorer = new Colorer("Viridis", ["1", "0", "100", "3", "2"], true);
+            var colorer = new Colorer(
+                "Viridis",
+                ["1", "0", "100", "3", "2"],
+                true
+            );
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 5);
             // As with above, expected colors determined by trying
@@ -166,7 +170,11 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
         test("Test construction with a seq. color map, numeric + non-numeric values, and useQuantScale = true", function () {
             // Same as the above test but with an extra non-numeric thing
             // tossed in
-            var colorer = new Colorer("Viridis", ["1", "problematic", "0", "100", "3", "2"], true);
+            var colorer = new Colorer(
+                "Viridis",
+                ["1", "problematic", "0", "100", "3", "2"],
+                true
+            );
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 6);
             // Check that the default "NaN color" matches Emperor's
@@ -265,24 +273,15 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             equal(hexmap.abc, "#440154");
         });
         test("Test that using a sequential / diverging color map with useQuantScale = true throws an error when there are < 2 unique numeric values", function () {
-            throws(
-                function () {
-                    new Colorer("RdBu", ["abc"], true);
-                },
-                /Category has less than 2 unique numeric values./
-            );
-            throws(
-                function () {
-                    new Colorer("Greys", ["0", "0", "0", "0", "0"], true);
-                },
-                /Category has less than 2 unique numeric values./
-            );
-            throws(
-                function () {
-                    new Colorer("Viridis", ["one", "two", "three"], true);
-                },
-                /Category has less than 2 unique numeric values./
-            );
+            throws(function () {
+                new Colorer("RdBu", ["abc"], true);
+            }, /Category has less than 2 unique numeric values./);
+            throws(function () {
+                new Colorer("Greys", ["0", "0", "0", "0", "0"], true);
+            }, /Category has less than 2 unique numeric values./);
+            throws(function () {
+                new Colorer("Viridis", ["one", "two", "three"], true);
+            }, /Category has less than 2 unique numeric values./);
         });
         test("Test that useQuantScale = true doesn't do anything if the color map is discrete", function () {
             var colorer = new Colorer("Paired", ["1", "2", "100", "abc"], true);
@@ -296,7 +295,11 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             equal(hexmap["100"], "#33a02c");
         });
         test("Test that useQuantScale = true works if only 2 numeric values", function () {
-            var colorer = new Colorer("Viridis", ["1", "2", "abc", "def", "ghi"], true);
+            var colorer = new Colorer(
+                "Viridis",
+                ["1", "2", "abc", "def", "ghi"],
+                true
+            );
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 5);
             // Non-numeric stuff gets the NaN color
@@ -306,7 +309,10 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             // And the 2 numeric values get the extreme colors from the color
             // map
             equal(hexmap["1"], chroma.brewer.Viridis[0]);
-            equal(hexmap["2"], chroma.brewer.Viridis[chroma.brewer.Viridis.length - 1]);
+            equal(
+                hexmap["2"],
+                chroma.brewer.Viridis[chroma.brewer.Viridis.length - 1]
+            );
         });
         test("Test Colorer.getQIIMEColor", function () {
             // Check the first 3 colors
@@ -327,20 +333,14 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             deepEqual(Colorer.getQIIMEColor(72), "#ff0000");
             deepEqual(Colorer.getQIIMEColor(73), "#0000ff");
             // Check that negative inputs cause problems
-            throws(
-                function () {
-                    Colorer.getQIIMEColor(-1);
-                },
-                /i must be nonnegative/
-            );
+            throws(function () {
+                Colorer.getQIIMEColor(-1);
+            }, /i must be nonnegative/);
             // ... even negative inputs where (if it wasn't negative) something
             // would get "looped" around
-            throws(
-                function () {
-                    Colorer.getQIIMEColor(-24);
-                },
-                /i must be nonnegative/
-            );
+            throws(function () {
+                Colorer.getQIIMEColor(-24);
+            }, /i must be nonnegative/);
         });
         test("Test Colorer.isColorMapDiscrete", function () {
             // Discrete
@@ -386,12 +386,9 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             notOk(Colorer.isColorMapDiscrete("PRGn"));
 
             // Wack
-            throws(
-                function () {
-                    Colorer.isColorMapDiscrete("birds-arent-real");
-                },
-                /Invalid color map ID "birds-arent-real" specified/
-            );
+            throws(function () {
+                Colorer.isColorMapDiscrete("birds-arent-real");
+            }, /Invalid color map ID "birds-arent-real" specified/);
         });
         test("Test Colorer.hex2RGB", function () {
             // Red
