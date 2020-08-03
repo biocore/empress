@@ -214,19 +214,17 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * @param {String} colorMapID
      * @return {Boolean} true if the color map with a matching ID is discrete;
      *                   false otherwise.
-     * @throws {Error} If no color map matches the ID, or if the color map
-     *                 matching the ID has the type Colorer.HEADER.
+     * @throws {Error} If no color map matches the ID.
      * @classmethod
      */
     Colorer.isColorMapDiscrete = function (colorMapID) {
         var colorMapObj = _.find(Colorer.__Colormaps, function (cm) {
             return cm.id === colorMapID;
         });
-        // If no color map has the requested ID -- or if the user somehow
-        // managed to select one of the "header" elements in the colorer select
+        // If no color map has the requested ID, then throw an error.
         // (e.g. "-- Discrete --"), then throw an error.
-        if (_.isUndefined(colorMapObj) || colorMapObj.type === Colorer.HEADER) {
-            throw new Error("Invalid color map ID " + colorMapID + "specified");
+        if (_.isUndefined(colorMapObj)) {
+            throw new Error("Invalid color map ID \"" + colorMapID + "\" specified");
         }
         return colorMapObj.type === Colorer.DISCRETE;
     };

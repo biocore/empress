@@ -171,7 +171,7 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             equal(hexmap["3"], "#450a5c");
             equal(hexmap["100"], "#fee825");
         });
-        test("Test Colorer.getMapRGB()", function () {
+        test("Test Colorer.getMapRGB", function () {
             var eles = ["abc", "def", "ghi"];
             var dark2palette = [
                 "#1b9e77",
@@ -202,7 +202,7 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
                 }
             }
         });
-        test("Test Colorer.getMapHex()", function () {
+        test("Test Colorer.getMapHex", function () {
             var eles = ["abc", "def", "ghi"];
             // Analogous to the getColorRGB() test above but simpler
             var dark2palette = [
@@ -334,6 +334,57 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
                     Colorer.getQIIMEColor(-24);
                 },
                 /i must be nonnegative/
+            );
+        });
+        test("Test Colorer.isColorMapDiscrete", function () {
+            // Discrete
+            ok(Colorer.isColorMapDiscrete("discrete-coloring-qiime"));
+            ok(Colorer.isColorMapDiscrete("Paired"));
+            ok(Colorer.isColorMapDiscrete("Accent"));
+            ok(Colorer.isColorMapDiscrete("Dark2"));
+            ok(Colorer.isColorMapDiscrete("Set1"));
+            ok(Colorer.isColorMapDiscrete("Set2"));
+            ok(Colorer.isColorMapDiscrete("Set3"));
+            ok(Colorer.isColorMapDiscrete("Pastel1"));
+            ok(Colorer.isColorMapDiscrete("Pastel2"));
+
+            // Sequential
+            notOk(Colorer.isColorMapDiscrete("Viridis"));
+            notOk(Colorer.isColorMapDiscrete("Reds"));
+            notOk(Colorer.isColorMapDiscrete("RdPu"));
+            notOk(Colorer.isColorMapDiscrete("Oranges"));
+            notOk(Colorer.isColorMapDiscrete("OrRd"));
+            notOk(Colorer.isColorMapDiscrete("YlOrBr"));
+            notOk(Colorer.isColorMapDiscrete("YlOrRd"));
+            notOk(Colorer.isColorMapDiscrete("YlGn"));
+            notOk(Colorer.isColorMapDiscrete("YlGnBu"));
+            notOk(Colorer.isColorMapDiscrete("Greens"));
+            notOk(Colorer.isColorMapDiscrete("GnBu"));
+            notOk(Colorer.isColorMapDiscrete("Blues"));
+            notOk(Colorer.isColorMapDiscrete("BuGn"));
+            notOk(Colorer.isColorMapDiscrete("BuPu"));
+            notOk(Colorer.isColorMapDiscrete("Purples"));
+            notOk(Colorer.isColorMapDiscrete("PuRd"));
+            notOk(Colorer.isColorMapDiscrete("PuBuGn"));
+            notOk(Colorer.isColorMapDiscrete("Greys"));
+
+            // Diverging
+            notOk(Colorer.isColorMapDiscrete("Spectral"));
+            notOk(Colorer.isColorMapDiscrete("RdBu"));
+            notOk(Colorer.isColorMapDiscrete("RdYlGn"));
+            notOk(Colorer.isColorMapDiscrete("RdYlBu"));
+            notOk(Colorer.isColorMapDiscrete("RdGy"));
+            notOk(Colorer.isColorMapDiscrete("PiYG"));
+            notOk(Colorer.isColorMapDiscrete("BrBG"));
+            notOk(Colorer.isColorMapDiscrete("PuOr"));
+            notOk(Colorer.isColorMapDiscrete("PRGn"));
+
+            // Wack
+            throws(
+                function () {
+                    Colorer.isColorMapDiscrete("birds-arent-real");
+                },
+                /Invalid color map ID "birds-arent-real" specified/
             );
         });
     });
