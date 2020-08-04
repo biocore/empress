@@ -251,13 +251,14 @@ define(["Colorer", "util"], function (Colorer, util) {
 
         // Animation loop
         setTimeout(function loop() {
-            if (!scope.pause && scope.curFrame !== scope.totalFrames) {
+            console.log(scope.curFrame)
+            if (!scope.pause && scope.curFrame + 1 < scope.totalFrames ) {
                 if (!scope.framesRdy[scope.curFrame + 1]) {
                     scope._collectFrame(scope.curFrame + 1);
                 }
                 scope.nextFrame();
                 setTimeout(loop, scope.timePerFram);
-            } else if (!scope.pause && scope.curFrame === scope.totalFrames) {
+            } else if (!scope.pause && scope.curFrame + 1 === scope.totalFrames) {
                 util.toastMsg("Animation Complete.");
             }
         }, 0);
