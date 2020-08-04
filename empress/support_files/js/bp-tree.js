@@ -144,6 +144,21 @@ define(["ByteArray"], function (ByteArray) {
                 this.ocCache_[i] = openInx;
             }
         }
+
+        /**
+         * @type{Array}
+         * @private
+         *
+         * Stores the order of nodes in an in-order traversal. Elements in this
+         * array are node ids
+         *
+         * Note: In-order is stored because bp-tree doesn't not have
+         *       an efficient way of convert a nodes in-order position to tree
+         *       index and vice versa like it does with post order through
+         *       the use of postorderselect() and postorder(). So it is more
+         *       efficient to cache an in-order tree traversal.
+         */
+        this._inorder = null;
     }
 
     /**
@@ -537,6 +552,66 @@ define(["ByteArray"], function (ByteArray) {
      */
     BPTree.prototype.preorderselect = function (k) {
         return this.select(1, k);
+    };
+
+    /**
+     * Returns an array of nodes sorted by their inoder position.
+     *
+     * Note: empress uses a nodes postorder position as its key in _treeData
+     *       so this method will use a nodes postorder position to represent
+     *       it in the resulting array.
+     *       This method will also cache the resulting array.
+     */
+    BPTree.prototype.inOrderNodes = function () {
+        if (this._inorder !== null) {
+            return this._inorder;
+        }
+
+        // the root node of the tree
+        var curNode = this.preorderselect(1);
+        var nodeStack = [curNode];
+        this._inorder = [];
+        while (nodeStack.length > 0) {
+            // "visit" node
+            curNode = nodeStack.shift();
+            this._inorder.push(this.postorder(curNode));
+
+            // append children to stack
+            var child = this.fchild(curNode);
+            while (child !== 0) {
+                nodeStack.push(child);
+                child = this.nsibling(child);
+            }
+        }
+        return this._inorder;
+    };
+
+    /**
+     * Finds the sum of lengths from start to end.
+     *
+     * Note: start must be a descendant of end. An error will be thrown if start
+     *       is not a descendant of end. Also, this method does not take into
+     *       account the length of end since that length would represent the
+     *       length of end to its parent.
+     *
+     * @param {Number} start The postorder position of a node
+     * @param {Number} end The postorder position of a node
+     *
+     * @return {Number} the sum of length from start to end
+     */
+    BPTree.prototype.getTotalLength = function (start, end) {
+        var curNode = start;
+        var totalLength = 0;
+        while (curNode !== end) {
+            totalLength += this.length(this.postorderselect(curNode));
+            curNode = this.postorder(
+                this.parent(this.postorderselect(curNode))
+            );
+            if (curNode === -1) {
+                throw "Node " + start + " must be a descendant of " + end;
+            }
+        }
+        return totalLength;
     };
 
     /**

@@ -25,7 +25,7 @@ require([
                         "3",
                         "EmpressNode6",
                     ],
-                    null,
+                    [7, 5, 1, 4, 2, 3, 6],
                     null
                 );
                 var layoutToCoordSuffix = {
@@ -55,6 +55,7 @@ require([
                         x2: 41,
                         y2: 42,
                         name: "root",
+                        visible: true,
                     },
                     6: {
                         color: [1.0, 1.0, 1.0],
@@ -65,6 +66,7 @@ require([
                         x2: 39,
                         y2: 40,
                         name: "EmpressNode6",
+                        visible: true,
                     },
                     5: {
                         color: [1.0, 1.0, 1.0],
@@ -75,6 +77,7 @@ require([
                         x2: 37,
                         y2: 38,
                         name: "internal",
+                        visible: true,
                     },
                     4: {
                         color: [1.0, 1.0, 1.0],
@@ -85,6 +88,8 @@ require([
                         x2: 35,
                         y2: 36,
                         name: "internal",
+                        visible: true,
+                        angle: 0,
                     },
                     2: {
                         color: [1.0, 1.0, 1.0],
@@ -95,6 +100,8 @@ require([
                         x2: 31,
                         y2: 32,
                         name: "2",
+                        visible: true,
+                        angle: 0.5,
                     },
                     3: {
                         color: [1.0, 1.0, 1.0],
@@ -105,6 +112,8 @@ require([
                         x2: 33,
                         y2: 34,
                         name: "3",
+                        visible: true,
+                        angle: 1,
                     },
                     1: {
                         color: [1.0, 1.0, 1.0],
@@ -115,6 +124,7 @@ require([
                         x2: 29,
                         y2: 30,
                         name: "1",
+                        visible: true,
                     },
                 };
                 // data for the BiomTable object
@@ -624,7 +634,9 @@ require([
                 var key = keys[i];
                 deepEqual(e._treeData[key].color, e.DEFAULT_COLOR);
                 equal(e._treeData[key].isColored, false);
+                equal(e._treeData[key].visible, true);
             }
+            deepEqual(e._group, new Array(e._tree.size + 1).fill(-1));
         });
 
         test("Test getSampleCategories", function () {
@@ -736,6 +748,358 @@ require([
                 Math.abs(this.empress.layoutAvgPoint.Unrooted[1] - 36) <=
                     1.0e-15
             );
+        });
+
+        test("Test assignGroups", function () {
+            // ((1,(2,3)4)5,6)7;
+            var obs = {
+                g1: new Set([1, 2, 3]),
+                g2: new Set([5, 6]),
+            };
+            var exp = new Array(this.empress._tree.size + 1).fill(-1);
+
+            // grab keys in order to match the same group assignment since
+            // object keys do not guarentee an order
+            var keys = Object.keys(obs);
+            var groupNum = 0;
+            for (var i in keys) {
+                var nodes = [...obs[keys[i]]];
+                for (var j in nodes) {
+                    exp[nodes[j]] = groupNum;
+                }
+                groupNum++;
+            }
+            this.empress.assignGroups(obs);
+            deepEqual(this.empress._group, exp);
+        });
+
+        test("Test collapseClades", function () {
+            // red should be the only collapsible clade
+            var obs = {
+                red: new Set([2, 3, 4]),
+                blue: new Set([1, 5, 6, 7]),
+            };
+            this.empress.assignGroups(obs);
+            this.empress.collapseClades();
+
+            // make sure .visible property of nodes in the collapsed is false
+            var collapsed = new Set([2, 3]);
+            var i;
+            for (i = 1; i <= this.empress._tree.size; i++) {
+                if (collapsed.has(i)) {
+                    deepEqual(
+                        this.empress._treeData[i].visible,
+                        false,
+                        "Test: node " + i + " should be invisible"
+                    );
+                } else {
+                    deepEqual(
+                        this.empress._treeData[i].visible,
+                        true,
+                        "Test: node " + i + " should be visible"
+                    );
+                }
+            }
+
+            // make sure the correct the correct collapsed clade buffer has the
+            // correct shape.
+            var collapseClades = [
+                35,
+                36,
+                0.75,
+                0.75,
+                0.75,
+                33,
+                34,
+                0.75,
+                0.75,
+                0.75,
+                31,
+                32,
+                0.75,
+                0.75,
+                0.75,
+                35,
+                36,
+                0.75,
+                0.75,
+                0.75,
+                33,
+                34,
+                0.75,
+                0.75,
+                0.75,
+                33,
+                34,
+                0.75,
+                0.75,
+                0.75,
+            ];
+            deepEqual(this.empress._collapsedCladeBuffer, collapseClades);
+
+            // nothing should be collapsed.
+            this.empress.resetTree();
+            obs = {
+                red: new Set([1, 2, 3]),
+                blue: new Set([]),
+            };
+            cm = {
+                red: [1, 0, 0],
+                blue: [0, 0, 1],
+            };
+            this.empress._colorTree(obs, cm);
+            this.empress.collapseClades();
+            for (i = 1; i <= this.empress._tree.size; i++) {
+                deepEqual(
+                    this.empress._treeData[i].visible,
+                    true,
+                    "Test: node belongs to collapsed clade => invisible"
+                );
+            }
+
+            // make sure nothing is in the buffer
+            ok(this.empress._collapsedCladeBuffer.length == 0);
+        });
+
+        test("Test createCollapsedCladeShape", function () {
+            // clade info: (Note: nodes are listed as postorder position)
+            this.empress._collapsedClades[1] = {
+                left: 2,
+                right: 3,
+                deepest: 4,
+                color: [1, 1, 1],
+            };
+
+            // manual set coorindate of nodes to make testing easier
+            this.empress._treeData[1] = {
+                xr: 1,
+                yr: 0,
+                xc1: 0,
+                yc1: 1,
+                x2: 0,
+                y2: 1,
+                angle: 0,
+            };
+            this.empress._treeData[2] = {
+                xr: 1,
+                yr: -1,
+                xc1: 1,
+                yc1: 1,
+                x2: 1,
+                y2: 1,
+                angle: Math.PI / 4,
+            };
+            this.empress._treeData[3] = {
+                xr: 1,
+                yr: 1,
+                xc1: -1,
+                yc1: -1,
+                x2: -1,
+                y2: -1,
+                angle: (3 * Math.PI) / 4,
+            };
+            this.empress._treeData[4] = {
+                xr: 5,
+                yr: 0,
+                xc1: 0,
+                yc1: 5,
+                x2: 0,
+                y2: 5,
+                angle: 0,
+            };
+
+            // check unrooted layout shape
+            this.empress.createCollapsedCladeShape(1);
+            var exp = [
+                0,
+                1,
+                1,
+                1,
+                1,
+                0,
+                5,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                1,
+                1,
+                1,
+                1,
+                0,
+                5,
+                1,
+                1,
+                1,
+                -1,
+                -1,
+                1,
+                1,
+                1,
+            ];
+            deepEqual(this.empress._collapsedCladeBuffer, exp);
+
+            // check rectangular
+            this.empress._collapsedCladeBuffer = [];
+            this.empress._currentLayout = "Rectangular";
+            this.empress.createCollapsedCladeShape(1);
+            exp = [1, 0, 1, 1, 1, 5, -1, 1, 1, 1, 5, 1, 1, 1, 1];
+            deepEqual(this.empress._collapsedCladeBuffer, exp);
+
+            // check circular
+            this.empress._collapsedCladeBuffer = [];
+            this.empress._currentLayout = "Circular";
+            exp = [];
+            this.empress.createCollapsedCladeShape(1);
+            var dangle = 0;
+            var langle = Math.PI / 4;
+            var rangle = (3 * Math.PI) / 4;
+            var totalAngle, cos, sin, sX, sY;
+
+            // This block finds (sX, sY) start point and total angle of the
+            // sector
+            x = 0;
+            y = 5;
+            totalAngle = rangle - langle;
+            cos = Math.cos(langle - dangle);
+            sin = Math.sin(langle - dangle);
+            sX = x * cos - y * sin;
+            sY = x * Math.sin(langle - dangle) + y * Math.cos(langle - dangle);
+
+            // create 15 triangles to approximate sector
+            var deltaAngle = totalAngle / 15;
+            cos = Math.cos(deltaAngle);
+            sin = Math.sin(deltaAngle);
+            for (var line = 0; line < 15; line++) {
+                // root of clade
+                exp.push(...[0, 1, 1, 1, 1]);
+
+                x = sX * cos - sY * sin;
+                y = sX * sin + sY * cos;
+                exp.push(...[x, y, 1, 1, 1]);
+
+                cos = Math.cos((line + 1) * deltaAngle);
+                sin = Math.sin((line + 1) * deltaAngle);
+                x = sX * cos - sY * sin;
+                y = sX * sin + sY * cos;
+                exp.push(...[x, y, 1, 1, 1]);
+            }
+            deepEqual(this.empress._collapsedCladeBuffer, exp);
+        });
+
+        test("Test _collapseClade", function () {
+            this.empress._collapseClade(4);
+            var exp = {
+                left: 2,
+                right: 3,
+                deepest: 3,
+                length: 3,
+                color: [0.75, 0.75, 0.75],
+            };
+            deepEqual(this.empress._collapsedClades[4], exp);
+
+            this.empress._currentLayout = "Rectangular";
+            this.empress._collapseClade(4);
+            deepEqual(this.empress._collapsedClades[4], exp);
+
+            this.empress._currentLayout = "Circular";
+            this.empress._collapseClade(4);
+            exp = {
+                color: [0.75, 0.75, 0.75],
+                deepest: 3,
+                left: 2,
+                length: 3,
+                right: 3,
+                sX: 26.262579448001144,
+                sY: 8.442566004327599,
+                totalAngle: 0.5,
+            };
+            deepEqual(this.empress._collapsedClades[4], exp);
+        });
+
+        test("Test getCladeNodes", function () {
+            deepEqual(
+                this.empress.getCladeNodes(5),
+                [1, 2, 3, 4, 5],
+                "valid node"
+            );
+
+            throws(function () {
+                this.empress.getCladeNodes(-1);
+            });
+        });
+
+        test("Test _isPointInClade", function () {
+            // clade info: (Note: nodes are listed as postorder position)
+            this.empress._collapsedClades[1] = {
+                left: 2,
+                right: 3,
+                deepest: 4,
+                color: [1, 1, 1],
+            };
+
+            // manual set coorindate of nodes to make testing easier
+            this.empress._treeData[1] = {
+                xr: 1,
+                yr: 0,
+                xc1: 0,
+                yc1: 1,
+                x2: 0,
+                y2: 1,
+                angle: Math.PI / 2,
+            };
+            this.empress._treeData[2] = {
+                xr: 1,
+                yr: -1,
+                xc1: 1,
+                yc1: 1,
+                x2: 1,
+                y2: 1,
+                angle: Math.PI / 4,
+            };
+            this.empress._treeData[3] = {
+                xr: 1,
+                yr: 1,
+                xc1: -1,
+                yc1: 1,
+                x2: -1,
+                y2: 1,
+                angle: (3 * Math.PI) / 4,
+            };
+            this.empress._treeData[4] = {
+                xr: 5,
+                yr: 0,
+                xc1: 0,
+                yc1: 5,
+                x2: 0,
+                y2: 5,
+                angle: Math.PI / 2,
+            };
+
+            // check unrooted layout shape
+            ok(this.empress._isPointInClade(1, [0, 2]));
+            ok(!this.empress._isPointInClade(1, [0, -2]));
+
+            this.empress._currentLayout = "Rectangular";
+            ok(this.empress._isPointInClade(1, [2, 0]));
+            ok(!this.empress._isPointInClade(1, [-2, 0]));
+
+            this.empress._currentLayout = "Circular";
+            this.empress.createCollapsedCladeShape(1);
+            ok(this.empress._isPointInClade(1, [0, 2]));
+            ok(!this.empress._isPointInClade(1, [0, -2]));
+        });
+
+        test("Test getName", function () {
+            deepEqual(this.empress.getName(7), "root", "Should be root");
+            throws(function () {
+                this.empress.getName(-1);
+            });
         });
 
         test("Test computeTipSamplePresence", function () {

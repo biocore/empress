@@ -74,8 +74,7 @@ define(["Colorer", "util"], function (Colorer, util) {
 
         /**
          * @type {Number}
-         * Stores the current timeframe that WILL BE DISPLAYED NEXT not the one
-         * that is currently shown on screen.
+         * Stores the current timeframe
          */
         this.curFrame = null;
 
@@ -111,9 +110,9 @@ define(["Colorer", "util"], function (Colorer, util) {
 
         /**
          * @type {Boolean}
-         * Hides uncolored branches if true.
+         * Collapse clades if true.
          */
-        this.hide = null;
+        this.collapse = null;
 
         /**
          * @type {Number}
@@ -128,7 +127,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @param {String} trajectory Metadata column to use for trajectory
      * @param {String} gradient Metadata column to user for gradient
      * @param {String} cm The color map to use for the animation
-     * @param {Boolean} hide Tells animator to hide uncolored branches
+     * @param {Boolean} collapse Tells animator to collapse clades
      * @param {Number} lWidth Tells animator how thick to make colored tree
      *                        branches
      */
@@ -136,7 +135,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         trajectory,
         gradient,
         cm,
-        hide,
+        collapse,
         lWidth
     ) {
         this.gradientCol = gradient;
@@ -155,7 +154,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.cm = colorer.getMapRGB();
         this.legendInfo = colorer.getMapHex();
 
-        this.hide = hide;
+        this.collapse = collapse;
         this.lWidth = lWidth;
     };
 
@@ -170,7 +169,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.gradientSteps = null;
         this.totalFrames = null;
         this.curFrame = null;
-        this.hide = null;
+        this.collapse = null;
         this.lWidth = null;
         this.timePerFram = -1;
         this.framesRdy = null;
@@ -188,13 +187,12 @@ define(["Colorer", "util"], function (Colorer, util) {
     };
 
     /**
-     * Set the hide status of uncolored branches
+     * Set the collapse status of clades
      *
-     * @param {Boolean} hide If true, then Animator will hide all uncolored
-     *                  branches
+     * @param {Boolean} collapse If true, then Animator will collapse clades
      */
-    Animator.prototype.setHide = function (hide) {
-        this.hide = hide;
+    Animator.prototype.setCollapse = function (collapse) {
+        this.collapse = collapse;
     };
 
     /**
@@ -216,6 +214,9 @@ define(["Colorer", "util"], function (Colorer, util) {
      * Draws the current frame and updates the legend.
      */
     Animator.prototype.drawFrame = function () {
+        if (this.queuedFrames === null) {
+            return;
+        }
         var frame = this.queuedFrames[this.curFrame];
         var name = `${frame.name} (${this.curFrame + 1} / ${this.totalFrames})`;
         var keyInfo = frame.keyInfo;
@@ -232,12 +233,12 @@ define(["Colorer", "util"], function (Colorer, util) {
         // draw tree
         this.empress.resetTree();
         this.empress._colorTree(obs, this.cm);
+        this.empress.assignGroups(obs);
+        if (this.collapse) {
+            this.empress.collapseClades();
+        }
         this.empress.thickenColoredNodes(this.lWidth);
-
-        // TODO: hide should be taken care of in empress state machine
-        this.empress.setNonSampleBranchVisibility(this.hide);
         this.empress.drawTree();
-        this.curFrame += 1;
     };
 
     /**
@@ -251,10 +252,10 @@ define(["Colorer", "util"], function (Colorer, util) {
         // Animation loop
         setTimeout(function loop() {
             if (!scope.pause && scope.curFrame !== scope.totalFrames) {
-                if (!scope.framesRdy[scope.curFrame]) {
-                    scope._collectFrame(scope.curFrame);
+                if (!scope.framesRdy[scope.curFrame + 1]) {
+                    scope._collectFrame(scope.curFrame + 1);
                 }
-                scope.drawFrame();
+                scope.nextFrame();
                 setTimeout(loop, scope.timePerFram);
             } else if (!scope.pause && scope.curFrame === scope.totalFrames) {
                 util.toastMsg("Animation Complete.");
@@ -267,7 +268,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * start the animation loop.
      */
     Animator.prototype.startAnimation = function () {
-        this.curFrame = 0;
+        this.curFrame = -1;
         this.pause = false;
         this.framesRdy = new Array(this.totalFrames).fill(false);
         this.queuedFrames = [];
@@ -355,9 +356,10 @@ define(["Colorer", "util"], function (Colorer, util) {
      * is paused and user presses the previous button.
      */
     Animator.prototype.prevFrame = function () {
-        // subtract two curFrame is the next frame.
-        this.curFrame -= 2;
-        this.curFrame = this.curFrame >= 0 ? this.curFrame : 0;
+        this.curFrame -= 1;
+        if (this.curFrame < 0) {
+            this.curFrame = 0;
+        }
         this.drawFrame();
     };
 
@@ -366,8 +368,8 @@ define(["Colorer", "util"], function (Colorer, util) {
      * paused and user presses the next button.
      */
     Animator.prototype.nextFrame = function () {
-        // curFrame is the next frame to draw
         // make sure curFrame is not passed last frame
+        this.curFrame += 1;
         if (this.curFrame >= this.totalFrames) {
             this.curFrame = this.totalFrames - 1;
         }
@@ -381,9 +383,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @return {Boolean} true if animatior is on first frame
      */
     Animator.prototype.onFirstFrame = function () {
-        // curFrame is always the next frame to draw so if curFrame is 1 then
-        // the first frame was just drawn
-        return this.curFrame == 1;
+        return this.curFrame == 0;
     };
 
     /**

@@ -37,10 +37,10 @@ require([
             trajectory.setAttribute("id", "animate-trajectory");
             this.div.appendChild(trajectory);
 
-            var hideChk = document.createElement("checkbox");
-            hideChk.setAttribute("id", "animate-hide-non-feature");
-            hideChk.setAttribute("value", false);
-            this.div.appendChild(hideChk);
+            var collapseChk = document.createElement("checkbox");
+            collapseChk.setAttribute("id", "animate-collapse-chk");
+            collapseChk.setAttribute("value", false);
+            this.div.appendChild(collapseChk);
 
             var lWidth = document.createElement("number");
             lWidth.setAttribute("id", "animate-line-width");
@@ -90,7 +90,7 @@ require([
                 sm
             );
             var empress = new Empress(
-                {},
+                { size: 0 },
                 {},
                 {},
                 {},
@@ -159,25 +159,48 @@ require([
     test("__resumeOptions", function () {
         // set up so that animator state machine is on first frame
         this.panel.animator.totalFrames = 3;
-        this.panel.animator.curFrame = 1;
+
+        // Note: this used to be 1 but the animator class has been updated
+        this.panel.animator.curFrame = 0;
         this.panel.__resumeOptions();
 
         // the followinng should be hidden
-        ok(this.panel.pauseBtn.classList.contains("hidden"));
-        ok(this.panel.startBtn.classList.contains("hidden"));
+        ok(
+            this.panel.pauseBtn.classList.contains("hidden"),
+            "pause button should be hidden"
+        );
+        ok(
+            this.panel.startBtn.classList.contains("hidden"),
+            "start button should be hidden"
+        );
 
         // show the following buttons
-        ok(!this.panel.stopBtn.classList.contains("hidden"));
-        ok(!this.panel.resumeBtn.classList.contains("hidden"));
-        ok(!this.panel.prevFrameBtn.classList.contains("hidden"));
-        ok(!this.panel.nextFrameBtn.classList.contains("hidden"));
+        ok(
+            !this.panel.stopBtn.classList.contains("hidden"),
+            "stop button should be visible"
+        );
+        ok(
+            !this.panel.resumeBtn.classList.contains("hidden"),
+            "resume button should be visible"
+        );
+        ok(
+            !this.panel.prevFrameBtn.classList.contains("hidden"),
+            "previous button should be visible"
+        );
+        ok(
+            !this.panel.nextFrameBtn.classList.contains("hidden"),
+            "next button should be visible"
+        );
 
         // animator should be on first frame
 
         // if animator is on first frame then prevFrameBtn should be disabled
         // and next frame should be enabled
-        ok(this.panel.prevFrameBtn.disabled);
-        ok(!this.panel.nextFrameBtn.disabled);
+        ok(
+            this.panel.prevFrameBtn.disabled,
+            "previous button should be disabled"
+        );
+        ok(!this.panel.nextFrameBtn.disabled, "next button should be enabled");
 
         // set animator to a middle frame
         this.panel.animator.curFrame = 2;
@@ -185,8 +208,11 @@ require([
 
         // if animaotr is on a middle frame then prev/nextFrameBtn should
         // be enabled
-        ok(!this.panel.prevFrameBtn.disabled);
-        ok(!this.panel.nextFrameBtn.disabled);
+        ok(
+            !this.panel.prevFrameBtn.disabled,
+            "previous button should be enabled"
+        );
+        ok(!this.panel.nextFrameBtn.disabled, "next button should be enabled");
 
         // set animator to last frame
         this.panel.animator.curFrame = 3;
@@ -216,7 +242,6 @@ require([
         this.panel.addAnimationTab();
 
         // make sure the events were created
-        ok(this.panel.hideChk.onchange !== null);
         ok(this.panel.lWidth.onchange !== null);
         ok(this.panel.startBtn.onclick !== null);
         ok(this.panel.pauseBtn.onclick !== null);

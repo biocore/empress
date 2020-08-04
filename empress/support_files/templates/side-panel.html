@@ -33,9 +33,13 @@
         </label>
       </p>
       <p>
-        <label for="sample-hide-non-feature">Hide Non-Sample Features</label>
-        <input id="sample-hide-non-feature" type="checkbox" checked="true"
+        <label for="sample-collapse-chk">Collapse Clades</label>
+        <input id="sample-collapse-chk" type="checkbox" value="false"
                class="empress-input">
+      </p>
+      <p class="side-panel-notes indented">
+        If checked, Collapse all clades whose members share the same sample
+        metadata value.
       </p>
       <p>
         <label for="sample-line-width">Extra Line Width</label>
@@ -71,6 +75,15 @@
         <label class="select-container">
           <select id="feature-color"></select>
         </label>
+      </p>
+      <p>
+        <label for="feature-collapse-chk">Collapse Clades</label>
+        <input id="feature-collapse-chk" type="checkbox" value="false"
+               class="empress-input">
+      </p>
+      <p class="side-panel-notes indented">
+        If checked, Collapse all clades whose members share the same feature
+        metadata value.
       </p>
       <p>
         <label for="feature-line-width">Extra Line Width</label>
@@ -169,9 +182,13 @@
     </label>
   </p>
   <p>
-    <label for="animate-hide-non-feature">Hide Non-Sample Features</label>
-    <input id="animate-hide-non-feature" type="checkbox" value="false"
+    <label for="animate-collapse-chk">Collapse Clades</label>
+    <input id="animate-collapse-chk" type="checkbox" value="false"
            class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, Collapse all clades whose members share the same sample
+    metadata value.
   </p>
   <p>
     <label for="animate-line-width">Extra Line Width</label>
@@ -220,6 +237,28 @@
   <p class="side-panel-notes indented">
     If checked, this draws circles at the positions of all tree nodes
     which had a specified name in the input Newick file.
+  </p>
+  <p class="side-panel-notes">
+    Clade Collapse Method
+  </p>
+  <p>
+    <label for="normal">Normal</label>
+    <input type="radio" id="normal" name="collapse-radio" value="normal"
+           checked="true" class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    The shape of the collapsed clade will show both the depth and width of the
+    clade. This option applies to all layouts.
+  </p>
+  <p>
+    <label for="symmetric">Symmetric</label>
+    <input type="radio" id="symmetric" name="collapse-radio" value="symmetric"
+           class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    The shape of the collapsed clade will only show the depth of the clade but
+    the shape will be symmetric w.r.t. to the root of the clade. This option
+    only applies to the Rectangular and Circular layouts.
   </p>
   <p>
     <button id="center-tree-btn">Reset Camera</button>

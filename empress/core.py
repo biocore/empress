@@ -286,6 +286,7 @@ class Empress():
             # for circular layout.
             tree_data[i]["xc0"] = node.xc0
             tree_data[i]["yc0"] = node.yc0
+            tree_data[i]["angle"] = node.clangle
 
             # Also add vertical bar coordinate info for the rectangular layout,
             # and start point & arc coordinate info for the circular layout
@@ -304,8 +305,10 @@ class Empress():
                 names_to_keys[node.name] = [i]
 
         names = []
+        lengths = []
         for node in self.tree.preorder(include_self=True):
             names.append(node.name)
+            lengths.append(node.length)
 
         s_ids, f_ids, sid2idxs, fid2idxs, compressed_table = compress_table(
             self.table
@@ -321,6 +324,7 @@ class Empress():
             'base_url': self.base_url,
             # tree info
             'tree': shifting(self._bp_tree),
+            'lengths': lengths,
             'tree_data': tree_data,
             'names': names,
             'names_to_keys': names_to_keys,
