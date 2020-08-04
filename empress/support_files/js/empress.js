@@ -1305,12 +1305,11 @@ define([
      * Sets the color of the tree back to default
      */
     Empress.prototype.resetTree = function () {
-        var keys = Object.keys(this._treeData);
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            this._treeData[key].color = this.DEFAULT_COLOR;
-            this._treeData[key].isColored = false;
-            this._treeData[key].visible = true;
+        for (var i = 1; i <= this._tree.size; i++) {
+            var node = this._treeData[i];
+            this.setNodeInfo(node, "color", this.DEFAULT_COLOR);
+            this.setNodeInfo(node, "isColored", false);
+            this.setNodeInfo(node, "visible", true);
         }
         this._collapsedClades = {};
         this._collapsedCladeBuffer = [];
@@ -1583,7 +1582,7 @@ define([
         var inorder = this._tree.inOrderNodes();
         for (var node in inorder) {
             node = inorder[node];
-            var visible = this._treeData[node].visible;
+            var visible = this.getNodeInfo(this._treeData[node], "visible");
             var isTip = this._tree.isleaf(this._tree.postorderselect(node));
 
             if (visible && !isTip && this._group[node] !== -1) {
@@ -1703,9 +1702,18 @@ define([
             // The angle of the sector is determined by taking the angle of the
             // "left" or "right" most child that is closest to the root of the
             // clade and doubling it.
-            var dangle = this._treeData[cladeInfo.deepest].angle;
-            var langle = this._treeData[cladeInfo.left].angle;
-            var rangle = this._treeData[cladeInfo.right].angle;
+            var dangle = this.getNodeInfo(
+                this._treeData[cladeInfo.deepest],
+                "angle"
+            );
+            var langle = this.getNodeInfo(
+                this._treeData[cladeInfo.left],
+                "angle"
+            );
+            var rangle = this.getNodeInfo(
+                this._treeData[cladeInfo.right],
+                "angle"
+            );
             var totalAngle, cos, sin, sX, sY;
 
             // This block finds (sX, sY) start point and total angle of the
@@ -1713,7 +1721,10 @@ define([
             x = this.getX(this._treeData[cladeInfo.deepest]);
             y = this.getY(this._treeData[cladeInfo.deepest]);
             if (this._collapseMethod === "symmetric") {
-                var nangle = this._treeData[rootNode].angle;
+                var nangle = this.getNodeInfo(
+                    this._treeData[rootNode],
+                    "angle"
+                );
                 var minAngle = Math.min(nangle - langle, rangle - nangle);
                 totalAngle = 2 * minAngle;
                 cos = Math.cos(nangle - minAngle - dangle);
@@ -1798,14 +1809,14 @@ define([
             right: cladeNodes[0],
             deepest: cladeNodes[0],
             length: this._tree.getTotalLength(cladeNodes[0], rootNode),
-            color: this._treeData[rootNode].color,
+            color: this.getNodeInfo(this._treeData[rootNode], "color"),
         };
 
         // step 2: find the following clade information and
         // step 3: make all descendants of rootNode invisible
         for (var i in cladeNodes) {
             var cladeNode = cladeNodes[i];
-            this._treeData[cladeNode].visible = false;
+            this.setNodeInfo(this._treeData[cladeNode], "visible", false);
 
             // internal nodes do not effect clade information
             if (!this._tree.isleaf(this._tree.postorderselect(cladeNode))) {
@@ -1837,9 +1848,9 @@ define([
                 currentCladeInfo.left = y < curLeftY ? cladeNode : curLeft;
                 currentCladeInfo.right = y > curRightY ? cladeNode : curRight;
             } else {
-                curLAng = this._treeData[curLeft].angle;
-                curRAng = this._treeData[curRight].angle;
-                angle = this._treeData[cladeNode].angle;
+                curLAng = this.getNodeInfo(this._treeData[curLeft], "angle");
+                curRAng = this.getNodeInfo(this._treeData[curRight], "angle");
+                angle = this.getNodeInfo(this._treeData[cladeNode], "angle");
                 currentCladeInfo.left = angle < curLAng ? cladeNode : curLeft;
                 currentCladeInfo.right = angle > curRAng ? cladeNode : curRight;
             }
@@ -1847,14 +1858,14 @@ define([
         this._collapsedClades[rootNode] = currentCladeInfo;
 
         // the root of the clade should be visible
-        this._treeData[rootNode].visible = true;
+        this.setNodeInfo(this._treeData[rootNode], "visible", true);
 
         // step 4)
         this.createCollapsedCladeShape(rootNode);
 
         // We set the root of the clade to default otherwise, the branch that
         // connects the root clade to its parent will still be colored
-        this._treeData[rootNode].color = this.DEFAULT_COLOR;
+        this.setNodeInfo(this._treeData[rootNode], "color", this.DEFAULT_COLOR);
     };
 
     /**
@@ -2116,7 +2127,7 @@ define([
         if (!this._treeData.hasOwnProperty(node)) {
             throw node + " is not a key in _treeData";
         }
-        return this._treeData[node].name;
+        return this.getNodeInfo(this._treeData[node], "name");
     };
     /*
      * Show the node menu for a node name

@@ -283,23 +283,24 @@ class Empress():
             "color": 10, # set in empress
             "isColored": 11, # set in empres
             "visible": 12, # set in empress
+            "inSample": 13,
             # internal nodes
-            "highestchildyr": 13,
-            "lowestchildyr": 14,
+            "highestchildyr": 14,
+            "lowestchildyr": 15,
             # non-root internal nodes
-            "arcx0": 15,
-            "arcy0": 16,
-            "arcstartangle": 17,
-            "arcendangle": 18
+            "arcx0": 16,
+            "arcy0": 17,
+            "arcstartangle": 18,
+            "arcendangle": 19
         }
         names_to_keys = {}
         # Note: tree_data starts with index 1 because the bp tree uses 1 based
         # indexing
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
             if node.is_tip():
-                tree_data[i] = [0] * 13
+                tree_data[i] = [0] * 14
             elif node.is_root():
-                tree_data[i] = [0] * 15
+                tree_data[i] = [0] * 16
             else:
                 tree_data[i] = [0] * len(td_to_ind)
             tree_data[i][td_to_ind["name"]] = node.name
