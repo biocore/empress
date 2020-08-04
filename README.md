@@ -1,3 +1,5 @@
+<!---Empress Logo--->
+
 # Introduction  
 
 Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki/Phylogenetic_tree) viewer that lets you interactively explore the hierarchical relationships between features in your dataset. While historically these features often represented evolutionary relationships of species in community surveys, and are characterized by their phylogeny or genetic similarity/differences, you can in fact view any type of information with hierarchical organization. For example, you can view trees of amplicon sequence variants (ASVs), metabolite trees of LC-MS data using [q2-qemistree](https://github.com/anupriyatripathi/q2-qemistree)  [ref](https://www.biorxiv.org/content/10.1101/2020.05.04.077636v1) or food trees (ref?) and etc.  
