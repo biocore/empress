@@ -34,6 +34,9 @@ define([
      *                       writing should map to "2" since it's represented
      *                       by a node's x2 and y2 coordinates in the data.
      * @param {String} defaultLayout The default layout to draw the tree with
+     * @param {Number} yrScalingFactor Vertical scaling factor for the
+     *                                 rectangular layout. Used to set the
+     *                                 height of barplots.
      * @param {BIOMTable} biom The BIOM table used to color the tree
      * @param {Array} featureMetadataColumns Columns of the feature metadata.
      *                Note: The order of this array should match the order of
