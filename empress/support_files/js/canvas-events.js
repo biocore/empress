@@ -143,7 +143,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 var y = treeSpace.y;
 
                 // check is mouse is in a clade
-                var clade = empress.isInAClade([x, y]);
+                var clade = empress.getRootNodeForPointInClade([x, y]);
                 if (clade !== -1) {
                     scope.placeNodeSelectionMenu(
                         scope.empress.getName(clade),

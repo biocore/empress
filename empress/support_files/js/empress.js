@@ -203,7 +203,7 @@ define([
         /**
          * @type{Object}
          * @private
-         * Stores the information about the collapsed clased. This object is
+         * Stores the information about the collapsed clades. This object is
          * used to determine if a user clicked on a collapsed clade.
          *
          * Note: <node_key> refers to the key in _treeData
@@ -213,7 +213,8 @@ define([
          *          left: <node_key>,
          *          right: <node_key>,
          *          deepest: <node_key>,
-         *          length: <Number>
+         *          length: <Number>,
+         *          color: <[r,g,b]>
          *      }
          *  }
          */
@@ -1578,6 +1579,7 @@ define([
             groupNum++;
         }
     };
+
     /**
      * Collapses all clades that share the same color into a quadrilateral.
      *
@@ -1607,8 +1609,8 @@ define([
         // "non-represented" or "non-unique".
 
         // project groups up tree
-        // Note: if _projectObservations was called, if an internal node
-        // belongs to a group, then all of its descendants will belong to the
+        // Note: if _projectObservations was called, then if an internal node
+        // belongs to a group, all of its descendants will belong to the
         // same group. However, this is not guaranteed if _projectOBservations
         // was not called. Thus, this loop is used to guarantee that if an
         // internal node belongs to a group then all of its descendants belong
@@ -1683,7 +1685,7 @@ define([
             return [scope.getX(node), scope.getY(node)];
         };
         if (this._currentLayout === "Unrooted") {
-            // Unrooted collasped clade is a quadrilateral whose vertices are
+            // Unrooted collapsed clade is a quadrilateral whose vertices are
             // 1) root of clade, 2) "left" most node, 3) "right" most node, and
             // 4) deepest node. However, WebGl requires that we approximate the
             // quadrilateral with triangles. Thus, the quad is made out of two
@@ -1692,9 +1694,6 @@ define([
 
             // input is either "left" most or "right" most child
             var addTriangle = function (child) {
-                // cladeBuffer.push(...getCoords(rootNode), ...color);
-                // cladeBuffer.push(...getCoords(cladeInfo["deepest"]), ...color);
-                // cladeBuffer.push(...getCoords(child), ...color);
                 addPoint(getCoords(rootNode));
                 addPoint(getCoords(cladeInfo.deepest));
                 addPoint(getCoords(child));
@@ -1706,7 +1705,7 @@ define([
             // triangle from 1, 4, 3
             addTriangle(cladeInfo.right);
         } else if (this._currentLayout === "Rectangular") {
-            // Rectangular layou is a triangle. Symmetric version is used if
+            // Rectangular layout is a triangle. Symmetric version is used if
             // this._collapseMethod === "symmetric"
             //
             // Unsymmetric version
@@ -1961,7 +1960,7 @@ define([
 
         // find left most child
         // Note: initializing lchild as cladeRoot incase cladeRoot is a tip
-        lchild = cladeRoot;
+        var lchild = cladeRoot;
         var fchild = this._tree.fchild(this._tree.postorderselect(cladeRoot));
         while (fchild !== 0) {
             lchild = this._tree.postorder(fchild);
@@ -2011,7 +2010,7 @@ define([
             // clade, we first calculate the area of the collapsed clade.
             // (The shape of the collapsed clade is a quad whose vertices are
             // (1) root, (2) "left" most child, (3) "right" most child, and
-            // (4) "deepest" child). Next, we form four triangls whose vertices
+            // (4) "deepest" child). Next, we form four triangles whose vertices
             // are:
             // 1) point, (3), (4)
             // 2) point, (4), (2)
@@ -2148,7 +2147,7 @@ define([
      *                  the collapse clade will be returned otherwise -1 is
      *                  returned.
      */
-    Empress.prototype.isInAClade = function (point) {
+    Empress.prototype.getRootNodeForPointInClade = function (point) {
         for (var clade in this._collapsedClades) {
             if (this._isPointInClade(clade, point)) {
                 var cladeNode = this._treeData[clade];
