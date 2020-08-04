@@ -254,7 +254,6 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=False)
         obs = viz._to_dict()
-        print(obs)
         dict_a_cp = copy.deepcopy(DICT_A)
 
         # NOTE: Uncomment the following two lines of code to write the current

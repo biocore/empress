@@ -554,7 +554,7 @@ define(["ByteArray"], function (ByteArray) {
         return this.select(1, k);
     };
 
-    /*
+    /**
      * Returns an array of nodes sorted by their inoder position.
      *
      * Note: empress uses a nodes postorder position as its key in _treeData
