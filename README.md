@@ -34,23 +34,24 @@ In this tutorial we will be using Empress within the QIIME 2 environment, and de
 
 ## Downloading Input Artifacts and Metadata  
 
-Before we start, we’ll need to download the necessary input artifacts which are produced following the [Moving Pictures Tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/), these are:  
+Before we start, we’ll need to download the necessary input artifacts -- all of which are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/). These are:
 
-1. A feature-table, a *FeatureTable[Frequency]* type artifact  
-1. A sample metadata file, tab-separated value format *txt/tsv*  
-1. A rooted tree, a *Phylogeny[Rooted]* type artifact  
-1. Taxonomic assignments of our features, a *FeatureData[Taxonomy]* type artifact  
-1. A PCoA biplot results file, *PCoAResults % Properties('biplot')* type artifact produced by [qiime diversity pcoa](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin  
+1. A feature table (a QIIME 2 artifact of type `FeatureTable[Frequency]`)
+1. A sample metadata file (a [tab-separated-value](https://en.wikipedia.org/wiki/Tab-separated_values) file)
+1. A rooted tree (a QIIME 2 artifact of type `Phylogeny[Rooted]`)
+1. Taxonomic assignments of our features (a QIIME 2 artifact of type `FeatureData[Taxonomy]`)
+1. A PCoA biplot results file (a QIIME 2 artifact of type `PCoAResults % Properties('biplot')`)
+    - This artifact in particular was produced by the [`qiime diversity pcoa`](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin, but ordinations / biplots created by other tools (e.g. [DEICODE](https://github.com/biocore/DEICODE/)) also work well with Empress.
 
-The last 2 items are required only when displaying an Empress tree plot in tandem with an Emperor PCoA plot/biplot (a.k.a Empire plot!)
-  
+The last item is required only when displaying an Empress tree plot in tandem with an Emperor PCoA plot/biplot (a.k.a. an Empire plot!)
+
 You can download these files individually by clicking the links below, or using `wget` to download them directly from your terminal.  
 
 - `table.qza` [view](https://view.qiime2.org/?src=https%3A%2F%2Fdocs.qiime2.org%2F2019.10%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qza) | [download](https://docs.qiime2.org/2019.10/data/tutorials/moving-pictures/table.qza)
 - `sample_metadata.tsv` [download](https://data.qiime2.org/2019.10/tutorials/moving-pictures/sample_metadata.tsv)
 - `rooted-tree.qza` [view](https://view.qiime2.org/?src=https%3A%2F%2Fdocs.qiime2.org%2F2019.10%2Fdata%2Ftutorials%2Fmoving-pictures%2Frooted-tree.qza) | [download](https://docs.qiime2.org/2019.10/data/tutorials/moving-pictures/rooted-tree.qza)
 - `taxonomy.qza` [view](https://view.qiime2.org/?src=https%3A%2F%2Fdocs.qiime2.org%2F2019.10%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftaxonomy.qza) | [download](https://docs.qiime2.org/2019.10/data/tutorials/moving-pictures/taxonomy.qza)
-- `biplot.qza` [view](https://view.qiime2.org/?src=https%3A%2F%2Fraw.githubusercontent.com%2Fbiocore%2Fempress%2Fmaster%2Fdocs%2Fmoving-pictures%2Fbiplot.qza) | [download](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/biplot.qza)   
+- `biplot.qza` [view](https://view.qiime2.org/?src=https%3A%2F%2Fraw.githubusercontent.com%2Fbiocore%2Fempress%2Fmaster%2Fdocs%2Fmoving-pictures%2Fbiplot.qza) | [download](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/biplot.qza)
 
 First we’ll create a directory to download our files to and change into it:  
 
@@ -72,7 +73,7 @@ We are now ready to create our interactive tree plot.
 
 ## Empress Plot  
 
-We’ll start with a simple stand-alone tree visualization artifact and explore our tree using the various features.   
+We’ll start with a simple stand-alone tree visualization artifact and explore our tree using the various features in Empress.
 
 ```bash
 qiime empress plot \
@@ -100,8 +101,8 @@ You can use your mouse’s scroll wheel to zoom in and out, and click and drag a
 The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Zoom in on the external node of the longest branch and click on the node.   
 
 
-A new node-viewer window appears with details about the selected node, including its name and taxonomic assignment. You’ll notice that this feature has -unexpectedly- only been classified at the Kingdom level, meaning that our feature-classifier was not able to find a suitable match in our reference database (Greengenes).  More often than not, these features correspond to non-biological reads such as chimeras, contaminants, or reads that have [index-hopped](https://www.illumina.com/content/dam/illumina-marketing/documents/products/whitepapers/index-hopping-white-paper-770-2017-004.pdf) from other samples. We will explore these possibilities further later. Also note that the tree used in this tutorial was built using the common *de novo* tree-building approach and it has previously been shown that the presence of these outlier branches in *de novo* trees can lead to artificial clustering of samples [(Janssen et. al 2018)](https://msystems.asm.org/content/3/3/e00021-18).
-In this window we can also select to view details about sample-metadata related to this feature. From the drop down menu select `body-site` and click the *Add* button. A new *Sample Presence Information* summary table appears which displays the number of samples containing the selected feature. We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature-table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.6%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the external nodes in a few other outlier branches. Do you see a similar pattern? Now try clicking on an external node of one of the shorter branches. Notice the much improved classification!
+A new menu appears with details about the selected node, including its name and taxonomic assignment. You’ll notice that this feature has -unexpectedly- only been classified at the Kingdom level, meaning that our feature-classifier was not able to find a suitable match in our reference database (Greengenes).  More often than not, these features correspond to non-biological reads such as chimeras, contaminants, or reads that have [index-hopped](https://www.illumina.com/content/dam/illumina-marketing/documents/products/whitepapers/index-hopping-white-paper-770-2017-004.pdf) from other samples. We will explore these possibilities further later. Also note that the tree used in this tutorial was built using the common *de novo* tree-building approach and it has previously been shown that the presence of these outlier branches in *de novo* trees can lead to artificial clustering of samples [(Janssen et. al 2018)](https://msystems.asm.org/content/3/3/e00021-18).
+In this window we can also select to view details about sample-metadata related to this feature. From the drop down menu select `body-site` and click the *Add* button. A new *Sample Presence Information* summary table appears which displays the number of samples containing the selected feature. We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.6%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the external nodes in a few other outlier branches. Do you see a similar pattern? Now try clicking on an external node of one of the shorter branches. Notice the much improved classification!
 
 ![empress_search_feature](docs/moving-pictures/img/empress_search_features.png)
  
@@ -115,7 +116,7 @@ Another way of exploring the classification of our features is to color the bran
 
 ![empress_unrooted_feature_coloring](docs/moving-pictures/img/empress_unrooted_feature_coloring.png)
 
-The plot is now updated so each branch is now colored by their Phylum level classification. We can see that the extra long branches are all the same color. Hover the cursor over the legend box and scroll to the bottom. The magenta color corresponds to an *Unspecified* Phylum. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
+The plot is now updated so each branch is now colored by its Phylum level classification. We can see that the extra long branches are all the same color. Hover the cursor over the legend box and scroll to the bottom. The magenta color corresponds to an *Unspecified* Phylum. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
 
 ### Exploring a feature’s closest common ancestors  
 
@@ -125,7 +126,7 @@ Now zoom into the longest branch of the top cluster and click on the closest ext
 
 ![empress_circular_common_ancestor](docs/moving-pictures/img/empress_circular_common_ancestor.png)
 
-Interestingly, we see that this node is classified as Acanthamoeba Palestinensis which is actually not a bacteria but rather a protozoa. It is not uncommon for certain Eukaryotes to appear in bacterial/archaeal reference databases as they may share a similar genetic lineage. Remember that mitochondria and chloroplasts likely evolved from prokaryotes themselves. Explore a few other common ancestral nodes from different outlier branches. We can see other surprising appearances by Cucurbita pepo (a variety of squash or pumpkin), Raphanus sativus (radish), and Streptophyta (an order of plants). Based on these results one might speculate that our *Unspecified* features likely also belong to either plants or protozoa groups rather than bacteria. Further, since these features appear only on the palm samples, it’s possible the source of these are in fact environmental contaminants rather than common human microbes.  
+Interestingly, we see that this node is classified as _Acanthamoeba Palestinensis_ which is actually not a bacteria but rather a protozoa. It is not uncommon for certain Eukaryotes to appear in bacterial/archaeal reference databases as they may share a similar genetic lineage. Remember that mitochondria and chloroplasts likely evolved from prokaryotes themselves. Explore a few other common ancestral nodes from different outlier branches. We can see other surprising appearances by _Cucurbita pepo_ (a variety of squash or pumpkin), _Raphanus sativus_ (radish), and _Streptophyta_ (an order of plants). Based on these results one might speculate that our *Unspecified* features likely also belong to either plants or protozoa groups rather than bacteria. Further, since these features appear only on the palm samples, it’s possible the source of these are in fact environmental contaminants rather than common human microbes.  
 
 In summary, given the branch length of these features, their very low abundance, lack of close matches in the reference database, and having non-microbial closest common ancestors, it is probably safe to filter these features from our table as non-biologically relevant reads.  
 
@@ -146,7 +147,7 @@ Once you are done customizing your tree, you can export the tree as an .SVG file
 
 ## Empire plots! Side-by-side integration of tree and PCoA plots  
 
-Now that you are familiar with basics, let’s try something a bit more advanced. One of the unique features of Empress is its ability to integrate a tree plot with an [Emperor](http://emperor.microbio.me/uno/) PCoA plot and visualize them side-by-side (these plots are internally referred to as Empire plots). To achieve this we provide a PCoA matrix (*PCoAResults* type artifact), which can be any beta diversity distance matrix, including biplots. Ordination biplots that are made using the [qiime diversity pcoa-biplot](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin, incorporate feature loadings represented by arrows that describe explanatory variables in the dataset. This functionality is also compatible with [`DEICODE` biplots](https://github.com/biocore/deicode). In this example we’ll use a PCoA biplot calculated using Unweighted UniFrac distances. To create this new plot, run the following:  
+Now that you are familiar with basics, let’s try something a bit more advanced. One of the unique features of Empress is its ability to integrate a tree plot with an [Emperor](http://emperor.microbio.me/uno/) PCoA plot and visualize them side-by-side (these plots are internally referred to as Empire plots). To achieve this we provide a PCoA matrix (`PCoAResults` type artifact), which can be any beta diversity distance matrix, including biplots. Ordination biplots that are made using the [qiime diversity pcoa-biplot](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin, incorporate feature loadings represented by arrows that describe explanatory variables in the dataset. This functionality is also compatible with [`DEICODE` biplots](https://github.com/biocore/deicode). In this example we’ll use a PCoA biplot calculated using Unweighted UniFrac distances. To create this new plot, run the following:  
 
 ```bash
 qiime empress plot \
