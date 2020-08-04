@@ -159,7 +159,7 @@ require([
         // set up so that animator state machine is on first frame
         this.panel.animator.totalFrames = 3;
 
-        // Note: this use to be 1 but the animator class has been updated
+        // Note: this used to be 1 but the animator class has been updated
         this.panel.animator.curFrame = 0;
         this.panel.__resumeOptions();
 
