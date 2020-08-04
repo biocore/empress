@@ -115,6 +115,7 @@ define([
         for (var i = 1; i <= this._tree.size; i++) {
             this._treeData[i][this._td_to_ind["color"]] = this.DEFAULT_COLOR;
             this._treeData[i][this._td_to_ind["visible"]] = true;
+            this._treeData[i][this._td_to_ind["isColored"]] = false;
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 this._numTips++;
             }
@@ -561,7 +562,6 @@ define([
     Empress.prototype.getNodeCoords = function () {
         var tree = this._tree;
         var coords = [];
-        var coords_index = 0;
 
         for (var i = 1; i <= tree.size; i++) {
             var node = this._treeData[i];
@@ -569,10 +569,11 @@ define([
                 continue;
             }
             if (!this.getNodeInfo(node, "name").startsWith("EmpressNode")) {
-                coords[coords_index++] = this.getX(node);
-                coords[coords_index++] = this.getY(node);
-                coords.push(...this.getNodeInfo(node, "color"));
-                coords_index += 3;
+                coords.push(
+                    this.getX(node),
+                    this.getY(node),
+                    ...this.getNodeInfo(node, "color")
+                );
             }
         }
 
@@ -624,7 +625,7 @@ define([
         // iterate throught the tree in postorder, skip root
         for (var i = 1; i < tree.size; i++) {
             // name of current node
-            var nodeIndex = i;
+            var nodeInd = i;
             var node = this._treeData[i];
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
             parent = this._treeData[parent];
@@ -658,7 +659,7 @@ define([
                 // 2. Draw vertical line, if this is an internal node
                 if (this.getNodeInfo(node, "lowestchildyr") !== undefined) {
                     // skip if node is root of collapsed clade
-                    if (this._collapsedClades.hasOwnProperty(nodeIndex)) continue;
+                    if (this._collapsedClades.hasOwnProperty(nodeInd)) continue;
                     addPoint(
                         this.getX(node),
                         this.getNodeInfo(node, "highestchildyr")
@@ -692,7 +693,7 @@ define([
                 // we're skipping the root)
                 if (
                     this.getNodeInfo(node, "arcx0") !== undefined &&
-                    !this._collapsedClades.hasOwnProperty(nodeIndex)
+                    !this._collapsedClades.hasOwnProperty(nodeInd)
                 ) {
                     // arcs are created by sampling 15 small lines along the
                     // arc spanned by rotating (arcx0, arcy0), the line whose
@@ -1294,8 +1295,8 @@ define([
 
             for (var j = 0; j < keys.length; j++) {
                 var node = this._treeData[keys[j]];
-                this._treeData[key].color = cm[category];
-                this._treeData[key].isColored = true;
+                this.setNodeInfo(node, "color", cm[category]);
+                this.setNodeInfo(node, "isColored", true);
             }
         }
     };
