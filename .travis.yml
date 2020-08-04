@@ -32,6 +32,4 @@ script:
   - ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/unweighted_unifrac_pcoa_results.qza --filter-extra-samples
   - ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/biplot.qza --filter-extra-samples
   # now we can upload the files to mchelper
-  curl -POST -F file=@"${PWD}/docs/moving-pictures/empress-tree.qzv" http://mchelper.ucsd.edu:8888/uploads/empress/${TRAVIS_BUILD_ID}/
-  curl -POST -F file=@"${PWD}/docs/moving-pictures/empress-tree-tandem.qzv" http://mchelper.ucsd.edu:8888/uploads/empress/${TRAVIS_BUILD_ID}/
-  curl -POST -F file=@"${PWD}/docs/moving-pictures/empress-tree-tandem-biplot.qzv" http://mchelper.ucsd.edu:8888/uploads/empress/${TRAVIS_BUILD_ID}/
+  curl -POST -F files=@"${PWD}/docs/moving-pictures/empress-tree.qzv" files=@"${PWD}/docs/moving-pictures/empress-tree-tandem.qzv" files=@"${PWD}/docs/moving-pictures/empress-tree-tandem-biplot.qzv" http://mchelper.ucsd.edu:8888/uploads/empress/${TRAVIS_BUILD_ID}/
