@@ -5,13 +5,12 @@
 
 # Introduction  
 
-Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki/Phylogenetic_tree) viewer that lets you interactively explore the hierarchical relationships between features in your dataset. While historically these features often represented evolutionary relationships of species in community surveys, and are characterized by their phylogeny or genetic similarity/differences, you can in fact view any type of information with hierarchical organization. For example, you can view trees of amplicon sequence variants (ASVs), or metabolite trees of LC-MS data using [q2-qemistree](https://github.com/anupriyatripathi/q2-qemistree) ([ref](https://www.biorxiv.org/content/10.1101/2020.05.04.077636v1)).
-
+Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki/Phylogenetic_tree) viewer that lets you interactively explore the hierarchical relationships between features in your dataset. While historically these features often represented evolutionary relationships of species in community surveys, and are characterized by their phylogeny or genetic similarity/differences, you can in fact view any type of information with hierarchical organization. For example, you can view trees of [amplicon sequence variants (ASVs)](https://en.wikipedia.org/wiki/Amplicon_sequence_variant), or metabolite trees of LC-MS data using [q2-qemistree](https://github.com/biocore/q2-qemistree) ([ref](https://www.biorxiv.org/content/10.1101/2020.05.04.077636v1)).
 
 # Installation   
 
 Currently, Empress is only accessible as a QIIME 2 plugin. To follow this tutorial you will need to have a QIIME 2 (version 2019.10 or newer) conda environment installed and activated. See the [QIIME 2 installation](https://docs.qiime2.org/2020.6/install/) page for installation instructions.  
-Once you have QIIME 2 installed, make sure the conda environment is activated by running:    
+Once you have QIIME 2 installed, make sure the conda environment is activated by running:
 
 ```
 conda activate qiime2-2020.6
@@ -19,7 +18,7 @@ conda activate qiime2-2020.6
 
 You can replace `qiime2-2020.6` above with whichever version of QIIME 2 you have currently installed.  
 
-Now we are ready to install Empress. Run the following codes:  
+Now we are ready to install Empress. Run the following commands:
 
 ```
 pip install git+https://github.com/biocore/empress.git
@@ -27,7 +26,7 @@ qiime dev refresh-cache
 qiime empress --help
 ```
 
-If you see information about Empress' QIIME 2 plugin, the installation was successful!   
+If you see information about Empress' QIIME 2 plugin, the installation was successful!
 
 # Example: Using Empress in QIIME 2   
 
@@ -101,8 +100,8 @@ You can use your mouse’s scroll wheel to zoom in and out, and click and drag a
 The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Zoom in on the external node of the longest branch and click on the node.   
 
 
-A new node-viewer window appears with details about the selected node, including its name and taxonomic assignment. You’ll notice that this feature has -unexpectedly- only been classified at the Kingdom level, meaning that our feature-classifier was not able to find a suitable match in our reference database (Greengenes).  More often than not, these features correspond to non-biological reads such as chimeras, contaminants, or reads that have [index-hopped](https://www.illumina.com/content/dam/illumina-marketing/documents/products/whitepapers/index-hopping-white-paper-770-2017-004.pdf) from other samples. We will explore these possibilities further later. Also note that the tree used in this tutorial was built using the common *de novo* tree-building approach and it has previously been shown that the presence of these outlier branches in *de novo* trees can lead to artificial clustering of samples [(Jansenn et. al 2018)](https://msystems.asm.org/content/3/3/e00021-18).  
-In this window we can also select to view details about sample-metadata related to this feature. From the drop down menu select `body-site` and click the *Add* button. A new *Sample Presence Information* summary table appears which displays the number of samples containing the selected feature. We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature-table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.6%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the external nodes in a few other outlier branches. Do you see a similar pattern? Now try clicking on an external node of one of the shorter branches. Notice the much improved classification!  
+A new node-viewer window appears with details about the selected node, including its name and taxonomic assignment. You’ll notice that this feature has -unexpectedly- only been classified at the Kingdom level, meaning that our feature-classifier was not able to find a suitable match in our reference database (Greengenes).  More often than not, these features correspond to non-biological reads such as chimeras, contaminants, or reads that have [index-hopped](https://www.illumina.com/content/dam/illumina-marketing/documents/products/whitepapers/index-hopping-white-paper-770-2017-004.pdf) from other samples. We will explore these possibilities further later. Also note that the tree used in this tutorial was built using the common *de novo* tree-building approach and it has previously been shown that the presence of these outlier branches in *de novo* trees can lead to artificial clustering of samples [(Janssen et. al 2018)](https://msystems.asm.org/content/3/3/e00021-18).
+In this window we can also select to view details about sample-metadata related to this feature. From the drop down menu select `body-site` and click the *Add* button. A new *Sample Presence Information* summary table appears which displays the number of samples containing the selected feature. We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature-table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.6%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the external nodes in a few other outlier branches. Do you see a similar pattern? Now try clicking on an external node of one of the shorter branches. Notice the much improved classification!
 
 ![empress_search_feature](docs/moving-pictures/img/empress_search_features.png)
  
