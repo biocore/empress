@@ -107,31 +107,31 @@ class TestCore(unittest.TestCase):
                                          'Sample4'],
                                   columns=['PC1', 'PC2', 'PC3'])
         self.pcoa = skbio.OrdinationResults(
-                'PCoA',
-                'Principal Coordinate Analysis',
-                eigvals,
-                samples_df,
-                proportion_explained=proportion_explained)
+            'PCoA',
+            'Principal Coordinate Analysis',
+            eigvals,
+            samples_df,
+            proportion_explained=proportion_explained)
 
         features = np.abs(samples_df.copy() / 2.0).iloc[:2, :]
         features.index = 'f.' + features.index
         self.biplot_no_matches = skbio.OrdinationResults(
-                'PCoA',
-                'Principal Coordinate Analysis',
-                eigvals,
-                samples_df,
-                features=features,
-                proportion_explained=proportion_explained)
+            'PCoA',
+            'Principal Coordinate Analysis',
+            eigvals,
+            samples_df,
+            features=features,
+            proportion_explained=proportion_explained)
 
         features = np.abs(samples_df / 2.0).iloc[:2, :]
         features.index = pd.Index(['a', 'h'])
         self.biplot = skbio.OrdinationResults(
-                'PCoA',
-                'Principal Coordinate Analysis',
-                eigvals,
-                samples_df,
-                features=features,
-                proportion_explained=proportion_explained)
+            'PCoA',
+            'Principal Coordinate Analysis',
+            eigvals,
+            samples_df,
+            features=features,
+            proportion_explained=proportion_explained)
         self.biplot_tree = parse_newick(
             '(((y:1,z:2):1,b:2)g:1,(:1,d:3)h:2):1;')
         self.biplot_table = pd.DataFrame(
@@ -571,6 +571,7 @@ DICT_A = {
             "yc1": 0.0,
             "xc0": 1481.4675640601124,
             "yc0": 0.0,
+            "angle": 0
         },
         2: {
             "name": "e",
@@ -582,6 +583,7 @@ DICT_A = {
             "yc1": 2817.9187609585556,
             "xc0": 457.7986539098309,
             "yc0": 1408.9593804792778,
+            "angle": 1.2566370614359172
         },
         3: {
             "name": "EmpressNode0",
@@ -593,12 +595,13 @@ DICT_A = {
             "yc1": 870.7847859041888,
             "xc0": 599.2662179699436,
             "yc0": 435.3923929520944,
+            "angle": 0.6283185307179586,
             "highestchildyr": -1381.875,
             "lowestchildyr": -2386.875,
             "arcx0": 457.7986539098309,
             "arcy0": 1408.9593804792778,
             "arcstartangle": 1.2566370614359172,
-            "arcendangle": 0,
+            "arcendangle": 0
         },
         4: {
             "name": "b",
@@ -610,6 +613,7 @@ DICT_A = {
             "yc1": 1306.1771788562833,
             "xc0": -599.2662179699435,
             "yc0": 435.3923929520945,
+            "angle": 2.5132741228718345
         },
         5: {
             "name": "g",
@@ -621,12 +625,13 @@ DICT_A = {
             "yc1": 740.7337820300562,
             "xc0": 0.0,
             "yc0": 0.0,
+            "angle": 1.5707963267948966,
             "highestchildyr": -376.875,
             "lowestchildyr": -1884.375,
             "arcx0": -599.2662179699435,
             "arcy0": 435.3923929520945,
             "arcstartangle": 2.5132741228718345,
-            "arcendangle": 0.6283185307179586,
+            "arcendangle": 0.6283185307179586
         },
         6: {
             "name": "EmpressNode1",
@@ -638,6 +643,7 @@ DICT_A = {
             "yc1": -1306.177178856283,
             "xc0": -1198.5324359398871,
             "yc0": -870.7847859041887,
+            "angle": 3.7699111843077517
         },
         7: {
             "name": "d",
@@ -649,6 +655,7 @@ DICT_A = {
             "yc1": -3522.398451198195,
             "xc0": 457.79865390983053,
             "yc0": -1408.9593804792778,
+            "angle": 5.026548245743669
         },
         8: {
             "name": "h",
@@ -660,12 +667,13 @@ DICT_A = {
             "yc1": -1408.9593804792778,
             "xc0": -0.0,
             "yc0": -0.0,
+            "angle": 4.39822971502571,
             "highestchildyr": 1633.125,
             "lowestchildyr": 628.125,
             "arcx0": 457.79865390983053,
             "arcy0": -1408.9593804792778,
             "arcstartangle": 5.026548245743669,
-            "arcendangle": 3.7699111843077517,
+            "arcendangle": 3.7699111843077517
         },
         9: {
             "name": "EmpressNode2",
@@ -677,9 +685,10 @@ DICT_A = {
             "yc1": 0.0,
             "xc0": 0.0,
             "yc0": 0.0,
+            "angle": 2.9845130209103035,
             "highestchildyr": 1130.625,
-            "lowestchildyr": -1130.625,
-        },
+            "lowestchildyr": -1130.625
+        }
     },
     "names": [
         "EmpressNode2",
@@ -692,6 +701,7 @@ DICT_A = {
         "EmpressNode1",
         "d",
     ],
+    "lengths": [0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 1.0, 3.0],
     "names_to_keys": {
         "a": [1],
         "e": [2],

@@ -81,5 +81,25 @@ require(["jquery", "VectorOps"], function ($, VectorOps) {
                 tR: [2, 3],
             });
         });
+
+        test("Test triangleArea", function () {
+            // these three tests use the same triangle but each test will
+            // move/rotate the triangle.
+            equal(VectorOps.triangleArea([0, 0], [20, 0], [0, 12]), 120);
+            equal(VectorOps.triangleArea([0, 0], [-20, 0], [0, -12]), 120);
+            equal(VectorOps.triangleArea([1, -1], [-19, -1], [1, -13]), 120);
+
+            equal(
+                VectorOps.triangleArea([0, 0], [0, 0], [0, 12]),
+                0,
+                "Area of a line should be zero"
+            );
+
+            equal(
+                VectorOps.triangleArea([0, 12], [0, 12], [0, 12]),
+                0,
+                "Area of a point should be zero"
+            );
+        });
     });
 });

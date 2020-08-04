@@ -127,11 +127,31 @@ define([], function () {
         return { tL: tL, tR: tR, bL: bL, bR: bR };
     }
 
+    /**
+     * Returns the area of the triangle whose vertices are a, b, c
+     *
+     * Note: a, b, c are defined as [x, y]
+     * @param {Array} a The first vertex of the triangle
+     * @param {Array} b The second vertex of the triangle
+     * @param {Array} c The thrid vertex of the triangle
+     *
+     * @returns {Number} The area of the triangle
+     */
+    function triangleArea(a, b, c) {
+        return Math.abs(
+            (a[0] * (b[1] - c[1]) +
+                b[0] * (c[1] - a[1]) +
+                c[0] * (a[1] - b[1])) /
+                2
+        );
+    }
+
     return {
         getAngle: getAngle,
         magnitude: magnitude,
         rotate: rotate,
         translate: translate,
         computeBoxCorners: computeBoxCorners,
+        triangleArea: triangleArea,
     };
 });

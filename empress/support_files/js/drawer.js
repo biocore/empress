@@ -119,6 +119,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
         // buffer object for colored clades
         s.cladeBuff = c.createBuffer();
+        this.cladeVertSize = 0;
 
         // buffer object for triangles (collapse clades)
         s.triBuff = c.createBuffer();
@@ -289,6 +290,17 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
+     * Fills the buffer used to draw collapsed clades.
+     *
+     * @param {Array} data The coordinates and colors to fill clade buffer
+     */
+    Drawer.prototype.loadCladeBuff = function (data) {
+        data = new Float32Array(data);
+        this.cladeVertSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.cladeBuff, data);
+    };
+
+    /**
      * Display the tree nodes.
      * Note: Currently Empress will only display the nodes that had an assigned
      * name in the newick string. (I.E. Empress will not show any node that
@@ -340,6 +352,9 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
         this.bindBuffer(s.thickNodeBuff);
         c.drawArrays(c.TRIANGLES, 0, this.thickNodeSize);
+
+        this.bindBuffer(s.cladeBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.cladeVertSize);
     };
 
     /**

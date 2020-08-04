@@ -244,6 +244,7 @@ define(["underscore", "util"], function (_, util) {
         var ctData = this.empress.computeTipSamplePresence(name, this.fields);
 
         // 2.1 The samples represented by this tip are sent to Emperor
+
         // check if this tip is present in the BIOM table. The array returned
         // by BIOMTable.getObsIDsDifference() contains the feature IDs present
         // in the input array but not in the BIOM table -- so if the length of

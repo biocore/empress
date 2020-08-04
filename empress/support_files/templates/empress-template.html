@@ -112,7 +112,11 @@
                  Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util,
                  filesaver) {
         // initialze the tree and model
-        var tree = new BPTree({{ tree }}, {{ names }});
+        var tree = new BPTree(
+          {{ tree }},
+          {{ names }},
+          {{ lengths}}
+        );
 
         var fmCols = {{ feature_metadata_columns | tojson }};
 
