@@ -11,8 +11,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
      *
      * Creates a layer in the barplot panel.
      *
-     * @param {Empress} empress Instance of Empress, used to handle various
-     *                          state things.
+     * @param {Array} fmCols Feature metadata columns.
+     * @param {Array} smCols Sample metadata columns.
      * @param {BarplotPanel} barplotPanel Instance of BarplotPanel. A reference
      *                                    to this is kept around so we can
      *                                    notify the BarplotPanel if this layer
@@ -26,8 +26,9 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
      * @return {BarplotLayer}
      * construct BarplotLayer
      */
-    function BarplotLayer(empress, barplotPanel, layerContainer, num) {
-        this.empress = empress;
+    function BarplotLayer(fmCols, smCols, barplotPanel, layerContainer, num) {
+        this.fmCols = fmCols;
+        this.smCols = smCols;
         this.barplotPanel = barplotPanel;
         this.layerContainer = layerContainer;
         this.num = num;
@@ -192,8 +193,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         chgColorSC.classList.add("select-container");
         var chgColorFMFieldSelector = document.createElement("select");
         // Populate the selector with all of the feature metadata columns
-        var fmCols = this.empress.getFeatureMetadataCategories();
-        _.each(fmCols, function (c) {
+        _.each(this.fmCols, function (c) {
             var opt = document.createElement("option");
             opt.innerText = opt.value = c;
             chgColorFMFieldSelector.appendChild(opt);
@@ -331,7 +331,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         chgLenSC.classList.add("select-container");
         var chgLenFMFieldSelector = document.createElement("select");
         // Populate the selector with all of the feature metadata columns
-        _.each(fmCols, function (c) {
+        _.each(this.fmCols, function (c) {
             var opt = document.createElement("option");
             opt.innerText = opt.value = c;
             chgLenFMFieldSelector.appendChild(opt);
@@ -431,8 +431,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         chgFieldSC.classList.add("select-container");
         var chgFieldSMFieldSelector = document.createElement("select");
         // Populate the selector with all of the sample metadata columns
-        var smCols = this.empress.getSampleCategories();
-        _.each(smCols, function (c) {
+        _.each(this.smCols, function (c) {
             var opt = document.createElement("option");
             opt.innerText = opt.value = c;
             chgFieldSMFieldSelector.appendChild(opt);

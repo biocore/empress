@@ -5,6 +5,7 @@ define([
     "Colorer",
     "VectorOps",
     "CanvasEvents",
+    "BarplotPanel",
     "util",
     "chroma",
 ], function (
@@ -14,6 +15,7 @@ define([
     Colorer,
     VectorOps,
     CanvasEvents,
+    BarplotPanel,
     util,
     chroma
 ) {
@@ -165,12 +167,28 @@ define([
         this._currentLayout = defaultLayout;
 
         /**
+         * @type {BarplotPanel}
+         * Manages a collection of BarplotLayers, as well as the state of the
+         * barplot panel. Also can call Empress.drawBarplots() /
+         * Empress.undrawBarplots() when needed.
+         * @private
+         */
+        this._barplotPanel = new BarplotPanel(this, this._defaultLayout);
+
+        /**
          * @type {Number}
          * The y scaling factor for the rectangular layout. This is used to
          * adjust the thickness of barplot bars.
          * @private
          */
         this._yrscf = yrScalingFactor;
+
+        /**
+         * @type{Boolean}
+         * Indicates whether or not barplots are currently drawn.
+         * @private
+         */
+        this._barplotsDrawn = false;
 
         /**
          * type {Object}
@@ -1006,6 +1024,7 @@ define([
     Empress.prototype.undrawBarplots = function () {
         this._drawer.loadBarplotBuff([]);
         this.drawTree();
+        this._barplotsDrawn = false;
     };
 
     /**
@@ -1075,6 +1094,7 @@ define([
         this._drawer.loadBarplotBuff([]);
         this._drawer.loadBarplotBuff(coords);
         this.drawTree();
+        this._barplotsDrawn = true;
     };
 
     Empress.prototype.addSMBarplotLayerCoords = function (
@@ -1742,6 +1762,17 @@ define([
                 // then call thickenColoredNodes()) causes the thick-line
                 // stuff to only change whenever the tree is redrawn.
                 this.thickenColoredNodes(this._currentLineWidth);
+
+                // Undraw or redraw barplots as needed
+                var supported = this._barplotPanel.updateLayoutAvailability(
+                    newLayout
+                );
+                if (!supported && this._barplotsDrawn) {
+                    this.undrawBarplots();
+                } else if (supported && this._barplotPanel.enabled) {
+                    this.drawBarplots(this._barplotPanel.layers);
+                }
+
                 // this._drawer.loadNodeBuff(this.getNodeCoords());
                 // this.drawTree();
                 this.centerLayoutAvgPoint();
