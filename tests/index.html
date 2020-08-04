@@ -22,8 +22,10 @@
   <input id="test-num-input" type="number" style="visibility: hidden;">
 
   <!-- Barplot GUI elements, which are automatically accessed when initializing
-      BarplotPanel (which is done from within Empress) -->
-  <div id="barplot-available-content" style="visibility: hidden;">
+       BarplotPanel (which is done from within Empress).
+       We use "display: none;" to avoid having this junk take up any space.
+  -->
+  <div id="barplot-available-content" style="display: none;">
     <p>
       <label for="barplot-chk">Draw barplots?</label>
       <input id="barplot-chk" type="checkbox" class="empress-input">
@@ -39,7 +41,7 @@
       <button id="barplot-update" class="hidden">Update</button>
     </p>
   </div>
-  <div id="barplot-unavailable-content" style="visibility: hidden;">
+  <div id="barplot-unavailable-content" style="display: none;">
     <p class="side-panel-notes" style="font-weight: bold;">
       Barplots are currently only supported in the rectangular layout. Please
       change the layout in order to use barplots.
