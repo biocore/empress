@@ -1100,10 +1100,11 @@ define([
      */
     Empress.prototype.drawBarplots = function (layers) {
         var scope = this;
-        // TODO: check current layout and alter behavior accordingly.
-        // for now this just assumes the rectangular layout, but we should
-        // support circular layout as well. (unrooted layout is incompatible
-        // with barplots.)
+        // TODO: In order to add support for circular layout barplots, much of
+        // this function will need to be reworked to handle those (e.g.
+        // computing the maximum radius from the root node at (0, 0) rather
+        // than the maximum X; changing the position of barplots; likely
+        // altering how this._yrscf is used; etc.)
         var coords = [];
         var maxX = -Infinity;
         for (var i = 1; i < this._tree.size; i++) {
@@ -1335,9 +1336,11 @@ define([
                 var fn = parseFloat(n);
                 // uses linear interpolation (we could add fancier
                 // scaling methods in the future as options if desired)
-                // TODO for consideration: does this make sense
-                // mathematically? Whoever reviews this PR, I'm asking you
-                // to consider this because IDK right now LOL
+                // TODO: verify that this handles negative values properly
+                // and/or support drawing negative values in the opposite
+                // direction as positive ones
+                // TODO: more clearly differentiate between value minima/maxima
+                // and length minima/maxima
                 fm2length[fn] =
                     ((fn - min) / range) * lengthRange +
                     layer.scaleLengthByFMMin;

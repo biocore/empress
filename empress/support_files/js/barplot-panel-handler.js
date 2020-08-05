@@ -128,7 +128,6 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
             this.layers[i].decrement();
         }
         this.layers.splice(layerNum - 1, 1);
-        // TODO: actually un-draw this layer...
     };
 
     /*
