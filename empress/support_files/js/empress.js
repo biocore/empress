@@ -109,13 +109,29 @@ define([
          */
         this._td_to_ind = td_to_ind;
 
+        // add additional info to treeData
+        // Note: this information is not added in core.py because the values
+        //       are initialized the same.
+        for (var key in this._td_to_ind) {
+            this._td_to_ind[key] += 4;
+        }
+        this._td_to_ind.color = 0;
+        this._td_to_ind.isColored = 1;
+        this._td_to_ind.visible = 2;
+        this._td_to_ind.inSample = 3;
+
         // count number of tips and set default color/visible
         // Note: currently empress tree uses 1-based index since the bp-tree
         //       bp-tree.js is based off of used 1-based index.
         for (var i = 1; i <= this._tree.size; i++) {
-            this._treeData[i][this._td_to_ind["color"]] = this.DEFAULT_COLOR;
-            this._treeData[i][this._td_to_ind["visible"]] = true;
-            this._treeData[i][this._td_to_ind["isColored"]] = false;
+            this._treeData[i].splice(
+                this._td_to_ind.color,
+                0,
+                this.DEFAULT_COLOR
+            );
+            this._treeData[i].splice(this._td_to_ind.isColored, 0, false);
+            this._treeData[i].splice(this._td_to_ind.visible, 0, true);
+            this._treeData[i].splice(this._td_to_ind.inSample, 0, false);
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 this._numTips++;
             }
@@ -269,16 +285,16 @@ define([
         this.centerLayoutAvgPoint();
     };
 
-    Empress.prototype.getNodeInfo = function(node, attr) {
+    Empress.prototype.getNodeInfo = function (node, attr) {
         return node[this._td_to_ind[attr]];
-    }
+    };
 
-    Empress.prototype.setNodeInfo = function(node, attr, value) {
+    Empress.prototype.setNodeInfo = function (node, attr, value) {
         if (this.getNodeInfo(node, attr) === undefined) {
             throw "Invalid attribute.";
         }
         node[this._td_to_ind[attr]] = value;
-    }
+    };
 
     /**
      * Draws the tree
@@ -597,9 +613,9 @@ define([
 
         var coords_index = 0;
 
-        var addPoint = function(x, y) {
+        var addPoint = function (x, y) {
             coords.push(x, y, ...color);
-        }
+        };
 
         /* Draw a vertical line, if we're in rectangular layout mode. Note that
          * we *don't* draw a horizontal line (with the branch length of the
@@ -619,7 +635,7 @@ define([
             );
             addPoint(
                 this.getX(rNode),
-                this.getNodeInfo(rNode, "highestchildyr"),
+                this.getNodeInfo(rNode, "highestchildyr")
             );
         }
         // iterate throught the tree in postorder, skip root
@@ -685,10 +701,7 @@ define([
                     this.getNodeInfo(node, "xc0"),
                     this.getNodeInfo(node, "yc0")
                 );
-                addPoint(
-                    this.getX(node),
-                    this.getY(node)
-                );
+                addPoint(this.getX(node), this.getY(node));
                 // 2. Draw arc, if this is an internal node (note again that
                 // we're skipping the root)
                 if (
@@ -702,7 +715,7 @@ define([
                     var numSamples = 15;
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
-                        this.getNodeInfo(node, "arcstartangle")
+                        this.getNodeInfo(node, "arcstartangle");
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this.getNodeInfo(node, "arcx0");
                     var sY = this.getNodeInfo(node, "arcy0");
@@ -822,7 +835,7 @@ define([
                 this.getNodeInfo(node, "lowestchildyr"),
             ],
         };
-        var color = this.getNodeInfo(node ,"color");
+        var color = this.getNodeInfo(node, "color");
         this._addTriangleCoords(coords, corners, color);
     };
 
@@ -892,13 +905,13 @@ define([
 
             if (
                 this._collapsedClades.hasOwnProperty(i) ||
-                !this.getNodeInfo(node ,"visible") ||
+                !this.getNodeInfo(node, "visible") ||
                 !this.getNodeInfo(node, "isColored")
             ) {
                 continue;
             }
 
-            var color = this.getNodeInfo(node ,"color");
+            var color = this.getNodeInfo(node, "color");
             if (this._currentLayout === "Rectangular") {
                 // Draw a thick vertical line for this node, if it isn't a tip
                 if (this.getNodeInfo(node, "lowestchildyr") !== undefined) {

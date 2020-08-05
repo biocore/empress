@@ -12,52 +12,32 @@ require(["jquery", "BPTree", "Empress"], function ($, BPTree, Empress) {
                     null
                 );
                 var layoutToCoordSuffix = { Circular: "c1" };
-                var treeData = {
-                    1: {
-                        color: [1.0, 1.0, 1.0],
-                        xc0: -2,
-                        yc0: 2,
-                        xc1: -2,
-                        yc1: 0,
-                        visible: true,
-                    },
-                    2: {
-                        color: [1.0, 1.0, 1.0],
-                        xc0: 2,
-                        yc0: 2,
-                        xc1: 2,
-                        yc1: 0,
-                        visible: true,
-                    },
-                    3: {
-                        color: [1.0, 1.0, 1.0],
-                        xc0: 0,
-                        yc0: 1,
-                        xc1: 0,
-                        yc1: -1,
-                        arcx0: 2,
-                        arcy0: 0,
-                        arcstartangle: 0,
-                        arcendangle: Math.PI,
-                        visible: true,
-                    },
-                    4: {
-                        color: [1.0, 1.0, 1.0],
-                        xc0: 0,
-                        yc0: -3,
-                        xc1: 0,
-                        yc1: -1,
-                        visible: true,
-                    },
-                    5: {
-                        color: [1.0, 1.0, 1.0],
-                        xc0: 0,
-                        yc0: -1,
-                        xc1: 0,
-                        yc1: -1,
-                        visible: true,
-                    },
+                var td_to_ind = {
+                    name: 0,
+                    x2: 1,
+                    y2: 2,
+                    xr: 3,
+                    yr: 4,
+                    xc1: 5,
+                    yc1: 6,
+                    xc0: 7,
+                    yc0: 8,
+                    angle: 9,
+                    highestchildyr: 10,
+                    lowestchildyr: 11,
+                    arcx0: 12,
+                    arcy0: 13,
+                    arcstartangle: 14,
+                    arcendangle: 15,
                 };
+                var treeData = [
+                    0,
+                    ["", 0, 0, 0, 0, -2, 0, -2, 2],
+                    ["", 0, 0, 0, 0, 2, 0, 2, 2],
+                    ["", 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 2, 0, 0, Math.PI],
+                    ["", 0, 0, 0, 0, 0, -1, 0, -3],
+                    ["", 0, 0, 0, 0, 0, -1, 0, -1],
+                ];
                 // README: If this test starts failing at some point in the
                 // future, it will probably be due to the parameters of the
                 // Empress object having been changed around without this
@@ -65,6 +45,7 @@ require(["jquery", "BPTree", "Empress"], function ($, BPTree, Empress) {
                 this.empress = new Empress(
                     tree,
                     treeData,
+                    td_to_ind,
                     null,
                     layoutToCoordSuffix,
                     "Circular",

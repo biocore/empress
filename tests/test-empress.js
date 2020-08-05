@@ -45,88 +45,38 @@ require([
                 // Note: the coordinates for each layout are "random". i.e.
                 // they will not make an actual tree. They were created to
                 // make testing easier.
-                var treeData = {
-                    7: {
-                        color: [1.0, 1.0, 1.0],
-                        xr: 13,
-                        yr: 14,
-                        xc1: 27,
-                        yc1: 28,
-                        x2: 41,
-                        y2: 42,
-                        name: "root",
-                        visible: true,
-                    },
-                    6: {
-                        color: [1.0, 1.0, 1.0],
-                        xr: 11,
-                        yr: 12,
-                        xc1: 25,
-                        yc1: 26,
-                        x2: 39,
-                        y2: 40,
-                        name: "EmpressNode6",
-                        visible: true,
-                    },
-                    5: {
-                        color: [1.0, 1.0, 1.0],
-                        xr: 9,
-                        yr: 10,
-                        xc1: 23,
-                        yc1: 24,
-                        x2: 37,
-                        y2: 38,
-                        name: "internal",
-                        visible: true,
-                    },
-                    4: {
-                        color: [1.0, 1.0, 1.0],
-                        xr: 7,
-                        yr: 8,
-                        xc1: 21,
-                        yc1: 22,
-                        x2: 35,
-                        y2: 36,
-                        name: "internal",
-                        visible: true,
-                        angle: 0,
-                    },
-                    2: {
-                        color: [1.0, 1.0, 1.0],
-                        xr: 3,
-                        yr: 4,
-                        xc1: 17,
-                        yc1: 18,
-                        x2: 31,
-                        y2: 32,
-                        name: "2",
-                        visible: true,
-                        angle: 0.5,
-                    },
-                    3: {
-                        color: [1.0, 1.0, 1.0],
-                        xr: 5,
-                        yr: 6,
-                        xc1: 19,
-                        yc1: 20,
-                        x2: 33,
-                        y2: 34,
-                        name: "3",
-                        visible: true,
-                        angle: 1,
-                    },
-                    1: {
-                        color: [1.0, 1.0, 1.0],
-                        xr: 1,
-                        yr: 2,
-                        xc1: 15,
-                        yc1: 16,
-                        x2: 29,
-                        y2: 30,
-                        name: "1",
-                        visible: true,
-                    },
+
+                // see core.py for more details on  the format of treeData
+                var treeData = [
+                    0, // this is blank since empress uses 1-based index. This
+                    // will be addressed with #223
+                    ["1", 29, 30, 1, 2, 15, 16, 0, 0, 0],
+                    ["2", 31, 32, 3, 4, 17, 18, 0, 0, 0.5],
+                    ["3", 33, 34, 5, 6, 19, 20, 0, 0, 1],
+                    ["internal", 35, 36, 7, 8, 21, 22, 0, 0, 0],
+                    ["internal", 37, 38, 9, 10, 23, 24, 0, 0, 0],
+                    ["EmpressNode6", 39, 40, 11, 12, 25, 26, 0, 0, 0],
+                    ["root", 41, 42, 13, 14, 27, 28, 0, 0, 0],
+                ];
+                var td_to_ind = {
+                    name: 0,
+                    x2: 1,
+                    y2: 2,
+                    xr: 3,
+                    yr: 4,
+                    xc1: 5,
+                    yc1: 6,
+                    xc0: 7,
+                    yc0: 8,
+                    angle: 9,
+                    highestchildyr: 10,
+                    lowestchildyr: 11,
+                    arcx0: 12,
+                    arcy0: 13,
+                    arcstartangle: 14,
+                    arcendangle: 15,
                 };
+
                 // data for the BiomTable object
                 // (These IDs / indices aren't assigned in any particular
                 // order; as long as it's consistent it doesn't matter.
@@ -194,6 +144,7 @@ require([
                 this.empress = new Empress(
                     tree,
                     treeData,
+                    td_to_ind,
                     nameToKeys,
                     layoutToCoordSuffix,
                     "Unrooted",
@@ -237,39 +188,6 @@ require([
                 equal(this.empress.getX(node), coord++);
                 equal(this.empress.getY(node), coord++);
             }
-        });
-
-        test("Test computeNecessaryCoordsSize", function () {
-            // add drawer information to empress
-            // the only drawer info needed for computeNecessaryCoordsSize is
-            // the size of each vertex which is 5 ([x, y, r, g, b])
-            this.empress._drawer = {};
-            this.empress._drawer.VERTEX_SIZE = 5;
-
-            // Note: tree has 1 root, 4 tips, and 2 non-root internal nodes
-
-            // rectangual layout needs one line for root, 4 lines for tips,
-            // and 4 lines for non-root internal nodes (2 lines per non-root
-            // internal node). Then each line is defined by 2 verticies and each
-            // vertex has a size of 5
-            var recLines = (1 + 4 + 2 * 2) * 2 * 5;
-            this.empress._currentLayout = "Rectangular";
-            equal(this.empress.computeNecessaryCoordsSize(), recLines);
-
-            // circular layout needs 0 lines for root, 4 lines for tips, and
-            // 32 lines for non-root internal nodes (16 lines per non-root
-            // internal nodes). Then each line is defined by 2 verticies and each
-            // vertex has a size of 5
-            var circLines = (0 + 4 + 2 * 16) * 2 * 5;
-            this.empress._currentLayout = "Circular";
-            equal(this.empress.computeNecessaryCoordsSize(), circLines);
-
-            //unrooted layout needs 0 lines for root, 4 lines for tips, and
-            // 2 lines for non-root internal nodes. Then each lines is defined
-            // by 2 verticies and each vertex has a size of 5.
-            var unrootLines = (0 + 4 + 2) * 2 * 5;
-            this.empress._currentLayout = "Unrooted";
-            equal(this.empress.computeNecessaryCoordsSize(), unrootLines);
         });
 
         test("Test getNodeCoords", function () {
@@ -326,7 +244,7 @@ require([
             // the entire tree should be colored. sampleGroup contain all tips
             for (var i = 1; i <= 7; i++) {
                 var node = this.empress._treeData[i];
-                deepEqual(node.color, [1.0, 0, 0]);
+                deepEqual(this.empress.getNodeInfo(node, "color"), [1.0, 0, 0]);
             }
         });
 
@@ -346,11 +264,23 @@ require([
             for (var i = 1; i <= 7; i++) {
                 var node = this.empress._treeData[i];
                 if (redNodes.has(i)) {
-                    deepEqual(node.color, [1.0, 0, 0]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), [
+                        1.0,
+                        0,
+                        0,
+                    ]);
                 } else if (greeNodes.has(i)) {
-                    deepEqual(node.color, [0, 1.0, 0]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), [
+                        0,
+                        1.0,
+                        0,
+                    ]);
                 } else {
-                    deepEqual(node.color, [0.75, 0.75, 0.75]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), [
+                        0.75,
+                        0.75,
+                        0.75,
+                    ]);
                 }
             }
         });
@@ -397,9 +327,16 @@ require([
             for (var i = 1; i <= 7; i++) {
                 var node = this.empress._treeData[i];
                 if (aGroupNodes.has(i)) {
-                    deepEqual(node.color, chroma(cm.a).gl().slice(0, 3));
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        chroma(cm.a).gl().slice(0, 3)
+                    );
                 } else {
-                    deepEqual(node.color, [0.75, 0.75, 0.75]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), [
+                        0.75,
+                        0.75,
+                        0.75,
+                    ]);
                 }
             }
         });
@@ -431,11 +368,21 @@ require([
             for (var i = 1; i <= 7; i++) {
                 node = this.empress._treeData[i];
                 if (group1.has(i)) {
-                    deepEqual(node.color, chroma(cm["1"]).gl().slice(0, 3));
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        chroma(cm["1"]).gl().slice(0, 3)
+                    );
                 } else if (group2.has(i)) {
-                    deepEqual(node.color, chroma(cm["2"]).gl().slice(0, 3));
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        chroma(cm["2"]).gl().slice(0, 3)
+                    );
                 } else {
-                    deepEqual(node.color, [0.75, 0.75, 0.75]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), [
+                        0.75,
+                        0.75,
+                        0.75,
+                    ]);
                 }
             }
 
@@ -456,11 +403,21 @@ require([
             for (i = 1; i <= 7; i++) {
                 node = this.empress._treeData[i];
                 if (group1.has(i)) {
-                    deepEqual(node.color, chroma(cm["1"]).gl().slice(0, 3));
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        chroma(cm["1"]).gl().slice(0, 3)
+                    );
                 } else if (group2.has(i)) {
-                    deepEqual(node.color, chroma(cm["2"]).gl().slice(0, 3));
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        chroma(cm["2"]).gl().slice(0, 3)
+                    );
                 } else {
-                    deepEqual(node.color, [0.75, 0.75, 0.75]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), [
+                        0.75,
+                        0.75,
+                        0.75,
+                    ]);
                 }
             }
         });
@@ -609,11 +566,23 @@ require([
             for (var i = 1; i <= 7; i++) {
                 var node = this.empress._treeData[i];
                 if (g1Nodes.has(i)) {
-                    deepEqual(node.color, [1, 0, 0]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), [
+                        1,
+                        0,
+                        0,
+                    ]);
                 } else if (g2Nodes.has(i)) {
-                    deepEqual(node.color, [0, 1, 0]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), [
+                        0,
+                        1,
+                        0,
+                    ]);
                 } else {
-                    deepEqual(node.color, [0, 0, 1]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), [
+                        0,
+                        0,
+                        1,
+                    ]);
                 }
             }
         });
@@ -622,11 +591,11 @@ require([
             var e = this.empress; // used to shorten function calls
             var keys = Object.keys(e._treeData);
             e.resetTree();
-            for (var i = 0; i < keys.length; i++) {
-                var key = keys[i];
-                deepEqual(e._treeData[key].color, e.DEFAULT_COLOR);
-                equal(e._treeData[key].isColored, false);
-                equal(e._treeData[key].visible, true);
+            for (var i = 1; i < keys.length; i++) {
+                var node = this.empress._treeData[keys[i]];
+                deepEqual(e.getNodeInfo(node, "color"), e.DEFAULT_COLOR);
+                equal(e.getNodeInfo(node, "isColored"), false);
+                equal(e.getNodeInfo(node, "visible"), true);
             }
             deepEqual(e._group, new Array(e._tree.size + 1).fill(-1));
         });
@@ -776,17 +745,18 @@ require([
 
             // make sure .visible property of nodes in the collapsed is false
             var collapsed = new Set([2, 3]);
-            var i;
+            var i, node;
             for (i = 1; i <= this.empress._tree.size; i++) {
+                node = this.empress._treeData[i];
                 if (collapsed.has(i)) {
                     deepEqual(
-                        this.empress._treeData[i].visible,
+                        this.empress.getNodeInfo(node, "visible"),
                         false,
                         "Test: node " + i + " should be invisible"
                     );
                 } else {
                     deepEqual(
-                        this.empress._treeData[i].visible,
+                        this.empress.getNodeInfo(node, "visible"),
                         true,
                         "Test: node " + i + " should be visible"
                     );
@@ -842,8 +812,9 @@ require([
             this.empress._colorTree(obs, cm);
             this.empress.collapseClades();
             for (i = 1; i <= this.empress._tree.size; i++) {
+                node = this.empress._treeData[i];
                 deepEqual(
-                    this.empress._treeData[i].visible,
+                    this.empress.getNodeInfo(node, "visible"),
                     true,
                     "Test: node belongs to collapsed clade => invisible"
                 );
@@ -863,42 +834,70 @@ require([
             };
 
             // manual set coorindate of nodes to make testing easier
-            this.empress._treeData[1] = {
-                xr: 1,
-                yr: 0,
-                xc1: 0,
-                yc1: 1,
-                x2: 0,
-                y2: 1,
-                angle: 0,
-            };
-            this.empress._treeData[2] = {
-                xr: 1,
-                yr: -1,
-                xc1: 1,
-                yc1: 1,
-                x2: 1,
-                y2: 1,
-                angle: Math.PI / 4,
-            };
-            this.empress._treeData[3] = {
-                xr: 1,
-                yr: 1,
-                xc1: -1,
-                yc1: -1,
-                x2: -1,
-                y2: -1,
-                angle: (3 * Math.PI) / 4,
-            };
-            this.empress._treeData[4] = {
-                xr: 5,
-                yr: 0,
-                xc1: 0,
-                yc1: 5,
-                x2: 0,
-                y2: 5,
-                angle: 0,
-            };
+            this.empress._treeData[1] = [
+                [1, 1, 1],
+                false,
+                true,
+                false,
+                "",
+                0,
+                1,
+                1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+            ];
+            this.empress._treeData[2] = [
+                [1, 1, 1],
+                false,
+                true,
+                false,
+                "",
+                1,
+                1,
+                1,
+                -1,
+                1,
+                1,
+                0,
+                0,
+                Math.PI / 4,
+            ];
+            this.empress._treeData[3] = [
+                [1, 1, 1],
+                false,
+                true,
+                false,
+                "",
+                -1,
+                -1,
+                1,
+                1,
+                -1,
+                -1,
+                0,
+                0,
+                (3 * Math.PI) / 4,
+            ];
+            this.empress._treeData[4] = [
+                [1, 1, 1],
+                false,
+                true,
+                false,
+                "",
+                0,
+                5,
+                5,
+                0,
+                0,
+                5,
+                0,
+                0,
+                0,
+            ];
 
             // check unrooted layout shape
             this.empress.createCollapsedCladeShape(1);
@@ -1036,42 +1035,70 @@ require([
             };
 
             // manual set coorindate of nodes to make testing easier
-            this.empress._treeData[1] = {
-                xr: 1,
-                yr: 0,
-                xc1: 0,
-                yc1: 1,
-                x2: 0,
-                y2: 1,
-                angle: Math.PI / 2,
-            };
-            this.empress._treeData[2] = {
-                xr: 1,
-                yr: -1,
-                xc1: 1,
-                yc1: 1,
-                x2: 1,
-                y2: 1,
-                angle: Math.PI / 4,
-            };
-            this.empress._treeData[3] = {
-                xr: 1,
-                yr: 1,
-                xc1: -1,
-                yc1: 1,
-                x2: -1,
-                y2: 1,
-                angle: (3 * Math.PI) / 4,
-            };
-            this.empress._treeData[4] = {
-                xr: 5,
-                yr: 0,
-                xc1: 0,
-                yc1: 5,
-                x2: 0,
-                y2: 5,
-                angle: Math.PI / 2,
-            };
+            this.empress._treeData[1] = [
+                [1, 1, 1],
+                false,
+                true,
+                false,
+                "",
+                0,
+                1,
+                1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                Math.PI / 2,
+            ];
+            this.empress._treeData[2] = [
+                [1, 1, 1],
+                false,
+                true,
+                false,
+                "",
+                1,
+                1,
+                1,
+                -1,
+                1,
+                1,
+                0,
+                0,
+                Math.PI / 4,
+            ];
+            this.empress._treeData[3] = [
+                [1, 1, 1],
+                false,
+                true,
+                false,
+                "",
+                -1,
+                1,
+                1,
+                1,
+                -1,
+                1,
+                0,
+                0,
+                (3 * Math.PI) / 4,
+            ];
+            this.empress._treeData[4] = [
+                [1, 1, 1],
+                false,
+                true,
+                false,
+                "",
+                0,
+                5,
+                5,
+                0,
+                0,
+                5,
+                0,
+                0,
+                Math.PI / 2,
+            ];
 
             // check unrooted layout shape
             ok(this.empress._isPointInClade(1, [0, 2]));

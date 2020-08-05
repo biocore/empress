@@ -267,8 +267,12 @@ class Empress():
         # store node data in a postorder fashion.
         # Note: currently, bp-tree uses 1-based index so the first element is 1
         #       this will be fixed in #223
-        tree_data = [0] * (self.tree.count() + 1);
+        tree_data = [0] * (self.tree.count() + 1)
         td_to_ind = {
+            # note: color, isColored, visible, and inSample with be appended in
+            # empress constructor. They are not added here because all nodes
+            # will be initialized with the same value.
+            #
             # all nodes
             "name": 0,
             "x2": 1,
@@ -280,27 +284,25 @@ class Empress():
             "xc0": 7,
             "yc0": 8,
             "angle": 9,
-            "color": 10, # set in empress
-            "isColored": 11, # set in empres
-            "visible": 12, # set in empress
-            "inSample": 13,
-            # internal nodes
-            "highestchildyr": 14,
-            "lowestchildyr": 15,
+            # all internal nodes
+            "highestchildyr": 10,
+            "lowestchildyr": 11,
             # non-root internal nodes
-            "arcx0": 16,
-            "arcy0": 17,
-            "arcstartangle": 18,
-            "arcendangle": 19
+            "arcx0": 12,
+            "arcy0": 13,
+            "arcstartangle": 14,
+            "arcendangle": 15
         }
         names_to_keys = {}
         # Note: tree_data starts with index 1 because the bp tree uses 1 based
         # indexing
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
             if node.is_tip():
-                tree_data[i] = [0] * 14
+                # add one to account for 0-based index
+                tree_data[i] = [0] * (td_to_ind["angle"] + 1)
             elif node.is_root():
-                tree_data[i] = [0] * 16
+                # add 2 to account for highestchildyr and lowestchildyr
+                tree_data[i] = [0] * (td_to_ind["angle"] + 2 + 1)
             else:
                 tree_data[i] = [0] * len(td_to_ind)
             tree_data[i][td_to_ind["name"]] = node.name
@@ -321,13 +323,16 @@ class Empress():
             # Also add vertical bar coordinate info for the rectangular layout,
             # and start point & arc coordinate info for the circular layout
             if not node.is_tip():
-                tree_data[i][td_to_ind["highestchildyr"]] = node.highest_child_yr
+                tree_data[i][td_to_ind["highestchildyr"]] = \
+                    node.highest_child_yr
                 tree_data[i][td_to_ind["lowestchildyr"]] = node.lowest_child_yr
                 if not node.is_root():
                     tree_data[i][td_to_ind["arcx0"]] = node.arcx0
                     tree_data[i][td_to_ind["arcy0"]] = node.arcy0
-                    tree_data[i][td_to_ind["arcstartangle"]] = node.highest_child_clangle
-                    tree_data[i][td_to_ind["arcendangle"]] = node.lowest_child_clangle
+                    tree_data[i][td_to_ind["arcstartangle"]] = \
+                        node.highest_child_clangle
+                    tree_data[i][td_to_ind["arcendangle"]] = \
+                        node.lowest_child_clangle
 
             if node.name in names_to_keys:
                 names_to_keys[node.name].append(i)
