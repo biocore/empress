@@ -317,7 +317,7 @@ define([
      *                     node. Note: this is an entry in this._treeData.
      * @param{String} attr The attribute to retrieve from the node.
      *
-     * @return The attribute, If attr is not a valid attribute of node, then
+     * @return The attribute; if attr is not a valid attribute of node, then
      *         undefined will be returned.
      */
     Empress.prototype.getNodeInfo = function (node, attr) {
