@@ -315,7 +315,7 @@ define([
      *
      * @param{Array} node An array that holds all the attributes for a given
      *                     node. Note: this is an entry in this._treeData.
-     * @param{String} attr The attribute to retive from node.
+     * @param{String} attr The attribute to retrieve from the node.
      *
      * @return The attribute, If attr is not a valid attribute of node, then
      *         undefined will be returned.
