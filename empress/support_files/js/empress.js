@@ -332,7 +332,7 @@ define([
      *
      * @param{Array} node An array that holds all the attributes for a given
      *                     node. Note: this is an entry in this._treeData.
-     * @param{String} attr The attribute to set in node.
+     * @param{String} attr The attribute to set for the node.
      * @param{Object} value The value to set for the given attribute for the
      *                      node.
      */
