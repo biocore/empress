@@ -85,6 +85,10 @@ instance/
 # Sphinx documentation
 docs/_build/
 
+# qzvs in docs
+docs/*.qzv
+docs/*/*.qzv
+
 # PyBuilder
 target/
 

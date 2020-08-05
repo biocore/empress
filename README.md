@@ -83,7 +83,7 @@ qiime empress plot \
     --m-feature-metadata-file taxonomy.qza \
     --o-visualization empress-tree.qzv
 ```
-- `empress-tree.qzv` [view](https://view.qiime2.org/?src=https%3A%2F%2Fraw.githubusercontent.com%2Fbiocore%2Fempress%2Fmaster%2Fdocs%2Fmoving-pictures%2Fempress-tree.qzv) | [download](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/empress-tree.qzv)
+- `empress-tree.qzv` [view](https://view.qiime2.org/?src=https%3A%2F%2Fmchelper.ucsd.edu%2Fdownloads%2Fempress%2Fmaster%2Fempress-tree.qzv) | [download](https://mchelper.ucsd.edu/downloads/empress/master/empress-tree.qzv)
 
 To view the newly made `empress-tree.qzv` artifact, you can drag and drop the file onto [https://view.qiime2.org/](https://view.qiime2.org/) or load it locally by running:   
 
@@ -105,7 +105,7 @@ A new menu appears with details about the selected node, including its name and 
 In this window we can also select to view details about sample-metadata related to this feature. From the drop down menu select `body-site` and click the *Add* button. A new *Sample Presence Information* summary table appears which displays the number of samples containing the selected feature. We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.6%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the external nodes in a few other outlier branches. Do you see a similar pattern? Now try clicking on an external node of one of the shorter branches. Notice the much improved classification!
 
 ![empress_search_feature](docs/moving-pictures/img/empress_search_features.png)
- 
+
 We can also locate specific features of interest using the search bar at the top of the main menu. For example, in our feature-table the most abundant ASV is `4b5eeb300368260019c1fbc7a3c718fc`. Paste this name in to the search bar and click *Search*.  
 The feature’s external node is now highlighted on the tree as a bright green circle. The most abundant ASV is a species belonging to the Bacteroides genus.  
 
@@ -121,7 +121,7 @@ The plot is now updated so each branch is now colored by its Phylum level classi
 ### Exploring a feature’s closest common ancestors  
 
 So far, we’ve looked at our data using the default unrooted tree view. To visually locate these features’ closest common ancestors, it may be easier to switch to a different layout. From the main menu, click *Layout* then select *Circular* (or *Rectangular*). Our plot automatically switches to a rooted circular cladogram.   
- 
+
 Now zoom into the longest branch of the top cluster and click on the closest external node that has a different Phylum classification (light blue).   
 
 ![empress_circular_common_ancestor](docs/moving-pictures/img/empress_circular_common_ancestor.png)
@@ -130,7 +130,7 @@ Interestingly, we see that this node is classified as _Acanthamoeba Palestinensi
 
 In summary, given the branch length of these features, their very low abundance, lack of close matches in the reference database, and having non-microbial closest common ancestors, it is probably safe to filter these features from our table as non-biologically relevant reads.  
 
-  
+
 ### Identifying group-specific features   
 
 The composition of microbial communities of the gut, tongue, and palms are very different from each other. Suppose we are interested in identifying which features are unique to each body-site and their evolutionary relationships. We can do this in Empress by colorizing our tree based on columns from our sample metadata file. From the main menu, click *Sample Metadata Coloring*, check the *Color by…* box, and from the drop-down menu select `body-site`. Click the *Update* button.  
@@ -180,7 +180,7 @@ qiime empress plot \
     --o-visualization empire-biplot.qzv
 ```
 
-- `empire-biplot.qzv` [view](https://view.qiime2.org/?src=https%3A%2F%2Fraw.githubusercontent.com%2Fbiocore%2Fempress%2Fmaster%2Fdocs%2Fmoving-pictures%2Fempire-biplot.qzv) | [download](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/empire-biplot.qzv)
+- `empire-biplot.qzv` [view](https://view.qiime2.org/?src=https%3A%2F%2Fmchelper.ucsd.edu%2Fdownloads%2Fempress%2Fmaster%2Fempire-biplot.qzv) | [download]((https://mchelper.ucsd.edu/downloads/empress/master/moving-pictures/empire-biplot.qzv)
 
 Load the new Empire plot. Here we see the Empress plot as before on the left, and on the right is an Emperor PCoA biplot. If you are unfamiliar with Emperor plots, you can learn more about them [here](http://emperor.microbio.me/). Briefly, each individual circle represents a single sample’s microbial community and the distances between these circles corresponds to the Unweighted UniFrac distance between them in a reduced dimensional space. The top 10 explanatory features are shown as arrows alongside their id names. The number of features that is shown on the biplot is determined by the `--p-number-of-features` parameter.  
 For clarity, let’s remove the long feature-id labels. Right click anywhere on the Emperor plot and select *Toggle label visibility*. Next, in Emperor, from the main menu click on *Select a color category* and select `body-site` under the *scatter* subheading. Now our samples are color coded based on their body site origin. Notice the clear clustering of these sample-types. Next, click on the same drop-down menu and this time under the *biplot* subheading select `Level 2`. Now we can see the top explanatory features (arrows) colored by their Phyla designation. Switch over to Empress, change the plot layout to *Circular*, and set the *Feature metadata coloring* to `Level 2` also. Minimize the menu bar to fully appreciate the plots!   
@@ -210,17 +210,17 @@ This is a good example of when your data can tell you something about your metad
 ## Additional Considerations
 
 **Note**: When your ordination was created from a subset of your original dataset (e.g. the feature table was rarefied, or certain low-frequency features or samples were otherwise filtered out), we recommend that you carefully consider *which* feature table you would like to visualize in Empress. You can use either:
-                                                                                
+
 - A *filtered table* that matches the ordination (e.g. with rarefaction done, and/or with low-abundance features/samples removed), or
 - A *raw table* -- that is, the original table before performing rarefaction/filtering for the ordination.
 
 There are some pros and cons for either of these choices. If you use a *filtered table*, then the Empress visualization will include less data than in the *raw dataset*: this will impact sample presence information, sample metadata coloring, and other parts of the visualization. If you select the *raw table*, you might find that some nodes in the tree won't be represented by any of the samples in the ordination (if the ordination was made using a *filtered table*, and `--p-no-filter-unobserved-features-from-phylogeny` is used). If you'd like to read more about this, there's some informal discussion in [pull request 237](https://github.com/biocore/empress/pull/237).
 
 The command above uses the *raw dataset* and removes extra samples not represented in the ordination (using the `--p-filter-extra-samples` flag)
- 
+
 <!---# Animations   
 
-One unique feature that makes Empress useful for exploring time-series data or making exciting presentations is its animation capability, which allows us to stratify and view our data at each time point rather than all at once. To set up the animation sequence, click on the Animation section from the main menu. From the *Gradient* drop-down menu, select `days-since-experiment-start`, the number of unique values in this column will be equal to the number of sequences we see in the final animation. From the *Trajectory* drop-down menu, select `body-site`, this will be the grouping factor by which the branch colors will be set to. Remember that colors on the plot represent branches unique to that group, branches that are shared between groups are not colored. Click on the `Start` button to initiate the animation and minimize the menu to view the full plot. You will begin to see a sequence of plots (automatically changing every few seconds) that represent the data at each time point found in the *days-since-experiment-start* column. At any point you can pause the animation by clicking on the `Pause` button and manually browse through the time points using the `Next Frame`, `Previous Frame`, or `Resume` buttons. Click `Stop` to terminate the animations. ---> 
+One unique feature that makes Empress useful for exploring time-series data or making exciting presentations is its animation capability, which allows us to stratify and view our data at each time point rather than all at once. To set up the animation sequence, click on the Animation section from the main menu. From the *Gradient* drop-down menu, select `days-since-experiment-start`, the number of unique values in this column will be equal to the number of sequences we see in the final animation. From the *Trajectory* drop-down menu, select `body-site`, this will be the grouping factor by which the branch colors will be set to. Remember that colors on the plot represent branches unique to that group, branches that are shared between groups are not colored. Click on the `Start` button to initiate the animation and minimize the menu to view the full plot. You will begin to see a sequence of plots (automatically changing every few seconds) that represent the data at each time point found in the *days-since-experiment-start* column. At any point you can pause the animation by clicking on the `Pause` button and manually browse through the time points using the `Next Frame`, `Previous Frame`, or `Resume` buttons. Click `Stop` to terminate the animations. --->
 
 # Acknowledgements
 
