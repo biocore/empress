@@ -17,7 +17,7 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                     null
                 );
                 var layoutToCoordSuffix = { Circular: "c1" };
-                var td_to_ind = {
+                var tdToInd = {
                     name: 0,
                     x2: 1,
                     y2: 2,
@@ -102,7 +102,7 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                 this.empress = new Empress(
                     tree,
                     treeData,
-                    td_to_ind,
+                    tdToInd,
                     null,
                     layoutToCoordSuffix,
                     "Circular",

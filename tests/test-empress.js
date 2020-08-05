@@ -58,7 +58,7 @@ require([
                     ["EmpressNode6", 39, 40, 11, 12, 25, 26, 0, 0, 0],
                     ["root", 41, 42, 13, 14, 27, 28, 0, 0, 0],
                 ];
-                var td_to_ind = {
+                var tdToInd = {
                     name: 0,
                     x2: 1,
                     y2: 2,
@@ -144,7 +144,7 @@ require([
                 this.empress = new Empress(
                     tree,
                     treeData,
-                    td_to_ind,
+                    tdToInd,
                     nameToKeys,
                     layoutToCoordSuffix,
                     "Unrooted",

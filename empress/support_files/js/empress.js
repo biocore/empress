@@ -57,7 +57,7 @@ define([
     function Empress(
         tree,
         treeData,
-        td_to_ind,
+        tdToInd,
         nameToKeys,
         layoutToCoordSuffix,
         defaultLayout,
@@ -113,29 +113,29 @@ define([
         /**
          * @type {Object}
          */
-        this._td_to_ind = td_to_ind;
+        this._tdToInd = tdToInd;
 
         // add additional info to treeData
         // Note: this information is not added in core.py because the values
         //       are initialized the same.
-        for (var key in this._td_to_ind) {
-            this._td_to_ind[key] += 3;
+        for (var key in this._tdToInd) {
+            this._tdToInd[key] += 3;
         }
-        this._td_to_ind.color = 0;
-        this._td_to_ind.isColored = 1;
-        this._td_to_ind.visible = 2;
+        this._tdToInd.color = 0;
+        this._tdToInd.isColored = 1;
+        this._tdToInd.visible = 2;
 
         // count number of tips and set default color/visible
         // Note: currently empress tree uses 1-based index since the bp-tree
         //       bp-tree.js is based off of used 1-based index.
         for (var i = 1; i <= this._tree.size; i++) {
             this._treeData[i].splice(
-                this._td_to_ind.color,
+                this._tdToInd.color,
                 0,
                 this.DEFAULT_COLOR
             );
-            this._treeData[i].splice(this._td_to_ind.isColored, 0, false);
-            this._treeData[i].splice(this._td_to_ind.visible, 0, true);
+            this._treeData[i].splice(this._tdToInd.isColored, 0, false);
+            this._treeData[i].splice(this._tdToInd.visible, 0, true);
         }
 
         /**
@@ -321,7 +321,7 @@ define([
      *         undefined will be returned.
      */
     Empress.prototype.getNodeInfo = function (node, attr) {
-        return node[this._td_to_ind[attr]];
+        return node[this._tdToInd[attr]];
     };
 
     /**
@@ -337,7 +337,7 @@ define([
      *                      node.
      */
     Empress.prototype.setNodeInfo = function (node, attr, value) {
-        node[this._td_to_ind[attr]] = value;
+        node[this._tdToInd[attr]] = value;
     };
 
     /**
