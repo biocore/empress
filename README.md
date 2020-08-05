@@ -155,7 +155,7 @@ These patterns should look familiar -- this is the same information as we showed
 
 ![empress barplots: phylum coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_3.png)
 
-Since both the node colorings and the barplot layer are showing the same information (`Level 2`), this display is a bit redundant. Let's try taking things down a level, and adjust our barplot layer to show the `Level 3` feature metadata field (a.k.a. the class-level taxonomic assignments). To do this, adjust the drop-down menu next to the *Color by...* box to go from `Level 2` to `Level 3`, and then click the *Update* button again.
+Since both the node colorings and the barplot layer are showing the same information (`Level 2`), this display is a bit redundant. Let's try taking things down a level, and adjust our barplot layer to show the `Level 3` feature metadata field (a.k.a. the class-level taxonomic assignments). To do this, adjust the drop-down menu next to the *Color by...* box (under the _Layer 1_ header in the _Barplots_ section, not in the _Feature Metadata Coloring_ section) to go from `Level 2` to `Level 3`, and then click the *Update* button again.
 
 ![empress barplots: class coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_4.png)
 
