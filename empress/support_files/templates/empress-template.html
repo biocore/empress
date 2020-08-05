@@ -139,7 +139,7 @@
         var empress = new Empress(
             tree,
             {{ tree_data }},
-            {{ td_to_ind }},
+            {{ td_to_ind | tojson }},
             {{ names_to_keys | tojson }},
             {{ layout_to_coordsuffix | tojson }},
             '{{ default_layout }}',

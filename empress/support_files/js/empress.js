@@ -98,7 +98,6 @@ define([
          * @private
          */
         this._tree = tree;
-        this._numTips = 0;
 
         /**
          * @type {Array}
@@ -119,12 +118,11 @@ define([
         // Note: this information is not added in core.py because the values
         //       are initialized the same.
         for (var key in this._td_to_ind) {
-            this._td_to_ind[key] += 4;
+            this._td_to_ind[key] += 3;
         }
         this._td_to_ind.color = 0;
         this._td_to_ind.isColored = 1;
         this._td_to_ind.visible = 2;
-        this._td_to_ind.inSample = 3;
 
         // count number of tips and set default color/visible
         // Note: currently empress tree uses 1-based index since the bp-tree
@@ -137,10 +135,6 @@ define([
             );
             this._treeData[i].splice(this._td_to_ind.isColored, 0, false);
             this._treeData[i].splice(this._td_to_ind.visible, 0, true);
-            this._treeData[i].splice(this._td_to_ind.inSample, 0, false);
-            if (this._tree.isleaf(this._tree.postorderselect(i))) {
-                this._numTips++;
-            }
         }
 
         /**
@@ -315,14 +309,33 @@ define([
         this.centerLayoutAvgPoint();
     };
 
+    /**
+     * Retrive an attribute from a node.
+     *
+     * @param{Array} node An array that holds all the attributes for a given
+     *                     node. Note: this is an entry in this._treeData.
+     * @param{String} attr The attribute to retive from node.
+     *
+     * @return The attribute, If attr is not a valid attribute of node, then
+     *         undefined will be returned.
+     */
     Empress.prototype.getNodeInfo = function (node, attr) {
         return node[this._td_to_ind[attr]];
     };
 
+    /**
+     * Sets an attribute of a node.
+     *
+     * Note: this method does not perfom any kind of validation. It is assumed
+     *       that node, attr and value are all valid.
+     *
+     * @param{Array} node An array that holds all the attributes for a given
+     *                     node. Note: this is an entry in this._treeData.
+     * @param{String} attr The attribute to set in node.
+     * @param{Object} value The value to set for the given attribute for the
+     *                      node.
+     */
     Empress.prototype.setNodeInfo = function (node, attr, value) {
-        if (this.getNodeInfo(node, attr) === undefined) {
-            throw "Invalid attribute.";
-        }
         node[this._td_to_ind[attr]] = value;
     };
 
@@ -591,12 +604,12 @@ define([
 
     Empress.prototype.getX = function (nodeObj) {
         var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
-        return nodeObj[this._td_to_ind[xname]];
+        return this.getNodeInfo(nodeObj, xname);
     };
 
     Empress.prototype.getY = function (nodeObj) {
         var yname = "y" + this._layoutToCoordSuffix[this._currentLayout];
-        return nodeObj[this._td_to_ind[yname]];
+        return this.getNodeInfo(nodeObj, yname);
     };
 
     /**
@@ -1630,7 +1643,7 @@ define([
      *
      *      2) Assigns each internal node to a group if all of its children belong
      *         to the same group.
-     *
+     *@t
      *      3) Remove empty groups from return object.
      *
      * Note: All tips that are not passed into obs are considered to belong to
@@ -1683,7 +1696,6 @@ define([
 
                 // add internal nodes to groups
                 if (obs[category].has(node)) {
-                    this.setNodeInfo(this._treeData[node], "inSample", true);
                     obs[category].add(parent);
                 }
                 if (notRepresented.has(node)) {
