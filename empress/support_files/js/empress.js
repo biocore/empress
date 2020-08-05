@@ -1144,7 +1144,7 @@ define([
         for (i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 var node = this._treeData[i];
-                var name = node.name;
+                var name = this.getNodeInfo(node, "name");
                 // Don't draw bars for tips that aren't in the BIOM table
                 // (Note that this is only for the sample metadata barplots --
                 // these tips could still ostensibly have associated
@@ -1327,7 +1327,7 @@ define([
         for (i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 var node = this._treeData[i];
-                var name = node.name;
+                var name = this.getNodeInfo(node, "name");
                 var fm;
                 // Assign this tip's bar a color
                 var color;
