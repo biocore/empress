@@ -102,9 +102,10 @@ define([
         /**
          * @type {Array}
          * The metadata associated with the tree branches
-         * Note: postorder positions are used as indicies because node names are
-         *       not assumed to be unique. Use nameToKeys to convert a name to
-         *       list of indicies associated with it. indicies start at 1
+         * Note: postorder positions are used as indices because internal node
+         *       names are not assumed to be unique. Use nameToKeys to
+         *       convert a name to the list of indices associated with it.
+         *       indices start at 1, for now; see #223 on GitHub.
          * @private
          */
         this._treeData = treeData;

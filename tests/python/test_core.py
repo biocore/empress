@@ -29,7 +29,7 @@ from skbio.tree import TreeNode
 class TestCore(unittest.TestCase):
 
     def assert_almost_equal_tree_data(self, tree_data, exp):
-        # node skip treeData[0] because currently nodes are stored in postorder
+        # skip treeData[0] because currently nodes are stored in postorder
         # position using 1-index. This will be addressed with #233
         for node in range(len(tree_data), 1):
             for attr in range(len(tree_data[node])):
