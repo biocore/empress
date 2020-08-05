@@ -34,13 +34,13 @@ In this tutorial we will be using Empress within the QIIME 2 environment, and de
 
 ## Downloading Input Artifacts and Metadata  
 
-Before we start, we’ll need to download the necessary input artifacts -- all of which are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/). These are:
+Before we start, we’ll need to download the necessary input artifacts. The first four of these artifacts are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/), and the last artifact was produced afterwards using data from the tutorial. These artifacts are:
 
 1. A feature table (a QIIME 2 artifact of type `FeatureTable[Frequency]`)
-1. A sample metadata file (a [tab-separated-value](https://en.wikipedia.org/wiki/Tab-separated_values) file)
-1. A rooted tree (a QIIME 2 artifact of type `Phylogeny[Rooted]`)
-1. Taxonomic assignments of our features (a QIIME 2 artifact of type `FeatureData[Taxonomy]`)
-1. A PCoA biplot results file (a QIIME 2 artifact of type `PCoAResults % Properties('biplot')`)
+2. A sample metadata file (a [tab-separated-value](https://en.wikipedia.org/wiki/Tab-separated_values) file)
+3. A rooted tree (a QIIME 2 artifact of type `Phylogeny[Rooted]`)
+4. Taxonomic assignments of our features (a QIIME 2 artifact of type `FeatureData[Taxonomy]`)
+5. A PCoA biplot results file (a QIIME 2 artifact of type `PCoAResults % Properties('biplot')`)
     - This artifact in particular was produced by the [`qiime diversity pcoa`](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin, but ordinations / biplots created by other tools (e.g. [DEICODE](https://github.com/biocore/DEICODE/)) also work well with Empress.
 
 The last item is required only when displaying an Empress tree plot in tandem with an Emperor PCoA plot/biplot (a.k.a. an Empire plot!)
@@ -92,7 +92,7 @@ qiime tools view empress-tree.qzv
 ```
 ![empress_plain](docs/moving-pictures/img/empress_plain.png)
 
-The starting plot is a simple unrooted tree which has all the normal properties of a phylogenetic tree. The outermost “tips” of the tree are referred to as “leafs”, “terminal nodes”, or “external nodes” and here represent a unique ASV. The line connected to this external node is referred to as a “branch”. A branch connects two or more nodes, in this case an external node to an internal node. These internal nodes represent a divergent point between nodes and the branch length represents the evolutionary distance between divergence points.  
+The starting plot is a simple unrooted tree which has all the normal properties of a phylogenetic tree. The outermost “tips” of the tree are referred to as “leaves”, “terminal nodes”, or “external nodes” and here represent a unique ASV. The line connected to this external node is referred to as a “branch”. A branch connects two or more nodes, in this case an external node to an internal node. These internal nodes represent a divergent point between nodes and the branch length represents the evolutionary distance between divergence points.
 You can use your mouse’s scroll wheel to zoom in and out, and click and drag anywhere on the plot to move the display to take a closer look at the various tree components. On the top-right we see a display menu with several subcategories that allow us to customize the plot. We will explore these options in more detail below.  
 
 
@@ -141,7 +141,7 @@ In this plot the colored branches represent lineages that are unique to the corr
 
 ### Visualizing feature / sample metadata in barplots
 
-Similarly to other tree visualization tools like [iTOL](https://itol.embl.de/), Empress can draw barplots in order to annotate tips of the tree with various types of information. Barplots are useful for doing this (moreso than node coloring, sometimes) because multiple "layers" of barplots can be shown at the same time -- this allows for us to view multiple types of data for the same tip simultaneously. Check out Figure 1 of [Song and Sanders et al. 2019](https://mbio.asm.org/node/61763.full) for just one example of a tree visualization using multiple layers of barplots for a pretty and effective figure.
+Similarly to other tree visualization tools like [iTOL](https://itol.embl.de/), Empress can draw barplots in order to annotate tips of the tree with various types of information. Barplots are useful for doing this (moreso than node coloring, sometimes) because multiple "layers" of barplots can be shown at the same time -- this allows for us to view multiple types of data for the same tip simultaneously. Check out Figure 1 of [Song and Sanders et al. 2020](https://mbio.asm.org/node/61763.full) for just one example of a tree visualization using multiple layers of barplots for a pretty and effective figure.
 
 Barplots in Empress are currently only compatible with the rectangular layout, but support for circular-layout barplots is planned. To use barplots, change the layout to *Rectangular* (using the *Layout* section of the main menu), and then open up the *Barplots* section of the main menu and check the `Draw Barplots?` checkbox. By default, a red bar of uniform length will be drawn for every tip in the tree:
 
@@ -155,11 +155,11 @@ These patterns should look familiar -- this is the same information as we showed
 
 ![empress barplots: phylum coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_3.png)
 
-Since both the node colorings and the barplot layer are showing the same information (`Level 2`), this display is a bit redundant. Let's try taking things down a level, and adjust our barplot layer to show the `Level 3` feature metadata field (a.k.a. the class-level taxonomic assignments). To do this, adjust the drop-down menu next to the *Color by...* box to go from `Level 2` to `Level 3`, and then click the *Update* button again.
+Since both the node colorings and the barplot layer are showing the same information (`Level 2`), this display is a bit redundant. Let's try taking things down a level, and adjust our barplot layer to show the `Level 3` feature metadata field (a.k.a. the class-level taxonomic assignments). To do this, adjust the drop-down menu next to the *Color by...* box (under the _Layer 1_ header in the _Barplots_ section, not in the _Feature Metadata Coloring_ section) to go from `Level 2` to `Level 3`, and then click the *Update* button again.
 
 ![empress barplots: class coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_4.png)
 
-Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at roughly five separate "clusters" throughout the tree: this doesn't necessarily mean that this is the same class at all of these clusters, since colors can be reused if there are more classes than colors for a given color map, but in this case coloring the tree by `Level 3` (and looking at the resulting legend) lets us confirm that there's only one lavender class. Try clicking on a node within one of these clusters to see what its class is.
+Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at roughly five separate "clusters" throughout the tree: this doesn't necessarily mean that this is the same class at all of these clusters, since colors can be reused if there are more classes than colors for a given color map, but in this case coloring the tree by `Level 3` (and looking at the resulting legend) lets us confirm that there's only one lavender class. Try clicking on a node within one of these clusters to see what this class is.
 
 It turns out that these lavender classes are all *Clostridia*. Does it make sense that representatives of this class are spread out throughout the tree so much? Unfortunately, yes, since *Clostridia* are -- to quote [Wikipedia](https://en.wikipedia.org/wiki/Clostridia) -- "a highly [polyphyletic](https://en.wikipedia.org/wiki/Polyphyly) class." (As an exercise, we recommend trying out adding on extra barplot layers for lower levels of taxonomy -- order, family, genus, etc. -- and seeing how things change.)
 
