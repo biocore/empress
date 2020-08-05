@@ -262,7 +262,9 @@ class Empress():
 
         # Compute coordinates resulting from layout algorithm(s)
         # TODO: figure out implications of screen size
-        layout_to_coordsuffix, default_layout = self.tree.coords(4020, 4020)
+        layout_to_coordsuffix, default_layout, yrscf = self.tree.coords(
+            4020, 4020
+        )
 
         # store node data in a postorder fashion.
         # Note: currently, bp-tree uses 1-based index so the first element is 1
@@ -380,6 +382,7 @@ class Empress():
             # layout information
             'layout_to_coordsuffix': layout_to_coordsuffix,
             'default_layout': default_layout,
+            'yrscf': yrscf,
             # Emperor integration
             'emperor_div': '',
             'emperor_require_logic': '',

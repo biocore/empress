@@ -148,6 +148,9 @@ require([
                     nameToKeys,
                     layoutToCoordSuffix,
                     "Unrooted",
+                    // Rectangular layout y scaling factor
+                    // equal to 4020 / (# leaves - 1) = 4020 / 3 = 1,340.0
+                    1340.0,
                     biom,
                     featureColumns,
                     tipMetadata,
@@ -315,9 +318,14 @@ require([
                 "discrete-coloring-qiime"
             );
 
-            // Group 'a' is the only group that contains unique features. Thus,
-            // group b should be removed by _projectObservations
-            var groups = ["a"];
+            // Although Group "b" doesn't contain any unique features, we now
+            // include all groups (regardless of whether or not they contain
+            // unique features) in the color map and legend. Therefore, we
+            // should see both "a" and "b" in the output of colorBySampleCat().
+            // (_projectObservations() will still remove group "b", but this
+            // shouldn't actually impact the display -- it'll just reduce the
+            // size of its output slightly.)
+            var groups = ["a", "b"];
             var resultGroups = util.naturalSort(Object.keys(cm));
             deepEqual(resultGroups, groups);
 
@@ -1154,6 +1162,53 @@ require([
             };
             var rootValues = e.computeIntSamplePresence(7, fields);
             deepEqual(rootValues.fieldsMap, rootPresence);
+        });
+
+        test("Test getUniqueFeatureMetadataInfo (method = tip)", function () {
+            var f1UniqueValues = ["1", "2"];
+            var f1Info = this.empress.getUniqueFeatureMetadataInfo("f1", "tip");
+            deepEqual(f1Info.sortedUniqueValues, ["1", "2"]);
+            // Tips 2 and 3 have a f1 value of 1
+            deepEqual(
+                new Set(f1Info.uniqueValueToFeatures["1"]),
+                new Set(["2", "3"])
+            );
+            // Tips 1 and EmpressNode6 have a f1 value of 2
+            deepEqual(
+                new Set(f1Info.uniqueValueToFeatures["2"]),
+                new Set(["1", "EmpressNode6"])
+            );
+        });
+        test("Test getUniqueFeatureMetadataInfo (method = all)", function () {
+            var f1UniqueValues = ["1", "2"];
+            var f1Info = this.empress.getUniqueFeatureMetadataInfo("f1", "all");
+            deepEqual(f1Info.sortedUniqueValues, ["1", "2"]);
+            // Tips 2 and 3, and the internal node(s) named "internal",
+            // have a f1 value of 1
+            deepEqual(
+                new Set(f1Info.uniqueValueToFeatures["1"]),
+                new Set(["internal", "2", "3"])
+            );
+            // Tips 1 and EmpressNode6 have a f1 value of 2
+            deepEqual(
+                new Set(f1Info.uniqueValueToFeatures["2"]),
+                new Set(["1", "EmpressNode6"])
+            );
+        });
+        test("Test getUniqueFeatureMetadataInfo (invalid fm column)", function () {
+            var scope = this;
+            throws(function () {
+                scope.empress.getUniqueFeatureMetadataInfo("f3", "tip");
+            }, /Feature metadata column "f3" not present in data./);
+        });
+        test("Test getUniqueFeatureMetadataInfo (invalid method)", function () {
+            var scope = this;
+            throws(function () {
+                scope.empress.getUniqueFeatureMetadataInfo(
+                    "f1",
+                    "i'm invalid!"
+                );
+            }, /F. metadata coloring method "i'm invalid!" unrecognized./);
         });
     });
 });

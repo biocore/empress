@@ -54,7 +54,7 @@ docs:
 		--i-pcoa docs/moving-pictures/unweighted_unifrac_pcoa_results.qza \
 		--m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
 		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
-		--o-visualization docs/moving-pictures/empress-tree-tandem.qzv \
+		--o-visualization docs/moving-pictures/empire.qzv \
 		--p-filter-extra-samples
 	qiime empress plot \
 		--i-tree docs/moving-pictures/rooted-tree.qza \
@@ -62,6 +62,6 @@ docs:
 		--i-feature-table docs/moving-pictures/table.qza \
 		--m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
 		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
-		--o-visualization docs/moving-pictures/empress-tree-tandem-biplot.qzv \
+		--o-visualization docs/moving-pictures/empire-biplot.qzv \
 		--p-filter-extra-samples \
 		--p-number-of-features 10

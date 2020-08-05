@@ -9,11 +9,16 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *                      This should be an id in Colorer.__Colormaps.
      * @param{Array} values The values in a metadata field for which colors
      *                      will be generated.
-     *
+     * @param{Boolean} useQuantScale Defaults to false. If true, this'll
+     *                               attempt to scale colors linearly based on
+     *                               their numeric values. (This will only be
+     *                               used if the input color map is sequential
+     *                               or diverging; if the color map is
+     *                               discrete, then this will be ignored.)
      * @return{Colorer}
      * constructs Colorer
      */
-    function Colorer(color, values) {
+    function Colorer(color, values, useQuantScale = false) {
         // Remove duplicate values and sort the values sanely
         this.sortedUniqueValues = util.naturalSort(_.uniq(values));
 
@@ -22,22 +27,16 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
 
-        // Figure out what "type" of color map has been selected (should be one
-        // of discrete, sequential, or diverging)
-        this.selectedColorMap = _.find(Colorer.__Colormaps, function (cm) {
-            return cm.id === color;
-        });
-
-        // Based on the determined color map type, assign colors accordingly
-        if (this.selectedColorMap.type === Colorer.DISCRETE) {
+        // Based on the color map type and the value of useQuantScale, assign
+        // colors accordingly
+        if (Colorer.isColorMapDiscrete(this.color)) {
             this.assignDiscreteColors();
-        } else if (
-            this.selectedColorMap.type === Colorer.SEQUENTIAL ||
-            this.selectedColorMap.type === Colorer.DIVERGING
-        ) {
-            this.assignOrdinalScaledColors();
         } else {
-            throw new Error("Invalid color map " + this.color + " specified");
+            if (useQuantScale) {
+                this.assignContinuousScaledColors();
+            } else {
+                this.assignOrdinalScaledColors();
+            }
         }
     }
 
@@ -66,8 +65,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
     /**
      * Assigns colors from a sequential or diverging color palette (specified
-     * by this.color) for every value in this.sortedUniqueValues. This will
-     * populate this.__valueToColor with this information.
+     * by this.color) for every value in this.sortedUniqueValues, taking into
+     * account only the relative positions of the values. This will populate
+     * this.__valueToColor with this information.
      *
      * Note the "ordinal" in the function name. This does not take into account
      * the actual magnitudes of numbers in the data -- all that matters is the
@@ -84,11 +84,11 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             this.__valueToColor[onlyVal] = chroma.brewer[this.color][0];
         } else {
             // ... Otherwise, do normal interpolation -- the first value gets
-            // the "first" color in the colormap, the last value gets the
-            // "last" color in the colormap, and things in between are
+            // the "first" color in the color map, the last value gets the
+            // "last" color in the color map, and things in between are
             // interpolated. Chroma takes care of all of the hard work.
             var interpolator = chroma
-                .scale(chroma.brewer[this.color])
+                .scale(this.color)
                 .domain([0, this.sortedUniqueValues.length - 1]);
 
             for (var i = 0; i < this.sortedUniqueValues.length; i++) {
@@ -96,6 +96,33 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
                 this.__valueToColor[val] = interpolator(i);
             }
         }
+    };
+
+    /**
+     * Assigns colors from a sequential or diverging color palette (specified
+     * by this.color) for every value in this.sortedUniqueValues, taking into
+     * account the magnitudes/etc. of the numeric values in
+     * this.sortedUniqueValues. This will populate this.__valueToColor with
+     * this information.
+     *
+     * Non-numeric values will not be assigned a color.
+     *
+     * This code was based on ColorViewController.getScaledColors() in Emperor:
+     * https://github.com/biocore/emperor/blob/b959aed7ffcb9fa3e4d019c6e93a1af3850564d9/emperor/support_files/js/color-view-controller.js#L398
+     */
+    Colorer.prototype.assignContinuousScaledColors = function () {
+        var scope = this;
+        var split = util.splitNumericValues(this.sortedUniqueValues);
+        if (split.numeric.length < 2) {
+            throw new Error("Category has less than 2 unique numeric values.");
+        }
+        var nums = _.map(split.numeric, parseFloat);
+        var min = _.min(nums);
+        var max = _.max(nums);
+        var interpolator = chroma.scale(this.color).domain([min, max]);
+        _.each(split.numeric, function (n) {
+            scope.__valueToColor[n] = interpolator(parseFloat(n));
+        });
     };
 
     /**
@@ -108,13 +135,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *                 G, B are all floats scaled to within the range [0, 1].
      */
     Colorer.prototype.getMapRGB = function () {
-        return _.mapObject(this.__valueToColor, function (color) {
-            // chroma(color).gl() returns an array with four components (RGBA
-            // instead of RGB). The slice() here strips off the final
-            // (transparency) element, which causes problems with Empress'
-            // drawing code
-            return chroma(color).gl().slice(0, 3);
-        });
+        return _.mapObject(this.__valueToColor, Colorer.hex2RGB);
     };
 
     /**
@@ -137,7 +158,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     };
 
     /**
-     * Adds all available color maps to the select object.
+     * Adds all available color maps to a select object.
      *
      * @param{Object} sel The select object to add color map options to.
      * @classmethod
@@ -155,6 +176,62 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             }
             sel.appendChild(opt);
         }
+    };
+
+    /**
+     * Converts a hex color to an RGB array suitable for use with WebGL.
+     *
+     * @param {String} hexString
+     * @return {Array} rgbArray
+     * @classmethod
+     */
+    Colorer.hex2RGB = function (hexString) {
+        // chroma(hexString).gl() returns an array with four components (RGBA
+        // instead of RGB). The slice() here strips off the final (alpha)
+        // element, which causes problems with Empress' drawing code.
+        return chroma(hexString).gl().slice(0, 3);
+    };
+
+    /**
+     * Returns the i-th hex color from the "Classic QIIME Colors" map, looping
+     * around as needed.
+     *
+     * @param {Number} i Nonnegative integer
+     * @return {String} Corresponding hex color
+     * @throws {Error} If i is negative
+     * @classmethod
+     */
+    Colorer.getQIIMEColor = function (i) {
+        if (i < 0) {
+            throw new Error("i must be nonnegative");
+        }
+        return Colorer.__qiimeDiscrete[i % Colorer.__qiimeDiscrete.length];
+    };
+
+    /**
+     * Given a color map's ID, determines if it's a discrete color map or not.
+     *
+     * The ID should match the "id" property of one of the color map objects
+     * within Colorer.__Colormaps.
+     *
+     * @param {String} colorMapID
+     * @return {Boolean} true if the color map with a matching ID is discrete;
+     *                   false otherwise.
+     * @throws {Error} If no color map matches the ID.
+     * @classmethod
+     */
+    Colorer.isColorMapDiscrete = function (colorMapID) {
+        var colorMapObj = _.find(Colorer.__Colormaps, function (cm) {
+            return cm.id === colorMapID;
+        });
+        // If no color map has the requested ID, then throw an error.
+        // (e.g. "-- Discrete --"), then throw an error.
+        if (_.isUndefined(colorMapObj)) {
+            throw new Error(
+                'Invalid color map ID "' + colorMapID + '" specified'
+            );
+        }
+        return colorMapObj.type === Colorer.DISCRETE;
     };
 
     Colorer.DISCRETE = "Discrete";
@@ -191,10 +268,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         "#808000",
         "#008080",
     ];
-
-    // This is also the default "nanColor" for Emperor. (We could make this
-    // configurable if desired.)
-    Colorer.NANCOLOR = "#64655d";
 
     // Used to create color select option and chroma.brewer
     //Modified from:

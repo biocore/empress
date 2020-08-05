@@ -90,7 +90,7 @@ def match_inputs(
         names. (Feature IDs here can describe tips or internal nodes in the
         tree.)
     ordination: skbio.OrdinationResults, optional
-        The ordination to display in a tandem plot.
+        The ordination to display in an empire plot.
     ignore_missing_samples: bool
         If True, pads missing samples (i.e. samples in the table but not the
         metadata) with placeholder metadata. If False, raises a

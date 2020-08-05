@@ -5,6 +5,7 @@ define([
     "Colorer",
     "VectorOps",
     "CanvasEvents",
+    "BarplotPanel",
     "util",
     "chroma",
 ], function (
@@ -14,6 +15,7 @@ define([
     Colorer,
     VectorOps,
     CanvasEvents,
+    BarplotPanel,
     util,
     chroma
 ) {
@@ -32,6 +34,9 @@ define([
      *                       writing should map to "2" since it's represented
      *                       by a node's x2 and y2 coordinates in the data.
      * @param {String} defaultLayout The default layout to draw the tree with
+     * @param {Number} yrScalingFactor Vertical scaling factor for the
+     *                                 rectangular layout. Used to set the
+     *                                 height of barplots.
      * @param {BIOMTable} biom The BIOM table used to color the tree
      * @param {Array} featureMetadataColumns Columns of the feature metadata.
      *                Note: The order of this array should match the order of
@@ -56,6 +61,7 @@ define([
         nameToKeys,
         layoutToCoordSuffix,
         defaultLayout,
+        yrScalingFactor,
         biom,
         featureMetadataColumns,
         tipMetadata,
@@ -185,6 +191,30 @@ define([
          */
         this._defaultLayout = defaultLayout;
         this._currentLayout = defaultLayout;
+
+        /**
+         * @type {BarplotPanel}
+         * Manages a collection of BarplotLayers, as well as the state of the
+         * barplot panel. Also can call Empress.drawBarplots() /
+         * Empress.undrawBarplots() when needed.
+         * @private
+         */
+        this._barplotPanel = new BarplotPanel(this, this._defaultLayout);
+
+        /**
+         * @type {Number}
+         * The y scaling factor for the rectangular layout. This is used to
+         * adjust the thickness of barplot bars.
+         * @private
+         */
+        this._yrscf = yrScalingFactor;
+
+        /**
+         * @type{Boolean}
+         * Indicates whether or not barplots are currently drawn.
+         * @private
+         */
+        this._barplotsDrawn = false;
 
         /**
          * type {Object}
@@ -848,13 +878,13 @@ define([
      *                    anything. (If this is < 0, this will throw an error.
      *                    But this really shouldn't happen, since this
      *                    parameter should be the output from
-     *                    util.parseAndValidateLineWidth().)
+     *                    util.parseAndValidateNum().)
      */
     Empress.prototype.thickenColoredNodes = function (lw) {
         // If lw isn't > 0, then we don't thicken colored lines at all --
         // we just leave them at their default width.
         if (lw < 0) {
-            // should never happen because util.parseAndValidateLineWidth()
+            // should never happen because util.parseAndValidateNum()
             // should've been called in order to obtain lw, but in case
             // this gets messed up in the future we'll catch it
             throw "Line width passed to thickenColoredNodes() is < 0.";
@@ -1001,6 +1031,356 @@ define([
     };
 
     /**
+     * Clears the barplot buffer and re-draws the tree.
+     *
+     * This is useful for immediately disabling barplots, for example if the
+     * layout is switched to one that doesn't support barplots (e.g. unrooted)
+     * or if the user unchecks the "Draw barplots?" checkbox.
+     */
+    Empress.prototype.undrawBarplots = function () {
+        this._drawer.loadBarplotBuff([]);
+        this.drawTree();
+        this._barplotsDrawn = false;
+    };
+
+    /**
+     * Draws barplots on the tree.
+     *
+     * @param {Array} layers An array of BarplotLayer objects. This can just be
+     *                       the "layers" attribute of a BarplotPanel object.
+     * @throws {Error} If any of the following conditions are met:
+     *                 -One of the layers is of barplot type "fm" and:
+     *                    -A field with < 2 unique numeric values is used to
+     *                     scale colors
+     *                    -A field with < 2 unique numeric values is used to
+     *                     scale lengths
+     *                    -Length scaling is attempted, and the layer's
+     *                     scaleLengthByFMMax attribute is smaller than its
+     *                     scaleLengthByFMMin attribute
+     */
+    Empress.prototype.drawBarplots = function (layers) {
+        var scope = this;
+        // TODO: In order to add support for circular layout barplots, much of
+        // this function will need to be reworked to handle those (e.g.
+        // computing the maximum radius from the root node at (0, 0) rather
+        // than the maximum X; changing the position of barplots; likely
+        // altering how this._yrscf is used; etc.)
+        var coords = [];
+        var maxX = -Infinity;
+        for (var i = 1; i < this._tree.size; i++) {
+            if (this._tree.isleaf(this._tree.postorderselect(i))) {
+                var x = this.getX(this._treeData[i]);
+                if (x > maxX) {
+                    maxX = x;
+                }
+            }
+        }
+        // Add on a gap between the rightmost node and the leftmost point of
+        // the first barplot layer. This could be made into a
+        // barplot-panel-level configurable thing if desired.
+        maxX += 100;
+
+        // As we iterate through the layers, we'll store the "previous layer
+        // max X" as a separate variable. This will help us easily work with
+        // layers of varying lengths.
+        var prevLayerMaxX = maxX;
+
+        _.each(layers, function (layer) {
+            if (layer.barplotType === "sm") {
+                prevLayerMaxX = scope.addSMBarplotLayerCoords(
+                    layer,
+                    coords,
+                    prevLayerMaxX
+                );
+            } else {
+                prevLayerMaxX = scope.addFMBarplotLayerCoords(
+                    layer,
+                    coords,
+                    prevLayerMaxX
+                );
+            }
+        });
+        // NOTE that we purposefuly don't clear the barplot buffer until we
+        // know all of the barplots are valid. If we were to call
+        // this.loadBarplotBuff([]) at the start of this function, then if we'd
+        // error out in the middle, the barplot buffer would be cleared without
+        // the tree being redrawn; this would result in the barplots
+        // disappearing the next time the user did something that prompted a
+        // redrawing of the tree (e.g. zooming or panning), which would be
+        // confusing.
+        this._drawer.loadBarplotBuff([]);
+        this._drawer.loadBarplotBuff(coords);
+        this.drawTree();
+        this._barplotsDrawn = true;
+    };
+
+    Empress.prototype.addSMBarplotLayerCoords = function (
+        layer,
+        coords,
+        prevLayerMaxX
+    ) {
+        var scope = this;
+        var sortedUniqueValues = this.getUniqueSampleValues(
+            layer.colorBySMField
+        );
+        var colorer = new Colorer(layer.colorBySMColorMap, sortedUniqueValues);
+        var sm2color = colorer.getMapRGB();
+        // Bar thickness
+        var halfyrscf = this._yrscf / 2;
+        for (i = 1; i < this._tree.size; i++) {
+            if (this._tree.isleaf(this._tree.postorderselect(i))) {
+                var node = this._treeData[i];
+                var name = node.name;
+                // Don't draw bars for tips that aren't in the BIOM table
+                // (Note that this is only for the sample metadata barplots --
+                // these tips could still ostensibly have associated
+                // feature metadata)
+                if (this._biom.getObsIDsDifference([name]).length > 0) {
+                    continue;
+                }
+                // Figure how many samples across each unique value in the
+                // selected sample metadata field contain this tip. (This is
+                // computed the same way as the information shown in the
+                // selected node menu's "Sample Presence Information" section.)
+                var spi = this.computeTipSamplePresence(name, [
+                    layer.colorBySMField,
+                ])[layer.colorBySMField];
+
+                // Sum the values of the sample presence information, getting
+                // us the total number of samples containing this tip.
+                // JS doesn't have a built-in sum() function, so I couldn't
+                // think of a better way to do this. Taken from
+                // https://underscorejs.org/#reduce.
+                var totalSampleCt = _.reduce(
+                    _.values(spi),
+                    function (a, b) {
+                        return a + b;
+                    },
+                    0
+                );
+                var prevSectionMaxX = prevLayerMaxX;
+                for (var v = 0; v < sortedUniqueValues.length; v++) {
+                    var smVal = sortedUniqueValues[v];
+                    var ct = spi[smVal];
+                    if (ct > 0) {
+                        var sectionColor = sm2color[smVal];
+                        // Assign each unique sample metadata value a length
+                        // proportional to its, well, proportion within the sample
+                        // presence information for this tip.
+                        var barSectionLen =
+                            layer.lengthSM * (ct / totalSampleCt);
+                        var thisSectionMaxX = prevSectionMaxX + barSectionLen;
+                        var y = this.getY(node);
+                        var ty = y + halfyrscf;
+                        var by = y - halfyrscf;
+                        var corners = {
+                            tL: [prevSectionMaxX, ty],
+                            tR: [thisSectionMaxX, ty],
+                            bL: [prevSectionMaxX, by],
+                            bR: [thisSectionMaxX, by],
+                        };
+                        this._addTriangleCoords(coords, corners, sectionColor);
+                        prevSectionMaxX = thisSectionMaxX;
+                    }
+                }
+            }
+        }
+        // The bar lengths are identical for all tips in this layer, so no need
+        // to do anything fancy to compute the maximum X coordinate.
+        return prevLayerMaxX + layer.lengthSM;
+    };
+
+    Empress.prototype.addFMBarplotLayerCoords = function (
+        layer,
+        coords,
+        prevLayerMaxX
+    ) {
+        var maxX = prevLayerMaxX;
+        var fm2color, colorFMIdx;
+        var fm2length, lengthFMIdx;
+        var msg;
+        // Map feature metadata values to colors, if requested (i.e. if
+        // layer.colorByFM is true). If not requested, we'll just use the
+        // layer's default color.
+        if (layer.colorByFM) {
+            var sortedUniqueColorValues = this.getUniqueFeatureMetadataInfo(
+                layer.colorByFMField,
+                "tip"
+            ).sortedUniqueValues;
+            // If this field is invalid then an error would have been
+            // raised in this.getUniqueFeatureMetadataInfo().
+            // (But... it really shouldn't be.)
+            colorFMIdx = _.indexOf(
+                this._featureMetadataColumns,
+                layer.colorByFMField
+            );
+            // We pass the true/false value of the "Continuous values?"
+            // checkbox to Colorer regardless of if the selected color map
+            // is discrete or sequential/diverging. This is because the Colorer
+            // class constructor is smart enough to ignore useQuantScale = true
+            // if the color map is discrete in the first place. (This is tested
+            // in the Colorer tests; ctrl-F for "CVALDISCRETETEST" in
+            // tests/test-colorer.js to see this.)
+            var colorer;
+            try {
+                colorer = new Colorer(
+                    layer.colorByFMColorMap,
+                    sortedUniqueColorValues,
+                    layer.colorByFMContinuous
+                );
+            } catch (err) {
+                // If the Colorer construction failed (should only have
+                // happened if the user asked for continuous values but the
+                // selected field doesn't have at least 2 unique numeric
+                // values), then we open a toast message about this error and
+                // then raise it again (with some more context, e.g. the field
+                // name / barplot layer number). This lets us bail out of
+                // drawing barplots while still keeping the user aware of why
+                // nothing just got drawn/updated.
+                msg =
+                    "Error with assigning colors in barplot layer " +
+                    layer.num +
+                    ": " +
+                    'the feature metadata field "' +
+                    layer.colorByFMField +
+                    '" has less than 2 unique numeric values.';
+                util.toastMsg(msg, 5000);
+                throw msg;
+            }
+            fm2color = colorer.getMapRGB();
+        }
+
+        // Next, map feature metadata values to lengths if requested
+        if (layer.scaleLengthByFM) {
+            var sortedUniqueLengthValues = this.getUniqueFeatureMetadataInfo(
+                layer.scaleLengthByFMField,
+                "tip"
+            ).sortedUniqueValues;
+            lengthFMIdx = _.indexOf(
+                this._featureMetadataColumns,
+                layer.scaleLengthByFMField
+            );
+            // Taken from ColorViewController.getScaledColors() in Emperor
+            var split = util.splitNumericValues(sortedUniqueLengthValues);
+            if (split.numeric.length < 2) {
+                msg =
+                    "Error with scaling lengths in barplot layer " +
+                    layer.num +
+                    ": " +
+                    'the feature metadata field "' +
+                    layer.scaleLengthByFMField +
+                    '" has less than 2 unique numeric values.';
+                util.toastMsg(msg, 5000);
+                throw msg;
+            }
+            fm2length = {};
+            // Compute the maximum and minimum values in the field to use to
+            // scale length by
+            var nums = _.map(split.numeric, parseFloat);
+            var valMin = _.min(nums);
+            var valMax = _.max(nums);
+            // Compute the value range (based on the min/max values in the
+            // field) and the length range (based on the min/max length that
+            // the user has set for this barplot layer)
+            var valRange = valMax - valMin;
+            var lengthRange =
+                layer.scaleLengthByFMMax - layer.scaleLengthByFMMin;
+            if (lengthRange < 0) {
+                msg =
+                    "Error with scaling lengths in barplot layer " +
+                    layer.num +
+                    ": " +
+                    "Maximum length is greater than minimum length.";
+                util.toastMsg(msg, 5000);
+                throw msg;
+            }
+            _.each(split.numeric, function (n) {
+                var fn = parseFloat(n);
+                // uses linear interpolation (we could add fancier
+                // scaling methods in the future as options if desired)
+                // TODO: verify that this handles negative values properly
+                // and/or support drawing negative values in the opposite
+                // direction as positive ones
+                fm2length[fn] =
+                    ((fn - valMin) / valRange) * lengthRange +
+                    layer.scaleLengthByFMMin;
+            });
+        }
+
+        // Now that we know how to encode each tip's bar, we can finally go
+        // iterate through the tree and create bars for the tips.
+        var halfyrscf = this._yrscf / 2;
+        for (i = 1; i < this._tree.size; i++) {
+            if (this._tree.isleaf(this._tree.postorderselect(i))) {
+                var node = this._treeData[i];
+                var name = node.name;
+                var fm;
+                // Assign this tip's bar a color
+                var color;
+                if (layer.colorByFM) {
+                    if (_.has(this._tipMetadata, name)) {
+                        fm = this._tipMetadata[name][colorFMIdx];
+                        if (_.has(fm2color, fm)) {
+                            color = fm2color[fm];
+                        } else {
+                            // This tip has metadata, but its value for this
+                            // field is non-numeric. Unlike Emperor, we don't
+                            // assign a "NaN color" for these non-numeric vals.
+                            // We could change this if requested.
+                            continue;
+                        }
+                    } else {
+                        // Don't draw a bar if this tip doesn't have
+                        // feature metadata and we're coloring bars by
+                        // feature metadata
+                        continue;
+                    }
+                } else {
+                    color = layer.defaultColor;
+                }
+
+                // Assign this tip's bar a length
+                var length;
+                if (layer.scaleLengthByFM) {
+                    if (_.has(this._tipMetadata, name)) {
+                        fm = this._tipMetadata[name][lengthFMIdx];
+                        if (_.has(fm2length, fm)) {
+                            length = fm2length[fm];
+                        } else {
+                            // This tip has metadata, but its value for
+                            // this field is non-numeric
+                            continue;
+                        }
+                    } else {
+                        // This tip has no metadata
+                        continue;
+                    }
+                } else {
+                    length = layer.defaultLength;
+                }
+                // Update maxX if needed
+                if (length + prevLayerMaxX > maxX) {
+                    maxX = length + prevLayerMaxX;
+                }
+
+                // Finally, add this tip's bar data to to an array of data
+                // describing the bars to draw
+                var y = this.getY(node);
+                var ty = y + halfyrscf;
+                var by = y - halfyrscf;
+                var corners = {
+                    tL: [prevLayerMaxX, ty],
+                    tR: [prevLayerMaxX + length, ty],
+                    bL: [prevLayerMaxX, by],
+                    bR: [prevLayerMaxX + length, by],
+                };
+                this._addTriangleCoords(coords, corners, color);
+            }
+        }
+        return maxX;
+    };
+
+    /**
      *
      * Color the tree by sample groups
      *
@@ -1030,7 +1410,7 @@ define([
             obs = Array.from(observationsPerGroup[group]);
 
             // convert hex string to rgb array
-            var rgb = chroma(group).gl().slice(0, 3);
+            var rgb = Colorer.hex2RGB(group);
 
             for (var i = 0; i < obs.length; i++) {
                 this.setNodeInfo(this._treeData[obs[i]], "color", rgb);
@@ -1045,7 +1425,7 @@ define([
      *
      * @param {Array} names Array of tree node names
      *
-     * @return {Set} A set of keys cooresponding to entries in _treeData
+     * @return {Set} A set of keys corresponding to entries in _treeData
      */
     Empress.prototype._namesToKeys = function (names) {
         var keys = new Set();
@@ -1081,6 +1461,13 @@ define([
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
 
+        // Assign colors to categories
+        var colorer = new Colorer(color, categories);
+        // colors for drawing the tree
+        var cm = colorer.getMapRGB();
+        // colors for the legend
+        var keyInfo = colorer.getMapHex();
+
         // shared by the following for loops
         var i, j, category;
 
@@ -1090,9 +1477,15 @@ define([
             obs[category] = this._namesToKeys(obs[category]);
         }
 
-        // assign internal nodes to appropriate category based on its children
+        // Assign internal nodes to appropriate category based on their
+        // children. Note that _projectObservations()'s returned obs will
+        // not contain categories that aren't unique to any tips. This is why
+        // we created a Colorer above, so that we can include all unique sample
+        // metadata values in the color map / legend.
         obs = this._projectObservations(obs, this.ignoreAbsentTips);
 
+        // If there aren't *any* sample metadata values unique to any tips,
+        // then return null so that the caller can warn the user.
         if (Object.keys(obs).length === 0) {
             return null;
         }
@@ -1100,13 +1493,6 @@ define([
         // assigns node in obs to groups in this._groups
         this.assignGroups(obs);
 
-        // assign colors to categories
-        categories = util.naturalSort(Object.keys(obs));
-        var colorer = new Colorer(color, categories);
-        // colors for drawing the tree
-        var cm = colorer.getMapRGB();
-        // colors for the legend
-        var keyInfo = colorer.getMapHex();
         // color tree
         this._colorTree(obs, cm);
 
@@ -1114,25 +1500,26 @@ define([
     };
 
     /**
-     * Color the tree based on a feature metadata column.
+     * Retrieve unique value information for a feature metadata field.
      *
-     * @param {String} cat The feature metadata column to color nodes by.
-     *                     This must be present in this._featureMetadataColumns
-     *                     or an error will be thrown.
-     * @param {String} color The name of the color map to use.
-     * @param {String} method Defines how coloring is done. If this is "tip",
-     *                        then only tip-level feature metadata will be
-     *                        used, and (similar to sample coloring) upwards
-     *                        propagation of unique values will be done in
-     *                        order to color internal nodes where applicable.
-     *                        If this is "all", then this will use both tip and
-     *                        internal node feature metadata without doing any
-     *                        propagation. If this is anything else, this will
+     * @param {String} cat The feature metadata column to find information for.
+     *                     Must be present in this._featureMetadataColumns or
+     *                     an error will be thrown.
+     * @param {String} method Defines what feature metadata to check.
+     *                        If this is "tip", then only tip-level feature
+     *                        metadata will be used. If this is "all", then
+     *                        this will use both tip and internal node feature
+     *                        metadata. If this is anything else, this will
      *                        throw an error.
-     *
-     * @return {Object} Maps unique values in this f. metadata column to colors
+     * @return {Object} An object with two keys:
+     *                  -sortedUniqueValues: maps to an Array of the unique
+     *                   values in this feature metadata field, sorted using
+     *                   util.naturalSort().
+     *                  -uniqueValueToFeatures: maps to an Object which maps
+     *                   the unique values in this feature metadata column to
+     *                   an array of the node name(s) with each value.
      */
-    Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+    Empress.prototype.getUniqueFeatureMetadataInfo = function (cat, method) {
         // In order to access feature metadata for a given node, we need to
         // find the 0-based index in this._featureMetadataColumns that the
         // specified f.m. column corresponds to. (We *could* get around this by
@@ -1141,7 +1528,7 @@ define([
         // done once per coloring operation so this shouldn't be a bottleneck.)
         var fmIdx = _.indexOf(this._featureMetadataColumns, cat);
         if (fmIdx < 0) {
-            throw "Feature metadata column " + cat + " not present in data.";
+            throw 'Feature metadata column "' + cat + '" not present in data.';
         }
 
         // The coloring method influences how much of the feature metadata
@@ -1173,6 +1560,35 @@ define([
         var sortedUniqueValues = util.naturalSort(
             Object.keys(uniqueValueToFeatures)
         );
+        return {
+            sortedUniqueValues: sortedUniqueValues,
+            uniqueValueToFeatures: uniqueValueToFeatures,
+        };
+    };
+
+    /**
+     * Color the tree based on a feature metadata column.
+     *
+     * @param {String} cat The feature metadata column to color nodes by.
+     *                     This must be present in this._featureMetadataColumns
+     *                     or an error will be thrown.
+     * @param {String} color The name of the color map to use.
+     * @param {String} method Defines how coloring is done. If this is "tip",
+     *                        then only tip-level feature metadata will be
+     *                        used, and (similar to sample coloring) upwards
+     *                        propagation of unique values will be done in
+     *                        order to color internal nodes where applicable.
+     *                        If this is "all", then this will use both tip and
+     *                        internal node feature metadata without doing any
+     *                        propagation. If this is anything else, this will
+     *                        throw an error.
+     *
+     * @return {Object} Maps unique values in this f. metadata column to colors
+     */
+    Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+        var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
+        var sortedUniqueValues = fmInfo.sortedUniqueValues;
+        var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
         // convert observation IDs to _treeData keys. Notably, this includes
         // converting the values of uniqueValueToFeatures from Arrays to Sets.
         var obs = {};
@@ -1370,6 +1786,17 @@ define([
                 // stuff to only change whenever the tree is redrawn.
                 this.thickenColoredNodes(this._currentLineWidth);
 
+                // Undraw or redraw barplots as needed
+                var supported = this._barplotPanel.updateLayoutAvailability(
+                    newLayout
+                );
+                // TODO: don't call drawTree() from either of these barplot
+                // funcs, since it'll get called in centerLayoutAvgPoint anyway
+                if (!supported && this._barplotsDrawn) {
+                    this.undrawBarplots();
+                } else if (supported && this._barplotPanel.enabled) {
+                    this.drawBarplots(this._barplotPanel.layers);
+                }
                 // recenter viewing window
                 // Note: this function calls drawTree()
                 this.centerLayoutAvgPoint();

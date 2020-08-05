@@ -31,3 +31,9 @@ script:
   - ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza
   - ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/unweighted_unifrac_pcoa_results.qza --filter-extra-samples
   - ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/biplot.qza --filter-extra-samples
+  - make docs
+after_success:
+  - if [ ${TRAVIS_PULL_REQUEST} == "false" ]; then export TRAVIS_PULL_REQUEST=${TRAVIS_BRANCH} ; fi
+  - echo ${TRAVIS_PULL_REQUEST}
+  # now we can upload the files to mchelper
+  - curl -POST -F "files[]=@${PWD}/docs/moving-pictures/empress-tree.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv" http://mchelper.ucsd.edu:8888/uploads/empress/${TRAVIS_PULL_REQUEST}/
