@@ -1,4 +1,4 @@
-define(["underscore", "chroma"], function (_, chroma) {
+define(["underscore"], function (_) {
     /**
      * Remove all non unique keys
      * Note: keys are referring to empress._treeData (i.e. postorder position of
