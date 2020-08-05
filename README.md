@@ -110,7 +110,7 @@ We can also locate specific features of interest using the search bar at the top
 The feature’s external node is now highlighted on the tree as a bright green circle. The most abundant ASV is a species belonging to the Bacteroides genus.  
 
 
-### Exploring groups of features  
+### Exploring groups of features
 
 Another way of exploring the classification of our features is to color the branches based on their taxonomic designation. From the main menu, click *Feature Metadata Coloring*, check the *Color by…* box and select *Level 2* which here corresponds to the Phylum level, and click *Update*.  
 
@@ -139,6 +139,25 @@ The composition of microbial communities of the gut, tongue, and palms are very 
 
 In this plot the colored branches represent lineages that are unique to the corresponding body site while the greyed branches are those that are shared across at least 2 body-sites and thus cannot be displayed with a single color. While it is not surprising to see a large number of unique features in the gut samples (red) compared to the palm samples (blue and orange), it is interesting to see a large number of unique features between the left and right palm. Can you think of any biological reasons why the left and right palms may contain such different unique microbes? Even though the left and right palm do harbor unique features, the representative clades appear more integrated among themselves, suggesting that their phylogeny are still more similar to each other than the gut taxa which appear to cluster mainly among themselves.  
 
+### Visualizing feature / sample metadata in barplots
+
+Similarly to other tree visualization tools like [iTOL](https://itol.embl.de/), Empress can draw barplots in order to annotate tips of the tree with various types of information. Barplots are useful for doing this because, unlike the node coloring functionality demonstrated above, multiple "layers" of barplots can be shown at the same time -- this allows for us to view multiple types of data for the same tip simultaneously. Check out Figure 1 of [Song and Sanders et al. 2019](https://mbio.asm.org/node/61763.full) for just one example of a tree visualization using multiple layers of barplots for an effective figure.
+
+Barplots in Empress are currently only compatible with the rectangular layout, but support for circular-layout barplots is planned. To use barplots, change the layout to *Rectangular* (using the *Layout* section of the main menu), and then open up the *Barplots* section of the main menu and check the `Draw Barplots?` checkbox. By default, a red bar of uniform length will be drawn for every tip in the tree:
+
+![empress barplots initial view](docs/moving-pictures/img/empress_barplots_1.png)
+
+Although these bars are not very useful by default, we can _encode_ them with information based on the feature or sample metadata you passed in to Empress when generating a visualization. Let's try coloring each tip's bar by its `Level 2` field: under the *Layer 1* header, check the *Color by...* box, and from the drop-down menu select `Level 2`. Click the *Update* button.
+
+![empress barplots: phylum coloring](docs/moving-pictures/img/empress_barplots_2.png)
+
+This color scheme should look familiar -- this is the same information as we showed when coloring the tree earlier. We can confirm this by trying out feature metadata coloring by `Level 2` again (see the "Exploring groups of features" section above for a refresher on how to do this):
+
+![empress barplots: phylum coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_3.png)
+
+We're not limited to encoding color information in barplots -- if we'd like, we can use feature metadata to adjust the _lengths_ of each tip's bar. This can be useful for seeing how certain quantitative metadata fields' values vary throughout the tree: perhaps a certain group of tips has a higher or lower value than other tips in the tree? Here, we'll visualize the `Confidence` field alongside the `Level 2` field -- this will show us how confident our classification algoritm was in our taxonomic assignments (see [this QIIME 2 forum thread](https://forum.qiime2.org/t/confidence-values-taxonomic-assignment/13199) for details). We can do this by checking the *Scale length by...* box, and from the drop-down menu selecting `Confidence`. Click the *Update* button.
+
+![empress barplots: phylum coloring, tree phylum coloring, confidence scaling](docs/moving-pictures/img/empress_barplots_4.png)
 
 ## Exporting Plots  
 
@@ -147,7 +166,7 @@ Once you are done customizing your tree, you can export the tree as an .SVG file
 
 ## Empire plots! Side-by-side integration of tree and PCoA plots  
 
-Now that you are familiar with basics, let’s try something a bit more advanced. One of the unique features of Empress is its ability to integrate a tree plot with an [Emperor](http://emperor.microbio.me/uno/) PCoA plot and visualize them side-by-side (these plots are internally referred to as Empire plots). To achieve this we provide a PCoA matrix (`PCoAResults` type artifact), which can be any beta diversity distance matrix, including biplots. Ordination biplots that are made using the [qiime diversity pcoa-biplot](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin, incorporate feature loadings represented by arrows that describe explanatory variables in the dataset. This functionality is also compatible with [`DEICODE` biplots](https://github.com/biocore/deicode). In this example we’ll use a PCoA biplot calculated using Unweighted UniFrac distances. To create this new plot, run the following:  
+Now that you are familiar with basics, let’s try something a bit more advanced. One of the unique features of Empress is its ability to integrate a tree plot with an [Emperor](http://emperor.microbio.me/uno/) PCoA plot and visualize them side-by-side (these plots are internally referred to as Empire plots). To achieve this we provide a PCoA matrix (`PCoAResults` type artifact), which can be any beta diversity distance matrix, including biplots. Ordination biplots that are made using the [`qiime diversity pcoa-biplot`](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin, incorporate feature loadings represented by arrows that describe explanatory variables in the dataset. This functionality is also compatible with [`DEICODE` biplots](https://github.com/biocore/deicode). In this example we’ll use a PCoA biplot calculated using Unweighted UniFrac distances. To create this new plot, run the following:  
 
 ```bash
 qiime empress plot \
