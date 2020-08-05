@@ -270,28 +270,40 @@ require(["jquery", "util"], function ($, util) {
             }
         });
 
-        test("Test parseAndValidateLineWidth (invalid case)", function () {
+        test("Test parseAndValidateNum (invalid case)", function () {
             var tni = document.getElementById("test-num-input");
             // force the test input's value to be -2
-            // (In practice, min="0" should prevent the values of Empress' line
-            // width inputs from being less than 0, but I don't really trust
-            // those to be perfect safeguards. Hence the paranoia.)
+            // (In practice, the default min="0" should prevent the values of
+            // Empress' line width inputs from being less than 0, but I don't
+            // really trust those to be perfect safeguards. Hence the
+            // paranoia.)
             tni.value = "-2";
             // Double-check that the value is -2 (so that we can verify that
-            // parseAndValidateLineWidth() actually *changed* this value)
+            // parseAndValidateNum() actually *changed* this value)
             deepEqual(tni.value, "-2");
-            var lw = util.parseAndValidateLineWidth(tni);
+            var lw = util.parseAndValidateNum(tni);
             deepEqual(lw, 0);
             deepEqual(tni.value, "0");
         });
 
-        test("Test parseAndValidateLineWidth (valid case)", function () {
+        test("Test parseAndValidateNum (valid case)", function () {
             var tni = document.getElementById("test-num-input");
             tni.value = "2.5";
             deepEqual(tni.value, "2.5");
-            var lw = util.parseAndValidateLineWidth(tni);
+            var lw = util.parseAndValidateNum(tni);
             deepEqual(lw, 2.5);
             deepEqual(tni.value, "2.5");
+        });
+        test("Test parseAndValidateNum (custom minimum)", function () {
+            // Tests that using a custom minimum parameter works
+            var tni = document.getElementById("test-num-input");
+            tni.value = "0.5";
+            deepEqual(tni.value, "0.5");
+            // Use a minimum of 1 instead of 0 -- so now things under that
+            // should get bumped up to 1
+            var n = util.parseAndValidateNum(tni, 1);
+            deepEqual(n, 1);
+            deepEqual(tni.value, "1");
         });
     });
 });

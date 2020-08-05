@@ -21,7 +21,34 @@
   <div id="test-div"></div>
   <input id="test-num-input" type="number" style="visibility: hidden;">
 
-  <!-- The tree canvas need for use in test-empress-->
+  <!-- Barplot GUI elements, which are automatically accessed when initializing
+       BarplotPanel (which is done from within Empress).
+       We use "display: none;" to avoid having this junk take up any space.
+  -->
+  <div id="barplot-available-content" style="display: none;">
+    <p>
+      <label for="barplot-chk">Draw barplots?</label>
+      <input id="barplot-chk" type="checkbox" class="empress-input">
+    </p>
+    <div id="barplot-layer-container" class="hidden">
+      <hr />
+    </div>
+    <p id="barplot-add-options" class="hidden">
+      <label for="barplot-add-btn">Add another layer</label>
+      <button id="barplot-add-btn">+</button>
+    </p>
+    <p>
+      <button id="barplot-update" class="hidden">Update</button>
+    </p>
+  </div>
+  <div id="barplot-unavailable-content" style="display: none;">
+    <p class="side-panel-notes" style="font-weight: bold;">
+      Barplots are currently only supported in the rectangular layout. Please
+      change the layout in order to use barplots.
+    </p>
+  </div>
+
+  <!-- The tree canvas need for use in test-empress -->
   <div id="tree-container" class="{{ emperor_classes }}">
     <div class="container {{ emperor_classes }}">
       <canvas class="tree-surface" id="tree-surface">
@@ -44,11 +71,14 @@
           'glMatrix' : './support_files/vendor/gl-matrix.min',
           'chroma' : './support_files/vendor/chroma.min',
           'underscore' : './support_files/vendor/underscore-min',
+          'spectrum' : './support_files/vendor/spectrum.min',
           'filesaver': './support_files/vendor/FileSaver.min',
 
           /* succinct tree paths */
           'AnimationPanel': './support_files/js/animation-panel-handler',
           'Animator': './support_files/js/animator',
+          'BarplotLayer': './support_files/js/barplot-layer',
+          'BarplotPanel': './support_files/js/barplot-panel-handler',
           'ByteArray': './support_files/js/byte-array',
           'BPTree' : './support_files/js/bp-tree',
           'Camera' : './support_files/js/camera',
@@ -85,6 +115,8 @@
          'underscore',
          'AnimationPanel',
          'Animator',
+         'BarplotLayer',
+         'BarplotPanel',
          'ByteArray',
          'BPTree',
          'Camera',
@@ -114,6 +146,8 @@
           underscore,
           AnimationPanel,
           Animator,
+          BarplotLayer,
+          BarplotPanel,
           ByteArray,
           BPTree,
           Camera,
@@ -137,8 +171,7 @@
             $(document).ready(function() {
                 QUnit.start();
             });
-
-    });
+        });
   </script>
 </body>
 </html>

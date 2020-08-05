@@ -160,30 +160,34 @@ define(["underscore"], function (_) {
      * Returns a numeric representation of a line width <input> element.
      *
      * If the value of the input is in some way "invalid" (i.e. isValidNumber()
-     * is false for this value, or the number is less than 0) then we will
-     * 1) set the value of the <input> to 0 ourselves, and
-     * 2) return 0.
+     * is false for this value, or the number is less than min) then we will
+     * 1) set the value of the <input> to min ourselves, and
+     * 2) return min.
      *
      * @param {HTMLElement} inputEle A reference to an <input> element
      *                               describing a line width to use in coloring
      *                               the tree. This should ideally have
-     *                               type="number" and min="0" set so that the
-     *                               user experience is consistent, but none of
-     *                               these things are checked for here -- we
-     *                               only look at the value of this element.
+     *                               type="number" and min="[min value]" set
+     *                               so that the user experience is consistent,
+     *                               but none of these things are checked for
+     *                               here -- we only look at the value of this
+     *                               element.
+     * @param {Number} min Defaults to 0. Minimum acceptable value for line
+     *                     width/for whatever numeric quality is being
+     *                     considered.
      * @return {Number} Sanitized number that can be used as input to
      *                  Empress.thickenColoredNodes().
      */
-    function parseAndValidateLineWidth(inputEle) {
+    function parseAndValidateNum(inputEle, min = 0) {
         if (isValidNumber(inputEle.value)) {
             var pfVal = parseFloat(inputEle.value);
-            if (pfVal >= 0) {
+            if (pfVal >= min) {
                 return pfVal;
             }
         }
         // If we're still here, the number was invalid.
-        inputEle.value = 0;
-        return 0;
+        inputEle.value = min;
+        return min;
     }
 
     return {
@@ -191,7 +195,7 @@ define(["underscore"], function (_) {
         naturalSort: naturalSort,
         splitNumericValues: splitNumericValues,
         isValidNumber: isValidNumber,
-        parseAndValidateLineWidth: parseAndValidateLineWidth,
+        parseAndValidateNum: parseAndValidateNum,
         toastMsg: toastMsg,
     };
 });

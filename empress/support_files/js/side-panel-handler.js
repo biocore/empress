@@ -220,7 +220,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         if (collapseChk.checked) {
             this.empress.collapseClades();
         }
-        var lw = util.parseAndValidateLineWidth(lwInput);
+        var lw = util.parseAndValidateNum(lwInput);
         this.empress.thickenColoredNodes(lw);
         this.empress.drawTree();
     };

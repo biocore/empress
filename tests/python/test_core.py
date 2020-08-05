@@ -743,6 +743,7 @@ DICT_A = {
         "Rectangular": "r",
         "Circular": "c1",
     },
+    "yrscf": 1005,
     "default_layout": "Unrooted",
     "emperor_div": "",
     "emperor_require_logic": "",

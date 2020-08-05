@@ -262,7 +262,9 @@ class Empress():
 
         # Compute coordinates resulting from layout algorithm(s)
         # TODO: figure out implications of screen size
-        layout_to_coordsuffix, default_layout = self.tree.coords(4020, 4020)
+        layout_to_coordsuffix, default_layout, yrscf = self.tree.coords(
+            4020, 4020
+        )
 
         tree_data = {}
         names_to_keys = {}
@@ -342,6 +344,7 @@ class Empress():
             # layout information
             'layout_to_coordsuffix': layout_to_coordsuffix,
             'default_layout': default_layout,
+            'yrscf': yrscf,
             # Emperor integration
             'emperor_div': '',
             'emperor_require_logic': '',
