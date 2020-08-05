@@ -418,7 +418,7 @@ define(["underscore", "util"], function (_, util) {
     SelectedNodeMenu.prototype.setSelectedNodes = function (nodeKeys) {
         // test to make sure nodeKeys represents nodes with the same name
         var emp = this.empress;
-        var name = emp.getNodeInf(emp._treeData[nodeKeys[0]], "name");
+        var name = emp.getNodeInfo(emp._treeData[nodeKeys[0]], "name");
         for (var i = 1; i < nodeKeys.length; i++) {
             if (emp.getNodeInfo(emp._treeData[nodeKeys[i]], "name") !== name) {
                 throw "setSelectedNodes(): keys do not represent the same node!";
