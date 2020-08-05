@@ -1314,13 +1314,15 @@ define([
                 throw msg;
             }
             fm2length = {};
+            // Compute the maximum and minimum values in the field to use to
+            // scale length by
             var nums = _.map(split.numeric, parseFloat);
-            var min = _.min(nums);
-            var max = _.max(nums);
-            var range = max - min;
-            if (range === 0) {
-                fm2length[max] = layer.scaleLengthByFMMax;
-            }
+            var valMin = _.min(nums);
+            var valMax = _.max(nums);
+            // Compute the value range (based on the min/max values in the
+            // field) and the length range (based on the min/max length that
+            // the user has set for this barplot layer)
+            var valRange = valMax - valMin;
             var lengthRange =
                 layer.scaleLengthByFMMax - layer.scaleLengthByFMMin;
             if (lengthRange < 0) {
@@ -1339,10 +1341,8 @@ define([
                 // TODO: verify that this handles negative values properly
                 // and/or support drawing negative values in the opposite
                 // direction as positive ones
-                // TODO: more clearly differentiate between value minima/maxima
-                // and length minima/maxima
                 fm2length[fn] =
-                    ((fn - min) / range) * lengthRange +
+                    ((fn - valMin) / valRange) * lengthRange +
                     layer.scaleLengthByFMMin;
             });
         }
