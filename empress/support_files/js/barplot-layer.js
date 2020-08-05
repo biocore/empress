@@ -24,7 +24,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
      *                     so on.
      *
      * @return {BarplotLayer}
-     * construct BarplotLayer
+     * @constructs BarplotLayer
      */
     function BarplotLayer(fmCols, smCols, barplotPanel, layerContainer, num) {
         this.fmCols = fmCols;
