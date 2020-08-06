@@ -199,7 +199,26 @@ define(["underscore", "util"], function (_, util) {
         return _.indexOf(arr, num, true) >= 0;
     };
 
-    BIOMTable.prototype._getObsCountAndTotalBy = function (colIdx, fIdx) {
+    /**
+     * Returns information about the amounts of samples per unique value in a
+     * metadata column containing a given feature.
+     *
+     * Note that this function is designed for internal use, so it doesn't do
+     * explicit validation -- it assumes that the input indices are sane.
+     *
+     * @param {String} colIdx Sample metadata column index
+     * @param {String} fIdx Feature index
+     *
+     * @return {Object} An object with two keys:
+     *                  -countMap: maps to an Object mapping the unique values
+     *                   in the sample metadata column to the number of samples
+     *                   with each value containing the specified feature.
+     *                  -containingSampleCount: maps to a Number describing the
+     *                   total number of samples containing the specified
+     *                   feature. Equivalently, this is the sum of the values
+     *                   of countMap.
+     */
+    BIOMTable.prototype._getObsCountsAndTotalBy = function (colIdx, fIdx) {
         var scope = this;
         var countMap = {};
         var containingSampleCount = 0;
@@ -337,7 +356,7 @@ define(["underscore", "util"], function (_, util) {
         var scope = this;
         var colIdx = this._getSampleMetadataColIndex(col);
         var fIdx = this._getFeatureIndexFromID(fID);
-        return this._getObsCountAndTotalBy(colIdx, fIdx).countMap;
+        return this._getObsCountsAndTotalBy(colIdx, fIdx).countMap;
     };
 
     /**
@@ -521,7 +540,7 @@ define(["underscore", "util"], function (_, util) {
             return {};
         }
         var colIdx = this._getSampleMetadataColIndex(col);
-        var countInfo = this._getObsCountAndTotalBy(colIdx, fIdx);
+        var countInfo = this._getObsCountsAndTotalBy(colIdx, fIdx);
         var countMap = countInfo.countMap;
         var containingSampleCount = countInfo.containingSampleCount;
         return _.mapObject(countMap, function (count) {
