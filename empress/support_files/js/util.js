@@ -190,6 +190,88 @@ define(["underscore"], function (_) {
         return min;
     }
 
+    /**
+     * Produces an Object mapping feature metadata values to barplot lengths.
+     *
+     * This code was based on ColorViewController.getScaledColors() in Emperor:
+     * https://github.com/biocore/emperor/blob/b959aed7ffcb9fa3e4d019c6e93a1af3850564d9/emperor/support_files/js/color-view-controller.js#L398
+     *
+     * @param {Array} sortedUniqueValues Array of unique values present in a
+     *                                   feature metadata field. Should have
+     *                                   been sorted using util.naturalSort().
+     *                                   Since these are expected to already be
+     *                                   *unique*, there shouldn't be any
+     *                                   duplicate values in this array.
+     * @param {Number} minLength Minimum length value to use for scaling: the
+     *                           minimum numeric value in sortedUniqueValues
+     *                           will get assigned this length.
+     * @param {Number} maxLength Maximum length value to use for scaling; works
+     *                           analogously to minLength above.
+     * @param {Number} layerNum Number of the barplot layer for which these
+     *                          scaling computations are being done. This
+     *                          will only be used if something goes wrong and
+     *                          this function needs to throw an error message.
+     * @param {String} fieldName Name of the feature metadata field represented
+     *                           by sortedUniqueValues. As with layerNum, this
+     *                           will only be used if this throws an error
+     *                           message.
+     * @return {Object} fm2length Maps the numeric items in sortedUniqueValues
+     *                            to their corresponding barplot lengths.
+     *                            Each length is guaranteed to be within the
+     *                            inclusive range [minLength, maxLength].
+     */
+    function assignBarplotLengths(
+        sortedUniqueValues,
+        minLength,
+        maxLength,
+        layerNum,
+        fieldName
+    ) {
+        var split = splitNumericValues(sortedUniqueValues);
+        if (split.numeric.length < 2) {
+            throw new Error(
+                "Error with scaling lengths in barplot layer " +
+                    layerNum +
+                    ': the feature metadata field "' +
+                    fieldName +
+                    '" has less than 2 unique numeric values.'
+            );
+        }
+        fm2length = {};
+        // Compute the maximum and minimum values in the field to use to
+        // scale length by
+        var nums = _.map(split.numeric, parseFloat);
+        var valMin = _.min(nums);
+        var valMax = _.max(nums);
+        // Compute the value range (based on the min/max values in the
+        // field) and the length range (based on the min/max length that
+        // the user has set for this barplot layer)
+        var valRange = valMax - valMin;
+        var lengthRange = maxLength - minLength;
+        if (lengthRange < 0) {
+            throw new Error(
+                "Error with scaling lengths in barplot layer " +
+                    layerNum +
+                    ": Maximum length is greater than minimum length."
+            );
+        }
+        _.each(split.numeric, function (n) {
+            // uses linear interpolation (we could add fancier
+            // scaling methods in the future as options if desired)
+            //
+            // NOTE: we purposefully use the original feature metadata value
+            // (i.e. n) as the key in fm2length, not parseFloat(n). This is
+            // because parseFloat(n) can have a different string representation
+            // than n, so using parseFloat(n) as a key would make these lengths
+            // unretrievable without calling parseFloat() multiple times. (An
+            // example of this is the metadata value "0.0", which parseFloat()
+            // converts to 0.)
+            fm2length[n] =
+                ((parseFloat(n) - valMin) / valRange) * lengthRange + minLength;
+        });
+        return fm2length;
+    }
+
     return {
         keepUniqueKeys: keepUniqueKeys,
         naturalSort: naturalSort,
@@ -197,5 +279,6 @@ define(["underscore"], function (_) {
         isValidNumber: isValidNumber,
         parseAndValidateNum: parseAndValidateNum,
         toastMsg: toastMsg,
+        assignBarplotLengths: assignBarplotLengths,
     };
 });

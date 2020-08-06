@@ -1,4 +1,4 @@
-require(["jquery", "util"], function ($, util) {
+require(["jquery", "underscore", "util"], function ($, _, util) {
     $(document).ready(function () {
         module("Utilities");
         /**
@@ -304,6 +304,73 @@ require(["jquery", "util"], function ($, util) {
             var n = util.parseAndValidateNum(tni, 1);
             deepEqual(n, 1);
             deepEqual(tni.value, "1");
+        });
+        test("Test assignBarplotLengths", function () {
+            var fm2length = util.assignBarplotLengths(
+                ["1", "2", "3", "4"],
+                0,
+                1,
+                100,
+                "testField"
+            );
+            deepEqual(_.keys(fm2length).length, 4);
+            deepEqual(fm2length["1"], 0);
+            deepEqual(fm2length["2"], 1 / 3);
+            deepEqual(fm2length["3"], 2 / 3);
+            deepEqual(fm2length["4"], 1);
+        });
+        test("Test assignBarplotLengths (negative values)", function () {
+            var fm2length = util.assignBarplotLengths(
+                ["-1", "-2", "-3", "-4"],
+                0,
+                1,
+                100,
+                "testField"
+            );
+            deepEqual(_.keys(fm2length).length, 4);
+            deepEqual(fm2length["-4"], 0);
+            deepEqual(fm2length["-3"], 1 / 3);
+            deepEqual(fm2length["-2"], 2 / 3);
+            deepEqual(fm2length["-1"], 1);
+            // Check that mixed negative / positive values are handled normally
+            var o = util.assignBarplotLengths(["1", "0", "-1"], 1, 5, 1, "t");
+            deepEqual(_.keys(o).length, 3);
+            deepEqual(o["-1"], 1);
+            deepEqual(o["0"], 3);
+            deepEqual(o["1"], 5);
+        });
+        test("Test assignBarplotLengths (non-numeric field error)", function () {
+            throws(function () {
+                util.assignBarplotLengths(["1"], 0, 1, 100, "testField");
+            }, /Error with scaling lengths in barplot layer 100: the feature metadata field "testField" has less than 2 unique numeric values./);
+            throws(function () {
+                util.assignBarplotLengths(
+                    ["abc", "def", "ghi"],
+                    0,
+                    1,
+                    3,
+                    "fie fi fo fum"
+                );
+            }, /Error with scaling lengths in barplot layer 3: the feature metadata field "fie fi fo fum" has less than 2 unique numeric values./);
+            throws(function () {
+                util.assignBarplotLengths([], 0, 1, 1, "asdf");
+            }, /Error with scaling lengths in barplot layer 1: the feature metadata field "asdf" has less than 2 unique numeric values./);
+            // Check that if both this error AND the max < min error are
+            // triggered, that this error has precedence. As with various other
+            // places in the code, the actual precedence doesn't matter too
+            // much; the main thing we're verifying here is that both errors
+            // happening don't somehow "cancel out". Because ... that'd be bad.
+            throws(function () {
+                util.assignBarplotLengths(["1"], 1, 0, 100, "funkyField");
+            }, /Error with scaling lengths in barplot layer 100: the feature metadata field "funkyField" has less than 2 unique numeric values./);
+        });
+        test("Test assignBarplotLengths (max len < min len error)", function () {
+            throws(function () {
+                util.assignBarplotLengths(["1", "2"], 1, 0, 5, "field");
+            }, /Error with scaling lengths in barplot layer 5: Maximum length is greater than minimum length./);
+            throws(function () {
+                util.assignBarplotLengths(["1", "2"], 10, 9.9999, 6, "field");
+            }, /Error with scaling lengths in barplot layer 6: Maximum length is greater than minimum length./);
         });
     });
 });
