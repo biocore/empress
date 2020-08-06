@@ -595,7 +595,8 @@ define(["underscore", "util"], function (_, util) {
             feature2freqs[fID] = {};
             _.each(fIdx2counts[fIdx], function (count, smValIdx) {
                 if (count > 0) {
-                    feature2freqs[fID][uniqueSMVals[smValIdx]] = count / totalSampleCount;
+                    feature2freqs[fID][uniqueSMVals[smValIdx]] =
+                        count / totalSampleCount;
                 }
             });
         });
