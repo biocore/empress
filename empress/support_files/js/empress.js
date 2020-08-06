@@ -125,7 +125,7 @@ define([
         this._tdToInd.isColored = 1;
         this._tdToInd.visible = 2;
 
-        // count number of tips and set default color/visible
+        // set default color/visible status for each node
         // Note: currently empress tree uses 1-based index since the bp-tree
         //       bp-tree.js is based off of used 1-based index.
         for (var i = 1; i <= this._tree.size; i++) {
