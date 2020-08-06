@@ -1145,44 +1145,26 @@ define([
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 var node = this._treeData[i];
                 var name = this.getNodeInfo(node, "name");
+                var freqs = this._biom.getObsFrequencyBy(
+                    layer.colorBySMField, name
+                );
                 // Don't draw bars for tips that aren't in the BIOM table
                 // (Note that this is only for the sample metadata barplots --
                 // these tips could still ostensibly have associated
                 // feature metadata)
-                if (this._biom.getObsIDsDifference([name]).length > 0) {
+                if (_.isEmpty(freqs)) {
                     continue;
                 }
-                // Figure how many samples across each unique value in the
-                // selected sample metadata field contain this tip. (This is
-                // computed the same way as the information shown in the
-                // selected node menu's "Sample Presence Information" section.)
-                var spi = this.computeTipSamplePresence(name, [
-                    layer.colorBySMField,
-                ])[layer.colorBySMField];
-
-                // Sum the values of the sample presence information, getting
-                // us the total number of samples containing this tip.
-                // JS doesn't have a built-in sum() function, so I couldn't
-                // think of a better way to do this. Taken from
-                // https://underscorejs.org/#reduce.
-                var totalSampleCt = _.reduce(
-                    _.values(spi),
-                    function (a, b) {
-                        return a + b;
-                    },
-                    0
-                );
                 var prevSectionMaxX = prevLayerMaxX;
                 for (var v = 0; v < sortedUniqueValues.length; v++) {
                     var smVal = sortedUniqueValues[v];
-                    var ct = spi[smVal];
-                    if (ct > 0) {
+                    var freq = freqs[smVal];
+                    if (freq > 0) {
                         var sectionColor = sm2color[smVal];
                         // Assign each unique sample metadata value a length
                         // proportional to its, well, proportion within the sample
                         // presence information for this tip.
-                        var barSectionLen =
-                            layer.lengthSM * (ct / totalSampleCt);
+                        var barSectionLen = layer.lengthSM * freq;
                         var thisSectionMaxX = prevSectionMaxX + barSectionLen;
                         var y = this.getY(node);
                         var ty = y + halfyrscf;
