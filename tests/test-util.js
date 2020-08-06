@@ -355,6 +355,22 @@ require(["jquery", "underscore", "util"], function ($, _, util) {
             throws(function () {
                 util.assignBarplotLengths([], 0, 1, 1, "asdf");
             }, /Error with scaling lengths in barplot layer 1: the feature metadata field "asdf" has less than 2 unique numeric values./);
+            // Check that if both this error AND the max < min error are
+            // triggered, that this error has precedence. As with various other
+            // places in the code, the actual precedence doesn't matter too
+            // much; the main thing we're verifying here is that both errors
+            // happening don't somehow "cancel out". Because ... that'd be bad.
+            throws(function () {
+                util.assignBarplotLengths(["1"], 1, 0, 100, "funkyField");
+            }, /Error with scaling lengths in barplot layer 100: the feature metadata field "funkyField" has less than 2 unique numeric values./);
         });
-    });
+        test("Test assignBarplotLengths (max len < min len error)", function () {
+            throws(function () {
+                util.assignBarplotLengths(["1", "2"], 1, 0, 5, "field");
+            }, /Error with scaling lengths in barplot layer 5: Maximum length is greater than minimum length./);
+            throws(function () {
+                util.assignBarplotLengths(["1", "2"], 10, 9.9999, 6, "field");
+            }, /Error with scaling lengths in barplot layer 6: Maximum length is greater than minimum length./);
+        });
+   });
 });
