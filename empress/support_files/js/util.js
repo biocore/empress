@@ -259,10 +259,6 @@ define(["underscore"], function (_) {
             // uses linear interpolation (we could add fancier
             // scaling methods in the future as options if desired)
             //
-            // TODO: verify that this handles negative values properly
-            // and/or support drawing negative values in the opposite
-            // direction as positive ones
-            //
             // NOTE: we purposefully use the original feature metadata value
             // (i.e. n) as the key in fm2length, not parseFloat(n). This is
             // because parseFloat(n) can have a different string representation
