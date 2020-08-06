@@ -220,7 +220,7 @@ define(["underscore", "util"], function (_, util) {
                 // This sample actually contains the feature!
                 cVal = scope._sm[sIdx][colIdx];
                 // Update our output Object's count info accordingly.
-                countMap[cVal] += 1;
+                countMap[cVal]++;
                 // And update the count of samples containing this feature
                 containingSampleCount++;
             }
@@ -483,7 +483,7 @@ define(["underscore", "util"], function (_, util) {
             var sampleIdx = scope._getSampleIndexFromID(sID);
             var cVal = scope._sm[sampleIdx][colIdx];
             if (_.has(valueToSampleCount, cVal)) {
-                valueToSampleCount[cVal] += 1;
+                valueToSampleCount[cVal]++;
             } else {
                 valueToSampleCount[cVal] = 1;
             }
