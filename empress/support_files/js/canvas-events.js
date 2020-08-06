@@ -156,14 +156,14 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 // margin of error for mouse click to still register a node sel
                 var epsilon = 10;
                 var closestDist = Infinity;
-                var closestNode = null;
+                var closeNode = null;
                 var xDist, yDist, closeNodeKey;
 
                 // Go through all the nodes in the tree and find the node
                 // closest to the (x, y) point that was clicked
                 for (var i = 1; i <= empress._tree.size; i++) {
                     var node = empress._treeData[i];
-                    if (!node.visible) continue;
+                    if (!empress.getNodeInfo(node, "visible")) continue;
                     var nodeX = empress.getX(node);
                     var nodeY = empress.getY(node);
                     xDist = x - nodeX;

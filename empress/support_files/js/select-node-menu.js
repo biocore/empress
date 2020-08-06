@@ -181,9 +181,9 @@ define(["underscore", "util"], function (_, util) {
         var emp = this.empress;
         var nodeKeys = this.nodeKeys;
         var node = emp._treeData[nodeKeys[0]];
-        var name = node.name;
+        var name = emp.getNodeInfo(node, "name");
 
-        this.nodeNameLabel.textContent = "Name: " + node.name;
+        this.nodeNameLabel.textContent = "Name: " + name;
 
         this.notes.textContent = "";
         this.warning.textContent = "";
@@ -226,7 +226,10 @@ define(["underscore", "util"], function (_, util) {
         }
 
         // get the name of the tip
-        var name = this.empress._treeData[this.nodeKeys[0]].name;
+        var name = this.empress.getNodeInfo(
+            this.empress._treeData[this.nodeKeys[0]],
+            "name"
+        );
 
         // 1. Add feature metadata information (if present for this tip; if
         // there isn't feature metadata for this tip, the f.m. UI elements in
@@ -280,7 +283,10 @@ define(["underscore", "util"], function (_, util) {
             throw "showInternalNode(): nodeKeys is not set!";
         }
 
-        var name = this.empress._treeData[this.nodeKeys[0]].name;
+        var name = this.empress.getNodeInfo(
+            this.empress._treeData[this.nodeKeys[0]],
+            "name"
+        );
 
         // Figure out whether or not we know the actual node in the tree (for
         // example, if the user searched for a node with a duplicate name, then
@@ -411,9 +417,9 @@ define(["underscore", "util"], function (_, util) {
     SelectedNodeMenu.prototype.setSelectedNodes = function (nodeKeys) {
         // test to make sure nodeKeys represents nodes with the same name
         var emp = this.empress;
-        var name = emp._treeData[nodeKeys[0]].name;
+        var name = emp.getNodeInfo(emp._treeData[nodeKeys[0]], "name");
         for (var i = 1; i < nodeKeys.length; i++) {
-            if (emp._treeData[nodeKeys[i]].name !== name) {
+            if (emp.getNodeInfo(emp._treeData[nodeKeys[i]], "name") !== name) {
                 throw "setSelectedNodes(): keys do not represent the same node!";
             }
         }
@@ -424,7 +430,7 @@ define(["underscore", "util"], function (_, util) {
         if (t.isleaf(t.postorderselect(nodeKeys[0])) && nodeKeys.length > 1) {
             throw (
                 "setSelectedNodes(): " +
-                this.empress._treeData[nodeKeys[0]].name +
+                emp.getNodeInfo(emp._treeData[nodeKeys[0]], "name") +
                 " matches multiple tips!"
             );
         }
