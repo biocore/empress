@@ -1212,7 +1212,6 @@ define([
         var maxX = prevLayerMaxX;
         var fm2color, colorFMIdx;
         var fm2length, lengthFMIdx;
-        var msg;
         // Map feature metadata values to colors, if requested (i.e. if
         // layer.colorByFM is true). If not requested, we'll just use the
         // layer's default color.
@@ -1251,7 +1250,7 @@ define([
                 // name / barplot layer number). This lets us bail out of
                 // drawing barplots while still keeping the user aware of why
                 // nothing just got drawn/updated.
-                msg =
+                var msg =
                     "Error with assigning colors in barplot layer " +
                     layer.num +
                     ": " +
@@ -1274,51 +1273,20 @@ define([
                 this._featureMetadataColumns,
                 layer.scaleLengthByFMField
             );
-            // Taken from ColorViewController.getScaledColors() in Emperor
-            var split = util.splitNumericValues(sortedUniqueLengthValues);
-            if (split.numeric.length < 2) {
-                msg =
-                    "Error with scaling lengths in barplot layer " +
-                    layer.num +
-                    ": " +
-                    'the feature metadata field "' +
-                    layer.scaleLengthByFMField +
-                    '" has less than 2 unique numeric values.';
-                util.toastMsg(msg, 5000);
-                throw msg;
+            try {
+                fm2length = util.assignBarplotLengths(
+                    sortedUniqueLengthValues,
+                    layer.scaleLengthByFMMin,
+                    layer.scaleLengthByFMMax,
+                    layer.num,
+                    layer.scaleLengthByFMField
+                );
+            } catch (err) {
+                // Fail gracefully, similarly to how we handle Colorer errors
+                // above
+                util.toastMsg(err.message, 5000);
+                throw err.message;
             }
-            fm2length = {};
-            // Compute the maximum and minimum values in the field to use to
-            // scale length by
-            var nums = _.map(split.numeric, parseFloat);
-            var valMin = _.min(nums);
-            var valMax = _.max(nums);
-            // Compute the value range (based on the min/max values in the
-            // field) and the length range (based on the min/max length that
-            // the user has set for this barplot layer)
-            var valRange = valMax - valMin;
-            var lengthRange =
-                layer.scaleLengthByFMMax - layer.scaleLengthByFMMin;
-            if (lengthRange < 0) {
-                msg =
-                    "Error with scaling lengths in barplot layer " +
-                    layer.num +
-                    ": " +
-                    "Maximum length is greater than minimum length.";
-                util.toastMsg(msg, 5000);
-                throw msg;
-            }
-            _.each(split.numeric, function (n) {
-                var fn = parseFloat(n);
-                // uses linear interpolation (we could add fancier
-                // scaling methods in the future as options if desired)
-                // TODO: verify that this handles negative values properly
-                // and/or support drawing negative values in the opposite
-                // direction as positive ones
-                fm2length[n] =
-                    ((fn - valMin) / valRange) * lengthRange +
-                    layer.scaleLengthByFMMin;
-            });
         }
 
         // Now that we know how to encode each tip's bar, we can finally go
