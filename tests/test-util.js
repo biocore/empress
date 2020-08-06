@@ -372,5 +372,5 @@ require(["jquery", "underscore", "util"], function ($, _, util) {
                 util.assignBarplotLengths(["1", "2"], 10, 9.9999, 6, "field");
             }, /Error with scaling lengths in barplot layer 6: Maximum length is greater than minimum length./);
         });
-   });
+    });
 });
