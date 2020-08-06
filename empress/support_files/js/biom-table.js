@@ -548,5 +548,60 @@ define(["underscore", "util"], function (_, util) {
         });
     };
 
+    BIOMTable.prototype.getFrequencyMap = function (col) {
+        var scope = this;
+        var colIdx = _.indexOf(this._smCols, col);
+        // note could make these faster by doing full on 2d arrays
+        var fIdx2counts = {};
+        var fIdx2sampleCt = {};
+        var containingSampleCount;
+        var cVal;
+
+        // Find unique (sorted) values in this sample metadata column
+        var uniqueSMVals = this.getUniqueSampleValues(col);
+        var numUniqueSMVals = uniqueSMVals.length;
+        var smVal2Idx = {};
+        _.each(uniqueSMVals, function (smVal, c) {
+            smVal2Idx[smVal] = c;
+        });
+        // Assign each feature an empty frequency array, soon to be filled in
+        var i, emptyCounts;
+        _.each(this._fIDs, function (fID, fIdx) {
+            emptyCounts = [];
+            for (i = 0; i < numUniqueSMVals; i++) {
+                emptyCounts.push(0);
+            }
+            fIdx2counts[fIdx] = emptyCounts;
+            fIdx2sampleCt[fIdx] = 0;
+        });
+        // Iterate through each sample of the BIOM table, storing group counts
+        // and total sample counts for each feature
+        var cValIdx;
+        _.each(this._tbl, function (presentFeatureIndices, sIdx) {
+            // Figure out what metadata value this sample has at the column.
+            cVal = scope._sm[sIdx][colIdx];
+            cValIdx = smVal2Idx[cVal];
+            // Increment group counts for each feature present in this sample
+            _.each(presentFeatureIndices, function (fIdx) {
+                fIdx2counts[fIdx][cValIdx]++;
+                fIdx2sampleCt[fIdx]++;
+            });
+        });
+        // Convert counts to frequencies
+        var feature2freqs = {};
+        var freqs, fIdx, totalSampleCount;
+        _.each(this._fIDs, function (fID, fIdx) {
+            totalSampleCount = fIdx2sampleCt[fIdx];
+            feature2freqs[fID] = {};
+            _.each(fIdx2counts[fIdx], function (count, smValIdx) {
+                if (count > 0) {
+                    feature2freqs[fID][uniqueSMVals[smValIdx]] = count / totalSampleCount;
+                }
+            });
+        });
+        console.log(feature2freqs);
+        return feature2freqs;
+    };
+
     return BIOMTable;
 });

@@ -1139,21 +1139,19 @@ define([
         );
         var colorer = new Colorer(layer.colorBySMColorMap, sortedUniqueValues);
         var sm2color = colorer.getMapRGB();
+        var feature2freqs = this._biom.getFrequencyMap(layer.colorBySMField);
         // Bar thickness
         var halfyrscf = this._yrscf / 2;
         for (i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 var node = this._treeData[i];
                 var name = this.getNodeInfo(node, "name");
-                var freqs = this._biom.getObsFrequencyBy(
-                    layer.colorBySMField,
-                    name
-                );
+                var freqs = feature2freqs[name];
                 // Don't draw bars for tips that aren't in the BIOM table
                 // (Note that this is only for the sample metadata barplots --
                 // these tips could still ostensibly have associated
                 // feature metadata)
-                if (_.isEmpty(freqs)) {
+                if (_.isUndefined(freqs)) {
                     continue;
                 }
                 var prevSectionMaxX = prevLayerMaxX;
