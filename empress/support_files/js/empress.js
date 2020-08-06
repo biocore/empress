@@ -1315,7 +1315,7 @@ define([
                 // TODO: verify that this handles negative values properly
                 // and/or support drawing negative values in the opposite
                 // direction as positive ones
-                fm2length[fn] =
+                fm2length[n] =
                     ((fn - valMin) / valRange) * lengthRange +
                     layer.scaleLengthByFMMin;
             });
