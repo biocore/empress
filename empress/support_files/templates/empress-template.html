@@ -118,9 +118,9 @@
                  Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util) {
         // initialze the tree and model
         var tree = new BPTree(
-          {{ tree }},
-          {{ names }},
-          {{ lengths}}
+          {{ tree  }},
+          {{ names  | tojson }},
+          {{ lengths | tojson }}
         );
 
         var fmCols = {{ feature_metadata_columns | tojson }};
@@ -138,7 +138,7 @@
         );
         var empress = new Empress(
             tree,
-            {{ tree_data }},
+            {{ tree_data | tojson }},
             {{ td_to_ind | tojson }},
             {{ names_to_keys | tojson }},
             {{ layout_to_coordsuffix | tojson }},
