@@ -1146,7 +1146,8 @@ define([
                 var node = this._treeData[i];
                 var name = this.getNodeInfo(node, "name");
                 var freqs = this._biom.getObsFrequencyBy(
-                    layer.colorBySMField, name
+                    layer.colorBySMField,
+                    name
                 );
                 // Don't draw bars for tips that aren't in the BIOM table
                 // (Note that this is only for the sample metadata barplots --

@@ -199,8 +199,7 @@ define(["underscore", "util"], function (_, util) {
         return _.indexOf(arr, num, true) >= 0;
     };
 
-
-    BIOMTable.prototype._getObsCountAndTotalBy = function(colIdx, fIdx) {
+    BIOMTable.prototype._getObsCountAndTotalBy = function (colIdx, fIdx) {
         var scope = this;
         var countMap = {};
         var containingSampleCount = 0;
@@ -226,7 +225,10 @@ define(["underscore", "util"], function (_, util) {
                 containingSampleCount++;
             }
         });
-        return {countMap: countMap, containingSampleCount: containingSampleCount};
+        return {
+            countMap: countMap,
+            containingSampleCount: containingSampleCount,
+        };
     };
 
     /**
