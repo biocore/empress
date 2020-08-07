@@ -102,7 +102,8 @@
             'VectorOps' : './js/vector-ops',
             'CanvasEvents' : './js/canvas-events',
             'SelectedNodeMenu' : './js/select-node-menu',
-            'util' : './js/util'
+            'util' : './js/util',
+            'LayoutsUtil': './js/layouts-util',
         }
     });
 
@@ -111,11 +112,11 @@
                     'SidePanel', 'AnimationPanel', 'Animator', 'BarplotLayer',
                     'BarplotPanel', 'BIOMTable', 'Empress', 'Legend',
                     'Colorer', 'VectorOps', 'CanvasEvents', 'SelectedNodeMenu',
-                    'util'],
+                    'util', 'LayoutsUtil'],
         function($, gl, chroma, underscore, spectrum, filesaver, ByteArray,
                  BPTree, Camera, Drawer, SidePanel, AnimationPanel, Animator,
                  BarplotLayer, BarplotPanel, BIOMTable, Empress, Legend,
-                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util) {
+                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util, LayoutsUtil) {
         // initialze the tree and model
         var tree = new BPTree(
           {{ tree  }},
@@ -151,6 +152,7 @@
             canvas
         );
         empress.initialize();
+        empress.layouts();
 
         var legend = new Legend(document.getElementById('tip-color-key'),
                                 document.getElementById('node-color-key'),

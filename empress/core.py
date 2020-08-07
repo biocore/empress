@@ -342,8 +342,8 @@ class Empress():
             else:
                 names_to_keys[node.name] = [i]
 
-        names = []
-        lengths = []
+        names = [""]
+        lengths = [""]
         for node in self.tree.preorder(include_self=True):
             names.append(node.name)
             lengths.append(node.length)
