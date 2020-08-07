@@ -200,57 +200,6 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Returns information about the amounts of samples per unique value in a
-     * metadata column containing a given feature.
-     *
-     * Note that this function is designed for internal use, so it doesn't do
-     * explicit validation -- it assumes that the input indices are sane.
-     *
-     * @param {String} colIdx Sample metadata column index
-     * @param {String} fIdx Feature index
-     *
-     * @return {Object} An object with two keys:
-     *                  -countMap: maps to an Object mapping the unique values
-     *                   in the sample metadata column to the number of samples
-     *                   with each value containing the specified feature.
-     *                  -containingSampleCount: maps to a Number describing the
-     *                   total number of samples containing the specified
-     *                   feature. Equivalently, this is the sum of the values
-     *                   of countMap.
-     */
-    BIOMTable.prototype._getObsCountsAndTotalBy = function (colIdx, fIdx) {
-        var scope = this;
-        var countMap = {};
-        var containingSampleCount = 0;
-        var cVal;
-        // Iterate through each sample of the BIOM table
-        _.each(this._tbl, function (presentFeatureIndices, sIdx) {
-            // Figure out what metadata value this sample has at the column.
-            // If we haven't recorded it as a key in our output Object yet, do
-            // so and set it to default to 0.
-            cVal = scope._sm[sIdx][colIdx];
-            if (!_.has(countMap, cVal)) {
-                countMap[cVal] = 0;
-            }
-            // Now, we check if we need to update the cVal entry by 1
-            // (indicating that one more sample with cVal contains the
-            // specified feature).
-            if (scope._sortedArrayHasNumber(presentFeatureIndices, fIdx)) {
-                // This sample actually contains the feature!
-                cVal = scope._sm[sIdx][colIdx];
-                // Update our output Object's count info accordingly.
-                countMap[cVal]++;
-                // And update the count of samples containing this feature
-                containingSampleCount++;
-            }
-        });
-        return {
-            countMap: countMap,
-            containingSampleCount: containingSampleCount,
-        };
-    };
-
-    /**
      * Return the feature IDs shared by the BIOM table and input array
      *
      * @param {Array[String]} other Array of strings to compute the
@@ -347,7 +296,7 @@ define(["underscore", "util"], function (_, util) {
      * @param {String} col Sample metadata column
      * @param {String} fID Feature (aka observation) ID
      *
-     * @return {Object} countMap
+     * @return {Object} valueToCountOfSampleWithObs
      *
      * @throws {Error} If the sample metadata column is unrecognized.
      *                 If the feature ID is unrecognized.
@@ -356,7 +305,28 @@ define(["underscore", "util"], function (_, util) {
         var scope = this;
         var colIdx = this._getSampleMetadataColIndex(col);
         var fIdx = this._getFeatureIndexFromID(fID);
-        return this._getObsCountsAndTotalBy(colIdx, fIdx).countMap;
+        var valueToCountOfSampleWithObs = {};
+        var cVal, fIdxPos;	
+        // Iterate through each sample of the BIOM table	
+        _.each(this._tbl, function (presentFeatureIndices, sIdx) {	
+            // Figure out what metadata value this sample has at the column.	
+            // If we haven't recorded it as a key in our output Object yet, do	
+            // so and set it to default to 0.	
+            cVal = scope._sm[sIdx][colIdx];	
+            if (!_.has(valueToCountOfSampleWithObs, cVal)) {	
+                valueToCountOfSampleWithObs[cVal] = 0;	
+            }	
+            // Now, we check if we need to update the cVal entry by 1	
+            // (indicating that one more sample with cVal contains the	
+            // specified feature).	
+            if (scope._sortedArrayHasNumber(presentFeatureIndices, fIdx)) {	
+                // This sample actually contains the feature!	
+                cVal = scope._sm[sIdx][colIdx];	
+                // Update our output Object's count info accordingly.	
+                valueToCountOfSampleWithObs[cVal]++;	
+            }	
+        });	
+        return valueToCountOfSampleWithObs;
     };
 
     /**
@@ -508,44 +478,6 @@ define(["underscore", "util"], function (_, util) {
             }
         });
         return valueToSampleCount;
-    };
-
-    /**
-     * Returns a object that maps the unique values of a sample metadata column
-     * to the *proportion* of samples with that metadata value containing a
-     * given feature.
-     *
-     * Besides the fact that this returns proportions (e.g.
-     * {a: 0.25, b: 0.5, c: 0.25} rather than {a: 1, b: 2, c: 1}), this
-     * function differs from getObsCountsBy() in that it doesn't raise an error
-     * if the input feature ID is unrecognized -- rather, it'll just return
-     * null in that case. (This is because this function is designed to be
-     * used with sample metadata tip barplots, and it's understood that some
-     * of the tips in the tree may not be present in the table.)
-     *
-     * @param {String} col Sample metadata column
-     * @param {String} fID Feature (aka observation) ID
-     *
-     * @return {Object} valueToFreq Maps unique values in the sample metadata
-     *                              column to their proportion of the total
-     *                              number of samples containing the specified
-     *                              feature. If no samples contain the
-     *                              specified feature, this will return {}.
-     *
-     * @throws {Error} If the sample metadata column is unrecognized.
-     */
-    BIOMTable.prototype.getObsFrequencyBy = function (col, fID) {
-        var fIdx = this._fID2Idx[fID];
-        if (_.isUndefined(fIdx)) {
-            return {};
-        }
-        var colIdx = this._getSampleMetadataColIndex(col);
-        var countInfo = this._getObsCountsAndTotalBy(colIdx, fIdx);
-        var countMap = countInfo.countMap;
-        var containingSampleCount = countInfo.containingSampleCount;
-        return _.mapObject(countMap, function (count) {
-            return count / containingSampleCount;
-        });
     };
 
     BIOMTable.prototype.getFrequencyMap = function (col) {
