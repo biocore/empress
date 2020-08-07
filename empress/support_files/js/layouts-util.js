@@ -9,7 +9,7 @@ define([
 ) {
     function rectangularLayout(tree, width, height) {
         var maxWidth = 0;
-        var maxHeight = 4;
+        var maxHeight = 0;
         var prevY = 0;
         var xCoord = new Array(tree.size + 1);
         var yCoord = new Array(tree.size +1);
@@ -18,9 +18,9 @@ define([
             if (tree.isleaf(tree.postorderselect(i))) {
                 yCoord[i] = prevY;
                 prevY += 1;
-                // if (yCoord[i] > maxHeight) {
-                //     maxHeight = yCoord[i];
-                // }
+                if (yCoord[i] > maxHeight) {
+                    maxHeight = yCoord[i];
+                }
             } else {
                 var sum = 0;
                 var numChild = 0;
