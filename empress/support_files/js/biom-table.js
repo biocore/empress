@@ -551,8 +551,9 @@ define(["underscore", "util"], function (_, util) {
         });
 
         // Convert counts to frequencies
-        // Also, return an Object where the keys are feature IDs, rather than
-        // an Array using feature indices
+        // Also, return an Object where the keys are feature IDs pointing to
+        // other Objects where the keys are sample metadata values, rather than
+        // a 2D array (which is how fIdx2counts has been stored)
         var fID2freqs = {};
         var totalSampleCount;
         _.each(this._fIDs, function (fID, fIdx) {
