@@ -306,26 +306,26 @@ define(["underscore", "util"], function (_, util) {
         var colIdx = this._getSampleMetadataColIndex(col);
         var fIdx = this._getFeatureIndexFromID(fID);
         var valueToCountOfSampleWithObs = {};
-        var cVal, fIdxPos;	
-        // Iterate through each sample of the BIOM table	
-        _.each(this._tbl, function (presentFeatureIndices, sIdx) {	
-            // Figure out what metadata value this sample has at the column.	
-            // If we haven't recorded it as a key in our output Object yet, do	
-            // so and set it to default to 0.	
-            cVal = scope._sm[sIdx][colIdx];	
-            if (!_.has(valueToCountOfSampleWithObs, cVal)) {	
-                valueToCountOfSampleWithObs[cVal] = 0;	
-            }	
-            // Now, we check if we need to update the cVal entry by 1	
-            // (indicating that one more sample with cVal contains the	
-            // specified feature).	
-            if (scope._sortedArrayHasNumber(presentFeatureIndices, fIdx)) {	
-                // This sample actually contains the feature!	
-                cVal = scope._sm[sIdx][colIdx];	
-                // Update our output Object's count info accordingly.	
-                valueToCountOfSampleWithObs[cVal]++;	
-            }	
-        });	
+        var cVal, fIdxPos;
+        // Iterate through each sample of the BIOM table
+        _.each(this._tbl, function (presentFeatureIndices, sIdx) {
+            // Figure out what metadata value this sample has at the column.
+            // If we haven't recorded it as a key in our output Object yet, do
+            // so and set it to default to 0.
+            cVal = scope._sm[sIdx][colIdx];
+            if (!_.has(valueToCountOfSampleWithObs, cVal)) {
+                valueToCountOfSampleWithObs[cVal] = 0;
+            }
+            // Now, we check if we need to update the cVal entry by 1
+            // (indicating that one more sample with cVal contains the
+            // specified feature).
+            if (scope._sortedArrayHasNumber(presentFeatureIndices, fIdx)) {
+                // This sample actually contains the feature!
+                cVal = scope._sm[sIdx][colIdx];
+                // Update our output Object's count info accordingly.
+                valueToCountOfSampleWithObs[cVal]++;
+            }
+        });
         return valueToCountOfSampleWithObs;
     };
 
