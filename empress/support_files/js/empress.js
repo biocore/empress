@@ -1156,10 +1156,26 @@ define([
                     continue;
                 }
                 var prevSectionMaxX = prevLayerMaxX;
+                // NOTE: currently we iterate through all of sortedUniqueValues
+                // once for every tip in the table, detecting unique values
+                // where no samples contain this tip using the
+                // !_.isUndefined() check. The reason we do things this way is
+                // that we want to ensure that unique values are processed in
+                // the same order for every tip.
+                //
+                // Ideally we'd skip having to do this full iteration, though,
+                // and only look at the unique values containing this tip from
+                // the start (saving time). This might require refactoring the
+                // output of BiomTable.getFrequencyMap(), though.
                 for (var v = 0; v < sortedUniqueValues.length; v++) {
                     var smVal = sortedUniqueValues[v];
                     var freq = freqs[smVal];
-                    if (freq > 0) {
+                    // Ignore sample metadata values where no sample with this
+                    // value contains this tip. We can detect this using
+                    // !_.isUndefined() because freqs should only include
+                    // entries for metadata values where this feature is
+                    // present in at least one sample with that value.
+                    if (!_.isUndefined(freq)) {
                         var sectionColor = sm2color[smVal];
                         // Assign each unique sample metadata value a length
                         // proportional to its, well, proportion within the sample
