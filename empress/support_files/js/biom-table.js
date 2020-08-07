@@ -551,9 +551,8 @@ define(["underscore", "util"], function (_, util) {
     BIOMTable.prototype.getFrequencyMap = function (col) {
         var scope = this;
         var colIdx = _.indexOf(this._smCols, col);
-        // note could make these faster by doing full on 2d arrays
-        var fIdx2counts = {};
-        var fIdx2sampleCt = {};
+        var fIdx2counts = [];
+        var fIdx2sampleCt = [];
         var containingSampleCount;
         var cVal;
 
@@ -571,8 +570,8 @@ define(["underscore", "util"], function (_, util) {
             for (i = 0; i < numUniqueSMVals; i++) {
                 emptyCounts.push(0);
             }
-            fIdx2counts[fIdx] = emptyCounts;
-            fIdx2sampleCt[fIdx] = 0;
+            fIdx2counts.push(emptyCounts);
+            fIdx2sampleCt.push(0);
         });
         // Iterate through each sample of the BIOM table, storing group counts
         // and total sample counts for each feature
@@ -588,20 +587,21 @@ define(["underscore", "util"], function (_, util) {
             });
         });
         // Convert counts to frequencies
-        var feature2freqs = {};
-        var freqs, fIdx, totalSampleCount;
+        // Also, return an Object where the keys are feature IDs, rather than
+        // an Array using feature indices
+        var fID2freqs = {};
+        var totalSampleCount;
         _.each(this._fIDs, function (fID, fIdx) {
             totalSampleCount = fIdx2sampleCt[fIdx];
-            feature2freqs[fID] = {};
+            fID2freqs[fID] = {};
             _.each(fIdx2counts[fIdx], function (count, smValIdx) {
                 if (count > 0) {
-                    feature2freqs[fID][uniqueSMVals[smValIdx]] =
+                    fID2freqs[fID][uniqueSMVals[smValIdx]] =
                         count / totalSampleCount;
                 }
             });
         });
-        console.log(feature2freqs);
-        return feature2freqs;
+        return fID2freqs;
     };
 
     return BIOMTable;
