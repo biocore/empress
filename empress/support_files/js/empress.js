@@ -1139,6 +1139,7 @@ define([
         );
         var colorer = new Colorer(layer.colorBySMColorMap, sortedUniqueValues);
         var sm2color = colorer.getMapRGB();
+        // Do most of the hard work: compute the frequencies for each tip
         var feature2freqs = this._biom.getFrequencyMap(layer.colorBySMField);
         // Bar thickness
         var halfyrscf = this._yrscf / 2;
