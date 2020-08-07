@@ -538,7 +538,6 @@ define(["underscore", "util"], function (_, util) {
 
         // Iterate through each sample of the BIOM table, storing unique s.m.
         // value counts and total sample counts for each feature
-        var cValIdx;
         _.each(this._tbl, function (presentFeatureIndices, sIdx) {
             // Figure out what metadata value this sample has at the column.
             cVal = scope._sm[sIdx][colIdx];
