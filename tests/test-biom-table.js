@@ -690,5 +690,19 @@ require(["jquery", "underscore", "BiomTable"], function ($, _, BiomTable) {
                 "Test: error thrown if unrecognized metadata col passed"
             );
         });
+        test("Test getFrequencyMap", function () {
+            deepEqual(this.biomTable.getFrequencyMap("f1"), {
+                o1: { a: 1 },
+                o2: { a: 0.5, c: 0.5 },
+                o3: { a: 0.5, c: 0.5 },
+                o4: { a: 0.5, b: 0.5 },
+                o5: { a: 2 / 3, b: 1 / 3 },
+                o6: { a: 0.5, c: 0.5 },
+                o7: { a: 1 },
+                o8: { b: 1 },
+                o9: { a: 1 },
+                o10: { a: 1 },
+            });
+        });
     });
 });
