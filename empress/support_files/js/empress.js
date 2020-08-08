@@ -300,14 +300,16 @@ define([
     }
 
     Empress.prototype.layouts = function() {
+        var d = new Date();
+        console.log("starting layout:", d.getTime());
         var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
+        var dt = new Date();
+        console.log("finished layout:", dt.getTime());
+        console.log(this._tree.numleaves())
         for (var i = 1; i < this._tree.size; i++) {
-            // console.log(this._treeData[i][this._tdToInd["xr"]], coords.xCoord[i])
-            console.log(this._treeData[i][this._tdToInd["yr"]]- coords.yCoord[i])
             this._treeData[i][this._tdToInd["xr"]] = _.isNaN(coords.xCoord[i]) ? 0 : coords.xCoord[i];
             this._treeData[i][this._tdToInd["yr"]] = _.isNaN(coords.yCoord[i]) ? 1 : coords.yCoord[i];
         }
-        // console.log(this._treeData)
     }
 
     /**

@@ -56,10 +56,8 @@ define([
         var yScalingFactor = 1;
 
         if (maxHeight > 0) {
-            // console.log(height, maxHeight)
             yScalingFactor = height / maxHeight;
         }
-        // console.log(yScalingFactor)
 
         for (var i = 1; i <= tree.size; i++) {
             xCoord[i] *= xScalingFactor;
