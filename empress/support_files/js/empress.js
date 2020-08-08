@@ -682,7 +682,7 @@ define([
                 this.getNodeInfo(rNode, "highestchildyr")
             );
         }
-        // iterate throught the tree in postorder, skip root
+        // iterate through the tree in postorder, skip root
         for (var i = 1; i < tree.size; i++) {
             // name of current node
             var nodeInd = i;
