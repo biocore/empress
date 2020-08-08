@@ -1157,11 +1157,14 @@ define([
                 }
                 var prevSectionMaxX = prevLayerMaxX;
                 // NOTE: currently we iterate through all of sortedUniqueValues
-                // once for every tip in the table, detecting unique values
-                // where no samples contain this tip using the
-                // !_.isUndefined() check. The reason we do things this way is
-                // that we want to ensure that unique values are processed in
-                // the same order for every tip.
+                // once for every tip in the table, detecting and skipping
+                // unique values where no samples contain this tip.
+                // The reason we do things this way, rather than just
+                // iterating directly over the keys of this tip's Object within
+                // the frequency map, is that we want to ensure that unique
+                // values are processed in the same order for every tip (so for
+                // a "body site" barplot you'd always see e.g. gut, left palm,
+                // right palm, tongue in that order).
                 //
                 // Ideally we'd skip having to do this full iteration, though,
                 // and only look at the unique values containing this tip from
