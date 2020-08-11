@@ -117,9 +117,9 @@ define(["Colorer", "util"], function (Colorer, util) {
 
         /**
          * @type {Number}
-         * How thick to make branches
+         * Extra width for branches.
          */
-        this.lWidth = null;
+        this.lWidth = 0;
     }
 
     /**
@@ -171,7 +171,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.totalFrames = null;
         this.curFrame = null;
         this.hide = null;
-        this.lWidth = null;
+        this.lWidth = 0;
         this.timePerFram = -1;
         this.framesRdy = null;
         this.queuedFrames = null;
