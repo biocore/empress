@@ -554,7 +554,13 @@ define(["underscore", "util"], function (_, util) {
         // Convert counts to frequencies
         // Also, return an Object where the keys are feature IDs pointing to
         // other Objects where the keys are sample metadata values, rather than
-        // a 2D array (which is how fIdx2Counts has been stored)
+        // a 2D array (which is how fIdx2Counts has been stored).
+        //
+        // TODO: It should be possible to return a 2D array without
+        // constructing an Object, which would save some space. This would
+        // require decently substantial refactoring of the tests / of
+        // Empress.addSMBarplotLayerCoords(), but if this gets to be too
+        // inefficient for large trees it's an option.
         var fID2Freqs = {};
         var totalSampleCount;
         _.each(this._fIDs, function (fID, fIdx) {
