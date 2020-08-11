@@ -1139,67 +1139,70 @@ define([
         );
         var colorer = new Colorer(layer.colorBySMColorMap, sortedUniqueValues);
         var sm2color = colorer.getMapRGB();
-        // Do most of the hard work: compute the frequencies for each tip
+        // Do most of the hard work: compute the frequencies for each tip (only
+        // the tips present in the BIOM table, that is)
         var feature2freqs = this._biom.getFrequencyMap(layer.colorBySMField);
         // Bar thickness
         var halfyrscf = this._yrscf / 2;
-        for (i = 1; i < this._tree.size; i++) {
-            if (this._tree.isleaf(this._tree.postorderselect(i))) {
-                var node = this._treeData[i];
-                var name = this.getNodeInfo(node, "name");
-                var freqs = feature2freqs[name];
-                // Don't draw bars for tips that aren't in the BIOM table
-                // (Note that this is only for the sample metadata barplots --
-                // these tips could still ostensibly have associated
-                // feature metadata)
-                if (_.isUndefined(freqs)) {
-                    continue;
-                }
-                var prevSectionMaxX = prevLayerMaxX;
-                // NOTE: currently we iterate through all of sortedUniqueValues
-                // once for every tip in the table, detecting and skipping
-                // unique values where no samples contain this tip.
-                // The reason we do things this way, rather than just
-                // iterating directly over the keys of this tip's Object within
-                // the frequency map, is that we want to ensure that unique
-                // values are processed in the same order for every tip (so for
-                // a "body site" barplot you'd always see e.g. gut, left palm,
-                // right palm, tongue in that order).
-                //
-                // Ideally we'd skip having to do this full iteration, though,
-                // and only look at the unique values containing this tip from
-                // the start (saving time). This might require refactoring the
-                // output of BiomTable.getFrequencyMap(), though.
-                for (var v = 0; v < sortedUniqueValues.length; v++) {
-                    var smVal = sortedUniqueValues[v];
-                    var freq = freqs[smVal];
-                    // Ignore sample metadata values where no sample with this
-                    // value contains this tip. We can detect this using
-                    // !_.isUndefined() because freqs should only include
-                    // entries for metadata values where this feature is
-                    // present in at least one sample with that value.
-                    if (!_.isUndefined(freq)) {
-                        var sectionColor = sm2color[smVal];
-                        // Assign each unique sample metadata value a length
-                        // proportional to its, well, proportion within the sample
-                        // presence information for this tip.
-                        var barSectionLen = layer.lengthSM * freq;
-                        var thisSectionMaxX = prevSectionMaxX + barSectionLen;
-                        var y = this.getY(node);
-                        var ty = y + halfyrscf;
-                        var by = y - halfyrscf;
-                        var corners = {
-                            tL: [prevSectionMaxX, ty],
-                            tR: [thisSectionMaxX, ty],
-                            bL: [prevSectionMaxX, by],
-                            bR: [thisSectionMaxX, by],
-                        };
-                        this._addTriangleCoords(coords, corners, sectionColor);
-                        prevSectionMaxX = thisSectionMaxX;
-                    }
+        // For each tip in the BIOM table...
+        // (We implicitly ignore [and don't draw anything for] tips that
+        // *aren't* in the BIOM table.)
+        _.each(feature2freqs, function(freqs, tipName) {
+            // Get the tree data for this tip.
+            // We can just get the 0-th key because tip names are guaranteed to
+            // be unique, so the nameToKeys entry for a tip name should be an
+            // array with 1 element.
+            var node = scope._treeData[scope._nameToKeys[tipName][0]];
+
+            // This variable defines the left x-coordinate for drawing the next
+            // "section" of the stacked barplot. It'll be updated as we iterate
+            // through the unique values in this sample metadata field below.
+            var prevSectionMaxX = prevLayerMaxX;
+
+            // For each unique value for this sample metadata field...
+            // NOTE: currently we iterate through all of sortedUniqueValues
+            // once for every tip in the table, detecting and skipping
+            // unique values where no samples contain this tip.
+            // The reason we do things this way, rather than just
+            // iterating directly over the keys of this tip's Object within
+            // the frequency map, is that we want to ensure that unique
+            // values are processed in the same order for every tip (so for
+            // a "body site" barplot you'd always see e.g. gut, left palm,
+            // right palm, tongue in that order).
+            //
+            // Ideally we'd skip having to do this full iteration, though,
+            // and only look at the unique values containing this tip from
+            // the start (saving time). This might require refactoring the
+            // output of BiomTable.getFrequencyMap(), though.
+            for (var v = 0; v < sortedUniqueValues.length; v++) {
+                var smVal = sortedUniqueValues[v];
+                var freq = freqs[smVal];
+                // Ignore sample metadata values where no sample with this
+                // value contains this tip. We can detect this using
+                // !_.isUndefined() because freqs should only include
+                // entries for metadata values where this feature is
+                // present in at least one sample with that value.
+                if (!_.isUndefined(freq)) {
+                    var sectionColor = sm2color[smVal];
+                    // Assign each unique sample metadata value a length
+                    // proportional to its, well, proportion within the sample
+                    // presence information for this tip.
+                    var barSectionLen = layer.lengthSM * freq;
+                    var thisSectionMaxX = prevSectionMaxX + barSectionLen;
+                    var y = scope.getY(node);
+                    var ty = y + halfyrscf;
+                    var by = y - halfyrscf;
+                    var corners = {
+                        tL: [prevSectionMaxX, ty],
+                        tR: [thisSectionMaxX, ty],
+                        bL: [prevSectionMaxX, by],
+                        bR: [thisSectionMaxX, by],
+                    };
+                    scope._addTriangleCoords(coords, corners, sectionColor);
+                    prevSectionMaxX = thisSectionMaxX;
                 }
             }
-        }
+        });
         // The bar lengths are identical for all tips in this layer, so no need
         // to do anything fancy to compute the maximum X coordinate.
         return prevLayerMaxX + layer.lengthSM;
