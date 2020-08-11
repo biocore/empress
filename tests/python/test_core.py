@@ -16,6 +16,7 @@ from skbio.util import assert_ordination_results_equal
 from pandas.util.testing import assert_frame_equal
 from os.path import exists
 from shutil import rmtree
+import biom
 
 from .test_integration import load_mp_data
 from emperor import Emperor
@@ -42,24 +43,20 @@ class TestCore(unittest.TestCase):
         )
         # Test table/metadata (mostly) adapted from Qurro:
         # the table is transposed to match QIIME2's expectation
-        self.table = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 0, 4],
-                "Sample2": [8, 7, 0, 5],
-                "Sample3": [1, 0, 0, 0],
-                "Sample4": [0, 0, 1, 0]
-            },
-            index=["a", "b", "e", "d"]
-        ).T
-        self.unrelated_table = pd.DataFrame(
-            {
-                "Sample1": [5, 2, 0, 2],
-                "Sample2": [2, 3, 0, 1],
-                "Sample3": [5, 2, 0, 0],
-                "Sample4": [4, 5, 0, 4]
-            },
-            index=["h", "i", "j", "k"]
-        ).T
+        self.table = biom.Table(np.array([[1, 2, 0, 4],
+                                          [8, 7, 0, 5],
+                                          [1, 0, 0, 0],
+                                          [0, 0, 1, 0]]).T,
+                                list('abed'),
+                                ['Sample1', 'Sample2', 'Sample3', 'Sample4'])
+
+        self.unrelated_table = biom.Table(np.array([[5, 2, 0, 2],
+                                                    [2, 3, 0, 1],
+                                                    [5, 2, 0, 0],
+                                                    [4, 5, 0, 4]]).T,
+                                          list("hijk"),
+                                          ['Sample1', 'Sample2', 'Sample3',
+                                           'Sample4'])
         self.sample_metadata = pd.DataFrame(
             {
                 "Metadata1": [0, 0, 0, 1],
@@ -67,7 +64,7 @@ class TestCore(unittest.TestCase):
                 "Metadata3": [1, 2, 3, 4],
                 "Metadata4": ["abc", "def", "ghi", "jkl"]
             },
-            index=list(self.table.index)
+            index=list(self.table.ids())
         )
         self.feature_metadata = pd.DataFrame(
             {
@@ -76,14 +73,11 @@ class TestCore(unittest.TestCase):
             },
             index=["a", "h"]
         )
-        self.filtered_table = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 4],
-                "Sample2": [8, 7, 5],
-                "Sample3": [1, 0, 0],
-            },
-            index=["a", "b", "d"]
-        ).T
+        self.filtered_table = biom.Table(np.array([[1, 2, 4],
+                                                   [8, 7, 5],
+                                                   [1, 0, 0]]).T,
+                                         ['a', 'b', 'd'],
+                                         ['Sample1', 'Sample2', 'Sample3'])
         self.filtered_sample_metadata = pd.DataFrame(
             {
                 "Metadata1": [0, 0, 0],
@@ -134,15 +128,11 @@ class TestCore(unittest.TestCase):
             proportion_explained=proportion_explained)
         self.biplot_tree = parse_newick(
             '(((y:1,z:2):1,b:2)g:1,(:1,d:3)h:2):1;')
-        self.biplot_table = pd.DataFrame(
-            {
-                "Sample1": [1, 2],
-                "Sample2": [8, 7],
-                "Sample3": [1, 0],
-                "Sample4": [0, 3]
-            },
-            index=["y", "z"]
-        ).T
+        self.biplot_table = biom.Table(np.array([[1, 2], [8, 7],
+                                                 [1, 0], [0, 3]]).T,
+                                       ['y', 'z'],
+                                       ['Sample1', 'Sample2', 'Sample3',
+                                        'Sample4'])
 
         self.files_to_remove = []
         self.maxDiff = None
@@ -166,7 +156,7 @@ class TestCore(unittest.TestCase):
             self.assertEqual(node.name, names[i])
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.table, viz.table.T)
+        self.assertEqual(self.table, viz.table)
         self.assertNotEqual(id(self.table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
@@ -191,7 +181,7 @@ class TestCore(unittest.TestCase):
             self.assertEqual(node.name, names[i])
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.table, viz.table.T)
+        self.assertEqual(self.table, viz.table)
         self.assertNotEqual(id(self.table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
@@ -206,9 +196,14 @@ class TestCore(unittest.TestCase):
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
     def test_init_with_ordination_empty_samples_in_pcoa(self):
+        def make_bad(v, i, m):
+            if i in ['Sample2', 'Sample4']:
+                return np.zeros(len(v))
+            else:
+                return v
+
         bad_table = self.table.copy()
-        bad_table.loc["Sample4"] = 0
-        bad_table.loc["Sample2"] = 0
+        bad_table.transform(make_bad, inplace=True)
         with self.assertRaisesRegex(
             ValueError,
             (
@@ -380,7 +375,7 @@ class TestCore(unittest.TestCase):
             self.assertEqual(node.name, names[i])
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.filtered_table, viz.table.T)
+        self.assertEqual(self.filtered_table, viz.table)
         self.assertNotEqual(id(self.filtered_table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
@@ -413,7 +408,7 @@ class TestCore(unittest.TestCase):
         assert_frame_equal(extra_fm.loc[["h"]], viz.int_md)
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.filtered_table, viz.table.T)
+        self.assertEqual(self.filtered_table, viz.table)
         self.assertNotEqual(id(self.filtered_table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
@@ -488,7 +483,7 @@ class TestCore(unittest.TestCase):
         # Convert artifacts / metadata objects to "normal" types that we can
         # pass to Empress
         bp_tree = from_skbio_treenode(tree.view(TreeNode))
-        tbl_df = tbl.view(pd.DataFrame)
+        tbl_df = tbl.view(biom.Table)
         pcoa_skbio = pcoa.view(skbio.OrdinationResults)
         smd_df = smd.to_dataframe()
         fmd_df = fmd.to_dataframe()
@@ -508,8 +503,6 @@ class TestCore(unittest.TestCase):
         self.assertFalse(funky_tip in viz.tip_md.index)
 
     def test_no_intersection_between_tree_and_table(self):
-        bad_table = self.unrelated_table.copy()
-        bad_table.index = range(len(self.unrelated_table.index))
         with self.assertRaisesRegex(
             tools.DataMatchingError,
             "No features in the feature table are present as tips in the tree."
@@ -531,7 +524,7 @@ class TestCore(unittest.TestCase):
                       ordination=self.pcoa)
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.table, viz.table.T)
+        self.assertEqual(self.table, viz.table)
         self.assertNotEqual(id(self.table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance

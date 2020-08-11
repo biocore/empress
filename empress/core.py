@@ -48,7 +48,7 @@ class Empress():
         ----------
         tree: bp.Tree
             The phylogenetic tree to visualize.
-        table: pd.DataFrame
+        table: biom.Table
             The matrix to visualize paired with the phylogenetic tree.
         sample_metadata: pd.DataFrame
             DataFrame object with the metadata associated to the samples in the
@@ -163,7 +163,7 @@ class Empress():
         # sending it to tools.match_inputs() and keep using the transposed
         # table for the rest of this visualizer.
         self.table, self.samples, self.tip_md, self.int_md = match_inputs(
-            self.tree, self.table.T, self.samples, self.features,
+            self.tree, self.table, self.samples, self.features,
             self.ordination, ignore_missing_samples, filter_extra_samples,
             filter_missing_features
         )
@@ -180,7 +180,8 @@ class Empress():
         )
         # remove unobserved features from the phylogeny
         if filter_unobserved_features_from_phylogeny:
-            self.tree = self.tree.shear(set(self.table.index))
+            features = set(self.table.ids(axis='observation'))
+            self.tree = self.tree.shear(features)
             # Remove features in the feature metadata that are no longer
             # present in the tree, due to being shorn off
             if self.tip_md is not None or self.int_md is not None:
