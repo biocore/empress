@@ -307,13 +307,15 @@ define([
         }
 
         this._tree.lengths_[1] = 1;
+        var d = new Date();
+        console.log("starting layout:", d.getTime());
         var coords = LayoutsUtil.unrootedLayout(this._tree, 4020,4020);
+        d = new Date();
+        console.log("starting layout:", d.getTime());
         for (var i = 1; i <= this._tree.size; i++) {
             this._treeData[i][this._tdToInd["x2"]] = _.isNaN(coords.xCoord[i]) ? 0 : coords.xCoord[i];
             this._treeData[i][this._tdToInd["y2"]] = _.isNaN(coords.yCoord[i]) ? 1 : coords.yCoord[i];
         }
-        console.log(this.getX(this._treeData[this._tree.size]))
-        console.log(this.getY(this._treeData[this._tree.size]))
         this.drawTree();
     }
 
