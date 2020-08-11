@@ -532,8 +532,8 @@ define(["underscore", "util"], function (_, util) {
             for (i = 0; i < numUniqueSMVals; i++) {
                 emptyCounts.push(0);
             }
-            fIdx2counts.push(emptyCounts);
-            fIdx2sampleCt.push(0);
+            fIdx2Counts.push(emptyCounts);
+            fIdx2SampleCt.push(0);
         });
 
         // Iterate through each sample of the BIOM table, storing unique s.m.
@@ -545,21 +545,21 @@ define(["underscore", "util"], function (_, util) {
             // Increment s.m. value counts for each feature present in this
             // sample
             _.each(presentFeatureIndices, function (fIdx) {
-                fIdx2counts[fIdx][cValIdx]++;
-                fIdx2sampleCt[fIdx]++;
+                fIdx2Counts[fIdx][cValIdx]++;
+                fIdx2SampleCt[fIdx]++;
             });
         });
 
         // Convert counts to frequencies
         // Also, return an Object where the keys are feature IDs pointing to
         // other Objects where the keys are sample metadata values, rather than
-        // a 2D array (which is how fIdx2counts has been stored)
+        // a 2D array (which is how fIdx2Counts has been stored)
         var fID2freqs = {};
         var totalSampleCount;
         _.each(this._fIDs, function (fID, fIdx) {
-            totalSampleCount = fIdx2sampleCt[fIdx];
+            totalSampleCount = fIdx2SampleCt[fIdx];
             fID2freqs[fID] = {};
-            _.each(fIdx2counts[fIdx], function (count, smValIdx) {
+            _.each(fIdx2Counts[fIdx], function (count, smValIdx) {
                 if (count > 0) {
                     fID2freqs[fID][uniqueSMVals[smValIdx]] =
                         count / totalSampleCount;
