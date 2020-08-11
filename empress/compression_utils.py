@@ -5,7 +5,6 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
-import numpy as np
 
 
 def remove_empty_samples_and_features(table, sample_metadata, ordination=None):
@@ -130,22 +129,14 @@ def compress_table(table):
     """
     feature_ids = table.ids(axis='observation')
     sample_ids = table.ids()
-    feature_ids_indexed = np.arange(len(feature_ids))
-    sample_ids_indexed = np.arange(len(sample_ids))
 
-    f_ids_to_indices = {fid: int(idx) for fid, idx in zip(feature_ids,
-                                                          feature_ids_indexed)}
-    s_ids_to_indices = {sid: int(idx) for sid, idx in zip(sample_ids,
-                                                          sample_ids_indexed)}
+    f_ids_to_indices = {fid: idx for idx, fid in enumerate(feature_ids)}
+    s_ids_to_indices = {sid: idx for idx, sid in enumerate(sample_ids)}
 
     compressed_table = []
-    for vec in table.iter_data(dense=False):
+    for vec in table.iter_data(axis='sample', dense=False):
         # vec is a row from a scipy.sparse.csr_matrix
-        compressed_table.append(list(feature_ids_indexed[vec.indices]))
-
-    # the values from compressed_table are np.int64 types, which the json
-    # encoder by default does not know how to handle.
-    compressed_table = [[int(v) for v in row] for row in compressed_table]
+        compressed_table.append([int(i) for i in vec.indices])
 
     return (
         list(sample_ids), list(feature_ids), s_ids_to_indices,

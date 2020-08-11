@@ -331,7 +331,7 @@ class TestCompressionUtils(unittest.TestCase):
         # First off, verify that compress_table() leaves the original table DF
         # untouched.
         self.assertEqual(table_copy, self.table_ef)
-        print(table_copy)
+
         # Check s_ids, which just be a list of the sample IDs in the same order
         # as they were in the table's columns.
         self.assertEqual(s_ids, ["Sample1", "Sample2", "Sample3"])

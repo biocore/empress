@@ -41,8 +41,6 @@ class TestCore(unittest.TestCase):
         self.pruned_tree = TreeNode.read(
             StringIO('(((a:1)EmpressNode0:1,b:2)g:1,(d:3)h:2)EmpressNode1:1;')
         )
-        # Test table/metadata (mostly) adapted from Qurro:
-        # the table is transposed to match QIIME2's expectation
         self.table = biom.Table(np.array([[1, 2, 0, 4],
                                           [8, 7, 0, 5],
                                           [1, 0, 0, 0],

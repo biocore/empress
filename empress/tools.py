@@ -238,7 +238,7 @@ def match_inputs(
         )
 
     padded_metadata = sample_metadata.copy()
-    if len(sm_and_table_samples) < len(ff_table.ids()):
+    if len(sm_and_table_samples) < len(table_samples):
         if ignore_missing_samples:
             # Works similarly to how Emperor does this: see
             # https://github.com/biocore/emperor/blob/659b62a9f02a6423b6258c814d0e83dbfd05220e/emperor/core.py#L350
