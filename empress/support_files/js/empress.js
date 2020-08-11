@@ -1147,7 +1147,7 @@ define([
         // For each tip in the BIOM table...
         // (We implicitly ignore [and don't draw anything for] tips that
         // *aren't* in the BIOM table.)
-        _.each(feature2freqs, function(freqs, tipName) {
+        _.each(feature2freqs, function (freqs, tipName) {
             // Get the tree data for this tip.
             // We can just get the 0-th key because tip names are guaranteed to
             // be unique, so the nameToKeys entry for a tip name should be an
