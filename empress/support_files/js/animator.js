@@ -245,11 +245,24 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.empress.drawTree();
     };
 
-    Animator.prototype.showAnimationFrameAtIndex = function (index) {
-        if (!this.framesRdy[index]) {
-            this._collectFrame(index);
+    /**
+     * Draw the tree corresponding a given frame.
+     *
+     * This method is used in empire plots, and won't draw a legend since the
+     * color values are visible in Emperor.
+     *
+     * @param{Number} frame The frame to retrieve. frame must be in the range
+     *                      [0, this.totalFrames] else an error will be thrown.
+     */
+    Animator.prototype.showAnimationFrameAtIndex = function (frame) {
+        if (frame < 0 || frame > this.totalFrames) throw "Invalid Frame";
+
+        this.curFrame = frame;
+        if (!this.framesRdy[frame]) {
+            this._collectFrame(frame);
         }
 
+        // don't show legends for empire animations
         this.drawFrame(false);
     };
 
@@ -283,7 +296,6 @@ define(["Colorer", "util"], function (Colorer, util) {
      */
     Animator.prototype.initAnimation = function () {
         this.curFrame = 0;
-        this.curFrame = -1;
         this.pause = false;
         this.framesRdy = new Array(this.totalFrames).fill(false);
         this.queuedFrames = [];
