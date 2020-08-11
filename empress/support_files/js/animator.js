@@ -213,9 +213,9 @@ define(["Colorer", "util"], function (Colorer, util) {
     /**
      * Draws the current frame and updates the legend.
      *
-     * @param{Boolean} showLegend Whether the legend should be shown on screen.
+     * @param{Boolean} showColors Whether the legend should be shown on screen.
      */
-    Animator.prototype.drawFrame = function (showLegend) {
+    Animator.prototype.drawFrame = function (showColors) {
         if (this.queuedFrames === null) {
             return;
         }
@@ -229,10 +229,8 @@ define(["Colorer", "util"], function (Colorer, util) {
         }
 
         // draw new legend
-        if (showLegend) {
-            this.legend.clearAllLegends();
-            this.legend.addColorKey(name, keyInfo, "node", false);
-        }
+        this.legend.clearAllLegends();
+        this.legend.addColorKey(name, showColors ? keyInfo : {}, "node", false);
 
         // draw tree
         this.empress.resetTree();
