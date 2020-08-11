@@ -113,7 +113,7 @@ define(["Colorer", "util"], function (Colorer, util) {
          * @type {Boolean}
          * Hides uncolored branches if true.
          */
-        this.hide = null;
+        this.hide = false;
 
         /**
          * @type {Number}
@@ -170,7 +170,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.gradientSteps = null;
         this.totalFrames = null;
         this.curFrame = null;
-        this.hide = null;
+        this.hide = false;
         this.lWidth = 0;
         this.timePerFram = -1;
         this.framesRdy = null;
@@ -214,6 +214,8 @@ define(["Colorer", "util"], function (Colorer, util) {
 
     /**
      * Draws the current frame and updates the legend.
+     *
+     * @param{Boolean} showLegend Whether the legend should be shown on screen.
      */
     Animator.prototype.drawFrame = function (showLegend) {
         var frame = this.queuedFrames[this.curFrame];
@@ -227,8 +229,8 @@ define(["Colorer", "util"], function (Colorer, util) {
 
         // draw new legend
         if (showLegend) {
-          this.legend.clearAllLegends();
-          this.legend.addColorKey(name, keyInfo, "node", false);
+            this.legend.clearAllLegends();
+            this.legend.addColorKey(name, keyInfo, "node", false);
         }
 
         // draw tree
@@ -272,7 +274,10 @@ define(["Colorer", "util"], function (Colorer, util) {
         }, 0);
     };
 
-    Animator.prototype.setupAnimation = function () {
+    /**
+     * Initialize the animation properties.
+     */
+    Animator.prototype.initAnimation = function () {
         this.curFrame = 0;
         this.pause = false;
         this.framesRdy = new Array(this.totalFrames).fill(false);
@@ -284,7 +289,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * start the animation loop.
      */
     Animator.prototype.startAnimation = function () {
-        this.setupAnimation();
+        this.initAnimation();
 
         // start animation loop
         // Note: This method is async and will create timeout events until

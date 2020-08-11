@@ -24,21 +24,28 @@ ec.sceneViews[0].on("click", function (name, object) {
 });
 
 // synchronize animations in Empress
-ec.controllers.animations.addEventListener('animation-started',
-function(payload) {
-    animator.setAnimationParameters(payload.message.trajectory,
-                                    payload.message.gradient,
-                                    'discrete-coloring-qiime', animator.hide,
-                                    animator.lWidth);
-    animator.setupAnimation();
+ec.controllers.animations.addEventListener("animation-started", function (
+    payload
+) {
+    animator.setAnimationParameters(
+        payload.message.trajectory,
+        payload.message.gradient,
+        "discrete-coloring-qiime",
+        animator.hide,
+        animator.lWidth
+    );
+    animator.initAnimation();
 });
 
-ec.controllers.animations.addEventListener('animation-new-frame-started',
-function(payload) {
-    animator.showAnimationFrameAtIndex(payload.message.frame);
-});
+ec.controllers.animations.addEventListener(
+    "animation-new-frame-started",
+    function (payload) {
+        animator.showAnimationFrameAtIndex(payload.message.frame);
+    }
+);
 
-ec.controllers.animations.addEventListener('animation-cancelled',
-function(payload) {
+ec.controllers.animations.addEventListener("animation-cancelled", function (
+    payload
+) {
     animator.stopAnimation();
 });

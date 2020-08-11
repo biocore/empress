@@ -224,6 +224,9 @@ require([
         ok(this.panel.prevFrameBtn.onclick !== null);
         ok(this.panel.nextFrameBtn !== null);
 
+        equal(this.panel.animator.lWidth, 0);
+        equal(this.panel.animator.hide, false);
+
         // make sure an option was created for each color
         var expectedColors = Colorer.__Colormaps;
         var resultColors = this.panel.colorSelect.options;
