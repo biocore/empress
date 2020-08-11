@@ -51,42 +51,38 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
         notOk(empress2._barplotPanel.availContent.classList.contains("hidden"));
         ok(empress2._barplotPanel.unavailContent.classList.contains("hidden"));
     });
-    // test("Layout availability toggling post-initialization", function () {
-    //     var empress = new Empress(
-    //         this.testData.tree,
-    //         this.testData.treeData,
-    //         this.testData.tdToInd,
-    //         this.testData.nameToKeys,
-    //         this.testData.layoutToCoordSuffix,
-    //         "Unrooted",
-    //         this.testData.yrscf,
-    //         this.testData.biom,
-    //         this.testData.fmCols,
-    //         this.testData.tm,
-    //         this.testData.im,
-    //         this.testData.canvas
-    //     );
+    test("Layout availability toggling post-initialization", function () {
+        var empress = new Empress(
+            this.testData.tree,
+            this.testData.treeData,
+            this.testData.tdToInd,
+            this.testData.nameToKeys,
+            this.testData.layoutToCoordSuffix,
+            "Unrooted",
+            this.testData.yrscf,
+            this.testData.biom,
+            this.testData.fmCols,
+            this.testData.tm,
+            this.testData.im,
+            this.testData.canvas
+        );
+        // We need to call this in order to make updateLayout() work.
+        // Otherwise, things start breaking -- see
+        // https://github.com/biocore/empress/pull/320 for context.
+        empress.initialize();
 
-    //     // After updating the layout to something that supports barplots, the
-    //     // barplot "available content" should now be shown.
-    //     //
-    //     // NOTE: This fails in testing -- I get the following error:
-    //     // TypeError: Cannot set property '0' of undefined
-    //     //     at Object.u (file:///home/marcus/Dropbox/Work/KnightLab/Empress/fedarko/empress/empress/support_files/vendor/gl-matrix.min.js:28:30362)
-    //     //     at Drawer.centerCameraOn (file:///home/marcus/Dropbox/Work/KnightLab/Empress/fedarko/empress/empress/support_files/js/drawer.js:466:17)
-    //     //     at Empress.centerLayoutAvgPoint (file:///home/marcus/Dropbox/Work/KnightLab/Empress/fedarko/empress/empress/support_files/js/empress.js:1929:22)
-    //     //     at Empress.updateLayout (file:///home/marcus/Dropbox/Work/KnightLab/Empress/fedarko/empress/empress/support_files/js/empress.js:1816:22)
-    //     //     at Object.<anonymous> (file:///home/marcus/Dropbox/Work/KnightLab/Empress/fedarko/empress/tests/test-barplot-panel-handler.js:68:17)
-    //     empress.updateLayout("Rectangular");
-    //     notOk(empress._barplotPanel.availContent.classList.contains("hidden"));
-    //     ok(empress._barplotPanel.unavailContent.classList.contains("hidden"));
+        // After updating the layout to something that supports barplots, the
+        // barplot "available content" should now be shown.
+        empress.updateLayout("Rectangular");
+        notOk(empress._barplotPanel.availContent.classList.contains("hidden"));
+        ok(empress._barplotPanel.unavailContent.classList.contains("hidden"));
 
-    //     // ... And going back to a not-compatible-with-barplots layout should
-    //     // switch back to the unavailable content.
-    //     empress.updateLayout("Unrooted");
-    //     ok(empress._barplotPanel.availContent.classList.contains("hidden"));
-    //     notOk(empress._barplotPanel.unavailContent.classList.contains("hidden"));
-    // });
+        // ... And going back to a not-compatible-with-barplots layout should
+        // switch back to the unavailable content.
+        empress.updateLayout("Unrooted");
+        ok(empress._barplotPanel.availContent.classList.contains("hidden"));
+        notOk(empress._barplotPanel.unavailContent.classList.contains("hidden"));
+    });
     test("Barplot layers default to feature metadata layers, but only if feature metadata is available", function () {
         var empressWithFM = new Empress(
             this.testData.tree,
