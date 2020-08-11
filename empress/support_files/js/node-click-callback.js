@@ -31,7 +31,7 @@ ec.controllers.animations.addEventListener("animation-started", function (
         payload.message.trajectory,
         payload.message.gradient,
         "discrete-coloring-qiime",
-        animator.hide,
+        animator.collapse,
         animator.lWidth
     );
     animator.initAnimation();

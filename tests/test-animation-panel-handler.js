@@ -252,6 +252,7 @@ require([
         ok(this.panel.nextFrameBtn !== null);
 
         equal(this.panel.animator.lWidth, 0);
+        equal(this.panel.animator.collapse, false);
 
         // make sure an option was created for each color
         var expectedColors = Colorer.__Colormaps;

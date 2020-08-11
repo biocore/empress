@@ -112,7 +112,7 @@ define(["Colorer", "util"], function (Colorer, util) {
          * @type {Boolean}
          * Collapse clades if true.
          */
-        this.collapse = null;
+        this.collapse = false;
 
         /**
          * @type {Number}
@@ -170,7 +170,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.totalFrames = null;
         this.curFrame = null;
         this.lWidth = 0;
-        this.collapse = null;
+        this.collapse = false;
         this.timePerFram = -1;
         this.framesRdy = null;
         this.queuedFrames = null;
