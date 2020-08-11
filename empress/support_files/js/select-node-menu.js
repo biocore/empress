@@ -38,13 +38,12 @@ define(["underscore", "util"], function (_, util) {
         }
 
         // add event to add button
-        var selectMenu = this;
         var click = function () {
-            var val = selectMenu.sel.value;
-            selectMenu.sel.options[selectMenu.sel.selectedIndex].remove();
-            selectMenu.fields.push(val);
-            selectMenu.smHeader.classList.remove("hidden");
-            selectMenu.showNodeMenu();
+            var val = scope.sel.value;
+            scope.sel.options[scope.sel.selectedIndex].remove();
+            scope.fields.push(val);
+            scope.smHeader.classList.remove("hidden");
+            scope.showNodeMenu();
         };
         this.addBtn.onclick = click;
     };
@@ -182,9 +181,9 @@ define(["underscore", "util"], function (_, util) {
         var emp = this.empress;
         var nodeKeys = this.nodeKeys;
         var node = emp._treeData[nodeKeys[0]];
-        var name = node.name;
+        var name = emp.getNodeInfo(node, "name");
 
-        this.nodeNameLabel.textContent = "Name: " + node.name;
+        this.nodeNameLabel.textContent = "Name: " + name;
 
         this.notes.textContent = "";
         this.warning.textContent = "";
@@ -227,7 +226,10 @@ define(["underscore", "util"], function (_, util) {
         }
 
         // get the name of the tip
-        var name = this.empress._treeData[this.nodeKeys[0]].name;
+        var name = this.empress.getNodeInfo(
+            this.empress._treeData[this.nodeKeys[0]],
+            "name"
+        );
 
         // 1. Add feature metadata information (if present for this tip; if
         // there isn't feature metadata for this tip, the f.m. UI elements in
@@ -244,10 +246,20 @@ define(["underscore", "util"], function (_, util) {
         var ctData = this.empress.computeTipSamplePresence(name, this.fields);
 
         // 2.1 The samples represented by this tip are sent to Emperor
-        this._samplesInSelection = this.empress._biom.getObsIDsIntersection([
-            name,
-        ]);
-        this._checkTips(this.empress._biom.getObsIDsDifference([name]));
+
+        // check if this tip is present in the BIOM table. The array returned
+        // by BIOMTable.getObsIDsDifference() contains the feature IDs present
+        // in the input array but not in the BIOM table -- so if the length of
+        // this array is zero, this feature is present in the table.
+        var diff = this.empress._biom.getObsIDsDifference([name]);
+        if (diff.length == 0) {
+            this._samplesInSelection = this.empress._biom.getSamplesByObservations(
+                [name]
+            );
+        } else {
+            this._samplesInSelection = [];
+        }
+        this._checkTips(diff);
 
         SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
         if (this.fields.length > 0) {
@@ -271,7 +283,10 @@ define(["underscore", "util"], function (_, util) {
             throw "showInternalNode(): nodeKeys is not set!";
         }
 
-        var name = this.empress._treeData[this.nodeKeys[0]].name;
+        var name = this.empress.getNodeInfo(
+            this.empress._treeData[this.nodeKeys[0]],
+            "name"
+        );
 
         // Figure out whether or not we know the actual node in the tree (for
         // example, if the user searched for a node with a duplicate name, then
@@ -402,9 +417,9 @@ define(["underscore", "util"], function (_, util) {
     SelectedNodeMenu.prototype.setSelectedNodes = function (nodeKeys) {
         // test to make sure nodeKeys represents nodes with the same name
         var emp = this.empress;
-        var name = emp._treeData[nodeKeys[0]].name;
+        var name = emp.getNodeInfo(emp._treeData[nodeKeys[0]], "name");
         for (var i = 1; i < nodeKeys.length; i++) {
-            if (emp._treeData[nodeKeys[i]].name !== name) {
+            if (emp.getNodeInfo(emp._treeData[nodeKeys[i]], "name") !== name) {
                 throw "setSelectedNodes(): keys do not represent the same node!";
             }
         }
@@ -415,7 +430,7 @@ define(["underscore", "util"], function (_, util) {
         if (t.isleaf(t.postorderselect(nodeKeys[0])) && nodeKeys.length > 1) {
             throw (
                 "setSelectedNodes(): " +
-                this.empress._treeData[nodeKeys[0]].name +
+                emp.getNodeInfo(emp._treeData[nodeKeys[0]], "name") +
                 " matches multiple tips!"
             );
         }

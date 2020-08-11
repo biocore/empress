@@ -262,39 +262,80 @@ class Empress():
 
         # Compute coordinates resulting from layout algorithm(s)
         # TODO: figure out implications of screen size
-        layout_to_coordsuffix, default_layout = self.tree.coords(4020, 4020)
+        layout_to_coordsuffix, default_layout, yrscf = self.tree.coords(
+            4020, 4020
+        )
 
-        tree_data = {}
+        # store node data in a postorder fashion.
+        # Note: currently, bp-tree uses 1-based index so the first element will
+        #       start at 1. Thus, the 0th index is null. This will be fixed in
+        #       #223
+        tree_data = [0]
+        td_to_ind = {
+            # note: color, isColored, visible, and inSample with be appended in
+            # empress constructor. They are not added here because all nodes
+            # will be initialized with the same value.
+            #
+            # all nodes
+            "name": 0,
+            "x2": 1,
+            "y2": 2,
+            "xr": 3,
+            "yr": 4,
+            "xc1": 5,
+            "yc1": 6,
+            "xc0": 7,
+            "yc0": 8,
+            "angle": 9,
+            # all internal nodes
+            "highestchildyr": 10,
+            "lowestchildyr": 11,
+            # non-root internal nodes
+            "arcx0": 12,
+            "arcy0": 13,
+            "arcstartangle": 14,
+            "arcendangle": 15
+        }
         names_to_keys = {}
         # Note: tree_data starts with index 1 because the bp tree uses 1 based
         # indexing
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
-            tree_data[i] = {
-                'name': node.name,
-            }
+            if node.is_tip():
+                # add one to account for 0-based index
+                tree_data.append([0] * (td_to_ind["angle"] + 1))
+            elif node.is_root():
+                # add 2 to account for highestchildyr and lowestchildyr
+                tree_data.append([0] * (td_to_ind["angle"] + 2 + 1))
+            else:
+                tree_data.append([0] * len(td_to_ind))
+            tree_data[i][td_to_ind["name"]] = node.name
             # Add coordinate data from all layouts for this node
             for layoutsuffix in layout_to_coordsuffix.values():
                 xcoord = "x" + layoutsuffix
                 ycoord = "y" + layoutsuffix
-                tree_data[i][xcoord] = getattr(node, xcoord)
-                tree_data[i][ycoord] = getattr(node, ycoord)
+                tree_data[i][td_to_ind[xcoord]] = getattr(node, xcoord)
+                tree_data[i][td_to_ind[ycoord]] = getattr(node, ycoord)
             # Hack: it isn't mentioned above, but we need start pos info for
             # circular layout. The start pos for the other layouts is the
             # parent xy coordinates so we need only need to specify the start
             # for circular layout.
-            tree_data[i]["xc0"] = node.xc0
-            tree_data[i]["yc0"] = node.yc0
+            tree_data[i][td_to_ind["xc0"]] = node.xc0
+            tree_data[i][td_to_ind["yc0"]] = node.yc0
+            tree_data[i][td_to_ind["angle"]] = node.clangle
 
             # Also add vertical bar coordinate info for the rectangular layout,
             # and start point & arc coordinate info for the circular layout
             if not node.is_tip():
-                tree_data[i]["highestchildyr"] = node.highest_child_yr
-                tree_data[i]["lowestchildyr"] = node.lowest_child_yr
+                tree_data[i][td_to_ind["highestchildyr"]] = \
+                    node.highest_child_yr
+                tree_data[i][td_to_ind["lowestchildyr"]] = node.lowest_child_yr
                 if not node.is_root():
-                    tree_data[i]["arcx0"] = node.arcx0
-                    tree_data[i]["arcy0"] = node.arcy0
-                    tree_data[i]["arcstartangle"] = node.highest_child_clangle
-                    tree_data[i]["arcendangle"] = node.lowest_child_clangle
+                    tree_data[i][td_to_ind["arcx0"]] = node.arcx0
+                    tree_data[i][td_to_ind["arcy0"]] = node.arcy0
+                    tree_data[i][td_to_ind["arcstartangle"]] = \
+                        node.highest_child_clangle
+                    tree_data[i][td_to_ind["arcendangle"]] = \
+                        node.lowest_child_clangle
 
             if node.name in names_to_keys:
                 names_to_keys[node.name].append(i)
@@ -302,8 +343,10 @@ class Empress():
                 names_to_keys[node.name] = [i]
 
         names = []
+        lengths = []
         for node in self.tree.preorder(include_self=True):
             names.append(node.name)
+            lengths.append(node.length)
 
         s_ids, f_ids, sid2idxs, fid2idxs, compressed_table = compress_table(
             self.table
@@ -319,7 +362,9 @@ class Empress():
             'base_url': self.base_url,
             # tree info
             'tree': shifting(self._bp_tree),
+            'lengths': lengths,
             'tree_data': tree_data,
+            'td_to_ind': td_to_ind,
             'names': names,
             'names_to_keys': names_to_keys,
             # feature table
@@ -338,6 +383,7 @@ class Empress():
             # layout information
             'layout_to_coordsuffix': layout_to_coordsuffix,
             'default_layout': default_layout,
+            'yrscf': yrscf,
             # Emperor integration
             'emperor_div': '',
             'emperor_require_logic': '',

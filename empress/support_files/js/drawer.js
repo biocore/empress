@@ -119,9 +119,14 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
         // buffer object for colored clades
         s.cladeBuff = c.createBuffer();
+        this.cladeVertSize = 0;
 
         // buffer object for triangles (collapse clades)
         s.triBuff = c.createBuffer();
+
+        // buffer object for barplots
+        s.barplotBuff = c.createBuffer();
+        this.barplotSize = 0;
 
         // world matrix
         this.worldMat = gl.mat4.create();
@@ -267,6 +272,18 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
+     * Fills the buffer used to draw barplots. This is done using triangles,
+     * analogously to how thick lines for colored nodes are (currently) drawn.
+     *
+     * @param {Array} data The coordinate and color data to fill the buffer
+     */
+    Drawer.prototype.loadBarplotBuff = function (data) {
+        data = new Float32Array(data);
+        this.barplotSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.barplotBuff, data);
+    };
+
+    /**
      * Fills the selected node buffer
      *
      * @param {Array} data The coordinate and color of selected node
@@ -286,6 +303,17 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         data = new Float32Array(data);
         this.nodeSize = data.length / 5;
         this.fillBufferData_(this.sProg_.nodeVertBuff, data);
+    };
+
+    /**
+     * Fills the buffer used to draw collapsed clades.
+     *
+     * @param {Array} data The coordinates and colors to fill clade buffer
+     */
+    Drawer.prototype.loadCladeBuff = function (data) {
+        data = new Float32Array(data);
+        this.cladeVertSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.cladeBuff, data);
     };
 
     /**
@@ -340,6 +368,12 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
         this.bindBuffer(s.thickNodeBuff);
         c.drawArrays(c.TRIANGLES, 0, this.thickNodeSize);
+
+        this.bindBuffer(s.barplotBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.barplotSize);
+
+        this.bindBuffer(s.cladeBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.cladeVertSize);
     };
 
     /**

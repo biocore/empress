@@ -18,7 +18,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.colorSelect = document.getElementById("animate-color-select");
         this.gradient = document.getElementById("animate-gradient");
         this.trajectory = document.getElementById("animate-trajectory");
-        this.hideChk = document.getElementById("animate-hide-non-feature");
+        this.collapseChk = document.getElementById("animate-collapse-chk");
         this.lWidth = document.getElementById("animate-line-width");
         this.startBtn = document.getElementById("animate-start-btn");
         this.stopBtn = document.getElementById("animate-stop-btn");
@@ -130,11 +130,12 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.trajectory.innerHTML = options;
 
         /**
-         * Event: triggers when user clicks on the hide branch checkbox.
-         * Sets hide parameter in animation state machine.
+         * Event: triggers when user changes value of collapse check box
+         * Sets collapse parameter in the animation state machine
          */
-        this.hideChk.onchange = function () {
-            scope.animator.setHide(scope.hideChk.checked);
+        this.collapseChk.onclick = function () {
+            scope.animator.setCollapse(this.checked);
+            scope.animator.drawFrame();
         };
 
         /**
@@ -142,9 +143,10 @@ define(["Colorer", "util"], function (Colorer, util) {
          * Sets line width parameter in animation state machine.
          */
         this.lWidth.onchange = function () {
-            var lw = util.parseAndValidateLineWidth(scope.lWidth);
+            var lw = util.parseAndValidateNum(scope.lWidth);
             // pass line width to state machine
             scope.animator.setLineWidth(lw);
+            scope.animator.drawFrame();
         };
 
         /**
@@ -162,7 +164,7 @@ define(["Colorer", "util"], function (Colorer, util) {
             var gradient = scope.gradient.value;
             var trajectory = scope.trajectory.value;
             var cm = scope.colorSelect.value;
-            var hide = scope.hideChk.checked;
+            var collapse = scope.collapseChk.checked;
             var lWidth = scope.lWidth.value;
 
             // pass parameters to state machine
@@ -170,7 +172,7 @@ define(["Colorer", "util"], function (Colorer, util) {
                 trajectory,
                 gradient,
                 cm,
-                hide,
+                collapse,
                 lWidth
             );
 

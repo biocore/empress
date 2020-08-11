@@ -3,6 +3,7 @@
   <head>
     <title>Empress</title>
     <link rel='stylesheet' type="text/css" href='{{ base_url }}/css/empress.css'>
+    <link rel='stylesheet' type="text/css" href='{{ base_url }}/vendor/spectrum.min.css'>
     {{ emperor_style }}
 
     <script src='{{ base_url }}/vendor/require-2.1.22.min.js'></script>
@@ -82,6 +83,7 @@
             'glMatrix' : './vendor/gl-matrix.min',
             'chroma' : './vendor/chroma.min',
             'underscore' : './vendor/underscore-min',
+            'spectrum' : './vendor/spectrum.min',
             'filesaver': './vendor/FileSaver.min',
 
             'ByteArray' : './js/byte-array',
@@ -91,6 +93,8 @@
             'SidePanel' : './js/side-panel-handler',
             'AnimationPanel' : './js/animation-panel-handler',
             'Animator' : './js/animator',
+            'BarplotLayer' : './js/barplot-layer',
+            'BarplotPanel' : './js/barplot-panel-handler',
             'BIOMTable' : './js/biom-table',
             'Empress' : './js/empress',
             'Legend' : './js/legend',
@@ -102,17 +106,22 @@
         }
     });
 
-    empressRequire(['glMatrix', 'chroma', 'underscore', 'ByteArray',
-                    'BPTree', 'Camera', 'Drawer', 'SidePanel', 'AnimationPanel',
-                    'Animator', 'BIOMTable', 'Empress', 'Legend', 'Colorer',
-                    'VectorOps', 'CanvasEvents', 'SelectedNodeMenu', 'util',
-                    'filesaver'],
-        function(gl, chroma, underscore, ByteArray, BPTree, Camera, Drawer,
-                 SidePanel, AnimationPanel, Animator, BIOMTable, Empress, Legend,
-                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util,
-                 filesaver) {
+    empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'spectrum',
+                    'filesaver', 'ByteArray', 'BPTree', 'Camera', 'Drawer',
+                    'SidePanel', 'AnimationPanel', 'Animator', 'BarplotLayer',
+                    'BarplotPanel', 'BIOMTable', 'Empress', 'Legend',
+                    'Colorer', 'VectorOps', 'CanvasEvents', 'SelectedNodeMenu',
+                    'util'],
+        function($, gl, chroma, underscore, spectrum, filesaver, ByteArray,
+                 BPTree, Camera, Drawer, SidePanel, AnimationPanel, Animator,
+                 BarplotLayer, BarplotPanel, BIOMTable, Empress, Legend,
+                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util) {
         // initialze the tree and model
-        var tree = new BPTree({{ tree }}, {{ names }});
+        var tree = new BPTree(
+          {{ tree  }},
+          {{ names  | tojson }},
+          {{ lengths | tojson }}
+        );
 
         var fmCols = {{ feature_metadata_columns | tojson }};
 
@@ -130,9 +139,11 @@
         var empress = new Empress(
             tree,
             {{ tree_data | tojson }},
+            {{ td_to_ind | tojson }},
             {{ names_to_keys | tojson }},
             {{ layout_to_coordsuffix | tojson }},
             '{{ default_layout }}',
+            {{ yrscf }},
             biom,
             fmCols,
             {{ compressed_tip_metadata | tojson }},
@@ -156,10 +167,10 @@
         }
         sPanel.addLayoutTab();
 
-        // create animator state machine
+        // Create animator state machine
         var animator = new Animator(empress, legend);
 
-        // add animator gui components
+        // Add animator GUI components
         var animationPanel = new AnimationPanel(animator);
         animationPanel.addAnimationTab();
 

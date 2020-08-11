@@ -73,7 +73,7 @@ input[type=text].empress-input, select {
 }
 
 input[type=number].empress-input {
-    width: 40px;
+    width: 60px;
 }
 
 input[type=radio].empress-input, input[type=checkbox].empress-input {
@@ -129,7 +129,7 @@ select {
     appearance: none;
     padding-right: 30px;
     /* ensures other elements are visible if there are long column names */
-    width: 160px;
+    width: 170px;
 }
 
 select::-ms-expand {
@@ -482,12 +482,6 @@ p.side-header button {
     justify-items: center;
 }
 
-.control hr {
-    border-top: 1px solid darkgray;
-    border-bottom: none;
-    margin-bottom: 20px;
-}
-
 .square {
     position: absolute;
     height: 0px;
@@ -651,4 +645,8 @@ div.legend:hover {
 
 .indented {
   margin-left: 2em;
+}
+
+.selected-metadata-choice {
+  background-color: #333 !important;
 }

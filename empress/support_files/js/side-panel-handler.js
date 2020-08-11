@@ -56,7 +56,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.sSel = document.getElementById("sample-options");
         this.sAddOpts = document.getElementById("sample-add");
         this.sColor = document.getElementById("sample-color");
-        this.sHideChk = document.getElementById("sample-hide-non-feature");
+        this.sCollapseCladesChk = document.getElementById(
+            "sample-collapse-chk"
+        );
         this.sLineWidth = document.getElementById("sample-line-width");
         this.sUpdateBtn = document.getElementById("sample-update");
 
@@ -65,6 +67,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.fSel = document.getElementById("feature-options");
         this.fAddOpts = document.getElementById("feature-add");
         this.fColor = document.getElementById("feature-color");
+        this.fCollapseCladesChk = document.getElementById(
+            "feature-collapse-chk"
+        );
         this.fLineWidth = document.getElementById("feature-line-width");
         this.fUpdateBtn = document.getElementById("feature-update");
         this.fMethodChk = document.getElementById("fm-method-chk");
@@ -73,11 +78,12 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
 
+        // global clade collapse GUI
+        this.normalCladeMethod = document.getElementById("normal");
+        this.symmetricCladeMethod = document.getElementById("symmetric");
+
         // export GUI components
         this.eExportSvgBtn = document.getElementById("export-btn-svg");
-
-        // uncheck button
-        this.sHideChk.checked = false;
 
         // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
@@ -140,8 +146,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 sChk: { checked: false },
                 sSel: { disabled: true },
                 sColor: { value: "discrete-coloring-qiime" },
-                sHideChk: { checked: false },
                 sLineWidth: { value: 0 },
+                sCollapseCladesChk: { checked: false },
             },
             [this.sAddOpts, this.sUpdateBtn]
         );
@@ -156,6 +162,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 fColor: { value: "discrete-coloring-qiime" },
                 fLineWidth: { value: 0 },
                 fMethodChk: { checked: true },
+                fCollapseCladesChk: { checked: false },
             },
             [this.fAddOpts, this.fUpdateBtn]
         );
@@ -195,6 +202,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      */
     SidePanel.prototype._updateColoring = function (
         colorMethodName,
+        collapseChk,
         lwInput,
         updateBtn
     ) {
@@ -209,7 +217,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // color tree
         this[colorMethodName]();
 
-        var lw = util.parseAndValidateLineWidth(lwInput);
+        if (collapseChk.checked) {
+            this.empress.collapseClades();
+        }
+        var lw = util.parseAndValidateNum(lwInput);
         this.empress.thickenColoredNodes(lw);
         this.empress.drawTree();
     };
@@ -220,7 +231,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     SidePanel.prototype._colorSampleTree = function () {
         var colBy = this.sSel.value;
         var col = this.sColor.value;
-        var hide = this.sHideChk.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col);
         if (keyInfo === null) {
             util.toastMsg(
@@ -229,7 +239,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.sUpdateBtn.classList.remove("hidden");
             return;
         }
-        this.empress.setNonSampleBranchVisibility(hide);
         this.legend.addColorKey(colBy, keyInfo, "node", false);
     };
 
@@ -384,18 +393,17 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.sColor.onchange = showUpdateBtn;
         this.sLineWidth.onchange = showUpdateBtn;
 
-        // determines whether to show features not in samples
-        this.sHideChk.onclick = function () {
-            scope.empress.setNonSampleBranchVisibility(this.checked);
-            scope.empress.drawTree();
-        };
-
         this.sUpdateBtn.onclick = function () {
             scope._updateColoring(
                 "_colorSampleTree",
+                scope.sCollapseCladesChk,
                 scope.sLineWidth,
                 scope.sUpdateBtn
             );
+        };
+
+        this.sCollapseCladesChk.onclick = function () {
+            scope.sUpdateBtn.click();
         };
     };
 
@@ -414,6 +422,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.recenterBtn.onclick = function () {
             scope.empress.centerLayoutAvgPoint();
         };
+        var updateCladeCollapseMethod = function () {
+            scope.empress.updateCollapseMethod(this.value);
+        };
+        this.normalCladeMethod.onclick = updateCladeCollapseMethod;
+        this.symmetricCladeMethod.onclick = updateCladeCollapseMethod;
     };
 
     SidePanel.prototype.updateFeatureMethodDesc = function () {
@@ -477,9 +490,14 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.fUpdateBtn.onclick = function () {
             scope._updateColoring(
                 "_colorFeatureTree",
+                scope.fCollapseCladesChk,
                 scope.fLineWidth,
                 scope.fUpdateBtn
             );
+        };
+
+        this.fCollapseCladesChk.onclick = function () {
+            scope.fUpdateBtn.click();
         };
     };
 

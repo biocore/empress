@@ -1,4 +1,9 @@
-require(["jquery", "BPTree", "Empress"], function ($, BPTree, Empress) {
+require(["jquery", "BPTree", "BiomTable", "Empress"], function (
+    $,
+    BPTree,
+    BiomTable,
+    Empress
+) {
     $(document).ready(function () {
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray without
@@ -12,52 +17,84 @@ require(["jquery", "BPTree", "Empress"], function ($, BPTree, Empress) {
                     null
                 );
                 var layoutToCoordSuffix = { Circular: "c1" };
-                var treeData = {
-                    1: {
-                        color: [1.0, 1.0, 1.0],
-                        xc0: -2,
-                        yc0: 2,
-                        xc1: -2,
-                        yc1: 0,
-                        visible: true,
-                    },
-                    2: {
-                        color: [1.0, 1.0, 1.0],
-                        xc0: 2,
-                        yc0: 2,
-                        xc1: 2,
-                        yc1: 0,
-                        visible: true,
-                    },
-                    3: {
-                        color: [1.0, 1.0, 1.0],
-                        xc0: 0,
-                        yc0: 1,
-                        xc1: 0,
-                        yc1: -1,
-                        arcx0: 2,
-                        arcy0: 0,
-                        arcstartangle: 0,
-                        arcendangle: Math.PI,
-                        visible: true,
-                    },
-                    4: {
-                        color: [1.0, 1.0, 1.0],
-                        xc0: 0,
-                        yc0: -3,
-                        xc1: 0,
-                        yc1: -1,
-                        visible: true,
-                    },
-                    5: {
-                        color: [1.0, 1.0, 1.0],
-                        xc0: 0,
-                        yc0: -1,
-                        xc1: 0,
-                        yc1: -1,
-                        visible: true,
-                    },
+                var tdToInd = {
+                    name: 0,
+                    x2: 1,
+                    y2: 2,
+                    xr: 3,
+                    yr: 4,
+                    xc1: 5,
+                    yc1: 6,
+                    xc0: 7,
+                    yc0: 8,
+                    angle: 9,
+                    highestchildyr: 10,
+                    lowestchildyr: 11,
+                    arcx0: 12,
+                    arcy0: 13,
+                    arcstartangle: 14,
+                    arcendangle: 15,
                 };
+
+                var treeData = [
+                    0,
+                    ["", 0, 0, 0, 0, -2, 0, -2, 2],
+                    ["", 0, 0, 0, 0, 2, 0, 2, 2],
+                    ["", 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 2, 0, 0, Math.PI],
+                    ["", 0, 0, 0, 0, 0, -1, 0, -3],
+                    ["", 0, 0, 0, 0, 0, -1, 0, -1],
+                ];
+
+                // data for the BiomTable object; copied from test-empress.js
+                // We need to actually pass a BiomTable to Empress so that
+                // the BarplotPanel can call Empress.getSampleCategories()
+                // without crashing.
+                var sIDs = ["s1", "s2", "s3", "s4", "s5", "s6", "s7"];
+                var fIDs = ["EmpressNode6", "1", "2", "3"];
+                var sID2Idx = {
+                    s1: 0,
+                    s2: 1,
+                    s3: 2,
+                    s4: 3,
+                    s5: 4,
+                    s6: 5,
+                    s7: 6,
+                };
+                var fID2Idx = {
+                    EmpressNode6: 0,
+                    "1": 1,
+                    "2": 2,
+                    "3": 3,
+                };
+                var tbl = [
+                    [1, 2, 3],
+                    [2, 3],
+                    [0, 1, 3],
+                    [2],
+                    [0, 1, 2, 3],
+                    [1, 2, 3],
+                    [0],
+                ];
+                var smCols = ["f1", "grad", "traj"];
+                var sm = [
+                    ["a", "1", "t1"],
+                    ["a", "2", "t1"],
+                    ["a", "1", "t2"],
+                    ["b", "2", "t2"],
+                    ["a", "3", "t3"],
+                    ["a", "3", "t3"],
+                    ["b", "4", "t4"],
+                ];
+                var biom = new BiomTable(
+                    sIDs,
+                    fIDs,
+                    sID2Idx,
+                    fID2Idx,
+                    tbl,
+                    smCols,
+                    sm
+                );
+
                 // README: If this test starts failing at some point in the
                 // future, it will probably be due to the parameters of the
                 // Empress object having been changed around without this
@@ -65,14 +102,16 @@ require(["jquery", "BPTree", "Empress"], function ($, BPTree, Empress) {
                 this.empress = new Empress(
                     tree,
                     treeData,
+                    tdToInd,
                     null,
                     layoutToCoordSuffix,
                     "Circular",
-                    null,
-                    [],
-                    {},
-                    {},
-                    null
+                    2010,
+                    biom,
+                    [], // feature metadata columns
+                    {}, // tip metadata
+                    {}, // internal node metadata
+                    null // canvas
                 );
                 this.empress._drawer = {};
                 this.empress._drawer.VERTEX_SIZE = 5;

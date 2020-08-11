@@ -1,4 +1,4 @@
-require(["jquery", "util"], function ($, util) {
+require(["jquery", "underscore", "util"], function ($, _, util) {
     $(document).ready(function () {
         module("Utilities");
         /**
@@ -270,28 +270,107 @@ require(["jquery", "util"], function ($, util) {
             }
         });
 
-        test("Test parseAndValidateLineWidth (invalid case)", function () {
+        test("Test parseAndValidateNum (invalid case)", function () {
             var tni = document.getElementById("test-num-input");
             // force the test input's value to be -2
-            // (In practice, min="0" should prevent the values of Empress' line
-            // width inputs from being less than 0, but I don't really trust
-            // those to be perfect safeguards. Hence the paranoia.)
+            // (In practice, the default min="0" should prevent the values of
+            // Empress' line width inputs from being less than 0, but I don't
+            // really trust those to be perfect safeguards. Hence the
+            // paranoia.)
             tni.value = "-2";
             // Double-check that the value is -2 (so that we can verify that
-            // parseAndValidateLineWidth() actually *changed* this value)
+            // parseAndValidateNum() actually *changed* this value)
             deepEqual(tni.value, "-2");
-            var lw = util.parseAndValidateLineWidth(tni);
+            var lw = util.parseAndValidateNum(tni);
             deepEqual(lw, 0);
             deepEqual(tni.value, "0");
         });
 
-        test("Test parseAndValidateLineWidth (valid case)", function () {
+        test("Test parseAndValidateNum (valid case)", function () {
             var tni = document.getElementById("test-num-input");
             tni.value = "2.5";
             deepEqual(tni.value, "2.5");
-            var lw = util.parseAndValidateLineWidth(tni);
+            var lw = util.parseAndValidateNum(tni);
             deepEqual(lw, 2.5);
             deepEqual(tni.value, "2.5");
+        });
+        test("Test parseAndValidateNum (custom minimum)", function () {
+            // Tests that using a custom minimum parameter works
+            var tni = document.getElementById("test-num-input");
+            tni.value = "0.5";
+            deepEqual(tni.value, "0.5");
+            // Use a minimum of 1 instead of 0 -- so now things under that
+            // should get bumped up to 1
+            var n = util.parseAndValidateNum(tni, 1);
+            deepEqual(n, 1);
+            deepEqual(tni.value, "1");
+        });
+        test("Test assignBarplotLengths", function () {
+            var fm2length = util.assignBarplotLengths(
+                ["1", "2", "3", "4"],
+                0,
+                1,
+                100,
+                "testField"
+            );
+            deepEqual(_.keys(fm2length).length, 4);
+            deepEqual(fm2length["1"], 0);
+            deepEqual(fm2length["2"], 1 / 3);
+            deepEqual(fm2length["3"], 2 / 3);
+            deepEqual(fm2length["4"], 1);
+        });
+        test("Test assignBarplotLengths (negative values)", function () {
+            var fm2length = util.assignBarplotLengths(
+                ["-1", "-2", "-3", "-4"],
+                0,
+                1,
+                100,
+                "testField"
+            );
+            deepEqual(_.keys(fm2length).length, 4);
+            deepEqual(fm2length["-4"], 0);
+            deepEqual(fm2length["-3"], 1 / 3);
+            deepEqual(fm2length["-2"], 2 / 3);
+            deepEqual(fm2length["-1"], 1);
+            // Check that mixed negative / positive values are handled normally
+            var o = util.assignBarplotLengths(["1", "0", "-1"], 1, 5, 1, "t");
+            deepEqual(_.keys(o).length, 3);
+            deepEqual(o["-1"], 1);
+            deepEqual(o["0"], 3);
+            deepEqual(o["1"], 5);
+        });
+        test("Test assignBarplotLengths (non-numeric field error)", function () {
+            throws(function () {
+                util.assignBarplotLengths(["1"], 0, 1, 100, "testField");
+            }, /Error with scaling lengths in barplot layer 100: the feature metadata field "testField" has less than 2 unique numeric values./);
+            throws(function () {
+                util.assignBarplotLengths(
+                    ["abc", "def", "ghi"],
+                    0,
+                    1,
+                    3,
+                    "fie fi fo fum"
+                );
+            }, /Error with scaling lengths in barplot layer 3: the feature metadata field "fie fi fo fum" has less than 2 unique numeric values./);
+            throws(function () {
+                util.assignBarplotLengths([], 0, 1, 1, "asdf");
+            }, /Error with scaling lengths in barplot layer 1: the feature metadata field "asdf" has less than 2 unique numeric values./);
+            // Check that if both this error AND the max < min error are
+            // triggered, that this error has precedence. As with various other
+            // places in the code, the actual precedence doesn't matter too
+            // much; the main thing we're verifying here is that both errors
+            // happening don't somehow "cancel out". Because ... that'd be bad.
+            throws(function () {
+                util.assignBarplotLengths(["1"], 1, 0, 100, "funkyField");
+            }, /Error with scaling lengths in barplot layer 100: the feature metadata field "funkyField" has less than 2 unique numeric values./);
+        });
+        test("Test assignBarplotLengths (max len < min len error)", function () {
+            throws(function () {
+                util.assignBarplotLengths(["1", "2"], 1, 0, 5, "field");
+            }, /Error with scaling lengths in barplot layer 5: Maximum length is greater than minimum length./);
+            throws(function () {
+                util.assignBarplotLengths(["1", "2"], 10, 9.9999, 6, "field");
+            }, /Error with scaling lengths in barplot layer 6: Maximum length is greater than minimum length./);
         });
     });
 });

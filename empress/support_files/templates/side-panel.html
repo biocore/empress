@@ -27,15 +27,19 @@
   <p class="hidden">
     <div id="sample-add" class="hidden">
       <p>
-        <label for="sample-color">Choose Color Map</label>
+        <label for="sample-color">Color Map</label>
         <label class="select-container">
           <select id="sample-color"></select>
         </label>
       </p>
       <p>
-        <label for="sample-hide-non-feature">Hide Non-Sample Features</label>
-        <input id="sample-hide-non-feature" type="checkbox" checked="true"
+        <label for="sample-collapse-chk">Collapse Clades</label>
+        <input id="sample-collapse-chk" type="checkbox" value="false"
                class="empress-input">
+      </p>
+      <p class="side-panel-notes indented">
+        If checked, collapse all clades whose members share the same sample
+        metadata value.
       </p>
       <p>
         <label for="sample-line-width">Extra Line Width</label>
@@ -67,10 +71,19 @@
   <p class="hidden">
     <div id="feature-add" class="hidden">
       <p>
-        <label for="feature-color">Choose Color Map</label>
+        <label for="feature-color">Color Map</label>
         <label class="select-container">
           <select id="feature-color"></select>
         </label>
+      </p>
+      <p>
+        <label for="feature-collapse-chk">Collapse Clades</label>
+        <input id="feature-collapse-chk" type="checkbox" value="false"
+               class="empress-input">
+      </p>
+      <p class="side-panel-notes indented">
+        If checked, collapse all clades whose members share the same feature
+        metadata value.
       </p>
       <p>
         <label for="feature-line-width">Extra Line Width</label>
@@ -105,6 +118,43 @@
   </p>
 </div>
 
+<!-- Barplot options -->
+<button class="side-header collapsible">Barplots</button>
+<div class="side-content control hidden" id="barplot-div">
+  <p class="side-panel-notes">
+    Annotate tips by feature and/or sample metadata.
+  </p>
+  <!-- Depending on the current layout, one of the below divs
+      (#barplot-available-content or #barplot-unavailable-content) will be
+      visible (i.e. doesn't have the class "hidden"). We default to
+      barplot-unavailable-content being visible, since the default layout is
+      unrooted; however, the BarplotPanel object will figure things out on
+      initialization anyway.
+  -->
+  <div id="barplot-available-content" class="hidden">
+    <p>
+      <label for="barplot-chk">Draw barplots?</label>
+      <input id="barplot-chk" type="checkbox" class="empress-input">
+    </p>
+    <div id="barplot-layer-container" class="hidden">
+      <hr />
+    </div>
+    <p id="barplot-add-options" class="hidden">
+      <label for="barplot-add-btn">Add another layer</label>
+      <button id="barplot-add-btn">+</button>
+    </p>
+    <p>
+      <button id="barplot-update" class="hidden">Update</button>
+    </p>
+  </div>
+  <div id="barplot-unavailable-content">
+    <p class="side-panel-notes" style="font-weight: bold;">
+      Barplots are currently only supported in the rectangular layout. Please
+      change the layout in order to use barplots.
+    </p>
+  </div>
+</div>
+
 <!-- animate Options -->
 <button class="side-header collapsible">Animation</button>
 <div class="side-content control hidden">
@@ -114,7 +164,7 @@
     gradient.
   </p>
   <p>
-    <label for="animate-color-select">Choose Color Map</label>
+    <label for="animate-color-select">Color Map</label>
     <label class="select-container">
       <select id="animate-color-select"></select>
     </label>
@@ -132,9 +182,13 @@
     </label>
   </p>
   <p>
-    <label for="animate-hide-non-feature">Hide Non-Sample Features</label>
-    <input id="animate-hide-non-feature" type="checkbox" value="false"
+    <label for="animate-collapse-chk">Collapse Clades</label>
+    <input id="animate-collapse-chk" type="checkbox" value="false"
            class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, collapse all clades whose members share the same sample
+    metadata value.
   </p>
   <p>
     <label for="animate-line-width">Extra Line Width</label>
@@ -183,6 +237,28 @@
   <p class="side-panel-notes indented">
     If checked, this draws circles at the positions of all tree nodes
     which had a specified name in the input Newick file.
+  </p>
+  <p class="side-panel-notes">
+    Clade Collapse Method
+  </p>
+  <p>
+    <label for="normal">Normal</label>
+    <input type="radio" id="normal" name="collapse-radio" value="normal"
+           checked="true" class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    The shape of the collapsed clade will show both the depth and width of the
+    clade. This option applies to all layouts.
+  </p>
+  <p>
+    <label for="symmetric">Symmetric</label>
+    <input type="radio" id="symmetric" name="collapse-radio" value="symmetric"
+           class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    The shape of the collapsed clade will only show the depth of the clade but
+    the shape will be symmetric w.r.t. to the root of the clade. This option
+    only applies to the Rectangular and Circular layouts.
   </p>
   <p>
     <button id="center-tree-btn">Reset Camera</button>
