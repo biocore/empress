@@ -2,7 +2,6 @@
 
 import click
 import numpy as np
-import pandas as pd
 import qiime2 as q2
 import pkg_resources
 
@@ -14,6 +13,7 @@ from emperor.util import get_emperor_support_files_dir
 from skbio import OrdinationResults
 from scipy.spatial.distance import euclidean
 from q2_types.tree import NewickFormat
+import biom
 
 ARG_TYPE = click.Path(exists=True, dir_okay=False, file_okay=True)
 
@@ -64,7 +64,7 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
     with open(str(tree.view(NewickFormat))) as f:
         tree = parse_newick(f.readline())
 
-    table = table.view(pd.DataFrame)
+    table = table.view(biom.Table)
     sample_metadata = sample_metadata.to_dataframe()
     feature_metadata = feature_metadata.to_dataframe()
 
