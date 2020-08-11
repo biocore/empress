@@ -84,8 +84,8 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
     //     // ... And going back to a not-compatible-with-barplots layout should
     //     // switch back to the unavailable content.
     //     empress.updateLayout("Unrooted");
-    //     notOk(empress._barplotPanel.availContent.classList.contains("hidden"));
-    //     ok(empress._barplotPanel.unavailContent.classList.contains("hidden"));
+    //     ok(empress._barplotPanel.availContent.classList.contains("hidden"));
+    //     notOk(empress._barplotPanel.unavailContent.classList.contains("hidden"));
     // });
     test("Barplot layers default to feature metadata layers, but only if feature metadata is available", function () {
         var empressWithFM = new Empress(
