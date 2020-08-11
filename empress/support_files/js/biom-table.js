@@ -501,7 +501,7 @@ define(["underscore", "util"], function (_, util) {
      *
      * @param {String} col Sample metadata column
      *
-     * @return {Object} fID2freqs
+     * @return {Object} fID2Freqs
      *
      * @throws {Error} If the sample metadata column is unrecognized.
      */
@@ -554,19 +554,19 @@ define(["underscore", "util"], function (_, util) {
         // Also, return an Object where the keys are feature IDs pointing to
         // other Objects where the keys are sample metadata values, rather than
         // a 2D array (which is how fIdx2Counts has been stored)
-        var fID2freqs = {};
+        var fID2Freqs = {};
         var totalSampleCount;
         _.each(this._fIDs, function (fID, fIdx) {
             totalSampleCount = fIdx2SampleCt[fIdx];
-            fID2freqs[fID] = {};
+            fID2Freqs[fID] = {};
             _.each(fIdx2Counts[fIdx], function (count, smValIdx) {
                 if (count > 0) {
-                    fID2freqs[fID][uniqueSMVals[smValIdx]] =
+                    fID2Freqs[fID][uniqueSMVals[smValIdx]] =
                         count / totalSampleCount;
                 }
             });
         });
-        return fID2freqs;
+        return fID2Freqs;
     };
 
     return BIOMTable;
