@@ -41,8 +41,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var maxWidth = 0;
         var maxHeight = 0;
         var prevY = 0;
-        var xCoord = new Array(tree.size + 1);
-        var yCoord = new Array(tree.size + 1);
+        var xCoord = new Array(tree.size + 1).fill(0);
+        var yCoord = new Array(tree.size + 1).fill(0);
+
         // postorder
         for (var i = 1; i <= tree.size; i++) {
             if (tree.isleaf(tree.postorderselect(i))) {
@@ -67,8 +68,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 yCoord[i] = sum / numChild;
             }
         }
-
-        xCoord.fill(0);
 
         // iterates in preorder
         for (i = 2; i <= tree.size; i++) {
@@ -105,14 +104,15 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             xCoord[i] *= xScalingFactor;
             yCoord[i] *= yScalingFactor;
         }
+
         var rX = xCoord[tree.size];
         var rY = yCoord[tree.size];
-        xCoord = _.map(xCoord, function (val) {
-            return val - rX;
-        });
-        yCoord = _.map(yCoord, function (val) {
-            return val - rY;
-        });
+
+        // skip the first element since the tree is zero-indexed
+        for (i = 1; i <= tree.size; i++) {
+            xCoord[i] -= rX;
+            yCoord[i] -= rY;
+        }
 
         // We draw each internal node as a vertical line ranging from its
         // lowest child y-position to its highest child y-position, and then
