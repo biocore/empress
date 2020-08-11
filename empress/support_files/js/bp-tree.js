@@ -625,7 +625,7 @@ define(["ByteArray"], function (ByteArray) {
         // by the current internal node
         var n = this.postorderselect(nodeKey);
         if (this.isleaf(n)) {
-            throw "Node must be internal!";
+            return [1];
         }
         var start = this.preorder(this.fchild(n));
         var end = this.preorder(this.lchild(n));
