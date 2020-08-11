@@ -6,9 +6,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * y-positions are centered over their descendant tips' positions.
      * x-positions are computed based on nodes' branch lengths.
      *
-     * Following this algorithm, nodes' rectangular layout coordinates are
-     * accessible at [node].xr and [node].yr.
-     *
      * For a simple tree, this layout should look something like:
      *          __
      *      ___|
@@ -31,7 +28,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
      * @return {Object} Object with xCoords and yCoords properties where the
-     *                   node coordinates are stored in postorder.
+     *                  node coordinates are stored in postorder.
      */
     function rectangularLayout(tree, width, height) {
         // NOTE: This doesn't draw a horizontal line leading to the root "node"
