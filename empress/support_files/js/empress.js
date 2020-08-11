@@ -306,15 +306,19 @@ define([
         var dt = new Date();
         console.log("finished layout:", dt.getTime());
         console.log(this._tree.numleaves());
-        for (var i = 1; i < this._tree.size; i++) {
-            this._treeData[i][this._tdToInd["xr"]] = _.isNaN(coords.xCoord[i])
-                ? 0
-                : coords.xCoord[i];
-            this._treeData[i][this._tdToInd["yr"]] = _.isNaN(coords.yCoord[i])
-                ? 1
-                : coords.yCoord[i];
+
+        this._tree.lengths_[1] = 1;
+        var d = new Date();
+        console.log("starting layout:", d.getTime());
+        var coords = LayoutsUtil.unrootedLayout(this._tree, 4020,4020);
+        d = new Date();
+        console.log("starting layout:", d.getTime());
+        for (var i = 1; i <= this._tree.size; i++) {
+            this._treeData[i][this._tdToInd["x2"]] = _.isNaN(coords.xCoord[i]) ? 0 : coords.xCoord[i];
+            this._treeData[i][this._tdToInd["y2"]] = _.isNaN(coords.yCoord[i]) ? 1 : coords.yCoord[i];
         }
-    };
+        this.drawTree();
+    }
 
     /**
      * Initializes WebGL and then draws the tree

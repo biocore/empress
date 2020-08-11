@@ -342,11 +342,12 @@ class Empress():
             else:
                 names_to_keys[node.name] = [i]
 
-        names = [""]
-        lengths = [""]
+        names = [-1]
+        lengths = [-1]
         for node in self.tree.preorder(include_self=True):
             names.append(node.name)
             lengths.append(node.length)
+        print(lengths)
 
         s_ids, f_ids, sid2idxs, fid2idxs, compressed_table = compress_table(
             self.table
