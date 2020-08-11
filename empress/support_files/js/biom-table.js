@@ -508,8 +508,8 @@ define(["underscore", "util"], function (_, util) {
     BIOMTable.prototype.getFrequencyMap = function (col) {
         var scope = this;
         var colIdx = this._getSampleMetadataColIndex(col);
-        var fIdx2counts = [];
-        var fIdx2sampleCt = [];
+        var fIdx2Counts = [];
+        var fIdx2SampleCt = [];
         var containingSampleCount, cVal, cValIdx;
 
         // Find unique (sorted) values in this sample metadata column; map
