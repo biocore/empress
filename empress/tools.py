@@ -76,11 +76,9 @@ def match_inputs(
     ----------
     bp_tree: bp.BP
         The tree to be visualized.
-    table: pd.DataFrame
-        Representation of the feature table. The index should describe feature
-        IDs; the columns should describe sample IDs. (It's expected that
-        feature IDs in the table only describe tips in the tree, not internal
-        nodes.)
+    table: biom.Table
+        Representation of the feature table. It's expected that feature IDs in
+        the table only describe tips in the tree, not internal nodes.
     sample_metadata: pd.DataFrame
         Sample metadata. The index should describe sample IDs; the columns
         should describe different sample metadata fields' names.
@@ -112,7 +110,7 @@ def match_inputs(
     Returns
     -------
     (table, sample_metadata, tip_metadata, int_metadata):
-        (pd.DataFrame, pd.DataFrame, pd.DataFrame / None, pd.DataFrame / None)
+        (biom.Table, pd.DataFrame, pd.DataFrame / None, pd.DataFrame / None)
         Versions of the input table, sample metadata, and feature metadata
         filtered such that:
             -The table only contains features also present as tips in the tree.
@@ -159,7 +157,7 @@ def match_inputs(
     ff_table = table.copy()
 
     if ordination is not None:
-        table_ids = set(ff_table.columns)
+        table_ids = set(ff_table.ids())
         ord_ids = set(ordination.samples.index)
 
         # don't allow for disjoint datasets
@@ -180,22 +178,22 @@ def match_inputs(
                         " the --p-filter-extra-samples flag." %
                         (', '.join(sorted(extra)))
                     )
-                ff_table = ff_table[ord_ids]
+                ff_table = ff_table.filter(ord_ids, inplace=False)
                 # We'll remove now-empty features from the table later in
                 # the code
         else:
             raise DataMatchingError(
                 "The ordination has more samples than the feature table."
             )
-
-    tree_and_table_features = ff_table.index.intersection(tip_names)
+    ff_table_features = set(ff_table.ids(axis='observation'))
+    tree_and_table_features = ff_table_features.intersection(tip_names)
     if len(tree_and_table_features) == 0:
         # Error condition 1
         raise DataMatchingError(
             "No features in the feature table are present as tips in the tree."
         )
 
-    if len(tree_and_table_features) < len(ff_table.index):
+    if len(tree_and_table_features) < len(ff_table_features):
         if filter_missing_features:
             # Filter table to just features that are also present in the tree.
             #
@@ -204,7 +202,8 @@ def match_inputs(
             # (and this is going to be the case in most datasets where the
             # features correspond to tips, since internal nodes aren't
             # explicitly described in the feature table).
-            ff_table = ff_table.loc[tree_and_table_features]
+            ff_table = ff_table.filter(tree_and_table_features,
+                                       axis='observation', inplace=False)
 
             # Report to user about any dropped features from table.
             dropped_feature_ct = table.shape[0] - ff_table.shape[0]
@@ -227,7 +226,7 @@ def match_inputs(
             )
 
     # Match table (post-feature-filtering, if done) and sample metadata.
-    table_samples = set(ff_table.columns)
+    table_samples = set(ff_table.ids())
     sm_samples = set(sample_metadata.index)
     sm_and_table_samples = sm_samples & table_samples
 
@@ -239,7 +238,7 @@ def match_inputs(
         )
 
     padded_metadata = sample_metadata.copy()
-    if len(sm_and_table_samples) < len(ff_table.columns):
+    if len(sm_and_table_samples) < len(table_samples):
         if ignore_missing_samples:
             # Works similarly to how Emperor does this: see
             # https://github.com/biocore/emperor/blob/659b62a9f02a6423b6258c814d0e83dbfd05220e/emperor/core.py#L350
@@ -278,7 +277,7 @@ def match_inputs(
     #
     # All that's left to do is to filter the sample metadata to just the
     # samples that are also present in the table.
-    sf_sample_metadata = sample_metadata.loc[ff_table.columns]
+    sf_sample_metadata = sample_metadata.loc[ff_table.ids()]
 
     # If desired, we could report here to the user about any dropped samples
     # from the metadata by looking at the difference between

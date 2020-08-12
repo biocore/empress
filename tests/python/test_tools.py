@@ -8,6 +8,8 @@
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
+import biom
+import numpy as np
 from skbio import TreeNode, OrdinationResults
 from empress import Tree, tools
 from empress.taxonomy_utils import split_taxonomy
@@ -22,17 +24,12 @@ class TestTools(unittest.TestCase):
     def setUp(self):
         self.tree = self.mock_tree_from_nwk()
         self.bp_tree = from_skbio_treenode(self.tree)
-        # Test table/metadata (mostly) adapted from Qurro:
-        # https://github.com/biocore/qurro/blob/b9613534b2125c2e7ee22e79fdff311812f4fefe/qurro/tests/test_df_utils.py#L178
-        self.table = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 0, 4],
-                "Sample2": [8, 7, 0, 5],
-                "Sample3": [1, 0, 0, 0],
-                "Sample4": [0, 0, 0, 0]
-            },
-            index=["a", "b", "e", "d"]
-        )
+        self.table = biom.Table(np.array([[1, 2, 0, 4],
+                                          [8, 7, 0, 5],
+                                          [1, 0, 0, 0],
+                                          [0, 0, 0, 0]]).T,
+                                list('abed'),
+                                ['Sample1', 'Sample2', 'Sample3', 'Sample4'])
         self.sample_metadata = pd.DataFrame(
             {
                 "Metadata1": [0, 0, 0, 1],
@@ -40,8 +37,8 @@ class TestTools(unittest.TestCase):
                 "Metadata3": [1, 2, 3, 4],
                 "Metadata4": ["abc", "def", "ghi", "jkl"]
             },
-            index=list(self.table.columns)[:]
-        )
+            index=list(self.table.ids()))
+
         # (These are some Greengenes taxonomy annotations I took from the
         # moving pictures taxonomy.qza file. I made up the confidences.)
         self.feature_metadata = pd.DataFrame(
@@ -111,7 +108,7 @@ class TestTools(unittest.TestCase):
         filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
             self.bp_tree, self.table, self.sample_metadata
         )
-        assert_frame_equal(filtered_table, self.table)
+        self.assertEqual(filtered_table, self.table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
         # We didn't pass in any feature metadata, so we shouldn't get any out
         self.assertIsNone(t_md)
@@ -125,7 +122,7 @@ class TestTools(unittest.TestCase):
             ordination=self.ordination
         )
 
-        assert_frame_equal(filtered_table, self.table)
+        self.assertEqual(filtered_table, self.table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
         # We didn't pass in any feature metadata, so we shouldn't get any out
         self.assertIsNone(t_md)
@@ -133,18 +130,21 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_only_1_feature_in_table(self):
         # This is technically allowed (so long as this 1 feature is a tree tip)
-        tiny_table = self.table.loc[["a"]]
+        tiny_table = self.table.filter({"a", }, axis='observation',
+                                       inplace=False)
         filtered_tiny_table, filtered_sample_md, tm, im = tools.match_inputs(
             self.bp_tree, tiny_table, self.sample_metadata
         )
-        assert_frame_equal(filtered_tiny_table, tiny_table)
+        self.assertEqual(filtered_tiny_table, tiny_table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
         self.assertIsNone(tm)
         self.assertIsNone(im)
 
     def test_match_inputs_no_tips_in_table(self):
         bad_table = self.table.copy()
-        bad_table.index = range(len(self.table.index))
+        bad_table.update_ids({i: idx for idx, i in
+                              enumerate(bad_table.ids(axis='observation'))},
+                             axis='observation', inplace=True)
         with self.assertRaisesRegex(
             tools.DataMatchingError,
             "No features in the feature table are present as tips in the tree."
@@ -183,10 +183,10 @@ class TestTools(unittest.TestCase):
             )
 
     def test_match_inputs_filter_missing_features_error(self):
-        bad_table = self.table.copy()
         # Replace one of the tip IDs in the table with an internal node ID,
         # instead. This isn't ok.
-        bad_table.index = ["a", "b", "e", "g"]
+        bad_table = biom.Table(self.table.matrix_data, list('abeg'),
+                               self.table.ids())
         with self.assertRaisesRegex(
             tools.DataMatchingError,
             "The feature table contains features that aren't present as tips "
@@ -197,8 +197,8 @@ class TestTools(unittest.TestCase):
     def test_match_inputs_filter_missing_features_override(self):
         """Checks that --p-filter-missing-features works as expected."""
         # The inputs are the same as with the above test
-        bad_table = self.table.copy()
-        bad_table.index = ["a", "b", "e", "g"]
+        bad_table = biom.Table(self.table.matrix_data, list('abeg'),
+                               self.table.ids())
         out_table = None
         out_sm = None
         with self.assertWarnsRegex(
@@ -215,20 +215,22 @@ class TestTools(unittest.TestCase):
                 self.bp_tree, bad_table, self.sample_metadata,
                 filter_missing_features=True
             )
-        self.assertCountEqual(out_table.index, ["a", "b", "e"])
+        self.assertCountEqual(out_table.ids(axis='observation'),
+                              ["a", "b", "e"])
         # Just to check, make sure the rest of the table is ok
-        assert_frame_equal(
-            out_table, self.table.loc[["a", "b", "e"]], check_like=True
-        )
+        self.assertEqual(out_table, self.table.filter({'a', 'b', 'e'},
+                                                      axis='observation',
+                                                      inplace=False))
         # ... and that the sample metadata is ok
         assert_frame_equal(
             out_sm, self.sample_metadata
         )
 
     def test_match_inputs_ignore_missing_samples_error(self):
-        bad_table = self.table.copy()
         # Replace one of the sample IDs in the table with some junk
-        bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
+        bad_table = biom.Table(self.table.matrix_data,
+                               self.table.ids(axis='observation'),
+                               ['Sample1', 'Sample2', 'Whatever', 'Sample4'])
         with self.assertRaisesRegex(
             tools.DataMatchingError,
             "The feature table contains samples that aren't present in the "
@@ -239,9 +241,9 @@ class TestTools(unittest.TestCase):
     def test_match_inputs_ignore_missing_samples_override(self):
         """Checks that --p-ignore-missing-samples works as expected."""
         # These inputs are the same as with the above test
-        bad_table = self.table.copy()
-        # Replace one of the sample IDs in the table with some junk
-        bad_table.columns = ["Sample1", "Sample2", "Whatever", "Sample4"]
+        bad_table = biom.Table(self.table.matrix_data,
+                               self.table.ids(axis='observation'),
+                               ['Sample1', 'Sample2', 'Whatever', 'Sample4'])
         out_table = None
         out_sm = None
         with self.assertWarnsRegex(
@@ -258,7 +260,7 @@ class TestTools(unittest.TestCase):
             )
 
         self.assertCountEqual(
-            out_table.columns,
+            out_table.ids(),
             ["Sample1", "Sample2", "Whatever", "Sample4"]
         )
         self.assertCountEqual(
@@ -266,7 +268,7 @@ class TestTools(unittest.TestCase):
             ["Sample1", "Sample2", "Whatever", "Sample4"]
         )
         # Make sure the table stays consistent
-        assert_frame_equal(out_table, bad_table)
+        self.assertEqual(out_table, bad_table)
         # ...And that the placeholder metadata was added in for the "Whatever"
         # sample correctly
         self.assertTrue(
@@ -294,7 +296,7 @@ class TestTools(unittest.TestCase):
             self.bp_tree, self.table,
             self.sample_metadata, self.feature_metadata
         )
-        assert_frame_equal(f_table, self.table)
+        self.assertEqual(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
         # Check that no filtering had to be done -- only differences in output
         # and input feature metadata should be that 1) the output is split into
@@ -337,7 +339,7 @@ class TestTools(unittest.TestCase):
         f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
             self.bp_tree, self.table, self.sample_metadata, bad_fm
         )
-        assert_frame_equal(f_table, self.table)
+        self.assertEqual(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
         # Check that the feature metadata just describes "e" (which should be
         # in the tip metadata)
@@ -362,7 +364,7 @@ class TestTools(unittest.TestCase):
         )
         # (check that we didn't mess up the table / sample metadata matching by
         # accident)
-        assert_frame_equal(f_table, self.table)
+        self.assertEqual(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
 
         split_fm = split_taxonomy(fm)
@@ -391,7 +393,7 @@ class TestTools(unittest.TestCase):
         f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
             t, self.table, self.sample_metadata, fm
         )
-        assert_frame_equal(f_table, self.table)
+        self.assertEqual(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
 
         split_fm = split_taxonomy(fm)
@@ -409,7 +411,7 @@ class TestTools(unittest.TestCase):
         f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
             t, self.table, self.sample_metadata, fm
         )
-        assert_frame_equal(f_table, self.table)
+        self.assertEqual(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
 
         split_fm = split_taxonomy(fm)
@@ -433,33 +435,28 @@ class TestTools(unittest.TestCase):
                                ordination=self.ordination)
 
     def test_ordination_is_superset(self):
-        self.table = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 0, 4],
-                "Sample2": [8, 7, 0, 5],
-                "Sample3": [1, 0, 0, 0],
-            },
-            index=["a", "b", "e", "d"]
-        )
+        table = biom.Table(np.array([[1, 2, 0, 4],
+                                     [8, 7, 0, 5],
+                                     [1, 0, 0, 0]]).T,
+                           list('abed'),
+                           ['Sample1', 'Sample2', 'Sample3'])
 
         with self.assertRaisesRegex(
             tools.DataMatchingError,
             "The ordination has more samples than the feature table"
         ):
-            tools.match_inputs(self.bp_tree, self.table, self.sample_metadata,
+            tools.match_inputs(self.bp_tree, table, self.sample_metadata,
                                ordination=self.ordination)
 
     def test_table_is_superset_raises(self):
-        self.table = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 0, 4],
-                "Sample2": [8, 7, 0, 5],
-                "Sample3": [1, 0, 0, 0],
-                "Sample4": [1, 0, 0, 0],
-                "Sample5": [1, 0, 4, 0],
-            },
-            index=["a", "b", "e", "d"]
-        )
+        table = biom.Table(np.array([[1, 2, 0, 4],
+                                     [8, 7, 0, 5],
+                                     [1, 0, 0, 0],
+                                     [1, 0, 0, 0],
+                                     [1, 0, 4, 0]]).T,
+                           list('abed'),
+                           ['Sample1', 'Sample2', 'Sample3', 'Sample4',
+                            'Sample5'])
 
         with self.assertRaisesRegex(
             tools.DataMatchingError,
@@ -467,33 +464,30 @@ class TestTools(unittest.TestCase):
             " the problematic sample identifiers: Sample5. You can override "
             "this error by using the --p-filter-extra-samples flag"
         ):
-            tools.match_inputs(self.bp_tree, self.table, self.sample_metadata,
+            tools.match_inputs(self.bp_tree, table, self.sample_metadata,
                                ordination=self.ordination)
 
     def test_table_is_superset_override_raises(self):
-        self.table = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 0, 4],
-                "Sample2": [8, 7, 0, 5],
-                "Sample3": [1, 0, 0, 0],
-                "Sample4": [1, 0, 0, 0],
-                "Sample5": [1, 0, 4, 0],
-            },
-            index=["a", "b", "e", "d"]
-        )
+        table = biom.Table(np.array([[1, 2, 0, 4],
+                                     [8, 7, 0, 5],
+                                     [1, 0, 0, 0],
+                                     [1, 0, 0, 0],
+                                     [1, 0, 4, 0]]).T,
+                           list('abed'),
+                           ['Sample1', 'Sample2', 'Sample3', 'Sample4',
+                            'Sample5'])
 
         filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
-            self.bp_tree, self.table, self.sample_metadata,
+            self.bp_tree, table, self.sample_metadata,
             ordination=self.ordination, filter_extra_samples=True)
 
         # NOTE: even though 'e' is now empty, it isn't removed now; it'll be
         # removed later on, in remove_empty_samples_and_features().
-        exp = self.table.loc[['a', 'b', 'e', 'd'],
-                             ['Sample1', 'Sample2', 'Sample3', 'Sample4']]
+        exp = table.filter(set(table.ids()) - {'Sample5', }, inplace=False)
 
         # guarantee the same sample-wise order
-        assert_frame_equal(filtered_table[exp.columns], exp)
-        assert_frame_equal(filtered_sample_md.loc[exp.columns],
+        self.assertEqual(filtered_table, exp)
+        assert_frame_equal(filtered_sample_md.loc[exp.ids()],
                            self.sample_metadata)
 
         # We didn't pass in any feature metadata, so we shouldn't get any out
