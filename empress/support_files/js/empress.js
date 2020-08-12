@@ -8,7 +8,7 @@ define([
     "BarplotPanel",
     "util",
     "chroma",
-    "LayoutsUtil"
+    "LayoutsUtil",
 ], function (
     _,
     Camera,
@@ -68,7 +68,7 @@ define([
         featureMetadataColumns,
         tipMetadata,
         intMetadata,
-        canvas,
+        canvas
     ) {
         /**
          * @type {Camera}
@@ -299,12 +299,13 @@ define([
         this._group = new Array(this._tree.size + 1).fill(-1);
     }
 
-    Empress.prototype.layouts = function() {
+    Empress.prototype.layouts = function () {
+        var d = new Date();
+        console.log("starting layout:", d.getTime());
         var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
-        for (var i = 1; i < this._tree.size; i++) {
-            this._treeData[i][this._tdToInd["xr"]] = _.isNaN(coords.xCoord[i]) ? 0 : coords.xCoord[i];
-            this._treeData[i][this._tdToInd["yr"]] = _.isNaN(coords.yCoord[i]) ? 1 : coords.yCoord[i];
-        }
+        var dt = new Date();
+        console.log("finished layout:", dt.getTime());
+        console.log(this._tree.numleaves());
 
         this._tree.lengths_[1] = 1;
         var d = new Date();
