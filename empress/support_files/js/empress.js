@@ -325,8 +325,10 @@ define([
             this._treeData[i][this._tdToInd["angle"]] = data.angle[i];
             this._treeData[i][this._tdToInd["arcx0"]] = data.arcx0[i];
             this._treeData[i][this._tdToInd["arcy0"]] = data.arcy0[i];
-            this._treeData[i][this._tdToInd["arcstartangle"]] = data.arcStartAngle[i];
-            this._treeData[i][this._tdToInd["arcendangle"]] = data.arcEndAngle[i];
+            this._treeData[i][this._tdToInd["arcstartangle"]] =
+                data.arcStartAngle[i];
+            this._treeData[i][this._tdToInd["arcendangle"]] =
+                data.arcEndAngle[i];
         }
 
         // Unrooted
@@ -338,11 +340,15 @@ define([
         console.log("finished unrooted layout:", d2.getTime());
         console.log("Time taken:", d2.getTime() - d.getTime());
         for (var i = 1; i <= this._tree.size; i++) {
-            this._treeData[i][this._tdToInd["x2"]] = _.isNaN(coords.xCoord[i]) ? 0 : coords.xCoord[i];
-            this._treeData[i][this._tdToInd["y2"]] = _.isNaN(coords.yCoord[i]) ? 1 : coords.yCoord[i];
+            this._treeData[i][this._tdToInd["x2"]] = _.isNaN(coords.xCoord[i])
+                ? 0
+                : coords.xCoord[i];
+            this._treeData[i][this._tdToInd["y2"]] = _.isNaN(coords.yCoord[i])
+                ? 1
+                : coords.yCoord[i];
         }
         this.drawTree();
-    }
+    };
 
     /**
      * Initializes WebGL and then draws the tree

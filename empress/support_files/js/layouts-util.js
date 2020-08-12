@@ -258,9 +258,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         for (i = 1; i < tree.size; i++) {
             // To avoid repeated lookups / computations, store a few things in
             // memory during this iteration of the loop
-            var parentRadius = radius[tree.postorder(
-                tree.parent(tree.postorderselect(i))
-            )];
+            var parentRadius =
+                radius[tree.postorder(tree.parent(tree.postorderselect(i)))];
             var currAngle = angle[i];
             var currRadius = radius[i];
             var angleCos = Math.cos(currAngle);
@@ -340,11 +339,21 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
         }
 
-        return { x0: x0, y0: y0, x1: x1, y1: y1, angle: angle, arcx0: arcx0, arcy0: arcy0, arcStartAngle: arcStartAngle, arcEndAngle: arcEndAngle};
+        return {
+            x0: x0,
+            y0: y0,
+            x1: x1,
+            y1: y1,
+            angle: angle,
+            arcx0: arcx0,
+            arcy0: arcy0,
+            arcStartAngle: arcStartAngle,
+            arcEndAngle: arcEndAngle,
+        };
     }
 
     function unrootedLayout(tree, width, height) {
-        var angle = (2*Math.PI) / tree.numleaves();
+        var angle = (2 * Math.PI) / tree.numleaves();
         var updateArgs = {
             s: 1.0,
             x1: 0.0,
@@ -353,37 +362,36 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             da: angle,
         };
         var bestArgs = {
-            s : Number.NEGATIVE_INFINITY,
+            s: Number.NEGATIVE_INFINITY,
             da: angle,
         };
         var x1Arr = new Array(tree.size + 1);
-        var x2Arr = new Array(tree.size +1);
-        var y1Arr = new Array(tree.size +1);
-        var y2Arr = new Array(tree.size +1);
-        var aArr = new Array(tree.size +1);
+        var x2Arr = new Array(tree.size + 1);
+        var y1Arr = new Array(tree.size + 1);
+        var y2Arr = new Array(tree.size + 1);
+        var aArr = new Array(tree.size + 1);
 
-
-        var updateCoords = function(args) {
+        var updateCoords = function (args) {
             var maxX = Number.NEGATIVE_INFINITY;
             var minX = Number.POSITIVE_INFINITY;
             var maxY = Number.NEGATIVE_INFINITY;
             var minY = Number.POSITIVE_INFINITY;
 
-            var getStep = function(node, a) {
+            var getStep = function (node, a) {
                 node = tree.preorder(tree.postorderselect(node));
                 return tree.lengths_[node] * args.s * a;
-            }
-            var setArrs = function(node, _x1, _x2, _y1, _y2, _a) {
+            };
+            var setArrs = function (node, _x1, _x2, _y1, _y2, _a) {
                 x1Arr[node] = _x1;
                 x2Arr[node] = _x2;
                 y1Arr[node] = _y1;
                 y2Arr[node] = _y2;
                 aArr[node] = _a;
-            }
+            };
 
             var x2 = args.x1 + getStep(tree.size, Math.sin(args.a));
             var y2 = args.y1 + getStep(tree.size, Math.cos(args.a));
-            setArrs(tree.size, args.x1, x2, args.y1, y2, args.a)
+            setArrs(tree.size, args.x1, x2, args.y1, y2, args.a);
 
             // reverse postorder
             for (var node = tree.size - 1; node > 0; node--) {
@@ -392,15 +400,16 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 );
                 var x1 = x2Arr[parent];
                 var y1 = y2Arr[parent];
-                var a = aArr[parent] - tree.findTips(parent).length * args.da / 2;
+                var a =
+                    aArr[parent] - (tree.findTips(parent).length * args.da) / 2;
                 var sib = tree.postorder(
                     tree.fchild(tree.postorderselect(parent))
                 );
                 while (sib !== 0) {
                     if (sib !== node) {
-                        a += (tree.findTips(sib).length * args.da);
+                        a += tree.findTips(sib).length * args.da;
                     } else {
-                        a += ((tree.findTips(node).length * args.da) / 2)
+                        a += (tree.findTips(node).length * args.da) / 2;
                         break;
                     }
                     sib = tree.postorder(
@@ -422,10 +431,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 minX: minX,
                 maxY: maxY,
                 minY: minY,
-            }
-
+            };
         };
-
 
         for (var i = 0; i < 60; i++) {
             updateArgs.a = (i / 60.0) * Math.PI;
@@ -446,8 +453,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var scale = Math.min(widthMin, heightMin) * 0.95;
             if (scale >= bestArgs.s) {
                 bestArgs.s = scale;
-                bestArgs.x1 = (width / 2) - ((update.maxX + update.minX) / 2) * scale;
-                bestArgs.y1 = height / 2 - ((update.maxY + update.minY) / 2) * scale;
+                bestArgs.x1 =
+                    width / 2 - ((update.maxX + update.minX) / 2) * scale;
+                bestArgs.y1 =
+                    height / 2 - ((update.maxY + update.minY) / 2) * scale;
                 bestArgs.a = updateArgs.a;
             }
         }
@@ -460,8 +469,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             y2Arr[i] -= rY;
         }
 
-        return {xCoord: x2Arr, yCoord: y2Arr};
-    };
+        return { xCoord: x2Arr, yCoord: y2Arr };
+    }
 
     return {
         rectangularLayout: rectangularLayout,
