@@ -23,7 +23,28 @@ ec.sceneViews[0].on("click", function (name, object) {
     empress.showNodeMenuForName(name);
 });
 
-// synchronize animations in Empress
+/*
+ * Callbacks to synchronize animations with Emperor.
+ *
+ * Animations are synchronized by subscribing to callbacks when an Emperor
+ * animation starts ("animation-started"), when a new frame is being rendered
+ * ("animation-new-frame-started"), and when the animation is
+ * cancelled/rewinded. When these animations are playing the legend in Empress
+ * won't render any color values, because these will be visible in Emperor
+ * already. Only the current timepoint will be visible for each frame.
+ *
+ * For each of these callbacks we retrieve information from Emperor regarding
+ * how to setup the animation, and what frame we are currently in.
+ *
+ * Each of these callbacks receive a payload object that contains a type and
+ * message attribute. The type attribute describes the name of the event
+ * itself. The message attribute can contain the name of the gradient category,
+ * trajectory category, Emperor's animation controller, and the frame that is
+ * currently being displayed.
+ *
+ * For more information about Emperor callbacks visit:
+ * http://biocore.github.io/emperor/build/html/js_integration.html#subscribing-to-events-from-a-3rd-party-application
+ */
 ec.controllers.animations.addEventListener("animation-started", function (
     payload
 ) {

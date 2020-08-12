@@ -205,7 +205,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @private
      */
     Animator.prototype._collectFrame = function (frame) {
-        if (frame < 0 || frame > this.totalFrames) throw "Invalid Frame";
+        if (frame < 0 || frame >= this.totalFrames) throw "Invalid Frame";
         this.queuedFrames[frame] = this.retriveFrame(frame);
         this.framesRdy[frame] = true;
     };
@@ -250,10 +250,10 @@ define(["Colorer", "util"], function (Colorer, util) {
      * color values are visible in Emperor.
      *
      * @param{Number} frame The frame to retrieve. frame must be in the range
-     *                      [0, this.totalFrames] else an error will be thrown.
+     *                      [0, this.totalFrames) else an error will be thrown.
      */
     Animator.prototype.showAnimationFrameAtIndex = function (frame) {
-        if (frame < 0 || frame > this.totalFrames) throw "Invalid Frame";
+        if (frame < 0 || frame >= this.totalFrames) throw "Invalid Frame";
 
         this.curFrame = frame;
         if (!this.framesRdy[frame]) {
