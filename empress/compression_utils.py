@@ -135,7 +135,6 @@ def compress_table(table):
 
     compressed_table = []
     for vec in table.iter_data(axis='sample', dense=False):
-        # vec is a row from a scipy.sparse.csr_matrix
         compressed_table.append([int(i) for i in vec.indices])
 
     return (

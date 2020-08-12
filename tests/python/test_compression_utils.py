@@ -328,7 +328,7 @@ class TestCompressionUtils(unittest.TestCase):
         table_copy = self.table_ef.copy()
         s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(table_copy)
 
-        # First off, verify that compress_table() leaves the original table DF
+        # First off, verify that compress_table() leaves the original table
         # untouched.
         self.assertEqual(table_copy, self.table_ef)
 
