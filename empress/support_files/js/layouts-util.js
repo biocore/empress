@@ -202,6 +202,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
 
         var anglePerTip = (2 * Math.PI) / tree.numleaves();
         var prevAngle = 0;
+        var child, currRadius;
 
         // Iterate over the tree in postorder, assigning angles
         // Note that we skip the root (using "i < tree.size" and not "<="),
@@ -215,7 +216,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 // children's angles
                 var angleSum = 0;
                 var numChildren = 0;
-                var child = tree.fchild(tree.postorderselect(i));
+                child = tree.fchild(tree.postorderselect(i));
                 while (child !== 0) {
                     child = tree.postorder(child);
                     angleSum += angle[child];
@@ -261,7 +262,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var parentRadius =
                 radius[tree.postorder(tree.parent(tree.postorderselect(i)))];
             var currAngle = angle[i];
-            var currRadius = radius[i];
+            currRadius = radius[i];
             var angleCos = Math.cos(currAngle);
             var angleSin = Math.sin(currAngle);
             // Assign starting points
@@ -317,7 +318,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 // Find the biggest and smallest angle of the node's children
                 var biggestChildAngle = Number.NEGATIVE_INFINITY;
                 var smallestChildAngle = Number.POSITIVE_INFINITY;
-                var child = tree.fchild(tree.postorderselect(i));
+                child = tree.fchild(tree.postorderselect(i));
                 while (child !== 0) {
                     child = tree.postorder(child);
                     var childAngle = angle[child];
@@ -331,7 +332,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 }
                 // Position the arc start point at the biggest child angle
                 // position
-                var currRadius = radius[i];
+                currRadius = radius[i];
                 arcx0[i] = currRadius * Math.cos(biggestChildAngle) * scale;
                 arcy0[i] = currRadius * Math.sin(biggestChildAngle) * scale;
                 arcStartAngle[i] = biggestChildAngle;
@@ -464,7 +465,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
 
         var rX = x2Arr[tree.size];
         var rY = y2Arr[tree.size];
-        for (var i = 1; i <= tree.size; i++) {
+        for (i = 1; i <= tree.size; i++) {
             x2Arr[i] -= rX;
             y2Arr[i] -= rY;
         }

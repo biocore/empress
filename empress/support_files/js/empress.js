@@ -318,17 +318,16 @@ define([
         console.log("finished circular layout:", d2.getTime());
         console.log("Time taken:", d2.getTime() - d.getTime());
         for (var i = 1; i <= this._tree.size; i++) {
-            this._treeData[i][this._tdToInd["xc0"]] = data.x0[i];
-            this._treeData[i][this._tdToInd["yc0"]] = data.y0[i];
-            this._treeData[i][this._tdToInd["xc1"]] = data.x1[i];
-            this._treeData[i][this._tdToInd["yc1"]] = data.y1[i];
-            this._treeData[i][this._tdToInd["angle"]] = data.angle[i];
-            this._treeData[i][this._tdToInd["arcx0"]] = data.arcx0[i];
-            this._treeData[i][this._tdToInd["arcy0"]] = data.arcy0[i];
-            this._treeData[i][this._tdToInd["arcstartangle"]] =
+            this._treeData[i][this._tdToInd.xc0] = data.x0[i];
+            this._treeData[i][this._tdToInd.yc0] = data.y0[i];
+            this._treeData[i][this._tdToInd.xc1] = data.x1[i];
+            this._treeData[i][this._tdToInd.yc1] = data.y1[i];
+            this._treeData[i][this._tdToInd.angle] = data.angle[i];
+            this._treeData[i][this._tdToInd.arcx0] = data.arcx0[i];
+            this._treeData[i][this._tdToInd.arcy0] = data.arcy0[i];
+            this._treeData[i][this._tdToInd.arcstartangle] =
                 data.arcStartAngle[i];
-            this._treeData[i][this._tdToInd["arcendangle"]] =
-                data.arcEndAngle[i];
+            this._treeData[i][this._tdToInd.arcendangle] = data.arcEndAngle[i];
         }
 
         // Unrooted
@@ -339,13 +338,9 @@ define([
         d2 = new Date();
         console.log("finished unrooted layout:", d2.getTime());
         console.log("Time taken:", d2.getTime() - d.getTime());
-        for (var i = 1; i <= this._tree.size; i++) {
-            this._treeData[i][this._tdToInd["x2"]] = _.isNaN(coords.xCoord[i])
-                ? 0
-                : coords.xCoord[i];
-            this._treeData[i][this._tdToInd["y2"]] = _.isNaN(coords.yCoord[i])
-                ? 1
-                : coords.yCoord[i];
+        for (i = 1; i <= this._tree.size; i++) {
+            this._treeData[i][this._tdToInd.x2] = coords.xCoord[i];
+            this._treeData[i][this._tdToInd.y2] = coords.yCoord[i];
         }
         this.drawTree();
     };
