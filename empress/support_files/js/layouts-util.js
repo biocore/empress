@@ -340,6 +340,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
         }
 
+        // We don't need to reposition coordinates relative to the root because
+        // the root is already at (0, 0) :)
+
         return {
             x0: x0,
             y0: y0,
