@@ -15,19 +15,19 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * |___|
      *     |___
      *
-     * For other resources see:
-     *
-     *  https://rachel53461.wordpress.com/2014/04/20/algorithm-for-drawing-trees/
-     *      Clear explanation of Reingold-Tilford that I used a lot
+     * REFERENCES
+     * ----------
+     * https://rachel53461.wordpress.com/2014/04/20/algorithm-for-drawing-trees/
+     *     Clear explanation of Reingold-Tilford that I used a lot
      *  https://github.com/qiime/Topiary-Explorer/blob/master/src/topiaryexplorer/TreeVis.java
-     *      Derived from the "Rectangular" layout algorithm code.
+     *     Derived from the "Rectangular" layout algorithm code.
      *
      * @param {BPTree} tree The tree to generate the coordinates for.
      * @param {Float} width Width of the canvas where the tree will be
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
-     * @return {Object} Object with xCoords and yCoords properties where the
+     * @return {Object} Object with xCoord and yCoord properties where the
      *                  node coordinates are stored in postorder.
      */
     function rectangularLayout(tree, width, height) {
@@ -117,6 +117,230 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         // (where the length of the horizontal line is proportional to the node
         // length in question).
         return { xCoord: xCoord, yCoord: yCoord };
+    }
+
+    /**
+     * "Circular" version of the rectangular layout.
+     *
+     * ANGLES
+     * ------
+     * Tips are arranged around the border of a circle (a.k.a. assigned an
+     * angle in the range [0, 2pi] in radians), and (non-root) internal nodes
+     * are assigned an angle equal to the average of their children's. This
+     * process is analogous to the assignment of y coordinates in the
+     * rectangular layout.
+     *
+     * RADII
+     * -----
+     * All nodes are then assigned a radius equal to the sum of their branch
+     * lengths descending from the root (not including the root's branch
+     * length, if provided: the root node is consistently represented as a
+     * single point in the center of the layout). This mirrors the assignment
+     * of x-coordinates in the rectangular layout.
+     *
+     * ARCS
+     * ----
+     * Finally, we create arcs for every non-root internal node connecting the
+     * "start points" of the child nodes of that node with the minimum and
+     * maximum angle. (These points should occur at the radius equal to the
+     * "end point" of the given non-root internal node.) These arcs should
+     * ideally be drawn as Bezier curves or something, but they can also be
+     * approximated by making multiple line segments throughout the curve.
+     * These arcs are analogous to the vertical lines drawn for the rectangular
+     * layout: they visually connect all of the children of an internal node.
+     *
+     * ROOT NODE
+     * ---------
+     * The root node of the tree is not drawn like other nodes in the tree.
+     * Like the other layouts, It will always be positioned at (0, 0) -- for
+     * the circular layout, this point is the center of the "circle"
+     * constructed during layout. Since the root's "end point" is the same as
+     * its "start point," it's not possible to draw a visible arc.
+     * (We could draw the root's branch length if desired, but for simplicity
+     * and consistency's sake this is omitted. This mirrors how the root is
+     * represented in the rectangular layout.)
+     *
+     * REFERENCES
+     * ----------
+     * https://github.com/qiime/Topiary-Explorer/blob/master/src/topiaryexplorer/TreeVis.java
+     *     Description above + the implementation of this algorithm derived
+     *     from the Polar layout algorithm code.
+     *
+     * @param {BPTree} tree The tree to generate the coordinates for.
+     * @param {Float} width Width of the canvas where the tree will be
+     *                      displayed.
+     * @param {Float} height Height of the canvas where the tree will be
+     *                       displayed.
+     * @return {Object} Object with the following properties:
+     *                   -x0, y0 ("starting point" x and y)
+     *                   -x1, y1 ("ending point" x and y)
+     *                   -angle (angle on the circle this node was assigned)
+     *                   -arcx0, arcy0 (arc start point for max-angle child x
+     *                    and y)
+     *                   -arcStartAngle
+     *                   -arcEndAngle
+     *                  Each of these properties maps to an Arrays where data
+     *                  for each node is stored in postorder. The arc* values
+     *                  will be 0 for all leaf nodes, and all values will be 0
+     *                  for the root node.
+     */
+    function circularLayout(tree, width, height) {
+        // Set up arrays we're going to store the results in
+        var x0 = new Array(tree.size + 1).fill(0);
+        var y0 = new Array(tree.size + 1).fill(0);
+        var x1 = new Array(tree.size + 1).fill(0);
+        var y1 = new Array(tree.size + 1).fill(0);
+        var angle = new Array(tree.size + 1).fill(0);
+        // (We don't return the radius values, but we need to keep track of
+        // them throughout this function anyway)
+        var radius = new Array(tree.size + 1).fill(0);
+        // Arc information (only relevant for non-root internal nodes)
+        var arcx0 = new Array(tree.size + 1).fill(0);
+        var arcy0 = new Array(tree.size + 1).fill(0);
+        var arcStartAngle = new Array(tree.size + 1).fill(0);
+        var arcEndAngle = new Array(tree.size + 1).fill(0);
+
+        var anglePerTip = (2 * Math.PI) / tree.numleaves();
+        var prevAngle = 0;
+
+        // Iterate over the tree in postorder, assigning angles
+        // Note that we skip the root (using "i < tree.size" and not "<="),
+        // since the root's angle is irrelevant
+        for (var i = 1; i < tree.size; i++) {
+            if (tree.isleaf(tree.postorderselect(i))) {
+                angle[i] = prevAngle;
+                prevAngle += anglePerTip;
+            } else {
+                // Assign internal nodes an angle of the average of their
+                // children's angles
+                var angleSum = 0;
+                var numChildren = 0;
+                var child = tree.fchild(tree.postorderselect(i));
+                while (child !== 0) {
+                    child = tree.postorder(child);
+                    angleSum += angle[child];
+                    child = tree.nsibling(tree.postorderselect(child));
+                    numChildren++;
+                }
+                angle[i] = angleSum / numChildren;
+            }
+        }
+
+        // Iterate over the tree in preorder, assigning radii
+        // (The "i = 2" skips the root of the tree)
+        for (i = 2; i <= tree.size; i++) {
+            // Get the postorder position of this node, which we'll use when
+            // writing to the radius array (which is stored in postorder, as
+            // are the remainder of the "result" arrays defined above)
+            var node = tree.postorder(tree.preorderselect(i));
+            var parent = tree.postorder(tree.parent(tree.preorderselect(i)));
+            radius[node] = radius[parent] + tree.lengths_[i];
+        }
+
+        // Now that we have the polar coordinates of the nodes, convert them to
+        // normal x/y coordinates (a.k.a. Cartesian coordinates). Also, figure
+        // out the maximum x/y coordinates for scaling.
+        //
+        // Unlike the rectangular / unrooted layout we need to keep track of
+        // two sets of positions for each (non-root) node: a "starting" and
+        // "end" point. In the other layouts we can just infer the starting
+        // point during drawing, but here each node's line begins at its parent
+        // node's radius but at its own angle in polar coordinates -- and to
+        // avoid doing extra work on converting between polar and Cartesian
+        // coords, we just compute both points here. (As a potential TODO, it's
+        // probably possible to do this more efficiently.)
+        var minX = 0;
+        var minY = 0;
+        var maxX = 0;
+        var maxY = 0;
+        // Go over the tree in postorder to produce Cartesian coords,
+        // skipping the root (since we know it's going to be at (0, 0))
+        for (i = 1; i < tree.size; i++) {
+            // To avoid repeated lookups / computations, store a few things in
+            // memory during this iteration of the loop
+            var parentRadius = radius[tree.postorder(
+                tree.parent(tree.postorderselect(i))
+            )];
+            var currAngle = angle[i];
+            var currRadius = radius[i];
+            var angleCos = Math.cos(currAngle);
+            var angleSin = Math.sin(currAngle);
+            // Assign starting points
+            x0[i] = parentRadius * angleCos;
+            y0[i] = parentRadius * angleSin;
+            // Assign ending points
+            x1[i] = currRadius * angleCos;
+            y1[i] = currRadius * angleSin;
+            // Now that points are assigned for this node, try to extend the
+            // min/max x/y. We only bother checking the end points because
+            // start points should, by definition, be closer to the root of the
+            // tree: and the root of the tree (positioned at (0, 0) has already
+            // been "checked" as the min/max x/y position since these variables
+            // are all initialized to 0.
+            if (x1[i] > maxX) {
+                maxX = x1[i];
+            }
+            if (y1[i] > maxY) {
+                maxY = y1[i];
+            }
+            if (x1[i] < minX) {
+                minX = x1[i];
+            }
+            if (y1[i] < minY) {
+                minY = y1[i];
+            }
+        }
+
+        // Based on the min/max x/y values, set scaling factors.
+        var widthScale = width / (maxX - minX);
+        var heightScale = height / (maxY - minY);
+        // We'll scale the coordinates by the longest dimension -- either
+        // widthScale or heightScale. In either case, we're just multiplying
+        // every node's coordinate by some constant factor, so things like
+        // node lengths are still comparable to each other.
+        var scale = widthScale > heightScale ? widthScale : heightScale;
+
+        // Go over the tree (in postorder, but order doesn't really matter
+        // for this) to 1) scale node positions and 2) determine arc positions
+        // for non-root internal nodes.
+        // I think determining arc positions could be included in the above for
+        // loop, so if in the future we decide to not do scaling we could
+        // probably omit this for loop entirely (saving some time).
+        for (i = 1; i < tree.size; i++) {
+            x0[i] *= scale;
+            y0[i] *= scale;
+            x1[i] *= scale;
+            y1[i] *= scale;
+            // Compute arcs for non-root internal nodes (we know that this node
+            // isn't the root because we're skipping the root entirely in this
+            // for loop)
+            if (!tree.isleaf(tree.postorderselect(i))) {
+                // Find the biggest and smallest angle of the node's children
+                var biggestChildAngle = Number.NEGATIVE_INFINITY;
+                var smallestChildAngle = Number.POSITIVE_INFINITY;
+                var child = tree.fchild(tree.postorderselect(i));
+                while (child !== 0) {
+                    child = tree.postorder(child);
+                    var childAngle = angle[child];
+                    if (childAngle > biggestChildAngle) {
+                        biggestChildAngle = childAngle;
+                    }
+                    if (childAngle < smallestChildAngle) {
+                        smallestChildAngle = childAngle;
+                    }
+                    child = tree.nsibling(tree.postorderselect(child));
+                }
+                // Position the arc start point at the biggest child angle
+                // position
+                var currRadius = radius[i];
+                arcx0[i] = currRadius * Math.cos(biggestChildAngle) * scale;
+                arcy0[i] = currRadius * Math.sin(biggestChildAngle) * scale;
+                arcStartAngle[i] = biggestChildAngle;
+                arcEndAngle[i] = smallestChildAngle;
+            }
+        }
+
+        return { x0: x0, y0: y0, x1: x1, y1: y1, angle: angle, arcx0: arcx0, arcy0: arcy0, arcStartAngle: arcStartAngle, arcEndAngle: arcEndAngle};
     }
 
     function unrootedLayout(tree, width, height) {
@@ -241,6 +465,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
 
     return {
         rectangularLayout: rectangularLayout,
+        circularLayout: circularLayout,
         unrootedLayout: unrootedLayout,
     };
 });

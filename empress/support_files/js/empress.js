@@ -300,19 +300,43 @@ define([
     }
 
     Empress.prototype.layouts = function () {
-        var d = new Date();
-        console.log("starting layout:", d.getTime());
-        var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
-        var dt = new Date();
-        console.log("finished layout:", dt.getTime());
-        console.log(this._tree.numleaves());
+        console.log("Tree has this many tips:", this._tree.numleaves());
 
-        this._tree.lengths_[1] = 1;
+        // Rectangular
         var d = new Date();
-        console.log("starting layout:", d.getTime());
-        var coords = LayoutsUtil.unrootedLayout(this._tree, 4020,4020);
+        console.log("starting rectangular layout:", d.getTime());
+        var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
+        var d2 = new Date();
+        console.log("finished rectangular layout:", d2.getTime());
+        console.log("Time taken:", d2.getTime() - d.getTime());
+
+        // Circular
         d = new Date();
-        console.log("starting layout:", d.getTime());
+        console.log("starting circular layout:", d.getTime());
+        var data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
+        d2 = new Date();
+        console.log("finished circular layout:", d2.getTime());
+        console.log("Time taken:", d2.getTime() - d.getTime());
+        for (var i = 1; i <= this._tree.size; i++) {
+            this._treeData[i][this._tdToInd["xc0"]] = data.x0[i];
+            this._treeData[i][this._tdToInd["yc0"]] = data.y0[i];
+            this._treeData[i][this._tdToInd["xc1"]] = data.x1[i];
+            this._treeData[i][this._tdToInd["yc1"]] = data.y1[i];
+            this._treeData[i][this._tdToInd["angle"]] = data.angle[i];
+            this._treeData[i][this._tdToInd["arcx0"]] = data.arcx0[i];
+            this._treeData[i][this._tdToInd["arcy0"]] = data.arcy0[i];
+            this._treeData[i][this._tdToInd["arcstartangle"]] = data.arcStartAngle[i];
+            this._treeData[i][this._tdToInd["arcendangle"]] = data.arcEndAngle[i];
+        }
+
+        // Unrooted
+        this._tree.lengths_[1] = 1;
+        d = new Date();
+        console.log("starting unrooted layout:", d.getTime());
+        coords = LayoutsUtil.unrootedLayout(this._tree, 4020, 4020);
+        d2 = new Date();
+        console.log("finished unrooted layout:", d2.getTime());
+        console.log("Time taken:", d2.getTime() - d.getTime());
         for (var i = 1; i <= this._tree.size; i++) {
             this._treeData[i][this._tdToInd["x2"]] = _.isNaN(coords.xCoord[i]) ? 0 : coords.xCoord[i];
             this._treeData[i][this._tdToInd["y2"]] = _.isNaN(coords.yCoord[i]) ? 1 : coords.yCoord[i];
@@ -772,7 +796,7 @@ define([
                 // 2. Draw arc, if this is an internal node (note again that
                 // we're skipping the root)
                 if (
-                    this.getNodeInfo(node, "arcx0") !== undefined &&
+                    !this._tree.isleaf(this._tree.postorderselect(i)) &&
                     !this._collapsedClades.hasOwnProperty(nodeInd)
                 ) {
                     // arcs are created by sampling 15 small lines along the
@@ -1003,7 +1027,7 @@ define([
                 // Thicken the "arc" if this is non-root internal node
                 // (TODO: this will need to be adapted when the arc is changed
                 // to be a bezier curve)
-                if (this.getNodeInfo(node, "arcx0") !== undefined) {
+                if (!this._tree.isleaf(this._tree.postorderselect(i))) {
                     // arcs are created by sampling 15 small lines along the
                     // arc spanned by rotating arcx0, the line whose origin
                     // is the root of the tree and endpoint is the start of the
