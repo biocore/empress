@@ -292,13 +292,47 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         }
 
         // Based on the min/max x/y values, set scaling factors.
-        var widthScale = width / (maxX - minX);
-        var heightScale = height / (maxY - minY);
         // We'll scale the coordinates by the longest dimension -- either
         // widthScale or heightScale. In either case, we're just multiplying
         // every node's coordinate by some constant factor, so things like
         // node lengths are still comparable to each other.
-        var scale = widthScale > heightScale ? widthScale : heightScale;
+        //
+        // The reason for checking the maxX === minX and maxY === minY cases is
+        // to handle the corner-case where the tree is a straight line (either
+        // along the x- or y-axis). In these cases, max - min for that axis
+        // will be 0, so the scale for that axis would be something divided by
+        // 0 -- a.k.a. not what something we should even consider using as a
+        // scaling factor.
+        var xEqual = maxX === minX;
+        var yEqual = maxY === minY;
+        var scale;
+        if (xEqual && yEqual) {
+            // Should never happen, but if the layout algorithm above is broken
+            // we could wind up here. Best to catch it immediately.
+            // https://news.ycombinator.com/item?id=11396045 :)
+            throw new Error(
+                "Circular layout's dimensions are invalid. Something is " +
+                    "seriously wrong."
+            );
+        } else if (xEqual) {
+            // The tree is a straight vertical line. (This shouldn't happen
+            // *now*, but if/when we support configuring the rotation of the
+            // circular layout it could totally happen.)
+            scale = height / (maxY - minY);
+        } else if (yEqual) {
+            // The tree is a straight horizontal line.
+            scale = width / (maxX - minX);
+        } else {
+            // minX !== maxX and minY !== maxY. So, the tree isn't a straight
+            // line. (Well, probably -- it could still ostensibly be a straight
+            // line not parallel to an axis if rotation is configurable in the
+            // future and the user sets rotation to 45 degrees or something
+            // silly like that. But, even if that's the case, it shouldn't
+            // matter -- scaling can still be done normally.)
+            var widthScale = width / (maxX - minX);
+            var heightScale = height / (maxY - minY);
+            scale = widthScale > heightScale ? widthScale : heightScale;
+        }
 
         // Go over the tree (in postorder, but order doesn't really matter
         // for this) to 1) scale node positions and 2) determine arc positions
