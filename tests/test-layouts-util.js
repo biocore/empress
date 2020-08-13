@@ -200,17 +200,15 @@ require([
             var obs = LayoutsUtil.circularLayout(this.straightLineTree);
             // The tree looks like:
             // root -- a ---- b
-            // Since the width is 100, the tree should be scaled so that the
-            // root is at x = 0 and b's endpoint is at x = 100.
-            deepEqual(obs.x0, [0, 100 / 3, 0, 0], "x0");
+            deepEqual(obs.x0, [0, 1, 0, 0], "x0");
             deepEqual(obs.y0, [0, 0, 0, 0], "y0");
-            deepEqual(obs.x1, [0, 100, 100 / 3, 0], "x1");
+            deepEqual(obs.x1, [0, 3, 1, 0], "x1");
             deepEqual(obs.y1, [0, 0, 0, 0], "y1");
             deepEqual(obs.angle, [0, 0, 0, 0], "angle");
             // TODO: in the future, a's arc information should be negative
             // numbers or something to indicate that its arc shouldn't be
-            // drawn.
-            deepEqual(obs.arcx0, [0, 0, 100 / 3, 0], "arcx0");
+            // drawn. See https://github.com/biocore/empress/issues/327.
+            deepEqual(obs.arcx0, [0, 0, 1, 0], "arcx0");
             deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
             deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
             deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
