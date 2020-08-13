@@ -33,9 +33,14 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.layerContainer = layerContainer;
         this.num = num;
 
+        this.fmAvailable = this.fmCols.length > 0;
+
         // This should be "fm" if the barplot is for feature metadata; "sm" if
-        // the barplot is for sample metadata
-        this.barplotType = "fm";
+        // the barplot is for sample metadata. (The default is to use feature
+        // metadata barplots, but if no feature metadata was passed to Empress
+        // then we have no choice but to just draw sample metadata barplots for
+        // everything.)
+        this.barplotType = this.fmAvailable ? "fm" : "sm";
 
         // Various properties of the barplot layer state for feature metadata
         this.initialDefaultColorHex = Colorer.getQIIMEColor(this.num - 1);
@@ -81,47 +86,55 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.updateHeader();
 
         // Add UI elements for switching between feature and sample metadata
-        // barplots for this layer
-        var metadataChoiceP = this.layerDiv.appendChild(
-            document.createElement("p")
-        );
-        var fmBtn = metadataChoiceP.appendChild(
-            document.createElement("button")
-        );
-        var smBtn = metadataChoiceP.appendChild(
-            document.createElement("button")
-        );
-        fmBtn.innerText = "Feature Metadata";
-        smBtn.innerText = "Sample Metadata";
-        // Center the feature and sample metadata buttons
-        fmBtn.setAttribute("style", "margin: 0 auto;");
-        smBtn.setAttribute("style", "margin: 0 auto;");
-        // Since we default to feature metadata barplot layers, we mark the
-        // feature metadata button as "selected" (a.k.a. we darken it a bit)
-        fmBtn.classList.add("selected-metadata-choice");
+        // barplots for this layer (only if feature metadata is available;
+        // otherwise, things will just default to sample metadata barplots.)
+        if (this.fmAvailable) {
+            var metadataChoiceP = this.layerDiv.appendChild(
+                document.createElement("p")
+            );
+            var fmBtn = metadataChoiceP.appendChild(
+                document.createElement("button")
+            );
+            var smBtn = metadataChoiceP.appendChild(
+                document.createElement("button")
+            );
+            fmBtn.innerText = "Feature Metadata";
+            smBtn.innerText = "Sample Metadata";
+            // Center the feature and sample metadata buttons
+            fmBtn.setAttribute("style", "margin: 0 auto;");
+            smBtn.setAttribute("style", "margin: 0 auto;");
+            // Since we default to feature metadata barplot layers, we mark the
+            // feature metadata button as "selected" (a.k.a. we darken it a bit)
+            fmBtn.classList.add("selected-metadata-choice");
 
-        this.initFMDiv();
+            // We delay calling initFMDiv() (and initSMDiv(), although that
+            // isn't in this block because it doesn't depend on feature
+            // metadata being available) until after we create the
+            // "type switching" choice buttons above. This is so that the
+            // buttons are placed above the FM / SM divs in the page layout.
+            this.initFMDiv();
+
+            fmBtn.onclick = function () {
+                if (scope.barplotType !== "fm") {
+                    scope.smDiv.classList.add("hidden");
+                    scope.fmDiv.classList.remove("hidden");
+                    fmBtn.classList.add("selected-metadata-choice");
+                    smBtn.classList.remove("selected-metadata-choice");
+                    scope.barplotType = "fm";
+                }
+            };
+            smBtn.onclick = function () {
+                if (scope.barplotType !== "sm") {
+                    scope.fmDiv.classList.add("hidden");
+                    scope.smDiv.classList.remove("hidden");
+                    smBtn.classList.add("selected-metadata-choice");
+                    fmBtn.classList.remove("selected-metadata-choice");
+                    scope.barplotType = "sm";
+                }
+            };
+        }
+
         this.initSMDiv();
-
-        fmBtn.onclick = function () {
-            if (scope.barplotType !== "fm") {
-                scope.smDiv.classList.add("hidden");
-                scope.fmDiv.classList.remove("hidden");
-                fmBtn.classList.add("selected-metadata-choice");
-                smBtn.classList.remove("selected-metadata-choice");
-                scope.barplotType = "fm";
-            }
-        };
-        smBtn.onclick = function () {
-            if (scope.barplotType !== "sm") {
-                scope.fmDiv.classList.add("hidden");
-                scope.smDiv.classList.remove("hidden");
-                smBtn.classList.add("selected-metadata-choice");
-                fmBtn.classList.remove("selected-metadata-choice");
-                scope.barplotType = "sm";
-            }
-        };
-
         // Add a row of UI elements that supports removing this layer
         var rmP = this.layerDiv.appendChild(document.createElement("p"));
         var rmLbl = rmP.appendChild(document.createElement("label"));
@@ -144,6 +157,9 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
     BarplotLayer.prototype.initFMDiv = function () {
         var scope = this;
         this.fmDiv = this.layerDiv.appendChild(document.createElement("div"));
+        if (this.barplotType !== "fm") {
+            this.fmDiv.classList.add("hidden");
+        }
 
         // Add default color stuff
         var dfltColorP = document.createElement("p");
@@ -416,8 +432,9 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
     BarplotLayer.prototype.initSMDiv = function () {
         var scope = this;
         this.smDiv = this.layerDiv.appendChild(document.createElement("div"));
-        // Hide this div by default
-        this.smDiv.classList.add("hidden");
+        if (this.barplotType !== "sm") {
+            this.smDiv.classList.add("hidden");
+        }
 
         var chgFieldP = this.smDiv.appendChild(document.createElement("p"));
         // Add a label
