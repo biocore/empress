@@ -104,12 +104,12 @@ def split_taxonomy(feature_metadata):
         # is the highest number of taxonomic levels in any string. We have to
         # account for leading and trailing whitespace (.str.strip()) as well as
         # for whitespace between delimiters (.str.split()). The regular
-        # expression splits tokens separated by semicolons and up to one
-        # leading or trailing space. Importantly, using the expand keyword
-        # ensures that all rows are padded to have n tokens. The final step is
-        # to replace those empty values with "Unspecified".
+        # expression splits tokens separated by semicolons and any leading or
+        # trailing whitespace. Importantly, using the expand keyword ensures
+        # that all rows are padded to have n tokens. The final step is to
+        # replace those empty values with "Unspecified".
         tax_levels = feature_metadata[tax_col_name]\
-            .str.strip().str.split(r'\s{0,1};\s{0,1}', expand=True)
+            .str.strip().str.split(r'\s*;\s*', expand=True)
         tax_levels.fillna('Unspecified', inplace=True)
 
         if len(tax_levels.columns) == 1:
