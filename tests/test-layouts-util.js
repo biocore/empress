@@ -58,49 +58,61 @@ require([
         });
 
         test("Test rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(this.tree, 500, 500);
+            var obs = LayoutsUtil.rectangularLayout(this.tree);
+            /* Why do these coordinates look like this?
+             *
+             * There are a few steps to the layout.
+             *
+             * 1. Compute initial y-coordinates of layout: tips are assigned to
+             *    y=0, y=1, y=2, ... up to y=|tips|, and internal nodes are
+             *    positioned at the average of their childrens' y-positions.
+             *
+             * 2. Compute initial x-coordinates of layout: root starts at x=0,
+             *    and each child C with parent P is assigned
+             *    x = P.x + C.branch_length.
+             *    (...those aren't real attribute names, this is pseudocode)
+             *
+             * 3. Coordinates are shifted so that the root node is at (0, 0).
+             *    So every node's x-coordinate is subtracted by the root (i)'s
+             *    x=0 (this does nothing), and every node's y-coordinate is
+             *    subtracted by the root's y=2.375.
+             */
 
+            // The output arrays are in postorder.
+            // (empty space), a, e, f, b, g, c, d, h, i (root)
             var exp = {
-                xCoord: [0, 300, 400, 200, 300, 100, 300, 500, 200, 0.0],
+                xCoord: [0, 3, 4, 2, 3, 1, 3, 5, 2, 0],
                 yCoord: [
                     0,
-                    -296.875,
-                    -171.875,
-                    -234.375,
-                    -46.875,
-                    -140.625,
-                    78.125,
-                    203.125,
-                    140.625,
-                    0.0,
+                    -2.375,
+                    -1.375,
+                    -1.875,
+                    -0.375,
+                    -1.125,
+                    0.625,
+                    1.625,
+                    1.125,
+                    0
                 ],
             };
             deepEqual(obs, exp);
         });
 
         test("Test straightline tree rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(
-                this.straightLineTree,
-                100,
-                100
-            );
+            var obs = LayoutsUtil.rectangularLayout(this.straightLineTree);
 
             var exp = {
-                xCoord: [0, 100, 100 / 3, 0],
+                xCoord: [0, 3, 1, 0],
                 yCoord: [0, 0, 0, 0],
             };
             deepEqual(obs, exp);
         });
 
         test("Test missing root length rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(
-                this.noRootLength,
-                100,
-                100
-            );
+            var obs = LayoutsUtil.rectangularLayout(this.noRootLength);
 
             var exp = {
-                xCoord: [0, 100, 100 / 3, 0],
+                xCoord: [0, 3, 1, 0],
                 yCoord: [0, 0, 0, 0],
             };
             deepEqual(obs, exp);
@@ -113,7 +125,7 @@ require([
                 ["", 1, 2, 4, 3, 1],
                 null
             );
-            var obs = LayoutsUtil.circularLayout(testTree, 100, 100);
+            var obs = LayoutsUtil.circularLayout(testTree);
             // Check that there isn't extra junk included in obs' output
             // (so we'll know that the 9 keys within obs we check are the
             // *only* keys in obs)
@@ -185,11 +197,7 @@ require([
             );
         });
         test("Test straightline tree circular layout", function () {
-            var obs = LayoutsUtil.circularLayout(
-                this.straightLineTree,
-                100,
-                100
-            );
+            var obs = LayoutsUtil.circularLayout(this.straightLineTree);
             // The tree looks like:
             // root -- a ---- b
             // Since the width is 100, the tree should be scaled so that the
@@ -198,6 +206,28 @@ require([
             deepEqual(obs.y0, [0, 0, 0, 0], "y0");
             deepEqual(obs.x1, [0, 100, 100 / 3, 0], "x1");
             deepEqual(obs.y1, [0, 0, 0, 0], "y1");
+            deepEqual(obs.angle, [0, 0, 0, 0], "angle");
+            // TODO: in the future, a's arc information should be negative
+            // numbers or something to indicate that its arc shouldn't be
+            // drawn.
+            deepEqual(obs.arcx0, [0, 0, 100 / 3, 0], "arcx0");
+            deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
+            deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
+            deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
+        });
+        test("Test straightline tree circular layout, rotated CCW by 90 degrees", function () {
+            var obs = LayoutsUtil.circularLayout(this.straightLineTree, Math.PI / 2);
+            // The tree looks like:
+            //  b
+            //  |
+            //  |
+            //  a
+            //  |
+            // root
+            deepEqual(obs.x0, [0, 0, 0, 0], "x0");
+            deepEqual(obs.y0, [0, 100 / 3, 0, 0], "y0");
+            deepEqual(obs.x1, [0, 0, 0, 0], "x1");
+            deepEqual(obs.y1, [0, 100, 100 / 3, 0], "y1");
             deepEqual(obs.angle, [0, 0, 0, 0], "angle");
             // TODO: in the future, a's arc information should be negative
             // numbers or something to indicate that its arc shouldn't be
