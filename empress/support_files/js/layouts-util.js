@@ -22,6 +22,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *  https://github.com/qiime/Topiary-Explorer/blob/master/src/topiaryexplorer/TreeVis.java
      *     Derived from the "Rectangular" layout algorithm code.
      *
+     * TODO: although this currently does not do "scaling" to fit the
+     * coordinates into the (4020, 4020) range, this scaling *is* done in the
+     * python code when computing vertical lines. This means that this layout
+     * will look funky for the time being until vertical line computation is
+     * ported to be within this function.
+     *
      * @param {BPTree} tree The tree to generate the coordinates for.
      * @return {Object} Object with xCoord and yCoord properties where the
      *                  node coordinates are stored in postorder.
