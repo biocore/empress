@@ -301,18 +301,18 @@ define([
 
     Empress.prototype.layouts = function () {
         var d = new Date();
-        console.log("starting layout:", d.getTime());
         var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
         var dt = new Date();
-        console.log("finished layout:", dt.getTime());
-        console.log(this._tree.numleaves());
+        var time = dt.getTime() - d.getTime();
+        console.log("number of nodes", this._tree.size);
+        console.log("finished layout:", time);
 
         this._tree.lengths_[1] = 1;
         var d = new Date();
-        console.log("starting layout:", d.getTime());
         var coords = LayoutsUtil.unrootedLayout(this._tree, 4020,4020);
-        d = new Date();
-        console.log("starting layout:", d.getTime());
+        dt = new Date();
+        time = dt.getTime() - d.getTime();
+        console.log("finished layout:", time);
         for (var i = 1; i <= this._tree.size; i++) {
             this._treeData[i][this._tdToInd["x2"]] = _.isNaN(coords.xCoord[i]) ? 0 : coords.xCoord[i];
             this._treeData[i][this._tdToInd["y2"]] = _.isNaN(coords.yCoord[i]) ? 1 : coords.yCoord[i];

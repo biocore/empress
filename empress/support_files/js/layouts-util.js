@@ -137,6 +137,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var y1Arr = new Array(tree.size +1);
         var y2Arr = new Array(tree.size +1);
         var aArr = new Array(tree.size +1);
+        var timeFindingTips = 0;
 
 
         var updateCoords = function(args) {
@@ -157,8 +158,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 aArr[node] = _a;
             }
 
-            var x2 = args.x1 + getStep(tree.size, Math.sin(args.a));
-            var y2 = args.y1 + getStep(tree.size, Math.cos(args.a));
+            var x2 = args.x1 + getStep(tree.size, 5);//Math.sin(args.a));
+            var y2 = args.y1 + getStep(tree.size, 6);//Math.cos(args.a));
             setArrs(tree.size, args.x1, x2, args.y1, y2, args.a)
 
             // reverse postorder
@@ -174,18 +175,27 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 );
                 while (sib !== 0) {
                     if (sib !== node) {
+                        var d = new Date();
                         a += (tree.findTips(sib).length * args.da);
+                        var dt = new Date();
+                        timeFindingTips += (dt.getTime() - d.getTime());
                     } else {
+                        var d = new Date();
                         a += ((tree.findTips(node).length * args.da) / 2)
+                        var dt = new Date();
+                        timeFindingTips += (dt.getTime() - d.getTime());
                         break;
                     }
+                    var d = new Date();
                     sib = tree.postorder(
                         tree.nsibling(tree.postorderselect(sib))
                     );
+                    var dt = new Date();
+                    timeFindingTips += (dt.getTime()-d.getTime());
                 }
 
-                x2 = x1 + getStep(node, Math.sin(a));
-                y2 = y1 + getStep(node, Math.cos(a));
+                x2 = x1 + getStep(node, 5);//Math.sin(a));
+                y2 = y1 + getStep(node, 4);//Math.cos(a));
                 setArrs(node, x1, x2, y1, y2, a);
                 maxX = Math.max(maxX, x2);
                 minX = Math.min(minX, x2);
@@ -203,7 +213,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         };
 
 
-        for (var i = 0; i < 60; i++) {
+        for (var i = 0; i < 1; i++) {
             updateArgs.a = (i / 60.0) * Math.PI;
             var update = updateCoords(updateArgs);
 
@@ -227,7 +237,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 bestArgs.a = updateArgs.a;
             }
         }
-        updateCoords(bestArgs);
+        // updateCoords(bestArgs);
+        console.log("Time in findTips", timeFindingTips)
 
         var rX = x2Arr[tree.size];
         var rY = y2Arr[tree.size];

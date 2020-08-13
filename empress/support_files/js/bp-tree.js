@@ -70,6 +70,16 @@ define(["ByteArray"], function (ByteArray) {
         this.names_ = names ? names : null;
 
         /**
+         * @type {Array}
+         * @private
+         * caches the number of tips under each node. Stores nodes in their
+         * postorder position. Postorder positions start at index 1 thus index
+         * 0 is considered "undefined".
+         * Note: leaf nodes have 1 tips
+         */
+        this._numTips = new Array(this.size + 1).fill(0);
+
+        /**
          * @type{Float32Array}
          * @private
          * stores the length of the nodes in preorder. If lengths are not
@@ -229,7 +239,7 @@ define(["ByteArray"], function (ByteArray) {
      * @return{String}
      */
     BPTree.prototype.name = function (i) {
-        return this.names_[this.preorder(i) - 1];
+        return this.names_[this.preorder(i)];
     };
 
     /**
@@ -255,7 +265,7 @@ define(["ByteArray"], function (ByteArray) {
      * @return{Number}
      */
     BPTree.prototype.length = function (i) {
-        return this.lengths_[this.preorder(i) - 1];
+        return this.lengths_[this.preorder(i)];
     };
 
     /**
@@ -625,7 +635,7 @@ define(["ByteArray"], function (ByteArray) {
         // by the current internal node
         var n = this.postorderselect(nodeKey);
         if (this.isleaf(n)) {
-            return [1];
+            throw "Error: " + nodeKey + " is a tip!";
         }
         var start = this.preorder(this.fchild(n));
         var end = this.preorder(this.lchild(n));
@@ -644,6 +654,31 @@ define(["ByteArray"], function (ByteArray) {
 
         return tips;
     };
+
+    /**
+     * Retrive number of tips in the subtree of a given node.
+     */
+    BPTree.prototype.getNumTips = function (nodeKey) {
+        if (this._numTips[nodeKey] !== 0) {
+            return this._numTips[nodeKey];
+        }
+
+        if (this.isleaf(this.postorderselect(nodeKey))) {
+            this._numTips[nodeKey] = 1;
+            return this._numTips[nodeKey];
+        }
+
+        var open = this.postorderselect(nodeKey);
+        var close = this.close(open);
+        var numTips = 0;
+        for (var i = open + 1; i < close; i++) {
+            if (this.b_[i] === 1 && this.b_[i+1] === 0) {
+                numTips += 1;
+            }
+        }
+        this._numTips[nodeKey] = numTips;
+        return numTips;
+    }
 
     /** True if name is in the names array for the tree
      *
