@@ -79,10 +79,14 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
         }
 
+        // Shift coordinates so that the root is at (0, 0). NOTE that the
+        // xCoord operations could be omitted for now, since (when drawing this
+        // layout from left -> right) the root will always be at x = 0 already.
+        // However, if in the future users want to rotate this layout (say, to
+        // make the tree move from top -> bottom), then we will still need to
+        // do this.
         var rX = xCoord[tree.size];
         var rY = yCoord[tree.size];
-
-        // skip the first element since the tree is zero-indexed
         for (i = 1; i <= tree.size; i++) {
             xCoord[i] -= rX;
             yCoord[i] -= rY;
