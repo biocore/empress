@@ -171,6 +171,17 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
+     * @param {Float} startAngle The first tip in the tree visited is assigned
+     *                           this angle (in radians). Can be used to rotate
+     *                           the tree: 0 is the eastmost point of the
+     *                           theoretical "circle" surrounding the root
+     *                           node, Math.PI / 2 is the northmost point of
+     *                           that circle, etc.). I believe this is
+     *                           analogous to how the "rotation" parameter of
+     *                           iTOL works.
+     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
+     *                                layout; otherwise, a uniform length of 1
+     *                                is used.
      * @return {Object} Object with the following properties:
      *                   -x0, y0 ("starting point" x and y)
      *                   -x1, y1 ("ending point" x and y)
@@ -184,7 +195,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                  will be 0 for all leaf nodes, and all values will be 0
      *                  for the root node.
      */
-    function circularLayout(tree, width, height) {
+    function circularLayout(
+        tree,
+        width,
+        height,
+        startAngle = 0,
+        ignoreLengths = false
+    ) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
         var y0 = new Array(tree.size + 1).fill(0);
@@ -201,7 +218,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var arcEndAngle = new Array(tree.size + 1).fill(0);
 
         var anglePerTip = (2 * Math.PI) / tree.numleaves();
-        var prevAngle = 0;
+        var prevAngle = startAngle;
         var child, currRadius;
 
         // Iterate over the tree in postorder, assigning angles
@@ -235,7 +252,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             // are the remainder of the "result" arrays defined above)
             var node = tree.postorder(tree.preorderselect(i));
             var parent = tree.postorder(tree.parent(tree.preorderselect(i)));
-            radius[node] = radius[parent] + tree.lengths_[i];
+            if (ignoreLengths) {
+                radius[node] = radius[parent] + 1;
+            } else {
+                radius[node] = radius[parent] + tree.lengths_[i];
+            }
         }
 
         // Now that we have the polar coordinates of the nodes, convert them to
