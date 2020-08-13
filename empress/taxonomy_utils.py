@@ -100,11 +100,19 @@ def split_taxonomy(feature_metadata):
                 "(case insensitive)."
             )
 
-        # Find the maximum number of ;s within any of the taxonomy annotations
-        # Thanks Yoshiki for showing how to do this concisely :)
-        max_sc_count = feature_metadata[tax_col_name].str.count(";").max()
+        # Split the single column of taxonomy strings into n columns, where n
+        # is the highest number of taxonomic levels in any string. We have to
+        # account for leading and trailing whitespace (.str.strip()) as well as
+        # for whitespace between delimiters (.str.split()). The regular
+        # expression splits tokens separated by semicolons and any leading or
+        # trailing whitespace. Importantly, using the expand keyword ensures
+        # that all rows are padded to have n tokens. The final step is to
+        # replace those empty values with "Unspecified".
+        tax_levels = feature_metadata[tax_col_name]\
+            .str.strip().str.split(r'\s*;\s*', expand=True)
+        tax_levels.fillna('Unspecified', inplace=True)
 
-        if max_sc_count == 0:
+        if len(tax_levels.columns) == 1:
             # We allow this in the case of single-rank taxonomies (e.g. just
             # kingdoms, for some reason). Can change this to an error if
             # desired.
@@ -118,23 +126,9 @@ def split_taxonomy(feature_metadata):
                 TaxonomyWarning
             )
 
-        # OK, actually do splitting now (taking into account max_sc_count)
-        def split_taxonomy_col(fm_row):
-            levels = [r.strip() for r in fm_row.loc[tax_col_name].split(";")]
-            # If this row's taxonomy has less levels than the max number of
-            # levels, pad it out with empty strings.
-            if len(levels) < max_sc_count + 1:
-                num_missing_levels = (max_sc_count + 1) - len(levels)
-                levels += ["Unspecified"] * num_missing_levels
-            return levels
-
-        # Our use of result_type="expand" means that tax_levels will be a
-        # DataFrame with the same index as feature_metadata but with one column
-        # for each taxonomic level (in order -- Kingdom, Phylum, etc.)
-        tax_levels = feature_metadata.apply(
-            split_taxonomy_col, axis="columns", result_type="expand"
-        )
-        # Assign human-friendly column names: Level 1, Level 2, ...
+        # Our use of expand=True means that tax_levels will be a DataFrame with
+        # the same index as feature_metadata but with one column for each
+        # taxonomic level (in order -- Kingdom, Phylum, etc.)
         tax_levels.columns = [
             "Level {}".format(i) for i in range(1, len(tax_levels.columns) + 1)
         ]

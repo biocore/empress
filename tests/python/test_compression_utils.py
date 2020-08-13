@@ -12,6 +12,7 @@ import unittest.mock
 import pandas as pd
 import numpy as np
 import skbio
+import biom
 from pandas.testing import assert_frame_equal
 from empress.compression_utils import (
     remove_empty_samples_and_features, compress_table,
@@ -22,24 +23,18 @@ from empress.compression_utils import (
 class TestCompressionUtils(unittest.TestCase):
 
     def setUp(self):
-        self.table = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 0, 4],
-                "Sample2": [8, 7, 0, 5],
-                "Sample3": [1, 0, 0, 0],
-                "Sample4": [0, 0, 0, 0]
-            },
-            index=["a", "b", "e", "d"]
-        )
+        self.table = biom.Table(np.array([[1, 2, 0, 4],
+                                          [8, 7, 0, 5],
+                                          [1, 0, 0, 0],
+                                          [0, 0, 0, 0]]).T, list('abed'),
+                                ['Sample1', 'Sample2', 'Sample3', 'Sample4'])
         # After filtering out empty samples/features:
-        self.table_ef = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 4],
-                "Sample2": [8, 7, 5],
-                "Sample3": [1, 0, 0]
-            },
-            index=["a", "b", "d"]
-        )
+        self.table_ef = biom.Table(np.array([[1, 2, 4],
+                                             [8, 7, 5],
+                                             [1, 0, 0]]).T,
+                                   ['a', 'b', 'd'],
+                                   ['Sample1', 'Sample2', 'Sample3'])
+
         self.sm = pd.DataFrame(
             {
                 "Metadata1": [0, 0, 0, 1],
@@ -47,7 +42,7 @@ class TestCompressionUtils(unittest.TestCase):
                 "Metadata3": [1, 2, 3, 4],
                 "Metadata4": ["abc", "def", "ghi", "jkl"]
             },
-            index=list(self.table.columns)[:]
+            index=list(self.table.ids())
         )
         # After filtering out empty samples/features:
         # (Note that we only care about "emptiness" from the table's
@@ -60,7 +55,7 @@ class TestCompressionUtils(unittest.TestCase):
                 "Metadata3": [1, 2, 3],
                 "Metadata4": ["abc", "def", "ghi"]
             },
-            index=self.table_ef.columns.copy()
+            index=self.table_ef.ids().copy()
         )
         self.sid2idx = {"Sample1": 0, "Sample2": 1, "Sample3": 2}
         self.tm = pd.DataFrame(
@@ -195,7 +190,8 @@ class TestCompressionUtils(unittest.TestCase):
     @unittest.mock.patch("sys.stdout", new_callable=io.StringIO)
     def test_remove_empty_1_empty_sample_and_feature(self, mock_stdout):
         ft, fsm = remove_empty_samples_and_features(self.table, self.sm)
-        assert_frame_equal(ft, self.table_ef)
+        self.assertEqual(ft, self.table_ef)
+
         assert_frame_equal(fsm, self.sm_ef)
         self.assertEqual(
             mock_stdout.getvalue(),
@@ -213,8 +209,14 @@ class TestCompressionUtils(unittest.TestCase):
             remove_empty_samples_and_features(self.table, self.sm, self.pcoa)
 
     def test_remove_empty_with_multiple_empty_samples_in_ordination(self):
+        def make_bad(v, i, m):
+            if i == 'Sample1':
+                return np.zeros(len(v))
+            else:
+                return v
+
         bad_table = self.table.copy()
-        bad_table["Sample1"] = 0
+        bad_table.transform(make_bad, inplace=True)
         with self.assertRaisesRegex(
             ValueError,
             (
@@ -272,7 +274,7 @@ class TestCompressionUtils(unittest.TestCase):
     @unittest.mock.patch("sys.stdout", new_callable=io.StringIO)
     def test_remove_empty_nothing_to_remove(self, mock_stdout):
         ft, fsm = remove_empty_samples_and_features(self.table_ef, self.sm_ef)
-        assert_frame_equal(ft, self.table_ef)
+        self.assertEqual(ft, self.table_ef)
         assert_frame_equal(fsm, self.sm_ef)
         self.assertEqual(mock_stdout.getvalue(), "")
 
@@ -289,13 +291,16 @@ class TestCompressionUtils(unittest.TestCase):
         ft, fsm = remove_empty_samples_and_features(
             self.table_ef, self.sm_ef, good_pcoa
         )
-        assert_frame_equal(ft, self.table_ef)
+        self.assertEqual(ft, self.table_ef)
         assert_frame_equal(fsm, self.sm_ef)
         self.assertEqual(mock_stdout.getvalue(), "")
 
     def test_remove_empty_table_empty(self):
+        def make_bad(v, i, m):
+            return np.zeros(len(v))
+
         diff_table = self.table.copy()
-        diff_table.loc[:, :] = 0
+        diff_table.transform(make_bad, inplace=True)
         with self.assertRaisesRegex(
             ValueError,
             "All samples / features in matched table are empty."
@@ -307,8 +312,11 @@ class TestCompressionUtils(unittest.TestCase):
         # self.pcoa), the table being completely empty should still take
         # precedence as an error. (If *both* errors are present for a dataset,
         # then I recommend consulting a priest.)
+        def make_bad(v, i, m):
+            return np.zeros(len(v))
+
         diff_table = self.table.copy()
-        diff_table.loc[:, :] = 0
+        diff_table.transform(make_bad, inplace=True)
         with self.assertRaisesRegex(
             ValueError,
             "All samples / features in matched table are empty."
@@ -320,9 +328,9 @@ class TestCompressionUtils(unittest.TestCase):
         table_copy = self.table_ef.copy()
         s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(table_copy)
 
-        # First off, verify that compress_table() leaves the original table DF
+        # First off, verify that compress_table() leaves the original table
         # untouched.
-        assert_frame_equal(table_copy, self.table_ef)
+        self.assertEqual(table_copy, self.table_ef)
 
         # Check s_ids, which just be a list of the sample IDs in the same order
         # as they were in the table's columns.
@@ -374,8 +382,9 @@ class TestCompressionUtils(unittest.TestCase):
         )
 
     def test_compress_table_fully_dense(self):
-        diff_table = self.table.copy()
-        diff_table.loc[:, :] = 333
+        diff_table = biom.Table(np.ones(self.table.shape),
+                                self.table.ids(axis='observation'),
+                                self.table.ids())
         s_ids, f_ids, sid2idx, fid2idx, tbl = compress_table(diff_table)
         self.assertEqual(s_ids, ["Sample1", "Sample2", "Sample3", "Sample4"])
         self.assertEqual(f_ids, ["a", "b", "e", "d"])
