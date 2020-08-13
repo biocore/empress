@@ -23,14 +23,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *     Derived from the "Rectangular" layout algorithm code.
      *
      * @param {BPTree} tree The tree to generate the coordinates for.
-     * @param {Float} width Width of the canvas where the tree will be
-     *                      displayed.
-     * @param {Float} height Height of the canvas where the tree will be
-     *                       displayed.
      * @return {Object} Object with xCoord and yCoord properties where the
      *                  node coordinates are stored in postorder.
      */
-    function rectangularLayout(tree, width, height) {
+    function rectangularLayout(tree) {
         // NOTE: This doesn't draw a horizontal line leading to the root "node"
         // of the graph. See https://github.com/biocore/empress/issues/141 for
         // context.
@@ -142,10 +138,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *     from the Polar layout algorithm code.
      *
      * @param {BPTree} tree The tree to generate the coordinates for.
-     * @param {Float} width Width of the canvas where the tree will be
-     *                      displayed.
-     * @param {Float} height Height of the canvas where the tree will be
-     *                       displayed.
      * @param {Float} startAngle The first tip in the tree visited is assigned
      *                           this angle (in radians). Can be used to rotate
      *                           the tree: 0 is the eastmost point of the
@@ -172,8 +164,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      */
     function circularLayout(
         tree,
-        width,
-        height,
         startAngle = 0,
         ignoreLengths = false
     ) {
@@ -235,8 +225,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         }
 
         // Now that we have the polar coordinates of the nodes, convert them to
-        // normal x/y coordinates (a.k.a. Cartesian coordinates). Also, figure
-        // out the maximum x/y coordinates for scaling.
+        // normal x/y coordinates (a.k.a. Cartesian coordinates).
+        // We skip the root because we already know it's going to be at (0, 0).
         //
         // Unlike the rectangular / unrooted layout we need to keep track of
         // two sets of positions for each (non-root) node: a "starting" and
@@ -246,12 +236,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         // avoid doing extra work on converting between polar and Cartesian
         // coords, we just compute both points here. (As a potential TODO, it's
         // probably possible to do this more efficiently.)
-        var minX = 0;
-        var minY = 0;
-        var maxX = 0;
-        var maxY = 0;
-        // Go over the tree in postorder to produce Cartesian coords,
-        // skipping the root (since we know it's going to be at (0, 0))
         for (i = 1; i < tree.size; i++) {
             // To avoid repeated lookups / computations, store a few things in
             // memory during this iteration of the loop
@@ -259,42 +243,24 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 radius[tree.postorder(tree.parent(tree.postorderselect(i)))];
             var currAngle = angle[i];
             currRadius = radius[i];
+            // NOTE: due to the inherent inaccuracies of floating-point math
+            // (and due to pi being irrational), Math.cos(Math.PI / 2) is
+            // __very__ slightly off from zero (so e.g.
+            // 2(cos(pi/2)) != 1(cos(pi/2)), even though ideally both sides of
+            // that equation would be 0). This shouldn't really impact
+            // anything, but it was a problem in the past when we were
+            // determining the "min and max" x/y coordinates for scaling
+            // (which has since been removed). Just something to keep in mind.
+            // (See https://stackoverflow.com/q/8050722/10730311 for details.)
             var angleCos = Math.cos(currAngle);
             var angleSin = Math.sin(currAngle);
-            // angleCos = (Math.abs(angleCos) < Number.EPSILON) ? 0 : angleCos;
-            // angleSin = (Math.abs(angleSin) < Number.EPSILON) ? 0 : angleSin;
             // Assign starting points
             x0[i] = parentRadius * angleCos;
             y0[i] = parentRadius * angleSin;
             // Assign ending points
             x1[i] = currRadius * angleCos;
             y1[i] = currRadius * angleSin;
-            // Now that points are assigned for this node, try to extend the
-            // min/max x/y. We only bother checking the end points because
-            // start points should, by definition, be closer to the root of the
-            // tree: and the root of the tree (positioned at (0, 0)) has
-            // already been "checked" as the min/max x/y position since these
-            // variables are all initialized to 0.
-            maxX = Math.max(maxX, x1[i]);
-            minX = Math.min(minX, x1[i]);
-            maxY = Math.max(maxY, y1[i]);
-            minY = Math.min(minY, y1[i]);
         }
-
-        // Based on the min/max x/y values, set scaling factors.
-        // We'll scale the coordinates by the longest dimension -- either
-        // widthScale or heightScale. In either case, we're just multiplying
-        // every node's coordinate by some constant factor, so things like
-        // node lengths are still comparable to each other.
-        //
-        // The reason for checking the maxX === minX and maxY === minY cases is
-        // to handle the corner-case where the tree is a straight line (either
-        // along the x- or y-axis). In these cases, max - min for that axis
-        // will be 0, so the scale for that axis would be something divided by
-        // 0 -- a.k.a. not what something we should even consider using as a
-        // scaling factor.
-        var xEqual = maxX === minX;
-        var yEqual = maxY === minY;
 
         // Go over the tree (in postorder, but order doesn't really matter
         // for this) to determine arc positions for non-root internal nodes.

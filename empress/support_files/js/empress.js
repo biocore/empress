@@ -305,7 +305,7 @@ define([
         // Rectangular
         var d = new Date();
         console.log("starting rectangular layout:", d.getTime());
-        var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
+        var coords = LayoutsUtil.rectangularLayout(this._tree);
         var d2 = new Date();
         console.log("finished rectangular layout:", d2.getTime());
         console.log("Time taken:", d2.getTime() - d.getTime());
@@ -313,7 +313,7 @@ define([
         // Circular
         d = new Date();
         console.log("starting circular layout:", d.getTime());
-        var data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
+        var data = LayoutsUtil.circularLayout(this._tree);
         d2 = new Date();
         console.log("finished circular layout:", d2.getTime());
         console.log("Time taken:", d2.getTime() - d.getTime());
