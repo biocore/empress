@@ -77,31 +77,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
         }
 
-        // We don't check if max_width == 0 here, because we check when
-        // constructing an Empress tree that it has at least one positive
-        // branch length and no negative branch lengths. (And if this is the
-        // case, then max_width must be > 0.)
-        var xScalingFactor = width / maxWidth;
-
-        // Since this will be multiplied by 0 for every node, we can set
-        // this to any real number and get the intended "effect" of keeping
-        // every node's y-coordinate at 0.
-        var yScalingFactor = 1;
-
-        // Having a max_height of 0 could actually happen, in the funky case
-        // where the entire tree is a straight line (e.g. A -> B -> C). In
-        // this case our "rectangular layout" drawing places all nodes on
-        // the same y-coordinate (0), resulting in max_height = 0.
-        // ... So, that's why we only do y-scaling if this *isn't* the case.
-        if (maxHeight > 0) {
-            yScalingFactor = height / maxHeight;
-        }
-
-        for (i = 1; i <= tree.size; i++) {
-            xCoord[i] *= xScalingFactor;
-            yCoord[i] *= yScalingFactor;
-        }
-
         var rX = xCoord[tree.size];
         var rY = yCoord[tree.size];
 
@@ -286,6 +261,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             currRadius = radius[i];
             var angleCos = Math.cos(currAngle);
             var angleSin = Math.sin(currAngle);
+            // angleCos = (Math.abs(angleCos) < Number.EPSILON) ? 0 : angleCos;
+            // angleSin = (Math.abs(angleSin) < Number.EPSILON) ? 0 : angleSin;
             // Assign starting points
             x0[i] = parentRadius * angleCos;
             y0[i] = parentRadius * angleSin;
@@ -295,21 +272,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             // Now that points are assigned for this node, try to extend the
             // min/max x/y. We only bother checking the end points because
             // start points should, by definition, be closer to the root of the
-            // tree: and the root of the tree (positioned at (0, 0) has already
-            // been "checked" as the min/max x/y position since these variables
-            // are all initialized to 0.
-            if (x1[i] > maxX) {
-                maxX = x1[i];
-            }
-            if (y1[i] > maxY) {
-                maxY = y1[i];
-            }
-            if (x1[i] < minX) {
-                minX = x1[i];
-            }
-            if (y1[i] < minY) {
-                minY = y1[i];
-            }
+            // tree: and the root of the tree (positioned at (0, 0)) has
+            // already been "checked" as the min/max x/y position since these
+            // variables are all initialized to 0.
+            maxX = Math.max(maxX, x1[i]);
+            minX = Math.min(minX, x1[i]);
+            maxY = Math.max(maxY, y1[i]);
+            minY = Math.min(minY, y1[i]);
         }
 
         // Based on the min/max x/y values, set scaling factors.
@@ -326,46 +295,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         // scaling factor.
         var xEqual = maxX === minX;
         var yEqual = maxY === minY;
-        var scale;
-        if (xEqual && yEqual) {
-            // Should never happen, but if the layout algorithm above is broken
-            // we could wind up here. Best to catch it immediately.
-            // https://news.ycombinator.com/item?id=11396045 :)
-            throw new Error(
-                "Circular layout's dimensions are invalid. Something is " +
-                    "seriously wrong."
-            );
-        } else if (xEqual) {
-            // The tree is a straight vertical line. (This shouldn't happen
-            // *now*, but if/when we support configuring the rotation of the
-            // circular layout it could totally happen.)
-            scale = height / (maxY - minY);
-        } else if (yEqual) {
-            // The tree is a straight horizontal line.
-            scale = width / (maxX - minX);
-        } else {
-            // minX !== maxX and minY !== maxY. So, the tree isn't a straight
-            // line. (Well, probably -- it could still ostensibly be a straight
-            // line not parallel to an axis if rotation is configurable in the
-            // future and the user sets rotation to 45 degrees or something
-            // silly like that. But, even if that's the case, it shouldn't
-            // matter -- scaling can still be done normally.)
-            var widthScale = width / (maxX - minX);
-            var heightScale = height / (maxY - minY);
-            scale = widthScale > heightScale ? widthScale : heightScale;
-        }
 
         // Go over the tree (in postorder, but order doesn't really matter
-        // for this) to 1) scale node positions and 2) determine arc positions
-        // for non-root internal nodes.
+        // for this) to determine arc positions for non-root internal nodes.
         // I think determining arc positions could be included in the above for
-        // loop, so if in the future we decide to not do scaling we could
-        // probably omit this for loop entirely (saving some time).
+        // loop...
         for (i = 1; i < tree.size; i++) {
-            x0[i] *= scale;
-            y0[i] *= scale;
-            x1[i] *= scale;
-            y1[i] *= scale;
             // Compute arcs for non-root internal nodes (we know that this node
             // isn't the root because we're skipping the root entirely in this
             // for loop)
@@ -388,8 +323,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 // Position the arc start point at the biggest child angle
                 // position
                 currRadius = radius[i];
-                arcx0[i] = currRadius * Math.cos(biggestChildAngle) * scale;
-                arcy0[i] = currRadius * Math.sin(biggestChildAngle) * scale;
+                arcx0[i] = currRadius * Math.cos(biggestChildAngle);
+                arcy0[i] = currRadius * Math.sin(biggestChildAngle);
                 arcStartAngle[i] = biggestChildAngle;
                 arcEndAngle[i] = smallestChildAngle;
             }
@@ -509,6 +444,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 heightMin = height / yDiff;
             }
 
+            // TODO: scaling can likely be removed
             var scale = Math.min(widthMin, heightMin) * 0.95;
             if (scale >= bestArgs.s) {
                 bestArgs.s = scale;
