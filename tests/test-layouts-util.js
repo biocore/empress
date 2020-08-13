@@ -6,6 +6,19 @@ require([
     "LayoutsUtil",
 ], function ($, _, ByteArray, BPTree, LayoutsUtil) {
     $(document).ready(function () {
+        // Convert an array of numbers to an array of strings all formatted
+        // using .toFixed(4).
+        var toFixedIfy = function (arr) {
+            return _.map(arr, function (ele) {
+                return ele.toFixed(4);
+            });
+        };
+        // Given two arrays of numbers, calls toFixedIfy() on each and
+        // asserts deep equality on the results.
+        var approxDeepEqual = function (arr1, arr2, message) {
+            deepEqual(toFixedIfy(arr1), toFixedIfy(arr2), message);
+        };
+
         module("Layout Utilities", {
             setup: function () {
                 this.tree = new BPTree(
@@ -131,19 +144,6 @@ require([
             // *only* keys in obs)
             deepEqual(_.keys(obs).length, 9, "Amount of keys is correct");
 
-            // Convert an array of numbers to an array of strings all formatted
-            // using .toFixed(4).
-            var toFixedIfy = function (arr) {
-                return _.map(arr, function (ele) {
-                    return ele.toFixed(4);
-                });
-            };
-            // Given two arrays of numbers, calls toFixedIfy() on each and
-            // asserts deep equality on the results.
-            var approxDeepEqual = function (arr1, arr2, message) {
-                deepEqual(toFixedIfy(arr1), toFixedIfy(arr2), message);
-            };
-
             // Check starting positions. Recall that the first elements here
             // are meaningless (these arrays are 1-indexed), and that the
             // remaining (0, 0)s are from nodes a, b, and the root -- all of
@@ -216,7 +216,8 @@ require([
             deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
         });
         test("Test straightline tree circular layout, rotated CCW by 90 degrees", function () {
-            var obs = LayoutsUtil.circularLayout(this.straightLineTree, Math.PI / 2);
+            var piover2 = Math.PI / 2;
+            var obs = LayoutsUtil.circularLayout(this.straightLineTree, piover2);
             // The tree looks like:
             //  b
             //  |
@@ -224,15 +225,15 @@ require([
             //  a
             //  |
             // root
-            deepEqual(obs.x0, [0, 0, 0, 0], "x0");
-            deepEqual(obs.y0, [0, 100 / 3, 0, 0], "y0");
-            deepEqual(obs.x1, [0, 0, 0, 0], "x1");
-            deepEqual(obs.y1, [0, 100, 100 / 3, 0], "y1");
-            deepEqual(obs.angle, [0, 0, 0, 0], "angle");
+            approxDeepEqual(obs.x0, [0, 0, 0, 0], "x0");
+            deepEqual(obs.y0, [0, 1, 0, 0], "y0");
+            approxDeepEqual(obs.x1, [0, 0, 0, 0], "x1");
+            deepEqual(obs.y1, [0, 3, 1, 0], "y1");
+            approxDeepEqual(obs.angle, [0, piover2, piover2, 0], "angle");
             // TODO: in the future, a's arc information should be negative
             // numbers or something to indicate that its arc shouldn't be
             // drawn.
-            deepEqual(obs.arcx0, [0, 0, 100 / 3, 0], "arcx0");
+            deepEqual(obs.arcx0, [0, 0, 0, 0], "arcx0");
             deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
             deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
             deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
