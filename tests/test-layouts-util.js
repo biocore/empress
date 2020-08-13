@@ -230,13 +230,13 @@ require([
             approxDeepEqual(obs.x1, [0, 0, 0, 0], "x1");
             deepEqual(obs.y1, [0, 3, 1, 0], "y1");
             approxDeepEqual(obs.angle, [0, piover2, piover2, 0], "angle");
-            // TODO: in the future, a's arc information should be negative
-            // numbers or something to indicate that its arc shouldn't be
-            // drawn.
-            deepEqual(obs.arcx0, [0, 0, 0, 0], "arcx0");
-            deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
-            deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
-            deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
+            // As with the above test, this arc will be invisible when drawn
+            // since a only has 1 child (b). This is clear from how a's
+            // arcStartAngle is equal to its arcEndAngle...
+            approxDeepEqual(obs.arcx0, [0, 0, 0, 0], "arcx0");
+            approxDeepEqual(obs.arcy0, [0, 0, 1, 0], "arcy0");
+            approxDeepEqual(obs.arcStartAngle, [0, 0, piover2, 0], "arcStartAngle");
+            approxDeepEqual(obs.arcEndAngle, [0, 0, piover2, 0], "arcEndAngle");
         });
     });
 });
