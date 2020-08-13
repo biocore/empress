@@ -323,7 +323,7 @@ define(["underscore", "util"], function (_, util) {
                 // This sample actually contains the feature!
                 cVal = scope._sm[sIdx][colIdx];
                 // Update our output Object's count info accordingly.
-                valueToCountOfSampleWithObs[cVal] += 1;
+                valueToCountOfSampleWithObs[cVal]++;
             }
         });
         return valueToCountOfSampleWithObs;
@@ -472,12 +472,108 @@ define(["underscore", "util"], function (_, util) {
             var sampleIdx = scope._getSampleIndexFromID(sID);
             var cVal = scope._sm[sampleIdx][colIdx];
             if (_.has(valueToSampleCount, cVal)) {
-                valueToSampleCount[cVal] += 1;
+                valueToSampleCount[cVal]++;
             } else {
                 valueToSampleCount[cVal] = 1;
             }
         });
         return valueToSampleCount;
+    };
+
+    /**
+     * Maps each feature ID in the table to a "frequencies" Object for a sample
+     * metadata field.
+     *
+     * Each "frequencies" Object contains information on the number of samples
+     * from each unique sample metadata value that contain the feature ID in
+     * question. Keys in these objects are unique sample metadata values, and
+     * values in these objects are the proportion of samples containing the
+     * feature that have this unique value. Only frequency information for
+     * unique values where at least 1 sample with this value contains the
+     * feature is included in a given "frequencies" Object.
+     *
+     * This function is designed to be reasonably fast, which is a big part of
+     * why this works on the order of "each feature ID in the table" rather
+     * than on a feature-per-feature basis. (The reason for this design is that
+     * this is used for generating sample metadata barplots, and that was
+     * previously very slow on large trees: see issue #298 on GitHub. Thanks
+     * to Yoshiki for discussing this with me.)
+     *
+     * @param {String} col Sample metadata column
+     *
+     * @return {Object} fID2Freqs
+     *
+     * @throws {Error} If the sample metadata column is unrecognized.
+     */
+    BIOMTable.prototype.getFrequencyMap = function (col) {
+        var scope = this;
+        var colIdx = this._getSampleMetadataColIndex(col);
+        var fIdx2Counts = [];
+        var fIdx2SampleCt = [];
+        var containingSampleCount, cVal, cValIdx;
+
+        // Find unique (sorted) values in this sample metadata column; map
+        // sample metadata values to a consistent index. (Using an index to
+        // store this data means we can store the sample metadata values for
+        // each feature in an Array rather than in an Object for now.)
+        var uniqueSMVals = this.getUniqueSampleValues(col);
+        var numUniqueSMVals = uniqueSMVals.length;
+        var smVal2Idx = {};
+        _.each(uniqueSMVals, function (smVal, c) {
+            smVal2Idx[smVal] = c;
+        });
+
+        // Assign each feature an empty counts array with all 0s. Also set
+        // things up so we can keep track of the total number of samples
+        // containing each feature easily.
+        var i, emptyCounts;
+        _.each(this._fIDs, function (fID, fIdx) {
+            emptyCounts = [];
+            for (i = 0; i < numUniqueSMVals; i++) {
+                emptyCounts.push(0);
+            }
+            fIdx2Counts.push(emptyCounts);
+            fIdx2SampleCt.push(0);
+        });
+
+        // Iterate through each the feature presence data for each sample in
+        // the BIOM table, storing unique s.m. value counts and total sample
+        // counts for each feature
+        _.each(this._tbl, function (presentFeatureIndices, sIdx) {
+            // Figure out what metadata value this sample has at the column.
+            cVal = scope._sm[sIdx][colIdx];
+            cValIdx = smVal2Idx[cVal];
+            // Increment s.m. value counts for each feature present in this
+            // sample
+            _.each(presentFeatureIndices, function (fIdx) {
+                fIdx2Counts[fIdx][cValIdx]++;
+                fIdx2SampleCt[fIdx]++;
+            });
+        });
+
+        // Convert counts to frequencies
+        // Also, return an Object where the keys are feature IDs pointing to
+        // other Objects where the keys are sample metadata values, rather than
+        // a 2D array (which is how fIdx2Counts has been stored).
+        //
+        // TODO: It should be possible to return a 2D array without
+        // constructing an Object, which would save some space. This would
+        // require decently substantial refactoring of the tests / of
+        // Empress.addSMBarplotLayerCoords(), but if this gets to be too
+        // inefficient for large trees it's an option.
+        var fID2Freqs = {};
+        var totalSampleCount;
+        _.each(this._fIDs, function (fID, fIdx) {
+            totalSampleCount = fIdx2SampleCt[fIdx];
+            fID2Freqs[fID] = {};
+            _.each(fIdx2Counts[fIdx], function (count, smValIdx) {
+                if (count > 0) {
+                    fID2Freqs[fID][uniqueSMVals[smValIdx]] =
+                        count / totalSampleCount;
+                }
+            });
+        });
+        return fID2Freqs;
     };
 
     return BIOMTable;

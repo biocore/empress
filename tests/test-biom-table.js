@@ -690,5 +690,91 @@ require(["jquery", "underscore", "BiomTable"], function ($, _, BiomTable) {
                 "Test: error thrown if unrecognized metadata col passed"
             );
         });
+        test("Test getFrequencyMap", function () {
+            deepEqual(
+                this.biomTable.getFrequencyMap("f1"),
+                {
+                    o1: { a: 1 },
+                    o2: { a: 0.5, c: 0.5 },
+                    o3: { a: 0.5, c: 0.5 },
+                    o4: { a: 0.5, b: 0.5 },
+                    o5: { a: 2 / 3, b: 1 / 3 },
+                    o6: { a: 0.5, c: 0.5 },
+                    o7: { a: 1 },
+                    o8: { b: 1 },
+                    o9: { a: 1 },
+                    o10: { a: 1 },
+                },
+                "Test frequency map for field f1"
+            );
+            deepEqual(
+                this.biomTable.getFrequencyMap("f4"),
+                {
+                    o1: { 4: 0.5, 3: 0.5 },
+                    o2: { 4: 0.5, 1: 0.5 },
+                    o3: { 3: 0.5, 1: 0.5 },
+                    o4: { 4: 0.5, 2: 0.5 },
+                    o5: { 4: 1 / 3, 3: 1 / 3, 5: 1 / 3 },
+                    o6: { 3: 0.5, 1: 0.5 },
+                    o7: { 4: 0.5, 3: 0.5 },
+                    o8: { 2: 0.5, 5: 0.5 },
+                    o9: { 3: 1 },
+                    o10: { 4: 1 },
+                },
+                "Test frequency map for field f4"
+            );
+
+            var smolTable = new BiomTable(
+                ["s1", "s2", "s3"],
+                ["o1", "o2", "o3", "o4"],
+                { s1: 0, s2: 1, s3: 2 },
+                { o1: 0, o2: 1, o3: 2, o4: 3 },
+                [
+                    [0, 1],
+                    [2, 3],
+                    [0, 3],
+                ],
+                ["f1"],
+                [["m"], ["m"], ["m"]]
+            );
+            deepEqual(
+                smolTable.getFrequencyMap("f1"),
+                {
+                    o1: { m: 1 },
+                    o2: { m: 1 },
+                    o3: { m: 1 },
+                    o4: { m: 1 },
+                },
+                "Test frequency map when all features unique to same group"
+            );
+
+            var funkyTable = new BiomTable(
+                ["s1", "s2", "s3"],
+                ["o1", "o2", "o3"],
+                { s1: 0, s2: 1, s3: 2 },
+                { o1: 0, o2: 1, o3: 2 },
+                [[0], [1], [2]],
+                ["f1"],
+                [["x"], ["y"], ["z"]]
+            );
+            deepEqual(
+                funkyTable.getFrequencyMap("f1"),
+                {
+                    o1: { x: 1 },
+                    o2: { y: 1 },
+                    o3: { z: 1 },
+                },
+                "Test frequency map when all features unique to different group"
+            );
+
+            var scope = this;
+            throws(
+                function () {
+                    scope.biomTable.getFrequencyMap("badfield");
+                },
+                /Sample metadata column "badfield" not in BIOM table./,
+                "Test error thrown if unrecognized metadata col passed"
+            );
+        });
     });
 });
