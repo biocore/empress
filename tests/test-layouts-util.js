@@ -207,22 +207,28 @@ require([
                 "arc start angle"
             );
         });
-        test("Test straightline tree circular layout", function () {
-            var obs = LayoutsUtil.circularLayout(this.straightLineTree);
-            // The tree looks like:
-            // root -- a ---- b
-            deepEqual(obs.x0, [0, 1, 0, 0], "x0");
-            deepEqual(obs.y0, [0, 0, 0, 0], "y0");
-            deepEqual(obs.x1, [0, 3, 1, 0], "x1");
-            deepEqual(obs.y1, [0, 0, 0, 0], "y1");
-            deepEqual(obs.angle, [0, 0, 0, 0], "angle");
-            // TODO: in the future, a's arc information should be negative
-            // numbers or something to indicate that its arc shouldn't be
-            // drawn. See https://github.com/biocore/empress/issues/327.
-            deepEqual(obs.arcx0, [0, 0, 1, 0], "arcx0");
-            deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
-            deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
-            deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
+        test("Test straightline tree circular layout (with and without root length)", function () {
+            // These are the same tree, just with and without the root having a
+            // length of 100. Since the circ. layout ignores the root's branch
+            // length, the output data should be exactly the same.
+            var trees = [this.straightLineTree, this.noRootLength];
+            _.each(trees, function(tree) {
+                var obs = LayoutsUtil.circularLayout(tree);
+                // The tree looks like:
+                // root -- a ---- b
+                deepEqual(obs.x0, [0, 1, 0, 0], "x0");
+                deepEqual(obs.y0, [0, 0, 0, 0], "y0");
+                deepEqual(obs.x1, [0, 3, 1, 0], "x1");
+                deepEqual(obs.y1, [0, 0, 0, 0], "y1");
+                deepEqual(obs.angle, [0, 0, 0, 0], "angle");
+                // TODO: in the future, a's arc information should be negative
+                // numbers or something to indicate that its arc shouldn't be
+                // drawn. See https://github.com/biocore/empress/issues/327.
+                deepEqual(obs.arcx0, [0, 0, 1, 0], "arcx0");
+                deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
+                deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
+                deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
+            });
         });
         test("Test straightline tree circular layout, rotated CCW by 90 degrees", function () {
             var piover2 = Math.PI / 2;
