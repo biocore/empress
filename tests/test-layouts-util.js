@@ -201,7 +201,7 @@ require([
             approxDeepEqual(
                 obs.arcEndAngle,
                 [0, 0, 0, 0, 0, 0],
-                "arc start angle"
+                "arc end angle"
             );
         });
         test("Test circular layout preserves branch lengths", function () {
@@ -294,6 +294,62 @@ require([
                 "arcStartAngle"
             );
             approxDeepEqual(obs.arcEndAngle, [0, 0, piover2, 0], "arcEndAngle");
+        });
+        test("Test circular layout with startAngle = 3pi and ignoreLengths", function () {
+            // Just a reminder of what this tree looks like in
+            // Newick format: "((d:4,c:3)b:2,a:1)root:1;"
+            // (Of course, we're ignoring branch lengths here, so you can
+            // ignore all the numbers in that string.)
+            var obs = LayoutsUtil.circularLayout(
+                this.circLayoutTestTree,
+                3 * Math.PI,
+                true
+            );
+            // Should be equal to (# non-root ancestor nodes)*cos(node angle)
+            // ... For d and c, there's only 1 non-root ancestor node. For all
+            // other nodes it's 0. Hence, you know, all the zeroes.
+            approxDeepEqual(obs.x0, [0, -1, 0.5, 0, 0, 0], "x0");
+            // Should be equal to (# non-root ancestor nodes)*sin(node angle)
+            approxDeepEqual(obs.y0, [0, 0, -0.866025, 0, 0, 0], "y0");
+
+            // Check ending positions.
+            // Should be equal to (# non-root ancestor nodes+1)*cos(node angle)
+            approxDeepEqual(obs.x1, [0, -2, 1, -0.5, 0.5, 0], "x1");
+            // Should be equal to (# non-root ancestor nodes+1)*sin(node angle)
+            approxDeepEqual(obs.y1, [0, 0, -1.7321, -0.866, 0.866, 0], "y1");
+
+            // Check angles. Now things start at 3pi.
+            var tpi = 3 * Math.PI;
+            var tpiPlusDelta = tpi + (2 * Math.PI) / 3;
+            approxDeepEqual(
+                obs.angle,
+                [
+                    0,
+                    tpi,
+                    tpiPlusDelta,
+                    (tpi + tpiPlusDelta) / 2,
+                    tpi + (4 * Math.PI) / 3,
+                    0,
+                ],
+                "angle"
+            );
+
+            // Check arc start points (just for b).
+            // Should be equal to 1 * op(tpiPlusDelta),
+            // where "op" is cos() for x and sin() for y.
+            approxDeepEqual(obs.arcx0, [0, 0, 0, 0.5, 0, 0], "arcx0");
+            approxDeepEqual(obs.arcy0, [0, 0, 0, -0.866, 0, 0], "arcy0");
+            // Check arc start and end (largest and smallest) angles.
+            approxDeepEqual(
+                obs.arcStartAngle,
+                [0, 0, 0, tpiPlusDelta, 0, 0],
+                "arc start angle"
+            );
+            approxDeepEqual(
+                obs.arcEndAngle,
+                [0, 0, 0, tpi, 0, 0],
+                "arc end angle"
+            );
         });
     });
 });
