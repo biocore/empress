@@ -63,6 +63,14 @@ require([
                     ["", null, 1.0, 2.0],
                     null
                 );
+
+                // In Newick format: "((d:4,c:3)b:2,a:1)root:1;"
+                this.circLayoutTestTree = new BPTree(
+                    new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0]),
+                    ["", "root", "b", "d", "c", "a"],
+                    ["", 1, 2, 4, 3, 1],
+                    null
+                );
             },
 
             teardown: function () {
@@ -135,14 +143,7 @@ require([
         });
 
         test("Test circular layout", function () {
-            // In Newick format: "((d:4,c:3)b:2,a:1)root:1;"
-            var testTree = new BPTree(
-                new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0]),
-                ["", "root", "b", "d", "c", "a"],
-                ["", 1, 2, 4, 3, 1],
-                null
-            );
-            var obs = LayoutsUtil.circularLayout(testTree);
+            var obs = LayoutsUtil.circularLayout(this.circLayoutTestTree);
             // Check that there isn't extra junk included in obs' output
             // (so we'll know that the 9 keys within obs we check are the
             // *only* keys in obs)
@@ -206,6 +207,23 @@ require([
                 [0, 0, 0, 0, 0, 0],
                 "arc start angle"
             );
+        });
+        test("Test circular layout preserves branch lengths", function () {
+            var obs = LayoutsUtil.circularLayout(this.circLayoutTestTree);
+            // Go over the tree in preorder (by starting our iteration at 2
+            // instead of 1 we skip the root, since we don't care about its
+            // length).
+            for (var preI = 2; preI <= this.circLayoutTestTree.size; preI++) {
+                var inputLength = this.circLayoutTestTree.lengths_[preI];
+                // Get the postorder node position -- this lets us find this
+                // node's x0 / y0 / etc. data from the circularLayout() output,
+                // since the arrays in the layout output are in postorder.
+                var postI = this.circLayoutTestTree.postorder(this.circLayoutTestTree.preorderselect(preI));
+                var dx2 = Math.pow(obs.x0[postI] - obs.x1[postI], 2);
+                var dy2 = Math.pow(obs.y0[postI] - obs.y1[postI], 2);
+                var effectiveLength = Math.sqrt(dx2 + dy2);
+                deepEqual(effectiveLength.toFixed(4), inputLength.toFixed(4));
+            }
         });
         test("Test straightline tree circular layout (with and without root length)", function () {
             // These are the same tree, just with and without the root having a
