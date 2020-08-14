@@ -57,6 +57,28 @@
     </div>
   </div>
 
+  <!-- Various side panel / selected-node-menu tags that are needed in order to
+       create an instance of CanvasEvents in Empress without crashing things.
+       Ideally, these should be loaded dynamically from what's in the empress
+       template HTML files, rather than inserted here willy-nilly.
+  -->
+  <div style="display: none;">
+    <input type="text" id="quick-search" placeholder="Search by node name..."
+      style="flex-grow: 1;" class="empress-input">
+    <button id="side-header-search-btn" style="flex-grow: 1;">Search</button>
+    <div id="menu-sm-table"></div>
+    <div id="menu-sm-section"></div>
+    <div id="menu-box"></div>
+    <div id="menu-select"></div>
+    <div id="menu-add-btn"></div>
+    <div id="menu-box-node-id"></div>
+    <div id="menu-box-notes"></div>
+    <div id="menu-box-warning"></div>
+    <div id="menu-fm-table"></div>
+    <div id="menu-fm-header"></div>
+    <div id="menu-sm-header"></div>
+  </div>
+
   <script>
     QUnit.config.autostart = false;
 
@@ -93,6 +115,9 @@
           'SelectedNodeMenu' : './support_files/js/select-node-menu',
           'LayoutsUtil' : './support_files/js/layouts-util',
 
+          /* test utility code */
+          'UtilitiesForTesting' : './../tests/utilities-for-testing',
+
           /* test paths */
           'testBPTree' : './../tests/test-bp-tree',
           'testByteTree' : './../tests/test-byte-array',
@@ -105,7 +130,8 @@
           'testEmpress' : './../tests/test-empress',
           'testExport': './../tests/test-export',
           'testAnimationHandler': './../tests/test-animation-panel-handler',
-          'testLayoutsUtil': './../tests/test-layouts-util'
+          'testLayoutsUtil': './../tests/test-layouts-util',
+          'testBarplotPanelHandler': './../tests/test-barplot-panel-handler'
         }
     });
 
@@ -128,6 +154,7 @@
          'Empress',
          'Legend',
          'LayoutsUtil',
+         'UtilitiesForTesting',
          'testBPTree',
          'testByteTree',
          'testBIOMTable',
@@ -137,9 +164,10 @@
          'testCircularLayoutComputation',
          'testVectorOps',
          'testEmpress',
-         'testAnimationHandler',
          'testExport',
-         'testLayoutsUtil'
+         'testAnimationHandler',
+         'testLayoutsUtil',
+         'testBarplotPanelHandler',
          ],
 
         // start tests
@@ -162,6 +190,7 @@
           Empress,
           Legend,
           LayoutsUtil,
+          UtilitiesForTesting,
           testBPTree,
           testByteTree,
           testCamera,
@@ -170,9 +199,10 @@
           testCircularLayoutComputation,
           testVectorOps,
           testEmpress,
-          testAnimationHandler,
           testExport,
-          testLayoutUtils
+          testAnimationHandler,
+          testLayoutUtils,
+          testBarplotPanelHandler,
         ) {
             $(document).ready(function() {
                 QUnit.start();

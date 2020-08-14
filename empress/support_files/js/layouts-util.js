@@ -146,21 +146,33 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var maxY = Number.NEGATIVE_INFINITY;
             var minY = Number.POSITIVE_INFINITY;
 
-            var getStep = function(node, a) {
-                node = tree.preorder(tree.postorderselect(node));
-                return tree.lengths_[node] * args.s * a;
-            }
-            var setArrs = function(node, _x1, _x2, _y1, _y2, _a) {
-                x1Arr[node] = _x1;
-                x2Arr[node] = _x2;
-                y1Arr[node] = _y1;
-                y2Arr[node] = _y2;
-                aArr[node] = _a;
-            }
+            // var getStep = function(node, a) {
+            //     node = tree.preorder(tree.postorderselect(node));
+            //     return tree.lengths_[node] * args.s * a;
+            // }
+            // var setArrs = function(node, _x1, _x2, _y1, _y2, _a) {
+            //     x1Arr[node] = _x1;
+            //     x2Arr[node] = _x2;
+            //     y1Arr[node] = _y1;
+            //     y2Arr[node] = _y2;
+            //     aArr[node] = _a;
+            // }
+            // var x2 = args.x1 + getStep(tree.size, Math.sin(args.a));
+            // var y2 = args.y1 + getStep(tree.size, Math.cos(args.a));
+            //---------------------
+            var n = tree.preorder(tree.postorderselect(tree.size));
+            var x2 = args.x1 + tree.lengths_[n] * args.s * Math.sin(args.a);
+            var y2 = args.y1 + tree.lengths_[n] * args.s * Math.cos(args.a);
+            //---------------------
 
-            var x2 = args.x1 + getStep(tree.size, 5);//Math.sin(args.a));
-            var y2 = args.y1 + getStep(tree.size, 6);//Math.cos(args.a));
-            setArrs(tree.size, args.x1, x2, args.y1, y2, args.a)
+            // setArrs(tree.size, args.x1, x2, args.y1, y2, args.a)
+            //----------------------
+            x1Arr[tree.size] = args.x1;
+            x2Arr[tree.size] = x2;
+            y1Arr[tree.size] = args.y1;
+            y2Arr[tree.size] = y2;
+            aArr[tree.size] = args.a;
+            //---------------------
 
             // reverse postorder
             for (var node = tree.size - 1; node > 0; node--) {
@@ -169,34 +181,47 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 );
                 var x1 = x2Arr[parent];
                 var y1 = y2Arr[parent];
-                var a = aArr[parent] - tree.findTips(parent).length * args.da / 2;
+                var a = aArr[parent] - tree.getNumTips(parent) * args.da / 2;
                 var sib = tree.postorder(
                     tree.fchild(tree.postorderselect(parent))
                 );
                 while (sib !== 0) {
                     if (sib !== node) {
-                        var d = new Date();
-                        a += (tree.findTips(sib).length * args.da);
-                        var dt = new Date();
-                        timeFindingTips += (dt.getTime() - d.getTime());
+                        // var d = new Date();
+                        a += (tree.getNumTips(sib) * args.da);
+                        // var dt = new Date();
+                        // timeFindingTips += (dt.getTime() - d.getTime());
                     } else {
-                        var d = new Date();
-                        a += ((tree.findTips(node).length * args.da) / 2)
-                        var dt = new Date();
-                        timeFindingTips += (dt.getTime() - d.getTime());
+                        // var d = new Date();
+                        a += ((tree.getNumTips(node) * args.da) / 2)
+                        // var dt = new Date();
+                        // timeFindingTips += (dt.getTime() - d.getTime());
                         break;
                     }
-                    var d = new Date();
+                    // var d = new Date();
                     sib = tree.postorder(
                         tree.nsibling(tree.postorderselect(sib))
                     );
-                    var dt = new Date();
-                    timeFindingTips += (dt.getTime()-d.getTime());
+                    // var dt = new Date();
+                    // timeFindingTips += (dt.getTime()-d.getTime());
                 }
 
-                x2 = x1 + getStep(node, 5);//Math.sin(a));
-                y2 = y1 + getStep(node, 4);//Math.cos(a));
-                setArrs(node, x1, x2, y1, y2, a);
+                // x2 = x1 + getStep(node, Math.sin(a));
+                // y2 = y1 + getStep(node, Math.cos(a));
+                //-------------------
+                n = tree.preorder(tree.postorderselect(node));
+                x2 = x1 + tree.lengths_[n] * args.s * Math.sin(a);
+                y2 = y1 + tree.lengths_[n] * args.s * Math.cos(a);
+                //------------------
+
+                // setArrs(node, x1, x2, y1, y2, a);
+                //------------------
+                x1Arr[node] = x1;
+                x2Arr[node] = x2;
+                y1Arr[node] = y1;
+                y2Arr[node] = y2;
+                aArr[node] = a;
+                //------------------
                 maxX = Math.max(maxX, x2);
                 minX = Math.min(minX, x2);
                 maxY = Math.max(maxY, y2);
@@ -213,7 +238,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         };
 
 
-        for (var i = 0; i < 1; i++) {
+        for (var i = 0; i < 60; i++) {
             updateArgs.a = (i / 60.0) * Math.PI;
             var update = updateCoords(updateArgs);
 
@@ -237,8 +262,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 bestArgs.a = updateArgs.a;
             }
         }
-        // updateCoords(bestArgs);
-        console.log("Time in findTips", timeFindingTips)
+        updateCoords(bestArgs);
+        // console.log("Time in findTips", timeFindingTips)
 
         var rX = x2Arr[tree.size];
         var rY = y2Arr[tree.size];
