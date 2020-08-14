@@ -423,12 +423,9 @@ class Tree(TreeNode):
                 child_clangle_sum = sum([c.clangle for c in n.children])
                 n.clangle = child_clangle_sum / len(n.children)
 
-        max_clradius = 0
         self.clradius = 0
         for n in self.preorder(include_self=False):
             n.clradius = n.parent.clradius + n.length
-            if n.clradius > max_clradius:
-                max_clradius = n.clradius
 
         # Now that we have the polar coordinates of the nodes, convert these
         # coordinates to normal x/y coordinates.
