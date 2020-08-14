@@ -216,7 +216,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         }
 
         // Iterate over the tree in preorder, assigning radii
-        // (The "i = 2" skips the root of the tree)
+        // (The "i = 2" skips the root of the tree; its radius is implicitly 0)
         for (i = 2; i <= tree.size; i++) {
             // Get the postorder position of this node, which we'll use when
             // writing to the radius array (which is stored in postorder, as

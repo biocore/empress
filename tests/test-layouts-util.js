@@ -246,6 +246,25 @@ require([
                 deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
             });
         });
+        test("Test straightline tree circular layout: ignoreLengths", function () {
+            var trees = [this.straightLineTree, this.noRootLength];
+            _.each(trees, function (tree) {
+                var obs = LayoutsUtil.circularLayout(tree, 0, true);
+                // The tree looks like: (note the equal branch lengths)
+                // root -- a -- b
+                deepEqual(obs.x0, [0, 1, 0, 0], "x0");
+                deepEqual(obs.y0, [0, 0, 0, 0], "y0");
+                // Now, all lengths are set to 1. So b ends at x = 2 rather
+                // than x = 3.
+                deepEqual(obs.x1, [0, 2, 1, 0], "x1");
+                deepEqual(obs.y1, [0, 0, 0, 0], "y1");
+                deepEqual(obs.angle, [0, 0, 0, 0], "angle");
+                deepEqual(obs.arcx0, [0, 0, 1, 0], "arcx0");
+                deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
+                deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
+                deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
+            });
+        });
         test("Test straightline tree circular layout, rotated CCW by 90 degrees", function () {
             var piover2 = Math.PI / 2;
             var obs = LayoutsUtil.circularLayout(
