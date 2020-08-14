@@ -146,33 +146,14 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var maxY = Number.NEGATIVE_INFINITY;
             var minY = Number.POSITIVE_INFINITY;
 
-            // var getStep = function(node, a) {
-            //     node = tree.preorder(tree.postorderselect(node));
-            //     return tree.lengths_[node] * args.s * a;
-            // }
-            // var setArrs = function(node, _x1, _x2, _y1, _y2, _a) {
-            //     x1Arr[node] = _x1;
-            //     x2Arr[node] = _x2;
-            //     y1Arr[node] = _y1;
-            //     y2Arr[node] = _y2;
-            //     aArr[node] = _a;
-            // }
-            // var x2 = args.x1 + getStep(tree.size, Math.sin(args.a));
-            // var y2 = args.y1 + getStep(tree.size, Math.cos(args.a));
-            //---------------------
             var n = tree.preorder(tree.postorderselect(tree.size));
             var x2 = args.x1 + tree.lengths_[n] * args.s * Math.sin(args.a);
             var y2 = args.y1 + tree.lengths_[n] * args.s * Math.cos(args.a);
-            //---------------------
-
-            // setArrs(tree.size, args.x1, x2, args.y1, y2, args.a)
-            //----------------------
             x1Arr[tree.size] = args.x1;
             x2Arr[tree.size] = x2;
             y1Arr[tree.size] = args.y1;
             y2Arr[tree.size] = y2;
             aArr[tree.size] = args.a;
-            //---------------------
 
             // reverse postorder
             for (var node = tree.size - 1; node > 0; node--) {
@@ -187,83 +168,68 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 );
                 while (sib !== 0) {
                     if (sib !== node) {
-                        // var d = new Date();
                         a += (tree.getNumTips(sib) * args.da);
-                        // var dt = new Date();
-                        // timeFindingTips += (dt.getTime() - d.getTime());
                     } else {
-                        // var d = new Date();
                         a += ((tree.getNumTips(node) * args.da) / 2)
-                        // var dt = new Date();
-                        // timeFindingTips += (dt.getTime() - d.getTime());
                         break;
                     }
-                    // var d = new Date();
                     sib = tree.postorder(
                         tree.nsibling(tree.postorderselect(sib))
                     );
-                    // var dt = new Date();
-                    // timeFindingTips += (dt.getTime()-d.getTime());
                 }
 
-                // x2 = x1 + getStep(node, Math.sin(a));
-                // y2 = y1 + getStep(node, Math.cos(a));
-                //-------------------
                 n = tree.preorder(tree.postorderselect(node));
                 x2 = x1 + tree.lengths_[n] * args.s * Math.sin(a);
                 y2 = y1 + tree.lengths_[n] * args.s * Math.cos(a);
-                //------------------
-
-                // setArrs(node, x1, x2, y1, y2, a);
-                //------------------
                 x1Arr[node] = x1;
                 x2Arr[node] = x2;
                 y1Arr[node] = y1;
                 y2Arr[node] = y2;
                 aArr[node] = a;
-                //------------------
-                maxX = Math.max(maxX, x2);
-                minX = Math.min(minX, x2);
-                maxY = Math.max(maxY, y2);
-                minY = Math.min(minY, y2);
+                // maxX = Math.max(maxX, x2);
+                // minX = Math.min(minX, x2);
+                // maxY = Math.max(maxY, y2);
+                // minY = Math.min(minY, y2);
             }
 
-            return {
-                maxX: maxX,
-                minX: minX,
-                maxY: maxY,
-                minY: minY,
-            }
+            // return {
+            //     maxX: maxX,
+            //     minX: minX,
+            //     maxY: maxY,
+            //     minY: minY,
+            // }
 
         };
 
 
-        for (var i = 0; i < 60; i++) {
+        // for (var i = 0; i < 1; i++) {
             updateArgs.a = (i / 60.0) * Math.PI;
-            var update = updateCoords(updateArgs);
+            // var update = updateCoords(updateArgs);
+            updateCoords(updateArgs);
 
-            var xDiff = update.maxX - update.minX;
-            var widthMin = 0;
-            if (xDiff !== 0) {
-                widthMin = width / xDiff;
-            }
+            // var xDiff = update.maxX - update.minX;
+            // var widthMin = 0;
+            // if (xDiff !== 0) {
+            //     widthMin = width / xDiff;
+            // }
 
-            var yDiff = update.maxY - update.minY;
-            var heightMin = 0;
-            if (yDiff !== 0) {
-                heightMin = height / yDiff;
-            }
+            // var yDiff = update.maxY - update.minY;
+            // var heightMin = 0;
+            // if (yDiff !== 0) {
+            //     heightMin = height / yDiff;
+            // }
 
-            var scale = Math.min(widthMin, heightMin) * 0.95;
-            if (scale >= bestArgs.s) {
-                bestArgs.s = scale;
-                bestArgs.x1 = (width / 2) - ((update.maxX + update.minX) / 2) * scale;
-                bestArgs.y1 = height / 2 - ((update.maxY + update.minY) / 2) * scale;
-                bestArgs.a = updateArgs.a;
-            }
-        }
-        updateCoords(bestArgs);
-        // console.log("Time in findTips", timeFindingTips)
+            // var scale = Math.min(widthMin, heightMin) * 0.95;
+            // console.log("scale", scale, "angle", updateArgs.a);
+            // if (scale >= bestArgs.s) {
+            //     bestArgs.s = scale;
+            //     bestArgs.x1 = (width / 2) - ((update.maxX + update.minX) / 2) * scale;
+            //     bestArgs.y1 = height / 2 - ((update.maxY + update.minY) / 2) * scale;
+            //     bestArgs.a = updateArgs.a;
+            // }
+        // }
+        // console.log("best scale", bestArgs.s, "best angle", bestArgs.a);
+        // updateCoords(bestArgs);
 
         var rX = x2Arr[tree.size];
         var rY = y2Arr[tree.size];
