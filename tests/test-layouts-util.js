@@ -21,6 +21,7 @@ require([
 
         module("Layout Utilities", {
             setup: function () {
+                // In Newick format: "(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;"
                 this.tree = new BPTree(
                     new Uint8Array([
                         1,
@@ -47,6 +48,7 @@ require([
                     null
                 );
 
+                // In Newick format: "((b:2)a:1)root:100;"
                 this.straightLineTree = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 0, 0]),
                     ["", "root", "a", "b"],
@@ -54,6 +56,7 @@ require([
                     null
                 );
 
+                // In Newick format: "((b:2)a:1)root;"
                 this.noRootLength = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 0, 0]),
                     ["", "root", "a", "b"],
@@ -132,6 +135,7 @@ require([
         });
 
         test("Test circular layout", function () {
+            // In Newick format: "((d:4,c:3)b:2,a:1)root:1;"
             var testTree = new BPTree(
                 new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0]),
                 ["", "root", "b", "d", "c", "a"],
@@ -149,18 +153,22 @@ require([
             // remaining (0, 0)s are from nodes a, b, and the root -- all of
             // which "originate" at (0, 0) because they're either immediate
             // descendants of the root node or the root node itself.
-            approxDeepEqual(obs.x0, [0, 38.49, -19.245, 0, 0, 0], "x0");
-            approxDeepEqual(obs.y0, [0, 0, 33.3333, 0, 0, 0], "y0");
+            //
+            // Should be equal to (total radius to parent node)*cos(node angle)
+            // e.g. tip "d"'s parent node is b, which has a total radius from
+            // the root of 2. The angle d was assigned is 0, so d's x0 position
+            // is 2*cos(0) = 2*1 = 2.
+            approxDeepEqual(obs.x0, [0, 2, -1, 0, 0, 0], "x0");
+            // Should be equal to (total radius to parent node)*sin(node angle)
+            approxDeepEqual(obs.y0, [0, 0, 1.7321, 0, 0, 0], "y0");
 
             // Check ending positions.
-            approxDeepEqual(
-                obs.x1,
-                [0, 115.4701, -48.1125, 19.245, -9.6225, 0],
-                "x1"
-            );
+            // Should be equal to (total radius to node)*cos(node angle).
+            approxDeepEqual(obs.x1, [0, 6, -2.5, 1, -0.5, 0], "x1");
+            // Should be equal to (total radius to node)*sin(node angle).
             approxDeepEqual(
                 obs.y1,
-                [0, 0, 83.3333, 33.3333, -16.6667, 0],
+                [0, 0, 4.3301, 1.7321, -0.8660, 0],
                 "y1"
             );
 
@@ -178,8 +186,11 @@ require([
 
             // Check arc start points. Only b should have any arc information;
             // the remaining nodes are either tips or the root.
-            approxDeepEqual(obs.arcx0, [0, 0, 0, -19.245, 0, 0], "arcx0");
-            approxDeepEqual(obs.arcy0, [0, 0, 0, 33.3333, 0, 0], "arcy0");
+            // Should be equal to
+            // (total radius to b = 2) * op(largest child angle of b = 2pi/3),
+            // where "op" is cos() for x and sin() for y.
+            approxDeepEqual(obs.arcx0, [0, 0, 0, -1, 0, 0], "arcx0");
+            approxDeepEqual(obs.arcy0, [0, 0, 0, 1.7321, 0, 0], "arcy0");
             // Check arc start and end angles. We've defined the "start" angle
             // to be the largest angle of an internal node's children, and the
             // "end" angle to be the smallest angle of these children.
