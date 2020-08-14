@@ -116,7 +116,7 @@ require([
                     0.625,
                     1.625,
                     1.125,
-                    0
+                    0,
                 ],
             };
             deepEqual(obs, exp);
@@ -167,11 +167,7 @@ require([
             // Should be equal to (total radius to node)*cos(node angle).
             approxDeepEqual(obs.x1, [0, 6, -2.5, 1, -0.5, 0], "x1");
             // Should be equal to (total radius to node)*sin(node angle).
-            approxDeepEqual(
-                obs.y1,
-                [0, 0, 4.3301, 1.7321, -0.8660, 0],
-                "y1"
-            );
+            approxDeepEqual(obs.y1, [0, 0, 4.3301, 1.7321, -0.866, 0], "y1");
 
             // Check angles. There are just 3 tips so they get assigned
             // multiples of (2pi / 3) (that is: 0, 2pi/3, and 4pi/3). The lone
@@ -218,7 +214,9 @@ require([
                 // Get the postorder node position -- this lets us find this
                 // node's x0 / y0 / etc. data from the circularLayout() output,
                 // since the arrays in the layout output are in postorder.
-                var postI = this.circLayoutTestTree.postorder(this.circLayoutTestTree.preorderselect(preI));
+                var postI = this.circLayoutTestTree.postorder(
+                    this.circLayoutTestTree.preorderselect(preI)
+                );
                 var dx2 = Math.pow(obs.x0[postI] - obs.x1[postI], 2);
                 var dy2 = Math.pow(obs.y0[postI] - obs.y1[postI], 2);
                 var effectiveLength = Math.sqrt(dx2 + dy2);
@@ -230,7 +228,7 @@ require([
             // length of 100. Since the circ. layout ignores the root's branch
             // length, the output data should be exactly the same.
             var trees = [this.straightLineTree, this.noRootLength];
-            _.each(trees, function(tree) {
+            _.each(trees, function (tree) {
                 var obs = LayoutsUtil.circularLayout(tree);
                 // The tree looks like:
                 // root -- a ---- b
@@ -250,7 +248,10 @@ require([
         });
         test("Test straightline tree circular layout, rotated CCW by 90 degrees", function () {
             var piover2 = Math.PI / 2;
-            var obs = LayoutsUtil.circularLayout(this.straightLineTree, piover2);
+            var obs = LayoutsUtil.circularLayout(
+                this.straightLineTree,
+                piover2
+            );
             // The tree looks like:
             //  b
             //  |
@@ -268,7 +269,11 @@ require([
             // arcStartAngle is equal to its arcEndAngle...
             approxDeepEqual(obs.arcx0, [0, 0, 0, 0], "arcx0");
             approxDeepEqual(obs.arcy0, [0, 0, 1, 0], "arcy0");
-            approxDeepEqual(obs.arcStartAngle, [0, 0, piover2, 0], "arcStartAngle");
+            approxDeepEqual(
+                obs.arcStartAngle,
+                [0, 0, piover2, 0],
+                "arcStartAngle"
+            );
             approxDeepEqual(obs.arcEndAngle, [0, 0, piover2, 0], "arcEndAngle");
         });
     });

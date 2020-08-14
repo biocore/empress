@@ -172,11 +172,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                  will be 0 for all leaf nodes, and all values will be 0
      *                  for the root node.
      */
-    function circularLayout(
-        tree,
-        startAngle = 0,
-        ignoreLengths = false
-    ) {
+    function circularLayout(tree, startAngle = 0, ignoreLengths = false) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
         var y0 = new Array(tree.size + 1).fill(0);
