@@ -1,5 +1,20 @@
 define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     /**
+     *
+     */
+    function centerAtRoot(xCoords, yCoords) {
+        var size = xCoords.length;
+        var rX = xCoords[size - 1];
+        var rY = yCoords[size - 1];
+
+        // skip the first element since the tree is zero-indexed
+        for (i = 1; i <= size - 1; i++) {
+            xCoords[i] -= rX;
+            yCoords[i] -= rY;
+        }
+    };
+
+    /**
      * Rectangular layout.
      *
      * In this sort of layout, each tip has a distinct y-position, and parent
@@ -102,14 +117,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             yCoord[i] *= yScalingFactor;
         }
 
-        var rX = xCoord[tree.size];
-        var rY = yCoord[tree.size];
-
-        // skip the first element since the tree is zero-indexed
-        for (i = 1; i <= tree.size; i++) {
-            xCoord[i] -= rX;
-            yCoord[i] -= rY;
-        }
+        centerAtRoot(xCoord, yCoord);
 
         // We draw each internal node as a vertical line ranging from its
         // lowest child y-position to its highest child y-position, and then
@@ -121,122 +129,52 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
 
     function unrootedLayout(tree, width, height) {
         var angle = (2*Math.PI) / tree.numleaves();
-        var updateArgs = {
-            s: 1.0,
-            x1: 0.0,
-            y1: 0.0,
-            a: 0.0,
-            da: angle,
-        };
-        var bestArgs = {
-            s : Number.NEGATIVE_INFINITY,
-            da: angle,
-        };
         var x1Arr = new Array(tree.size + 1);
         var x2Arr = new Array(tree.size +1);
         var y1Arr = new Array(tree.size +1);
         var y2Arr = new Array(tree.size +1);
         var aArr = new Array(tree.size +1);
-        var timeFindingTips = 0;
 
+        var n = tree.preorder(tree.postorderselect(tree.size));
+        var x1 = 0, y1 = 0, a = 0, da = angle;
+        var x2 = x1 + tree.lengths_[n] * Math.sin(a);
+        var y2 = y1 + tree.lengths_[n] * Math.cos(a);
+        x1Arr[tree.size] = x1;
+        x2Arr[tree.size] = x2;
+        y1Arr[tree.size] = y1;
+        y2Arr[tree.size] = y2;
+        aArr[tree.size] = a;
 
-        var updateCoords = function(args) {
-            var maxX = Number.NEGATIVE_INFINITY;
-            var minX = Number.POSITIVE_INFINITY;
-            var maxY = Number.NEGATIVE_INFINITY;
-            var minY = Number.POSITIVE_INFINITY;
-
-            var n = tree.preorder(tree.postorderselect(tree.size));
-            var x2 = args.x1 + tree.lengths_[n] * args.s * Math.sin(args.a);
-            var y2 = args.y1 + tree.lengths_[n] * args.s * Math.cos(args.a);
-            x1Arr[tree.size] = args.x1;
-            x2Arr[tree.size] = x2;
-            y1Arr[tree.size] = args.y1;
-            y2Arr[tree.size] = y2;
-            aArr[tree.size] = args.a;
-
-            // reverse postorder
-            for (var node = tree.size - 1; node > 0; node--) {
-                var parent = tree.postorder(
-                    tree.parent(tree.postorderselect(node))
+        // reverse postorder
+        for (var node = tree.size - 1; node > 0; node--) {
+            var parent = tree.postorder(
+                tree.parent(tree.postorderselect(node))
+            );
+            x1 = x2Arr[parent];
+            y1 = y2Arr[parent];
+            a = aArr[parent] - tree.getNumTips(parent) * da / 2;
+            var sib = tree.postorder(
+                tree.fchild(tree.postorderselect(parent))
+            );
+            while (sib !== node) {
+                a += (tree.getNumTips(sib) * da);
+                sib = tree.postorder(
+                    tree.nsibling(tree.postorderselect(sib))
                 );
-                var x1 = x2Arr[parent];
-                var y1 = y2Arr[parent];
-                var a = aArr[parent] - tree.getNumTips(parent) * args.da / 2;
-                var sib = tree.postorder(
-                    tree.fchild(tree.postorderselect(parent))
-                );
-                while (sib !== 0) {
-                    if (sib !== node) {
-                        a += (tree.getNumTips(sib) * args.da);
-                    } else {
-                        a += ((tree.getNumTips(node) * args.da) / 2)
-                        break;
-                    }
-                    sib = tree.postorder(
-                        tree.nsibling(tree.postorderselect(sib))
-                    );
-                }
-
-                n = tree.preorder(tree.postorderselect(node));
-                x2 = x1 + tree.lengths_[n] * args.s * Math.sin(a);
-                y2 = y1 + tree.lengths_[n] * args.s * Math.cos(a);
-                x1Arr[node] = x1;
-                x2Arr[node] = x2;
-                y1Arr[node] = y1;
-                y2Arr[node] = y2;
-                aArr[node] = a;
-                // maxX = Math.max(maxX, x2);
-                // minX = Math.min(minX, x2);
-                // maxY = Math.max(maxY, y2);
-                // minY = Math.min(minY, y2);
             }
+            a += ((tree.getNumTips(node) * da) / 2)
 
-            // return {
-            //     maxX: maxX,
-            //     minX: minX,
-            //     maxY: maxY,
-            //     minY: minY,
-            // }
-
-        };
-
-
-        // for (var i = 0; i < 1; i++) {
-            updateArgs.a = (i / 60.0) * Math.PI;
-            // var update = updateCoords(updateArgs);
-            updateCoords(updateArgs);
-
-            // var xDiff = update.maxX - update.minX;
-            // var widthMin = 0;
-            // if (xDiff !== 0) {
-            //     widthMin = width / xDiff;
-            // }
-
-            // var yDiff = update.maxY - update.minY;
-            // var heightMin = 0;
-            // if (yDiff !== 0) {
-            //     heightMin = height / yDiff;
-            // }
-
-            // var scale = Math.min(widthMin, heightMin) * 0.95;
-            // console.log("scale", scale, "angle", updateArgs.a);
-            // if (scale >= bestArgs.s) {
-            //     bestArgs.s = scale;
-            //     bestArgs.x1 = (width / 2) - ((update.maxX + update.minX) / 2) * scale;
-            //     bestArgs.y1 = height / 2 - ((update.maxY + update.minY) / 2) * scale;
-            //     bestArgs.a = updateArgs.a;
-            // }
-        // }
-        // console.log("best scale", bestArgs.s, "best angle", bestArgs.a);
-        // updateCoords(bestArgs);
-
-        var rX = x2Arr[tree.size];
-        var rY = y2Arr[tree.size];
-        for (var i = 1; i <= tree.size; i++) {
-            x2Arr[i] -= rX;
-            y2Arr[i] -= rY;
+            n = tree.preorder(tree.postorderselect(node));
+            x2 = x1 + tree.lengths_[n] * Math.sin(a);
+            y2 = y1 + tree.lengths_[n] * Math.cos(a);
+            x1Arr[node] = x1;
+            x2Arr[node] = x2;
+            y1Arr[node] = y1;
+            y2Arr[node] = y2;
+            aArr[node] = a;
         }
+
+        centerAtRoot(x2Arr, y2Arr);
 
         return {xCoord: x2Arr, yCoord: y2Arr};
     };

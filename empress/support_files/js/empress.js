@@ -330,6 +330,7 @@ define([
         nodeNames = nodeNames.filter((n) => !n.startsWith("EmpressNode"));
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
+        this.layouts();
         this.centerLayoutAvgPoint();
     };
 
