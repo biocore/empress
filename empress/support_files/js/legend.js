@@ -1,40 +1,56 @@
 define(["underscore", "util"], function (_, util) {
-    function Legend(tip, node, clade) {
-        this.__tipLeg = tip;
-        this.__nodeLeg = node;
-        this.__cladeLeg = clade;
-        this.__legends = ["tip", "node", "clade"];
+    /**
+     *
+     * @class Legend
+     *
+     * Creates a legend within a given HTML element. (You'll need to call
+     * addColorKey() to populate the legend with data.)
+     *
+     * Currently, this legend is only designed to show color variation.
+     * However, extending it to show other sorts of encodings -- for example,
+     * length data in barplots -- would be doable.
+     *
+     * @param {HTMLElement} container DOM element to which this legend's HTML
+     *                                will be added.
+     *
+     * @return {Legend}
+     * @constructs Legend
+     */
+    function Legend(container) {
+        this._container = container;
     }
 
     /**
-     * Display a color key in the legend box.
-     * @param {String} name - key name
-     * @param {Object} info - key information
-     * @param {Object} container - container DOM
-     * @param {Boolean} gradient - gradient or discrete
+     * Populates the legend to represent a color key.
+     *
+     * @param {String} name Text to show in the legend title.
+     * @param {Object} info Color key information. This should map unique
+     *                      values (e.g. in sample or feature metadata) to
+     *                      their assigned color, expressed in hex format.
+     * @param {Boolean} isContinuous Whether or not to display a continuous
+     *                               (gradient) or categorical color key.
      */
-    Legend.prototype.addColorKey = function (name, info, container, gradient) {
-        var legendContainer = this.__getLegend(container);
+    Legend.prototype.addColorKey = function (name, info, isContinuous) {
         if (name) {
-            let div = document.createElement("div");
-            div.classList.add("legend-title");
-            div.innerHTML = name;
-            legendContainer.appendChild(div);
-            legendContainer.classList.remove("hidden");
+            var titleDiv = this._container.appendChild(
+                document.createElement("div")
+            );
+            titleDiv.classList.add("legend-title");
+            titleDiv.innerText = name;
         }
-        if (gradient) {
-            this.__addContinuousKey(info, legendContainer);
+        if (isContinuous) {
+            this.__addContinuousKey(info);
         } else {
-            this.__addCategoricalKey(info, legendContainer);
+            this.__addCategoricalKey(info);
         }
+        this._container.classList.remove("hidden");
     };
 
     /**
      * Display a continuous color key.
      * @param {Object} info - key information
-     * @param {Object} container - container DOM
      */
-    Legend.prototype.__addContinuousKey = function (info, container) {
+    Legend.prototype.__addContinuousKey = function (info) {
         // create key container
         let div = document.createElement("div");
         div.classList.add("gradient-bar");
@@ -70,11 +86,10 @@ define(["underscore", "util"], function (_, util) {
     /**
      * Display a categorical color key.
      * @param {Object} info - key information
-     * @param {Object} container - container DOM
      */
-    Legend.prototype.__addCategoricalKey = function (info, container) {
+    Legend.prototype.__addCategoricalKey = function (info) {
+        var scope = this;
         let key;
-        let category = container.innerText;
         let i = 0;
         let sortedCategories = util.naturalSort(Object.keys(info));
         _.each(sortedCategories, function (key) {
@@ -98,7 +113,7 @@ define(["underscore", "util"], function (_, util) {
             // TODO: add total percentage of tree colored by each category
             //       old method was not correct.
 
-            container.appendChild(div);
+            scope._container.appendChild(div);
         });
     };
 
@@ -113,46 +128,15 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Grabs the approperiate legend
+     * Remove all child HTML elements from this legend.
      *
-     * @param {string} leg - The type of legend
-     *
-     * @return {div}
-     */
-    Legend.prototype.__getLegend = function (leg) {
-        var container;
-        switch (leg) {
-            case "tip":
-                container = this.__tipLeg;
-                break;
-            case "node":
-                container = this.__nodeLeg;
-                break;
-            case "clade":
-                container = this.__cladeLeg;
-                break;
-        }
-
-        return container;
-    };
-
-    /**
-     * Remove all lengends
+     * This method taken from
+     * https://developer.mozilla.org/en-US/docs/Web/API/Node/childNodes.
      */
     Legend.prototype.clearAllLegends = function () {
-        for (var i = 0; i < this.__legends.length; i++) {
-            this.clearLegend(this.__legends[i]);
+        while (this._container.firstChild) {
+            this._container.removeChild(this._container.firstChild);
         }
-    };
-
-    /**
-     * Removes a legend
-     * @param {string} leg - The legend to remove
-     */
-    Legend.prototype.clearLegend = function (leg) {
-        var legend = this.__getLegend(leg);
-        legend.innerHTML = "";
-        legend.classList.add("hidden");
     };
 
     return Legend;

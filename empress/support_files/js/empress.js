@@ -1625,7 +1625,8 @@ define([
      *
      * @param {Object} obs Maps categories to a set of observations (i.e. tips)
      * @param {Bool} ignoreAbsentTips Whether absent tips should be ignored
-     * during color propagation.
+     *                                during color propagation.
+     *
      * @return {Object} returns A Map with the same group names that maps groups
                         to a set of keys (i.e. tree nodes) that are unique to
                         each group.

@@ -8,9 +8,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      * Additional tabs such as Sample Metadata can be added by calling their
      * initialization function.
      *
-     * @param {div} container Container where the side panel will live.
-     * @param {Empress} empress The empress tree
-     * @param {div} legend Container that holds the legend
+     * @param {HTMLElement} container Container where the side panel will live
+     * @param {Empress} empress Empress instance; used to redraw the tree, etc.
+     * @param {Legend} legend Reference to the main legend object
      *
      * @return {SidePanel}
      * @constructs SidePanel
@@ -239,7 +239,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.sUpdateBtn.classList.remove("hidden");
             return;
         }
-        this.legend.addColorKey(colBy, keyInfo, "node", false);
+        this.legend.addColorKey(colBy, keyInfo, false);
     };
 
     /**
@@ -254,7 +254,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             col,
             coloringMethod
         );
-        this.legend.addColorKey(colBy, keyInfo, "node", false);
+        this.legend.addColorKey(colBy, keyInfo, false);
     };
 
     /**

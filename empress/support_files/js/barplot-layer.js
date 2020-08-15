@@ -524,11 +524,8 @@ define([
         this.legendDiv = this.layerDiv.appendChild(
             document.createElement("div")
         );
-        var nodeColorKey = this.legendDiv.appendChild(
-            document.createElement("div")
-        );
-        nodeColorKey.classList.add("legend");
-        this.legend = new Legend(null, nodeColorKey, null);
+        this.legendDiv.classList.add("legend");
+        this.legend = new Legend(this.legendDiv);
         this.legend.addColorKey(
             "Legend test!",
             {
@@ -537,7 +534,6 @@ define([
                 asdf2: "#0f0",
                 dasodfj: "saddlebrown",
             },
-            "node",
             false
         );
         // TODO add a function that can be called to update this legend. I
