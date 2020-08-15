@@ -68,6 +68,9 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.initHTML();
     }
 
+    /**
+     * Initializes the HTML for this barplot layer.
+     */
     BarplotLayer.prototype.initHTML = function () {
         var scope = this;
         this.layerDiv = document.createElement("div");
@@ -154,6 +157,12 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.layerDiv.appendChild(document.createElement("hr"));
     };
 
+    /**
+     * Initializes the feature metadata <div> for this barplot layer.
+     *
+     * This should only be called if the visualization was provided feature
+     * metadata.
+     */
     BarplotLayer.prototype.initFMDiv = function () {
         var scope = this;
         this.fmDiv = this.layerDiv.appendChild(document.createElement("div"));
@@ -429,6 +438,9 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         // info to a selector (duplicated btwn color and length stuff)
     };
 
+    /**
+     * Initializes the sample metadata <div> for this barplot layer.
+     */
     BarplotLayer.prototype.initSMDiv = function () {
         var scope = this;
         this.smDiv = this.layerDiv.appendChild(document.createElement("div"));
@@ -500,18 +512,64 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         });
     };
 
+    /**
+     * Updates the text in the layer's header based on the layer's number.
+     *
+     * Since the layer's number can change (e.g. when a layer with a lower
+     * number than it is removed), this function may be called many times
+     * throughout a layer's lifespan.
+     */
     BarplotLayer.prototype.updateHeader = function () {
         this.headerElement.innerText = "Layer " + this.num;
     };
 
+    /**
+     * Lowers this layer's number by 1 and calls this.updateHeader().
+     *
+     * This should be called when a layer with a lower number than this layer's
+     * number is removed. For example, if there are three layers (1, 2, 3), and
+     * layer 2 is removed, then layer 3 should be decremented to layer 2 --
+     * since it's now the second, rather than the third, layer.
+     */
     BarplotLayer.prototype.decrement = function () {
         this.num--;
         this.updateHeader();
     };
 
+    /**
+     * @type{Number}
+     * The minimum length used for all of the length inputs: i.e. no length
+     * entered by the user can be below this. This should really stay at zero.
+     * @public
+     */
     BarplotLayer.MIN_LENGTH = 0;
+
+    /**
+     * @type{Number}
+     * The default length used for the "Default length" input for feature
+     * metadata barplots and for the "Length" input for sample metadata
+     * barplots. (NOTE: this length, as with the other length values here,
+     * isn't in any particular units like pixels. A length of 100 will look
+     * somewhat different on two trees with drastically different sizes;
+     * however, from testing, it seems like a reasonable default.)
+     * @public
+     */
     BarplotLayer.DEFAULT_LENGTH = 100;
+
+    /**
+     * @type {Number}
+     * The default length used for the "Minimum length" input for length
+     * scaling in feature metadata barplots.
+     * @public
+     */
     BarplotLayer.DEFAULT_MIN_LENGTH = 1;
+
+    /**
+     * @type {Number}
+     * The default length used for the "Maximum length" input for length
+     * scaling in feature metadata barplots.
+     * @public
+     */
     BarplotLayer.DEFAULT_MAX_LENGTH = 100;
 
     return BarplotLayer;
