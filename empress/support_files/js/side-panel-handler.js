@@ -133,10 +133,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         _.each(elesToHide, function (ele) {
             ele.classList.add("hidden");
         });
-        // Reset tree and then clear legends
+        // Reset tree and then clear legend
         this.empress.resetTree();
         this.empress.drawTree();
-        this.legend.clearAllLegends();
+        this.legend.clear();
     };
 
     /* Resets the sample metadata coloring tab. */
@@ -208,8 +208,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     ) {
         this.empress.resetTree();
 
-        // clear legends
-        this.legend.clearAllLegends();
+        this.legend.clear();
 
         // hide update button
         updateBtn.classList.add("hidden");

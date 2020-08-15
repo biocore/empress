@@ -43,6 +43,7 @@ define(["underscore", "util"], function (_, util) {
         } else {
             this.__addCategoricalKey(info);
         }
+        // If the container was previously hidden, un-hide it
         this._container.classList.remove("hidden");
     };
 
@@ -128,12 +129,13 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Remove all child HTML elements from this legend.
+     * Hides, and removes all child HTML elements from, the container.
      *
-     * This method taken from
+     * Code to remove all child elements taken from
      * https://developer.mozilla.org/en-US/docs/Web/API/Node/childNodes.
      */
-    Legend.prototype.clearAllLegends = function () {
+    Legend.prototype.clear = function () {
+        this._container.classList.add("hidden");
         while (this._container.firstChild) {
             this._container.removeChild(this._container.firstChild);
         }

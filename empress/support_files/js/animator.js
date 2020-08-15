@@ -227,7 +227,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         }
 
         // draw new legend
-        this.legend.clearAllLegends();
+        this.legend.clear();
         this.legend.addColorKey(name, keyInfo, false);
 
         // draw tree
@@ -303,7 +303,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      */
     Animator.prototype.stopAnimation = function () {
         this.__resetParams();
-        this.legend.clearAllLegends();
+        this.legend.clear();
         this.empress.resetTree();
         this.empress.drawTree();
     };
