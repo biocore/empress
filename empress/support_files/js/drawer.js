@@ -336,7 +336,10 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     Drawer.prototype.draw = function () {
         var c = this.contex_;
         var s = this.sProg_;
-        c.viewport(0, 0, c.canvas.width, c.canvas.height);
+        // Using c.drawingBufferWidth/Height instead of c.canvas.width/height
+        // has a few advantages in corner-cases, as described in #1 on
+        // https://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
+        c.viewport(0, 0, c.drawingBufferWidth, c.drawingBufferHeight);
 
         // create MVP matrix
         var mvp = gl.mat4.create();
