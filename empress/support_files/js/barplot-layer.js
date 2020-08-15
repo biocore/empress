@@ -1,10 +1,11 @@
-define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
-    $,
-    _,
-    spectrum,
-    Colorer,
-    util
-) {
+define([
+    "jquery",
+    "underscore",
+    "spectrum",
+    "Colorer",
+    "Legend",
+    "util",
+], function ($, _, spectrum, Colorer, Legend, util) {
     /**
      *
      * @class BarplotLayer
@@ -32,6 +33,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.barplotPanel = barplotPanel;
         this.layerContainer = layerContainer;
         this.num = num;
+
+        this.legend = null;
 
         this.fmAvailable = this.fmCols.length > 0;
 
@@ -65,6 +68,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.layerDiv = null;
         this.fmDiv = null;
         this.smDiv = null;
+        this.legendDiv = null;
         this.initHTML();
     }
 
@@ -138,6 +142,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         }
 
         this.initSMDiv();
+        this.initLegendDiv();
         // Add a row of UI elements that supports removing this layer
         var rmP = this.layerDiv.appendChild(document.createElement("p"));
         var rmLbl = rmP.appendChild(document.createElement("label"));
@@ -510,6 +515,47 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
                 BarplotLayer.MIN_LENGTH
             );
         });
+    };
+
+    /**
+     * Initializes a <div> for this barplot layer that'll contain a legend.
+     */
+    BarplotLayer.prototype.initLegendDiv = function () {
+        this.legendDiv = this.layerDiv.appendChild(
+            document.createElement("div")
+        );
+        var nodeColorKey = this.legendDiv.appendChild(
+            document.createElement("div")
+        );
+        nodeColorKey.classList.add("legend");
+        this.legend = new Legend(null, nodeColorKey, null);
+        this.legend.addColorKey(
+            "Legend test!",
+            {
+                asdf: "#f00",
+                lol: "#00f",
+                asdf2: "#0f0",
+                dasodfj: "saddlebrown",
+            },
+            "node",
+            false
+        );
+        // TODO add a function that can be called to update this legend. I
+        // guess it should take in parameters with the color information,
+        // whether or not it's discrete or continuous coloring, etc.? The
+        // category information should be basically the same btwn. fm and sm
+        // coloring -- continuous values (i.e. where we have to draw gradients)
+        // will be the hard part, although we can probably just reuse Emperor
+        // code.
+        // TODO 2: give the legend a fixed height and make it vertically
+        // scrollable on overflow? This should already kinda be done thanks to
+        // the legend class being applied to nodeColorKey, but I feel like
+        // making a new class for that is probably a better option (since I
+        // don't think the hover effect makes sense). Also, it should be centered properly...
+        // TODO 3: if possible, making the legend text selectable (overriding
+        // the unselectable-text class on the side panel) would be nice, so
+        // users can do things like highlight category names. Understandable if
+        // this isn't easily doable, though.
     };
 
     /**
