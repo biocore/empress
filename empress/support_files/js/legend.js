@@ -122,11 +122,12 @@ define(["underscore", "util"], function (_, util) {
             // https://stackoverflow.com/a/26212545/10730311. (Applying
             // .gradient-label to the labelCell directly resulted in the
             // margin-left not being respected, hence this workaround.)
-            var innerLabel = labelCell.appendChild(document.createElement('label'));
+            var innerLabel = labelCell.appendChild(
+                document.createElement("label")
+            );
             innerLabel.classList.add("gradient-label");
             innerLabel.innerText = key;
             innerLabel.title = key;
-
         });
         this._container.appendChild(containerTable);
     };
