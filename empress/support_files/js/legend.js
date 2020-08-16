@@ -97,27 +97,38 @@ define(["underscore", "util"], function (_, util) {
     Legend.prototype.__addCategoricalKey = function (info) {
         var scope = this;
         let sortedCategories = util.naturalSort(_.keys(info));
+        var containerTable = document.createElement("table");
+        // Remove border spacing, which seems to be a default for at least some
+        // browsers. This prevents labels from appearing to the left of color
+        // categories when scrolling the legend horizontally (it just looks
+        // kinda ugly, so by smooshing the colors to the left of the legend we
+        // avoid this problem).
+        containerTable.setAttribute("style", "border-spacing: 0;");
         _.each(sortedCategories, function (key) {
-            // create a container row for each color / text pair
-            let div = document.createElement("div");
-            div.classList.add("gradient-bar");
+            var newRow = containerTable.insertRow(-1);
 
             // Add a color box (could totally be replaced by e.g. a Spectrum
             // color picker in the future)
-            let component = document.createElement("div");
-            component.classList.add("category-color");
-            component.setAttribute("style", "background: " + info[key] + ";");
-            div.appendChild(component);
+            var colorCell = newRow.insertCell(-1);
+            colorCell.classList.add("category-color");
+            colorCell.classList.add("frozen-cell");
+            colorCell.setAttribute("style", "background: " + info[key] + ";");
 
             // Add a label for that color box
-            var label = document.createElement("label");
-            label.classList.add("gradient-label");
-            label.innerText = key;
-            label.title = key;
-            div.appendChild(label);
+            var labelCell = newRow.insertCell(-1);
+            // We put the actual label text inside a <label> in the cell, not
+            // just in the first layer of the cell. This is needed so that we
+            // can have margins on this text: see
+            // https://stackoverflow.com/a/26212545/10730311. (Applying
+            // .gradient-label to the labelCell directly resulted in the
+            // margin-left not being respected, hence this workaround.)
+            var innerLabel = labelCell.appendChild(document.createElement('label'));
+            innerLabel.classList.add("gradient-label");
+            innerLabel.innerText = key;
+            innerLabel.title = key;
 
-            scope._container.appendChild(div);
         });
+        this._container.appendChild(containerTable);
     };
 
     /**

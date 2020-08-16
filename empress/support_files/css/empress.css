@@ -234,6 +234,13 @@ select:-moz-focusring {
     font-size: 8pt;
 }
 
+.frozen-cell {
+    position: relative;
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    left: 0;
+}
+
 .menu-box-header-cell {
     background-color: white;
     position: relative;
@@ -549,7 +556,6 @@ p.side-header button {
  */
 div.legend {
     margin: 20px;
-    padding: 5px;
     border: 1px solid darkgray;
     min-width: 150px;
     max-width: 33vh;
@@ -572,38 +578,27 @@ div.legend:hover {
     margin: 5px 0;
 }
 
-/* Color key
- *
- * Use of inline-block based on https://stackoverflow.com/a/55430864/10730311.
- * (It's needed to get the category-color and gradient-label elements to fit on
- * the same line, while simultaneously allowing horizontal overflow [i.e. a
- * scrollbar] to happen when needed.)
- */
-.gradient-bar {
-    padding: 3px;
-    height: 18px;
-}
+/* Color key */
+
 .gradient-label {
     white-space: nowrap;
-    display: inline-block;
     margin-left: 5px;
     margin-right: 5px;
     height: 15px;
-    vertical-align: middle;
+}
+
+.category-color {
+    height: 15px;
+    width: 15px;
+    min-height: 15px;
+    min-width: 15px;
+    border: 1px solid black;
 }
 
 .gradient-color {
     width: 150px;
 }
 
-.category-color {
-    display: inline-block;
-    height: 15px;
-    width: 15px;
-    min-height: 15px;
-    min-width: 15px;
-    vertical-align: middle;
-}
 
 /* toast */
 
