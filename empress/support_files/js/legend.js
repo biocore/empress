@@ -96,29 +96,25 @@ define(["underscore", "util"], function (_, util) {
      */
     Legend.prototype.__addCategoricalKey = function (info) {
         var scope = this;
-        let key;
-        let i = 0;
         let sortedCategories = util.naturalSort(_.keys(info));
         _.each(sortedCategories, function (key) {
-            // create key container
+            // create a container row for each color / text pair
             let div = document.createElement("div");
             div.classList.add("gradient-bar");
 
-            // color gradient
+            // Add a color box (could totally be replaced by e.g. a Spectrum
+            // color picker in the future)
             let component = document.createElement("div");
             component.classList.add("category-color");
             component.setAttribute("style", "background: " + info[key] + ";");
             div.appendChild(component);
 
-            // label
-            component = document.createElement("label");
-            component.classList.add("gradient-label");
-            component.innerHTML = key;
-            component.title = key;
-            div.appendChild(component);
-
-            // TODO: add total percentage of tree colored by each category
-            //       old method was not correct.
+            // Add a label for that color box
+            var label = document.createElement("label");
+            label.classList.add("gradient-label");
+            label.innerText = key;
+            label.title = key;
+            div.appendChild(label);
 
             scope._container.appendChild(div);
         });
