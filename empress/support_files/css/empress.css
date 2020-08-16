@@ -243,10 +243,6 @@ select:-moz-focusring {
 
 .menu-box-header-cell {
     background-color: white;
-    position: relative;
-    position: -webkit-sticky; /* Safari */
-    position: sticky;
-    left: 0;
 }
 
 .menu-table tr td button:only-child:hover {

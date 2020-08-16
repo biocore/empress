@@ -92,6 +92,7 @@ define(["underscore", "util"], function (_, util) {
             fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
             fieldHeaderCell.rowSpan = 2;
             fieldHeaderCell.classList.add("menu-box-header-cell");
+            fieldHeaderCell.classList.add("frozen-cell");
 
             var fieldDataRow = tableEle.insertRow(-1);
 
