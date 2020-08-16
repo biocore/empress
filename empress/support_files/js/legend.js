@@ -108,13 +108,13 @@ define(["underscore", "util"], function (_, util) {
             var newRow = containerTable.insertRow(-1);
 
             // Add a color box (could totally be replaced by e.g. a Spectrum
-            // color picker in the future)
+            // color picker in the future).
             var colorCell = newRow.insertCell(-1);
             colorCell.classList.add("category-color");
             colorCell.classList.add("frozen-cell");
             colorCell.setAttribute("style", "background: " + info[key] + ";");
 
-            // Add a label for that color box
+            // Add a label for that color box.
             var labelCell = newRow.insertCell(-1);
             // We put the actual label text inside a <label> in the cell, not
             // just in the first layer of the cell. This is needed so that we
