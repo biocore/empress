@@ -48,7 +48,7 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Display a continuous color key.
+     * Displays a continuous color key.
      * @param {Object} info - key information
      */
     Legend.prototype.__addContinuousKey = function (info) {
@@ -85,14 +85,20 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Display a categorical color key.
-     * @param {Object} info - key information
+     * Displays a categorical color key.
+     *
+     * Each key/value pair in the input color key is displayed in a separate
+     * row in the legend. Pairs are sorted from top to bottom in the legend
+     * using util.naturalSort() on the keys (this should match the way colors
+     * are assigned).
+     *
+     * @param {Object} info Color key to represent in the legend.
      */
     Legend.prototype.__addCategoricalKey = function (info) {
         var scope = this;
         let key;
         let i = 0;
-        let sortedCategories = util.naturalSort(Object.keys(info));
+        let sortedCategories = util.naturalSort(_.keys(info));
         _.each(sortedCategories, function (key) {
             // create key container
             let div = document.createElement("div");
