@@ -525,24 +525,8 @@ define([
             document.createElement("div")
         );
         this.legendDiv.classList.add("legend");
+        // TODO: hide legend until it's used
         this.legend = new Legend(this.legendDiv);
-        this.legend.addColorKey(
-            "Legend test!",
-            {
-                asdf: "#f00",
-                lol: "#00f",
-                asdf2: "#0f0",
-                dasodfj: "saddlebrown",
-            },
-            false
-        );
-        // TODO add a function that can be called to update this legend. I
-        // guess it should take in parameters with the color information,
-        // whether or not it's discrete or continuous coloring, etc.? The
-        // category information should be basically the same btwn. fm and sm
-        // coloring -- continuous values (i.e. where we have to draw gradients)
-        // will be the hard part, although we can probably just reuse Emperor
-        // code.
         // TODO 2: give the legend a fixed height and make it vertically
         // scrollable on overflow? This should already kinda be done thanks to
         // the legend class being applied to nodeColorKey, but I feel like
@@ -552,6 +536,34 @@ define([
         // the unselectable-text class on the side panel) would be nice, so
         // users can do things like highlight category names. Understandable if
         // this isn't easily doable, though.
+    };
+
+    /**
+     * Populates the legend with information about the current coloring
+     * selection.
+     *
+     * NOTE: currently, this is called by empress.js when "updating" the
+     * barplots. However, it would be good to instead update this whenever the
+     * colorings / barplot type changes -- that'd require storing the colorer
+     * within the barplot layer class, and then having empress.js access that i
+     * guess? maybe would require passing a reference to Empress to
+     * BarplotLayers, so that the layer could retrieve unique sample / feature
+     * metadata values or whatever.
+     * or whatevs.
+     */
+    BarplotLayer.prototype.populateLegend = function (hexColorMap) {
+        this.legend.clear();
+        var title;
+        if (this.barplotType === "fm") {
+            title = this.colorByFMField;
+        } else {
+            title = this.colorBySMField;
+        }
+        this.legend.addColorKey(
+            title,
+            hexColorMap,
+            false // TODO configure based on "continuous values" if bptype is fm
+        );
     };
 
     /**

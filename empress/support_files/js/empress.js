@@ -1138,6 +1138,7 @@ define([
             layer.colorBySMField
         );
         var colorer = new Colorer(layer.colorBySMColorMap, sortedUniqueValues);
+        layer.populateLegend(colorer.getMapHex());
         var sm2color = colorer.getMapRGB();
         // Do most of the hard work: compute the frequencies for each tip (only
         // the tips present in the BIOM table, that is)
@@ -1265,6 +1266,7 @@ define([
                 throw msg;
             }
             fm2color = colorer.getMapRGB();
+            layer.populateLegend(colorer.getMapHex());
         }
 
         // Next, map feature metadata values to lengths if requested
