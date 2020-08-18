@@ -52,6 +52,7 @@ define([
         this.colorByFMField = null;
         this.colorByFMColorMap = null;
         this.colorByFMContinuous = false;
+        this.colorByFMColorMapDiscrete = true;
         this.defaultLength = BarplotLayer.DEFAULT_LENGTH;
         this.scaleLengthByFM = false;
         this.scaleLengthByFMField = null;
@@ -312,8 +313,10 @@ define([
             // hides/shows its "Continuous values" elements.
             if (Colorer.isColorMapDiscrete(scope.colorByFMColorMap)) {
                 continuousValP.classList.add("hidden");
+                scope.colorByFMColorMapDiscrete = true;
             } else {
                 continuousValP.classList.remove("hidden");
+                scope.colorByFMColorMapDiscrete = false;
             }
         });
         $(continuousValCheckbox).change(function () {
@@ -565,8 +568,8 @@ define([
         }
         // Show a categorical legend (isContinuous = false) _unless_ the
         // barplot is for feature metadata and the "Continuous values" checkbox
-        // is checked.
-        if (isFM && this.colorByFMContinuous) {
+        // is checked and visible.
+        if (isFM && this.colorByFMContinuous && !this.colorByFMColorMapDiscrete) {
             this.legend.addContinuousKey(title, colorer.getGradientSVG());
         } else {
             this.legend.addCategoricalKey(title, colorer.getMapHex());
