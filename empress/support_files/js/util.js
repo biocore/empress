@@ -12,30 +12,48 @@ define(["underscore"], function (_) {
      */
     function keepUniqueKeys(keys, removeAll) {
         // get unique keys
+        console.log("unique", keys)
         var items = Object.keys(keys);
         var i;
+        var uniqueKeys = new Set();
+        var allKeys = new Set();
+        var dupKeys = new Set();
+        console.log("start");
 
-        // TODO: The current method to get the unique observations
-        // belonging to each sample category is slow. Refactoring it will lead
-        // to a nice speed boost.
-        // https://github.com/biocore/empress/issues/147
-        var uniqueKeysArray = _.chain(keys)
-            .values()
-            .map(function (item) {
-                return [...item];
-            })
-            .flatten()
-            .groupBy(function (key) {
-                return key;
-            })
-            .filter(function (key) {
-                return key.length === 1;
-            })
-            .flatten()
-            .value();
-        var uniqueKeys = new Set(uniqueKeysArray);
+        var t = new Date();
+        for (var item in keys) {
+            var itemKeys = Array.from(keys[item]);
+            for (i in itemKeys) {
+                var key = itemKeys[i];
+                if (allKeys.has(key)) {
+                    dupKeys.add(key);
+                } else {
+                    allKeys.add(key);
+                }
+            }
+        }
+
+        // // TODO: The current method to get the unique observations
+        // // belonging to each sample category is slow. Refactoring it will lead
+        // // to a nice speed boost.
+        // // https://github.com/biocore/empress/issues/147
+        // var uniqueKeysArray = _.chain(keys)
+        //     .values()
+        //     .map(function (item) {
+        //         return [...item];
+        //     })
+        //     .flatten()
+        //     .groupBy(function (key) {
+        //         return key;
+        //     })
+        //     .filter(function (key) {
+        //         return key.length === 1;
+        //     })
+        //     .flatten()
+        //     .value();
+        // var uniqueKeys = new Set(uniqueKeysArray);
         var isUnique = function (key) {
-            return uniqueKeys.has(key);
+            return !dupKeys.has(key);
         };
 
         // get the unique keys in each item
@@ -53,6 +71,8 @@ define(["underscore"], function (_) {
             }
             result[items[i]] = keep;
         }
+        var dt = new Date();
+        console.log("time", dt.getTime() - t.getTime());
 
         return result;
     }

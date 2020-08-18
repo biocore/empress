@@ -29,11 +29,6 @@ define(["Empress", "BPTree", "BiomTable"], function (
             [0, 7, 5, 1, 4, 2, 3, 6],
             null
         );
-        var layoutToCoordSuffix = {
-            Rectangular: "r",
-            Circular: "c1",
-            Unrooted: "2",
-        };
 
         var nameToKeys = {
             root: [7],
@@ -148,12 +143,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
         if (constructEmpress) {
             empress = new Empress(
                 tree,
-                treeData,
-                // tdToInd,
                 nameToKeys,
-                layoutToCoordSuffix,
-                "Unrooted",
-                yrscf,
                 biom,
                 featureColumns,
                 tipMetadata,
@@ -170,8 +160,6 @@ define(["Empress", "BPTree", "BiomTable"], function (
             treeData: treeData,
             tdToInd: tdToInd,
             nameToKeys: nameToKeys,
-            layoutToCoordSuffix: layoutToCoordSuffix,
-            yrscf: yrscf,
             biom: biom,
             fmCols: featureColumns,
             tm: tipMetadata,

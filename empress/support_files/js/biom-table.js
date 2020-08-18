@@ -37,6 +37,8 @@ define(["underscore", "util"], function (_, util) {
         // length checking) and where things have a reasonable chance of
         // getting messed up (e.g. checking that feature indices in the table
         // are sorted)
+        console.log("biom-table", tbl)
+        console.log("fIds", fIDs)
         if (sIDs.length !== tbl.length) {
             throw new Error("Sample IDs and table are uneven lengths.");
         } else if (sIDs.length !== sm.length) {

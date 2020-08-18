@@ -262,9 +262,8 @@ class Empress():
         sm_cols, compressed_sm = compress_sample_metadata(
             sid2idxs, self.samples
         )
-        fm_cols, compressed_tm_tmp, compressed_im_tmp = compress_feature_metadata(
-            self.tip_md, self.int_md
-        )
+        fm_cols, compressed_tm_tmp, compressed_im_tmp = \
+            compress_feature_metadata(self.tip_md, self.int_md)
 
         names_to_keys = {}
         fid2idxs = {}
@@ -288,7 +287,7 @@ class Empress():
             if node.name in compressed_im_tmp:
                 compressed_im[i] = compressed_im_tmp[node.name]
 
-        # self.tree.coords(4020, 4020)
+        self.tree.coords(4020, 4020)
         names = [-1]
         lengths = [-1]
         for node in self.tree.preorder(include_self=True):

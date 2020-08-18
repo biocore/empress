@@ -37,6 +37,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var coord = 1;
             var node;
             this.empress._currentLayout = "Rectangular";
+            console.log("tree data",this.empress._treeData)
             for (var i = 1; i <= 7; i++) {
                 node = this.empress._treeData[i];
                 equal(this.empress.getX(node), coord++);

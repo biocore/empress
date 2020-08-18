@@ -367,7 +367,6 @@ define([
     Empress.prototype.initialize = function () {
         this._drawer.initialize();
         this._events.setMouseEvents();
-        // var nodeNames = Object.keys(this._nameToKeys);
         var nodeNames = this._tree.getAllNames();
         nodeNames.shift();
         nodeNames = nodeNames.filter((n) => !n.startsWith("EmpressNode"));
@@ -1601,7 +1600,6 @@ define([
         } else {
             throw 'F. metadata coloring method "' + method + '" unrecognized.';
         }
-
         // Produce a mapping of unique values in this feature metadata
         // column to an array of the node name(s) with each value.
         var uniqueValueToFeatures = {};
@@ -1620,6 +1618,7 @@ define([
         var sortedUniqueValues = util.naturalSort(
             Object.keys(uniqueValueToFeatures)
         );
+        console.log("feature metadata", uniqueValueToFeatures)
         return {
             sortedUniqueValues: sortedUniqueValues,
             uniqueValueToFeatures: uniqueValueToFeatures,
@@ -1659,6 +1658,7 @@ define([
                 uniqueValueToFeatures[uniqueVal]
             );
         });
+        console.log("after keys", obs)
 
         // assign colors to unique values
         var colorer = new Colorer(color, sortedUniqueValues);
@@ -1775,6 +1775,7 @@ define([
      *                   of Colorer.getMapRGB().
      */
     Empress.prototype._colorTree = function (obs, cm) {
+        console.log("color feature", obs)
         var categories = util.naturalSort(Object.keys(obs));
         // color tree
         for (var i = 0; i < categories.length; i++) {
