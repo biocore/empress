@@ -28,9 +28,14 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         this.__valueToColor = {};
 
         // Will be set to a string containing the SVG for a gradient, if
-        // useQuantScale is true and the input color map is sequential /
-        // diverging
+        // continuous scaling is done (i.e. useQuantScale is true and the
+        // input color map is sequential / diverging)
         this._gradientSVG = null;
+
+        // Will be set to true if there were any non-numeric elements included
+        // in the input values that couldn't be assigned colors (only if
+        // continuous scaling was done)
+        this._missingNonNumerics = false;
 
         // Based on the color map type and the value of useQuantScale, assign
         // colors accordingly
@@ -129,6 +134,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
         });
+        // Figure out if we should show a warning message about missing values
+        // to the user
+        this._missingNonNumerics = split.nonNumeric.length > 0;
 
         // Create SVG describing the gradient
         var mid = (min + max) / 2;
@@ -181,7 +189,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
                     "is not discrete."
             );
         } else {
-            return this._gradientSVG;
+            return [this._gradientSVG, this._missingNonNumerics];
         }
     };
 

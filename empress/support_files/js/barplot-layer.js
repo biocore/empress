@@ -580,7 +580,8 @@ define([
                 this.colorByFMContinuous &&
                 !this.colorByFMColorMapDiscrete
             ) {
-                this.legend.addContinuousKey(title, colorer.getGradientSVG());
+                var gradInfo = colorer.getGradientSVG();
+                this.legend.addContinuousKey(title, gradInfo[0], gradInfo[1]);
             } else {
                 this.legend.addCategoricalKey(title, colorer.getMapHex());
             }

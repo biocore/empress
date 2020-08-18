@@ -38,20 +38,26 @@ define(["underscore", "util"], function (_, util) {
      * Displays a continuous color key.
      *
      * This function already assumes you have the SVG for the gradient to show,
-     * so this function doesn't do much actual work.
+     * so it doesn't do much actual work. (Gradients should be obtainable from
+     * Colorer.getGradientSVG().)
      *
      * The creation of the SVG container was based on Emperor's code:
      * https://github.com/biocore/emperor/blob/00c73f80c9d504826e61ddcc8b2c0b93f344819f/emperor/support_files/js/color-view-controller.js#L54-L56
      *
-     * TODO: show warning <p> or something mentioning that any non-numeric
-     * values have been omitted from the legend, and no bars are drawn for
-     * them. Ideally this would show the number of said non-numeric
-     * values, but that's not required IMO.
-     *
+     * @param {String} name Text to show in the legend title.
      * @param {String} gradientSVG SVG defining a color gradient, to be shown
      *                             in the legend.
+     * @param {Boolean} showNonNumericWarning If true, a warning will be shown
+     *                                        below the gradient about some
+     *                                        values being omitted from the
+     *                                        gradient due to being
+     *                                        non-numeric.
      */
-    Legend.prototype.addContinuousKey = function (name, gradientSVG) {
+    Legend.prototype.addContinuousKey = function (
+        name,
+        gradientSVG,
+        showNonNumericWarning
+    ) {
         this.updateTitle(name);
         // Apparently we need to use createElementNS() (not just
         // createElement()) for SVGs. I am not sure why this is the case, but
@@ -69,6 +75,23 @@ define(["underscore", "util"], function (_, util) {
         // just kinda plop the SVG code into containerSVG's HTML
         containerSVG.innerHTML = gradientSVG;
         this._container.appendChild(containerSVG);
+        if (showNonNumericWarning) {
+            var warningP = document.createElement("p");
+            warningP.innerText =
+                "Some value(s) in this field were not " +
+                "numeric. These value(s) have been left " +
+                "out of the gradient, and no bar(s) " +
+                "have been drawn for them.";
+            warningP.classList.add("side-panel-notes");
+            // All legends have white-space: nowrap; set to prevent color
+            // labels from breaking onto the next line (which would look
+            // funky). However, for this simple warning paragraph, we want it
+            // to display like an ordinary paragraph (and have line breaks as
+            // necessary to fit within the legend container). Hence why we
+            // override the white-space setting for this element.
+            warningP.setAttribute("style", "white-space: normal;");
+            this._container.appendChild(warningP);
+        }
         this.unhide();
     };
 
