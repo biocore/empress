@@ -37,23 +37,20 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var coord = 1;
             var node;
             this.empress._currentLayout = "Rectangular";
-            console.log("tree data",this.empress._treeData)
-            for (var i = 1; i <= 7; i++) {
-                node = this.empress._treeData[i];
+            console.log(this.empress._treeData)
+            for (node = 1; node <= 7; node++) {
                 equal(this.empress.getX(node), coord++);
                 equal(this.empress.getY(node), coord++);
             }
 
             this.empress._currentLayout = "Circular";
-            for (i = 1; i <= 7; i++) {
-                node = this.empress._treeData[i];
+            for (node = 1; node <= 7; node++) {
                 equal(this.empress.getX(node), coord++);
                 equal(this.empress.getY(node), coord++);
             }
 
             this.empress._currentLayout = "Unrooted";
-            for (i = 1; i <= 7; i++) {
-                node = this.empress._treeData[i];
+            for (node = 1; node <= 7; node++) {
                 equal(this.empress.getX(node), coord++);
                 equal(this.empress.getY(node), coord++);
             }
@@ -111,8 +108,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             this.empress.colorSampleGroups(sampleGroup);
 
             // the entire tree should be colored. sampleGroup contain all tips
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
+            for (var node = 1; node <= 7; node++) {
                 deepEqual(this.empress.getNodeInfo(node, "color"), [1.0, 0, 0]);
             }
         });
@@ -130,15 +126,14 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // green nodes are the unique nodes in 00FF00
             var greeNodes = new Set([1, 3]);
             this.empress.colorSampleGroups(sampleGroups);
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
-                if (redNodes.has(i)) {
+            for (var node = 1; node <= 7; node++) {
+                if (redNodes.has(node)) {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
                         1.0,
                         0,
                         0,
                     ]);
-                } else if (greeNodes.has(i)) {
+                } else if (greeNodes.has(node)) {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
                         0,
                         1.0,
@@ -198,9 +193,8 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // make sure nodes where assigned the correct color
             // note that gropu b does not have any unique nodes
             var aGroupNodes = new Set([1, 3]);
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
-                if (aGroupNodes.has(i)) {
+            for (var node = 1; node <= 7; node++) {
+                if (aGroupNodes.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
                         chroma(cm.a).gl().slice(0, 3)
@@ -239,14 +233,13 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var node;
             var group1 = new Set([2, 3, 4]);
             var group2 = new Set([1, 6]);
-            for (var i = 1; i <= 7; i++) {
-                node = this.empress._treeData[i];
-                if (group1.has(i)) {
+            for (var node = 1; node <= 7; node++) {
+                if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
                         chroma(cm["1"]).gl().slice(0, 3)
                     );
-                } else if (group2.has(i)) {
+                } else if (group2.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
                         chroma(cm["2"]).gl().slice(0, 3)
@@ -274,14 +267,13 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             //       if propagtion was used, then 4, 5 would belong to group2
             group1 = new Set([4, 5]);
             group2 = new Set([1, 2, 3, 6]);
-            for (i = 1; i <= 7; i++) {
-                node = this.empress._treeData[i];
-                if (group1.has(i)) {
+            for (node = 1; node <= 7; node++) {
+                if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
                         chroma(cm["1"]).gl().slice(0, 3)
                     );
-                } else if (group2.has(i)) {
+                } else if (group2.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
                         chroma(cm["2"]).gl().slice(0, 3)
@@ -437,15 +429,14 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 g3: [0, 0, 1],
             };
             this.empress._colorTree(obs, cm);
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
-                if (g1Nodes.has(i)) {
+            for (var node = 1; node <= 7; node++) {
+                if (g1Nodes.has(node)) {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
                         1,
                         0,
                         0,
                     ]);
-                } else if (g2Nodes.has(i)) {
+                } else if (g2Nodes.has(node)) {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
                         0,
                         1,
@@ -465,8 +456,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var e = this.empress; // used to shorten function calls
             var keys = Object.keys(e._treeData);
             e.resetTree();
-            for (var i = 1; i < keys.length; i++) {
-                var node = this.empress._treeData[keys[i]];
+            for (var node = 1; node < keys.length; node++) {
                 deepEqual(e.getNodeInfo(node, "color"), e.DEFAULT_COLOR);
                 equal(e.getNodeInfo(node, "isColored"), false);
                 equal(e.getNodeInfo(node, "visible"), true);
@@ -620,19 +610,18 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // make sure .visible property of nodes in the collapsed is false
             var collapsed = new Set([2, 3]);
             var i, node;
-            for (i = 1; i <= this.empress._tree.size; i++) {
-                node = this.empress._treeData[i];
-                if (collapsed.has(i)) {
+            for (node = 1; node <= this.empress._tree.size; node++) {
+                if (collapsed.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "visible"),
                         false,
-                        "Test: node " + i + " should be invisible"
+                        "Test: node " + node + " should be invisible"
                     );
                 } else {
                     deepEqual(
                         this.empress.getNodeInfo(node, "visible"),
                         true,
-                        "Test: node " + i + " should be visible"
+                        "Test: node " + node + " should be visible"
                     );
                 }
             }
@@ -685,8 +674,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             };
             this.empress._colorTree(obs, cm);
             this.empress.collapseClades();
-            for (i = 1; i <= this.empress._tree.size; i++) {
-                node = this.empress._treeData[i];
+            for (node = 1; node <= this.empress._tree.size; node++) {
                 deepEqual(
                     this.empress.getNodeInfo(node, "visible"),
                     true,

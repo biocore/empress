@@ -1618,7 +1618,6 @@ define([
         var sortedUniqueValues = util.naturalSort(
             Object.keys(uniqueValueToFeatures)
         );
-        console.log("feature metadata", uniqueValueToFeatures)
         return {
             sortedUniqueValues: sortedUniqueValues,
             uniqueValueToFeatures: uniqueValueToFeatures,
@@ -1645,11 +1644,16 @@ define([
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
     Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+        var t = new Date();
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
+        var dt = new Date();
+        console.log("getUniqueFeature time", dt.getTime() - t.getTime());
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
         // convert observation IDs to _treeData keys. Notably, this includes
         // converting the values of uniqueValueToFeatures from Arrays to Sets.
+
+        t = new Date();
         var obs = {};
         var scope = this;
         _.each(sortedUniqueValues, function (uniqueVal, i) {
@@ -1658,7 +1662,8 @@ define([
                 uniqueValueToFeatures[uniqueVal]
             );
         });
-        console.log("after keys", obs)
+        dt = new Date();
+        console.log("get treedate keys time", dt.getTime() - t.getTime());
 
         // assign colors to unique values
         var colorer = new Colorer(color, sortedUniqueValues);
@@ -1667,16 +1672,25 @@ define([
         // colors for the legend
         var keyInfo = colorer.getMapHex();
 
+        t = new Date();
         // Do upwards propagation only if the coloring method is "tip"
         if (method === "tip") {
             obs = this._projectObservations(obs, false);
         }
+        dt = new Date();
+        console.log("project obs time", dt.getTime() - t.getTime());
 
+        t = new Date();
         // assigns nodes in to a group in this._group array
         this.assignGroups(obs);
+        dt = new Date();
+        console.log("assign groups time", dt.getTime() - t.getTime());
 
+        t = new Date();
         // color tree
         this._colorTree(obs, cm);
+        dt = new Date();
+        console.log("color tree time", dt.getTime() - t.getTime());
 
         return keyInfo;
     };
@@ -1710,7 +1724,9 @@ define([
             notRepresented = new Set(),
             i,
             j;
+        console.log("Project obs start");
 
+        var t = new Date();
         if (!ignoreAbsentTips) {
             // find "non-represented" tips
             // Note: the following uses postorder traversal
@@ -1727,6 +1743,8 @@ define([
                 }
             }
         }
+        var dt = new Date();
+        console.log("ignore abs tips", dt.getTime() - t.getTime());
 
         // assign internal nodes to appropriate category based on children
         // iterate using postorder
@@ -1734,6 +1752,7 @@ define([
         // root (at index tree.size) in this loop, we iterate over all its
         // descendants; so in the event that all leaves are unique,
         // the root can still get assigned to a group.
+        t = new Date();
         for (i = 1; i < tree.size; i++) {
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
@@ -1750,13 +1769,23 @@ define([
                 }
             }
         }
+        dt = new Date();
+        console.log("assign groups", dt.getTime() - t.getTime());
+
+        t = new Date();
         var result = util.keepUniqueKeys(obs, notRepresented);
+        dt = new Date();
+        console.log("keep unique", dt.getTime() - t.getTime());
 
         // remove all groups that do not contain unique features
+        t = new Date();
         result = _.pick(result, function (value, key) {
             return value.size > 0;
         });
+        dt = new Date();
+        console.log("remove empty", dt.getTime() - t.getTime());
 
+        console.log("project obs end");
         return result;
     };
 
@@ -1775,7 +1804,6 @@ define([
      *                   of Colorer.getMapRGB().
      */
     Empress.prototype._colorTree = function (obs, cm) {
-        console.log("color feature", obs)
         var categories = util.naturalSort(Object.keys(obs));
         // color tree
         for (var i = 0; i < categories.length; i++) {
@@ -2716,3 +2744,54 @@ define([
 
     return Empress;
 });
+
+var f = function() {
+    var t = [];
+    var d = new Date();
+    for (var i = 0; i < 10000000; i ++) {
+        t[i] = 1;
+    }
+    var st = new Set(t);
+    st.has(1) ? console.log("!!!") : console.log(":(");
+    var dt = new Date();
+    console.log("add by index", dt.getTime() - d.getTime());
+
+    var t = [];
+    var d = new Date();
+    for (var i = 0; i < 10000000; i ++) {
+        t.push(i)
+    }
+    var st = new Set(t);
+    st.has(1) ? console.log("!!!") : console.log(":(");
+    var dt = new Date();
+    console.log("add by push", dt.getTime() - d.getTime());
+
+    var t = new Set();
+    var d = new Date();
+    for (var i = 0; i < 10000000; i ++) {
+        t.add(i);
+    }
+    var dt = new Date();
+    console.log("add by set", dt.getTime() - d.getTime());
+
+    var d = new Date();
+    var t = new Array(10000000);
+    for (var i = 0; i < 10000000; i ++) {
+        t[i] = 1;
+    }
+    var st = new Set(t);
+    st.has(1) ? console.log("!!!") : console.log(":(");
+    var dt = new Date();
+    console.log("add by init", dt.getTime() - d.getTime());
+
+    var d = new Date();
+    var t = new Array(10000000).fill(0);
+    for (var i = 0; i < 10000000; i ++) {
+        t[i] = 1;
+    }
+    var st = new Set(t);
+    st.has(1) ? console.log("!!!") : console.log(":(");
+    var dt = new Date();
+    console.log("add by init and fill", dt.getTime() - d.getTime());
+}
+f();
