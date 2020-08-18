@@ -524,12 +524,12 @@ define([
      * Initializes a <div> for this barplot layer that'll contain a legend.
      */
     BarplotLayer.prototype.initLegendDiv = function () {
-        this.legendDiv = this.layerDiv.appendChild(
-            document.createElement("div")
-        );
+        this.legendDiv = document.createElement("div");
+        this.legendDiv.classList.add("hidden");
         this.legendDiv.classList.add("legend");
-        // TODO: hide legend until it's used
+        this.legendDiv.classList.add("barplot-layer-legend");
         this.legend = new Legend(this.legendDiv);
+        this.layerDiv.appendChild(this.legendDiv);
         // TODO 2: give the legend a fixed height and make it vertically
         // scrollable on overflow? This should already kinda be done thanks to
         // the legend class being applied to nodeColorKey, but I feel like
@@ -555,28 +555,35 @@ define([
      * or whatevs.
      *
      * @param {Colorer} colorer Instance of a Colorer object defining the
-     *                          current color selection for this barplot.
+     *                          current color selection for this barplot. This
+     *                          parameter is optional; if it's undefined, then
+     *                          this will just clear the legend without
+     *                          populating it again. (This could happen if the
+     *                          user decides to uncheck the "Color by..."
+     *                          checkbox for a feature metadata layer.)
      */
     BarplotLayer.prototype.populateLegend = function (colorer) {
         this.legend.clear();
-        var title;
-        var isFM = this.barplotType === "fm";
-        if (isFM) {
-            title = this.colorByFMField;
-        } else {
-            title = this.colorBySMField;
-        }
-        // Show a categorical legend (isContinuous = false) _unless_ the
-        // barplot is for feature metadata and the "Continuous values" checkbox
-        // is checked and visible.
-        if (
-            isFM &&
-            this.colorByFMContinuous &&
-            !this.colorByFMColorMapDiscrete
-        ) {
-            this.legend.addContinuousKey(title, colorer.getGradientSVG());
-        } else {
-            this.legend.addCategoricalKey(title, colorer.getMapHex());
+        if (!_.isUndefined(colorer)) {
+            var isFM = this.barplotType === "fm";
+            var title;
+            if (isFM) {
+                title = this.colorByFMField;
+            } else {
+                title = this.colorBySMField;
+            }
+            // Show a categorical legend (isContinuous = false) _unless_ the
+            // barplot is for feature metadata and the "Continuous values" checkbox
+            // is checked and visible.
+            if (
+                isFM &&
+                this.colorByFMContinuous &&
+                !this.colorByFMColorMapDiscrete
+            ) {
+                this.legend.addContinuousKey(title, colorer.getGradientSVG());
+            } else {
+                this.legend.addCategoricalKey(title, colorer.getMapHex());
+            }
         }
     };
 

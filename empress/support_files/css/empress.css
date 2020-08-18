@@ -534,7 +534,9 @@ p.side-header button {
 }
 
 
-/* legend */
+/* Legends: both the main legend for the tree coloring (#legend-main)
+ * and legends for barplot layers
+ */
 
 #legend-panel {
     position: absolute;
@@ -547,26 +549,37 @@ p.side-header button {
     flex-direction: column;
 }
 
+.legend {
+    border: 1px solid darkgray;
+    white-space: nowrap;
+}
+
+.barplot-layer-legend {
+    max-height: 15em;
+    /* The side panel width is 450px */
+    max-width: 430px;
+    overflow: auto;
+}
+
 /* The legend is resizable, thanks to resize: both; and overflow: auto.
  * See https://stackoverflow.com/a/61976603/10730311.
  */
-div.legend {
+#legend-main {
     margin: 20px;
-    border: 1px solid darkgray;
     min-width: 150px;
     max-width: 40vh;
     min-height: 30px;
     max-height: 85vh;
     resize: both;
     overflow: auto;
-    white-space: nowrap;
     background-color: rgba(255, 255, 255, 0.5);
 }
 
-div.legend:hover {
+#legend-main:hover {
     border: 1px solid dimgray;
     background-color: white;
 }
+
 
 .legend-title {
     text-align: center;
