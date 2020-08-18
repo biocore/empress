@@ -279,7 +279,8 @@ define([
         var colormapSelector = document.createElement("select");
         Colorer.addColorsToSelect(colormapSelector);
         colormapSC.appendChild(colormapSelector);
-        colormapSelector.id = "barplot-layer-" + this.uniqueNum + "fm-colormap";
+        colormapSelector.id =
+            "barplot-layer-" + this.uniqueNum + "-fm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
         // Add a row for choosing the scale type (i.e. whether to use
@@ -420,7 +421,7 @@ define([
             );
         });
         minLenP.appendChild(minLenInput);
-        minLenInput.id = "barplot-layer-" + this.uniqueNum + "fm-minlen-input";
+        minLenInput.id = "barplot-layer-" + this.uniqueNum + "-fm-minlen-input";
         minLenLbl.setAttribute("for", minLenInput.id);
 
         // Add max len stuff
@@ -439,7 +440,7 @@ define([
             );
         });
         maxLenP.appendChild(maxLenInput);
-        maxLenInput.id = "barplot-layer-" + this.uniqueNum + "fm-maxlen-input";
+        maxLenInput.id = "barplot-layer-" + this.uniqueNum + "-fm-maxlen-input";
         maxLenLbl.setAttribute("for", maxLenInput.id);
 
         lenDetailsDiv.appendChild(minLenP);
@@ -516,7 +517,8 @@ define([
         var colormapSelector = document.createElement("select");
         Colorer.addColorsToSelect(colormapSelector);
         colormapSC.appendChild(colormapSelector);
-        colormapSelector.id = "barplot-layer-" + this.uniqueNum + "sm-colormap";
+        colormapSelector.id =
+            "barplot-layer-" + this.uniqueNum + "-sm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
         var lenP = this.smDiv.appendChild(document.createElement("p"));
