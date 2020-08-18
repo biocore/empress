@@ -569,7 +569,11 @@ define([
         // Show a categorical legend (isContinuous = false) _unless_ the
         // barplot is for feature metadata and the "Continuous values" checkbox
         // is checked and visible.
-        if (isFM && this.colorByFMContinuous && !this.colorByFMColorMapDiscrete) {
+        if (
+            isFM &&
+            this.colorByFMContinuous &&
+            !this.colorByFMColorMapDiscrete
+        ) {
             this.legend.addContinuousKey(title, colorer.getGradientSVG());
         } else {
             this.legend.addCategoricalKey(title, colorer.getMapHex());
