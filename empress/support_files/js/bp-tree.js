@@ -246,7 +246,7 @@ define(["ByteArray"], function (ByteArray) {
     };
 
     BPTree.prototype.getAllNames = function() {
-        return this.names_;
+        return Array.from(this.names_);
     }
 
     /**
