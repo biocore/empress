@@ -1,4 +1,4 @@
-define(["jquery", "underscore", "util"], function ($, _, util) {
+define(["underscore", "util"], function (_, util) {
     /**
      *
      * @class Legend
@@ -53,7 +53,6 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
      */
     Legend.prototype.addContinuousKey = function (name, gradientSVG) {
         this.updateTitle(name);
-        var exteriorDiv = $("<div>");
         // Apparently we need to use createElementNS() (not just
         // createElement()) for SVGs. I am not sure why this is the case, but
         // it made the SVG show up (before I added this, nothing was showing up
@@ -68,9 +67,8 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         containerSVG.setAttribute("height", "100%");
         containerSVG.setAttribute("style", "display: block; margin: auto;");
         // just kinda plop the SVG code into containerSVG's HTML
-        $(containerSVG).html(gradientSVG);
-        exteriorDiv.append($(containerSVG));
-        $(this._container).append(exteriorDiv);
+        containerSVG.innerHTML = gradientSVG;
+        this._container.appendChild(containerSVG);
         this.unhide();
     };
 
