@@ -228,7 +228,7 @@ define(["Colorer", "util"], function (Colorer, util) {
 
         // draw new legend
         this.legend.clear();
-        this.legend.addColorKey(name, keyInfo, false);
+        this.legend.addCategoricalKey(name, keyInfo);
 
         // draw tree
         this.empress.resetTree();

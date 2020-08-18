@@ -51,7 +51,7 @@ define([
         this.colorByFM = false;
         this.colorByFMField = null;
         this.colorByFMColorMap = null;
-        this.colorByFMScaleType = null;
+        this.colorByFMContinuous = false;
         this.defaultLength = BarplotLayer.DEFAULT_LENGTH;
         this.scaleLengthByFM = false;
         this.scaleLengthByFMField = null;
@@ -550,20 +550,27 @@ define([
      * BarplotLayers, so that the layer could retrieve unique sample / feature
      * metadata values or whatever.
      * or whatevs.
+     *
+     * @param {Colorer} colorer Instance of a Colorer object defining the
+     *                          current color selection for this barplot.
      */
-    BarplotLayer.prototype.populateLegend = function (hexColorMap) {
+    BarplotLayer.prototype.populateLegend = function (colorer) {
         this.legend.clear();
         var title;
-        if (this.barplotType === "fm") {
+        var isFM = this.barplotType === "fm";
+        if (isFM) {
             title = this.colorByFMField;
         } else {
             title = this.colorBySMField;
         }
-        this.legend.addColorKey(
-            title,
-            hexColorMap,
-            false // TODO configure based on "continuous values" if bptype is fm
-        );
+        // Show a categorical legend (isContinuous = false) _unless_ the
+        // barplot is for feature metadata and the "Continuous values" checkbox
+        // is checked.
+        if (isFM && this.colorByFMContinuous) {
+            this.legend.addContinuousKey(title, colorer.getGradientSVG());
+        } else {
+            this.legend.addCategoricalKey(title, colorer.getMapHex());
+        }
     };
 
     /**

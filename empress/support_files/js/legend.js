@@ -1,10 +1,11 @@
-define(["underscore", "util"], function (_, util) {
+define(["jquery", "underscore", "util"], function ($, _, util) {
     /**
      *
      * @class Legend
      *
      * Creates a legend within a given HTML element. (You'll need to call
-     * addColorKey() to populate the legend with data.)
+     * addCategoricalKey() or addContinuousKey() to populate the legend with
+     * data.)
      *
      * Currently, this legend is only designed to show color variation.
      * However, extending it to show other sorts of encodings -- for example,
@@ -20,68 +21,57 @@ define(["underscore", "util"], function (_, util) {
         this._container = container;
     }
 
-    /**
-     * Populates the legend to represent a color key.
-     *
-     * @param {String} name Text to show in the legend title.
-     * @param {Object} info Color key information. This should map unique
-     *                      values (e.g. in sample or feature metadata) to
-     *                      their assigned color, expressed in hex format.
-     * @param {Boolean} isContinuous Whether or not to display a continuous
-     *                               (gradient) or categorical color key.
-     */
-    Legend.prototype.addColorKey = function (name, info, isContinuous) {
-        if (name) {
-            var titleDiv = this._container.appendChild(
-                document.createElement("div")
-            );
-            titleDiv.classList.add("legend-title");
-            titleDiv.innerText = name;
-        }
-        if (isContinuous) {
-            this.__addContinuousKey(info);
-        } else {
-            this.__addCategoricalKey(info);
-        }
+    Legend.prototype.updateTitle = function (name) {
+        var titleDiv = this._container.appendChild(
+            document.createElement("div")
+        );
+        titleDiv.classList.add("legend-title");
+        titleDiv.innerText = name;
+    };
+
+    Legend.prototype.unhide = function () {
         // If the container was previously hidden, un-hide it
         this._container.classList.remove("hidden");
     };
 
     /**
      * Displays a continuous color key.
-     * @param {Object} info - key information
+     *
+     * This function already assumes you have the SVG for the gradient to show,
+     * so this function doesn't do much actual work.
+     *
+     * The creation of the SVG container was based on Emperor's code:
+     * https://github.com/biocore/emperor/blob/00c73f80c9d504826e61ddcc8b2c0b93f344819f/emperor/support_files/js/color-view-controller.js#L54-L56
+     *
+     * TODO: show warning <p> or something mentioning that any non-numeric
+     * values have been omitted from the legend, and no bars are drawn for
+     * them. Ideally this would show the number of said non-numeric
+     * values, but that's not required IMO.
+     *
+     * @param {String} gradientSVG SVG defining a color gradient, to be shown
+     *                             in the legend.
      */
-    Legend.prototype.__addContinuousKey = function (info) {
-        // create key container
-        let div = document.createElement("div");
-        div.classList.add("gradient-bar");
-
-        // min label
-        let component = document.createElement("label");
-        component.classList.add("gradient-label");
-        component.innerHTML = this.__formatNumLabel(info.min[0]);
-        div.appendChild(component);
-
-        // color gradient
-        component = document.createElement("div");
-        component.classList.add("gradient-color");
-        component.setAttribute(
-            "style",
-            "background: linear-gradient(to right, " +
-                info.min[1] +
-                " 0%, " +
-                info.max[1] +
-                " 100%);"
+    Legend.prototype.addContinuousKey = function (name, gradientSVG) {
+        this.updateTitle(name);
+        var exteriorDiv = $("<div>");
+        // Apparently we need to use createElementNS() (not just
+        // createElement()) for SVGs. I am not sure why this is the case, but
+        // it made the SVG show up (before I added this, nothing was showing up
+        // although the SVG worked if I saved it into a HTML document and
+        // opened that in a browser). See
+        // https://stackoverflow.com/a/17520712/10730311.
+        var containerSVG = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg"
         );
-        div.appendChild(component);
-
-        // max label
-        component = document.createElement("label");
-        component.classList.add("gradient-label");
-        component.innerHTML = this.__formatNumLabel(info.max[0]);
-        div.appendChild(component);
-
-        container.appendChild(div);
+        containerSVG.setAttribute("width", "100%");
+        containerSVG.setAttribute("height", "100%");
+        containerSVG.setAttribute("style", "display: block; margin: auto;");
+        // just kinda plop the SVG code into containerSVG's HTML
+        $(containerSVG).html(gradientSVG);
+        exteriorDiv.append($(containerSVG));
+        $(this._container).append(exteriorDiv);
+        this.unhide();
     };
 
     /**
@@ -92,10 +82,14 @@ define(["underscore", "util"], function (_, util) {
      * using util.naturalSort() on the keys (this should match the way colors
      * are assigned).
      *
-     * @param {Object} info Color key to represent in the legend.
+     * @param {String} name Text to show in the legend title.
+     * @param {Object} info Color key information. This should map unique
+     *                      values (e.g. in sample or feature metadata) to
+     *                      their assigned color, expressed in hex format.
      */
-    Legend.prototype.__addCategoricalKey = function (info) {
+    Legend.prototype.addCategoricalKey = function (name, info) {
         var scope = this;
+        this.updateTitle(name);
         let sortedCategories = util.naturalSort(_.keys(info));
         var containerTable = document.createElement("table");
         // Remove border spacing, which seems to be a default for at least some
@@ -130,6 +124,7 @@ define(["underscore", "util"], function (_, util) {
             innerLabel.title = key;
         });
         this._container.appendChild(containerTable);
+        this.unhide();
     };
 
     /**
@@ -139,7 +134,7 @@ define(["underscore", "util"], function (_, util) {
      * @returns {string} formatted number
      */
     Legend.prototype.__formatNumLabel = function (num) {
-        return num.toPrecision(4).replace(/\.?0+$/, "");
+        return num.toFixed(4).replace(/\.?0+$/, "");
     };
 
     /**

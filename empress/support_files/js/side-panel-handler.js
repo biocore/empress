@@ -238,7 +238,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.sUpdateBtn.classList.remove("hidden");
             return;
         }
-        this.legend.addColorKey(colBy, keyInfo, false);
+        this.legend.addCategoricalKey(colBy, keyInfo);
     };
 
     /**
@@ -253,7 +253,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             col,
             coloringMethod
         );
-        this.legend.addColorKey(colBy, keyInfo, false);
+        this.legend.addCategoricalKey(colBy, keyInfo);
     };
 
     /**

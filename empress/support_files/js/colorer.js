@@ -27,6 +27,11 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
 
+        // Will be set to a string containing the SVG for a gradient, if
+        // useQuantScale is true and the input color map is sequential /
+        // diverging
+        this._gradientSVG = null;
+
         // Based on the color map type and the value of useQuantScale, assign
         // colors accordingly
         if (Colorer.isColorMapDiscrete(this.color)) {
@@ -103,7 +108,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * by this.color) for every value in this.sortedUniqueValues, taking into
      * account the magnitudes/etc. of the numeric values in
      * this.sortedUniqueValues. This will populate this.__valueToColor with
-     * this information.
+     * this information. This will also populate this._gradientSVG with a
+     * String describing this gradient.
      *
      * Non-numeric values will not be assigned a color.
      *
@@ -123,6 +129,60 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
         });
+
+        // Create SVG describing the gradient
+        var mid = (min + max) / 2;
+        var step = (max - min) / 100;
+        var stopColors = [];
+        for (var s = min; s <= max; s += step) {
+            stopColors.push(interpolator(s).hex());
+        }
+        var gradientSVG = "<defs>";
+        gradientSVG +=
+            '<linearGradient id="Gradient" x1="0" x2="0" y1="1" y2="0">';
+        for (var pos = 0; pos < stopColors.length; pos++) {
+            // The </stop> wasn't present in Emperor's code for this, so I added
+            // it.
+            gradientSVG +=
+                '<stop offset="' +
+                pos +
+                '%" stop-color="' +
+                stopColors[pos] +
+                '"></stop>';
+        }
+        gradientSVG +=
+            '</linearGradient></defs><rect id="gradientRect" ' +
+            'width="20" height="95%" fill="url(#Gradient)"/>';
+
+        gradientSVG +=
+            '<text x="25" y="12px" font-family="sans-serif" ' +
+            'font-size="12px" text-anchor="start">' +
+            max +
+            "</text>";
+        gradientSVG +=
+            '<text x="25" y="50%" font-family="sans-serif" ' +
+            'font-size="12px" text-anchor="start">' +
+            mid +
+            "</text>";
+        gradientSVG +=
+            '<text x="25" y="95%" font-family="sans-serif" ' +
+            'font-size="12px" text-anchor="start">' +
+            min +
+            "</text>";
+
+        this._gradientSVG = gradientSVG;
+    };
+
+    Colorer.prototype.getGradientSVG = function () {
+        if (_.isNull(this._gradientSVG)) {
+            throw new Error(
+                "No gradient defined for this Colorer; check that " +
+                    "useQuantScale is true and that the selected color map " +
+                    "is not discrete."
+            );
+        } else {
+            return this._gradientSVG;
+        }
     };
 
     /**
