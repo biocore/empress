@@ -15,10 +15,26 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *                               used if the input color map is sequential
      *                               or diverging; if the color map is
      *                               discrete, then this will be ignored.)
+     * @param{Number} gradientIDSuffix Defaults to 0. If useQuantScale is true
+     *                                 and the color map is sequential or
+     *                                 diverging, then the gradient SVG
+     *                                 available from this Colorer will have
+     *                                 any IDs within it suffixed with this
+     *                                 number. This allows for the presence of
+     *                                 multiple gradients on the same page
+     *                                 without ID conflicts. (If the input
+     *                                 color map is discrete and/or
+     *                                 useQuantScale is false, then this will
+     *                                 be ignored.)
      * @return{Colorer}
      * constructs Colorer
      */
-    function Colorer(color, values, useQuantScale = false) {
+    function Colorer(
+        color,
+        values,
+        useQuantScale = false,
+        gradientIDSuffix = 0
+    ) {
         // Remove duplicate values and sort the values sanely
         this.sortedUniqueValues = util.naturalSort(_.uniq(values));
 
@@ -31,6 +47,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // continuous scaling is done (i.e. useQuantScale is true and the
         // input color map is sequential / diverging)
         this._gradientSVG = null;
+
+        this._gradientIDSuffix = gradientIDSuffix;
 
         // Will be set to true if there were any non-numeric elements included
         // in the input values that couldn't be assigned colors (only if
@@ -146,8 +164,11 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             stopColors.push(interpolator(s).hex());
         }
         var gradientSVG = "<defs>";
+        // We append a number to the gradient ID so that multiple gradients can
+        // be present on the same page without overriding each other
+        var gID = "Gradient" + this._gradientIDSuffix;
         gradientSVG +=
-            '<linearGradient id="Gradient" x1="0" x2="0" y1="1" y2="0">';
+            '<linearGradient id="' + gID + '" x1="0" x2="0" y1="1" y2="0">';
         for (var pos = 0; pos < stopColors.length; pos++) {
             // The </stop> wasn't present in Emperor's code for this, so I added
             // it.
@@ -159,8 +180,10 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
                 '"></stop>';
         }
         gradientSVG +=
-            '</linearGradient></defs><rect id="gradientRect" ' +
-            'width="20" height="95%" fill="url(#Gradient)"/>';
+            "</linearGradient></defs><rect " +
+            'width="20" height="95%" fill="url(#' +
+            gID +
+            ')"/>';
 
         gradientSVG +=
             '<text x="25" y="12px" font-family="sans-serif" ' +

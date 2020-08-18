@@ -22,17 +22,41 @@ define([
      *                                     HTML should be added.
      * @param {Number} num The "number" of this layer. Layer 1 should be
      *                     the closest layer to the tips of the tree, and
-     *                     so on.
+     *                     so on. Shown in the title of this layer in the UI.
+     * @param {Number} uniqueNum An arbitrary number. This can be any number,
+     *                           so long as no other barplot layer on the page
+     *                           is guaranteed to never have the same
+     *                           uniqueNum. Used when assigning IDs to HTML
+     *                           elements within this layer -- this ensures
+     *                           that one layer's elements don't trump another
+     *                           layer's elements. (This should not be the same
+     *                           thing as num above, unless the way that works
+     *                           is changed in the future! Consider the case
+     *                           where there are three layers, and Layer 1 is
+     *                           removed. Now, Layer 3's "num" will be
+     *                           decremented so that it is named Layer 2 --
+     *                           but its HTML elements (at least those assigned
+     *                           IDs) will still have uniqueNum in their IDs,
+     *                           so if the next layer added also has 3 for its
+     *                           uniqueNum, things are going to break.)
      *
      * @return {BarplotLayer}
      * @constructs BarplotLayer
      */
-    function BarplotLayer(fmCols, smCols, barplotPanel, layerContainer, num) {
+    function BarplotLayer(
+        fmCols,
+        smCols,
+        barplotPanel,
+        layerContainer,
+        num,
+        uniqueNum
+    ) {
         this.fmCols = fmCols;
         this.smCols = smCols;
         this.barplotPanel = barplotPanel;
         this.layerContainer = layerContainer;
         this.num = num;
+        this.uniqueNum = uniqueNum;
 
         this.legend = null;
 
@@ -150,7 +174,7 @@ define([
         rmLbl.innerText = "Remove this layer";
         var rmBtn = rmP.appendChild(document.createElement("button"));
         rmBtn.innerText = "-";
-        rmBtn.id = "barplot-layer-" + this.num + "-remove-button";
+        rmBtn.id = "barplot-layer-" + this.uniqueNum + "-remove-button";
         rmLbl.setAttribute("for", rmBtn.id);
         rmBtn.onclick = function () {
             scope.barplotPanel.removeLayer(scope.num);
@@ -184,7 +208,8 @@ define([
         dfltColorLbl.innerText = "Default color";
         var dfltColorInput = document.createElement("input");
         dfltColorInput.setAttribute("type", "text");
-        dfltColorInput.id = "barplot-layer-" + this.num + "-dfltcolor-input";
+        dfltColorInput.id =
+            "barplot-layer-" + this.uniqueNum + "-dfltcolor-input";
         dfltColorLbl.setAttribute("for", dfltColorInput.id);
         dfltColorP.appendChild(dfltColorInput);
         // Register dfltColorInput as a color selector with spectrum.js
@@ -210,7 +235,8 @@ define([
         chgColorP.appendChild(chgColorLbl);
         // Add the checkbox, taking care to use a certain ID
         var chgColorCheckbox = document.createElement("input");
-        var chgColorCheckboxID = "barplot-layer-" + this.num + "-chgcolor-chk";
+        var chgColorCheckboxID =
+            "barplot-layer-" + this.uniqueNum + "-chgcolor-chk";
         chgColorCheckbox.id = chgColorCheckboxID;
         chgColorCheckbox.setAttribute("type", "checkbox");
         chgColorCheckbox.classList.add("empress-input");
@@ -253,7 +279,7 @@ define([
         var colormapSelector = document.createElement("select");
         Colorer.addColorsToSelect(colormapSelector);
         colormapSC.appendChild(colormapSelector);
-        colormapSelector.id = "barplot-layer-" + this.num + "fm-colormap";
+        colormapSelector.id = "barplot-layer-" + this.uniqueNum + "fm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
         // Add a row for choosing the scale type (i.e. whether to use
@@ -270,7 +296,7 @@ define([
             document.createElement("input")
         );
         continuousValCheckbox.id =
-            "barplot-layer-" + this.num + "-fmcolor-continuous-chk";
+            "barplot-layer-" + this.uniqueNum + "-fmcolor-continuous-chk";
         continuousValCheckbox.setAttribute("type", "checkbox");
         continuousValCheckbox.classList.add("empress-input");
         continuousValLbl.setAttribute("for", continuousValCheckbox.id);
@@ -332,7 +358,7 @@ define([
         dfltLenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
         dfltLenInput.classList.add("empress-input");
         dfltLenInput.value = this.defaultLength;
-        dfltLenInput.id = "barplot-layer-" + this.num + "-dfltlen-input";
+        dfltLenInput.id = "barplot-layer-" + this.uniqueNum + "-dfltlen-input";
         dfltLenLbl.setAttribute("for", dfltLenInput.id);
         $(dfltLenInput).change(function () {
             scope.defaultLength = util.parseAndValidateNum(
@@ -350,7 +376,8 @@ define([
         chgLenP.appendChild(chgLenLbl);
         // Add the checkbox, taking care to use a certain ID
         var chgLenCheckbox = document.createElement("input");
-        var chgLenCheckboxID = "barplot-layer-" + this.num + "-chglen-chk";
+        var chgLenCheckboxID =
+            "barplot-layer-" + this.uniqueNum + "-chglen-chk";
         chgLenCheckbox.id = chgLenCheckboxID;
         chgLenCheckbox.setAttribute("type", "checkbox");
         chgLenCheckbox.classList.add("empress-input");
@@ -393,7 +420,7 @@ define([
             );
         });
         minLenP.appendChild(minLenInput);
-        minLenInput.id = "barplot-layer-" + this.num + "fm-minlen-input";
+        minLenInput.id = "barplot-layer-" + this.uniqueNum + "fm-minlen-input";
         minLenLbl.setAttribute("for", minLenInput.id);
 
         // Add max len stuff
@@ -412,7 +439,7 @@ define([
             );
         });
         maxLenP.appendChild(maxLenInput);
-        maxLenInput.id = "barplot-layer-" + this.num + "fm-maxlen-input";
+        maxLenInput.id = "barplot-layer-" + this.uniqueNum + "fm-maxlen-input";
         maxLenLbl.setAttribute("for", maxLenInput.id);
 
         lenDetailsDiv.appendChild(minLenP);
@@ -474,7 +501,7 @@ define([
             chgFieldSMFieldSelector.appendChild(opt);
         });
         chgFieldSMFieldSelector.id =
-            "barplot-layer-" + this.num + "-chgsmfield";
+            "barplot-layer-" + this.uniqueNum + "-chgsmfield";
         chgFieldLbl.setAttribute("for", chgFieldSMFieldSelector.id);
         chgFieldSC.appendChild(chgFieldSMFieldSelector);
 
@@ -489,7 +516,7 @@ define([
         var colormapSelector = document.createElement("select");
         Colorer.addColorsToSelect(colormapSelector);
         colormapSC.appendChild(colormapSelector);
-        colormapSelector.id = "barplot-layer-" + this.num + "sm-colormap";
+        colormapSelector.id = "barplot-layer-" + this.uniqueNum + "sm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
         var lenP = this.smDiv.appendChild(document.createElement("p"));
@@ -500,7 +527,7 @@ define([
         lenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
         lenInput.classList.add("empress-input");
         lenInput.value = this.defaultLength;
-        lenInput.id = "barplot-layer-" + this.num + "-smlength-input";
+        lenInput.id = "barplot-layer-" + this.uniqueNum + "-smlength-input";
         lenLbl.setAttribute("for", lenInput.id);
 
         // TODO initialize defaults more sanely

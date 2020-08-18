@@ -1244,7 +1244,8 @@ define([
                 colorer = new Colorer(
                     layer.colorByFMColorMap,
                     sortedUniqueColorValues,
-                    layer.colorByFMContinuous
+                    layer.colorByFMContinuous,
+                    layer.uniqueNum
                 );
             } catch (err) {
                 // If the Colorer construction failed (should only have
