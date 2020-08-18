@@ -12,6 +12,17 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             setup: function () {
                 this.empress = UtilitiesForTesting.getTestData(true).empress;
                 this.empress._drawer.initialize();
+
+            // Since layouts are now computed on client-side which means
+            // _treeData and _tdToInd are created on client-side. The test were
+            // originally written when coordinates were calculated on python
+            // side. Thus we need to set them back.
+            this.empress._treeData = UtilitiesForTesting
+                .getTestData(false)
+                .treeData;
+            this.empress._tdToInd = UtilitiesForTesting
+                .getTestData(false)
+                .tdToInd;
             },
 
             teardown: function () {

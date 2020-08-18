@@ -644,7 +644,20 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
         test("Test findTips", function () {
             // Note: 0 entry is blank because names uses 1-based index
             // see https://github.com/biocore/empress/issues/311
-            var names = ["", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"];
+            var names = [
+                "",
+                "a",
+                "b",
+                "c",
+                "d",
+                "e",
+                "f",
+                "g",
+                "h",
+                "i",
+                "j",
+                "k",
+            ];
             var resBP = new BPTree(this.bpArray, names, null, null);
 
             // postorder positions
@@ -668,20 +681,8 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             });
         });
 
-        test("Test getNumTips", function() {
-            var expected = [
-                undefined,
-                1,
-                1,
-                1,
-                1,
-                3,
-                1,
-                1,
-                1,
-                2,
-                2,
-                6];
+        test("Test getNumTips", function () {
+            var expected = [undefined, 1, 1, 1, 1, 3, 1, 1, 1, 2, 2, 6];
             for (var i = 1; i <= this.bpObj.size; i++) {
                 equal(this.bpObj.getNumTips(i), expected[i], "node " + i);
             }

@@ -197,7 +197,12 @@ class Tree(TreeNode):
             Name of the default layout.
         """
 
-        layout_to_coordsuffix = {}
+        # layout_to_coordsuffix = {}
+        layout_to_coordsuffix = {
+            "Rectangular": "r",
+            "Unrooted": "2",
+            "Circular": "c1"
+        }
         layout_algs = (
             self.layout_unrooted,
             self.layout_rectangular,
@@ -205,23 +210,24 @@ class Tree(TreeNode):
         )
         # We set the default layout to whatever the first layout in
         # layout_algs is, but this behavior is of course modifiable
-        default_layout = None
+        # default_layout = None
+        default_layout = "Unrooted"
         # Also, we retrieve the y scaling factor from the rectangular layout so
         # that we can use it to scale the bars in the barplots to be
         # consistently thick. A tree with just a few nodes will seem to have
         # bigger vertical gaps between tips, and will thus need thicker bars.
         yr_scaling_factor = 1
-        for alg in layout_algs:
-            if alg == self.layout_rectangular:
-                name, suffix, yr_scaling_factor = alg(width, height)
-            else:
-                name, suffix = alg(width, height)
-            layout_to_coordsuffix[name] = suffix
-            self.alter_coordinates_relative_to_root(suffix)
-            if name == "Circular":
-                self.alter_coordinates_relative_to_root("c0")
-            if default_layout is None:
-                default_layout = name
+        # for alg in layout_algs:
+            # if alg == self.layout_rectangular:
+            #     name, suffix, yr_scaling_factor = alg(width, height)
+            # else:
+            #     name, suffix = alg(width, height)
+            # layout_to_coordsuffix[name] = suffix
+            # self.alter_coordinates_relative_to_root(suffix)
+            # if name == "Circular":
+            #     self.alter_coordinates_relative_to_root("c0")
+            # if default_layout is None:
+            #     default_layout = name
 
         # Determine highest and lowest child y-position for internal nodes in
         # the rectangular layout; used to draw vertical lines for these nodes.
@@ -232,16 +238,16 @@ class Tree(TreeNode):
         # for this vertical line shouldn't show up. I don't think this should
         # cause any problems, but it may be worth detecting these cases and not
         # drawing vertical lines for them in the future.
-        for n in self.preorder():
-            if not n.is_tip():
-                # wow, child does not look like a word any more
-                n.highest_child_yr = float("-inf")
-                n.lowest_child_yr = float("inf")
-                for c in n.children:
-                    if c.yr > n.highest_child_yr:
-                        n.highest_child_yr = c.yr
-                    if c.yr < n.lowest_child_yr:
-                        n.lowest_child_yr = c.yr
+        # for n in self.preorder():
+        #     if not n.is_tip():
+        #         # wow, child does not look like a word any more
+        #         n.highest_child_yr = float("-inf")
+        #         n.lowest_child_yr = float("inf")
+        #         for c in n.children:
+        #             if c.yr > n.highest_child_yr:
+        #                 n.highest_child_yr = c.yr
+        #             if c.yr < n.lowest_child_yr:
+        #                 n.lowest_child_yr = c.yr
 
         return layout_to_coordsuffix, default_layout, yr_scaling_factor
 
@@ -423,12 +429,9 @@ class Tree(TreeNode):
                 child_clangle_sum = sum([c.clangle for c in n.children])
                 n.clangle = child_clangle_sum / len(n.children)
 
-        max_clradius = 0
         self.clradius = 0
         for n in self.preorder(include_self=False):
             n.clradius = n.parent.clradius + n.length
-            if n.clradius > max_clradius:
-                max_clradius = n.clradius
 
         # Now that we have the polar coordinates of the nodes, convert these
         # coordinates to normal x/y coordinates.

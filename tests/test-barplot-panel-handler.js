@@ -16,7 +16,7 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
         var empress = new Empress(
             this.testData.tree,
             this.testData.treeData,
-            this.testData.tdToInd,
+            // this.testData.tdToInd,
             this.testData.nameToKeys,
             this.testData.layoutToCoordSuffix,
             "Unrooted",
@@ -37,7 +37,7 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
         var empress2 = new Empress(
             this.testData.tree,
             this.testData.treeData,
-            this.testData.tdToInd,
+            // this.testData.tdToInd,
             this.testData.nameToKeys,
             this.testData.layoutToCoordSuffix,
             "Rectangular",
@@ -55,7 +55,7 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
         var empress = new Empress(
             this.testData.tree,
             this.testData.treeData,
-            this.testData.tdToInd,
+            // this.testData.tdToInd,
             this.testData.nameToKeys,
             this.testData.layoutToCoordSuffix,
             "Unrooted",
@@ -89,7 +89,7 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
         var empressWithFM = new Empress(
             this.testData.tree,
             this.testData.treeData,
-            this.testData.tdToInd,
+            // this.testData.tdToInd,
             this.testData.nameToKeys,
             this.testData.layoutToCoordSuffix,
             "Unrooted",
@@ -105,7 +105,7 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
         var empressWithNoFM = new Empress(
             this.testData.tree,
             this.testData.treeData,
-            this.testData.tdToInd,
+            // this.testData.tdToInd,
             this.testData.nameToKeys,
             this.testData.layoutToCoordSuffix,
             "Unrooted",

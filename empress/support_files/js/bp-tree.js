@@ -14,6 +14,7 @@ define(["ByteArray"], function (ByteArray) {
      * @constructs BPTree
      */
     function BPTree(b, names = null, lengths = null, coding = 51) {
+        var d = new Date();
         if (coding !== null) {
             var b_len = b.length - 1;
             var decoded_b = [];
@@ -45,6 +46,8 @@ define(["ByteArray"], function (ByteArray) {
 
             b = decoded_b;
         }
+        var dt = new Date();
+        console.log("uncompressed tree in", dt.getTime() - d.getTime());
 
         /**
          * @type {Array}
@@ -241,6 +244,10 @@ define(["ByteArray"], function (ByteArray) {
     BPTree.prototype.name = function (i) {
         return this.names_[this.preorder(i)];
     };
+
+    BPTree.prototype.getAllNames = function() {
+        return this.names_;
+    }
 
     /**
      *
@@ -672,13 +679,13 @@ define(["ByteArray"], function (ByteArray) {
         var close = this.close(open);
         var numTips = 0;
         for (var i = open + 1; i < close; i++) {
-            if (this.b_[i] === 1 && this.b_[i+1] === 0) {
+            if (this.b_[i] === 1 && this.b_[i + 1] === 0) {
                 numTips += 1;
             }
         }
         this._numTips[nodeKey] = numTips;
         return numTips;
-    }
+    };
 
     /** True if name is in the names array for the tree
      *

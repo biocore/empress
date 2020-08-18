@@ -51,31 +51,37 @@ define(["Empress", "BPTree", "BiomTable"], function (
         var treeData = [
             0, // this is blank since empress uses 1-based index. This
             // will be addressed with #223
-            ["1", 29, 30, 1, 2, 15, 16, 0, 0, 0],
-            ["2", 31, 32, 3, 4, 17, 18, 0, 0, 0.5],
-            ["3", 33, 34, 5, 6, 19, 20, 0, 0, 1],
-            ["internal", 35, 36, 7, 8, 21, 22, 0, 0, 0],
-            ["internal", 37, 38, 9, 10, 23, 24, 0, 0, 0],
-            ["EmpressNode6", 39, 40, 11, 12, 25, 26, 0, 0, 0],
-            ["root", 41, 42, 13, 14, 27, 28, 0, 0, 0],
+            [[0.75, 0.75, 0.75], false, true, "1", 29, 30, 1, 2, 15, 16, 0, 0, 0],
+            [[0.75, 0.75, 0.75], false, true, "2", 31, 32, 3, 4, 17, 18, 0, 0, 0.5],
+            [[0.75, 0.75, 0.75], false, true, "3", 33, 34, 5, 6, 19, 20, 0, 0, 1],
+            [[0.75, 0.75, 0.75], false, true, "internal", 35, 36, 7, 8, 21, 22, 0, 0, 0],
+            [[0.75, 0.75, 0.75], false, true, "internal", 37, 38, 9, 10, 23, 24, 0, 0, 0],
+            [[0.75, 0.75, 0.75], false, true, "EmpressNode6", 39, 40, 11, 12, 25, 26, 0, 0, 0],
+            [[0.75, 0.75, 0.75], false, true, "root", 41, 42, 13, 14, 27, 28, 0, 0, 0],
         ];
         var tdToInd = {
-            name: 0,
-            x2: 1,
-            y2: 2,
-            xr: 3,
-            yr: 4,
-            xc1: 5,
-            yc1: 6,
-            xc0: 7,
-            yc0: 8,
-            angle: 9,
-            highestchildyr: 10,
-            lowestchildyr: 11,
-            arcx0: 12,
-            arcy0: 13,
-            arcstartangle: 14,
-            arcendangle: 15,
+            // all nodes
+            color: 0,
+            isColored: 1,
+            visible: 2,
+            name: 3,
+            x2: 4,
+            y2: 5,
+            xr: 6,
+            yr: 7,
+            xc1: 8,
+            yc1: 9,
+            xc0: 10,
+            yc0: 11,
+            angle: 12,
+            // all internal nodes
+            highestchildyr: 13,
+            lowestchildyr: 14,
+            // non-root internal nodes
+            arcx0: 15,
+            arcy0: 16,
+            arcstartangle: 17,
+            arcendangle: 18,
         };
 
         // data for the BiomTable object
@@ -143,7 +149,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
             empress = new Empress(
                 tree,
                 treeData,
-                tdToInd,
+                // tdToInd,
                 nameToKeys,
                 layoutToCoordSuffix,
                 "Unrooted",

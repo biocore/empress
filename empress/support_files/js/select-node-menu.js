@@ -180,7 +180,7 @@ define(["underscore", "util"], function (_, util) {
         // grab the name of the node
         var emp = this.empress;
         var nodeKeys = this.nodeKeys;
-        var node = emp._treeData[nodeKeys[0]];
+        var node = nodeKeys[0];
         var name = emp.getNodeInfo(node, "name");
 
         this.nodeNameLabel.textContent = "Name: " + name;
@@ -226,10 +226,7 @@ define(["underscore", "util"], function (_, util) {
         }
 
         // get the name of the tip
-        var name = this.empress.getNodeInfo(
-            this.empress._treeData[this.nodeKeys[0]],
-            "name"
-        );
+        var name = this.empress.getNodeInfo(this.nodeKeys[0], "name");
 
         // 1. Add feature metadata information (if present for this tip; if
         // there isn't feature metadata for this tip, the f.m. UI elements in
@@ -283,10 +280,7 @@ define(["underscore", "util"], function (_, util) {
             throw "showInternalNode(): nodeKeys is not set!";
         }
 
-        var name = this.empress.getNodeInfo(
-            this.empress._treeData[this.nodeKeys[0]],
-            "name"
-        );
+        var name = this.empress.getNodeInfo(this.nodeKeys[0], "name");
 
         // Figure out whether or not we know the actual node in the tree (for
         // example, if the user searched for a node with a duplicate name, then
@@ -417,9 +411,10 @@ define(["underscore", "util"], function (_, util) {
     SelectedNodeMenu.prototype.setSelectedNodes = function (nodeKeys) {
         // test to make sure nodeKeys represents nodes with the same name
         var emp = this.empress;
-        var name = emp.getNodeInfo(emp._treeData[nodeKeys[0]], "name");
+        var name = emp.getNodeInfo(nodeKeys[0], "name");
+        console.log("!!!!", emp.getNodeInfo(nodeKeys[0], "name"))
         for (var i = 1; i < nodeKeys.length; i++) {
-            if (emp.getNodeInfo(emp._treeData[nodeKeys[i]], "name") !== name) {
+            if (emp.getNodeInfo(nodeKeys[i], "name") !== name) {
                 throw "setSelectedNodes(): keys do not represent the same node!";
             }
         }
@@ -430,7 +425,7 @@ define(["underscore", "util"], function (_, util) {
         if (t.isleaf(t.postorderselect(nodeKeys[0])) && nodeKeys.length > 1) {
             throw (
                 "setSelectedNodes(): " +
-                emp.getNodeInfo(emp._treeData[nodeKeys[0]], "name") +
+                emp.getNodeInfo(nodeKeys[0], "name") +
                 " matches multiple tips!"
             );
         }
@@ -442,7 +437,7 @@ define(["underscore", "util"], function (_, util) {
          */
         var highlightedNodes = [];
         for (i = 0; i < nodeKeys.length; i++) {
-            var node = this.empress._treeData[nodeKeys[i]];
+            var node = nodeKeys[i];
             var x = this.empress.getX(node);
             var y = this.empress.getY(node);
             highlightedNodes.push(...[x, y, 0, 1, 0]);
@@ -466,7 +461,7 @@ define(["underscore", "util"], function (_, util) {
             return;
         }
 
-        var nodeToPositionAt = this.empress._treeData[this.nodeKeys[0]];
+        var nodeToPositionAt = this.nodeKeys[0];
         // get table coords
         var x = this.empress.getX(nodeToPositionAt);
         var y = this.empress.getY(nodeToPositionAt);

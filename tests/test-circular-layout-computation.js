@@ -18,31 +18,37 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                 );
                 var layoutToCoordSuffix = { Circular: "c1" };
                 var tdToInd = {
-                    name: 0,
-                    x2: 1,
-                    y2: 2,
-                    xr: 3,
-                    yr: 4,
-                    xc1: 5,
-                    yc1: 6,
-                    xc0: 7,
-                    yc0: 8,
-                    angle: 9,
-                    highestchildyr: 10,
-                    lowestchildyr: 11,
-                    arcx0: 12,
-                    arcy0: 13,
-                    arcstartangle: 14,
-                    arcendangle: 15,
+                    // all nodes
+                    color: 0,
+                    isColored: 1,
+                    visible: 2,
+                    name: 3,
+                    x2: 4,
+                    y2: 5,
+                    xr: 6,
+                    yr: 7,
+                    xc1: 8,
+                    yc1: 9,
+                    xc0: 10,
+                    yc0: 11,
+                    angle: 12,
+                    // all internal nodes
+                    highestchildyr: 13,
+                    lowestchildyr: 14,
+                    // non-root internal nodes
+                    arcx0: 15,
+                    arcy0: 16,
+                    arcstartangle: 17,
+                    arcendangle: 18,
                 };
 
                 var treeData = [
                     0,
-                    ["", 0, 0, 0, 0, -2, 0, -2, 2],
-                    ["", 0, 0, 0, 0, 2, 0, 2, 2],
-                    ["", 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 2, 0, 0, Math.PI],
-                    ["", 0, 0, 0, 0, 0, -1, 0, -3],
-                    ["", 0, 0, 0, 0, 0, -1, 0, -1],
+                    [[0.75, 0.75, 0.75], false, true, "", 0, 0, 0, 0, -2, 0, -2, 2],
+                    [[0.75, 0.75, 0.75], false, true, "", 0, 0, 0, 0, 2, 0, 2, 2],
+                    [[0.75, 0.75, 0.75], false, true, "", 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 2, 0, 0, Math.PI],
+                    [[0.75, 0.75, 0.75], false, true, "", 0, 0, 0, 0, 0, -1, 0, -3],
+                    [[0.75, 0.75, 0.75], false, true, "", 0, 0, 0, 0, 0, -1, 0, -1],
                 ];
 
                 // data for the BiomTable object; copied from test-empress.js
@@ -102,7 +108,6 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                 this.empress = new Empress(
                     tree,
                     treeData,
-                    tdToInd,
                     null,
                     layoutToCoordSuffix,
                     "Circular",
@@ -115,6 +120,13 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                 );
                 this.empress._drawer = {};
                 this.empress._drawer.VERTEX_SIZE = 5;
+
+                // Since layouts are now computed on client-side which means
+                // _treeData and _tdToInd are created on client-side. The test were
+                // originally written when coordinates were calculated on python
+                // side. Thus we need to set them back.
+                this.empress._treeData = treeData;
+                this.empress._tdToInd = tdToInd;
             },
 
             teardown: function () {
@@ -140,6 +152,8 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
             equal(coords[(node - 1) * 10 + 1], 1); // start y position
             equal(coords[(node - 1) * 10 + 5], 0); // end x position
             equal(coords[(node - 1) * 10 + 6], -1); // end y position
+
+            console.log(coords)
 
             // For the arc for node 3 start at (2,0) and ends at (-2, 0)
             // check if arc for node 3 is correct
