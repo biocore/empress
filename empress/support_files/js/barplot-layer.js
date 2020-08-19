@@ -559,29 +559,21 @@ define([
         this.legendDiv.classList.add("barplot-layer-legend");
         this.legend = new Legend(this.legendDiv);
         this.layerDiv.appendChild(this.legendDiv);
-        // TODO 2: give the legend a fixed height and make it vertically
-        // scrollable on overflow? This should already kinda be done thanks to
-        // the legend class being applied to nodeColorKey, but I feel like
-        // making a new class for that is probably a better option (since I
-        // don't think the hover effect makes sense). Also, it should be centered properly...
-        // TODO 3: if possible, making the legend text selectable (overriding
+        // TODO: if possible, making the legend text selectable (overriding
         // the unselectable-text class on the side panel) would be nice, so
-        // users can do things like highlight category names. Understandable if
-        // this isn't easily doable, though.
+        // users can do things like highlight and copy category names.
+        // Understandable if this isn't easily doable, though.
     };
 
     /**
      * Populates the legend with information about the current coloring
      * selection.
      *
-     * NOTE: currently, this is called by empress.js when "updating" the
-     * barplots. However, it would be good to instead update this whenever the
-     * colorings / barplot type changes -- that'd require storing the colorer
-     * within the barplot layer class, and then having empress.js access that i
-     * guess? maybe would require passing a reference to Empress to
-     * BarplotLayers, so that the layer could retrieve unique sample / feature
-     * metadata values or whatever.
-     * or whatevs.
+     * This is currently called by the Empress object when drawing barplots; so
+     * the legend is only updated when the "Update" button is pressed, rather
+     * than whenever one of the UI elements changes. Restructuring things so
+     * this class creates the Colorer is possible, but would likely require
+     * this class having a reference to the Empress object.
      *
      * @param {Colorer} colorer Instance of a Colorer object defining the
      *                          current color selection for this barplot.
