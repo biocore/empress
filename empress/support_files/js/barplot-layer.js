@@ -70,6 +70,16 @@ define([
         this.barplotType = this.fmAvailable ? "fm" : "sm";
 
         // Various properties of the barplot layer state for feature metadata
+        //
+        // NOTE that the default color defaults to the (this.num)th "Classic
+        // QIIME Colors" color. The fact that we use this.num and not
+        // this.uniqueNum for this is a tradeoff; it ensures consistency (even
+        // if the user's added and removed hundreds of layers, a new Layer 1
+        // will always default to red, a new Layer 2 will always default to
+        // blue, etc.) at the cost of some possible silliness (it's possible
+        // to, say, add two layers, remove the first, and then add another one;
+        // and now both Layer 1 and Layer 2 will have their default color as
+        // blue). Shouldn't really impact most users anyway.
         this.initialDefaultColorHex = Colorer.getQIIMEColor(this.num - 1);
         this.defaultColor = Colorer.hex2RGB(this.initialDefaultColorHex);
         this.colorByFM = false;
@@ -305,6 +315,10 @@ define([
         // colormap is discrete
         continuousValP.classList.add("hidden");
 
+        // Initialize defaults to match the UI defaults (e.g. the default
+        // feature metadata field for coloring is the first in the selector)
+        this.colorByFMField = chgColorFMFieldSelector.value;
+        this.colorByFMColorMap = colormapSelector.value;
         // Alter visibility of the color-changing details when the "Color
         // by..." checkbox is clicked
         $(chgColorCheckbox).change(function () {
@@ -446,12 +460,11 @@ define([
         lenDetailsDiv.appendChild(minLenP);
         lenDetailsDiv.appendChild(maxLenP);
 
+        this.scaleLengthByFMField = chgLenFMFieldSelector.value;
         $(chgLenCheckbox).change(function () {
             if (chgLenCheckbox.checked) {
                 chgLenFMFieldSelector.disabled = false;
                 scope.scaleLengthByFM = true;
-                // TODO rather than setting this here, have it be set to the
-                // first value in the selector on initialization
                 scope.scaleLengthByFMField = chgLenFMFieldSelector.value;
                 dfltLenP.classList.add("hidden");
                 lenDetailsDiv.classList.remove("hidden");
