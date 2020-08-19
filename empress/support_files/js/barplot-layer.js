@@ -587,26 +587,26 @@ define([
      *                          current color selection for this barplot.
      */
     BarplotLayer.prototype.populateLegend = function (colorer) {
-            var isFM = this.barplotType === "fm";
-            var title;
-            if (isFM) {
-                title = this.colorByFMField;
-            } else {
-                title = this.colorBySMField;
-            }
-            // Show a categorical legend (isContinuous = false) _unless_ the
-            // barplot is for feature metadata and the "Continuous values" checkbox
-            // is checked and visible.
-            if (
-                isFM &&
-                this.colorByFMContinuous &&
-                !this.colorByFMColorMapDiscrete
-            ) {
-                var gradInfo = colorer.getGradientSVG();
-                this.legend.addContinuousKey(title, gradInfo[0], gradInfo[1]);
-            } else {
-                this.legend.addCategoricalKey(title, colorer.getMapHex());
-            }
+        var isFM = this.barplotType === "fm";
+        var title;
+        if (isFM) {
+            title = this.colorByFMField;
+        } else {
+            title = this.colorBySMField;
+        }
+        // Show a categorical legend (isContinuous = false) _unless_ the
+        // barplot is for feature metadata and the "Continuous values" checkbox
+        // is checked and visible.
+        if (
+            isFM &&
+            this.colorByFMContinuous &&
+            !this.colorByFMColorMapDiscrete
+        ) {
+            var gradInfo = colorer.getGradientSVG();
+            this.legend.addContinuousKey(title, gradInfo[0], gradInfo[1]);
+        } else {
+            this.legend.addCategoricalKey(title, colorer.getMapHex());
+        }
     };
 
     /**
