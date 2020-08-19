@@ -145,9 +145,11 @@ Similarly to other tree visualization tools like [iTOL](https://itol.embl.de/), 
 
 #### First: a small warning about barplots
 
-Although barplots are useful for identifying patterns in phylogenies, be wary of
-reading too much into them! The ordering of tips is arbitrary, and this can
-distort the figures shown. To quote "Inferring Phylogenies" (Felsenstein 2004), pages 573–574:
+Although barplots are very useful for identifying patterns, be wary of
+reading too much into them! The ordering of tips / clades on the same level of
+the tree is [currently arbitrary](https://github.com/biocore/empress/issues/170),
+and this can impact the way barplots look in ways that might not be immediately
+obvious. To quote "Inferring Phylogenies" (Felsenstein 2004), pages 573–574:
 
 > It is worth noting that by reordering tips, you can change the viewer's impression of the closeness of relationships. [...] A little judicious flipping may create a Great Chain of Being marching nicely along the sequence of names, even though the tree supports no such thing.
 
