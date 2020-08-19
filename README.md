@@ -147,7 +147,7 @@ Similarly to other tree visualization tools like [iTOL](https://itol.embl.de/), 
 
 Although barplots are useful for identifying patterns in phylogenies, be wary of
 reading too much into them! The ordering of tips is arbitrary, and this can
-distort the figures shown. To quote _Felsenstein 2004_, pages 573--574:
+distort the figures shown. To quote "Inferring Phylogenies" (Felsenstein 2004), pages 573–574:
 
 > It is worth noting that by reordering tips, you can change the viewer's impression of the closeness of relationships. [...] A little judicious flipping may create a Great Chain of Being marching nicely along the sequence of names, even though the tree supports no such thing.
 
@@ -169,7 +169,7 @@ Since both the node colorings and the barplot layer are now showing the same inf
 
 ![empress barplots: class coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_4.png)
 
-Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at roughly five separate "clusters" throughout the tree: are all of these the same class? We can tell from the legend for this layer (under the heading __`Level 3`__) that there is only one class colored lavender here, `c__Clostridia`.
+Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at roughly five separate "clusters" throughout the tree: are all of these the same class? We can tell from the legend for this layer (under the heading `Level 3`) that there is only one class colored lavender here, `c__Clostridia`.
 
 So, these lavender classes are all *Clostridia*. Does it make sense that representatives of this class are spread out throughout the tree so much? Unfortunately, yes, since *Clostridia* are -- to quote [Wikipedia](https://en.wikipedia.org/wiki/Clostridia) -- "a highly [polyphyletic](https://en.wikipedia.org/wiki/Polyphyly) class." (As an exercise, we recommend trying out adding on extra barplot layers for lower levels of taxonomy -- order, family, genus, etc. -- and seeing how things change.)
 
@@ -185,7 +185,7 @@ One thing we might be interested in doing is seeing what types of samples contai
 
 Let's revisit our analysis above of which tips are unique to which body sites in this dataset -- now, we'll instead be asking the related question of "which body site(s) are the tips in this dataset most frequently seen in?" To investigate this, we'll use our new barplot layer to show this information.
 
-In order to do this, we'll need to change our new layer ("Layer 2") from a feature metadata layer to a sample metadata layer. You can do this by clicking on the _Sample Metadata_ button underneath the text "Layer 2". The controls available for this barplot layer should change; in order to show sample presence information for body sites, change the _Show sample info for..._ drop-down menu to `body-site`. Try clicking _Update_ to see what our new Layer 2 looks like.
+In order to do this, we'll need to change our new layer (_Layer 2_) from a feature metadata layer to a sample metadata layer. You can do this by clicking on the _Sample Metadata_ button underneath the text _Layer 2_. The controls available for this barplot layer should change; in order to show sample presence information for body sites, change the _Show sample info for..._ drop-down menu to `body-site`. Try clicking _Update_ to see what our new Layer 2 looks like.
 
 ![empress barplots: class coloring layer 1, bodysite layer 2, and tree phylum coloring](docs/moving-pictures/img/empress_barplots_6.png)
 
