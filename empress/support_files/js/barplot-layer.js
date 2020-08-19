@@ -648,7 +648,11 @@ define([
     /**
      * @type{Number}
      * The minimum length used for all of the length inputs: i.e. no length
-     * entered by the user can be below this. This should really stay at zero.
+     * entered by the user can be below this. This could conceivably be
+     * increased to 1 or another small positive value, but it should probably
+     * stay at 0 so that 0 can be used as the minimum length for length
+     * scaling. (In any case, this should NOT be set to a negative number!
+     * That'll break things.)
      * @public
      */
     BarplotLayer.MIN_LENGTH = 0;
