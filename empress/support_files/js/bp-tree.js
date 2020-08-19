@@ -172,6 +172,8 @@ define(["ByteArray"], function (ByteArray) {
          *       efficient to cache an in-order tree traversal.
          */
         this._inorder = null;
+
+        this._nameToNodes = {};
     }
 
     /**
@@ -242,7 +244,7 @@ define(["ByteArray"], function (ByteArray) {
      * @return{String}
      */
     BPTree.prototype.name = function (i) {
-        return this.names_[this.preorder(i)];
+        return this.names_[this.postorder(i)];
     };
 
     BPTree.prototype.getAllNames = function() {
@@ -272,7 +274,7 @@ define(["ByteArray"], function (ByteArray) {
      * @return{Number}
      */
     BPTree.prototype.length = function (i) {
-        return this.lengths_[this.preorder(i)];
+        return this.lengths_[this.postorder(i)];
     };
 
     /**
@@ -621,12 +623,11 @@ define(["ByteArray"], function (ByteArray) {
         var totalLength = 0;
         while (curNode !== end) {
             totalLength += this.length(this.postorderselect(curNode));
-            curNode = this.postorder(
-                this.parent(this.postorderselect(curNode))
-            );
+            curNode = this.parent(this.postorderselect(curNode));
             if (curNode === -1) {
                 throw "Node " + start + " must be a descendant of " + end;
             }
+            curNode = this.postorder(curNode);
         }
         return totalLength;
     };
@@ -655,7 +656,7 @@ define(["ByteArray"], function (ByteArray) {
         for (var j = start; j <= end; j++) {
             var node = this.preorderselect(j);
             if (this.isleaf(node)) {
-                tips.push(this.name(node));
+                tips.push(this.postorder(node));
             }
         }
 
@@ -695,6 +696,24 @@ define(["ByteArray"], function (ByteArray) {
     BPTree.prototype.containsNode = function (name) {
         return this.names_.indexOf(name) !== -1;
     };
+
+    /**
+     *
+     */
+    BPTree.prototype.getNodesWithName = function(name) {
+        if (name in this._nameToNodes) {
+            return this._nameToNodes[name];
+        }
+
+        this._nameToNodes[name] = [];
+        for (var i = 1; i <= this.size; i++) {
+            if (name === this.names_[i]) {
+                this._nameToNodes[name].push(i);
+            }
+        }
+
+        return this._nameToNodes[name];
+    }
 
     return BPTree;
 });

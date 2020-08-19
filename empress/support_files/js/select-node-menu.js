@@ -226,13 +226,13 @@ define(["underscore", "util"], function (_, util) {
         }
 
         // get the name of the tip
-        var name = this.empress.getNodeInfo(this.nodeKeys[0], "name");
+        var node = this.nodeKeys[0];
 
         // 1. Add feature metadata information (if present for this tip; if
         // there isn't feature metadata for this tip, the f.m. UI elements in
         // the selected node menu will be hidden)
         SelectedNodeMenu.makeFeatureMetadataTable(
-            name,
+            node,
             this.empress._featureMetadataColumns,
             this.empress._tipMetadata,
             this.fmHeader,
@@ -240,7 +240,7 @@ define(["underscore", "util"], function (_, util) {
         );
 
         // 2. Add sample presence information for this tip
-        var ctData = this.empress.computeTipSamplePresence(name, this.fields);
+        var ctData = this.empress.computeTipSamplePresence(node, this.fields);
 
         // 2.1 The samples represented by this tip are sent to Emperor
 
@@ -248,10 +248,10 @@ define(["underscore", "util"], function (_, util) {
         // by BIOMTable.getObsIDsDifference() contains the feature IDs present
         // in the input array but not in the BIOM table -- so if the length of
         // this array is zero, this feature is present in the table.
-        var diff = this.empress._biom.getObsIDsDifference([name]);
+        var diff = this.empress._biom.getObsIDsDifference([node]);
         if (diff.length == 0) {
             this._samplesInSelection = this.empress._biom.getSamplesByObservations(
-                [name]
+                [node]
             );
         } else {
             this._samplesInSelection = [];
@@ -295,7 +295,7 @@ define(["underscore", "util"], function (_, util) {
         // The reason we try to figure this out here is so that we can
         // determine whether or not to show a warning about duplicate names
         // in the menu.
-        var keysOfNodesWithThisName = this.empress._nameToKeys[name];
+        var keysOfNodesWithThisName = this.empress._tree.getNodesWithName(name);
         if (keysOfNodesWithThisName.length > 1) {
             this.warning.textContent =
                 "Warning: " +
@@ -308,7 +308,7 @@ define(["underscore", "util"], function (_, util) {
         // (Note that we allow duplicate-name internal nodes to have
         // feature metadata; this isn't a problem)
         SelectedNodeMenu.makeFeatureMetadataTable(
-            name,
+            this.nodeKeys[0],
             this.empress._featureMetadataColumns,
             this.empress._intMetadata,
             this.fmHeader,

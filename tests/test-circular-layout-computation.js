@@ -107,11 +107,7 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                 // invocation of the object being updated.
                 this.empress = new Empress(
                     tree,
-                    treeData,
                     null,
-                    layoutToCoordSuffix,
-                    "Circular",
-                    2010,
                     biom,
                     [], // feature metadata columns
                     {}, // tip metadata
@@ -127,6 +123,7 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                 // side. Thus we need to set them back.
                 this.empress._treeData = treeData;
                 this.empress._tdToInd = tdToInd;
+                this.empress._currentLayout = "Circular";
             },
 
             teardown: function () {

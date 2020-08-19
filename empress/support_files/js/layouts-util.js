@@ -90,7 +90,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var node = tree.postorder(tree.preorderselect(i));
             var parent = tree.postorder(tree.parent(tree.preorderselect(i)));
 
-            xCoord[node] = xCoord[parent] + tree.lengths_[i];
+            xCoord[node] = xCoord[parent] + tree.length(tree.preorderselect(i));
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
             }
@@ -292,7 +292,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             if (ignoreLengths) {
                 radius[node] = radius[parent] + 1;
             } else {
-                radius[node] = radius[parent] + tree.lengths_[i];
+                radius[node] = radius[parent] + tree.length(tree.preorderselect(i));
             }
         }
 
@@ -392,13 +392,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var y2Arr = new Array(tree.size + 1);
         var aArr = new Array(tree.size + 1);
 
-        var n = tree.preorder(tree.postorderselect(tree.size));
+        var n = tree.postorderselect(tree.size);
         var x1 = 0,
             y1 = 0,
             a = 0,
             da = angle;
-        var x2 = x1 + tree.lengths_[n] * Math.sin(a);
-        var y2 = y1 + tree.lengths_[n] * Math.cos(a);
+        var x2 = x1 + tree.length(n) * Math.sin(a);
+        var y2 = y1 + tree.length(n) * Math.cos(a);
         x1Arr[tree.size] = x1;
         x2Arr[tree.size] = x2;
         y1Arr[tree.size] = y1;
@@ -420,9 +420,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
             a += (tree.getNumTips(node) * da) / 2;
 
-            n = tree.preorder(tree.postorderselect(node));
-            x2 = x1 + tree.lengths_[n] * Math.sin(a);
-            y2 = y1 + tree.lengths_[n] * Math.cos(a);
+            n = tree.postorderselect(node);
+            x2 = x1 + tree.length(n) * Math.sin(a);
+            y2 = y1 + tree.length(n) * Math.cos(a);
             x1Arr[node] = x1;
             x2Arr[node] = x2;
             y1Arr[node] = y1;

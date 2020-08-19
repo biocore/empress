@@ -32,7 +32,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 this.bpObj = new BPTree(
                     this.bpArray,
                     null,
-                    [0, 11, 5, 1, 2, 4, 3, 6, 10, 9, 7, 8],
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                     null
                 );
 
@@ -207,7 +207,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             var lengths = names.map((k) => parseInt(k));
             var resBP = new BPTree(this.bpArray, names, lengths, null);
             for (var i = 1; i <= this.bpObj.size; i++) {
-                var index = resBP.preorderselect(i);
+                var index = resBP.postorderselect(i);
                 equal(resBP.name(index), names[i], "Name");
                 equal(resBP.length(index), lengths[i], "Length");
             }

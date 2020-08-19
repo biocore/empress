@@ -265,18 +265,12 @@ class Empress():
         fm_cols, compressed_tm_tmp, compressed_im_tmp = \
             compress_feature_metadata(self.tip_md, self.int_md)
 
-        names_to_keys = {}
         fid2idxs = {}
         compressed_tm = {}
         compressed_im = {}
         test = True
         unique = set()
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
-            if i in names_to_keys:
-                names_to_keys[i].append(i)
-            else:
-                names_to_keys[i] = [i]
-
             if node.name in fid2idxs_tmp:
                 fid2idxs[i] = fid2idxs_tmp[node.name]
                 f_ids[fid2idxs[i]] = i
@@ -284,12 +278,15 @@ class Empress():
             if node.name in compressed_tm_tmp:
                 compressed_tm[i] = compressed_tm_tmp[node.name]
 
+            # Note: for internal metadata, node names may not be unique. Thus,
+            # when using internal metadata, you will need to use bp-tree to
+            # grab all nodes with same name.
             if node.name in compressed_im_tmp:
                 compressed_im[i] = compressed_im_tmp[node.name]
 
         names = [-1]
         lengths = [-1]
-        for node in self.tree.preorder(include_self=True):
+        for node in self.tree.postorder(include_self=True):
             names.append(node.name)
             lengths.append(node.length)
 
@@ -299,7 +296,6 @@ class Empress():
             'tree': shifting(self._bp_tree),
             'lengths': lengths,
             'names': names,
-            'names_to_keys': names_to_keys,
             # feature table
             's_ids': s_ids,
             'f_ids': f_ids,
