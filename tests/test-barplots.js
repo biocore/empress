@@ -1,7 +1,8 @@
-require(["jquery", "underscore", "Empress", "UtilitiesForTesting"], function (
+require(["jquery", "underscore", "Empress", "BarplotLayer", "UtilitiesForTesting"], function (
     $,
     _,
     Empress,
+    BarplotLayer,
     UtilitiesForTesting
 ) {
     module("Barplots", {
@@ -117,7 +118,6 @@ require(["jquery", "underscore", "Empress", "UtilitiesForTesting"], function (
         });
     });
     test("BarplotPanelHandler.removeLayer", function () {
-        var scope = this;
         var empress = this.initTestEmpress();
         empress._barplotPanel.addLayer();
         equal(empress._barplotPanel.layers.length, 2);
@@ -164,4 +164,45 @@ require(["jquery", "underscore", "Empress", "UtilitiesForTesting"], function (
         // distinct unique number.
         equal(empress._barplotPanel.layers[2].uniqueNum, 4);
     });
+    test("BarplotLayer initialization: state matches UI", function () {
+        var empress = this.initTestEmpress();
+        var layer1 = empress._barplotPanel.layers[0];
+        // initTestEmpress() passes in feature metadata, so barplots should
+        // default to feature metadata
+        equal(layer1.barplotType, "fm");
+        // Default color (for feature metadata barplots) defaults to red,
+        // a.k.a. the first "Classic QIIME Colors" color
+        equal(layer1.initialDefaultColorHex, "#ff0000");
+        // (this is a hacky way of checking each element of a RGB triple; for
+        // some reason QUnit complains when trying to compare arrays)
+        equal(layer1.defaultColor[0], 1);
+        equal(layer1.defaultColor[1], 0);
+        equal(layer1.defaultColor[2], 0);
+
+        // Default length defaults to, well, DEFAULT_LENGTH
+        equal(layer1.defaultLength, BarplotLayer.DEFAULT_LENGTH);
+
+        // Check feature metadata coloring defaults. By default, feature
+        // metadata coloring isn't used -- a just-created feature metadata
+        // barplot doesn't have any color or length encodings.
+        notOk(layer1.colorByFM);
+        equal(layer1.colorByFMField, empress._barplotPanel.fmCols[0]);
+        equal(layer1.colorByFMColorMap, "discrete-coloring-qiime");
+        notOk(layer1.colorByFMContinuous);
+        ok(layer1.colorByFMColorMapDiscrete);
+
+        // Check feature metadata length-scaling defaults
+        notOk(layer1.scaleLengthByFM);
+        equal(layer1.scaleLengthByFMField, empress._barplotPanel.fmCols[0]);
+        equal(layer1.scaleLengthByFMMin, BarplotLayer.DEFAULT_MIN_LENGTH);
+        equal(layer1.scaleLengthByFMMax, BarplotLayer.DEFAULT_MAX_LENGTH);
+
+        // Check sample metadata barplot defaults
+        equal(layer1.colorBySMField, empress._barplotPanel.smCols[0]);
+        equal(layer1.colorBySMColorMap, "discrete-coloring-qiime");
+        equal(layer1.lengthSM, BarplotLayer.DEFAULT_LENGTH);
+    });
+    // TODO: Test that interacting with various elements of the BarplotLayer UI
+    // also changes the BarplotLayer state. Testing this shouldn't really be
+    // that difficult, it'll just be kind of tedious.
 });
