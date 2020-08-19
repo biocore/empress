@@ -204,6 +204,31 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         this._gradientSVG = gradientSVG;
     };
 
+    /**
+     * Returns an array containing SVG information and a flag about non-numeric
+     * values, to be used when creating a legend based on continuous scaling.
+     *
+     * This function should only be called if, on Colorer construction,
+     * useQuantScale is true and the input color map is sequential or
+     * diverging. If this is not the case (a.k.a. assignContinuousScaledColors
+     * was not called during construction), then this function will throw an
+     * error.
+     *
+     * @return{Array} gradientInfo An array containing two elements:
+     *                             1. gradientSVG: a String containing the SVG
+     *                                describing this Colorer's gradient. This
+     *                                will include information about the
+     *                                input numeric values along this gradient.
+     *                             2. missingNonNumerics: a Boolean value that
+     *                                is true if any of the values passed to
+     *                                this Colorer were not numeric (and
+     *                                therefore not assignable to any colors on
+     *                                the gradient), and false otherwise. If
+     *                                this is true, it's recommended that the
+     *                                caller show a warning along with the
+     *                                gradient that some value(s) have been
+     *                                omitted from the color map.
+     */
     Colorer.prototype.getGradientSVG = function () {
         if (_.isNull(this._gradientSVG)) {
             throw new Error(
