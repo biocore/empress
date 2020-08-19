@@ -208,8 +208,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     ) {
         this.empress.resetTree();
 
-        this.legend.clear();
-
         // hide update button
         updateBtn.classList.add("hidden");
 

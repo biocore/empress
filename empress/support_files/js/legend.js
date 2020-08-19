@@ -21,7 +21,12 @@ define(["underscore", "util"], function (_, util) {
         this._container = container;
     }
 
-    Legend.prototype.updateTitle = function (name) {
+    /**
+     * Adds a title element to the legend container.
+     *
+     * @param {String} name Text to show in the title.
+     */
+    Legend.prototype.addTitle = function (name) {
         var titleDiv = this._container.appendChild(
             document.createElement("div")
         );
@@ -29,6 +34,9 @@ define(["underscore", "util"], function (_, util) {
         titleDiv.innerText = name;
     };
 
+    /**
+     * Un-hides the legend.
+     */
     Legend.prototype.unhide = function () {
         // If the container was previously hidden, un-hide it
         this._container.classList.remove("hidden");
@@ -37,15 +45,15 @@ define(["underscore", "util"], function (_, util) {
     /**
      * Displays a continuous color key.
      *
-     * This function already assumes you have the SVG for the gradient to show,
-     * so it doesn't do much actual work. (Gradients should be obtainable from
-     * Colorer.getGradientSVG().)
+     * This function takes as input the gradient SVG to display, so it doesn't
+     * do much actual work. (Colorer.getGradientSVG() does the work of
+     * computing this.)
      *
      * The creation of the SVG container was based on Emperor's code:
      * https://github.com/biocore/emperor/blob/00c73f80c9d504826e61ddcc8b2c0b93f344819f/emperor/support_files/js/color-view-controller.js#L54-L56
      *
      * @param {String} name Text to show in the legend title.
-     * @param {String} gradientSVG SVG defining a color gradient, to be shown
+     * @param {String} gradientSVG SVG defining a color gradient; will be shown
      *                             in the legend.
      * @param {Boolean} showNonNumericWarning If true, a warning will be shown
      *                                        below the gradient about some
@@ -58,7 +66,8 @@ define(["underscore", "util"], function (_, util) {
         gradientSVG,
         showNonNumericWarning
     ) {
-        this.updateTitle(name);
+        this.clear();
+        this.addTitle(name);
         // Apparently we need to use createElementNS() (not just
         // createElement()) for SVGs. I am not sure why this is the case, but
         // it made the SVG show up (before I added this, nothing was showing up
@@ -109,8 +118,8 @@ define(["underscore", "util"], function (_, util) {
      *                      their assigned color, expressed in hex format.
      */
     Legend.prototype.addCategoricalKey = function (name, info) {
-        var scope = this;
-        this.updateTitle(name);
+        this.clear();
+        this.addTitle(name);
         let sortedCategories = util.naturalSort(_.keys(info));
         var containerTable = document.createElement("table");
         // Remove border spacing, which seems to be a default for at least some
@@ -146,16 +155,6 @@ define(["underscore", "util"], function (_, util) {
         });
         this._container.appendChild(containerTable);
         this.unhide();
-    };
-
-    /**
-     * Format a number that is to be displayed in a label.
-     *
-     * @param {number} num - number to be formatted
-     * @returns {string} formatted number
-     */
-    Legend.prototype.__formatNumLabel = function (num) {
-        return num.toFixed(4).replace(/\.?0+$/, "");
     };
 
     /**

@@ -592,7 +592,6 @@ define([
      *                          checkbox for a feature metadata layer.)
      */
     BarplotLayer.prototype.populateLegend = function (colorer) {
-        this.legend.clear();
         if (!_.isUndefined(colorer)) {
             var isFM = this.barplotType === "fm";
             var title;
@@ -614,6 +613,8 @@ define([
             } else {
                 this.legend.addCategoricalKey(title, colorer.getMapHex());
             }
+        } else {
+            this.legend.clear();
         }
     };
 
