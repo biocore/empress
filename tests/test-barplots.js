@@ -1,10 +1,10 @@
-require(["jquery", "underscore", "Empress", "BarplotLayer", "UtilitiesForTesting"], function (
-    $,
-    _,
-    Empress,
-    BarplotLayer,
-    UtilitiesForTesting
-) {
+require([
+    "jquery",
+    "underscore",
+    "Empress",
+    "BarplotLayer",
+    "UtilitiesForTesting",
+], function ($, _, Empress, BarplotLayer, UtilitiesForTesting) {
     module("Barplots", {
         setup: function () {
             this.testData = UtilitiesForTesting.getTestData();
@@ -134,8 +134,14 @@ require(["jquery", "underscore", "Empress", "BarplotLayer", "UtilitiesForTesting
         equal(empress._barplotPanel.layers[1].num, 2);
         // Check that layer 1's header stayed the same, while layer 3's header
         // was decremented along with its number
-        equal(empress._barplotPanel.layers[0].headerElement.innerText, "Layer 1");
-        equal(empress._barplotPanel.layers[1].headerElement.innerText, "Layer 2");
+        equal(
+            empress._barplotPanel.layers[0].headerElement.innerText,
+            "Layer 1"
+        );
+        equal(
+            empress._barplotPanel.layers[1].headerElement.innerText,
+            "Layer 2"
+        );
         // Check that the *unique numbers* of each layer remained the same
         // (so that the HTML elements created for each layer will have distinct
         // IDs)
@@ -155,9 +161,18 @@ require(["jquery", "underscore", "Empress", "BarplotLayer", "UtilitiesForTesting
         equal(empress._barplotPanel.layers[0].num, 1);
         equal(empress._barplotPanel.layers[1].num, 2);
         equal(empress._barplotPanel.layers[2].num, 3);
-        equal(empress._barplotPanel.layers[0].headerElement.innerText, "Layer 1");
-        equal(empress._barplotPanel.layers[1].headerElement.innerText, "Layer 2");
-        equal(empress._barplotPanel.layers[2].headerElement.innerText, "Layer 3");
+        equal(
+            empress._barplotPanel.layers[0].headerElement.innerText,
+            "Layer 1"
+        );
+        equal(
+            empress._barplotPanel.layers[1].headerElement.innerText,
+            "Layer 2"
+        );
+        equal(
+            empress._barplotPanel.layers[2].headerElement.innerText,
+            "Layer 3"
+        );
         equal(empress._barplotPanel.layers[0].uniqueNum, 1);
         equal(empress._barplotPanel.layers[1].uniqueNum, 3);
         // This is the most important check -- the newest layer should have a
