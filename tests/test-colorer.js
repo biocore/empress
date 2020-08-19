@@ -568,5 +568,45 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
             // Should be true -- since the values we passed are not all numeric
             ok(gradInfo[1]);
         });
+        test("Test Colorer.getGradientSVG (custom gradientIDSuffix)", function () {
+            var eles = ["0", "1", "2", "3", "4"];
+            var colorer = new Colorer("Viridis", eles, true, 5);
+            var gradInfo = colorer.getGradientSVG();
+
+            // The "Gradient0" IDs in the reference SVG should be replaced with
+            // "Gradient5". The split/join thing is a way of replacing one
+            // sequence with another, since JS' standard library doesn't seem
+            // to have an easy cross-browser-supported way to do this as of
+            // writing: see https://stackoverflow.com/a/1145525/10730311.
+            equal(
+                gradInfo[0],
+                referenceSVG.split("Gradient0").join("Gradient5")
+            );
+            notOk(gradInfo[1]);
+        });
+        test("Test Colorer.getGradientSVG (error: no gradient defined)", function () {
+            var expectedErrorRegex = /No gradient defined for this Colorer; check that useQuantScale is true and that the selected color map is not discrete./;
+
+            // Error case 1: useQuantScale is false
+            var eles = ["0", "1", "2", "3", "4"];
+            var colorer = new Colorer("Viridis", eles);
+            throws(function () {
+                colorer.getGradientSVG();
+            }, expectedErrorRegex);
+
+            // Error case 2: useQuantScale is true, but the color map is
+            // discrete
+            colorer = new Colorer("Paired", eles, true);
+            throws(function () {
+                colorer.getGradientSVG();
+            }, expectedErrorRegex);
+
+            // Error case 3: useQuantScale is false and the color map is
+            // discrete
+            colorer = new Colorer("Pastel2", eles);
+            throws(function () {
+                colorer.getGradientSVG();
+            }, expectedErrorRegex);
+        });
     });
 });
