@@ -10,7 +10,6 @@ import unittest
 from skbio import TreeNode
 from empress import Tree
 from empress.tree import TreeFormatWarning
-from math import sqrt
 
 
 class TestTree(unittest.TestCase):
