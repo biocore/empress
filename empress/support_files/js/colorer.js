@@ -170,14 +170,21 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         gradientSVG +=
             '<linearGradient id="' + gID + '" x1="0" x2="0" y1="1" y2="0">';
         for (var pos = 0; pos < stopColors.length; pos++) {
-            // The </stop> wasn't present in Emperor's code for this, so I added
-            // it.
+            // "stop" tags are written here as <stop .../>. This matches what
+            // Emperor does, and also the example on MDN here:
+            // https://developer.mozilla.org/en-US/docs/Web/SVG/Element/stop.
+            // Weirdly, Chromium seems to convert these to <stop ...></stop>.
+            // I thought at first that this was causing the gradients to not
+            // show up, but that wasn't the problem -- it was not using
+            // document.createElementNS(). Anyway, we keep things shorter for
+            // now for consistency, but replacing '"/>' with '"></stop>' works
+            // fine also.
             gradientSVG +=
                 '<stop offset="' +
                 pos +
                 '%" stop-color="' +
                 stopColors[pos] +
-                '"></stop>';
+                '"/>';
         }
         gradientSVG +=
             "</linearGradient></defs><rect " +
