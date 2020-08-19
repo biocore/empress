@@ -584,15 +584,9 @@ define([
      * or whatevs.
      *
      * @param {Colorer} colorer Instance of a Colorer object defining the
-     *                          current color selection for this barplot. This
-     *                          parameter is optional; if it's undefined, then
-     *                          this will just clear the legend without
-     *                          populating it again. (This could happen if the
-     *                          user decides to uncheck the "Color by..."
-     *                          checkbox for a feature metadata layer.)
+     *                          current color selection for this barplot.
      */
     BarplotLayer.prototype.populateLegend = function (colorer) {
-        if (!_.isUndefined(colorer)) {
             var isFM = this.barplotType === "fm";
             var title;
             if (isFM) {
@@ -613,9 +607,17 @@ define([
             } else {
                 this.legend.addCategoricalKey(title, colorer.getMapHex());
             }
-        } else {
-            this.legend.clear();
-        }
+    };
+
+    /**
+     * Clears this layer's legend.
+     *
+     * This is used when no color encoding is used for this layer -- this can
+     * happen when the layer is for feature metadata, but the "Color by..."
+     * checkbox is unchecked.
+     */
+    BarplotLayer.prototype.clearLegend = function () {
+        this.legend.clear();
     };
 
     /**

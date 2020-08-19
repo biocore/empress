@@ -1269,7 +1269,7 @@ define([
             fm2color = colorer.getMapRGB();
             layer.populateLegend(colorer);
         } else {
-            layer.populateLegend();
+            layer.clearLegend();
         }
 
         // Next, map feature metadata values to lengths if requested
