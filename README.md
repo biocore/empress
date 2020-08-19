@@ -226,7 +226,8 @@ values vary pretty wildly (even though the minimum `Confidence` is around
 0.68)!
 
 We can fix this by checking the `Continuous values?` box (it shows up when a
-sequential or diverging color map is selected). Try doing that:
+sequential or diverging color map is selected). Try doing that, and then click
+*Update* one last time for now:
 
 ![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, Viridis-continuous-colored confidence layer 3](docs/moving-pictures/img/empress_barplots_10.png)
 
