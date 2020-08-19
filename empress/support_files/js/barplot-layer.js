@@ -636,6 +636,9 @@ define([
      * number is removed. For example, if there are three layers (1, 2, 3), and
      * layer 2 is removed, then layer 3 should be decremented to layer 2 --
      * since it's now the second, rather than the third, layer.
+     *
+     * (Critically, this does NOT decrement this layer's "unique number". This
+     * is intentional.)
      */
     BarplotLayer.prototype.decrement = function () {
         this.num--;
