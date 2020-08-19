@@ -606,6 +606,13 @@ define([
      * This is used when no color encoding is used for this layer -- this can
      * happen when the layer is for feature metadata, but the "Color by..."
      * checkbox is unchecked.
+     *
+     * NOTE that this is called even if the legend is already "cleared" --
+     * either this or populateLegend() is called once for every layer every
+     * time the barplots are redrawn. It'd be possible to try to save the state
+     * of the legend to avoid re-clearing / populating it, but I really doubt
+     * that this will be a bottleneck (unless there are, like, 1000 barplot
+     * layers at once).
      */
     BarplotLayer.prototype.clearLegend = function () {
         this.legend.clear();
