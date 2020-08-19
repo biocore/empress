@@ -586,9 +586,8 @@ define([
         } else {
             title = this.colorBySMField;
         }
-        // Show a categorical legend (isContinuous = false) _unless_ the
-        // barplot is for feature metadata and the "Continuous values" checkbox
-        // is checked and visible.
+        // Show a categorical legend *unless* the barplot is for feature
+        // metadata and the "Continuous values" checkbox is visible and checked
         if (
             isFM &&
             this.colorByFMContinuous &&
