@@ -123,6 +123,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
         };
         var intMetadata = {
             4: ["1", "1"],
+            5: ["1", "1"],
         };
         var biom = new BiomTable(sIDs, fIDs, sID2Idx, fID2Idx, tbl, smCols, sm);
         var canvas = document.createElement("canvas");

@@ -107,7 +107,6 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                 // invocation of the object being updated.
                 this.empress = new Empress(
                     tree,
-                    null,
                     biom,
                     [], // feature metadata columns
                     {}, // tip metadata
@@ -149,8 +148,6 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
             equal(coords[(node - 1) * 10 + 1], 1); // start y position
             equal(coords[(node - 1) * 10 + 5], 0); // end x position
             equal(coords[(node - 1) * 10 + 6], -1); // end y position
-
-            console.log(coords)
 
             // For the arc for node 3 start at (2,0) and ends at (-2, 0)
             // check if arc for node 3 is correct

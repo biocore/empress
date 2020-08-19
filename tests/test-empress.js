@@ -149,30 +149,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             }
         });
 
-        test("Test _namesToKeys", function () {
-            var internalKeys = [4, 5, 7];
-            var result = this.empress._namesToKeys(["root", "internal"]);
-            result = util.naturalSort(Array.from(result));
-            deepEqual(result, internalKeys);
-
-            var tip = [1];
-            result = this.empress._namesToKeys(["1"]);
-            result = util.naturalSort(Array.from(result));
-            deepEqual(result, tip);
-
-            var allNodes = [1, 2, 3, 4, 5, 6, 7];
-            result = this.empress._namesToKeys([
-                "1",
-                "2",
-                "3",
-                "internal",
-                "EmpressNode6",
-                "root",
-            ]);
-            result = util.naturalSort(Array.from(result));
-            deepEqual(result, allNodes);
-        });
-
         test("Test colorBySampleCat", function () {
             var cm = this.empress.colorBySampleCat(
                 "f1",
@@ -237,12 +213,14 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["1"]).gl().slice(0, 3)
+                        chroma(cm["1"]).gl().slice(0, 3),
+                        "node: " + node
                     );
                 } else if (group2.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["2"]).gl().slice(0, 3)
+                        chroma(cm["2"]).gl().slice(0, 3),
+                        "node: " + node
                     );
                 } else {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
@@ -271,12 +249,14 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["1"]).gl().slice(0, 3)
+                        chroma(cm["1"]).gl().slice(0, 3),
+                        "node: " + node
                     );
                 } else if (group2.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["2"]).gl().slice(0, 3)
+                        chroma(cm["2"]).gl().slice(0, 3),
+                        "node: " + node
                     );
                 } else {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
@@ -515,8 +495,8 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
 
         test("Test getGradientStep", function () {
             var expectedObs = {
-                t1: ["1", "2", "3"],
-                t2: ["EmpressNode6", "1", "3"],
+                t1: [1, 2, 3],
+                t2: [1, 3, 6],
             };
             var obs = this.empress.getGradientStep("grad", "1", "traj");
             var groups = Object.keys(obs);
@@ -700,7 +680,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 0,
                 1,
                 1,
@@ -715,7 +694,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 1,
                 1,
                 1,
@@ -730,7 +708,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 -1,
                 -1,
                 1,
@@ -745,7 +722,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 0,
                 5,
                 5,
@@ -897,7 +873,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 0,
                 1,
                 1,
@@ -912,7 +887,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 1,
                 1,
                 1,
@@ -927,7 +901,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 -1,
                 1,
                 1,
@@ -942,7 +915,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 0,
                 5,
                 5,
@@ -1011,18 +983,17 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
         });
 
         test("Test getUniqueFeatureMetadataInfo (method = tip)", function () {
-            var f1UniqueValues = ["1", "2"];
             var f1Info = this.empress.getUniqueFeatureMetadataInfo("f1", "tip");
             deepEqual(f1Info.sortedUniqueValues, ["1", "2"]);
             // Tips 2 and 3 have a f1 value of 1
             deepEqual(
                 new Set(f1Info.uniqueValueToFeatures["1"]),
-                new Set(["2", "3"])
+                new Set([2, 3])
             );
             // Tips 1 and EmpressNode6 have a f1 value of 2
             deepEqual(
                 new Set(f1Info.uniqueValueToFeatures["2"]),
-                new Set(["1", "EmpressNode6"])
+                new Set([1, 6])
             );
         });
         test("Test getUniqueFeatureMetadataInfo (method = all)", function () {
@@ -1033,12 +1004,12 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // have a f1 value of 1
             deepEqual(
                 new Set(f1Info.uniqueValueToFeatures["1"]),
-                new Set(["internal", "2", "3"])
+                new Set([4, 5, 2, 3])
             );
             // Tips 1 and EmpressNode6 have a f1 value of 2
             deepEqual(
                 new Set(f1Info.uniqueValueToFeatures["2"]),
-                new Set(["1", "EmpressNode6"])
+                new Set([1, 6])
             );
         });
         test("Test getUniqueFeatureMetadataInfo (invalid fm column)", function () {

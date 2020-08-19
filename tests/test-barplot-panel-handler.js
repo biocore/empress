@@ -15,7 +15,6 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
         // unrooted layout, which doesn't support barplots.
         var empress = new Empress(
             this.testData.tree,
-            this.testData.nameToKeys,
             this.testData.biom,
             this.testData.fmCols,
             this.testData.tm,
@@ -31,7 +30,6 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
         // *does* support barplots.
         var empress2 = new Empress(
             this.testData.tree,
-            this.testData.nameToKeys,
             this.testData.biom,
             this.testData.fmCols,
             this.testData.tm,
@@ -46,7 +44,6 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
     test("Layout availability toggling post-initialization", function () {
         var empress = new Empress(
             this.testData.tree,
-            this.testData.nameToKeys,
             this.testData.biom,
             this.testData.fmCols,
             this.testData.tm,
@@ -75,7 +72,6 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
     test("Barplot layers default to feature metadata layers, but only if feature metadata is available", function () {
         var empressWithFM = new Empress(
             this.testData.tree,
-            this.testData.nameToKeys,
             this.testData.biom,
             this.testData.fmCols,
             this.testData.tm,
@@ -86,7 +82,6 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
 
         var empressWithNoFM = new Empress(
             this.testData.tree,
-            this.testData.nameToKeys,
             this.testData.biom,
             [],
             {},

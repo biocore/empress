@@ -14,7 +14,6 @@ define(["ByteArray"], function (ByteArray) {
      * @constructs BPTree
      */
     function BPTree(b, names = null, lengths = null, coding = 51) {
-        var d = new Date();
         if (coding !== null) {
             var b_len = b.length - 1;
             var decoded_b = [];
@@ -46,8 +45,6 @@ define(["ByteArray"], function (ByteArray) {
 
             b = decoded_b;
         }
-        var dt = new Date();
-        console.log("uncompressed tree in", dt.getTime() - d.getTime());
 
         /**
          * @type {Array}

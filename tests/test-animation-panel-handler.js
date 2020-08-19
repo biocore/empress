@@ -91,7 +91,6 @@ require([
             );
             var empress = new Empress(
                 { size: 0 },
-                {},
                 biom,
                 [],
                 {},

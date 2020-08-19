@@ -279,8 +279,8 @@ class Empress():
                 compressed_tm[i] = compressed_tm_tmp[node.name]
 
             # Note: for internal metadata, node names may not be unique. Thus,
-            # when using internal metadata, you will need to use bp-tree to
-            # grab all nodes with same name.
+            # we are adding all internal nodes with the same name to metadata
+            # table.
             if node.name in compressed_im_tmp:
                 compressed_im[i] = compressed_im_tmp[node.name]
 

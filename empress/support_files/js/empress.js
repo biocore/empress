@@ -305,14 +305,8 @@ define([
     }
 
     Empress.prototype.layouts = function () {
-        console.log("number of nodes", this._tree.size);
-        // console.log("Tree has this many tips:", this._tree.numleaves());
-
         // Rectangular
-        var d = new Date();
         var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
-        var d2 = new Date();
-        console.log("finished rectangular layout:", d2.getTime() - d.getTime());
         this._yrscf = coords.yScalingFactor;
         for (i = 1; i <= this._tree.size; i++) {
             this._treeData[i][this._tdToInd.xr] = coords.xCoord[i];
@@ -324,10 +318,7 @@ define([
         }
 
         // Circular
-        d = new Date();
         var data = LayoutsUtil.circularLayout(this._tree);
-        d2 = new Date();
-        console.log("finished circular layout:", d2.getTime() - d.getTime());
         for (var i = 1; i <= this._tree.size; i++) {
             this._treeData[i][this._tdToInd.xc0] = data.x0[i];
             this._treeData[i][this._tdToInd.yc0] = data.y0[i];
@@ -342,11 +333,7 @@ define([
         }
 
         // Unrooted
-        // this._tree.lengths_[1] = 1;
-        d = new Date();
         coords = LayoutsUtil.unrootedLayout(this._tree, 4020, 4020);
-        d2 = new Date();
-        console.log("finished unrooted layout:", d2.getTime() - d.getTime());
         for (i = 1; i <= this._tree.size; i++) {
             this._treeData[i][this._tdToInd.x2] = coords.xCoord[i];
             this._treeData[i][this._tdToInd.y2] = coords.yCoord[i];
