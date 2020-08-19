@@ -143,6 +143,16 @@ In this plot the colored branches represent lineages that are unique to the corr
 
 Similarly to other tree visualization tools like [iTOL](https://itol.embl.de/), Empress can draw barplots in order to annotate tips of the tree with various types of information. Barplots are useful for doing this (moreso than node coloring, sometimes) because multiple "layers" of barplots can be shown at the same time -- this allows for us to view multiple types of data for the same tip simultaneously. Check out Figure 1 of [Song and Sanders et al. 2020](https://mbio.asm.org/node/61763.full) for just one example of a tree visualization using multiple layers of barplots for a pretty and effective figure.
 
+#### First: a small warning about barplots
+
+Although barplots are useful for identifying patterns in phylogenies, be wary of
+reading too much into them! The ordering of tips is arbitrary, and this can
+distort the figures shown. To quote _Felsenstein 2004_, pages 573--574:
+
+> It is worth noting that by reordering tips, you can change the viewer's impression of the closeness of relationships. [...] A little judicious flipping may create a Great Chain of Being marching nicely along the sequence of names, even though the tree supports no such thing.
+
+#### Diving into barplots: categorical feature metadata
+
 Barplots in Empress are currently only compatible with the rectangular layout, but support for circular-layout barplots is planned. To use barplots, change the layout to *Rectangular* (using the *Layout* section of the main menu), and then open up the *Barplots* section of the main menu and check the `Draw Barplots?` checkbox. By default, a red bar of uniform length will be drawn for every tip in the tree:
 
 ![empress barplots initial view](docs/moving-pictures/img/empress_barplots_1.png)
@@ -151,17 +161,19 @@ Although these bars are not very useful by default, we can _encode_ them with in
 
 ![empress barplots: phylum coloring](docs/moving-pictures/img/empress_barplots_2.png)
 
-These patterns should look familiar -- this is the same information as we showed when coloring the tree earlier. We can confirm this by trying out feature metadata coloring by `Level 2` again, using the same `Classic QIIME Colors` color map (see the "Exploring groups of features" section above for a refresher on how to do this):
+These patterns should look familiar -- this is the same information as we showed when coloring the tree by feature metadata earlier. We can confirm this by trying out feature metadata coloring by `Level 2` again, using the same `Classic QIIME Colors` color map (see the "Exploring groups of features" section above for a refresher on how to do this):
 
 ![empress barplots: phylum coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_3.png)
 
-Since both the node colorings and the barplot layer are showing the same information (`Level 2`), this display is a bit redundant. Let's try taking things down a level, and adjust our barplot layer to show the `Level 3` feature metadata field (a.k.a. the class-level taxonomic assignments). To do this, adjust the drop-down menu next to the *Color by...* box (under the _Layer 1_ header in the _Barplots_ section, not in the _Feature Metadata Coloring_ section) to go from `Level 2` to `Level 3`, and then click the *Update* button again.
+Since both the node colorings and the barplot layer are now showing the same information (`Level 2`), this display is a bit redundant (although it is reassuring :). Let's try taking things down a level, and adjust our barplot layer to show the `Level 3` feature metadata field (a.k.a. the class-level taxonomic assignments). To do this, adjust the drop-down menu next to the *Color by...* box (under the _Layer 1_ header in the _Barplots_ section, not in the _Feature Metadata Coloring_ section) to go from `Level 2` to `Level 3`, and then click the *Update* button again.
 
 ![empress barplots: class coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_4.png)
 
-Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at roughly five separate "clusters" throughout the tree: this doesn't necessarily mean that this is the same class at all of these clusters, since colors can be reused if there are more classes than colors for a given color map, but in this case coloring the tree by `Level 3` (and looking at the resulting legend) lets us confirm that there's only one lavender class. Try clicking on a node within one of these clusters to see what this class is.
+Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at roughly five separate "clusters" throughout the tree: are all of these the same class? We can tell from the legend for this layer (under the heading __`Level 3`__) that there is only one class colored lavender here, `c__Clostridia`.
 
-It turns out that these lavender classes are all *Clostridia*. Does it make sense that representatives of this class are spread out throughout the tree so much? Unfortunately, yes, since *Clostridia* are -- to quote [Wikipedia](https://en.wikipedia.org/wiki/Clostridia) -- "a highly [polyphyletic](https://en.wikipedia.org/wiki/Polyphyly) class." (As an exercise, we recommend trying out adding on extra barplot layers for lower levels of taxonomy -- order, family, genus, etc. -- and seeing how things change.)
+So, these lavender classes are all *Clostridia*. Does it make sense that representatives of this class are spread out throughout the tree so much? Unfortunately, yes, since *Clostridia* are -- to quote [Wikipedia](https://en.wikipedia.org/wiki/Clostridia) -- "a highly [polyphyletic](https://en.wikipedia.org/wiki/Polyphyly) class." (As an exercise, we recommend trying out adding on extra barplot layers for lower levels of taxonomy -- order, family, genus, etc. -- and seeing how things change.)
+
+#### Barplots of sample presence information
 
 Up until now, we've just been working with a single "barplot layer." We can add on more layers if we want -- this will let us visualize additional tip information alongside the layer we have that currently shows `Level 3` information. To add a new layer, click on the `+` button (with the label _Add another layer_). Now, click *Update* again to see what this new layer looks like.
 
@@ -171,19 +183,57 @@ We have a new layer to work with!
 
 One thing we might be interested in doing is seeing what types of samples contain each tip. This is possible using the _Sample Metadata Coloring_ functionality described above, but this only lets us see information about tips that are unique to a given sample metadata category -- and in practice many tips are often shared between multiple metadata categories, complicating things.
 
-Let's revisit our analysis above of which tips are unique to which body sites in this dataset -- now, we'll instead be asking the related question of "which tips are most frequently seen in which body sites in this dataset?" To investigate this, we'll use our new barplot layer to show this information.
+Let's revisit our analysis above of which tips are unique to which body sites in this dataset -- now, we'll instead be asking the related question of "which body site(s) are the tips in this dataset most frequently seen in?" To investigate this, we'll use our new barplot layer to show this information.
 
 In order to do this, we'll need to change our new layer ("Layer 2") from a feature metadata layer to a sample metadata layer. You can do this by clicking on the _Sample Metadata_ button underneath the text "Layer 2". The controls available for this barplot layer should change; in order to show sample presence information for body sites, change the _Show sample info for..._ drop-down menu to `body-site`. Try clicking _Update_ to see what our new Layer 2 looks like.
 
 ![empress barplots: class coloring layer 1, bodysite layer 2, and tree phylum coloring](docs/moving-pictures/img/empress_barplots_6.png)
 
-Layer 2 now shows a stacked barplot for each tip, based on the proportions of sample groups containing a given tip. The colors used in this barplot are the same as with sample metadata coloring -- red corresponds to gut samples, green corresponds to tongue samples, etc. When we zoom in, we can see things in detail (you may want to re-color the tree using the _Sample Metadata Coloring_ controls and `body-site` so you can see what these colors mean):
+Layer 2 now shows a stacked barplot for each tip, based on the proportions of sample groups containing a given tip. As with layer 1, the colors are described in this layer's legend. When we zoom in, we can see things in detail:
 
 ![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2](docs/moving-pictures/img/empress_barplots_7.png)
 
-The top-most tip is only present in right palm samples, the second-from-the-top tip is only present in gut samples, and so on. The length taken up by a "block" for a given tip is proportional to how many samples of that type contain the tip (relative to the total number of samples containing the tip; it's [not absolute](https://github.com/biocore/empress/issues/322)) -- so the fourth-from-the-top tip, for example, is present in mostly tongue samples but also present (albeit in fewer) left palm samples. When we click on this tip (name `9f1913b781d2cde1c8a4c57b7dc2ab83`) in the tree, we can see that this matches up with the _Sample Presence Information_ `body-site` summary for this tip: it's present in 2 tongue samples and 1 left palm sample.
+The top-most tip is only present in right palm samples (colored orange), the second-from-the-top tip is only present in gut samples (colored red), and so on. The length taken up by a "block" for a given tip is proportional to how many samples of that type contain the tip (relative to the total number of samples containing the tip; it's [not absolute](https://github.com/biocore/empress/issues/322)) -- so the fourth-from-the-top tip, for example, is present in mostly tongue samples but also present (albeit in fewer) left palm samples. When we click on this tip (name `9f1913b781d2cde1c8a4c57b7dc2ab83`) in the tree, we can see that this matches up with the _Sample Presence Information_ `body-site` summary for this tip: it's present in 2 tongue samples and 1 left palm sample.
 
-This was a brief introduction to some of the barplot functionality available in Empress. There's a lot more that hasn't been documented here -- scaling bars' lengths by a continuous feature metadata field, coloring bars by a continuous feature metadata field (e.g. an importance score or [Songbird](https://github.com/biocore/songbird/)/[ALDEx2](https://www.bioconductor.org/packages/release/bioc/html/ALDEx2.html)-style feature differential), adjusting the default colors or lengths of bars, and so on. We encourage you to try things out; feel free to contact us if you have any questions!
+#### Barplots of continuous feature metadata
+
+Although drawing barplots of "categorical" feature metadata (like taxonomy
+annotations) can be useful, often we'd like to display barplots of continuous
+feature metadata. This can be useful for many types of information -- for
+example, importance scores, [Songbird](https://github.com/biocore/songbird/)/[ALDEx2](https://www.bioconductor.org/packages/release/bioc/html/ALDEx2.html)/etc.-style feature differentials, and taxonomy annotation confidences.
+
+Here we'll add on another layer describing the `Confidence`s of the taxonomy
+annotations in this dataset. (See [this thread](https://forum.qiime2.org/t/confidence-values-taxonomic-assignment/13199) for details about interpreting these values.)
+
+All of the confidence values in this dataset are numeric, but we don't _have_ to interpret them as numbers. Let's see what it looks like if we try to use a "categorical" (a.k.a. "discrete") color map for this field. Click on the `+` button to add a new layer, check the *Color by...* box, and select `Confidence`. Click the *Update* button.
+
+![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, categorical-colored confidence layer 3](docs/moving-pictures/img/empress_barplots_8.png)
+
+Try scrolling through this layer's legend. It should be clear that this color map (`Classic QIIME Colors`) does not make sense for this field -- although the confidence values are correctly sorted in ascending order, the actual color assignments are meaningless.
+
+Let's try changing away from this discrete color map to a "sequential" one.
+Select `Viridis` from the `Color Map` drop-down menu, and click *Update*.
+
+![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, Viridis-ordinal-colored confidence layer 3](docs/moving-pictures/img/empress_barplots_9.png)
+
+Try scrolling through the legend now. Things should be a bit clearer -- there's
+a gradient from purple to yellow that seems to align with the `Confidence`
+values. However, this color map is still not considering the actual numeric
+values of these `Confidence`s: only the relative positions of these values are
+taken into account. Notice how there are so many `Confidence` values with values
+greater than 0.99, and that in spite of this the colors assigned to these
+values vary pretty wildly (even though the minimum `Confidence` is around
+0.68)!
+
+We can fix this by checking the `Continuous values?` box (it shows up when a
+sequential or diverging color map is selected). Try doing that:
+
+![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, Viridis-continuous-colored confidence layer 3](docs/moving-pictures/img/empress_barplots_10.png)
+
+Now, colors are assigned based on `Confidence`s as we might expect, using
+linear interpolation (courtesy of [chroma.js](https://gka.github.io/chroma.js/#scale-domain)).
+
+This was a brief introduction to some of the barplot functionality available in Empress. There's a lot more that hasn't been documented here -- scaling bars' lengths by a continuous feature metadata field, adjusting the default colors or lengths of bars, and so on. We encourage you to try things out; feel free to contact us if you have any questions!
 
 ## Exporting Plots  
 
