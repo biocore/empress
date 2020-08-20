@@ -641,7 +641,7 @@ define([
     };
 
     /**
-     * Retrives the coordinate info of the tree.
+     * Retrieves the coordinate info of the tree.
      *  format of coordinate info: [x, y, red, green, blue, ...]
      *
      * @return {Array}
@@ -792,6 +792,40 @@ define([
         return new Float32Array(coords);
     };
 
+    /**
+     * Returns an Object describing circular layout angle information for a
+     * node.
+     *
+     * (TODO: throw an error if the current layout isn't circular, in which
+     * case angle information won't be available in the first place)
+     *
+     * @param {Array} node An array that holds all the attributes for a given
+     *                    node. As with the "node" parameter of
+     *                    this.getNodeInfo(), this is an entry in the tree
+     *                    data.
+     * @param {Number} halfAngleRange A number equal to (2pi) / (# leaves in
+     *                                the tree), used to determine the lower
+     *                                and upper angles. This is accepted as a
+     *                                parameter rather than computed here so
+     *                                that, if this function is called multiple
+     *                                times in succession when drawing a
+     *                                barplot layer, this value can be computed
+     *                                just once for this layer up front.
+     *
+     * @return {Object} angleInfo An Object with the following keys:
+     *                             -angle
+     *                             -lowerAngle
+     *                             -upperAngle
+     *                             -angleCos
+     *                             -angleSin
+     *                             -lowerAngleCos
+     *                             -lowerAngleSin
+     *                             -upperAngleCos
+     *                             -upperAngleSin
+     *                            This Object can be passed directly into
+     *                            this._addCircularBarCoords() as its angleInfo
+     *                            parameter.
+     */
     Empress.prototype._getNodeAngleInfo = function (node, halfAngleRange) {
         var angle = this.getNodeInfo(node, "angle");
         var lowerAngle = angle - halfAngleRange;
@@ -815,6 +849,42 @@ define([
         };
     };
 
+    /**
+     * Adds to an array of coordinates / colors the data needed to draw four
+     * triangles (two rectangles) for a single bar in a circular layout
+     * barplot.
+     *
+     * Since this only draws two rectangles, the resulting barplots look jagged
+     * for small trees but look smooth enough for at least moderately-sized
+     * trees.
+     *
+     * For a node with an angle pointing at the bottom-left of the screen, the
+     * rectangles drawn here will look something like:
+     *
+     *     tR1        /
+     *     /  \      /
+     * tL1/    \    /
+     *    \     \  *
+     *     \     \bR-----tR2
+     *      \    /         |
+     *       \  /          |
+     *        bL---------tL2
+     *
+     * Here, tL1 and tR2 are on the "lower angle" and tL2 and tR2 are on the
+     * "upper angle," as specified in the angleInfo parameter.
+     *
+     * (This style of ASCII art [esp. the "using * to denote an arrow" thing]
+     * mimics http://mathforum.org/dr.math/faq/formulas/faq.polar.html.)
+     *
+     * @param {Array} coords Array containing coordinate + color data, to be
+     *                       passed to Drawer.loadBarplotBuff().
+     * @param {Number} r Inner radius of the bar to draw
+     * @param {Number} outR Outer radius of the bar to draw
+     * @param {Object} angleInfo Object returned by this._getNodeAngleInfo()
+     *                           for the node this bar is being drawn for.
+     * @param {Array} color The GL color to draw / fill both triangles with.
+     *                      Should be an RGB array (e.g. [1, 0, 0] for red).
+     */
     Empress.prototype._addCircularBarCoords = function (
         coords,
         r,
@@ -822,17 +892,15 @@ define([
         angleInfo,
         color
     ) {
-        // Draws two rectangles. Will look jagged for small trees,
-        // but should look smooth enough for trees with enough
-        // tips.
-        // This works because Polar coordinates (of the form
-        // (radius, theta)) can be converted to Cartesian
-        // coordinates (x, y) by using the formulae:
+        // Polar coordinates (of the form (radius, theta)) can be converted
+        // to Cartesian coordinates (x, y) by using the formulae:
         //  x = radius * cos(theta)
         //  y = radius * sin(theta)
-        // See e.g. https://tutorial.math.lamar.edu/classes/calcii/polarcoordinates.aspx.
-        // So every position defined by these arrays is just
-        // being converted from Polar to Cartesian.
+        // Every coordinate defined by these arrays is being converted from
+        // Polar to Cartesian, since we know the radius and angle (theta) of
+        // these coordinates (and therefore the Polar coordinates).
+        // For more detail on this, see for example
+        // https://tutorial.math.lamar.edu/classes/calcii/polarcoordinates.aspx
         var centerBL = [outR * angleInfo.angleCos, outR * angleInfo.angleSin];
         var centerBR = [r * angleInfo.angleCos, r * angleInfo.angleSin];
         var t1 = {
@@ -885,7 +953,8 @@ define([
      * @param {Object} corners Object with tL, tR, bL, and bR entries (each
      *                         mapping to an array of the format [x, y]
      *                         indicating this position).
-     * @param {Array} color  the color to draw / fill both triangles with
+     * @param {Array} color The GL color to draw / fill both triangles with.
+     *                      Should be an RGB array (e.g. [1, 0, 0] for red).
      */
     Empress.prototype._addTriangleCoords = function (coords, corners, color) {
         // Triangle 1
