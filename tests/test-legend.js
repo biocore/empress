@@ -100,5 +100,14 @@ require(["jquery", "chroma", "Legend"], function (
             // ... and all of its child elements should be removed
             equal(this.containerEle.firstChild, null);
         });
+        test("unhide", function () {
+            var legend = new Legend(this.containerEle);
+            legend.clear();
+            // Legend container is now hidden
+            ok(this.containerEle.classList.contains("hidden"));
+            legend.unhide();
+            // Legend container is now not hidden!
+            notOk(this.containerEle.classList.contains("hidden"));
+        });
     });
 });
