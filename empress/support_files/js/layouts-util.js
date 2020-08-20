@@ -232,7 +232,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         startAngle = 0,
         ignoreLengths = false
     ) {
-        console.log("normalize", normalize, width, height)
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
         var y0 = new Array(tree.size + 1).fill(0);
@@ -338,7 +337,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var widthScale = width / (maxX - minX);
         var heightScale = height / (maxY - minY);
         var scaleFactor = Math.max(widthScale, heightScale);
-        console.log(maxX, minX, maxY, minY, scaleFactor, widthScale, heightScale)
         // Go over the tree (in postorder, but order doesn't really matter
         // for this) to determine arc positions for non-root internal nodes.
         // I think determining arc positions could be included in the above for
