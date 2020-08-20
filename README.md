@@ -145,7 +145,7 @@ Similarly to other tree visualization tools like [iTOL](https://itol.embl.de/), 
 
 Barplots in Empress are compatible with either the rectangular or circular layouts. Here we'll use the rectangular layout, but feel free to follow along with the circular layout if you prefer!
 
-First off, change the layout to *Rectangular* (using the *Layout* section of the main menu), and then open up the *Barplots* section of the main menu and check the `Draw Barplots?` checkbox. By default, a red bar of uniform length will be drawn for every tip in the tree:
+First off, change the layout to *Rectangular* (using the *Layout* section of the main menu), and then open up the *Barplots* section of the main menu and check the `Draw Barplots?` checkbox. Click the *Update* button that appears. By default, a red bar of uniform length will be drawn for every tip in the tree:
 
 ![empress barplots initial view](docs/moving-pictures/img/empress_barplots_1.png)
 
