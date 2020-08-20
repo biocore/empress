@@ -179,7 +179,6 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 // "selected," so we can open the menu
                 var nX = empress.getX(closeNode);
                 var nY = empress.getY(closeNode);
-                console.log(nX,nY)
                 var screenSpace = drawer.toScreenSpace(nX, nY);
                 nX = screenSpace.x;
                 nY = screenSpace.y;

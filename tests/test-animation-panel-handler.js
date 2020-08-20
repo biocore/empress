@@ -89,14 +89,7 @@ require([
                 smCols,
                 sm
             );
-            var empress = new Empress(
-                { size: 0 },
-                biom,
-                [],
-                {},
-                {},
-                null
-            );
+            var empress = new Empress({ size: 0 }, biom, [], {}, {}, null);
             var animator = new Animator(
                 empress,
                 new Legend(

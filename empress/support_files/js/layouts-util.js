@@ -27,6 +27,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
+     * @param {Boolean} normalize If true, then the tree will be scaled up to
+     *                            fill the bounds of width and height
      * @return {Object} Object with xCoords and yCoords properties where the
      *                  node coordinates are stored in postorder.
      */
@@ -200,6 +202,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *     from the Polar layout algorithm code.
      *
      * @param {BPTree} tree The tree to generate the coordinates for.
+     * @param {Float} width Width of the canvas where the tree will be
+     *                      displayed.
+     * @param {Float} height Height of the canvas where the tree will be
+     *                       displayed.
+     * @param {Boolean} normalize If true, then the tree will be scaled up to
+     *                            fill the bounds of width and height
      * @param {Float} startAngle The first tip in the tree visited is assigned
      *                           this angle (in radians). Can be used to rotate
      *                           the tree: 0 is the eastmost point of the
@@ -250,8 +258,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var anglePerTip = (2 * Math.PI) / tree.numleaves();
         var prevAngle = startAngle;
         var child, currRadius;
-        var maxX = 0, minX = Number.POSITIVE_INFINITY;
-        var maxY = 0, minY = Number.POSITIVE_INFINITY;
+        var maxX = 0,
+            minX = Number.POSITIVE_INFINITY;
+        var maxY = 0,
+            minY = Number.POSITIVE_INFINITY;
 
         // Iterate over the tree in postorder, assigning angles
         // Note that we skip the root (using "i < tree.size" and not "<="),
@@ -287,7 +297,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             if (ignoreLengths) {
                 radius[node] = radius[parent] + 1;
             } else {
-                radius[node] = radius[parent] + tree.length(tree.preorderselect(i));
+                radius[node] =
+                    radius[parent] + tree.length(tree.preorderselect(i));
             }
         }
 
@@ -417,8 +428,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         y1Arr[tree.size] = y1;
         y2Arr[tree.size] = y2;
         aArr[tree.size] = a;
-        var maxX = x2Arr[tree.size], minX = x2Arr[tree.size];
-        var maxY = y2Arr[tree.size], minY = y2Arr[tree.size];
+        var maxX = x2Arr[tree.size],
+            minX = x2Arr[tree.size];
+        var maxY = y2Arr[tree.size],
+            minY = y2Arr[tree.size];
 
         // reverse postorder
         for (var node = tree.size - 1; node > 0; node--) {
@@ -448,7 +461,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minX = Math.min(minX, x2Arr[node]);
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
-
         }
         var rX = x2Arr[tree.size];
         var rY = y2Arr[tree.size];

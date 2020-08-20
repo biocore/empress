@@ -96,6 +96,7 @@ define([
         this._tree = tree;
 
         /**
+         * Used to index into _treeData
          * @type {Object}
          */
         this._tdToInd = {
@@ -304,6 +305,9 @@ define([
         this._group = new Array(this._tree.size + 1).fill(-1);
     }
 
+    /**
+     * Computes the various tree layouts and fills _treeData
+     */
     Empress.prototype.layouts = function () {
         // Rectangular
         var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
@@ -347,6 +351,8 @@ define([
         this._drawer.initialize();
         this._events.setMouseEvents();
         var nodeNames = this._tree.getAllNames();
+
+        // need to delete first element because tree uses 1-based index
         nodeNames.shift();
         nodeNames = nodeNames.filter((n) => !n.startsWith("EmpressNode"));
         nodeNames.sort();
@@ -742,7 +748,9 @@ define([
         for (var node = 1; node < tree.size; node++) {
             // name of current node
             // var node = this._treeData[node];
-            var parent = tree.postorder(tree.parent(tree.postorderselect(node)));
+            var parent = tree.postorder(
+                tree.parent(tree.postorderselect(node))
+            );
             // parent = this._treeData[parent];
 
             if (!this.getNodeInfo(node, "visible")) {
@@ -996,7 +1004,9 @@ define([
         // iterate through the tree in postorder, skip root
         for (var node = 1; node < this._tree.size; node++) {
             // name of current node
-            var parent = tree.postorder(tree.parent(tree.postorderselect(node)));
+            var parent = tree.postorder(
+                tree.parent(tree.postorderselect(node))
+            );
             // parent = this._treeData[parent];
 
             if (

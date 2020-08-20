@@ -170,6 +170,13 @@ define(["ByteArray"], function (ByteArray) {
          */
         this._inorder = null;
 
+        /**
+         * @type {Object}
+         * @private
+         * This object is used to cache name look ups. Keys are node names and
+         * values are an array of all nodes (defined by the postorder position)
+         * that have the same name.
+         */
         this._nameToNodes = {};
     }
 
@@ -244,9 +251,12 @@ define(["ByteArray"], function (ByteArray) {
         return this.names_[this.postorder(i)];
     };
 
-    BPTree.prototype.getAllNames = function() {
+    /**
+     * Returns an array of all node names in tree
+     */
+    BPTree.prototype.getAllNames = function () {
         return Array.from(this.names_);
-    }
+    };
 
     /**
      *
@@ -662,6 +672,9 @@ define(["ByteArray"], function (ByteArray) {
 
     /**
      * Retrive number of tips in the subtree of a given node.
+     *
+     * @param {Integer} nodeKey The postorder position of a node
+     * @return {Integer} The number of tips on the subtree rooted at nodeKey.
      */
     BPTree.prototype.getNumTips = function (nodeKey) {
         if (this._numTips[nodeKey] !== 0) {
@@ -695,9 +708,12 @@ define(["ByteArray"], function (ByteArray) {
     };
 
     /**
+     * Returns all node with a given name
      *
+     * @param {String} name The name of node(s)
+     * @return {Array} An array of postorder position of nodes with a given name
      */
-    BPTree.prototype.getNodesWithName = function(name) {
+    BPTree.prototype.getNodesWithName = function (name) {
         if (name in this._nameToNodes) {
             return this._nameToNodes[name];
         }
@@ -710,7 +726,7 @@ define(["ByteArray"], function (ByteArray) {
         }
 
         return this._nameToNodes[name];
-    }
+    };
 
     return BPTree;
 });

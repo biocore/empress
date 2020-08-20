@@ -81,7 +81,6 @@ require([
             },
         });
 
-
         test("Test rectangular layout", function () {
             var obs = LayoutsUtil.rectangularLayout(this.tree, 1, 1, false);
             /* Why do these coordinates look like this?
@@ -117,7 +116,7 @@ require([
                     Infinity,
                     Infinity,
                     0.625,
-                    -1.125
+                    -1.125,
                 ],
                 xCoord: [0, 3, 4, 2, 3, 1, 3, 5, 2, 0],
                 yCoord: [
@@ -138,7 +137,12 @@ require([
         });
 
         test("Test straightline tree rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(this.straightLineTree,1,1,false);
+            var obs = LayoutsUtil.rectangularLayout(
+                this.straightLineTree,
+                1,
+                1,
+                false
+            );
 
             var exp = {
                 highestChildYr: [0, 0, 0, 0],
@@ -151,19 +155,29 @@ require([
         });
 
         test("Test missing root length rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(this.noRootLength,1,1,false);
+            var obs = LayoutsUtil.rectangularLayout(
+                this.noRootLength,
+                1,
+                1,
+                false
+            );
 
             var exp = {
                 highestChildYr: [0, 0, 0, 0],
                 lowestChildYr: [Infinity, Infinity, 0, 0],
                 xCoord: [0, 3, 1, 0],
                 yCoord: [0, 0, 0, 0],
-                yScalingFactor: 1
+                yScalingFactor: 1,
             };
             deepEqual(obs, exp);
         });
         test("Test circular layout", function () {
-            var obs = LayoutsUtil.circularLayout(this.circLayoutTestTree, 5, 5, false);
+            var obs = LayoutsUtil.circularLayout(
+                this.circLayoutTestTree,
+                5,
+                5,
+                false
+            );
             // Check that there isn't extra junk included in obs' output
             // (so we'll know that the 9 keys within obs we check are the
             // *only* keys in obs)
@@ -225,7 +239,12 @@ require([
             );
         });
         test("Test circular layout preserves branch lengths", function () {
-            var obs = LayoutsUtil.circularLayout(this.circLayoutTestTree,1,1,false);
+            var obs = LayoutsUtil.circularLayout(
+                this.circLayoutTestTree,
+                1,
+                1,
+                false
+            );
             // We skip root since we don't care about its length.
             for (var postI = 1; postI < this.circLayoutTestTree.size; postI++) {
                 var inputLength = this.circLayoutTestTree.lengths_[postI];
@@ -261,7 +280,14 @@ require([
         test("Test straightline tree circular layout: ignoreLengths", function () {
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.circularLayout(tree, 1, 1, false, 0, true);
+                var obs = LayoutsUtil.circularLayout(
+                    tree,
+                    1,
+                    1,
+                    false,
+                    0,
+                    true
+                );
                 // The tree looks like: (note the equal branch lengths)
                 // root -- a -- b
                 deepEqual(obs.x0, [0, 1, 0, 0], "x0");
@@ -370,7 +396,7 @@ require([
             );
         });
 
-        test("Test unrooted layout", function() {
+        test("Test unrooted layout", function () {
             var obs = LayoutsUtil.unrootedLayout(this.tree, 1, 1);
             var exp = {
                 xCoord: [
@@ -383,7 +409,7 @@ require([
                     0.3819660112501051,
                     0.49071198499985974,
                     0.25464400750007005,
-                    0
+                    0,
                 ],
                 yCoord: [
                     undefined,
@@ -395,10 +421,10 @@ require([
                     -0.04136942678222631,
                     -0.4076585497973588,
                     -0.08273885356445265,
-                    1
-                ]
+                    1,
+                ],
             };
-            deepEqual(obs, exp)
+            deepEqual(obs, exp);
         });
     });
 });

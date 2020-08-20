@@ -412,7 +412,7 @@ define(["underscore", "util"], function (_, util) {
         // test to make sure nodeKeys represents nodes with the same name
         var emp = this.empress;
         var name = emp.getNodeInfo(nodeKeys[0], "name");
-        console.log("!!!!", emp.getNodeInfo(nodeKeys[0], "name"))
+        console.log("!!!!", emp.getNodeInfo(nodeKeys[0], "name"));
         for (var i = 1; i < nodeKeys.length; i++) {
             if (emp.getNodeInfo(nodeKeys[i], "name") !== name) {
                 throw "setSelectedNodes(): keys do not represent the same node!";
