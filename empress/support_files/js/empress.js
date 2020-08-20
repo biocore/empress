@@ -1316,13 +1316,13 @@ define([
             // than computing this for every section in the stacked barplot --
             // doable b/c this information is constant through the sections.
             var y, ty, by;
-            var nodeAngleInfo;
+            var angleInfo;
             if (scope._currentLayout === "Rectangular") {
                 y = scope.getY(node);
                 ty = y + halfyrscf;
                 by = y - halfyrscf;
             } else if (scope._currentLayout === "Circular") {
-                nodeAngleInfo = scope._getNodeAngleInfo(node, halfAngleRange);
+                angleInfo = scope._getNodeAngleInfo(node, halfAngleRange);
             }
 
             // For each unique value for this sample metadata field...
@@ -1368,7 +1368,7 @@ define([
                             coords,
                             prevSectionMaxD,
                             thisSectionMaxD,
-                            nodeAngleInfo,
+                            angleInfo,
                             sectionColor
                         );
                     } else {
