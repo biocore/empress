@@ -1351,16 +1351,51 @@ define([
 
                 // Finally, add this tip's bar data to to an array of data
                 // describing the bars to draw
-                var y = this.getY(node);
-                var ty = y + halfyrscf;
-                var by = y - halfyrscf;
-                var corners = {
-                    tL: [prevLayerMaxX, ty],
-                    tR: [prevLayerMaxX + length, ty],
-                    bL: [prevLayerMaxX, by],
-                    bR: [prevLayerMaxX + length, by],
-                };
-                this._addTriangleCoords(coords, corners, color);
+                if (this._currentLayout === "Rectangular") {
+                    var y = this.getY(node);
+                    var ty = y + halfyrscf;
+                    var by = y - halfyrscf;
+                    var corners = {
+                        tL: [prevLayerMaxX, ty],
+                        tR: [prevLayerMaxX + length, ty],
+                        bL: [prevLayerMaxX, by],
+                        bR: [prevLayerMaxX + length, by],
+                    };
+                    this._addTriangleCoords(coords, corners, color);
+                } else if (this._currentLayout === "Circular") {
+                    var angle = this.getNodeInfo(node, "angle");
+                    // This is really (2pi / # leaves) / 2, but the 2s cancel
+                    // out so it's just pi / # leaves
+                    var halfAngleRange = Math.PI / this._tree.numleaves();
+                    // TODO: store this in the layout data when it's computed
+                    // via JS...? So we don't have to figure it out for every
+                    // node
+                    var lowerAngleCos = Math.cos(angle - halfAngleRange);
+                    var upperAngleCos = Math.cos(angle + halfAngleRange);
+                    var lowerAngleSin = Math.sin(angle - halfAngleRange);
+                    var upperAngleSin = Math.sin(angle + halfAngleRange);
+                    var r = prevLayerMaxX;
+                    var outR = prevLayerMaxX + length;
+                    // Currently, this draws just a single rectangle. For trees
+                    // with a large enough amount of tips this is fine, but for
+                    // trees with just a few tips this'll look funky and we'll
+                    // need to approximate this by drawing multiple rectangles
+                    // along the arc between the lower and upper angle.
+                    var t1 = {
+                        tL: [outR * lowerAngleCos, outR * lowerAngleSin],
+                        tR: [r * lowerAngleCos, r * lowerAngleSin],
+                        bL: [outR * upperAngleCos, outR * upperAngleSin],
+                        bR: [r * upperAngleCos, r * upperAngleSin],
+                    };
+                    this._addTriangleCoords(coords, t1, color);
+                } else {
+                    // This should never happen, since an unsupported layout
+                    // (e.g. unrooted) being selected should hide the barplot
+                    // controls and un-draw barplots.
+                    throw new Error(
+                        "Unsupported layout when drawing f.m. barplots"
+                    );
+                }
             }
         }
         return maxX;

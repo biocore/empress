@@ -191,7 +191,7 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
     /**
      * Array containing the names of layouts compatible with barplots.
      */
-    BarplotPanel.SUPPORTED_LAYOUTS = ["Rectangular"];
+    BarplotPanel.SUPPORTED_LAYOUTS = ["Rectangular", "Circular"];
 
     return BarplotPanel;
 });
