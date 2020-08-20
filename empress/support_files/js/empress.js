@@ -904,19 +904,13 @@ define([
         var centerBL = [r2 * angleInfo.angleCos, r2 * angleInfo.angleSin];
         var centerBR = [r1 * angleInfo.angleCos, r1 * angleInfo.angleSin];
         var t1 = {
-            tL: [
-                r2 * angleInfo.lowerAngleCos,
-                r2 * angleInfo.lowerAngleSin,
-            ],
+            tL: [r2 * angleInfo.lowerAngleCos, r2 * angleInfo.lowerAngleSin],
             tR: [r1 * angleInfo.lowerAngleCos, r1 * angleInfo.lowerAngleSin],
             bL: centerBL,
             bR: centerBR,
         };
         var t2 = {
-            tL: [
-                r2 * angleInfo.upperAngleCos,
-                r2 * angleInfo.upperAngleSin,
-            ],
+            tL: [r2 * angleInfo.upperAngleCos, r2 * angleInfo.upperAngleSin],
             tR: [r1 * angleInfo.upperAngleCos, r1 * angleInfo.upperAngleSin],
             bL: centerBL,
             bR: centerBR,
