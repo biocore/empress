@@ -865,10 +865,10 @@ define([
      *     /  \      /
      * tL1/    \    /
      *    \     \  *
-     *     \     \bR-----tR2
+     *     \     \bR-----tR2        (Inner radius)
      *      \    /         |
      *       \  /          |
-     *        bL---------tL2
+     *        bL---------tL2        (Outer radius)
      *
      * Here, tL1 and tR2 are on the "lower angle" and tL2 and tR2 are on the
      * "upper angle," as specified in the angleInfo parameter.
@@ -878,8 +878,8 @@ define([
      *
      * @param {Array} coords Array containing coordinate + color data, to be
      *                       passed to Drawer.loadBarplotBuff().
-     * @param {Number} r Inner radius of the bar to draw
-     * @param {Number} outR Outer radius of the bar to draw
+     * @param {Number} r1 Inner radius of the bar to draw
+     * @param {Number} r2 Outer radius of the bar to draw
      * @param {Object} angleInfo Object returned by this._getNodeAngleInfo()
      *                           for the node this bar is being drawn for.
      * @param {Array} color The GL color to draw / fill both triangles with.
@@ -887,8 +887,8 @@ define([
      */
     Empress.prototype._addCircularBarCoords = function (
         coords,
-        r,
-        outR,
+        r1,
+        r2,
         angleInfo,
         color
     ) {
@@ -901,23 +901,23 @@ define([
         // these coordinates (and therefore the Polar coordinates).
         // For more detail on this, see for example
         // https://tutorial.math.lamar.edu/classes/calcii/polarcoordinates.aspx
-        var centerBL = [outR * angleInfo.angleCos, outR * angleInfo.angleSin];
-        var centerBR = [r * angleInfo.angleCos, r * angleInfo.angleSin];
+        var centerBL = [r2 * angleInfo.angleCos, r2 * angleInfo.angleSin];
+        var centerBR = [r1 * angleInfo.angleCos, r1 * angleInfo.angleSin];
         var t1 = {
             tL: [
-                outR * angleInfo.lowerAngleCos,
-                outR * angleInfo.lowerAngleSin,
+                r2 * angleInfo.lowerAngleCos,
+                r2 * angleInfo.lowerAngleSin,
             ],
-            tR: [r * angleInfo.lowerAngleCos, r * angleInfo.lowerAngleSin],
+            tR: [r1 * angleInfo.lowerAngleCos, r1 * angleInfo.lowerAngleSin],
             bL: centerBL,
             bR: centerBR,
         };
         var t2 = {
             tL: [
-                outR * angleInfo.upperAngleCos,
-                outR * angleInfo.upperAngleSin,
+                r2 * angleInfo.upperAngleCos,
+                r2 * angleInfo.upperAngleSin,
             ],
-            tR: [r * angleInfo.upperAngleCos, r * angleInfo.upperAngleSin],
+            tR: [r1 * angleInfo.upperAngleCos, r1 * angleInfo.upperAngleSin],
             bL: centerBL,
             bR: centerBR,
         };
