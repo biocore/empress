@@ -1099,20 +1099,30 @@ define([
         // layers of varying lengths.
         var prevLayerMaxX = maxX;
 
+        // As we iterate through the layers, we'll also store the Colorer
+        // that was used for each layer (or null, if no Colorer was used --
+        // i.e. for feature metadata barplots with no color encoding). At the
+        // end of this function, when we know that all barplots are valid,
+        // we'll populate / clear legends accordingly.
+        var legendsToPopulate = [];
+
         _.each(layers, function (layer) {
+            var layerInfo;
             if (layer.barplotType === "sm") {
-                prevLayerMaxX = scope.addSMBarplotLayerCoords(
+                layerInfo = scope.addSMBarplotLayerCoords(
                     layer,
                     coords,
                     prevLayerMaxX
                 );
             } else {
-                prevLayerMaxX = scope.addFMBarplotLayerCoords(
+                layerInfo = scope.addFMBarplotLayerCoords(
                     layer,
                     coords,
                     prevLayerMaxX
                 );
             }
+            prevLayerMaxX = layerInfo[0];
+            legendsToPopulate.push(layerInfo[1]);
         });
         // NOTE that we purposefuly don't clear the barplot buffer until we
         // know all of the barplots are valid. If we were to call
@@ -1125,9 +1135,39 @@ define([
         this._drawer.loadBarplotBuff([]);
         this._drawer.loadBarplotBuff(coords);
         this.drawTree();
+
+        // By the same logic, now we can safely update the barplot legends to
+        // match the barplots that are now drawn.
+        _.each(legendsToPopulate, function (colorer, layerIndex) {
+            if (_.isNull(colorer)) {
+                layers[layerIndex].clearLegend();
+            } else {
+                layers[layerIndex].populateLegend(colorer);
+            }
+        });
+
+        // Finally, we can say that barplots have been drawn :)
         this._barplotsDrawn = true;
     };
 
+    /**
+     * Adds a sample metadata barplot layer's coordinates to an array.
+     *
+     * @param {BarplotLayer} layer The layer to be drawn.
+     * @param {Array} coords The array to which the coordinates for this layer
+     *                       will be added.
+     * @param {Number} prevLayerMaxX The leftmost x-coordinate to use for each
+     *                               bar within this layer.
+     *
+     * @return {Array} layerInfo An array containing two elements:
+     *                           1. The rightmost x-coordinate present within
+     *                              this layer (this should really just be
+     *                              prevLayerMaxX + layer.lengthSM, since all
+     *                              tips' bars in a stacked sample metadata
+     *                              barplot have the same length)
+     *                           2. The Colorer used to assign colors to sample
+     *                              metadata values
+     */
     Empress.prototype.addSMBarplotLayerCoords = function (
         layer,
         coords,
@@ -1138,7 +1178,6 @@ define([
             layer.colorBySMField
         );
         var colorer = new Colorer(layer.colorBySMColorMap, sortedUniqueValues);
-        layer.populateLegend(colorer);
         var sm2color = colorer.getMapRGB();
         // Do most of the hard work: compute the frequencies for each tip (only
         // the tips present in the BIOM table, that is)
@@ -1206,15 +1245,40 @@ define([
         });
         // The bar lengths are identical for all tips in this layer, so no need
         // to do anything fancy to compute the maximum X coordinate.
-        return prevLayerMaxX + layer.lengthSM;
+        return [prevLayerMaxX + layer.lengthSM, colorer];
     };
 
+    /**
+     * Adds a feature metadata barplot layer's coordinates to an array.
+     *
+     * @param {BarplotLayer} layer The layer to be drawn.
+     * @param {Array} coords The array to which the coordinates for this layer
+     *                       will be added.
+     * @param {Number} prevLayerMaxX The leftmost x-coordinate to use for each
+     *                               bar within this layer.
+     *
+     * @return {Array} layerInfo An array containing two elements:
+     *                           1. The rightmost x-coordinate present within
+     *                              this layer
+     *                           2. The Colorer used to assign colors to
+     *                              feature metadata values, if layer.colorByFM
+     *                              is truthy. (If layer.colorByFM is falsy,
+     *                              then this will just be null, indicating
+     *                              that no color legend should be shown for
+     *                              this layer.)
+     *
+     * @throws {Error} If continuous color or length scaling is requested, but
+     *                 the feature metadata field used for either scaling
+     *                 operation does not contain at least two unique numeric
+     *                 values.
+     */
     Empress.prototype.addFMBarplotLayerCoords = function (
         layer,
         coords,
         prevLayerMaxX
     ) {
         var maxX = prevLayerMaxX;
+        var colorer = null;
         var fm2color, colorFMIdx;
         var fm2length, lengthFMIdx;
         // Map feature metadata values to colors, if requested (i.e. if
@@ -1239,7 +1303,6 @@ define([
             // if the color map is discrete in the first place. (This is tested
             // in the Colorer tests; ctrl-F for "CVALDISCRETETEST" in
             // tests/test-colorer.js to see this.)
-            var colorer;
             try {
                 colorer = new Colorer(
                     layer.colorByFMColorMap,
@@ -1267,9 +1330,6 @@ define([
                 throw msg;
             }
             fm2color = colorer.getMapRGB();
-            layer.populateLegend(colorer);
-        } else {
-            layer.clearLegend();
         }
 
         // Next, map feature metadata values to lengths if requested
@@ -1368,7 +1428,7 @@ define([
                 this._addTriangleCoords(coords, corners, color);
             }
         }
-        return maxX;
+        return [maxX, colorer];
     };
 
     /**
