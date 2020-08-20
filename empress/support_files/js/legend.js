@@ -74,6 +74,8 @@ define(["underscore", "util"], function (_, util) {
         // although the SVG worked if I saved it into a HTML document and
         // opened that in a browser). See
         // https://stackoverflow.com/a/17520712/10730311.
+        // (According to https://stackoverflow.com/q/27854409/10730311, this
+        // should work offline.)
         var containerSVG = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "svg"
