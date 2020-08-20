@@ -311,7 +311,7 @@ define([
     };
 
     /**
-     * Retrive an attribute from a node.
+     * Retrieve an attribute from a node.
      *
      * @param{Array} node An array that holds all the attributes for a given
      *                     node. Note: this is an entry in this._treeData.
@@ -614,7 +614,7 @@ define([
     };
 
     /**
-     * Retrives the node coordinate info
+     * Retrieves the node coordinate info
      * format of node coordinate info: [x, y, red, green, blue, ...]
      *
      * @return {Array}
