@@ -888,8 +888,8 @@ define([
      *
      * @param {Array} coords Array containing coordinate + color data, to be
      *                       passed to Drawer.loadBarplotBuff().
-     * @param {Number} r1 Inner radius of the bar to draw
-     * @param {Number} r2 Outer radius of the bar to draw
+     * @param {Number} r1 Inner radius of the bar to draw.
+     * @param {Number} r2 Outer radius of the bar to draw.
      * @param {Object} angleInfo Object returned by this._getNodeAngleInfo()
      *                           for the node this bar is being drawn for.
      * @param {Array} color The GL color to draw / fill both triangles with.
