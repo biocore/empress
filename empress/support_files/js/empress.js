@@ -1317,6 +1317,10 @@ define([
             // through the unique values in this sample metadata field below.
             var prevSectionMaxD = prevLayerMaxD;
 
+            // Compute y-coordinate / angle information up front. Doing this
+            // here lets us compute this only once per tip (per layer), rather
+            // than computing this for every section in the stacked barplot --
+            // doable b/c this information is constant through the sections.
             var y, ty, by;
             var nodeAngleInfo;
             if (scope._currentLayout === "Rectangular") {
