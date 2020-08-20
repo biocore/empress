@@ -796,9 +796,6 @@ define([
      * Returns an Object describing circular layout angle information for a
      * node.
      *
-     * (TODO: throw an error if the current layout isn't circular, in which
-     * case angle information won't be available in the first place)
-     *
      * @param {Array} node An array that holds all the attributes for a given
      *                    node. As with the "node" parameter of
      *                    this.getNodeInfo(), this is an entry in the tree
@@ -825,28 +822,41 @@ define([
      *                            This Object can be passed directly into
      *                            this._addCircularBarCoords() as its angleInfo
      *                            parameter.
+     *
+     * @throws {Error} If the current layout is not "Circular".
      */
     Empress.prototype._getNodeAngleInfo = function (node, halfAngleRange) {
-        var angle = this.getNodeInfo(node, "angle");
-        var lowerAngle = angle - halfAngleRange;
-        var upperAngle = angle + halfAngleRange;
-        var angleCos = Math.cos(angle);
-        var angleSin = Math.sin(angle);
-        var lowerAngleCos = Math.cos(lowerAngle);
-        var lowerAngleSin = Math.sin(lowerAngle);
-        var upperAngleCos = Math.cos(upperAngle);
-        var upperAngleSin = Math.sin(upperAngle);
-        return {
-            angle: angle,
-            lowerAngle: lowerAngle,
-            upperAngle: upperAngle,
-            angleCos: angleCos,
-            angleSin: angleSin,
-            lowerAngleCos: lowerAngleCos,
-            lowerAngleSin: lowerAngleSin,
-            upperAngleCos: upperAngleCos,
-            upperAngleSin: upperAngleSin,
-        };
+        if (this._currentLayout === "Circular") {
+            var angle = this.getNodeInfo(node, "angle");
+            var lowerAngle = angle - halfAngleRange;
+            var upperAngle = angle + halfAngleRange;
+            var angleCos = Math.cos(angle);
+            var angleSin = Math.sin(angle);
+            var lowerAngleCos = Math.cos(lowerAngle);
+            var lowerAngleSin = Math.sin(lowerAngle);
+            var upperAngleCos = Math.cos(upperAngle);
+            var upperAngleSin = Math.sin(upperAngle);
+            return {
+                angle: angle,
+                lowerAngle: lowerAngle,
+                upperAngle: upperAngle,
+                angleCos: angleCos,
+                angleSin: angleSin,
+                lowerAngleCos: lowerAngleCos,
+                lowerAngleSin: lowerAngleSin,
+                upperAngleCos: upperAngleCos,
+                upperAngleSin: upperAngleSin,
+            };
+        } else {
+            // When layouts are ported to JS in the future, catching this error
+            // will be more important -- since then the node's angle
+            // attribute won't even be accessible, and this function would
+            // likely just fail silently otherwise (returning an Object with a
+            // bunch of undefined / NaN values)
+            throw new Error(
+                "_getNodeAngleInfo() called when not in circular layout"
+            );
+        }
     };
 
     /**
