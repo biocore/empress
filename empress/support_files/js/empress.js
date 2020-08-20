@@ -1074,18 +1074,27 @@ define([
      */
     Empress.prototype.drawBarplots = function (layers) {
         var scope = this;
-        // TODO: In order to add support for circular layout barplots, much of
-        // this function will need to be reworked to handle those (e.g.
-        // computing the maximum radius from the root node at (0, 0) rather
-        // than the maximum X; changing the position of barplots; likely
-        // altering how this._yrscf is used; etc.)
         var coords = [];
+        // NOTE / TODO: currently, this is set up so that radius info is stored
+        // in these "maxX" / etc. variables. We should probably rename them to
+        // say "maxOut" or "maxXorR" or uh something clearer
         var maxX = -Infinity;
         for (var i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
-                var x = this.getX(this._treeData[i]);
-                if (x > maxX) {
-                    maxX = x;
+                if (this._currentLayout === "Rectangular") {
+                    var x = this.getX(this._treeData[i]);
+                    if (x > maxX) {
+                        maxX = x;
+                    }
+                } else if (this._currentLayout === "Circular") {
+                    var r =
+                        this.getX(this._treeData[i]) /
+                        Math.cos(this.getNodeInfo(this._treeData[i], "angle"));
+                    if (r > maxX) {
+                        maxX = r;
+                    }
+                } else {
+                    throw new Error("Unsupported barplot layout");
                 }
             }
         }
@@ -1374,6 +1383,8 @@ define([
                     var upperAngleCos = Math.cos(angle + halfAngleRange);
                     var lowerAngleSin = Math.sin(angle - halfAngleRange);
                     var upperAngleSin = Math.sin(angle + halfAngleRange);
+                    var angleCos = Math.cos(angle);
+                    var angleSin = Math.sin(angle);
                     var r = prevLayerMaxX;
                     var outR = prevLayerMaxX + length;
                     // Currently, this draws just a single rectangle. For trees
@@ -1384,10 +1395,17 @@ define([
                     var t1 = {
                         tL: [outR * lowerAngleCos, outR * lowerAngleSin],
                         tR: [r * lowerAngleCos, r * lowerAngleSin],
-                        bL: [outR * upperAngleCos, outR * upperAngleSin],
-                        bR: [r * upperAngleCos, r * upperAngleSin],
+                        bL: [outR * angleCos, outR * angleSin],
+                        bR: [r * angleCos, r * angleSin],
+                    };
+                    var t2 = {
+                        tL: [outR * upperAngleCos, outR * upperAngleSin],
+                        tR: [r * upperAngleCos, r * upperAngleSin],
+                        bL: [outR * angleCos, outR * angleSin],
+                        bR: [r * angleCos, r * angleSin],
                     };
                     this._addTriangleCoords(coords, t1, color);
+                    this._addTriangleCoords(coords, t2, color);
                 } else {
                     // This should never happen, since an unsupported layout
                     // (e.g. unrooted) being selected should hide the barplot
