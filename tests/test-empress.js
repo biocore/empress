@@ -1056,5 +1056,30 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 );
             }, /F. metadata coloring method "i'm invalid!" unrecognized./);
         });
+        test("Test _getNodeAngleInfo", function () {
+            var scope = this;
+            this.empress.updateLayout("Circular");
+            var node = this.empress._treeData[1];
+            // the halfAngleRange is 2pi / 4 (since there are 4 leaves in this
+            // test tree), or equivalently pi / 2.
+            var piover2 = Math.PI / 2;
+            var angleInfo = this.empress._getNodeAngleInfo(node, piover2);
+            equal(angleInfo.angle, 0);
+            equal(angleInfo.lowerAngle.toFixed(5), -piover2.toFixed(5));
+            equal(angleInfo.upperAngle.toFixed(5), piover2.toFixed(5));
+            equal(angleInfo.angleCos, 1);
+            equal(angleInfo.angleSin, 0);
+            equal(angleInfo.lowerAngleCos.toFixed(5), 0);
+            equal(angleInfo.lowerAngleSin.toFixed(5), -1);
+            equal(angleInfo.upperAngleCos.toFixed(5), 0);
+            equal(angleInfo.upperAngleSin.toFixed(5), 1);
+            // Test that this throws an error if the tree is not in the
+            // circular layout
+            this.empress.updateLayout("Rectangular");
+            // (Gotta escape the parens in the regex or else it breaks)
+            throws(function () {
+                scope.empress._getNodeAngleInfo(node, Math.PI / 2);
+            }, /_getNodeAngleInfo\(\) called when not in circular layout/);
+        });
     });
 });
