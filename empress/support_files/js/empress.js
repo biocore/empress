@@ -1213,6 +1213,7 @@ define([
                         var angle = scope.getNodeInfo(node, "angle");
                         // This is really (2pi / # leaves) / 2, but the 2s cancel
                         // out so it's just pi / # leaves
+                        // TODO: only compute these once per node
                         var halfAngleRange = Math.PI / scope._tree.numleaves();
                         var lowerAngleCos = Math.cos(angle - halfAngleRange);
                         var upperAngleCos = Math.cos(angle + halfAngleRange);
@@ -1233,6 +1234,8 @@ define([
                         // See e.g. https://tutorial.math.lamar.edu/classes/calcii/polarcoordinates.aspx.
                         // So every coordinate in one of these arrays is just
                         // being converted from Polar to Cartesian.
+                        // TODO: don't compute redundant stuff (e.g. the bL and
+                        // bRs) more than once
                         var t1 = {
                             tL: [outR * lowerAngleCos, outR * lowerAngleSin],
                             tR: [r * lowerAngleCos, r * lowerAngleSin],
@@ -1417,6 +1420,8 @@ define([
                     var angle = this.getNodeInfo(node, "angle");
                     // This is really (2pi / # leaves) / 2, but the 2s cancel
                     // out so it's just pi / # leaves
+                    // TODO: don't compute this for every tip, just move it
+                    // above
                     var halfAngleRange = Math.PI / this._tree.numleaves();
                     // TODO: store this in the layout data when it's computed
                     // via JS...? So we don't have to figure it out for every
@@ -1432,6 +1437,8 @@ define([
                     // Draws two rectangles. Will look jagged for small trees,
                     // but should look smooth enough for trees with enough
                     // tips.
+                    // TODO: don't compute redundant stuff (e.g. the bL and
+                    // bRs) more than once
                     var t1 = {
                         tL: [outR * lowerAngleCos, outR * lowerAngleSin],
                         tR: [r * lowerAngleCos, r * lowerAngleSin],
