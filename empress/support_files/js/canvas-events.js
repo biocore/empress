@@ -177,7 +177,6 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 // check if the closest-to-the-click node is within epsilon
                 // pixels away from the mouse click; if so, this node was
                 // "selected," so we can open the menu
-                console.log("???", empress.getNodeInfo(closeNode, "name"))
                 var nX = empress.getX(closeNode);
                 var nY = empress.getY(closeNode);
                 console.log(nX,nY)

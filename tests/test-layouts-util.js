@@ -43,32 +43,32 @@ require([
                         0,
                         0,
                     ]),
-                    ["", "i", "g", "f", "a", "e", "b", "h", "c", "d"],
-                    [null, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 1.0, 3.0],
+                    ["", "a", "e", "f", "b", "g", "c", "d", "h", "i"],
+                    [null, 1.0, 2.0, 1.0, 2.0, 1.0, 1.0, 3.0, 2.0, 1.0],
                     null
                 );
 
                 // In Newick format: "((b:2)a:1)root:100;"
                 this.straightLineTree = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 0, 0]),
-                    ["", "root", "a", "b"],
-                    ["", 100.0, 1.0, 2.0],
+                    ["", "b", "a", "root"],
+                    ["", 2.0, 1.0, 100.0],
                     null
                 );
 
                 // In Newick format: "((b:2)a:1)root;"
                 this.noRootLength = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 0, 0]),
-                    ["", "root", "a", "b"],
-                    ["", null, 1.0, 2.0],
+                    ["", "b", "a", "root"],
+                    ["", 2.0, 1.0, null],
                     null
                 );
 
                 // In Newick format: "((d:4,c:3)b:2,a:1)root:1;"
                 this.circLayoutTestTree = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0]),
-                    ["", "root", "b", "d", "c", "a"],
-                    ["", 1, 2, 4, 3, 1],
+                    ["", "d", "c", "b", "a", "root"],
+                    ["", 4.0, 3.0, 2.0, 1.0, 1.0],
                     null
                 );
             },
@@ -81,8 +81,9 @@ require([
             },
         });
 
+
         test("Test rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(this.tree, 5, 5);
+            var obs = LayoutsUtil.rectangularLayout(this.tree, 1, 1, false);
             /* Why do these coordinates look like this?
              *
              * There are a few steps to the layout.
@@ -105,45 +106,64 @@ require([
             // The output arrays are in postorder.
             // (empty space), a, e, f, b, g, c, d, h, i (root)
             var exp = {
+                highestChildYr: [0, 0, 0, 0, 0, 0, 0, 0, 1.625, 1.125],
+                lowestChildYr: [
+                    Infinity,
+                    Infinity,
+                    Infinity,
+                    -2.375,
+                    Infinity,
+                    -1.875,
+                    Infinity,
+                    Infinity,
+                    0.625,
+                    -1.125
+                ],
                 xCoord: [0, 3, 4, 2, 3, 1, 3, 5, 2, 0],
                 yCoord: [
-                0,
-                -2.96875,
-                -1.71875,
-                -2.34375,
-                -0.46875,
-                -1.40625,
-                0.78125,
-                2.03125,
-                1.40625,
-                0
-              ],
+                    0,
+                    -2.375,
+                    -1.375,
+                    -1.875,
+                    -0.375,
+                    -1.125,
+                    0.625,
+                    1.625,
+                    1.125,
+                    0,
+                ],
+                yScalingFactor: 0.25,
             };
             deepEqual(obs, exp);
         });
 
         test("Test straightline tree rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(this.straightLineTree, 3, 3);
+            var obs = LayoutsUtil.rectangularLayout(this.straightLineTree,1,1,false);
 
             var exp = {
+                highestChildYr: [0, 0, 0, 0],
+                lowestChildYr: [Infinity, Infinity, 0, 0],
                 xCoord: [0, 3, 1, 0],
                 yCoord: [0, 0, 0, 0],
+                yScalingFactor: 1,
             };
             deepEqual(obs, exp);
         });
 
         test("Test missing root length rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(this.noRootLength, 3, 3);
+            var obs = LayoutsUtil.rectangularLayout(this.noRootLength,1,1,false);
 
             var exp = {
+                highestChildYr: [0, 0, 0, 0],
+                lowestChildYr: [Infinity, Infinity, 0, 0],
                 xCoord: [0, 3, 1, 0],
                 yCoord: [0, 0, 0, 0],
+                yScalingFactor: 1
             };
             deepEqual(obs, exp);
         });
-
         test("Test circular layout", function () {
-            var obs = LayoutsUtil.circularLayout(this.circLayoutTestTree);
+            var obs = LayoutsUtil.circularLayout(this.circLayoutTestTree, 5, 5, false);
             // Check that there isn't extra junk included in obs' output
             // (so we'll know that the 9 keys within obs we check are the
             // *only* keys in obs)
@@ -205,18 +225,10 @@ require([
             );
         });
         test("Test circular layout preserves branch lengths", function () {
-            var obs = LayoutsUtil.circularLayout(this.circLayoutTestTree);
-            // Go over the tree in preorder (by starting our iteration at 2
-            // instead of 1 we skip the root, since we don't care about its
-            // length).
-            for (var preI = 2; preI <= this.circLayoutTestTree.size; preI++) {
-                var inputLength = this.circLayoutTestTree.lengths_[preI];
-                // Get the postorder node position -- this lets us find this
-                // node's x0 / y0 / etc. data from the circularLayout() output,
-                // since the arrays in the layout output are in postorder.
-                var postI = this.circLayoutTestTree.postorder(
-                    this.circLayoutTestTree.preorderselect(preI)
-                );
+            var obs = LayoutsUtil.circularLayout(this.circLayoutTestTree,1,1,false);
+            // We skip root since we don't care about its length.
+            for (var postI = 1; postI < this.circLayoutTestTree.size; postI++) {
+                var inputLength = this.circLayoutTestTree.lengths_[postI];
                 var dx2 = Math.pow(obs.x0[postI] - obs.x1[postI], 2);
                 var dy2 = Math.pow(obs.y0[postI] - obs.y1[postI], 2);
                 var effectiveLength = Math.sqrt(dx2 + dy2);
@@ -229,7 +241,7 @@ require([
             // length, the output data should be exactly the same.
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.circularLayout(tree);
+                var obs = LayoutsUtil.circularLayout(tree, 1, 1, false);
                 // The tree looks like:
                 // root -- a ---- b
                 deepEqual(obs.x0, [0, 1, 0, 0], "x0");
@@ -249,7 +261,7 @@ require([
         test("Test straightline tree circular layout: ignoreLengths", function () {
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.circularLayout(tree, 0, true);
+                var obs = LayoutsUtil.circularLayout(tree, 1, 1, false, 0, true);
                 // The tree looks like: (note the equal branch lengths)
                 // root -- a -- b
                 deepEqual(obs.x0, [0, 1, 0, 0], "x0");
@@ -269,6 +281,9 @@ require([
             var piover2 = Math.PI / 2;
             var obs = LayoutsUtil.circularLayout(
                 this.straightLineTree,
+                1,
+                1,
+                false,
                 piover2
             );
             // The tree looks like:
@@ -302,6 +317,9 @@ require([
             // ignore all the numbers in that string.)
             var obs = LayoutsUtil.circularLayout(
                 this.circLayoutTestTree,
+                1,
+                1,
+                false,
                 3 * Math.PI,
                 true
             );
@@ -350,6 +368,37 @@ require([
                 [0, 0, 0, tpi, 0, 0],
                 "arc end angle"
             );
+        });
+
+        test("Test unrooted layout", function() {
+            var obs = LayoutsUtil.unrootedLayout(this.tree, 1, 1);
+            var exp = {
+                xCoord: [
+                    undefined,
+                    -0.3333333333333333,
+                    -0.5092880150001401,
+                    -0.25464400750007005,
+                    -0.12732200375003502,
+                    -0.12732200375003502,
+                    0.3819660112501051,
+                    0.49071198499985974,
+                    0.25464400750007005,
+                    0
+                ],
+                yCoord: [
+                    undefined,
+                    -0.10830656541096874,
+                    0.0827388535644527,
+                    0,
+                    0.309117981297196,
+                    0.04136942678222635,
+                    -0.04136942678222631,
+                    -0.4076585497973588,
+                    -0.08273885356445265,
+                    1
+                ]
+            };
+            deepEqual(obs, exp)
         });
     });
 });

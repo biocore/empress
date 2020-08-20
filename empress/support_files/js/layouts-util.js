@@ -1,20 +1,5 @@
 define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     /**
-     *
-     */
-    function centerAtRoot(xCoords, yCoords) {
-        var size = xCoords.length;
-        var rX = xCoords[size - 1];
-        var rY = yCoords[size - 1];
-
-        // skip the first element since the tree is zero-indexed
-        for (i = 1; i <= size - 1; i++) {
-            xCoords[i] -= rX;
-            yCoords[i] -= rY;
-        }
-    }
-
-    /**
      * Rectangular layout.
      *
      * In this sort of layout, each tip has a distinct y-position, and parent
@@ -45,7 +30,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @return {Object} Object with xCoords and yCoords properties where the
      *                  node coordinates are stored in postorder.
      */
-    function rectangularLayout(tree, width, height) {
+    function rectangularLayout(tree, width, height, normalize = true) {
         // NOTE: This doesn't draw a horizontal line leading to the root "node"
         // of the graph. See https://github.com/biocore/empress/issues/141 for
         // context.
@@ -115,10 +100,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         if (maxHeight > 0) {
             yScalingFactor = height / maxHeight;
         }
-
-        for (i = 1; i <= tree.size; i++) {
-            xCoord[i] *= xScalingFactor;
-            yCoord[i] *= yScalingFactor;
+        if (normalize) {
+            for (i = 1; i <= tree.size; i++) {
+                xCoord[i] *= xScalingFactor;
+                yCoord[i] *= yScalingFactor;
+            }
         }
 
         var rX = xCoord[tree.size];
@@ -238,7 +224,15 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                  will be 0 for all leaf nodes, and all values will be 0
      *                  for the root node.
      */
-    function circularLayout(tree, startAngle = 0, ignoreLengths = false) {
+    function circularLayout(
+        tree,
+        width,
+        height,
+        normalize = true,
+        startAngle = 0,
+        ignoreLengths = false
+    ) {
+        console.log("normalize", normalize, width, height)
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
         var y0 = new Array(tree.size + 1).fill(0);
@@ -257,6 +251,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var anglePerTip = (2 * Math.PI) / tree.numleaves();
         var prevAngle = startAngle;
         var child, currRadius;
+        var maxX = 0, minX = Number.POSITIVE_INFINITY;
+        var maxY = 0, minY = Number.POSITIVE_INFINITY;
 
         // Iterate over the tree in postorder, assigning angles
         // Note that we skip the root (using "i < tree.size" and not "<="),
@@ -332,26 +328,41 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             // Assign ending points
             x1[i] = currRadius * angleCos;
             y1[i] = currRadius * angleSin;
+
+            maxX = Math.max(maxX, x1[i]);
+            minX = Math.min(minX, x1[i]);
+            maxY = Math.max(maxY, y1[i]);
+            minY = Math.min(minY, y1[i]);
         }
 
+        var widthScale = width / (maxX - minX);
+        var heightScale = height / (maxY - minY);
+        var scaleFactor = Math.max(widthScale, heightScale);
+        console.log(maxX, minX, maxY, minY, scaleFactor, widthScale, heightScale)
         // Go over the tree (in postorder, but order doesn't really matter
         // for this) to determine arc positions for non-root internal nodes.
         // I think determining arc positions could be included in the above for
         // loop...
         for (i = 1; i < tree.size; i++) {
+            if (normalize) {
+                x0[i] *= scaleFactor;
+                x1[i] *= scaleFactor;
+                y0[i] *= scaleFactor;
+                y1[i] *= scaleFactor;
+            }
             // Compute arcs for non-root internal nodes (we know that this node
             // isn't the root because we're skipping the root entirely in this
             // for loop)
             if (!tree.isleaf(tree.postorderselect(i))) {
                 // Find the biggest and smallest angle of the node's children
-                var biggestChildAngle = Number.NEGATIVE_INFINITY;
+                var biggestCAngle = Number.NEGATIVE_INFINITY;
                 var smallestChildAngle = Number.POSITIVE_INFINITY;
                 child = tree.fchild(tree.postorderselect(i));
                 while (child !== 0) {
                     child = tree.postorder(child);
                     var childAngle = angle[child];
-                    if (childAngle > biggestChildAngle) {
-                        biggestChildAngle = childAngle;
+                    if (childAngle > biggestCAngle) {
+                        biggestCAngle = childAngle;
                     }
                     if (childAngle < smallestChildAngle) {
                         smallestChildAngle = childAngle;
@@ -361,9 +372,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 // Position the arc start point at the biggest child angle
                 // position
                 currRadius = radius[i];
-                arcx0[i] = currRadius * Math.cos(biggestChildAngle);
-                arcy0[i] = currRadius * Math.sin(biggestChildAngle);
-                arcStartAngle[i] = biggestChildAngle;
+                arcx0[i] = currRadius * Math.cos(biggestCAngle);
+                arcy0[i] = currRadius * Math.sin(biggestCAngle);
+                if (normalize) {
+                    arcx0[i] *= scaleFactor;
+                    arcy0[i] *= scaleFactor;
+                }
+                arcStartAngle[i] = biggestCAngle;
                 arcEndAngle[i] = smallestChildAngle;
             }
         }
@@ -384,7 +399,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         };
     }
 
-    function unrootedLayout(tree, width, height) {
+    function unrootedLayout(tree, width, height, normalize = true) {
         var angle = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
         var x2Arr = new Array(tree.size + 1);
@@ -404,6 +419,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         y1Arr[tree.size] = y1;
         y2Arr[tree.size] = y2;
         aArr[tree.size] = a;
+        var maxX = x2Arr[tree.size], minX = x2Arr[tree.size];
+        var maxY = y2Arr[tree.size], minY = y2Arr[tree.size];
 
         // reverse postorder
         for (var node = tree.size - 1; node > 0; node--) {
@@ -428,9 +445,30 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             y1Arr[node] = y1;
             y2Arr[node] = y2;
             aArr[node] = a;
-        }
 
-        centerAtRoot(x2Arr, y2Arr);
+            maxX = Math.max(maxX, x2Arr[node]);
+            minX = Math.min(minX, x2Arr[node]);
+            maxY = Math.max(maxY, y2Arr[node]);
+            minY = Math.min(minY, y2Arr[node]);
+
+        }
+        var rX = x2Arr[tree.size];
+        var rY = y2Arr[tree.size];
+        var scale;
+        if (normalize) {
+            var widthScale = width / (maxX - minX);
+            var heightScale = height / (maxY - minY);
+            scale = Math.min(widthScale, heightScale);
+        } else {
+            scale = 1;
+        }
+        // skip the first element since the tree is zero-indexed
+        for (var i = 1; i <= tree.size - 1; i++) {
+            x2Arr[i] -= rX;
+            y2Arr[i] -= rY;
+            x2Arr[i] *= scale;
+            y2Arr[i] *= scale;
+        }
 
         return { xCoord: x2Arr, yCoord: y2Arr };
     }

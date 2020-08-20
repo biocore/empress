@@ -318,7 +318,7 @@ define([
         }
 
         // Circular
-        var data = LayoutsUtil.circularLayout(this._tree);
+        var data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
         for (var i = 1; i <= this._tree.size; i++) {
             this._treeData[i][this._tdToInd.xc0] = data.x0[i];
             this._treeData[i][this._tdToInd.yc0] = data.y0[i];
