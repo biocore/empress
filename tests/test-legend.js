@@ -12,6 +12,25 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             // StackOverflow post somewhere.)
             setup: function () {
                 this.containerEle = document.createElement("div");
+                this.validateRefSVG = function (obsContainerSVG, expSVG) {
+                    equal(obsContainerSVG.tagName, "svg");
+                    equal(
+                        obsContainerSVG.namespaceURI,
+                        "http://www.w3.org/2000/svg"
+                    );
+                    // When rendering the SVG on the page, the browser replaces
+                    // <stop .../> with <stop ...></stop> (and
+                    // <rect .../> with <rect ...></rect). I don't know why this is
+                    // happening, but so that we can directly compare the HTML strings
+                    // we just replace things in the observed SVG to make them
+                    // consistent.
+                    var obsContainerSVGInnerHTML = obsContainerSVG.innerHTML
+                        .split("></stop>")
+                        .join("/>")
+                        .split("></rect>")
+                        .join("/>");
+                    equal(obsContainerSVGInnerHTML, expSVG);
+                };
             },
             tearDown: function () {
                 this.containerEle.remove();
@@ -85,6 +104,8 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                     // Now, check that the legend is as expected.
                     equal(cellsInRow[1].innerText, expectedKey);
                 });
+            // Legend should be visible
+            notOk(this.containerEle.classList.contains("hidden"));
         });
         test("addCategoricalKey (just 1 color)", function () {
             var legend = new Legend(this.containerEle);
@@ -110,12 +131,63 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
         });
         test("addContinuousKey", function () {
             var legend = new Legend(this.containerEle);
+            var refSVG = UtilitiesForTesting.getReferenceSVG();
             legend.addContinuousKey(
-                "omg continuous",
-                UtilitiesForTesting.getReferenceSVG(),
+                "OMG this is a continuous legend!",
+                refSVG,
                 false
             );
+
+            // As with addCategoricalKey(), there are two children added to the
+            // top level of the container element.
             equal(this.containerEle.children.length, 2);
+
+            // 1. A title
+            var title = this.containerEle.children[0];
+            ok(title.classList.contains("legend-title"));
+            equal(title.innerText, "OMG this is a continuous legend!");
+
+            // 2. A "container SVG" element containing the gradient SVG
+            var cSVG = this.containerEle.children[1];
+            this.validateRefSVG(cSVG, refSVG);
+
+            // Legend should be visible
+            notOk(this.containerEle.classList.contains("hidden"));
+        });
+        test("addContinuousKey (with non-numeric warning)", function () {
+            var legend = new Legend(this.containerEle);
+            var refSVG = UtilitiesForTesting.getReferenceSVG();
+            legend.addContinuousKey("howdy", refSVG, true);
+
+            // There's a third top-level child element now -- a warning
+            // message shown to the user.
+            equal(this.containerEle.children.length, 3);
+
+            // 1. Check title
+            var title = this.containerEle.children[0];
+            ok(title.classList.contains("legend-title"));
+            equal(title.innerText, "howdy");
+
+            // 2. Check SVG
+            var cSVG = this.containerEle.children[1];
+            this.validateRefSVG(cSVG, refSVG);
+
+            // 3. Check non-numeric warning
+            var warning = this.containerEle.children[2];
+            equal(warning.tagName, "P");
+            equal(
+                warning.innerText,
+                "Some value(s) in this field were not " +
+                    "numeric. These value(s) have been left " +
+                    "out of the gradient, and no bar(s) " +
+                    "have been drawn for them."
+            );
+            // Verify that the warning <p> has white-space: normal; set so it
+            // has line breaks, like normal text
+            equal($(warning).css("white-space"), "normal");
+
+            // Legend should be visible
+            notOk(this.containerEle.classList.contains("hidden"));
         });
         test("clear", function () {
             var legend = new Legend(this.containerEle);
