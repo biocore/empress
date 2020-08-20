@@ -1222,11 +1222,9 @@ define([
                         var angleSin = Math.sin(angle);
                         var r = prevSectionMaxX;
                         var outR = thisSectionMaxX;
-                        // Currently, this draws just a single rectangle. For trees
-                        // with a large enough amount of tips this is fine, but for
-                        // trees with just a few tips this'll look funky and we'll
-                        // need to approximate this by drawing multiple rectangles
-                        // along the arc between the lower and upper angle.
+                        // Draws two rectangles. Will look jagged for small trees,
+                        // but should look smooth enough for trees with enough
+                        // tips.
                         var t1 = {
                             tL: [outR * lowerAngleCos, outR * lowerAngleSin],
                             tR: [r * lowerAngleCos, r * lowerAngleSin],
@@ -1423,11 +1421,9 @@ define([
                     var angleSin = Math.sin(angle);
                     var r = prevLayerMaxX;
                     var outR = prevLayerMaxX + length;
-                    // Currently, this draws just a single rectangle. For trees
-                    // with a large enough amount of tips this is fine, but for
-                    // trees with just a few tips this'll look funky and we'll
-                    // need to approximate this by drawing multiple rectangles
-                    // along the arc between the lower and upper angle.
+                    // Draws two rectangles. Will look jagged for small trees,
+                    // but should look smooth enough for trees with enough
+                    // tips.
                     var t1 = {
                         tL: [outR * lowerAngleCos, outR * lowerAngleSin],
                         tR: [r * lowerAngleCos, r * lowerAngleSin],
