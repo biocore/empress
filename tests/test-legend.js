@@ -31,6 +31,10 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                         .join("/>");
                     equal(obsContainerSVGInnerHTML, expSVG);
                 };
+                this.validateTitleEle = function (ele, expText) {
+                    ok(ele.classList.contains("legend-title"));
+                    equal(ele.innerText, expText);
+                };
             },
             tearDown: function () {
                 this.containerEle.remove();
@@ -67,9 +71,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             equal(this.containerEle.children.length, 2);
 
             // The first of these child elements should be a title
-            var title = this.containerEle.children[0];
-            ok(title.classList.contains("legend-title"));
-            equal(title.innerText, "qwerty");
+            this.validateTitleEle(this.containerEle.children[0], "qwerty");
 
             // The second is a table containing the color map
             var tbl = this.containerEle.children[1];
@@ -143,9 +145,10 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             equal(this.containerEle.children.length, 2);
 
             // 1. A title
-            var title = this.containerEle.children[0];
-            ok(title.classList.contains("legend-title"));
-            equal(title.innerText, "OMG this is a continuous legend!");
+            this.validateTitleEle(
+                this.containerEle.children[0],
+                "OMG this is a continuous legend!"
+            );
 
             // 2. A "container SVG" element containing the gradient SVG
             var cSVG = this.containerEle.children[1];
@@ -164,9 +167,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             equal(this.containerEle.children.length, 3);
 
             // 1. Check title
-            var title = this.containerEle.children[0];
-            ok(title.classList.contains("legend-title"));
-            equal(title.innerText, "howdy");
+            this.validateTitleEle(this.containerEle.children[0], "howdy");
 
             // 2. Check SVG
             var cSVG = this.containerEle.children[1];
@@ -214,6 +215,24 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             legend.unhide();
             // Legend container is now not hidden!
             notOk(this.containerEle.classList.contains("hidden"));
+        });
+        test("addTitle", function () {
+            var legend = new Legend(this.containerEle);
+            legend.addTitle("Hi I'm a title");
+            equal(this.containerEle.children.length, 1);
+            this.validateTitleEle(
+                this.containerEle.children[0],
+                "Hi I'm a title"
+            );
+
+            // Note that addTitle() sets the text using innerText, so HTML in
+            // the text should be treated as just part of the string
+            var titleText =
+                "Two titles? In my <div></div>? It's more " +
+                "likely than you think.";
+            legend.addTitle(titleText);
+            equal(this.containerEle.children.length, 2);
+            this.validateTitleEle(this.containerEle.children[1], titleText);
         });
     });
 });
