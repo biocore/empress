@@ -1209,16 +1209,19 @@ define([
     Empress.prototype.drawBarplots = function (layers) {
         var scope = this;
         var coords = [];
-        // NOTE / TODO: currently, this is set up so that radius info is stored
-        // in these "maxX" / etc. variables. We should probably rename them to
-        // say "maxOut" or "maxXorR" or uh something clearer
-        var maxX = -Infinity;
+        // The "D" stands for displacement. For the rectangular layout, this
+        // variable represents the rightmost node's x-coordinate; for the
+        // circular layout, this variable represents the node with the largest
+        // radius' radius. (This is used when determining how "close" to the
+        // root node we can start drawing barplots and not cross over any
+        // nodes.)
+        var maxD = -Infinity;
         for (var i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 if (this._currentLayout === "Rectangular") {
                     var x = this.getX(this._treeData[i]);
-                    if (x > maxX) {
-                        maxX = x;
+                    if (x > maxD) {
+                        maxD = x;
                     }
                 } else if (this._currentLayout === "Circular") {
                     // Since x-coordinates are equal to r*cos(theta), we can
@@ -1228,8 +1231,8 @@ define([
                     var r =
                         this.getX(this._treeData[i]) /
                         Math.cos(this.getNodeInfo(this._treeData[i], "angle"));
-                    if (r > maxX) {
-                        maxX = r;
+                    if (r > maxD) {
+                        maxD = r;
                     }
                 } else {
                     throw new Error("Unsupported barplot layout");
@@ -1238,26 +1241,27 @@ define([
         }
         // Add on a gap between the rightmost node and the leftmost point of
         // the first barplot layer. This could be made into a
-        // barplot-panel-level configurable thing if desired.
-        maxX += 100;
+        // barplot-panel-level configurable thing if desired. (Note that, as
+        // with the barplot lengths, the units here are arbitrary.)
+        maxD += 100;
 
         // As we iterate through the layers, we'll store the "previous layer
-        // max X" as a separate variable. This will help us easily work with
+        // max D" as a separate variable. This will help us easily work with
         // layers of varying lengths.
-        var prevLayerMaxX = maxX;
+        var prevLayerMaxD = maxD;
 
         _.each(layers, function (layer) {
             if (layer.barplotType === "sm") {
-                prevLayerMaxX = scope.addSMBarplotLayerCoords(
+                prevLayerMaxD = scope.addSMBarplotLayerCoords(
                     layer,
                     coords,
-                    prevLayerMaxX
+                    prevLayerMaxD
                 );
             } else {
-                prevLayerMaxX = scope.addFMBarplotLayerCoords(
+                prevLayerMaxD = scope.addFMBarplotLayerCoords(
                     layer,
                     coords,
-                    prevLayerMaxX
+                    prevLayerMaxD
                 );
             }
         });
@@ -1278,7 +1282,7 @@ define([
     Empress.prototype.addSMBarplotLayerCoords = function (
         layer,
         coords,
-        prevLayerMaxX
+        prevLayerMaxD
     ) {
         var scope = this;
         var sortedUniqueValues = this.getUniqueSampleValues(
@@ -1311,7 +1315,7 @@ define([
             // This variable defines the left x-coordinate for drawing the next
             // "section" of the stacked barplot. It'll be updated as we iterate
             // through the unique values in this sample metadata field below.
-            var prevSectionMaxX = prevLayerMaxX;
+            var prevSectionMaxD = prevLayerMaxD;
 
             var y, ty, by;
             var nodeAngleInfo;
@@ -1352,41 +1356,41 @@ define([
                     // Assign each unique sample metadata value a length
                     // proportional to its, well, proportion within the sample
                     // presence information for this tip.
-                    var thisSectionMaxX = prevSectionMaxX + barSectionLen;
+                    var thisSectionMaxD = prevSectionMaxD + barSectionLen;
                     if (scope._currentLayout === "Rectangular") {
                         var corners = {
-                            tL: [prevSectionMaxX, ty],
-                            tR: [thisSectionMaxX, ty],
-                            bL: [prevSectionMaxX, by],
-                            bR: [thisSectionMaxX, by],
+                            tL: [prevSectionMaxD, ty],
+                            tR: [thisSectionMaxD, ty],
+                            bL: [prevSectionMaxD, by],
+                            bR: [thisSectionMaxD, by],
                         };
                         scope._addTriangleCoords(coords, corners, sectionColor);
                     } else if (scope._currentLayout === "Circular") {
                         scope._addCircularBarCoords(
                             coords,
-                            prevSectionMaxX,
-                            thisSectionMaxX,
+                            prevSectionMaxD,
+                            thisSectionMaxD,
                             nodeAngleInfo,
                             sectionColor
                         );
                     } else {
                         throw new Error("Unsupported barplot layout");
                     }
-                    prevSectionMaxX = thisSectionMaxX;
+                    prevSectionMaxD = thisSectionMaxD;
                 }
             }
         });
         // The bar lengths are identical for all tips in this layer, so no need
-        // to do anything fancy to compute the maximum X coordinate.
-        return prevLayerMaxX + layer.lengthSM;
+        // to do anything fancy to compute the maximum displacement.
+        return prevLayerMaxD + layer.lengthSM;
     };
 
     Empress.prototype.addFMBarplotLayerCoords = function (
         layer,
         coords,
-        prevLayerMaxX
+        prevLayerMaxD
     ) {
-        var maxX = prevLayerMaxX;
+        var maxD = prevLayerMaxD;
         var fm2color, colorFMIdx;
         var fm2length, lengthFMIdx;
         // Map feature metadata values to colors, if requested (i.e. if
@@ -1518,9 +1522,9 @@ define([
                 } else {
                     length = layer.defaultLength;
                 }
-                // Update maxX if needed
-                if (length + prevLayerMaxX > maxX) {
-                    maxX = length + prevLayerMaxX;
+                // Update maxD if needed
+                if (length + prevLayerMaxD > maxD) {
+                    maxD = length + prevLayerMaxD;
                 }
 
                 // Finally, add this tip's bar data to to an array of data
@@ -1530,17 +1534,17 @@ define([
                     var ty = y + halfyrscf;
                     var by = y - halfyrscf;
                     var corners = {
-                        tL: [prevLayerMaxX, ty],
-                        tR: [prevLayerMaxX + length, ty],
-                        bL: [prevLayerMaxX, by],
-                        bR: [prevLayerMaxX + length, by],
+                        tL: [prevLayerMaxD, ty],
+                        tR: [prevLayerMaxD + length, ty],
+                        bL: [prevLayerMaxD, by],
+                        bR: [prevLayerMaxD + length, by],
                     };
                     this._addTriangleCoords(coords, corners, color);
                 } else if (this._currentLayout === "Circular") {
                     this._addCircularBarCoords(
                         coords,
-                        prevLayerMaxX,
-                        prevLayerMaxX + length,
+                        prevLayerMaxD,
+                        prevLayerMaxD + length,
                         this._getNodeAngleInfo(node, halfAngleRange),
                         color
                     );
@@ -1554,7 +1558,7 @@ define([
                 }
             }
         }
-        return maxX;
+        return maxD;
     };
 
     /**
