@@ -1087,6 +1087,10 @@ define([
                         maxX = x;
                     }
                 } else if (this._currentLayout === "Circular") {
+                    // Since x-coordinates are equal to r*cos(theta), we can
+                    // divide a given node's x-coordinate by cos(theta) to get
+                    // its radius. (There is probably a more efficient way to
+                    // do this.)
                     var r =
                         this.getX(this._treeData[i]) /
                         Math.cos(this.getNodeInfo(this._treeData[i], "angle"));
@@ -1151,8 +1155,15 @@ define([
         // Do most of the hard work: compute the frequencies for each tip (only
         // the tips present in the BIOM table, that is)
         var feature2freqs = this._biom.getFrequencyMap(layer.colorBySMField);
-        // Bar thickness
+
+        // Bar thickness (rect layout barplots)
         var halfyrscf = this._yrscf / 2;
+
+        // Bar thickness (circular layout barplots)
+        // This is really (2pi / # leaves) / 2, but the 2s cancel
+        // out so it's just pi / # leaves
+        var halfAngleRange = Math.PI / scope._tree.numleaves();
+
         // For each tip in the BIOM table...
         // (We implicitly ignore [and don't draw anything for] tips that
         // *aren't* in the BIOM table.)
@@ -1211,14 +1222,12 @@ define([
                         scope._addTriangleCoords(coords, corners, sectionColor);
                     } else if (scope._currentLayout === "Circular") {
                         var angle = scope.getNodeInfo(node, "angle");
-                        // This is really (2pi / # leaves) / 2, but the 2s cancel
-                        // out so it's just pi / # leaves
-                        // TODO: only compute these once per node
-                        var halfAngleRange = Math.PI / scope._tree.numleaves();
-                        var lowerAngleCos = Math.cos(angle - halfAngleRange);
-                        var upperAngleCos = Math.cos(angle + halfAngleRange);
-                        var lowerAngleSin = Math.sin(angle - halfAngleRange);
-                        var upperAngleSin = Math.sin(angle + halfAngleRange);
+                        var lowerAngle = angle - halfAngleRange;
+                        var upperAngle = angle + halfAngleRange;
+                        var lowerAngleCos = Math.cos(lowerAngle);
+                        var upperAngleCos = Math.cos(upperAngle);
+                        var lowerAngleSin = Math.sin(lowerAngle);
+                        var upperAngleSin = Math.sin(upperAngle);
                         var angleCos = Math.cos(angle);
                         var angleSin = Math.sin(angle);
                         var r = prevSectionMaxX;
@@ -1232,21 +1241,21 @@ define([
                         //  x = radius * cos(theta)
                         //  y = radius * sin(theta)
                         // See e.g. https://tutorial.math.lamar.edu/classes/calcii/polarcoordinates.aspx.
-                        // So every coordinate in one of these arrays is just
+                        // So every position defined by these arrays is just
                         // being converted from Polar to Cartesian.
-                        // TODO: don't compute redundant stuff (e.g. the bL and
-                        // bRs) more than once
+                        var centerBL = [outR * angleCos, outR * angleSin];
+                        var centerBR = [r * angleCos, r * angleSin];
                         var t1 = {
                             tL: [outR * lowerAngleCos, outR * lowerAngleSin],
                             tR: [r * lowerAngleCos, r * lowerAngleSin],
-                            bL: [outR * angleCos, outR * angleSin],
-                            bR: [r * angleCos, r * angleSin],
+                            bL: centerBL,
+                            bR: centerBR,
                         };
                         var t2 = {
                             tL: [outR * upperAngleCos, outR * upperAngleSin],
                             tR: [r * upperAngleCos, r * upperAngleSin],
-                            bL: [outR * angleCos, outR * angleSin],
-                            bR: [r * angleCos, r * angleSin],
+                            bL: centerBL,
+                            bR: centerBR,
                         };
                         scope._addTriangleCoords(coords, t1, sectionColor);
                         scope._addTriangleCoords(coords, t2, sectionColor);
@@ -1350,6 +1359,7 @@ define([
         // Now that we know how to encode each tip's bar, we can finally go
         // iterate through the tree and create bars for the tips.
         var halfyrscf = this._yrscf / 2;
+        var halfAngleRange = Math.PI / this._tree.numleaves();
         for (i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 var node = this._treeData[i];
@@ -1418,18 +1428,12 @@ define([
                     this._addTriangleCoords(coords, corners, color);
                 } else if (this._currentLayout === "Circular") {
                     var angle = this.getNodeInfo(node, "angle");
-                    // This is really (2pi / # leaves) / 2, but the 2s cancel
-                    // out so it's just pi / # leaves
-                    // TODO: don't compute this for every tip, just move it
-                    // above
-                    var halfAngleRange = Math.PI / this._tree.numleaves();
-                    // TODO: store this in the layout data when it's computed
-                    // via JS...? So we don't have to figure it out for every
-                    // node
-                    var lowerAngleCos = Math.cos(angle - halfAngleRange);
-                    var upperAngleCos = Math.cos(angle + halfAngleRange);
-                    var lowerAngleSin = Math.sin(angle - halfAngleRange);
-                    var upperAngleSin = Math.sin(angle + halfAngleRange);
+                    var lowerAngle = angle - halfAngleRange;
+                    var upperAngle = angle + halfAngleRange;
+                    var lowerAngleCos = Math.cos(lowerAngle);
+                    var upperAngleCos = Math.cos(upperAngle);
+                    var lowerAngleSin = Math.sin(lowerAngle);
+                    var upperAngleSin = Math.sin(upperAngle);
                     var angleCos = Math.cos(angle);
                     var angleSin = Math.sin(angle);
                     var r = prevLayerMaxX;
@@ -1437,19 +1441,19 @@ define([
                     // Draws two rectangles. Will look jagged for small trees,
                     // but should look smooth enough for trees with enough
                     // tips.
-                    // TODO: don't compute redundant stuff (e.g. the bL and
-                    // bRs) more than once
+                    var centerBL = [outR * angleCos, outR * angleSin];
+                    var centerBR = [r * angleCos, r * angleSin];
                     var t1 = {
                         tL: [outR * lowerAngleCos, outR * lowerAngleSin],
                         tR: [r * lowerAngleCos, r * lowerAngleSin],
-                        bL: [outR * angleCos, outR * angleSin],
-                        bR: [r * angleCos, r * angleSin],
+                        bL: centerBL,
+                        bR: centerBR,
                     };
                     var t2 = {
                         tL: [outR * upperAngleCos, outR * upperAngleSin],
                         tR: [r * upperAngleCos, r * upperAngleSin],
-                        bL: [outR * angleCos, outR * angleSin],
-                        bR: [r * angleCos, r * angleSin],
+                        bL: centerBL,
+                        bR: centerBR,
                     };
                     this._addTriangleCoords(coords, t1, color);
                     this._addTriangleCoords(coords, t2, color);
