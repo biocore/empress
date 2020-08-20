@@ -1193,21 +1193,57 @@ define([
                 // present in at least one sample with that value.
                 if (!_.isUndefined(freq)) {
                     var sectionColor = sm2color[smVal];
+                    var barSectionLen = layer.lengthSM * freq;
                     // Assign each unique sample metadata value a length
                     // proportional to its, well, proportion within the sample
                     // presence information for this tip.
-                    var barSectionLen = layer.lengthSM * freq;
                     var thisSectionMaxX = prevSectionMaxX + barSectionLen;
-                    var y = scope.getY(node);
-                    var ty = y + halfyrscf;
-                    var by = y - halfyrscf;
-                    var corners = {
-                        tL: [prevSectionMaxX, ty],
-                        tR: [thisSectionMaxX, ty],
-                        bL: [prevSectionMaxX, by],
-                        bR: [thisSectionMaxX, by],
-                    };
-                    scope._addTriangleCoords(coords, corners, sectionColor);
+                    if (scope._currentLayout === "Rectangular") {
+                        var y = scope.getY(node);
+                        var ty = y + halfyrscf;
+                        var by = y - halfyrscf;
+                        var corners = {
+                            tL: [prevSectionMaxX, ty],
+                            tR: [thisSectionMaxX, ty],
+                            bL: [prevSectionMaxX, by],
+                            bR: [thisSectionMaxX, by],
+                        };
+                        scope._addTriangleCoords(coords, corners, sectionColor);
+                    } else if (scope._currentLayout === "Circular") {
+                        var angle = scope.getNodeInfo(node, "angle");
+                        // This is really (2pi / # leaves) / 2, but the 2s cancel
+                        // out so it's just pi / # leaves
+                        var halfAngleRange = Math.PI / scope._tree.numleaves();
+                        var lowerAngleCos = Math.cos(angle - halfAngleRange);
+                        var upperAngleCos = Math.cos(angle + halfAngleRange);
+                        var lowerAngleSin = Math.sin(angle - halfAngleRange);
+                        var upperAngleSin = Math.sin(angle + halfAngleRange);
+                        var angleCos = Math.cos(angle);
+                        var angleSin = Math.sin(angle);
+                        var r = prevSectionMaxX;
+                        var outR = thisSectionMaxX;
+                        // Currently, this draws just a single rectangle. For trees
+                        // with a large enough amount of tips this is fine, but for
+                        // trees with just a few tips this'll look funky and we'll
+                        // need to approximate this by drawing multiple rectangles
+                        // along the arc between the lower and upper angle.
+                        var t1 = {
+                            tL: [outR * lowerAngleCos, outR * lowerAngleSin],
+                            tR: [r * lowerAngleCos, r * lowerAngleSin],
+                            bL: [outR * angleCos, outR * angleSin],
+                            bR: [r * angleCos, r * angleSin],
+                        };
+                        var t2 = {
+                            tL: [outR * upperAngleCos, outR * upperAngleSin],
+                            tR: [r * upperAngleCos, r * upperAngleSin],
+                            bL: [outR * angleCos, outR * angleSin],
+                            bR: [r * angleCos, r * angleSin],
+                        };
+                        scope._addTriangleCoords(coords, t1, sectionColor);
+                        scope._addTriangleCoords(coords, t2, sectionColor);
+                    } else {
+                        throw new Error("Unsupported barplot layout");
+                    }
                     prevSectionMaxX = thisSectionMaxX;
                 }
             }
