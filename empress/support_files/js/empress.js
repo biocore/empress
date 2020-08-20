@@ -792,6 +792,71 @@ define([
         return new Float32Array(coords);
     };
 
+    Empress.prototype._getNodeAngleInfo = function (node, halfAngleRange) {
+        var angle = this.getNodeInfo(node, "angle");
+        var lowerAngle = angle - halfAngleRange;
+        var upperAngle = angle + halfAngleRange;
+        var angleCos = Math.cos(angle);
+        var angleSin = Math.sin(angle);
+        var lowerAngleCos = Math.cos(lowerAngle);
+        var lowerAngleSin = Math.sin(lowerAngle);
+        var upperAngleCos = Math.cos(upperAngle);
+        var upperAngleSin = Math.sin(upperAngle);
+        return {
+            angle: angle,
+            lowerAngle: lowerAngle,
+            upperAngle: upperAngle,
+            angleCos: angleCos,
+            angleSin: angleSin,
+            lowerAngleCos: lowerAngleCos,
+            lowerAngleSin: lowerAngleSin,
+            upperAngleCos: upperAngleCos,
+            upperAngleSin: upperAngleSin,
+        };
+    };
+
+    Empress.prototype._addCircularBarCoords = function (
+        coords,
+        r,
+        outR,
+        angleInfo,
+        color
+    ) {
+        // Draws two rectangles. Will look jagged for small trees,
+        // but should look smooth enough for trees with enough
+        // tips.
+        // This works because Polar coordinates (of the form
+        // (radius, theta)) can be converted to Cartesian
+        // coordinates (x, y) by using the formulae:
+        //  x = radius * cos(theta)
+        //  y = radius * sin(theta)
+        // See e.g. https://tutorial.math.lamar.edu/classes/calcii/polarcoordinates.aspx.
+        // So every position defined by these arrays is just
+        // being converted from Polar to Cartesian.
+        var centerBL = [outR * angleInfo.angleCos, outR * angleInfo.angleSin];
+        var centerBR = [r * angleInfo.angleCos, r * angleInfo.angleSin];
+        var t1 = {
+            tL: [
+                outR * angleInfo.lowerAngleCos,
+                outR * angleInfo.lowerAngleSin,
+            ],
+            tR: [r * angleInfo.lowerAngleCos, r * angleInfo.lowerAngleSin],
+            bL: centerBL,
+            bR: centerBR,
+        };
+        var t2 = {
+            tL: [
+                outR * angleInfo.upperAngleCos,
+                outR * angleInfo.upperAngleSin,
+            ],
+            tR: [r * angleInfo.upperAngleCos, r * angleInfo.upperAngleSin],
+            bL: centerBL,
+            bR: centerBR,
+        };
+        this._addTriangleCoords(coords, t1, color);
+        this._addTriangleCoords(coords, t2, color);
+    };
+
     /**
      * Adds to an array of coordinates / colors the data needed to draw two
      * triangles.
@@ -1180,29 +1245,13 @@ define([
             var prevSectionMaxX = prevLayerMaxX;
 
             var y, ty, by;
-            var angle,
-                lowerAngle,
-                upperAngle,
-                angleCos,
-                angleSin,
-                lowerAngleCos,
-                lowerAngleSin,
-                upperAngleCos,
-                upperAngleSin;
+            var nodeAngleInfo;
             if (scope._currentLayout === "Rectangular") {
                 y = scope.getY(node);
                 ty = y + halfyrscf;
                 by = y - halfyrscf;
             } else if (scope._currentLayout === "Circular") {
-                angle = scope.getNodeInfo(node, "angle");
-                lowerAngle = angle - halfAngleRange;
-                upperAngle = angle + halfAngleRange;
-                angleCos = Math.cos(angle);
-                angleSin = Math.sin(angle);
-                lowerAngleCos = Math.cos(lowerAngle);
-                upperAngleCos = Math.cos(upperAngle);
-                lowerAngleSin = Math.sin(lowerAngle);
-                upperAngleSin = Math.sin(upperAngle);
+                nodeAngleInfo = scope._getNodeAngleInfo(node, halfAngleRange);
             }
 
             // For each unique value for this sample metadata field...
@@ -1244,35 +1293,13 @@ define([
                         };
                         scope._addTriangleCoords(coords, corners, sectionColor);
                     } else if (scope._currentLayout === "Circular") {
-                        var r = prevSectionMaxX;
-                        var outR = thisSectionMaxX;
-                        // Draws two rectangles. Will look jagged for small trees,
-                        // but should look smooth enough for trees with enough
-                        // tips.
-                        // This works because Polar coordinates (of the form
-                        // (radius, theta)) can be converted to Cartesian
-                        // coordinates (x, y) by using the formulae:
-                        //  x = radius * cos(theta)
-                        //  y = radius * sin(theta)
-                        // See e.g. https://tutorial.math.lamar.edu/classes/calcii/polarcoordinates.aspx.
-                        // So every position defined by these arrays is just
-                        // being converted from Polar to Cartesian.
-                        var centerBL = [outR * angleCos, outR * angleSin];
-                        var centerBR = [r * angleCos, r * angleSin];
-                        var t1 = {
-                            tL: [outR * lowerAngleCos, outR * lowerAngleSin],
-                            tR: [r * lowerAngleCos, r * lowerAngleSin],
-                            bL: centerBL,
-                            bR: centerBR,
-                        };
-                        var t2 = {
-                            tL: [outR * upperAngleCos, outR * upperAngleSin],
-                            tR: [r * upperAngleCos, r * upperAngleSin],
-                            bL: centerBL,
-                            bR: centerBR,
-                        };
-                        scope._addTriangleCoords(coords, t1, sectionColor);
-                        scope._addTriangleCoords(coords, t2, sectionColor);
+                        scope._addCircularBarCoords(
+                            coords,
+                            prevSectionMaxX,
+                            thisSectionMaxX,
+                            nodeAngleInfo,
+                            sectionColor
+                        );
                     } else {
                         throw new Error("Unsupported barplot layout");
                     }
@@ -1441,36 +1468,13 @@ define([
                     };
                     this._addTriangleCoords(coords, corners, color);
                 } else if (this._currentLayout === "Circular") {
-                    var angle = this.getNodeInfo(node, "angle");
-                    var lowerAngle = angle - halfAngleRange;
-                    var upperAngle = angle + halfAngleRange;
-                    var lowerAngleCos = Math.cos(lowerAngle);
-                    var upperAngleCos = Math.cos(upperAngle);
-                    var lowerAngleSin = Math.sin(lowerAngle);
-                    var upperAngleSin = Math.sin(upperAngle);
-                    var angleCos = Math.cos(angle);
-                    var angleSin = Math.sin(angle);
-                    var r = prevLayerMaxX;
-                    var outR = prevLayerMaxX + length;
-                    // Draws two rectangles. Will look jagged for small trees,
-                    // but should look smooth enough for trees with enough
-                    // tips.
-                    var centerBL = [outR * angleCos, outR * angleSin];
-                    var centerBR = [r * angleCos, r * angleSin];
-                    var t1 = {
-                        tL: [outR * lowerAngleCos, outR * lowerAngleSin],
-                        tR: [r * lowerAngleCos, r * lowerAngleSin],
-                        bL: centerBL,
-                        bR: centerBR,
-                    };
-                    var t2 = {
-                        tL: [outR * upperAngleCos, outR * upperAngleSin],
-                        tR: [r * upperAngleCos, r * upperAngleSin],
-                        bL: centerBL,
-                        bR: centerBR,
-                    };
-                    this._addTriangleCoords(coords, t1, color);
-                    this._addTriangleCoords(coords, t2, color);
+                    this._addCircularBarCoords(
+                        coords,
+                        prevLayerMaxX,
+                        prevLayerMaxX + length,
+                        this._getNodeAngleInfo(node, halfAngleRange),
+                        color
+                    );
                 } else {
                     // This should never happen, since an unsupported layout
                     // (e.g. unrooted) being selected should hide the barplot
