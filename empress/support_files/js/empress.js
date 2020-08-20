@@ -1179,6 +1179,32 @@ define([
             // through the unique values in this sample metadata field below.
             var prevSectionMaxX = prevLayerMaxX;
 
+            var y, ty, by;
+            var angle,
+                lowerAngle,
+                upperAngle,
+                angleCos,
+                angleSin,
+                lowerAngleCos,
+                lowerAngleSin,
+                upperAngleCos,
+                upperAngleSin;
+            if (scope._currentLayout === "Rectangular") {
+                y = scope.getY(node);
+                ty = y + halfyrscf;
+                by = y - halfyrscf;
+            } else if (scope._currentLayout === "Circular") {
+                angle = scope.getNodeInfo(node, "angle");
+                lowerAngle = angle - halfAngleRange;
+                upperAngle = angle + halfAngleRange;
+                angleCos = Math.cos(angle);
+                angleSin = Math.sin(angle);
+                lowerAngleCos = Math.cos(lowerAngle);
+                upperAngleCos = Math.cos(upperAngle);
+                lowerAngleSin = Math.sin(lowerAngle);
+                upperAngleSin = Math.sin(upperAngle);
+            }
+
             // For each unique value for this sample metadata field...
             // NOTE: currently we iterate through all of sortedUniqueValues
             // once for every tip in the table, detecting and skipping
@@ -1210,9 +1236,6 @@ define([
                     // presence information for this tip.
                     var thisSectionMaxX = prevSectionMaxX + barSectionLen;
                     if (scope._currentLayout === "Rectangular") {
-                        var y = scope.getY(node);
-                        var ty = y + halfyrscf;
-                        var by = y - halfyrscf;
                         var corners = {
                             tL: [prevSectionMaxX, ty],
                             tR: [thisSectionMaxX, ty],
@@ -1221,15 +1244,6 @@ define([
                         };
                         scope._addTriangleCoords(coords, corners, sectionColor);
                     } else if (scope._currentLayout === "Circular") {
-                        var angle = scope.getNodeInfo(node, "angle");
-                        var lowerAngle = angle - halfAngleRange;
-                        var upperAngle = angle + halfAngleRange;
-                        var lowerAngleCos = Math.cos(lowerAngle);
-                        var upperAngleCos = Math.cos(upperAngle);
-                        var lowerAngleSin = Math.sin(lowerAngle);
-                        var upperAngleSin = Math.sin(upperAngle);
-                        var angleCos = Math.cos(angle);
-                        var angleSin = Math.sin(angle);
                         var r = prevSectionMaxX;
                         var outR = thisSectionMaxX;
                         // Draws two rectangles. Will look jagged for small trees,
