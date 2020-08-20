@@ -1225,6 +1225,14 @@ define([
                         // Draws two rectangles. Will look jagged for small trees,
                         // but should look smooth enough for trees with enough
                         // tips.
+                        // This works because Polar coordinates (of the form
+                        // (radius, theta)) can be converted to Cartesian
+                        // coordinates (x, y) by using the formulae:
+                        //  x = radius * cos(theta)
+                        //  y = radius * sin(theta)
+                        // See e.g. https://tutorial.math.lamar.edu/classes/calcii/polarcoordinates.aspx.
+                        // So every coordinate in one of these arrays is just
+                        // being converted from Polar to Cartesian.
                         var t1 = {
                             tL: [outR * lowerAngleCos, outR * lowerAngleSin],
                             tR: [r * lowerAngleCos, r * lowerAngleSin],
