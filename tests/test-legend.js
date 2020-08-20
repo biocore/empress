@@ -1,4 +1,9 @@
-require(["jquery", "chroma", "Legend"], function ($, chroma, Legend) {
+require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
+    $,
+    chroma,
+    UtilitiesForTesting,
+    Legend
+) {
     $(document).ready(function () {
         module("Legend", {
             // Create and destroy the container HTML element within the test,
@@ -102,6 +107,15 @@ require(["jquery", "chroma", "Legend"], function ($, chroma, Legend) {
             throws(function () {
                 legend.addCategoricalKey("oops", {});
             }, /Can't create a categorical legend when there are no categories in the info/);
+        });
+        test("addContinuousKey", function () {
+            var legend = new Legend(this.containerEle);
+            legend.addContinuousKey(
+                "omg continuous",
+                UtilitiesForTesting.getReferenceSVG(),
+                false
+            );
+            equal(this.containerEle.children.length, 2);
         });
         test("clear", function () {
             var legend = new Legend(this.containerEle);
