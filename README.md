@@ -234,7 +234,7 @@ sequential or diverging color map is selected). Try doing that, and then click
 ![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, Viridis-continuous-colored confidence layer 3](docs/moving-pictures/img/empress_barplots_10.png)
 
 Now, colors are assigned based on `Confidence`s as we might expect, using
-linear interpolation (courtesy of [chroma.js](https://gka.github.io/chroma.js/#scale-domain)).
+linear interpolation.
 
 This was a brief introduction to some of the barplot functionality available in Empress. There's a lot more that hasn't been documented here -- scaling bars' lengths by a continuous feature metadata field, adjusting the default colors or lengths of bars, and so on. We encourage you to try things out; feel free to contact us if you have any questions!
 
