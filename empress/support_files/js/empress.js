@@ -1241,7 +1241,7 @@ define([
                     // preorder traversal through the tree to see which tip has
                     // the largest cumulative length, then scale that to the
                     // radius value in the layout? Not sure if this step is a
-                    // bottleneck, though.)
+                    // bottleneck worth spending time working on, though.)
                     var r =
                         this.getX(this._treeData[i]) /
                         Math.cos(this.getNodeInfo(this._treeData[i], "angle"));
