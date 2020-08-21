@@ -1089,9 +1089,11 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // The [0.25, 0.5, 0.75] is the GL color we use. (Mostly chosen
             // here so that each R/G/B value is distinct; apparently this is a
             // weird shade of blue when you draw it.)
-            this.empress._addCircularBarCoords(
-                coords, 100, 200, angleInfo, [0.25, 0.5, 0.75]
-            );
+            this.empress._addCircularBarCoords(coords, 100, 200, angleInfo, [
+                0.25,
+                0.5,
+                0.75,
+            ]);
             // Each call of _addTriangleCoords() draws a rectangle with two
             // triangles. This involves adding 6 positions to coords, and since
             // positions take up 5 spaces in an array here ([x, y, r, g, b]),
@@ -1135,7 +1137,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // (Of course when you look at the other side of the circle left
             // and right'll be switched around. We just stick to this notation
             // here to make testing this less difficult.)
-            _.each(coords, function(v, i) {
+            _.each(coords, function (v, i) {
                 if (i === 0) {
                     equal(v, "preexisting thing in the array");
                 } else {
@@ -1191,9 +1193,9 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                                 default:
                                     throw new Error(
                                         "This should never happen: index " +
-                                        i +
-                                        " has a floor(i/5) value of " +
-                                        floor
+                                            i +
+                                            " has a floor(i/5) value of " +
+                                            floor
                                     );
                             }
                             break;
