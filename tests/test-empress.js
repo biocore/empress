@@ -1274,5 +1274,86 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 }
             });
         });
+        test("Test _addRectangularBarCoords", function () {
+            var coords = [];
+            var lx = 0;
+            var rx = 1;
+            var by = 2;
+            var ty = 3;
+            var color = [0.3, 0.8, 0.9];
+            this.empress._addRectangularBarCoords(
+                coords,
+                lx,
+                rx,
+                by,
+                ty,
+                color
+            );
+            // Each point has 5 values (x, y, r, g, b) and there are 3
+            // triangles (6 points) added, so the length of coords should now
+            // be 6 * 5 = 30.
+            equal(coords.length, 30);
+            // We use a pared-down form of the iteration test used above in
+            // testing _addCircularBarCoords(). This function is simpler (it
+            // only calls _addTriangleCoords() once, so only one rectangle is
+            // added), and there isn't a preexisting element in coords, so
+            // checking things is much less involved.
+            _.each(coords, function (v, i) {
+                var floor = Math.floor(i / 5);
+                switch (i % 5) {
+                    case 0:
+                        // x coordinate
+                        // Same logic as in the circular bar coords test --
+                        // which 5-tuplet of (x, y, r, g, b) is this
+                        // x-coordinate present in? This will determine what it
+                        // SHOULD be (i.e. if this 5-tuplet is supposed to be
+                        // the "top left" of the rectangle being drawn, then
+                        // its x-coordinate should be the left x-coordinate)
+                        switch (floor) {
+                            case 0:
+                            case 1:
+                            case 3:
+                                // tL (0, 3) or bL (1)
+                                equal(v, lx);
+                                break;
+                            default:
+                                // bR (2, 5) or tR (4)
+                                equal(v, rx);
+                        }
+                        break;
+                    case 1:
+                        // y coordinate
+                        switch (floor) {
+                            case 0:
+                            case 3:
+                            case 4:
+                                // tL (0, 3) or tR (4)
+                                equal(v, ty);
+                                break;
+                            default:
+                                // bL (1) or bR (2, 5)
+                                equal(v, by);
+                        }
+                        break;
+                    case 2:
+                        // Red (constant)
+                        equal(v, 0.3);
+                        break;
+                    case 3:
+                        // Green (constant)
+                        equal(v, 0.8);
+                        break;
+                    case 4:
+                        // Blue (constant)
+                        equal(v, 0.9);
+                        break;
+                    default:
+                        throw new Error(
+                            "If this is encountered, something went " +
+                                "very wrong."
+                        );
+                }
+            });
+        });
     });
 });
