@@ -256,7 +256,7 @@ class Empress():
             object and the sample + feature metadata.
         """
 
-        s_ids, f_ids, sid2idxs, fid2idxs_tmp, compressed_table = compress_table(
+        s_ids, f_ids, sid2idxs, fid2idxs_t, compressed_table = compress_table(
             self.table
         )
         sm_cols, compressed_sm = compress_sample_metadata(
@@ -268,11 +268,9 @@ class Empress():
         fid2idxs = {}
         compressed_tm = {}
         compressed_im = {}
-        test = True
-        unique = set()
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
-            if node.name in fid2idxs_tmp:
-                fid2idxs[i] = fid2idxs_tmp[node.name]
+            if node.name in fid2idxs_t:
+                fid2idxs[i] = fid2idxs_t[node.name]
                 f_ids[fid2idxs[i]] = i
 
             if node.name in compressed_tm_tmp:

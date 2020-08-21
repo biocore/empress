@@ -15,9 +15,9 @@ define(["underscore"], function (_) {
         var items = Object.keys(keys);
         var allKeys = new Set();
         var dupKeys = new Set();
-
+        var i, itemKeys;
         for (var item in keys) {
-            var itemKeys = Array.from(keys[item]);
+            itemKeys = Array.from(keys[item]);
             for (i in itemKeys) {
                 var key = itemKeys[i];
                 if (allKeys.has(key)) {
@@ -31,8 +31,8 @@ define(["underscore"], function (_) {
         // get the unique keys in each item
         var result = {};
         items = Object.keys(keys);
-        for (var i = 0; i < items.length; i++) {
-            var itemKeys = [...keys[items[i]]];
+        for (i = 0; i < items.length; i++) {
+            itemKeys = [...keys[items[i]]];
             var keep = new Set();
             for (var j = 0; j < itemKeys.length; j++) {
                 if (removeAll.has(itemKeys[j])) continue;

@@ -208,7 +208,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var node;
             var group1 = new Set([2, 3, 4]);
             var group2 = new Set([1, 6]);
-            for (var node = 1; node <= 7; node++) {
+            for (node = 1; node <= 7; node++) {
                 if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),

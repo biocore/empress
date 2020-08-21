@@ -73,9 +73,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         }
 
         // iterates in preorder
+        var parent;
         for (i = 2; i <= tree.size; i++) {
             var node = tree.postorder(tree.preorderselect(i));
-            var parent = tree.postorder(tree.parent(tree.preorderselect(i)));
+            parent = tree.postorder(tree.parent(tree.preorderselect(i)));
 
             xCoord[node] = xCoord[parent] + tree.length(tree.preorderselect(i));
             if (maxWidth < xCoord[node]) {
@@ -128,7 +129,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             // I don't think this should cause any problems, but it may be worth
             // detecting these cases and not drawing vertical lines for them in
             // the future.
-            var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
+            parent = tree.postorder(tree.parent(tree.postorderselect(i)));
             if (yCoord[i] > highestChildYr[parent]) {
                 highestChildYr[parent] = yCoord[i];
             }
