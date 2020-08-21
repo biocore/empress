@@ -893,7 +893,6 @@ define([
      * @param {Object} angleInfo Object returned by this._getNodeAngleInfo()
      *                           for the node this bar is being drawn for.
      * @param {Array} color The GL color to draw / fill both triangles with.
-     *                      Should be an RGB array (e.g. [1, 0, 0] for red).
      */
     Empress.prototype._addCircularBarCoords = function (
         coords,
@@ -927,6 +926,39 @@ define([
         };
         this._addTriangleCoords(coords, t1, color);
         this._addTriangleCoords(coords, t2, color);
+    };
+
+    /**
+     * Adds to an array of coordinates / colors the data needed to draw two
+     * triangles (one rectangle) for a single bar in a rectangular layout
+     * barplot.
+     *
+     * This is a simple convenience function that just calls
+     * Empress._addTriangleCoords() to do most of its work.
+     *
+     * @param {Array} coords Array containing coordinate + color data, to be
+     *                       passed to Drawer.loadBarplotBuff().
+     * @param {Number} lx Leftmost x-coordinate of the rectangle to draw.
+     * @param {Number} rx Rightmost x-coordinate of the rectangle to draw.
+     * @param {Number} by Bottommost y-coordinate of the rectangle to draw.
+     * @param {Number} ty Topmost y-coordinate of the rectangle to draw.
+     * @param {Array} color The GL color to draw / fill both triangles with.
+     */
+    Empress.prototype._addRectangularBarCoords = function (
+        coords,
+        lx,
+        rx,
+        by,
+        ty,
+        color
+    ) {
+        var corners = {
+            tL: [lx, ty],
+            tR: [rx, ty],
+            bL: [lx, by],
+            bR: [rx, by],
+        };
+        this._addTriangleCoords(coords, corners, color);
     };
 
     /**
@@ -1391,13 +1423,14 @@ define([
                     // presence information for this tip.
                     var thisSectionMaxD = prevSectionMaxD + barSectionLen;
                     if (scope._currentLayout === "Rectangular") {
-                        var corners = {
-                            tL: [prevSectionMaxD, ty],
-                            tR: [thisSectionMaxD, ty],
-                            bL: [prevSectionMaxD, by],
-                            bR: [thisSectionMaxD, by],
-                        };
-                        scope._addTriangleCoords(coords, corners, sectionColor);
+                        scope._addRectangularBarCoords(
+                            coords,
+                            prevSectionMaxD,
+                            thisSectionMaxD,
+                            by,
+                            ty,
+                            sectionColor
+                        );
                     } else {
                         scope._addCircularBarCoords(
                             coords,
@@ -1562,24 +1595,26 @@ define([
                     maxD = length + prevLayerMaxD;
                 }
 
+                var thisLayerMaxD = prevLayerMaxD + length;
                 // Finally, add this tip's bar data to to an array of data
                 // describing the bars to draw
                 if (this._currentLayout === "Rectangular") {
                     var y = this.getY(node);
                     var ty = y + halfyrscf;
                     var by = y - halfyrscf;
-                    var corners = {
-                        tL: [prevLayerMaxD, ty],
-                        tR: [prevLayerMaxD + length, ty],
-                        bL: [prevLayerMaxD, by],
-                        bR: [prevLayerMaxD + length, by],
-                    };
-                    this._addTriangleCoords(coords, corners, color);
+                    this._addRectangularBarCoords(
+                        coords,
+                        prevLayerMaxD,
+                        thisLayerMaxD,
+                        by,
+                        ty,
+                        color
+                    );
                 } else {
                     this._addCircularBarCoords(
                         coords,
                         prevLayerMaxD,
-                        prevLayerMaxD + length,
+                        thisLayerMaxD,
                         this._getNodeAngleInfo(node, halfAngleRange),
                         color
                     );
