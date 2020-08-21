@@ -173,5 +173,27 @@ define(["Empress", "BPTree", "BiomTable"], function (
         };
     }
 
-    return { getTestData: getTestData };
+    /**
+     * Calls .toFixed() on two numbers with a specified "digits" value and then
+     * asserts the results' equality.
+     *
+     * I'm gonna be honest, I feel like I've written this function five times
+     * for this project. I can't find this anywhere in this branch, so I
+     * suspect that one of the incoming PRs contains something sort of like
+     * this. If and when it comes to that, we may want to standardize things to
+     * just use this function.
+     *
+     * @param {Number} n1
+     * @param {Number} n2
+     * @param {Number} digits Will be passed to .toFixed(). Named this way
+     *                        because the corresponding parameter in .toFixed()
+     *                        is also called "digits".
+     */
+    function approxEqual(n1, n2, digits = 4) {
+        var n1f = n1.toFixed(digits);
+        var n2f = n2.toFixed(digits);
+        equal(n1f, n2f);
+    }
+
+    return { getTestData: getTestData, approxEqual: approxEqual };
 });

@@ -1082,6 +1082,86 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             }, /_getNodeAngleInfo\(\) called when not in circular layout/);
         });
         test("Test _addCircularBarCoords", function () {
+            /**
+             * Utility function for checking that an x or y value is what it
+             * should be.
+             *
+             * The use of 200 and 100 (for the outer and inner radius,
+             * respectively) and of 0 for the node angle, pi / 2 for the
+             * half-angle range, etc. means that this function is hardcoded
+             * for the test example demonstrated here. However, this could be
+             * generalized to test _addCircularBarCoords() in more detail if
+             * desired.
+             *
+             * @param {Number} fiveTupleIdx A 0-based number indicating which
+             *                              [x, y, r, g, b] chunk in a coords
+             *                              array the input value is from.
+             * @param {Number} v A value in a coords array located at either
+             *                   the x or y position in one of those 5-tuples.
+             * @param {Boolean} isX truthy if this is supposed to be an
+             *                      x-coordinate value, falsy if this is
+             *                      supposed to be a y-coordinate value. The
+             *                      only difference this makes here is whether
+             *                      Polar -> Cartesian conversions are done
+             *                      with r*cos(theta) or r*sin(theta) (the
+             *                      former is for x, the latter is for y).
+             *
+             */
+            var checkCoordVal = function (fiveTupleIdx, v, isX) {
+                var trigFunc = isX ? Math.cos : Math.sin;
+                var piover2 = Math.PI / 2;
+                switch (fiveTupleIdx) {
+                    case 0:
+                    case 3:
+                        // tL on the lower rectangle
+                        UtilitiesForTesting.approxEqual(
+                            v,
+                            200 * trigFunc(-piover2)
+                        );
+                        break;
+                    case 1:
+                    case 7:
+                        // bL
+                        UtilitiesForTesting.approxEqual(v, 200 * trigFunc(0));
+                        break;
+                    case 2:
+                    case 5:
+                    case 8:
+                    case 11:
+                        // bR
+                        UtilitiesForTesting.approxEqual(v, 100 * trigFunc(0));
+                        break;
+                    case 4:
+                        // tR on the lower rectangle
+                        UtilitiesForTesting.approxEqual(
+                            v,
+                            100 * trigFunc(-piover2)
+                        );
+                        break;
+                    case 6:
+                    case 9:
+                        // tL on the upper rectangle
+                        UtilitiesForTesting.approxEqual(
+                            v,
+                            200 * trigFunc(piover2)
+                        );
+                        break;
+                    case 10:
+                        // tR on the upper rectangle
+                        UtilitiesForTesting.approxEqual(
+                            v,
+                            100 * trigFunc(piover2)
+                        );
+                        break;
+                    default:
+                        throw new Error(
+                            "This should never happen: index " +
+                                i +
+                                " has a floor(i / 5) value of " +
+                                floor
+                        );
+                }
+            };
             var coords = ["preexisting thing in the array"];
             this.empress.updateLayout("Circular");
             var node = this.empress._treeData[1];
@@ -1147,116 +1227,23 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 } else {
                     // Which group of 5 elements (x, y, r, g, b) does this
                     // value fall in? We can figure this out by taking the
-                    // floor of i / 5. The 0th 5-tuplet is tL in the lower
-                    // rectangle (covering [1, 5]), the 1th 5-tuplet is bL in
+                    // floor of i / 5. The 0th 5-tuple is tL in the lower
+                    // rectangle (covering [1, 5]), the 1th 5-tuple is bL in
                     // the lower rectangle (covering [6, 10]), etc.
                     // (This isn't necessary to compute for R / G / B values
                     // since those are going to be the same at every point, but
                     // this is needed for figuring out what the expected value
-                    // should be of the x / y values.)
+                    // should be for an x or y value. checkCoordVal() does the
+                    // hard work in figuring that out.)
                     var floor = Math.floor(i / 5);
                     switch (i % 5) {
                         case 1:
-                            // It's an x coordinate
-                            switch (floor) {
-                                case 0:
-                                case 3:
-                                    // tL on the lower rectangle
-                                    // This should be 0 because the tL's x is
-                                    // (outer radius) * (cos(lower angle)) =
-                                    // 200 * cos(-pi/2) = 0.
-                                    equal(v.toFixed(5), 0);
-                                    break;
-                                case 1:
-                                case 7:
-                                    // bL
-                                    // 200 * cos(0) = 200
-                                    equal(v, 200);
-                                    break;
-                                case 2:
-                                case 5:
-                                case 8:
-                                case 11:
-                                    // bR
-                                    // 100 * cos(0) = 100
-                                    equal(v, 100);
-                                    break;
-                                case 4:
-                                    // tR on the lower rectangle
-                                    // 100 * cos(-pi/2) = 0
-                                    equal(v.toFixed(5), 0);
-                                    break;
-                                case 6:
-                                case 9:
-                                    // tL on the upper rectangle
-                                    // 200 * cos(pi/2) = 0
-                                    equal(v.toFixed(5), 0);
-                                    break;
-                                case 10:
-                                    // tR on the upper rectangle
-                                    // 100 * cos(pi/2) = 0
-                                    equal(v.toFixed(5), 0);
-                                    break;
-                                default:
-                                    throw new Error(
-                                        "This should never happen: index " +
-                                            i +
-                                            " has a floor(i/5) value of " +
-                                            floor
-                                    );
-                            }
+                            // x coordinate
+                            checkCoordVal(floor, v, true);
                             break;
                         case 2:
-                            // It's a y coordinate. This works basically the
-                            // same as x coordinates, but now we use sin()
-                            // instead of cos().
-                            switch (floor) {
-                                case 0:
-                                case 3:
-                                    // tL on the lower rectangle
-                                    // This should be -200 because the tL's y
-                                    // is (outer radius) * (sin(lower angle)) =
-                                    // 200 * sin(-pi/2) = -200.
-                                    equal(v.toFixed(5), -200);
-                                    break;
-                                case 1:
-                                case 7:
-                                    // bL
-                                    // 200 * sin(0) = 0
-                                    equal(v, 0);
-                                    break;
-                                case 2:
-                                case 5:
-                                case 8:
-                                case 11:
-                                    // bR
-                                    // 100 * sin(0) = 0
-                                    equal(v, 0);
-                                    break;
-                                case 4:
-                                    // tR on the lower rectangle
-                                    // 100 * sin(-pi/2) = -100
-                                    equal(v.toFixed(5), -100);
-                                    break;
-                                case 6:
-                                case 9:
-                                    // tL on the upper rectangle
-                                    // 200 * sin(pi/2) = 200
-                                    equal(v.toFixed(5), 200);
-                                    break;
-                                case 10:
-                                    // tR on the upper rectangle
-                                    // 100 * sin(pi/2) = 100
-                                    equal(v.toFixed(5), 100);
-                                    break;
-                                default:
-                                    throw new Error(
-                                        "This should never happen: index " +
-                                            i +
-                                            " has a floor(i/5) value of " +
-                                            floor
-                                    );
-                            }
+                            // y coordinate
+                            checkCoordVal(floor, v, false);
                             break;
                         case 3:
                             // Red (constant)
@@ -1267,7 +1254,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                             equal(v, 0.5);
                             break;
                         case 0:
-                            // Blue (constant)
                             // Blue (constant)
                             // Note that although coords[0] is divisible by 5,
                             // it shouldn't be 0.75 since it's filled in with a
