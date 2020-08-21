@@ -1268,7 +1268,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                         default:
                             throw new Error(
                                 "If this is encountered, something went " +
-                                "very wrong."
+                                    "very wrong."
                             );
                     }
                 }
