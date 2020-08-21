@@ -1308,13 +1308,22 @@ define([
         // the tips present in the BIOM table, that is)
         var feature2freqs = this._biom.getFrequencyMap(layer.colorBySMField);
 
-        // Bar thickness (rect layout barplots)
-        var halfyrscf = this._yrscf / 2;
-
-        // Bar thickness (circular layout barplots)
-        // This is really (2pi / # leaves) / 2, but the 2s cancel
-        // out so it's just pi / # leaves
-        var halfAngleRange = Math.PI / scope._tree.numleaves();
+        // Only bother computing the halfyrscf / halfAngleRange value we need.
+        // (this._tree.numleaves() does iterate over the full tree, at least
+        // as of writing, so avoiding calling it if possible is a good idea.)
+        // NOTE: This code is duplicated between this function and
+        // addFMBarplotLayerCoords(). Not sure if it's worth the work to
+        // abstract it, though, since it boils down to ~6 lines.
+        var halfyrscf, halfAngleRange;
+        if (this._currentLayout === "Rectangular") {
+            // Bar thickness (rect layout barplots)
+            halfyrscf = this._yrscf / 2;
+        } else {
+            // Bar thickness (circular layout barplots)
+            // This is really (2pi / # leaves) / 2, but the 2s cancel
+            // out so it's just pi / # leaves
+            halfAngleRange = Math.PI / this._tree.numleaves();
+        }
 
         // For each tip in the BIOM table...
         // (We implicitly ignore [and don't draw anything for] tips that
@@ -1494,8 +1503,12 @@ define([
 
         // Now that we know how to encode each tip's bar, we can finally go
         // iterate through the tree and create bars for the tips.
-        var halfyrscf = this._yrscf / 2;
-        var halfAngleRange = Math.PI / this._tree.numleaves();
+        var halfyrscf, halfAngleRange;
+        if (this._currentLayout === "Rectangular") {
+            halfyrscf = this._yrscf / 2;
+        } else {
+            halfAngleRange = Math.PI / this._tree.numleaves();
+        }
         for (i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
                 var node = this._treeData[i];
