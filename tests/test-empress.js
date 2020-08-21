@@ -1108,10 +1108,14 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // For reference, _addTriangleCoords() works by (given four
             // "corners", tL / tR / bL / bR) adding coordinate info for two
             // triangles:
+            //
             //    tL--tR
             //    | \  |
             //    |  \ |
             //    bL--bR
+            //
+            // These two triangles are added to coords in the following order:
+            //
             // 1. tL -> bL -> bR
             // 2. tL -> tR -> bR
             //
@@ -1134,23 +1138,26 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             //
             // We consider "left" positions as those using the outer radius,
             // and "right" positions as those using the inner radius.
-            // (Of course when you look at the other side of the circle left
+            // (Of course when you look at an opposite side of the circle left
             // and right'll be switched around. We just stick to this notation
-            // here to make testing this less difficult.)
+            // here to make describing and testing this less difficult.)
             _.each(coords, function (v, i) {
                 if (i === 0) {
                     equal(v, "preexisting thing in the array");
                 } else {
+                    // Which group of 5 elements (x, y, r, g, b) does this
+                    // value fall in? We can figure this out by taking the
+                    // floor of i / 5. The 0th 5-tuplet is tL in the lower
+                    // rectangle (covering [1, 5]), the 1th 5-tuplet is bL in
+                    // the lower rectangle (covering [6, 10]), etc.
+                    // (This isn't necessary to compute for R / G / B values
+                    // since those are going to be the same at every point, but
+                    // this is needed for figuring out what the expected value
+                    // should be of the x / y values.)
+                    var floor = Math.floor(i / 5);
                     switch (i % 5) {
                         case 1:
                             // It's an x coordinate
-                            // Which group of 5 elements (x, y, r, g, b) does
-                            // this coordinate fall in? We can figure this out
-                            // by taking the floor of i / 5. The 0th 5-tuplet
-                            // is tL in the lower rectangle (covering [1, 5]),
-                            // the 1th 5-tuplet is bL in the lower rectangle
-                            // (covering [6, 10]), etc.
-                            var floor = Math.floor(i / 5);
                             switch (floor) {
                                 case 0:
                                 case 3:
@@ -1200,8 +1207,56 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                             }
                             break;
                         case 2:
-                            // It's a y coordinate
-                            // TODO test
+                            // It's a y coordinate. This works basically the
+                            // same as x coordinates, but now we use sin()
+                            // instead of cos().
+                            switch (floor) {
+                                case 0:
+                                case 3:
+                                    // tL on the lower rectangle
+                                    // This should be -200 because the tL's y
+                                    // is (outer radius) * (sin(lower angle)) =
+                                    // 200 * sin(-pi/2) = -200.
+                                    equal(v.toFixed(5), -200);
+                                    break;
+                                case 1:
+                                case 7:
+                                    // bL
+                                    // 200 * sin(0) = 0
+                                    equal(v, 0);
+                                    break;
+                                case 2:
+                                case 5:
+                                case 8:
+                                case 11:
+                                    // bR
+                                    // 100 * sin(0) = 0
+                                    equal(v, 0);
+                                    break;
+                                case 4:
+                                    // tR on the lower rectangle
+                                    // 100 * sin(-pi/2) = -100
+                                    equal(v.toFixed(5), -100);
+                                    break;
+                                case 6:
+                                case 9:
+                                    // tL on the upper rectangle
+                                    // 200 * sin(pi/2) = 200
+                                    equal(v.toFixed(5), 200);
+                                    break;
+                                case 10:
+                                    // tR on the upper rectangle
+                                    // 100 * sin(pi/2) = 100
+                                    equal(v.toFixed(5), 100);
+                                    break;
+                                default:
+                                    throw new Error(
+                                        "This should never happen: index " +
+                                            i +
+                                            " has a floor(i/5) value of " +
+                                            floor
+                                    );
+                            }
                             break;
                         case 3:
                             // Red (constant)
