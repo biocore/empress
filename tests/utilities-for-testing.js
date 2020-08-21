@@ -177,11 +177,12 @@ define(["Empress", "BPTree", "BiomTable"], function (
      * Calls .toFixed() on two numbers with a specified "digits" value and then
      * asserts the results' equality.
      *
-     * I'm gonna be honest, I feel like I've written this function five times
-     * for this project. I can't find this anywhere in this branch, so I
-     * suspect that one of the incoming PRs contains something sort of like
-     * this. If and when it comes to that, we may want to standardize things to
-     * just use this function.
+     * I already wrote something kind of like this for the JS layout tests --
+     * see the toFixedIfy() and approxDeepEqual() functions defined at the top
+     * of test-layouts-util.js as of writing. However, that branch is not
+     * merged into master yet, and this addresses a slightly simpler use case
+     * (just comparing individual numbers, not arrays of numbers). Eventually
+     * we may want to combine these functions, but this should be ok for now.
      *
      * @param {Number} n1
      * @param {Number} n2
