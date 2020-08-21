@@ -1081,5 +1081,141 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 scope.empress._getNodeAngleInfo(node, Math.PI / 2);
             }, /_getNodeAngleInfo\(\) called when not in circular layout/);
         });
+        test("Test _addCircularBarCoords", function () {
+            var coords = ["preexisting thing in the array"];
+            this.empress.updateLayout("Circular");
+            var node = this.empress._treeData[1];
+            var angleInfo = this.empress._getNodeAngleInfo(node, Math.PI / 2);
+            // The [0.25, 0.5, 0.75] is the GL color we use. (Mostly chosen
+            // here so that each R/G/B value is distinct; apparently this is a
+            // weird shade of blue when you draw it.)
+            this.empress._addCircularBarCoords(
+                coords, 100, 200, angleInfo, [0.25, 0.5, 0.75]
+            );
+            // Each call of _addTriangleCoords() draws a rectangle with two
+            // triangles. This involves adding 6 positions to coords, and since
+            // positions take up 5 spaces in an array here ([x, y, r, g, b]),
+            // and since _addCircularBarCoords() creates two rectangles (four
+            // triangles), coords should contain 6*5 = 30 * 2 = 60 + 1 = 61
+            // elements. (The + 1 is for the preexisting thing in the array --
+            // just checking that coords isn't completely overwritten or
+            // anything.)
+            equal(coords.length, 61);
+
+            // Check the actual coordinate values.
+            // For reference, _addTriangleCoords() works by (given four
+            // "corners", tL / tR / bL / bR) adding coordinate info for two
+            // triangles:
+            //    tL--tR
+            //    | \  |
+            //    |  \ |
+            //    bL--bR
+            // 1. tL -> bL -> bR
+            // 2. tL -> tR -> bR
+            //
+            // And there are two rectangles (or quadrilaterals?) being drawn
+            // in this function: one with tL and tR being on the lower angle,
+            // and one with tL and tL and tR being on the upper angle.
+            //
+            //    0     1     2
+            // 1. tL -> bL -> bR (t = lower angle)
+            //    3     4     5
+            // 2. tL -> tR -> bR (t = lower angle)
+            //    6     7     8
+            // 3. tL -> bL -> bR (t = upper angle)
+            //    9     10    11
+            // 4. tL -> tR -> bR (t = upper angle)
+            //
+            // Note that bL and bR remain consistent throughout all of the
+            // triangles drawn: these are always at the same angle as the node
+            // this bar is being drawn for.
+            //
+            // We consider "left" positions as those using the outer radius,
+            // and "right" positions as those using the inner radius.
+            // (Of course when you look at the other side of the circle left
+            // and right'll be switched around. We just stick to this notation
+            // here to make testing this less difficult.)
+            _.each(coords, function(v, i) {
+                if (i === 0) {
+                    equal(v, "preexisting thing in the array");
+                } else {
+                    switch (i % 5) {
+                        case 1:
+                            // It's an x coordinate
+                            // Which group of 5 elements (x, y, r, g, b) does
+                            // this coordinate fall in? We can figure this out
+                            // by taking the floor of i / 5. The 0th 5-tuplet
+                            // is tL in the lower rectangle (covering [1, 5]),
+                            // the 1th 5-tuplet is bL in the lower rectangle
+                            // (covering [6, 10]), etc.
+                            var floor = Math.floor(i / 5);
+                            switch (floor) {
+                                case 0:
+                                case 3:
+                                    // tL on the lower rectangle
+                                    // This should be 0 because the tL's x is
+                                    // (outer radius) * (cos(lower angle)) =
+                                    // 200 * cos(-pi/2) = 0.
+                                    equal(v.toFixed(5), 0);
+                                    break;
+                                case 1:
+                                case 7:
+                                    // bL
+                                    // 200 * cos(0) = 200
+                                    equal(v, 200);
+                                    break;
+                                case 2:
+                                case 5:
+                                case 8:
+                                case 11:
+                                    // bR
+                                    // 100 * cos(0) = 100
+                                    equal(v, 100);
+                                case 4:
+                                    // tR on the lower rectangle
+                                    // TODO test
+                                    break;
+                                case 6:
+                                case 9:
+                                    // tL on the upper rectangle
+                                    // TODO test
+                                    break;
+                                case 10:
+                                    // tR on the upper rectangle
+                                    // TODO test
+                                    break;
+                                default:
+                                    throw new Error(
+                                        "This should never happen: index " +
+                                        i +
+                                        " has a floor(i/5) value of " +
+                                        floor
+                                    );
+                            }
+                            break;
+                        case 2:
+                            // It's a y coordinate
+                            // TODO test
+                            break;
+                        case 3:
+                            // Red (constant)
+                            equal(v, 0.25);
+                            break;
+                        case 4:
+                            // Green (constant)
+                            equal(v, 0.5);
+                            break;
+                        case 0:
+                            // Blue (constant)
+                            // Blue (constant)
+                            // Note that although coords[0] is divisible by 5,
+                            // it shouldn't be 0.75 since it's filled in with a
+                            // preexisting value.
+                            equal(v, 0.75);
+                            break;
+                    }
+                }
+            });
+        });
     });
 });
