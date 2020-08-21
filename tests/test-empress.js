@@ -1084,7 +1084,9 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
         test("Test _addCircularBarCoords", function () {
             /**
              * Utility function for checking that an x or y value is what it
-             * should be.
+             * should be. See the comments later on in this test (before
+             * iterating through coords) for details on how coordinates are
+             * added in _addCircularBarCoords().
              *
              * The use of 200 and 100 (for the outer and inner radius,
              * respectively) and of 0 for the node angle, pi / 2 for the
@@ -1176,12 +1178,12 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             ]);
             // Each call of _addTriangleCoords() draws a rectangle with two
             // triangles. This involves adding 6 positions to coords, and since
-            // positions take up 5 spaces in an array here ([x, y, r, g, b]),
+            // positions take up 5 spaces in an array here (x, y, r, g, b),
             // and since _addCircularBarCoords() creates two rectangles (four
             // triangles), coords should contain 6*5 = 30 * 2 = 60 + 1 = 61
             // elements. (The + 1 is for the preexisting thing in the array --
-            // just checking that coords isn't completely overwritten or
-            // anything.)
+            // it's in this test just to check that the input coords array
+            // is appended to, not overwritten.)
             equal(coords.length, 61);
 
             // Check the actual coordinate values.
@@ -1194,7 +1196,10 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             //    |  \ |
             //    bL--bR
             //
-            // These two triangles are added to coords in the following order:
+            // The position information for these two triangles are added to
+            // coords in the following order. (This results in 6*5 = 30 values
+            // being added to coords, since each of these positions has its
+            // own x, y, r, g, b.)
             //
             // 1. tL -> bL -> bR
             // 2. tL -> tR -> bR
@@ -1260,6 +1265,11 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                             // preexisting value.
                             equal(v, 0.75);
                             break;
+                        default:
+                            throw new Error(
+                                "If this is encountered, something went " +
+                                "very wrong."
+                            );
                     }
                 }
             });
