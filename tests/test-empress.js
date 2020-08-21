@@ -1171,18 +1171,22 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                                     // bR
                                     // 100 * cos(0) = 100
                                     equal(v, 100);
+                                    break;
                                 case 4:
                                     // tR on the lower rectangle
-                                    // TODO test
+                                    // 100 * cos(-pi/2) = 0
+                                    equal(v.toFixed(5), 0);
                                     break;
                                 case 6:
                                 case 9:
                                     // tL on the upper rectangle
-                                    // TODO test
+                                    // 200 * cos(pi/2) = 0
+                                    equal(v.toFixed(5), 0);
                                     break;
                                 case 10:
                                     // tR on the upper rectangle
-                                    // TODO test
+                                    // 100 * cos(pi/2) = 0
+                                    equal(v.toFixed(5), 0);
                                     break;
                                 default:
                                     throw new Error(
