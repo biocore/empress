@@ -1331,7 +1331,13 @@ define([
                 y = scope.getY(node);
                 ty = y + halfyrscf;
                 by = y - halfyrscf;
-            } else if (scope._currentLayout === "Circular") {
+            } else {
+                // NOTE: In this function and in addFMBarplotLayerCoords(), we
+                // don't bother checking if scope._currentLayout is not
+                // Rectangular / Circular. This should already have been
+                // checked for in drawBarplots(), so we can safely assume that
+                // we're in one of the supported layouts. (If not, it's the
+                // caller's problem.)
                 angleInfo = scope._getNodeAngleInfo(node, halfAngleRange);
             }
 
@@ -1373,7 +1379,7 @@ define([
                             bR: [thisSectionMaxD, by],
                         };
                         scope._addTriangleCoords(coords, corners, sectionColor);
-                    } else if (scope._currentLayout === "Circular") {
+                    } else {
                         scope._addCircularBarCoords(
                             coords,
                             prevSectionMaxD,
@@ -1381,8 +1387,6 @@ define([
                             angleInfo,
                             sectionColor
                         );
-                    } else {
-                        throw new Error("Unsupported barplot layout");
                     }
                     prevSectionMaxD = thisSectionMaxD;
                 }
@@ -1548,20 +1552,13 @@ define([
                         bR: [prevLayerMaxD + length, by],
                     };
                     this._addTriangleCoords(coords, corners, color);
-                } else if (this._currentLayout === "Circular") {
+                } else {
                     this._addCircularBarCoords(
                         coords,
                         prevLayerMaxD,
                         prevLayerMaxD + length,
                         this._getNodeAngleInfo(node, halfAngleRange),
                         color
-                    );
-                } else {
-                    // This should never happen, since an unsupported layout
-                    // (e.g. unrooted) being selected should hide the barplot
-                    // controls and un-draw barplots.
-                    throw new Error(
-                        "Unsupported layout when drawing f.m. barplots"
                     );
                 }
             }
