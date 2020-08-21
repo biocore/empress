@@ -24,9 +24,10 @@ define([
      *                     the closest layer to the tips of the tree, and
      *                     so on. Shown in the title of this layer in the UI.
      * @param {Number} uniqueNum An arbitrary number. This can be any number,
-     *                           so long as no other barplot layer on the page
-     *                           is guaranteed to never have the same
-     *                           uniqueNum. Used when assigning IDs to HTML
+     *                           so long as it is guaranteed to be unique to
+     *                           this barplot layer (no other layer on the page
+     *                           should have this as its unique number).
+     *                           Used when assigning IDs to HTML
      *                           elements within this layer -- this ensures
      *                           that one layer's elements don't trump another
      *                           layer's elements. (This should not be the same
