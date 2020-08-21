@@ -1215,10 +1215,12 @@ define([
         var coords = [];
         // The "D" stands for displacement. For the rectangular layout, this
         // variable represents the rightmost node's x-coordinate; for the
-        // circular layout, this variable represents the node with the largest
-        // radius' radius. (This is used when determining how "close" to the
-        // root node we can start drawing barplots and not cross over any
-        // nodes.)
+        // circular layout, this variable represents the node farthest away
+        // from the root's distance from the root (a.k.a. radius, since the
+        // root is (0, 0)).
+        // In any case, the maxD value is used when determining how "close"
+        // to the root node we can start drawing barplots without crossing over
+        // any nodes.
         var maxD = -Infinity;
         for (var i = 1; i < this._tree.size; i++) {
             if (this._tree.isleaf(this._tree.postorderselect(i))) {
@@ -1228,10 +1230,18 @@ define([
                         maxD = x;
                     }
                 } else if (this._currentLayout === "Circular") {
+                    // We don't currently store nodes' radii, so we figure this
+                    // out by looking at the node's x-coordinate and angle.
                     // Since x-coordinates are equal to r*cos(theta), we can
                     // divide a given node's x-coordinate by cos(theta) to get
-                    // its radius. (There is probably a more efficient way to
-                    // do this.)
+                    // its radius. I know we can get the same result by
+                    // computing sqrt(x^2 + y^2) (a.k.a. distance from the
+                    // root at (0, 0)), but this seems faster. (There is still
+                    // probably an even faster way to do this though; maybe a
+                    // preorder traversal through the tree to see which tip has
+                    // the largest cumulative length, then scale that to the
+                    // radius value in the layout? Not sure if this step is a
+                    // bottleneck, though.)
                     var r =
                         this.getX(this._treeData[i]) /
                         Math.cos(this.getNodeInfo(this._treeData[i], "angle"));
