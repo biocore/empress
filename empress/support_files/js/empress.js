@@ -449,13 +449,6 @@ define([
                 i + this._drawer.VERTEX_SIZE <= coords.length;
                 i += this._drawer.VERTEX_SIZE
             ) {
-                // getNodeCoords array seem to be larger than necessary and
-                // elements are initialized with 0.  Thus, nodes at (0, 0) will
-                // be skipped (root will always be positioned at 0,0 and drawn
-                // below) This is a known issue and will be resolved with #142
-                if (coords[i] == 0 && coords[i + 1] == 0) {
-                    continue;
-                }
                 svg +=
                     '<circle cx="' +
                     coords[i] +
@@ -471,15 +464,8 @@ define([
             }
         }
 
-        // add one black circle to indicate the root
-        // Not sure if this special treatment for root is necessary once #142
-        // is merged. (TODO, it isn't.)
-        svg += "<!-- root node -->\n";
-        svg +=
-            '<circle cx="0" cy="0" r="' +
-            NODE_RADIUS +
-            '" fill="rgb(0,0,0)"/>\n';
-
+        // Determine viewBox information; construct a "declaration" that can be
+        // added to the SVG header. TODO: expand based on legend dimensions.
         var vbMinX = minX - NODE_RADIUS;
         var vbMinY = minY - NODE_RADIUS;
         var vbWidth = maxX - minX + 2 * NODE_RADIUS;
