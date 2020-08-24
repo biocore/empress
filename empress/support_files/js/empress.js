@@ -491,15 +491,15 @@ define([
     /**
      * Creates an SVG string to export legends.
      *
-     * @param {Document} dom A reference to the current document.
      * @param {Number} leftX The leftmost x-coordinate to place legends at.
      * @param {Number} topY The topmost y-coordinate to place legends at. (If
      *                      there are multiple legends, they will be positioned
      *                      below each other.)
+     *
      * @return {String} svg The SVG code representing all legend(s) for the
      *                      tree visualization.
      */
-    Empress.prototype.exportSVGLegend = function (dom, leftX, topY) {
+    Empress.prototype.exportSVGLegend = function (leftX, topY) {
         // top left position of legends, multiple legends are placed below
         // each other.
         // all distances are based on this variable, thus "zooming" can be
@@ -521,7 +521,7 @@ define([
         //
         // Count the number of used rows
         var row = 1;
-        for (var legend of dom.getElementsByClassName("legend")) {
+        for (var legend of document.getElementsByClassName("legend")) {
             var maxLineWidth = 0;
             var title = legend.getElementsByClassName("legend-title");
             var svg_legend = "";

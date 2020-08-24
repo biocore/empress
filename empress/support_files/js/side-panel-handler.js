@@ -340,7 +340,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             var svgInfo = scope.empress.exportSVG();
             // create SVG tags for legend, collected from the HTML document
             var legendSVG = scope.empress.exportSVGLegend(
-                document,
                 svgInfo.legendLeftX,
                 svgInfo.legendTopY
             );
