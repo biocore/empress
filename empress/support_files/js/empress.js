@@ -1007,7 +1007,6 @@ define([
             var parent = tree.postorder(
                 tree.parent(tree.postorderselect(node))
             );
-            // parent = this._treeData[parent];
 
             if (
                 this._collapsedClades.hasOwnProperty(node) ||

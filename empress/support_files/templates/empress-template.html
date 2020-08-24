@@ -117,7 +117,6 @@
                  BPTree, Camera, Drawer, SidePanel, AnimationPanel, Animator,
                  BarplotLayer, BarplotPanel, BIOMTable, Empress, Legend,
                  Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util, LayoutsUtil) {
-        var d = new Date();
         // initialze the tree and model
         var tree = new BPTree(
           {{ tree  }},
@@ -182,8 +181,6 @@
               document.querySelector(".side-content:not(.hidden)"));
           });
         });
-        var dt = new Date();
-        console.log("loaded page in", dt.getTime() - d.getTime());
 
         document.getElementById("loading-screen").classList.add("hidden");
 

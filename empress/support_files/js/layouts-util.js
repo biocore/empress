@@ -29,8 +29,15 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                       displayed.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height
-     * @return {Object} Object with xCoords and yCoords properties where the
-     *                  node coordinates are stored in postorder.
+     * @return {Object} Object with the following properties:
+     *                   -xCoords
+     *                   -yCoords
+     *                   -highestChildYr
+     *                   -lowestChildYr
+     *                   -yScalingFactor
+     *                  Each of these properties (except for yScalingFactor)
+     *                  maps to an Array where data for each node is stored in
+     *                  postorder. yScalingFactor maps to a Number.
      */
     function rectangularLayout(tree, width, height, normalize = true) {
         // NOTE: This doesn't draw a horizontal line leading to the root "node"
@@ -228,7 +235,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                    and y)
      *                   -arcStartAngle
      *                   -arcEndAngle
-     *                  Each of these properties maps to an Arrays where data
+     *                  Each of these properties maps to an Array where data
      *                  for each node is stored in postorder. The arc* values
      *                  will be 0 for all leaf nodes, and all values will be 0
      *                  for the root node.

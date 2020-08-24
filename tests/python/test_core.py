@@ -238,7 +238,6 @@ class TestCore(unittest.TestCase):
         self.files_to_remove.append('./something-else')
 
     def test_to_dict(self):
-
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=False)
 

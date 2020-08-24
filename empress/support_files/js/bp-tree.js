@@ -671,7 +671,7 @@ define(["ByteArray"], function (ByteArray) {
     };
 
     /**
-     * Retrive number of tips in the subtree of a given node.
+     * Retrieve number of tips in the subtree of a given node.
      *
      * @param {Integer} nodeKey The postorder position of a node
      * @return {Integer} The number of tips on the subtree rooted at nodeKey.

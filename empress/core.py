@@ -281,7 +281,7 @@ class Empress():
             # table.
             if node.name in compressed_im_tmp:
                 compressed_im[i] = compressed_im_tmp[node.name]
-
+# bptree indices start at one, hence we pad the arrays
         names = [-1]
         lengths = [-1]
         for node in self.tree.postorder(include_self=True):
