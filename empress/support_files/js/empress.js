@@ -503,18 +503,24 @@ define([
     };
 
     /**
-     * Creates an SVG string to export legends
+     * Creates an SVG string to export legends.
+     *
+     * @param {Document} dom A reference to the current document.
+     * @param {Number} leftX The leftmost x-coordinate to place legends at.
+     * @param {Number} topY The topmost y-coordinate to place legends at. (If
+     *                      there are multiple legends, they will be positioned
+     *                      below each other.)
+     * @return {String} svg The SVG code representing all legend(s) for the
+     *                      tree visualization.
      */
-    Empress.prototype.exportSVGLegend = function (dom, startX, startY) {
+    Empress.prototype.exportSVGLegend = function (dom, leftX, topY) {
         // top left position of legends, multiple legends are placed below
         // each other.
-        var top_left_x = startX;
-        var top_left_y = startY;
         // all distances are based on this variable, thus "zooming" can be
         // done by just increasing this single value
         var unit = 30;
         // distance between two text lines as a multiplication factor of unit
-        var factor_lineheight = 1.8;
+        var lineHeightScaleFactor = 1.8;
         // the SVG string to be generated
         var svg = "";
 
@@ -530,20 +536,20 @@ define([
         // Count the number of used rows
         var row = 1;
         for (var legend of dom.getElementsByClassName("legend")) {
-            var max_line_width = 0;
+            var maxLineWidth = 0;
             var title = legend.getElementsByClassName("legend-title");
             var svg_legend = "";
             if (title.length > 0) {
                 var titlelabel = title.item(0).innerHTML;
-                max_line_width = Math.max(
-                    max_line_width,
+                maxLineWidth = Math.max(
+                    maxLineWidth,
                     context.measureText(titlelabel).width
                 );
                 svg_legend +=
                     '<text x="' +
-                    (top_left_x + unit) +
+                    (leftX + unit) +
                     '" y="' +
-                    (top_left_y + row * (unit * factor_lineheight)) +
+                    (topY + row * (unit * lineHeightScaleFactor)) +
                     '" style="font-weight:bold;font-size:' +
                     unit +
                     'pt;">' +
@@ -563,17 +569,17 @@ define([
                         .getElementsByClassName("gradient-label")
                         .item(0)
                         .getAttribute("title");
-                    max_line_width = Math.max(
-                        max_line_width,
+                    maxLineWidth = Math.max(
+                        maxLineWidth,
                         context.measureText(itemlabel).width
                     );
 
                     // a rect left of the label to indicate the used color
                     svg_legend +=
                         '<rect x="' +
-                        (top_left_x + unit) +
+                        (leftX + unit) +
                         '" y="' +
-                        (top_left_y + row * (unit * factor_lineheight) - unit) +
+                        (topY + row * (unit * lineHeightScaleFactor) - unit) +
                         '" width="' +
                         unit +
                         '" height="' +
@@ -584,9 +590,9 @@ define([
                     // the key label
                     svg_legend +=
                         '<text x="' +
-                        (top_left_x + 2.5 * unit) +
+                        (leftX + 2.5 * unit) +
                         '" y="' +
-                        (top_left_y + row * (unit * factor_lineheight)) +
+                        (topY + row * (unit * lineHeightScaleFactor)) +
                         '" style="font-size:' +
                         unit +
                         'pt;">' +
@@ -595,28 +601,28 @@ define([
                     row++;
                 }
                 // draw a rect behind, i.e. lower z-order, the legend title and
-                // colored keys to visually group the legend. Also acutally put
+                // colored keys to visually group the legend. Also actually put
                 // these elements into a group for easier manual editing
                 // rect shall have a certain padding, its height must exceed
-                //number of used text rows and width must be larger than longest
-                // key text and/or legend title
+                // the number of used text rows and width must be larger than
+                // longest key text and/or legend title
                 svg +=
                     '<g>\n<rect x="' +
-                    top_left_x +
+                    leftX +
                     '" y="' +
-                    (top_left_y +
+                    (topY +
                         (row -
                             legend.getElementsByClassName("gradient-bar")
                                 .length -
                             2) *
-                            (unit * factor_lineheight)) +
+                            (unit * lineHeightScaleFactor)) +
                     '" width="' +
-                    (max_line_width + 2 * unit) +
+                    (maxLineWidth + 2 * unit) +
                     '" height="' +
                     ((legend.getElementsByClassName("gradient-bar").length +
                         1) *
                         unit *
-                        factor_lineheight +
+                        lineHeightScaleFactor +
                         unit) +
                     '" style="fill:#eeeeee;stroke:#000000;stroke-width:1" ry="30" />\n' +
                     svg_legend +
