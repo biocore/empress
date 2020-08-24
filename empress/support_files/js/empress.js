@@ -351,7 +351,20 @@ define([
     };
 
     /**
-     * Creates an SVG string to export the current drawing
+     * Creates an SVG string to export the current drawing.
+     *
+     * @return {Object} svgInfo An Object containing four keys:
+     *                          -svg: Maps to a String containing the SVG code
+     *                           representing the current tree visualization.
+     *                          -viewBoxText: Maps to a String containing the
+     *                           SVG's "viewBox" attribute declaration and
+     *                           information.
+     *                          -legendLeftX: Maps to a Number indicating the
+     *                           leftmost x-coordinate at which legends should
+     *                           be placed in relation to the SVG.
+     *                          -legendTopY: Maps to a Number indicating the
+     *                           topmost y-coordinate at which legends should
+     *                           be placed in relation to the SVG.
      */
     Empress.prototype.exportSVG = function () {
         // TODO: use the same value as the actual WebGL drawing engine, but
@@ -459,36 +472,44 @@ define([
         }
 
         // add one black circle to indicate the root
-        // Not sure if this speacial treatment for root is necessary once #142
-        // is merged.
+        // Not sure if this special treatment for root is necessary once #142
+        // is merged. (TODO, it isn't.)
         svg += "<!-- root node -->\n";
         svg +=
             '<circle cx="0" cy="0" r="' +
             NODE_RADIUS +
             '" fill="rgb(0,0,0)"/>\n';
 
-        return [
-            svg,
+        var vbMinX = minX - NODE_RADIUS;
+        var vbMinY = minY - NODE_RADIUS;
+        var vbWidth = maxX - minX + 2 * NODE_RADIUS;
+        var vbHeight = maxY - minY + 2 * NODE_RADIUS;
+        var vbText =
             'viewBox="' +
-                (minX - NODE_RADIUS) +
-                " " +
-                (minY - NODE_RADIUS) +
-                " " +
-                (maxX - minX + 2 * NODE_RADIUS) +
-                " " +
-                (maxY - minY + 2 * NODE_RADIUS) +
-                '"',
-        ];
+            vbMinX +
+            " " +
+            vbMinY +
+            " " +
+            vbWidth +
+            " " +
+            vbHeight +
+            '"';
+        return {
+            svg: svg,
+            viewBoxText: vbText,
+            legendLeftX: maxX,
+            legendTopY: minY,
+        };
     };
 
     /**
      * Creates an SVG string to export legends
      */
-    Empress.prototype.exportSVGLegend = function (dom) {
+    Empress.prototype.exportSVGLegend = function (dom, startX, startY) {
         // top left position of legends, multiple legends are placed below
         // each other.
-        var top_left_x = 0;
-        var top_left_y = 0;
+        var top_left_x = startX;
+        var top_left_y = startY;
         // all distances are based on this variable, thus "zooming" can be
         // done by just increasing this single value
         var unit = 30;

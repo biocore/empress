@@ -328,28 +328,33 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     };
 
     /**
-     * Initializes export components
+     * Initializes exporting options.
      */
     SidePanel.prototype.addExportTab = function () {
         // for use in closures
         var scope = this;
 
         this.exportSVGBtn.onclick = function () {
-            // create SVG tags to draw the tree and determine viewbox for whole figure
-            var [svg_tree, svg_viewbox] = scope.empress.exportSVG();
+            // Get the SVG for the tree visualization, along with the viewBox
+            // and dimensions
+            var svgInfo = scope.empress.exportSVG();
             // create SVG tags for legend, collected from the HTML document
-            var svg_legend = scope.empress.exportSVGLegend(document);
-            // add all SVG elements into one string ...
-            svg =
+            var legendSVG = scope.empress.exportSVGLegend(
+                document,
+                svgInfo.legendLeftX,
+                svgInfo.legendTopY
+            );
+            // add all SVG elements into one string...
+            var totalSVG =
                 '<svg xmlns="http://www.w3.org/2000/svg" ' +
-                svg_viewbox +
+                svgInfo.viewBoxText +
                 " >\n" +
-                svg_tree +
+                svgInfo.svg +
                 "\n" +
-                svg_legend +
+                legendSVG +
                 "</svg>\n";
             // ... and present user as a downloadable file
-            var blob = new Blob([svg], { type: "image/svg+xml" });
+            var blob = new Blob([totalSVG], { type: "image/svg+xml" });
             saveAs(blob, "empress-tree.svg");
         };
     };
