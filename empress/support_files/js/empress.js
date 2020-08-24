@@ -535,7 +535,7 @@ define([
             var svg_legend = "";
             if (title.length > 0) {
                 var titlelabel = title.item(0).innerHTML;
-                var max_line_width = Math.max(
+                max_line_width = Math.max(
                     max_line_width,
                     context.measureText(titlelabel).width
                 );
