@@ -83,7 +83,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.symmetricCladeMethod = document.getElementById("symmetric");
 
         // export GUI components
-        this.eExportSvgBtn = document.getElementById("export-btn-svg");
+        this.exportSVGBtn = document.getElementById("export-btn-svg");
 
         // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
@@ -334,11 +334,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // for use in closures
         var scope = this;
 
-        this.eExportSvgBtn.onclick = function () {
+        this.exportSVGBtn.onclick = function () {
             // create SVG tags to draw the tree and determine viewbox for whole figure
-            [svg_tree, svg_viewbox] = scope.empress.exportSvg();
+            var [svg_tree, svg_viewbox] = scope.empress.exportSVG();
             // create SVG tags for legend, collected from the HTML document
-            svg_legend = scope.empress.exportSVG_legend(document);
+            var svg_legend = scope.empress.exportSVGLegend(document);
             // add all SVG elements into one string ...
             svg =
                 '<svg xmlns="http://www.w3.org/2000/svg" ' +

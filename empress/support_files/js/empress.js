@@ -353,24 +353,24 @@ define([
     /**
      * Creates an SVG string to export the current drawing
      */
-    Empress.prototype.exportSvg = function () {
+    Empress.prototype.exportSVG = function () {
         // TODO: use the same value as the actual WebGL drawing engine, but
         // right now this value is hard coded on line 327 of drawer.js
-        NODE_RADIUS = 4;
+        var NODE_RADIUS = 4;
 
-        minX = 0;
-        maxX = 0;
-        minY = 0;
-        maxY = 0;
-        svg = "";
+        var minX = 0;
+        var maxX = 0;
+        var minY = 0;
+        var maxY = 0;
+        var svg = "";
 
         // create a line from x1,y1 to x2,y2 for every two consecutive coordinates
         // 5 array elements encode one coordinate:
         // i=x, i+1=y, i+2=red, i+3=green, i+4=blue
         svg += "<!-- tree branches -->\n";
-        coords = this.getCoords();
+        var coords = this.getCoords();
         for (
-            i = 0;
+            var i = 0;
             i + 2 * this._drawer.VERTEX_SIZE <= coords.length;
             i += 2 * this._drawer.VERTEX_SIZE
         ) {
@@ -380,7 +380,7 @@ define([
             // So, if coords[i+2] == DEFAULT_COLOR then coords[i+2+5] will
             // also be equal to DEFAULT_COLOR. Thus, we can save checking three
             // array elements here.
-            linewidth = 1 + this._currentLineWidth;
+            var linewidth = 1 + this._currentLineWidth;
             if (
                 coords[i + 2] == this.DEFAULT_COLOR[0] &&
                 coords[i + 3] == this.DEFAULT_COLOR[1] &&
@@ -484,16 +484,18 @@ define([
     /**
      * Creates an SVG string to export legends
      */
-    Empress.prototype.exportSVG_legend = function (dom) {
+    Empress.prototype.exportSVGLegend = function (dom) {
         // top left position of legends, multiple legends are placed below
         // each other.
-        top_left_x = 0;
-        top_left_y = 0;
-        unit = 30; // all distances are based on this variable, thus "zooming"
-        // can be realised by just increasing this single value
-        factor_lineheight = 1.8; // distance between two text lines as a
-        // multiplication factor of unit
-        svg = ""; // the svg string to be generated
+        var top_left_x = 0;
+        var top_left_y = 0;
+        // all distances are based on this variable, thus "zooming" can be
+        // done by just increasing this single value
+        var unit = 30;
+        // distance between two text lines as a multiplication factor of unit
+        var factor_lineheight = 1.8;
+        // the SVG string to be generated
+        var svg = "";
 
         // used as a rough estimate about the consumed width by text strings
         var myCanvas = document.createElement("canvas");
@@ -503,14 +505,16 @@ define([
         // the document can have up to three legends, of which at most one shall
         // be visible at any given timepoint. This might change and thus this
         // method can draw multiple legends
-        row = 1; // count the number of used rows
-        for (let legend of dom.getElementsByClassName("legend")) {
-            max_line_width = 0;
-            title = legend.getElementsByClassName("legend-title");
-            svg_legend = "";
+        //
+        // Count the number of used rows
+        var row = 1;
+        for (var legend of dom.getElementsByClassName("legend")) {
+            var max_line_width = 0;
+            var title = legend.getElementsByClassName("legend-title");
+            var svg_legend = "";
             if (title.length > 0) {
-                titlelabel = title.item(0).innerHTML;
-                max_line_width = Math.max(
+                var titlelabel = title.item(0).innerHTML;
+                var max_line_width = Math.max(
                     max_line_width,
                     context.measureText(titlelabel).width
                 );
@@ -525,16 +529,16 @@ define([
                     titlelabel +
                     "</text>\n";
                 row++;
-                for (let item of legend.getElementsByClassName(
+                for (var item of legend.getElementsByClassName(
                     "gradient-bar"
                 )) {
-                    color = item
+                    var color = item
                         .getElementsByClassName("category-color")
                         .item(0)
                         .getAttribute("style")
                         .split(":")[1]
                         .split(";")[0];
-                    itemlabel = item
+                    var itemlabel = item
                         .getElementsByClassName("gradient-label")
                         .item(0)
                         .getAttribute("title");
