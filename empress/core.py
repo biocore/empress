@@ -256,6 +256,12 @@ class Empress():
             object and the sample + feature metadata.
         """
 
+        # The fid2idxs dict we get from compress_table() is temporary -- later,
+        # we'll restructure it so that the keys (feature IDs) are nodes'
+        # postorder positions in the tree rather than arbitrary unique
+        # integers. (TODO: it should be possible to speed this up by passing
+        # the tree to compress_table() so postorder positions can immediately
+        # be used as keys / feature IDs without an intermediate step.)
         s_ids, f_ids, sid2idxs, fid2idxs_t, compressed_table = compress_table(
             self.table
         )
@@ -265,6 +271,8 @@ class Empress():
         fm_cols, compressed_tm_tmp, compressed_im_tmp = \
             compress_feature_metadata(self.tip_md, self.int_md)
 
+        # Use nodes' postorder positions as their "IDs" for the BIOM table and
+        # feature metadata
         fid2idxs = {}
         compressed_tm = {}
         compressed_im = {}
@@ -277,8 +285,8 @@ class Empress():
                 compressed_tm[i] = compressed_tm_tmp[node.name]
 
             # Note: for internal metadata, node names may not be unique. Thus,
-            # we are adding all internal nodes with the same name to metadata
-            # table.
+            # we duplicate the internal node metadata for each node in the
+            # metadata with the same name.
             if node.name in compressed_im_tmp:
                 compressed_im[i] = compressed_im_tmp[node.name]
 # bptree indices start at one, hence we pad the arrays
