@@ -158,5 +158,23 @@ define(["Empress", "BPTree", "BiomTable"], function (
         };
     }
 
-    return { getTestData: getTestData };
+    // Convert an array of numbers to an array of strings all formatted
+    // using .toFixed(4).
+    function toFixedIfy(arr) {
+        return _.map(arr, function (ele) {
+            return ele.toFixed(4);
+        });
+    }
+
+    // Given two arrays of numbers, calls toFixedIfy() on each and
+    // asserts deep equality on the results.
+    function approxDeepEqual(arr1, arr2, message) {
+        deepEqual(toFixedIfy(arr1), toFixedIfy(arr2), message);
+    }
+
+    return {
+        getTestData: getTestData,
+        toFixedIfy: toFixedIfy,
+        approxDeepEqual: approxDeepEqual,
+    };
 });

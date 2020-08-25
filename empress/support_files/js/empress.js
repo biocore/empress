@@ -124,7 +124,6 @@ define([
             arcendangle: 11,
         };
 
-
         /**
          * @type {Array}
          * The metadata associated with the tree branches
@@ -310,7 +309,7 @@ define([
      * Computes the current tree layout and fills _treeData
      */
     Empress.prototype.getLayoutInfo = function () {
-        var data;
+        var data, i;
         // Rectangular
         if (this._currentLayout === "Rectangular") {
             data = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
@@ -332,7 +331,7 @@ define([
         // Circular
         if (this._currentLayout === "Circular") {
             data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
-            for (var i = 1; i <= this._tree.size; i++) {
+            for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
                 this._treeData[i].length = this._tdToInd.visible + 1;
 
@@ -346,7 +345,8 @@ define([
                 this._treeData[i][this._tdToInd.arcy0] = data.arcy0[i];
                 this._treeData[i][this._tdToInd.arcstartangle] =
                     data.arcStartAngle[i];
-                this._treeData[i][this._tdToInd.arcendangle] = data.arcEndAngle[i];
+                this._treeData[i][this._tdToInd.arcendangle] =
+                    data.arcEndAngle[i];
             }
         }
 
@@ -356,10 +356,10 @@ define([
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
                 this._treeData[i].length = this._tdToInd.visible + 1;
-                
+
                 // store new layout information
-                this._treeData[i][this._tdToInd.x2] = data.xCoord[i];
-                this._treeData[i][this._tdToInd.y2] = data.yCoord[i];
+                this._treeData[i][this._tdToInd.x2] = data.xCoords[i];
+                this._treeData[i][this._tdToInd.y2] = data.yCoords[i];
             }
         }
     };
@@ -1805,7 +1805,6 @@ define([
                 // get new layout
                 this._currentLayout = newLayout;
                 this.getLayoutInfo();
-
 
                 // recollapse clades
                 if (Object.keys(this._collapsedClades).length != 0) {

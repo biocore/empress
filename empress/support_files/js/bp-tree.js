@@ -1,4 +1,4 @@
-define(["ByteArray"], function (ByteArray) {
+define(["ByteArray", "underscore"], function (ByteArray, _) {
     /**
      *
      * @class BPTree
@@ -8,7 +8,8 @@ define(["ByteArray"], function (ByteArray) {
      * @param {Array} b The array that represents the tree structure
      * @param {Array} names The names of each node stored in preorder
      * @param {Array} lengths The lengths of each node stored in preorder
-     * @param {Number} coding The number of 1/0s coded in the tree, null not coded
+     * @param {Number} coding The number of 1/0s coded in the tree, null not
+     *                        coded
      *
      * @return {BPTree}
      * @constructs BPTree
@@ -31,8 +32,10 @@ define(["ByteArray"], function (ByteArray) {
                         .split("")
                         .map(_helper_decode);
 
-                    // We need to pad the number if we are not in the last number of the list
-                    // Note that we ae padding with 51, which should match the python code
+                    // We need to pad the number if we are not in the last
+                    // number of the list
+                    // Note that we ae padding with 51, which should match the
+                    // python code
                     if (i < b_len && element.length < 51) {
                         var padding = new Array(coding - element.length).fill(
                             0
@@ -255,7 +258,7 @@ define(["ByteArray"], function (ByteArray) {
      * Returns an array of all node names in tree
      */
     BPTree.prototype.getAllNames = function () {
-        return Array.from(this.names_);
+        return _.clone(this.names_);
     };
 
     /**
@@ -707,7 +710,8 @@ define(["ByteArray"], function (ByteArray) {
     };
 
     /**
-     * Returns all node with a given name. Once a name is search, the resulting
+     * Returns all node with a given name. Once a name is search, the returned
+     * object is cached in this._nameToNodes.
      *
      * @param {String} name The name of node(s)
      * @return {Array} An array of postorder position of nodes with a given name

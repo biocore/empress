@@ -49,10 +49,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var prevY = 0;
         var xCoord = new Array(tree.size + 1).fill(0);
         var yCoord = new Array(tree.size + 1).fill(0);
-        var highestChildYr = new Array(tree.size + 1);//.fill(0);
-        var lowestChildYr = new Array(tree.size + 1);//.fill(
-        //     Number.POSITIVE_INFINITY
-        // );
+        var highestChildYr = new Array(tree.size + 1);
+        var lowestChildYr = new Array(tree.size + 1);
 
         // postorder
         for (var i = 1; i <= tree.size; i++) {
@@ -130,7 +128,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             // in the rectangular layout; used to draw vertical lines for these
             // nodes.
 
-            // NOTE / TODO: This will have the effect of drawing vertical lines
+            // NOTE: This will have the effect of drawing vertical lines
             // even for nodes with only 1 child -- in this case
             // lowest_child_yr == highest_child_yr for this node, so all of the
             // stuff drawn in WebGL for this vertical line shouldn't show up.
@@ -138,11 +136,17 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             // detecting these cases and not drawing vertical lines for them in
             // the future.
             parent = tree.postorder(tree.parent(tree.postorderselect(i)));
-            if (yCoord[i] > highestChildYr[parent] || highestChildYr[parent] === undefined) {
+            if (
+                yCoord[i] > highestChildYr[parent] ||
+                highestChildYr[parent] === undefined
+            ) {
                 highestChildYr[parent] = yCoord[i];
             }
 
-            if (yCoord[i] < lowestChildYr[parent] || lowestChildYr[parent] === undefined) {
+            if (
+                yCoord[i] < lowestChildYr[parent] ||
+                lowestChildYr[parent] === undefined
+            ) {
                 lowestChildYr[parent] = yCoord[i];
             }
         }
@@ -417,12 +421,32 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         };
     }
 
+    /**
+     * Unrooted layout.
+     *
+     * REFERENCES
+     * ----------
+     * https://github.com/biocore/gneiss/blob/master/gneiss/plot/_dendrogram.py
+     *
+     * @param {BPTree} tree The tree to generate the coordinates for.
+     * @param {Float} width Width of the canvas where the tree will be
+     *                      displayed.
+     * @param {Float} height Height of the canvas where the tree will be
+     *                       displayed.
+     * @param {Boolean} normalize If true, then the tree will be scaled up to
+     *                            fill the bounds of width and height.
+     * @return {Object} Object with the following properties:
+     *                   -xCoords
+     *                   -yCoords
+     *                  Each of these properties maps to an Array where data for
+     *                  each node is stored in postorder.
+     */
     function unrootedLayout(tree, width, height, normalize = true) {
         var angle = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
-        var x2Arr = new Array(tree.size + 1);
+        var x2Arr = new Array(tree.size + 1).fill(0);
         var y1Arr = new Array(tree.size + 1);
-        var y2Arr = new Array(tree.size + 1);
+        var y2Arr = new Array(tree.size + 1).fill(0);
         var aArr = new Array(tree.size + 1);
 
         var n = tree.postorderselect(tree.size);
@@ -489,7 +513,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             y2Arr[i] *= scale;
         }
 
-        return { xCoord: x2Arr, yCoord: y2Arr };
+        return { xCoords: x2Arr, yCoords: y2Arr };
     }
 
     return {

@@ -271,8 +271,8 @@ class TestCore(unittest.TestCase):
         nan_sample_metadata = self.sample_metadata.copy()
         nan_feature_metadata = self.feature_metadata.copy()
         nan_sample_metadata.at["Sample2", "Metadata4"] = np.nan
-        nan_feature_metadata.at['h', "fmdcol1"] = np.nan
-        nan_feature_metadata.at['a', "fmdcol2"] = np.nan
+        nan_feature_metadata.at["h", "fmdcol1"] = np.nan
+        nan_feature_metadata.at["a", "fmdcol2"] = np.nan
 
         viz = Empress(self.tree, self.table, nan_sample_metadata,
                       nan_feature_metadata,

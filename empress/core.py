@@ -276,7 +276,12 @@ class Empress():
         fid2idxs = {}
         compressed_tm = {}
         compressed_im = {}
+        # bptree indices start at one, hence we pad the arrays
+        names = [-1]
+        lengths = [-1]
         for i, node in enumerate(self.tree.postorder(include_self=True), 1):
+            names.append(node.name)
+            lengths.append(node.length)
             if node.name in fid2idxs_t:
                 fid2idxs[i] = fid2idxs_t[node.name]
                 f_ids[fid2idxs[i]] = i
@@ -289,12 +294,6 @@ class Empress():
             # metadata with the same name.
             if node.name in compressed_im_tmp:
                 compressed_im[i] = compressed_im_tmp[node.name]
-# bptree indices start at one, hence we pad the arrays
-        names = [-1]
-        lengths = [-1]
-        for node in self.tree.postorder(include_self=True):
-            names.append(node.name)
-            lengths.append(node.length)
 
         data_to_render = {
             'base_url': self.base_url,
