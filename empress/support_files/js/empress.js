@@ -488,6 +488,15 @@ define([
         };
     };
 
+    Empress.prototype.getViewBoxText = function (
+        mainMinX,
+        mainMinY,
+        mainWidth,
+        mainHeight,
+        legendMaxX,
+        legendMaxY
+    ) {};
+
     /**
      * Creates an SVG string to export legends.
      *
