@@ -49,10 +49,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var prevY = 0;
         var xCoord = new Array(tree.size + 1).fill(0);
         var yCoord = new Array(tree.size + 1).fill(0);
-        var highestChildYr = new Array(tree.size + 1).fill(0);
-        var lowestChildYr = new Array(tree.size + 1).fill(
-            Number.POSITIVE_INFINITY
-        );
+        var highestChildYr = new Array(tree.size + 1);//.fill(0);
+        var lowestChildYr = new Array(tree.size + 1);//.fill(
+        //     Number.POSITIVE_INFINITY
+        // );
 
         // postorder
         for (var i = 1; i <= tree.size; i++) {
@@ -137,11 +137,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             // detecting these cases and not drawing vertical lines for them in
             // the future.
             parent = tree.postorder(tree.parent(tree.postorderselect(i)));
-            if (yCoord[i] > highestChildYr[parent]) {
+            if (yCoord[i] > highestChildYr[parent] || highestChildYr[parent] === undefined) {
                 highestChildYr[parent] = yCoord[i];
             }
 
-            if (yCoord[i] < lowestChildYr[parent]) {
+            if (yCoord[i] < lowestChildYr[parent] || lowestChildYr[parent] === undefined) {
                 lowestChildYr[parent] = yCoord[i];
             }
         }

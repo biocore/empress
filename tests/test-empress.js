@@ -953,7 +953,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
 
             var lf2presence = {
                 f1: { a: 4, b: 1 },
-                grad: { "1": 1, "2": 2, "3": 2, "4": 0 },
+                grad: { 1: 1, 2: 2, 3: 2, 4: 0 },
                 traj: { t1: 2, t2: 1, t3: 2, t4: 0 },
             };
             deepEqual(ctData, lf2presence);
@@ -966,7 +966,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
 
             var int4presence = {
                 f1: { a: 5, b: 1 },
-                grad: { "1": 2, "2": 2, "3": 2, "4": 0 },
+                grad: { 1: 2, 2: 2, 3: 2, 4: 0 },
                 traj: { t1: 2, t2: 2, t3: 2, t4: 0 },
             };
             deepEqual(values.fieldsMap, int4presence);
@@ -974,7 +974,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             //also testing root which should have all tips -> all samples
             var rootPresence = {
                 f1: { a: 5, b: 2 },
-                grad: { "1": 2, "2": 2, "3": 2, "4": 1 },
+                grad: { 1: 2, 2: 2, 3: 2, 4: 1 },
                 traj: { t1: 2, t2: 2, t3: 2, t4: 1 },
             };
             var rootValues = e.computeIntSamplePresence(7, fields);

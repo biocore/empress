@@ -140,9 +140,9 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                 };
                 var fID2Idx = {
                     EmpressNode6: 0,
-                    "1": 1,
-                    "2": 2,
-                    "3": 3,
+                    1: 1,
+                    2: 2,
+                    3: 3,
                 };
                 var tbl = [
                     [1, 2, 3],

@@ -310,37 +310,46 @@ define([
      */
     Empress.prototype.layouts = function () {
         // Rectangular
-        var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
-        this._yrscf = coords.yScalingFactor;
-        for (i = 1; i <= this._tree.size; i++) {
-            this._treeData[i][this._tdToInd.xr] = coords.xCoord[i];
-            this._treeData[i][this._tdToInd.yr] = coords.yCoord[i];
-            this._treeData[i][this._tdToInd.highestchildyr] =
-                coords.highestChildYr[i];
-            this._treeData[i][this._tdToInd.lowestchildyr] =
-                coords.lowestChildYr[i];
+        if (this._currentLayout === "Rectangular") {
+            var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
+            this._yrscf = coords.yScalingFactor;
+            for (i = 1; i <= this._tree.size; i++) {
+                this._treeData[i][this._tdToInd.xr] = coords.xCoord[i];
+                this._treeData[i][this._tdToInd.yr] = coords.yCoord[i];
+                this._treeData[i][this._tdToInd.highestchildyr] =
+                    coords.highestChildYr[i];
+                this._treeData[i][this._tdToInd.lowestchildyr] =
+                    coords.lowestChildYr[i];
+            }
         }
-
+        
         // Circular
-        var data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
-        for (var i = 1; i <= this._tree.size; i++) {
-            this._treeData[i][this._tdToInd.xc0] = data.x0[i];
-            this._treeData[i][this._tdToInd.yc0] = data.y0[i];
-            this._treeData[i][this._tdToInd.xc1] = data.x1[i];
-            this._treeData[i][this._tdToInd.yc1] = data.y1[i];
-            this._treeData[i][this._tdToInd.angle] = data.angle[i];
-            this._treeData[i][this._tdToInd.arcx0] = data.arcx0[i];
-            this._treeData[i][this._tdToInd.arcy0] = data.arcy0[i];
-            this._treeData[i][this._tdToInd.arcstartangle] =
-                data.arcStartAngle[i];
-            this._treeData[i][this._tdToInd.arcendangle] = data.arcEndAngle[i];
+        if (this._currentLayout === "Circular") {
+            var data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
+            for (var i = 1; i <= this._tree.size; i++) {
+                this._treeData[i][this._tdToInd.xc0] = data.x0[i];
+                this._treeData[i][this._tdToInd.yc0] = data.y0[i];
+                this._treeData[i][this._tdToInd.xc1] = data.x1[i];
+                this._treeData[i][this._tdToInd.yc1] = data.y1[i];
+                this._treeData[i][this._tdToInd.angle] = data.angle[i];
+                this._treeData[i][this._tdToInd.arcx0] = data.arcx0[i];
+                this._treeData[i][this._tdToInd.arcy0] = data.arcy0[i];
+                this._treeData[i][this._tdToInd.arcstartangle] =
+                    data.arcStartAngle[i];
+                this._treeData[i][this._tdToInd.arcendangle] = data.arcEndAngle[i];
+            }
         }
 
         // Unrooted
-        coords = LayoutsUtil.unrootedLayout(this._tree, 4020, 4020);
-        for (i = 1; i <= this._tree.size; i++) {
-            this._treeData[i][this._tdToInd.x2] = coords.xCoord[i];
-            this._treeData[i][this._tdToInd.y2] = coords.yCoord[i];
+        if (this._currentLayout === "Unrooted") {
+            coords = LayoutsUtil.unrootedLayout(this._tree, 4020, 4020);
+            var d = new Date();
+            for (i = 1; i <= this._tree.size; i++) {
+                this._treeData[i][this._tdToInd.x2] = coords.xCoord[i];
+                this._treeData[i][this._tdToInd.y2] = coords.yCoord[i];
+            }
+            var dt = new Date();
+            console.log("time", dt - d);
         }
     };
 

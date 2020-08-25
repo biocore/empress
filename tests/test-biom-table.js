@@ -657,8 +657,8 @@ require(["jquery", "underscore", "BiomTable"], function ($, _, BiomTable) {
             deepEqual(
                 this.biomTable.getSampleValuesCount(["s1", "s3"], "f4"),
                 {
-                    "4": 1,
-                    "1": 1,
+                    4: 1,
+                    1: 1,
                 },
                 "Test getSampleValuesCount passing s1 and s3 for f4"
             );
