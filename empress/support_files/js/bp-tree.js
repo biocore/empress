@@ -681,12 +681,11 @@ define(["ByteArray"], function (ByteArray) {
             return this._numTips[nodeKey];
         }
 
-        if (this.isleaf(this.postorderselect(nodeKey))) {
+        var open = this.postorderselect(nodeKey);
+        if (this.isleaf(open)) {
             this._numTips[nodeKey] = 1;
             return this._numTips[nodeKey];
         }
-
-        var open = this.postorderselect(nodeKey);
         var close = this.close(open);
         var numTips = 0;
         for (var i = open + 1; i < close; i++) {

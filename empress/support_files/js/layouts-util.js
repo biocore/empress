@@ -28,7 +28,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
-     *                            fill the bounds of width and height
+     *                            fill the bounds of width and height.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -97,9 +97,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         // case, then max_width must be > 0.)
         var xScalingFactor = width / maxWidth;
 
-        // Since this will be multiplied by 0 for every node, we can set
-        // this to any real number and get the intended "effect" of keeping
-        // every node's y-coordinate at 0.
+        // If the tree is a straight line (i.e. all internal nodes have exactly
+        // one child), every node in the tree will have a y-coordinate of 0. In
+        // this case, this scaling factor won't matter, since it'll get
+        // multiplied by 0 for every node.
         var yScalingFactor = 1;
 
         // Having a max_height of 0 could actually happen, in the funky case
@@ -215,7 +216,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
-     *                            fill the bounds of width and height
+     *                            fill the bounds of width and height.
      * @param {Float} startAngle The first tip in the tree visited is assigned
      *                           this angle (in radians). Can be used to rotate
      *                           the tree: 0 is the eastmost point of the

@@ -385,7 +385,7 @@ define([
     /**
      * Retrive an attribute from a node.
      *
-     * @param{Integer} node post-order position of node.
+     * @param{Number} node Postorder position of node.
      * @param{String} attr The attribute to retrieve from the node.
      *
      * @return The attribute; if attr is not a valid attribute of node, then
@@ -677,10 +677,10 @@ define([
     };
 
     /**
-     * Retrives x coordinate of node.
+     * Retrieves x coordinate of node in the current layout.
      *
-     * @param {Integer} node post-order position of node.
-     * @return {Number} x coorinate of node.
+     * @param {Number} node Postorder position of node.
+     * @return {Number} x coordinate of node.
      */
     Empress.prototype.getX = function (node) {
         var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
@@ -688,10 +688,10 @@ define([
     };
 
     /**
-     * Retrives y coordinate of node.
+     * Retrieves y coordinate of node in the current layout.
      *
-     * @param {Integer} node post-order position of node.
-     * @return {Number} y coorinate of node.
+     * @param {Number} node Postorder position of node.
+     * @return {Number} y coordinate of node.
      */
     Empress.prototype.getY = function (node) {
         var yname = "y" + this._layoutToCoordSuffix[this._currentLayout];
@@ -1579,7 +1579,7 @@ define([
         var uniqueValueToFeatures = {};
         _.each(fmObjs, function (mObj) {
             _.mapObject(mObj, function (fmRow, node) {
-                // need to convert to interger
+                // need to convert to integer
                 node = parseInt(node);
                 // This is loosely based on how BIOMTable.getObsBy() works.
                 var fmVal = fmRow[fmIdx];
