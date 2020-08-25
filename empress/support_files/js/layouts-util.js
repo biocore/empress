@@ -513,7 +513,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             y2Arr[i] *= scale;
         }
 
-        return { xCoords: x2Arr, yCoords: y2Arr };
+        return { xCoord: x2Arr, yCoord: y2Arr };
     }
 
     return {

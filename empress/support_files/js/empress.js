@@ -358,8 +358,8 @@ define([
                 this._treeData[i].length = this._tdToInd.visible + 1;
 
                 // store new layout information
-                this._treeData[i][this._tdToInd.x2] = data.xCoords[i];
-                this._treeData[i][this._tdToInd.y2] = data.yCoords[i];
+                this._treeData[i][this._tdToInd.x2] = data.xCoord[i];
+                this._treeData[i][this._tdToInd.y2] = data.yCoord[i];
             }
         }
     };
