@@ -13,7 +13,7 @@ JavaScript code. The `.travis.yml` file (under the `install` section) shows
 how to install these packages: essentially, you'll just need to run
 
 ```bash
-npm install -g qunit-puppeteer jshint prettier
+npm install -g qunit-puppeteer jshint prettier@2.0.5
 ```
 
 If you don't have `npm` installed, you will need to install that first.
