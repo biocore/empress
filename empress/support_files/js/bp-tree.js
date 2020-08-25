@@ -708,7 +708,7 @@ define(["ByteArray"], function (ByteArray) {
     };
 
     /**
-     * Returns all node with a given name
+     * Returns all node with a given name. Once a name is search, the resulting
      *
      * @param {String} name The name of node(s)
      * @return {Array} An array of postorder position of nodes with a given name

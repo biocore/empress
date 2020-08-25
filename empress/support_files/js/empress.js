@@ -104,25 +104,26 @@ define([
             color: 0,
             isColored: 1,
             visible: 2,
-            name: 3,
-            x2: 4,
-            y2: 5,
-            xr: 6,
-            yr: 7,
-            xc1: 8,
-            yc1: 9,
-            xc0: 10,
-            yc0: 11,
-            angle: 12,
-            // all internal nodes
-            highestchildyr: 13,
-            lowestchildyr: 14,
-            // non-root internal nodes
-            arcx0: 15,
-            arcy0: 16,
-            arcstartangle: 17,
-            arcendangle: 18,
+            // unrooted layout
+            x2: 3,
+            y2: 4,
+            // rectuangular layout
+            xr: 3,
+            yr: 4,
+            highestchildyr: 5,
+            lowestchildyr: 6,
+            // circular layout
+            xc0: 3,
+            yc0: 4,
+            xc1: 5,
+            yc1: 6,
+            angle: 7,
+            arcx0: 8,
+            arcy0: 9,
+            arcstartangle: 10,
+            arcendangle: 11,
         };
+
 
         /**
          * @type {Array}
@@ -306,27 +307,36 @@ define([
     }
 
     /**
-     * Computes the various tree layouts and fills _treeData
+     * Computes the current tree layout and fills _treeData
      */
-    Empress.prototype.layouts = function () {
+    Empress.prototype.getLayoutInfo = function () {
+        var data;
         // Rectangular
         if (this._currentLayout === "Rectangular") {
-            var coords = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
-            this._yrscf = coords.yScalingFactor;
+            data = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
+            this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
-                this._treeData[i][this._tdToInd.xr] = coords.xCoord[i];
-                this._treeData[i][this._tdToInd.yr] = coords.yCoord[i];
+                // remove old layout information
+                this._treeData[i].length = this._tdToInd.visible + 1;
+
+                // store new layout information
+                this._treeData[i][this._tdToInd.xr] = data.xCoord[i];
+                this._treeData[i][this._tdToInd.yr] = data.yCoord[i];
                 this._treeData[i][this._tdToInd.highestchildyr] =
-                    coords.highestChildYr[i];
+                    data.highestChildYr[i];
                 this._treeData[i][this._tdToInd.lowestchildyr] =
-                    coords.lowestChildYr[i];
+                    data.lowestChildYr[i];
             }
         }
-        
+
         // Circular
         if (this._currentLayout === "Circular") {
-            var data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
+            data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
             for (var i = 1; i <= this._tree.size; i++) {
+                // remove old layout information
+                this._treeData[i].length = this._tdToInd.visible + 1;
+
+                // store new layout information
                 this._treeData[i][this._tdToInd.xc0] = data.x0[i];
                 this._treeData[i][this._tdToInd.yc0] = data.y0[i];
                 this._treeData[i][this._tdToInd.xc1] = data.x1[i];
@@ -342,14 +352,15 @@ define([
 
         // Unrooted
         if (this._currentLayout === "Unrooted") {
-            coords = LayoutsUtil.unrootedLayout(this._tree, 4020, 4020);
-            var d = new Date();
+            data = LayoutsUtil.unrootedLayout(this._tree, 4020, 4020);
             for (i = 1; i <= this._tree.size; i++) {
-                this._treeData[i][this._tdToInd.x2] = coords.xCoord[i];
-                this._treeData[i][this._tdToInd.y2] = coords.yCoord[i];
+                // remove old layout information
+                this._treeData[i].length = this._tdToInd.visible + 1;
+                
+                // store new layout information
+                this._treeData[i][this._tdToInd.x2] = data.xCoord[i];
+                this._treeData[i][this._tdToInd.y2] = data.yCoord[i];
             }
-            var dt = new Date();
-            console.log("time", dt - d);
         }
     };
 
@@ -367,7 +378,7 @@ define([
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
 
-        this.layouts();
+        this.getLayoutInfo();
         this.centerLayoutAvgPoint();
     };
 
@@ -1791,7 +1802,10 @@ define([
     Empress.prototype.updateLayout = function (newLayout) {
         if (this._currentLayout !== newLayout) {
             if (this._layoutToCoordSuffix.hasOwnProperty(newLayout)) {
+                // get new layout
                 this._currentLayout = newLayout;
+                this.getLayoutInfo();
+
 
                 // recollapse clades
                 if (Object.keys(this._collapsedClades).length != 0) {
