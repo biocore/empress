@@ -368,6 +368,7 @@ define([
      * Initializes WebGL and then draws the tree
      */
     Empress.prototype.initialize = function () {
+        console.log("tree size", this._tree.size);
         this._drawer.initialize();
         this._events.setMouseEvents();
         var nodeNames = this._tree.getAllNames();
