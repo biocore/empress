@@ -25,20 +25,6 @@ define([
      * @class EmpressTree
      *
      * @param {BPTree} tree The phylogenetic tree
-     * @param {Object} treeData The metadata associated with the tree
-     *                 Note: currently treeData uses the preorder position of
-     *                       each node as a key. Originally this was to save a
-     *                       a bit of space but it be better if it used the
-     *                       actual name of the name in tree.
-     * @param {Object} nameToKeys Converts tree node names to an array of keys.
-     * @param {Object} layoutToCoordSuffix Maps layout names to coord. suffix.
-     *                 Note: An example is the "Unrooted" layout, which as of
-     *                       writing should map to "2" since it's represented
-     *                       by a node's x2 and y2 coordinates in the data.
-     * @param {String} defaultLayout The default layout to draw the tree with
-     * @param {Number} yrScalingFactor Vertical scaling factor for the
-     *                                 rectangular layout. Used to set the
-     *                                 height of barplots.
      * @param {BIOMTable} biom The BIOM table used to color the tree
      * @param {Array} featureMetadataColumns Columns of the feature metadata.
      *                Note: The order of this array should match the order of
@@ -98,16 +84,17 @@ define([
         /**
          * Used to index into _treeData
          * @type {Object}
+         * @private
          */
         this._tdToInd = {
-            // all nodes
+            // all nodes (non-layout parameters)
             color: 0,
             isColored: 1,
             visible: 2,
             // unrooted layout
             x2: 3,
             y2: 4,
-            // rectuangular layout
+            // rectangular layout
             xr: 3,
             yr: 4,
             highestchildyr: 5,
@@ -125,12 +112,17 @@ define([
         };
 
         /**
+         * The number of non layout parameters in _treeData.
+         * @type {Number}
+         * @private
+         */
+        this._numOfNonLayoutParam = 3
+
+        /**
          * @type {Array}
          * The metadata associated with the tree branches
          * Note: postorder positions are used as indices because internal node
-         *       names are not assumed to be unique. Use nameToKeys to
-         *       convert a name to the list of indices associated with it.
-         *       indices start at 1, for now; see #223 on GitHub.
+         *       names are not assumed to be unique.
          * @private
          */
         this._treeData = new Array(this._tree.size + 1);
@@ -316,7 +308,7 @@ define([
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._tdToInd.visible + 1;
+                this._treeData[i].length = this._numOfNonLayoutParam;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.xr] = data.xCoord[i];
@@ -326,14 +318,11 @@ define([
                 this._treeData[i][this._tdToInd.lowestchildyr] =
                     data.lowestChildYr[i];
             }
-        }
-
-        // Circular
-        if (this._currentLayout === "Circular") {
+        } else if (this._currentLayout === "Circular") {
             data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._tdToInd.visible + 1;
+                this._treeData[i].length = this._numOfNonLayoutParam;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.xc0] = data.x0[i];
@@ -348,14 +337,11 @@ define([
                 this._treeData[i][this._tdToInd.arcendangle] =
                     data.arcEndAngle[i];
             }
-        }
-
-        // Unrooted
-        if (this._currentLayout === "Unrooted") {
+        } else {
             data = LayoutsUtil.unrootedLayout(this._tree, 4020, 4020);
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._tdToInd.visible + 1;
+                this._treeData[i].length = this._numOfNonLayoutParam;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.x2] = data.xCoord[i];

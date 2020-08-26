@@ -710,8 +710,8 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     };
 
     /**
-     * Returns all node with a given name. Once a name is search, the returned
-     * object is cached in this._nameToNodes.
+     * Returns all node with a given name. Once a name has been searched for,
+     * the returned object is cached in this._nameToNodes.
      *
      * @param {String} name The name of node(s)
      * @return {Array} An array of postorder position of nodes with a given name
