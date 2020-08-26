@@ -259,7 +259,7 @@ define(["underscore"], function (_) {
             fm2length[n] =
                 ((parseFloat(n) - valMin) / valRange) * lengthRange + minLength;
         });
-        return fm2length;
+        return [fm2length, valMin, valMax];
     }
 
     return {

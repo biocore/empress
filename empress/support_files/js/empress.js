@@ -1167,7 +1167,10 @@ define([
         // i.e. for feature metadata barplots with no color encoding). At the
         // end of this function, when we know that all barplots are valid,
         // we'll populate / clear legends accordingly.
-        var legendsToPopulate = [];
+        var colorLegendsToPopulate = [];
+
+        // Also, we keep track of length-scaling information as well.
+        var lengthLegendsToPopulate = [];
 
         _.each(layers, function (layer) {
             var layerInfo;
@@ -1177,15 +1180,23 @@ define([
                     coords,
                     prevLayerMaxX
                 );
+                // Currently, length-scaling is only supported for feature
+                // metadata barplots; however, it'd totally be possible to
+                // extend this to sample metadata barplots in the future (see
+                // e.g. https://github.com/biocore/empress/issues/353). If/when
+                // this is supported, making this work will just be a matter of
+                // having addSMBarplotLayerCoords() return an extra thing.
+                lengthLegendsToPopulate.push(null);
             } else {
                 layerInfo = scope.addFMBarplotLayerCoords(
                     layer,
                     coords,
                     prevLayerMaxX
                 );
+                lengthLegendsToPopulate.push(layerInfo[2]);
             }
             prevLayerMaxX = layerInfo[0];
-            legendsToPopulate.push(layerInfo[1]);
+            colorLegendsToPopulate.push(layerInfo[1]);
         });
         // NOTE that we purposefuly don't clear the barplot buffer until we
         // know all of the barplots are valid. If we were to call
@@ -1201,11 +1212,18 @@ define([
 
         // By the same logic, now we can safely update the barplot legends to
         // match the barplots that are now drawn.
-        _.each(legendsToPopulate, function (colorer, layerIndex) {
+        _.each(colorLegendsToPopulate, function (colorer, layerIndex) {
             if (_.isNull(colorer)) {
-                layers[layerIndex].clearLegend();
+                layers[layerIndex].clearColorLegend();
             } else {
-                layers[layerIndex].populateLegend(colorer);
+                layers[layerIndex].populateColorLegend(colorer);
+            }
+        });
+        _.each(lengthLegendsToPopulate, function (valSpan, layerIndex) {
+            if (_.isNull(valSpan)) {
+                layers[layerIndex].clearLengthLegend();
+            } else {
+                layers[layerIndex].populateLengthLegend(...valSpan);
             }
         });
 
@@ -1337,6 +1355,8 @@ define([
         var maxX = prevLayerMaxX;
         var colorer = null;
         var fm2color, colorFMIdx;
+        var lenValMin = null;
+        var lenValMax = null;
         var fm2length, lengthFMIdx;
         // Map feature metadata values to colors, if requested (i.e. if
         // layer.colorByFM is true). If not requested, we'll just use the
@@ -1400,7 +1420,7 @@ define([
                 layer.scaleLengthByFMField
             );
             try {
-                fm2length = util.assignBarplotLengths(
+                [fm2length, lenValMin, lenValMax] = util.assignBarplotLengths(
                     sortedUniqueLengthValues,
                     layer.scaleLengthByFMMin,
                     layer.scaleLengthByFMMax,
@@ -1483,7 +1503,8 @@ define([
                 this._addTriangleCoords(coords, corners, color);
             }
         }
-        return [maxX, colorer];
+        var lenValSpan = _.isNull(lenValMin) ? null : [lenValMin, lenValMax];
+        return [maxX, colorer, lenValSpan];
     };
 
     /**
