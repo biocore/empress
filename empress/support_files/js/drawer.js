@@ -5,13 +5,23 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         "",
         "attribute vec2 vertPosition;",
         "uniform mat4 mvpMat;",
-        "attribute vec3 color;",
+        "attribute float color;",
         "varying vec3 c;",
         "uniform float pointSize;",
         "",
+        "vec3 unpackColor(float f) {",
+        "  vec3 color;",
+        "  color.b = floor(f / 256.0 / 256.0);",
+        "    color.g = floor((f - color.b * 256.0 * 256.0) / 256.0);",
+        "    color.r = floor(f - color.b * 256.0 * 256.0 - color.g * 256.0);",
+        "    // now we have a vec3 with the 3 components in range [0..255]. ",
+        "    // Let's normalize it!",
+        "    return color / 255.0;",
+        "}",
+        "",
         "void main()",
         "{",
-        "  c = color;",
+        "  c = unpackColor(color);",
         "  gl_Position = mvpMat * vec4(vertPosition, 0.0, 1.0);",
         "  gl_PointSize = pointSize;",
         "}",
@@ -222,9 +232,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
     Drawer.prototype.fillElemData_ = function(buff, data) {
         var c = this.contex_;
-        console.log(buff, data)
         c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, buff);
-        c.bufferData(c.ELEMENT_ARRAY_BUFFER, new Uint32Array(data), c.DYNAMIC_DRAW);
+        c.bufferData(c.ELEMENT_ARRAY_BUFFER, new Uint32Array(data), c.STATIC_DRAW);
     };
 
     /**
@@ -297,7 +306,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      */
     Drawer.prototype.bindColorBuffer = function (buffer) {
         // defines constants for a vertex. A vertex is the form [x, y, r, g, b]
-        const COLOR_SIZE = 3;
+        const COLOR_SIZE = 1;
         const COLOR_OFFSET = 0;
 
         var c = this.contex_;
@@ -368,7 +377,6 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @param {Array} data The coordinate and color data to fill tree buffer
      */
     Drawer.prototype.loadTreeElemBuff = function (data) {
-        console.log(data)
         this.treeElmSize = data.length;
         this.fillElemData_(this.sProg_.treeElements, data);
     };
@@ -462,18 +470,18 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // set the mvp attribute
         c.uniformMatrix4fv(s.mvpMat, false, mvp);
 
-        // // draw tree node circles, if requested
-        // if (this.showTreeNodes) {
-        //     c.uniform1i(s.isSingle, 1);
-        //     c.uniform1f(s.pointSize, 4.0);
-        //     this.bindBuffer(s.nodeVertBuff);
-        //     c.drawArrays(c.POINTS, 0, this.nodeSize);
-        // }
+        // draw tree node circles, if requested
+        if (this.showTreeNodes) {
+            c.uniform1i(s.isSingle, 1);
+            c.uniform1f(s.pointSize, 4.0);
+            this.bindBuffer(s.nodeVertBuff);
+            c.drawArrays(c.POINTS, 0, this.nodeSize);
+        }
 
-        // // draw selected node
-        // c.uniform1f(s.pointSize, 9.0);
-        // this.bindBuffer(s.selectedNodeBuff);
-        // c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
+        // draw selected node
+        c.uniform1f(s.pointSize, 9.0);
+        this.bindBuffer(s.selectedNodeBuff);
+        c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 
         c.uniform1i(s.isSingle, 0);
         // this.bindBuffer(s.treeVertBuff);
@@ -483,14 +491,14 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.bindColorBuffer(s.colorTreeBuff);
         c.drawElements(c.LINES, this.treeElmSize, c.UNSIGNED_INT, 0);
 
-        // this.bindBuffer(s.thickNodeBuff);
-        // c.drawArrays(c.TRIANGLES, 0, this.thickNodeSize);
+        this.bindBuffer(s.thickNodeBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.thickNodeSize);
 
-        // this.bindBuffer(s.barplotBuff);
-        // c.drawArrays(c.TRIANGLES, 0, this.barplotSize);
+        this.bindBuffer(s.barplotBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.barplotSize);
 
-        // this.bindBuffer(s.cladeBuff);
-        // c.drawArrays(c.TRIANGLES, 0, this.cladeVertSize);
+        this.bindBuffer(s.cladeBuff);
+        c.drawArrays(c.TRIANGLES, 0, this.cladeVertSize);
     };
 
     /**

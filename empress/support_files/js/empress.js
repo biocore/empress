@@ -86,7 +86,7 @@ define([
          * @type {Array}
          * The default color of the tree
          */
-        this.DEFAULT_COLOR = [0.75, 0.75, 0.75];
+        this.DEFAULT_COLOR = Colorer.rbgToFloat([191, 191, 191]);
 
         /**
          * @type {BPTree}
@@ -421,7 +421,7 @@ define([
     Empress.prototype.drawTree = function () {
         this._drawer.loadTreeColorBuff(this.getTreeColor());
         // this._drawer.loadTreeBuff(this.getCoords());
-        this._drawer.loadNodeBuff(this.getNodeCoords());
+        // this._drawer.loadNodeBuff(this.getNodeCoords());
         this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
     };
@@ -614,9 +614,7 @@ define([
         var coords = [];
         var color;
         var addPoint = function () {
-            coords[coords.length] = color[0];
-            coords[coords.length] = color[1];
-            coords[coords.length] = color[2];
+            coords[coords.length] = color;
         };
 
         /* Draw a vertical line, if we're in rectangular layout mode. Note that
@@ -1019,7 +1017,6 @@ define([
      * @return {Array}
      */
     Empress.prototype.getCoords = function () {
-        var s = new Date();
         var adding = 0;
         var tree = this._tree;
 
@@ -1032,14 +1029,12 @@ define([
         var coords_index = 0;
 
         var addPoint = function (x, y) {
-            var d = new Date();
             // coords.push(x, y, ...color);
             coords[coords.length] = x;
             coords[coords.length] = y;
             coords[coords.length] = color[0];
             coords[coords.length] = color[1];
             coords[coords.length] = color[2];
-            var dt = new Date();
             adding += dt.getTime() - d.getTime();
         };
 
@@ -1171,9 +1166,6 @@ define([
                 addPoint(this.getX(node), this.getY(node));
             }
         }
-        var end = new Date();
-        console.log("total = ", end.getTime() - s.getTime())
-        console.log("adding = ", adding)
         return new Float32Array(coords);
     };
 
