@@ -113,6 +113,7 @@
           'VectorOps' : './support_files/js/vector-ops',
           'CanvasEvents' : './support_files/js/canvas-events',
           'SelectedNodeMenu' : './support_files/js/select-node-menu',
+          'LayoutsUtil' : './support_files/js/layouts-util',
 
           /* test utility code */
           'UtilitiesForTesting' : './../tests/utilities-for-testing',
@@ -130,7 +131,8 @@
           'testExport': './../tests/test-export',
           'testAnimationHandler': './../tests/test-animation-panel-handler',
           'testBarplots': './../tests/test-barplots',
-          'testLegend': './../tests/test-legend'
+          'testLegend': './../tests/test-legend',
+          'testLayoutsUtil': './../tests/test-layouts-util'
         }
     });
 
@@ -152,6 +154,7 @@
          'util',
          'Empress',
          'Legend',
+         'LayoutsUtil',
          'UtilitiesForTesting',
          'testBPTree',
          'testByteTree',
@@ -166,6 +169,7 @@
          'testAnimationHandler',
          'testBarplots',
          'testLegend',
+         'testLayoutsUtil',
          ],
 
         // start tests
@@ -187,6 +191,7 @@
           util,
           Empress,
           Legend,
+          LayoutsUtil,
           UtilitiesForTesting,
           testBPTree,
           testByteTree,
@@ -199,7 +204,8 @@
           testExport,
           testAnimationHandler,
           testBarplots,
-          testLegend
+          testLegend,
+          testLayoutsUtil,
         ) {
             $(document).ready(function() {
                 QUnit.start();

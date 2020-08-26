@@ -29,13 +29,6 @@ from skbio.tree import TreeNode
 
 class TestCore(unittest.TestCase):
 
-    def assert_almost_equal_tree_data(self, tree_data, exp):
-        # skip treeData[0] because currently nodes are stored in postorder
-        # position using 1-index. This will be addressed with #233
-        for node in range(len(tree_data), 1):
-            for attr in range(len(tree_data[node])):
-                self.assertAlmostEqual(tree_data[node][attr], exp[node][attr])
-
     def setUp(self):
         self.tree = parse_newick('(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2):1;')
         self.pruned_tree = TreeNode.read(
@@ -247,6 +240,7 @@ class TestCore(unittest.TestCase):
     def test_to_dict(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=False)
+
         obs = viz._to_dict()
         dict_a_cp = copy.deepcopy(DICT_A)
 
@@ -258,13 +252,6 @@ class TestCore(unittest.TestCase):
         # with open("dictcode.py", "w") as f:
         #     f.write("DICT_A = {}".format(str(obs)))
 
-        tree_data = obs['tree_data']
-        exp = dict_a_cp['tree_data']
-
-        self.assert_almost_equal_tree_data(tree_data, exp)
-
-        dict_a_cp.pop('tree_data')
-        obs.pop('tree_data')
         self.assertEqual(obs, dict_a_cp)
 
     def test_to_dict_with_feature_metadata(self):
@@ -274,16 +261,10 @@ class TestCore(unittest.TestCase):
         )
         obs = viz._to_dict()
         dict_a_with_fm = copy.deepcopy(DICT_A)
-        dict_a_with_fm["compressed_tip_metadata"] = {"a": ["asdf", "qwer"]}
-        dict_a_with_fm["compressed_int_metadata"] = {"h": ["ghjk", "tyui"]}
+        dict_a_with_fm["compressed_tip_metadata"] = {1: ["asdf", "qwer"]}
+        dict_a_with_fm["compressed_int_metadata"] = {8: ["ghjk", "tyui"]}
         dict_a_with_fm["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
 
-        tree_data = obs['tree_data']
-        exp = dict_a_with_fm['tree_data']
-        self.assert_almost_equal_tree_data(tree_data, exp)
-
-        obs.pop('tree_data')
-        dict_a_with_fm.pop('tree_data')
         self.assertEqual(obs, dict_a_with_fm)
 
     def test_to_dict_with_metadata_nans(self):
@@ -302,16 +283,10 @@ class TestCore(unittest.TestCase):
         # [1][3] corresponds to Sample2, Metadata4
         dict_a_nan["compressed_sample_metadata"][1][3] = str(np.nan)
 
-        dict_a_nan["compressed_tip_metadata"] = {"a": ["asdf", str(np.nan)]}
-        dict_a_nan["compressed_int_metadata"] = {"h": [str(np.nan), "tyui"]}
+        dict_a_nan["compressed_tip_metadata"] = {1: ["asdf", str(np.nan)]}
+        dict_a_nan["compressed_int_metadata"] = {8: [str(np.nan), "tyui"]}
         dict_a_nan["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
 
-        tree_data = obs['tree_data']
-        exp = dict_a_nan['tree_data']
-        self.assert_almost_equal_tree_data(tree_data, exp)
-
-        dict_a_nan.pop('tree_data')
-        obs.pop('tree_data')
         self.assertEqual(obs, dict_a_nan)
 
         res = viz.make_empress()
@@ -337,11 +312,7 @@ class TestCore(unittest.TestCase):
         # values, this helps with tests not breaking if any character changes
         # in # Emperor
         for key, value in obs.items():
-            if key == 'tree_data':
-                tree_data = obs['tree_data']
-                exp = DICT_A['tree_data']
-                self.assert_almost_equal_tree_data(tree_data, exp)
-            elif not key.startswith('emperor_'):
+            if not key.startswith('emperor_'):
                 self.assertEqual(obs[key], DICT_A[key])
 
         exp = "    <div id='emperor-notebook"
@@ -552,187 +523,28 @@ class TestCore(unittest.TestCase):
 DICT_A = {
     "base_url": "support_files",
     "tree": [250472],
-    "tree_data": [
-        0,
-        [
-            "a",
-            -82.19088834200284,
-            1568.2955749395592,
-            2412.0,
-            -2386.875,
-            2222.2013460901685,
-            0.0,
-            1481.4675640601124,
-            0.0,
-            0
-        ],
-        [
-            "e",
-            948.7236134182863,
-            2108.2845722271436,
-            3216.0,
-            -1381.875,
-            915.5973078196618,
-            2817.9187609585556,
-            457.7986539098309,
-            1408.9593804792778,
-            1.2566370614359172
-        ],
-        [
-            "EmpressNode0",
-            295.3117872853636,
-            1102.1185942229504,
-            1608.0,
-            -1884.375,
-            1198.5324359398871,
-            870.7847859041888,
-            599.2662179699436,
-            435.3923929520944,
-            0.6283185307179586,
-            -1381.875,
-            -2386.875,
-            457.7986539098309,
-            1408.9593804792778,
-            1.2566370614359172,
-            0
-        ],
-        [
-            "b",
-            1485.5419815224768,
-            192.57380029925002,
-            2412.0,
-            -376.875,
-            -1797.7986539098304,
-            1306.1771788562833,
-            -599.2662179699435,
-            435.3923929520945,
-            2.5132741228718345
-        ],
-        [
-            "g",
-            326.7059130664611,
-            503.08298900209684,
-            804.0,
-            -1130.625,
-            4.5356862759171076e-14,
-            740.7337820300562,
-            0.0,
-            0.0,
-            1.5707963267948966,
-            -376.875,
-            -1884.375,
-            -599.2662179699435,
-            435.3923929520945,
-            2.5132741228718345,
-            0.6283185307179586
-        ],
-        [
-            "EmpressNode1",
-            -622.0177003518252,
-            -1605.201583225047,
-            2412.0,
-            628.125,
-            -1797.7986539098308,
-            -1306.177178856283,
-            -1198.5324359398871,
-            -870.7847859041887,
-            3.7699111843077517
-        ],
-        [
-            "d",
-            -2333.458018477523,
-            -1651.0752884434787,
-            4020.0,
-            1633.125,
-            1144.4966347745763,
-            -3522.398451198195,
-            457.79865390983053,
-            -1408.9593804792778,
-            5.026548245743669
-        ],
-        [
-            "h",
-            -653.4118261329227,
-            -1006.1659780041933,
-            1608.0,
-            1130.625,
-            -457.79865390983105,
-            -1408.9593804792778,
-            -0.0,
-            -0.0,
-            4.39822971502571,
-            1633.125,
-            628.125,
-            457.79865390983053,
-            -1408.9593804792778,
-            5.026548245743669,
-            3.7699111843077517
-        ],
-        [
-            "EmpressNode2",
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            2.9845130209103035,
-            1130.625,
-            -1130.625
-        ]
-    ],
-    "td_to_ind": {
-        "angle": 9,
-        "arcendangle": 15,
-        "arcstartangle": 14,
-        "arcx0": 12,
-        "arcy0": 13,
-        "highestchildyr": 10,
-        "lowestchildyr": 11,
-        "name": 0,
-        "x2": 1,
-        "xc0": 7,
-        "xc1": 5,
-        "xr": 3,
-        "y2": 2,
-        "yc0": 8,
-        "yc1": 6,
-        "yr": 4
-    },
     "names": [
-        "EmpressNode2",
-        "g",
-        "EmpressNode0",
+        -1,
         "a",
         "e",
+        "EmpressNode0",
         "b",
-        "h",
+        "g",
         "EmpressNode1",
         "d",
+        "h",
+        "EmpressNode2"
     ],
-    "lengths": [0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 1.0, 3.0],
-    "names_to_keys": {
-        "a": [1],
-        "e": [2],
-        "EmpressNode0": [3],
-        "b": [4],
-        "g": [5],
-        "EmpressNode1": [6],
-        "d": [7],
-        "h": [8],
-        "EmpressNode2": [9],
-    },
+    "lengths": [-1, 1.0, 2.0, 1.0, 2.0, 1.0, 1.0, 3.0, 2.0, None],
     "s_ids": ["Sample1", "Sample2", "Sample3", "Sample4"],
-    "f_ids": ["a", "b", "e", "d"],
+    "f_ids": [1, 4, 2, 7],
     "s_ids_to_indices": {
         "Sample1": 0,
         "Sample2": 1,
         "Sample3": 2,
         "Sample4": 3,
     },
-    "f_ids_to_indices": {"a": 0, "b": 1, "e": 2, "d": 3},
+    "f_ids_to_indices": {1: 0, 4: 1, 2: 2, 7: 3},
     "compressed_table": [[0, 1, 3], [0, 1, 3], [0], [2]],
     "sample_metadata_columns": [
         "Metadata1",
@@ -749,13 +561,6 @@ DICT_A = {
     "feature_metadata_columns": [],
     "compressed_tip_metadata": {},
     "compressed_int_metadata": {},
-    "layout_to_coordsuffix": {
-        "Unrooted": "2",
-        "Rectangular": "r",
-        "Circular": "c1",
-    },
-    "yrscf": 1005,
-    "default_layout": "Unrooted",
     "emperor_div": "",
     "emperor_require_logic": "",
     "emperor_style": "",

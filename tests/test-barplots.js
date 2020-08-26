@@ -8,15 +8,9 @@ require([
     module("Barplots", {
         setup: function () {
             this.testData = UtilitiesForTesting.getTestData();
-            this.initTestEmpress = function (defaultLayout = "Rectangular") {
+            this.initTestEmpress = function () {
                 return new Empress(
                     this.testData.tree,
-                    this.testData.treeData,
-                    this.testData.tdToInd,
-                    this.testData.nameToKeys,
-                    this.testData.layoutToCoordSuffix,
-                    defaultLayout,
-                    this.testData.yrscf,
                     this.testData.biom,
                     this.testData.fmCols,
                     this.testData.tm,
@@ -31,21 +25,15 @@ require([
         var empress = this.initTestEmpress();
         equal(empress._barplotPanel.layers.length, 1);
     });
-    test("Layout availability toggling: initialization", function () {
+    test("Layout availability toggling: initialization (default unrooted layout)", function () {
         // The default layout should influence whether the barplot panel's
-        // "available" or "unavailable" content is shown. First, let's try the
-        // unrooted layout, which doesn't support barplots.
+        // "available" or "unavailable" content is shown. As of writing, the
+        // default layout will always be Unrooted.
         var empress = this.initTestEmpress("Unrooted");
         ok(empress._barplotPanel.availContent.classList.contains("hidden"));
         notOk(
             empress._barplotPanel.unavailContent.classList.contains("hidden")
         );
-
-        // And now let's try starting out in the rectangular layout, which
-        // *does* support barplots.
-        var empress2 = this.initTestEmpress("Rectangular");
-        notOk(empress2._barplotPanel.availContent.classList.contains("hidden"));
-        ok(empress2._barplotPanel.unavailContent.classList.contains("hidden"));
     });
     test("Layout availability toggling post-initialization", function () {
         var empress = this.initTestEmpress("Unrooted");
@@ -76,12 +64,6 @@ require([
 
         var empressWithNoFM = new Empress(
             this.testData.tree,
-            this.testData.treeData,
-            this.testData.tdToInd,
-            this.testData.nameToKeys,
-            this.testData.layoutToCoordSuffix,
-            "Rectangular",
-            this.testData.yrscf,
             this.testData.biom,
             [],
             {},

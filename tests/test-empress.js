@@ -12,6 +12,17 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             setup: function () {
                 this.empress = UtilitiesForTesting.getTestData(true).empress;
                 this.empress._drawer.initialize();
+
+                // Since layouts are now computed client-side which means
+                // _treeData and _tdToInd are created on client-side. The test were
+                // originally written when coordinates were calculated on python
+                // side. Thus we need to set them back.
+                this.empress._treeData = UtilitiesForTesting.getTestData(
+                    false
+                ).treeData;
+                this.empress._tdToInd = UtilitiesForTesting.getTestData(
+                    false
+                ).tdToInd;
             },
 
             teardown: function () {
@@ -26,22 +37,19 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var coord = 1;
             var node;
             this.empress._currentLayout = "Rectangular";
-            for (var i = 1; i <= 7; i++) {
-                node = this.empress._treeData[i];
+            for (node = 1; node <= 7; node++) {
                 equal(this.empress.getX(node), coord++);
                 equal(this.empress.getY(node), coord++);
             }
 
             this.empress._currentLayout = "Circular";
-            for (i = 1; i <= 7; i++) {
-                node = this.empress._treeData[i];
+            for (node = 1; node <= 7; node++) {
                 equal(this.empress.getX(node), coord++);
                 equal(this.empress.getY(node), coord++);
             }
 
             this.empress._currentLayout = "Unrooted";
-            for (i = 1; i <= 7; i++) {
-                node = this.empress._treeData[i];
+            for (node = 1; node <= 7; node++) {
                 equal(this.empress.getX(node), coord++);
                 equal(this.empress.getY(node), coord++);
             }
@@ -99,8 +107,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             this.empress.colorSampleGroups(sampleGroup);
 
             // the entire tree should be colored. sampleGroup contain all tips
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
+            for (var node = 1; node <= 7; node++) {
                 deepEqual(this.empress.getNodeInfo(node, "color"), [1.0, 0, 0]);
             }
         });
@@ -118,15 +125,14 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // green nodes are the unique nodes in 00FF00
             var greeNodes = new Set([1, 3]);
             this.empress.colorSampleGroups(sampleGroups);
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
-                if (redNodes.has(i)) {
+            for (var node = 1; node <= 7; node++) {
+                if (redNodes.has(node)) {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
                         1.0,
                         0,
                         0,
                     ]);
-                } else if (greeNodes.has(i)) {
+                } else if (greeNodes.has(node)) {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
                         0,
                         1.0,
@@ -140,30 +146,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                     ]);
                 }
             }
-        });
-
-        test("Test _namesToKeys", function () {
-            var internalKeys = [4, 5, 7];
-            var result = this.empress._namesToKeys(["root", "internal"]);
-            result = util.naturalSort(Array.from(result));
-            deepEqual(result, internalKeys);
-
-            var tip = [1];
-            result = this.empress._namesToKeys(["1"]);
-            result = util.naturalSort(Array.from(result));
-            deepEqual(result, tip);
-
-            var allNodes = [1, 2, 3, 4, 5, 6, 7];
-            result = this.empress._namesToKeys([
-                "1",
-                "2",
-                "3",
-                "internal",
-                "EmpressNode6",
-                "root",
-            ]);
-            result = util.naturalSort(Array.from(result));
-            deepEqual(result, allNodes);
         });
 
         test("Test colorBySampleCat", function () {
@@ -186,9 +168,8 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // make sure nodes where assigned the correct color
             // note that gropu b does not have any unique nodes
             var aGroupNodes = new Set([1, 3]);
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
-                if (aGroupNodes.has(i)) {
+            for (var node = 1; node <= 7; node++) {
+                if (aGroupNodes.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
                         chroma(cm.a).gl().slice(0, 3)
@@ -227,17 +208,18 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var node;
             var group1 = new Set([2, 3, 4]);
             var group2 = new Set([1, 6]);
-            for (var i = 1; i <= 7; i++) {
-                node = this.empress._treeData[i];
-                if (group1.has(i)) {
+            for (node = 1; node <= 7; node++) {
+                if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["1"]).gl().slice(0, 3)
+                        chroma(cm["1"]).gl().slice(0, 3),
+                        "node: " + node
                     );
-                } else if (group2.has(i)) {
+                } else if (group2.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["2"]).gl().slice(0, 3)
+                        chroma(cm["2"]).gl().slice(0, 3),
+                        "node: " + node
                     );
                 } else {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
@@ -262,17 +244,18 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             //       if propagtion was used, then 4, 5 would belong to group2
             group1 = new Set([4, 5]);
             group2 = new Set([1, 2, 3, 6]);
-            for (i = 1; i <= 7; i++) {
-                node = this.empress._treeData[i];
-                if (group1.has(i)) {
+            for (node = 1; node <= 7; node++) {
+                if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["1"]).gl().slice(0, 3)
+                        chroma(cm["1"]).gl().slice(0, 3),
+                        "node: " + node
                     );
-                } else if (group2.has(i)) {
+                } else if (group2.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["2"]).gl().slice(0, 3)
+                        chroma(cm["2"]).gl().slice(0, 3),
+                        "node: " + node
                     );
                 } else {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
@@ -425,15 +408,14 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 g3: [0, 0, 1],
             };
             this.empress._colorTree(obs, cm);
-            for (var i = 1; i <= 7; i++) {
-                var node = this.empress._treeData[i];
-                if (g1Nodes.has(i)) {
+            for (var node = 1; node <= 7; node++) {
+                if (g1Nodes.has(node)) {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
                         1,
                         0,
                         0,
                     ]);
-                } else if (g2Nodes.has(i)) {
+                } else if (g2Nodes.has(node)) {
                     deepEqual(this.empress.getNodeInfo(node, "color"), [
                         0,
                         1,
@@ -453,8 +435,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var e = this.empress; // used to shorten function calls
             var keys = Object.keys(e._treeData);
             e.resetTree();
-            for (var i = 1; i < keys.length; i++) {
-                var node = this.empress._treeData[keys[i]];
+            for (var node = 1; node < keys.length; node++) {
                 deepEqual(e.getNodeInfo(node, "color"), e.DEFAULT_COLOR);
                 equal(e.getNodeInfo(node, "isColored"), false);
                 equal(e.getNodeInfo(node, "visible"), true);
@@ -513,8 +494,8 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
 
         test("Test getGradientStep", function () {
             var expectedObs = {
-                t1: ["1", "2", "3"],
-                t2: ["EmpressNode6", "1", "3"],
+                t1: [1, 2, 3],
+                t2: [1, 3, 6],
             };
             var obs = this.empress.getGradientStep("grad", "1", "traj");
             var groups = Object.keys(obs);
@@ -608,19 +589,18 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // make sure .visible property of nodes in the collapsed is false
             var collapsed = new Set([2, 3]);
             var i, node;
-            for (i = 1; i <= this.empress._tree.size; i++) {
-                node = this.empress._treeData[i];
-                if (collapsed.has(i)) {
+            for (node = 1; node <= this.empress._tree.size; node++) {
+                if (collapsed.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "visible"),
                         false,
-                        "Test: node " + i + " should be invisible"
+                        "Test: node " + node + " should be invisible"
                     );
                 } else {
                     deepEqual(
                         this.empress.getNodeInfo(node, "visible"),
                         true,
-                        "Test: node " + i + " should be visible"
+                        "Test: node " + node + " should be visible"
                     );
                 }
             }
@@ -673,8 +653,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             };
             this.empress._colorTree(obs, cm);
             this.empress.collapseClades();
-            for (i = 1; i <= this.empress._tree.size; i++) {
-                node = this.empress._treeData[i];
+            for (node = 1; node <= this.empress._tree.size; node++) {
                 deepEqual(
                     this.empress.getNodeInfo(node, "visible"),
                     true,
@@ -700,7 +679,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 0,
                 1,
                 1,
@@ -715,7 +693,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 1,
                 1,
                 1,
@@ -730,7 +707,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 -1,
                 -1,
                 1,
@@ -745,7 +721,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 0,
                 5,
                 5,
@@ -897,7 +872,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 0,
                 1,
                 1,
@@ -912,7 +886,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 1,
                 1,
                 1,
@@ -927,7 +900,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 -1,
                 1,
                 1,
@@ -942,7 +914,6 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 [1, 1, 1],
                 false,
                 true,
-                "",
                 0,
                 5,
                 5,
@@ -982,7 +953,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
 
             var lf2presence = {
                 f1: { a: 4, b: 1 },
-                grad: { "1": 1, "2": 2, "3": 2, "4": 0 },
+                grad: { 1: 1, 2: 2, 3: 2, 4: 0 },
                 traj: { t1: 2, t2: 1, t3: 2, t4: 0 },
             };
             deepEqual(ctData, lf2presence);
@@ -995,7 +966,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
 
             var int4presence = {
                 f1: { a: 5, b: 1 },
-                grad: { "1": 2, "2": 2, "3": 2, "4": 0 },
+                grad: { 1: 2, 2: 2, 3: 2, 4: 0 },
                 traj: { t1: 2, t2: 2, t3: 2, t4: 0 },
             };
             deepEqual(values.fieldsMap, int4presence);
@@ -1003,7 +974,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             //also testing root which should have all tips -> all samples
             var rootPresence = {
                 f1: { a: 5, b: 2 },
-                grad: { "1": 2, "2": 2, "3": 2, "4": 1 },
+                grad: { 1: 2, 2: 2, 3: 2, 4: 1 },
                 traj: { t1: 2, t2: 2, t3: 2, t4: 1 },
             };
             var rootValues = e.computeIntSamplePresence(7, fields);
@@ -1011,18 +982,17 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
         });
 
         test("Test getUniqueFeatureMetadataInfo (method = tip)", function () {
-            var f1UniqueValues = ["1", "2"];
             var f1Info = this.empress.getUniqueFeatureMetadataInfo("f1", "tip");
             deepEqual(f1Info.sortedUniqueValues, ["1", "2"]);
             // Tips 2 and 3 have a f1 value of 1
             deepEqual(
                 new Set(f1Info.uniqueValueToFeatures["1"]),
-                new Set(["2", "3"])
+                new Set([2, 3])
             );
             // Tips 1 and EmpressNode6 have a f1 value of 2
             deepEqual(
                 new Set(f1Info.uniqueValueToFeatures["2"]),
-                new Set(["1", "EmpressNode6"])
+                new Set([1, 6])
             );
         });
         test("Test getUniqueFeatureMetadataInfo (method = all)", function () {
@@ -1033,12 +1003,12 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             // have a f1 value of 1
             deepEqual(
                 new Set(f1Info.uniqueValueToFeatures["1"]),
-                new Set(["internal", "2", "3"])
+                new Set([4, 5, 2, 3])
             );
             // Tips 1 and EmpressNode6 have a f1 value of 2
             deepEqual(
                 new Set(f1Info.uniqueValueToFeatures["2"]),
-                new Set(["1", "EmpressNode6"])
+                new Set([1, 6])
             );
         });
         test("Test getUniqueFeatureMetadataInfo (invalid fm column)", function () {

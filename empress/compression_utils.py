@@ -50,7 +50,14 @@ def remove_empty_samples_and_features(table, sample_metadata, ordination=None):
     orig_tbl_samples = set(table.ids())
     orig_tbl_features = set(table.ids(axis='observation'))
 
-    filtered_table = table.remove_empty(inplace=False)
+    # this code is equivalent to the PR below, we should update once that gets
+    # merged and a newer BIOM release is publicly available
+    # https://github.com/biocore/biom-format/pull/847
+    filtered_table = table.copy()
+    for ax in {'observation', 'sample'}:
+        filtered_table = filtered_table.filter(
+            table.ids(axis=ax)[table.sum(axis=ax) > 0], axis=ax,
+            inplace=False)
     if filtered_table.is_empty():
         raise ValueError("All samples / features in matched table are empty.")
 

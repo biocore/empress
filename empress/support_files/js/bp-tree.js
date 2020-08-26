@@ -1,4 +1,4 @@
-define(["ByteArray"], function (ByteArray) {
+define(["ByteArray", "underscore"], function (ByteArray, _) {
     /**
      *
      * @class BPTree
@@ -8,7 +8,8 @@ define(["ByteArray"], function (ByteArray) {
      * @param {Array} b The array that represents the tree structure
      * @param {Array} names The names of each node stored in preorder
      * @param {Array} lengths The lengths of each node stored in preorder
-     * @param {Number} coding The number of 1/0s coded in the tree, null not coded
+     * @param {Number} coding The number of 1/0s coded in the tree, null not
+     *                        coded
      *
      * @return {BPTree}
      * @constructs BPTree
@@ -31,8 +32,10 @@ define(["ByteArray"], function (ByteArray) {
                         .split("")
                         .map(_helper_decode);
 
-                    // We need to pad the number if we are not in the last number of the list
-                    // Note that we ae padding with 51, which should match the python code
+                    // We need to pad the number if we are not in the last
+                    // number of the list
+                    // Note that we ae padding with 51, which should match the
+                    // python code
                     if (i < b_len && element.length < 51) {
                         var padding = new Array(coding - element.length).fill(
                             0
@@ -68,6 +71,16 @@ define(["ByteArray"], function (ByteArray) {
          *       Uint16Array
          */
         this.names_ = names ? names : null;
+
+        /**
+         * @type {Array}
+         * @private
+         * caches the number of tips under each node. Stores nodes in their
+         * postorder position. Postorder positions start at index 1 thus index
+         * 0 is considered "undefined".
+         * Note: leaf nodes have 1 tips
+         */
+        this._numTips = new Array(this.size + 1).fill(0);
 
         /**
          * @type{Float32Array}
@@ -159,6 +172,15 @@ define(["ByteArray"], function (ByteArray) {
          *       efficient to cache an in-order tree traversal.
          */
         this._inorder = null;
+
+        /**
+         * @type {Object}
+         * @private
+         * This object is used to cache name look ups. Keys are node names and
+         * values are an array of all nodes (defined by the postorder position)
+         * that have the same name.
+         */
+        this._nameToNodes = {};
     }
 
     /**
@@ -229,7 +251,18 @@ define(["ByteArray"], function (ByteArray) {
      * @return{String}
      */
     BPTree.prototype.name = function (i) {
-        return this.names_[this.preorder(i) - 1];
+        return this.names_[this.postorder(i)];
+    };
+
+    /**
+     * Returns an array of all node names in tree.
+     */
+    BPTree.prototype.getAllNames = function () {
+        var names = _.clone(this.names_);
+        // Currently, names_ is uses 1-based index (see issue @223). So we need
+        // to delete first element.
+        names.shift();
+        return names;
     };
 
     /**
@@ -255,7 +288,7 @@ define(["ByteArray"], function (ByteArray) {
      * @return{Number}
      */
     BPTree.prototype.length = function (i) {
-        return this.lengths_[this.preorder(i) - 1];
+        return this.lengths_[this.postorder(i)];
     };
 
     /**
@@ -604,12 +637,11 @@ define(["ByteArray"], function (ByteArray) {
         var totalLength = 0;
         while (curNode !== end) {
             totalLength += this.length(this.postorderselect(curNode));
-            curNode = this.postorder(
-                this.parent(this.postorderselect(curNode))
-            );
+            curNode = this.parent(this.postorderselect(curNode));
             if (curNode === -1) {
                 throw "Node " + start + " must be a descendant of " + end;
             }
+            curNode = this.postorder(curNode);
         }
         return totalLength;
     };
@@ -625,7 +657,7 @@ define(["ByteArray"], function (ByteArray) {
         // by the current internal node
         var n = this.postorderselect(nodeKey);
         if (this.isleaf(n)) {
-            throw "Node must be internal!";
+            throw "Error: " + nodeKey + " is a tip!";
         }
         var start = this.preorder(this.fchild(n));
         var end = this.preorder(this.lchild(n));
@@ -638,11 +670,38 @@ define(["ByteArray"], function (ByteArray) {
         for (var j = start; j <= end; j++) {
             var node = this.preorderselect(j);
             if (this.isleaf(node)) {
-                tips.push(this.name(node));
+                tips.push(this.postorder(node));
             }
         }
 
         return tips;
+    };
+
+    /**
+     * Retrieve number of tips in the subtree of a given node.
+     *
+     * @param {Integer} nodeKey The postorder position of a node
+     * @return {Integer} The number of tips on the subtree rooted at nodeKey.
+     */
+    BPTree.prototype.getNumTips = function (nodeKey) {
+        if (this._numTips[nodeKey] !== 0) {
+            return this._numTips[nodeKey];
+        }
+
+        var open = this.postorderselect(nodeKey);
+        if (this.isleaf(open)) {
+            this._numTips[nodeKey] = 1;
+            return this._numTips[nodeKey];
+        }
+        var close = this.close(open);
+        var numTips = 0;
+        for (var i = open + 1; i < close; i++) {
+            if (this.b_[i] === 1 && this.b_[i + 1] === 0) {
+                numTips += 1;
+            }
+        }
+        this._numTips[nodeKey] = numTips;
+        return numTips;
     };
 
     /** True if name is in the names array for the tree
@@ -652,6 +711,28 @@ define(["ByteArray"], function (ByteArray) {
      */
     BPTree.prototype.containsNode = function (name) {
         return this.names_.indexOf(name) !== -1;
+    };
+
+    /**
+     * Returns all node with a given name. Once a name has been searched for,
+     * the returned object is cached in this._nameToNodes.
+     *
+     * @param {String} name The name of node(s)
+     * @return {Array} An array of postorder position of nodes with a given name
+     */
+    BPTree.prototype.getNodesWithName = function (name) {
+        if (name in this._nameToNodes) {
+            return this._nameToNodes[name];
+        }
+
+        this._nameToNodes[name] = [];
+        for (var i = 1; i <= this.size; i++) {
+            if (name === this.names_[i]) {
+                this._nameToNodes[name].push(i);
+            }
+        }
+
+        return this._nameToNodes[name];
     };
 
     return BPTree;
