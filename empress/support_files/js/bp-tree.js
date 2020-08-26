@@ -255,10 +255,14 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     };
 
     /**
-     * Returns an array of all node names in tree
+     * Returns an array of all node names in tree.
      */
     BPTree.prototype.getAllNames = function () {
-        return _.clone(this.names_);
+        var names = _.clone(this.names_);
+        // Currently, names_ is uses 1-based index (see issue @223). So we need
+        // to delete first element.
+        names.shift();
+        return names;
     };
 
     /**
