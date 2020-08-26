@@ -71,7 +71,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     Drawer.prototype.initialize = function () {
         // shorten name, will be using this frequently
         var c = this.contex_;
-
+        var ext = c.getExtension("OES_element_index_uint");
         //Sets the size of canvas to be equal to the width of the window.
         this.setCanvasSize();
 
@@ -103,9 +103,17 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         s.isSingle = c.getUniformLocation(s, "isSingle");
         s.pointSize = c.getUniformLocation(s, "pointSize");
 
-        // buffer object for tree
+        // buffer object for tree coordinates
         s.treeVertBuff = c.createBuffer();
         this.treeVertSize = 0;
+
+        // buffer object to store tree color
+        s.colorTreeBuff = c.createBuffer()
+        this.colorTreeSize = 0;
+
+        // element object
+        s.treeElements = c.createBuffer();
+        this.treeElmSize = 0;
 
         // buffer object used to thicken node lines
         s.thickNodeBuff = c.createBuffer();
@@ -212,6 +220,13 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         c.bufferData(c.ARRAY_BUFFER, data, c.DYNAMIC_DRAW);
     };
 
+    Drawer.prototype.fillElemData_ = function(buff, data) {
+        var c = this.contex_;
+        console.log(buff, data)
+        c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, buff);
+        c.bufferData(c.ELEMENT_ARRAY_BUFFER, new Uint32Array(data), c.DYNAMIC_DRAW);
+    };
+
     /**
      * Binds the buffer so WebGL can use it.
      *
@@ -250,6 +265,71 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
+     * Binds the buffer so WebGL can use it.
+     *
+     * @param {WebGLBuffer} buffer The Buffer to bind
+     */
+    Drawer.prototype.bindCoordBuffer = function (buffer) {
+        // defines constants for a vertex. A vertex is the form [x, y, r, g, b]
+        const COORD_SIZE = 2;
+        const COORD_OFFSET = 0;
+
+        var c = this.contex_;
+        var s = this.sProg_;
+
+        // tell webGL which buffer to use
+        c.bindBuffer(c.ARRAY_BUFFER, buffer);
+
+        c.vertexAttribPointer(
+            s.vertPosition,
+            COORD_SIZE,
+            c.FLOAT,
+            c.FALSE,
+            COORD_SIZE * Float32Array.BYTES_PER_ELEMENT,
+            COORD_OFFSET
+        );
+    };
+
+    /**
+     * Binds the buffer so WebGL can use it.
+     *
+     * @param {WebGLBuffer} buffer The Buffer to bind
+     */
+    Drawer.prototype.bindColorBuffer = function (buffer) {
+        // defines constants for a vertex. A vertex is the form [x, y, r, g, b]
+        const COLOR_SIZE = 3;
+        const COLOR_OFFSET = 0;
+
+        var c = this.contex_;
+        var s = this.sProg_;
+
+        // tell webGL which buffer to use
+        c.bindBuffer(c.ARRAY_BUFFER, buffer);
+
+        c.vertexAttribPointer(
+            s.color,
+            COLOR_SIZE,
+            c.FLOAT,
+            c.FALSE,
+            COLOR_SIZE * Float32Array.BYTES_PER_ELEMENT,
+            COLOR_OFFSET * Float32Array.BYTES_PER_ELEMENT
+        );
+    };
+
+    /**
+     * Binds the buffer so WebGL can use it.
+     *
+     * @param {WebGLBuffer} buffer The Buffer to bind
+     */
+    Drawer.prototype.bindElemBuffer = function (buffer) {
+        var c = this.contex_;
+        var s = this.sProg_;
+
+        // tell webGL which buffer to use
+        c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, buffer);
+    };
+
+    /**
      * Fills the buffer used to draw the tree
      *
      * @param {Array} data The coordinate and color data to fill tree buffer
@@ -258,6 +338,39 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         data = new Float32Array(data);
         this.treeVertSize = data.length / 5;
         this.fillBufferData_(this.sProg_.treeVertBuff, data);
+    };
+
+    /**
+     * Fills the buffer used to draw the tree
+     *
+     * @param {Array} data The coordinate and color data to fill tree buffer
+     */
+    Drawer.prototype.loadTreeCoordsBuff = function (data) {
+        data = new Float32Array(data);
+        this.treeVertSize = data.length / 2;
+        this.fillBufferData_(this.sProg_.treeVertBuff, data);
+    };
+
+    /**
+     * Fills the buffer used to draw the tree
+     *
+     * @param {Array} data The coordinate and color data to fill tree buffer
+     */
+    Drawer.prototype.loadTreeColorBuff = function (data) {
+        data = new Float32Array(data);
+        this.colorTreeSize = data.length / 3;
+        this.fillBufferData_(this.sProg_.colorTreeBuff, data);
+    };
+
+    /**
+     * Fills the buffer used to draw the tree
+     *
+     * @param {Array} data The coordinate and color data to fill tree buffer
+     */
+    Drawer.prototype.loadTreeElemBuff = function (data) {
+        console.log(data)
+        this.treeElmSize = data.length;
+        this.fillElemData_(this.sProg_.treeElements, data);
     };
 
     /**
@@ -349,31 +462,35 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // set the mvp attribute
         c.uniformMatrix4fv(s.mvpMat, false, mvp);
 
-        // draw tree node circles, if requested
-        if (this.showTreeNodes) {
-            c.uniform1i(s.isSingle, 1);
-            c.uniform1f(s.pointSize, 4.0);
-            this.bindBuffer(s.nodeVertBuff);
-            c.drawArrays(c.POINTS, 0, this.nodeSize);
-        }
+        // // draw tree node circles, if requested
+        // if (this.showTreeNodes) {
+        //     c.uniform1i(s.isSingle, 1);
+        //     c.uniform1f(s.pointSize, 4.0);
+        //     this.bindBuffer(s.nodeVertBuff);
+        //     c.drawArrays(c.POINTS, 0, this.nodeSize);
+        // }
 
-        // draw selected node
-        c.uniform1f(s.pointSize, 9.0);
-        this.bindBuffer(s.selectedNodeBuff);
-        c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
+        // // draw selected node
+        // c.uniform1f(s.pointSize, 9.0);
+        // this.bindBuffer(s.selectedNodeBuff);
+        // c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 
         c.uniform1i(s.isSingle, 0);
-        this.bindBuffer(s.treeVertBuff);
-        c.drawArrays(c.LINES, 0, this.treeVertSize);
+        // this.bindBuffer(s.treeVertBuff);
+        // c.drawArrays(c.LINES, 0, this.treeVertSize);
+        this.bindElemBuffer(s.treeElements);
+        this.bindCoordBuffer(s.treeVertBuff);
+        this.bindColorBuffer(s.colorTreeBuff);
+        c.drawElements(c.LINES, this.treeElmSize, c.UNSIGNED_INT, 0);
 
-        this.bindBuffer(s.thickNodeBuff);
-        c.drawArrays(c.TRIANGLES, 0, this.thickNodeSize);
+        // this.bindBuffer(s.thickNodeBuff);
+        // c.drawArrays(c.TRIANGLES, 0, this.thickNodeSize);
 
-        this.bindBuffer(s.barplotBuff);
-        c.drawArrays(c.TRIANGLES, 0, this.barplotSize);
+        // this.bindBuffer(s.barplotBuff);
+        // c.drawArrays(c.TRIANGLES, 0, this.barplotSize);
 
-        this.bindBuffer(s.cladeBuff);
-        c.drawArrays(c.TRIANGLES, 0, this.cladeVertSize);
+        // this.bindBuffer(s.cladeBuff);
+        // c.drawArrays(c.TRIANGLES, 0, this.cladeVertSize);
     };
 
     /**

@@ -206,6 +206,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         lwInput,
         updateBtn
     ) {
+        var d = new Date();
         this.empress.resetTree();
 
         // clear legends
@@ -223,6 +224,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var lw = util.parseAndValidateNum(lwInput);
         this.empress.thickenColoredNodes(lw);
         this.empress.drawTree();
+        var dt = new Date();
+        console.log("color tree", dt.getTime() - d.getTime())
     };
 
     /**

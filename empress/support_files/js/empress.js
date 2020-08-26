@@ -362,6 +362,8 @@ define([
                 this._treeData[i][this._tdToInd.y2] = data.yCoord[i];
             }
         }
+        this._drawer.loadTreeElemBuff(this.elements());
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
     };
 
     /**
@@ -417,11 +419,298 @@ define([
      * Draws the tree
      */
     Empress.prototype.drawTree = function () {
-        this._drawer.loadTreeBuff(this.getCoords());
+        this._drawer.loadTreeColorBuff(this.getTreeColor());
+        // this._drawer.loadTreeBuff(this.getCoords());
         this._drawer.loadNodeBuff(this.getNodeCoords());
         this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
     };
+
+    Empress.prototype.elements = function() {
+        var adding = 0;
+        var elem = [];
+        var tree = this._tree;
+
+        var e = 0;
+        if (this._currentLayout === "Rectangular") {
+            elem.push(e++);
+            elem.push(e++);
+        }
+        // iterate through the tree in postorder, skip root
+        for (var node = 1; node < tree.size; node++) {
+            var parent = tree.postorder(
+                tree.parent(tree.postorderselect(node))
+            );
+
+            if (!this.getNodeInfo(node, "visible")) {
+                continue;
+            }
+
+            if (this._currentLayout === "Rectangular") {
+                elem.push(e++);
+                elem.push(e++);
+                if (this.getNodeInfo(node, "lowestchildyr") !== undefined) {
+                    // skip if node is root of collapsed clade
+                    if (this._collapsedClades.hasOwnProperty(node)) continue;
+                    elem.push(e++);
+                    elem.push(e++);
+                }
+            } else if (this._currentLayout === "Circular") {
+                    elem.push(e++);
+                    elem.push(e++);
+                if (
+                    !this._tree.isleaf(this._tree.postorderselect(node)) &&
+                    !this._collapsedClades.hasOwnProperty(node)
+                ) {
+                    for (var line = 0; line < 15; line++) {
+                        elem.push(e++);
+                        elem.push(e++);
+                    }
+                }
+            } else {
+                elem.push(e++);
+                elem.push(e++);
+            }
+        }
+        return elem;
+    }
+
+    Empress.prototype.getTreeCoords = function() {
+        var tree = this._tree;
+        var coords = [];
+
+        var addPoint = function (x, y) {
+            coords[coords.length] = x;
+            coords[coords.length] = y;
+        };
+
+        /* Draw a vertical line, if we're in rectangular layout mode. Note that
+         * we *don't* draw a horizontal line (with the branch length of the
+         * root) for the root node, even if it has a nonzero branch length;
+         * this could be modified in the future if desired. See #141 on GitHub.
+         *
+         * (The python code explicitly disallows trees with <= 1 nodes, so
+         * we're never going to be in the unfortunate situation of having the
+         * root be the ONLY node in the tree. So this behavior is ok.)
+         */
+        if (this._currentLayout === "Rectangular") {
+            addPoint(
+                this.getX(tree.size),
+                this.getNodeInfo(tree.size, "lowestchildyr")
+            );
+            addPoint(
+                this.getX(tree.size),
+                this.getNodeInfo(tree.size, "highestchildyr")
+            );
+        }
+        // iterate through the tree in postorder, skip root
+        for (var node = 1; node < tree.size; node++) {
+            // name of current node
+            // var node = this._treeData[node];
+            var parent = tree.postorder(
+                tree.parent(tree.postorderselect(node))
+            );
+            // parent = this._treeData[parent];
+
+            if (!this.getNodeInfo(node, "visible")) {
+                continue;
+            }
+
+            if (this._currentLayout === "Rectangular") {
+                /* Nodes in the rectangular layout can have up to two "parts":
+                 * a horizontal line, and a vertical line at the end of this
+                 * line. These parts are indicated below as AAA... and BBB...,
+                 * respectively. (Child nodes are indicated by CCC...)
+                 *
+                 *        BCCCCCCCCCCCC
+                 *        B
+                 * AAAAAAAB
+                 *        B
+                 *        BCCCCCCCCCCCC
+                 *
+                 * All nodes except for the root are drawn with a horizontal
+                 * line, and all nodes except for tips are drawn with a
+                 * vertical line.
+                 */
+                // 1. Draw horizontal line (we're already skipping the root)
+                addPoint(this.getX(parent), this.getY(node));
+                addPoint(this.getX(node), this.getY(node));
+                // 2. Draw vertical line, if this is an internal node
+                if (this.getNodeInfo(node, "lowestchildyr") !== undefined) {
+                    // skip if node is root of collapsed clade
+                    if (this._collapsedClades.hasOwnProperty(node)) continue;
+                    addPoint(
+                        this.getX(node),
+                        this.getNodeInfo(node, "highestchildyr")
+                    );
+                    addPoint(
+                        this.getX(node),
+                        this.getNodeInfo(node, "lowestchildyr")
+                    );
+                }
+            } else if (this._currentLayout === "Circular") {
+                /* Same deal as above, except instead of a "vertical line" this
+                 * time we draw an "arc".
+                 */
+                // 1. Draw line protruding from parent (we're already skipping
+                // the root so this is ok)
+                //
+                // Note that position info for this is stored as two sets of
+                // coordinates: (xc0, yc0) for start point, (xc1, yc1) for end
+                // point. The *c1 coordinates are explicitly associated with
+                // the circular layout so we can just use this.getX() /
+                // this.getY() for these coordinates.
+                addPoint(
+                    this.getNodeInfo(node, "xc0"),
+                    this.getNodeInfo(node, "yc0")
+                );
+                addPoint(this.getX(node), this.getY(node));
+                // 2. Draw arc, if this is an internal node (note again that
+                // we're skipping the root)
+                if (
+                    !this._tree.isleaf(this._tree.postorderselect(node)) &&
+                    !this._collapsedClades.hasOwnProperty(node)
+                ) {
+                    // arcs are created by sampling 15 small lines along the
+                    // arc spanned by rotating (arcx0, arcy0), the line whose
+                    // origin is the root of the tree and endpoint is the start
+                    // of the arc, by arcendangle - arcstartangle radians.
+                    var numSamples = 15;
+                    var arcDeltaAngle =
+                        this.getNodeInfo(node, "arcendangle") -
+                        this.getNodeInfo(node, "arcstartangle");
+                    var sampleAngle = arcDeltaAngle / numSamples;
+                    var sX = this.getNodeInfo(node, "arcx0");
+                    var sY = this.getNodeInfo(node, "arcy0");
+                    for (var line = 0; line < numSamples; line++) {
+                        var x =
+                            sX * Math.cos(line * sampleAngle) -
+                            sY * Math.sin(line * sampleAngle);
+                        var y =
+                            sX * Math.sin(line * sampleAngle) +
+                            sY * Math.cos(line * sampleAngle);
+                        addPoint(x, y);
+
+                        x =
+                            sX * Math.cos((line + 1) * sampleAngle) -
+                            sY * Math.sin((line + 1) * sampleAngle);
+                        y =
+                            sX * Math.sin((line + 1) * sampleAngle) +
+                            sY * Math.cos((line + 1) * sampleAngle);
+                        addPoint(x, y);
+                    }
+                }
+            } else {
+                addPoint(this.getX(parent), this.getY(parent));
+                addPoint(this.getX(node), this.getY(node));
+            }
+        }
+        return new Float32Array(coords);
+    }
+
+    Empress.prototype.getTreeColor = function() {
+        var tree = this._tree;
+
+        var coords = [];
+        var color;
+        var addPoint = function () {
+            coords[coords.length] = color[0];
+            coords[coords.length] = color[1];
+            coords[coords.length] = color[2];
+        };
+
+        /* Draw a vertical line, if we're in rectangular layout mode. Note that
+         * we *don't* draw a horizontal line (with the branch length of the
+         * root) for the root node, even if it has a nonzero branch length;
+         * this could be modified in the future if desired. See #141 on GitHub.
+         *
+         * (The python code explicitly disallows trees with <= 1 nodes, so
+         * we're never going to be in the unfortunate situation of having the
+         * root be the ONLY node in the tree. So this behavior is ok.)
+         */
+        if (this._currentLayout === "Rectangular") {
+            color = this.getNodeInfo(tree.size, "color");
+            addPoint();
+            addPoint();
+        }
+        // iterate through the tree in postorder, skip root
+        for (var node = 1; node < tree.size; node++) {
+            // name of current node
+            // var node = this._treeData[node];
+            var parent = tree.postorder(
+                tree.parent(tree.postorderselect(node))
+            );
+            // parent = this._treeData[parent];
+
+            if (!this.getNodeInfo(node, "visible")) {
+                continue;
+            }
+
+            // branch color
+            color = this.getNodeInfo(node, "color");
+
+            if (this._currentLayout === "Rectangular") {
+                /* Nodes in the rectangular layout can have up to two "parts":
+                 * a horizontal line, and a vertical line at the end of this
+                 * line. These parts are indicated below as AAA... and BBB...,
+                 * respectively. (Child nodes are indicated by CCC...)
+                 *
+                 *        BCCCCCCCCCCCC
+                 *        B
+                 * AAAAAAAB
+                 *        B
+                 *        BCCCCCCCCCCCC
+                 *
+                 * All nodes except for the root are drawn with a horizontal
+                 * line, and all nodes except for tips are drawn with a
+                 * vertical line.
+                 */
+                // 1. Draw horizontal line (we're already skipping the root)
+                addPoint();
+                addPoint();
+                // 2. Draw vertical line, if this is an internal node
+                if (this.getNodeInfo(node, "lowestchildyr") !== undefined) {
+                    // skip if node is root of collapsed clade
+                    if (this._collapsedClades.hasOwnProperty(node)) continue;
+                    addPoint();
+                    addPoint();
+                }
+            } else if (this._currentLayout === "Circular") {
+                /* Same deal as above, except instead of a "vertical line" this
+                 * time we draw an "arc".
+                 */
+                // 1. Draw line protruding from parent (we're already skipping
+                // the root so this is ok)
+                //
+                // Note that position info for this is stored as two sets of
+                // coordinates: (xc0, yc0) for start point, (xc1, yc1) for end
+                // point. The *c1 coordinates are explicitly associated with
+                // the circular layout so we can just use this.getX() /
+                // this.getY() for these coordinates.
+                addPoint();
+                addPoint();
+                // 2. Draw arc, if this is an internal node (note again that
+                // we're skipping the root)
+                if (
+                    !this._tree.isleaf(this._tree.postorderselect(node)) &&
+                    !this._collapsedClades.hasOwnProperty(node)
+                ) {
+                    var numSamples = 15;
+                    for (var line = 0; line < numSamples; line++) {
+                        addPoint();
+                        addPoint();
+                    }
+                }
+            } else {
+                // Draw nodes for the unrooted layout.
+                // coordinate info for parent
+                addPoint();
+                // coordinate info for current nodeN
+                addPoint();
+            }
+        }
+        return new Float32Array(coords);
+    }
 
     /**
      * Creates an SVG string to export the current drawing
@@ -730,6 +1019,8 @@ define([
      * @return {Array}
      */
     Empress.prototype.getCoords = function () {
+        var s = new Date();
+        var adding = 0;
         var tree = this._tree;
 
         // The coordinates (and colors) of the tree's nodes.
@@ -741,7 +1032,15 @@ define([
         var coords_index = 0;
 
         var addPoint = function (x, y) {
-            coords.push(x, y, ...color);
+            var d = new Date();
+            // coords.push(x, y, ...color);
+            coords[coords.length] = x;
+            coords[coords.length] = y;
+            coords[coords.length] = color[0];
+            coords[coords.length] = color[1];
+            coords[coords.length] = color[2];
+            var dt = new Date();
+            adding += dt.getTime() - d.getTime();
         };
 
         /* Draw a vertical line, if we're in rectangular layout mode. Note that
@@ -872,6 +1171,9 @@ define([
                 addPoint(this.getX(node), this.getY(node));
             }
         }
+        var end = new Date();
+        console.log("total = ", end.getTime() - s.getTime())
+        console.log("adding = ", adding)
         return new Float32Array(coords);
     };
 
