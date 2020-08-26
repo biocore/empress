@@ -330,7 +330,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         var categories = Object.keys(obs);
         for (var i = 0; i < categories.length; i++) {
             category = categories[i];
-            obs[category] = this.empress._namesToKeys(obs[category]);
+            obs[category] = new Set(obs[category]);
         }
         obs = this.empress._projectObservations(
             obs,

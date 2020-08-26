@@ -15,12 +15,6 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
         // unrooted layout, which doesn't support barplots.
         var empress = new Empress(
             this.testData.tree,
-            this.testData.treeData,
-            this.testData.tdToInd,
-            this.testData.nameToKeys,
-            this.testData.layoutToCoordSuffix,
-            "Unrooted",
-            this.testData.yrscf,
             this.testData.biom,
             this.testData.fmCols,
             this.testData.tm,
@@ -36,30 +30,20 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
         // *does* support barplots.
         var empress2 = new Empress(
             this.testData.tree,
-            this.testData.treeData,
-            this.testData.tdToInd,
-            this.testData.nameToKeys,
-            this.testData.layoutToCoordSuffix,
-            "Rectangular",
-            this.testData.yrscf,
             this.testData.biom,
             this.testData.fmCols,
             this.testData.tm,
             this.testData.im,
             this.testData.canvas
         );
+        empress2.initialize();
+        empress2.updateLayout("Rectangular");
         notOk(empress2._barplotPanel.availContent.classList.contains("hidden"));
         ok(empress2._barplotPanel.unavailContent.classList.contains("hidden"));
     });
     test("Layout availability toggling post-initialization", function () {
         var empress = new Empress(
             this.testData.tree,
-            this.testData.treeData,
-            this.testData.tdToInd,
-            this.testData.nameToKeys,
-            this.testData.layoutToCoordSuffix,
-            "Unrooted",
-            this.testData.yrscf,
             this.testData.biom,
             this.testData.fmCols,
             this.testData.tm,
@@ -88,12 +72,6 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
     test("Barplot layers default to feature metadata layers, but only if feature metadata is available", function () {
         var empressWithFM = new Empress(
             this.testData.tree,
-            this.testData.treeData,
-            this.testData.tdToInd,
-            this.testData.nameToKeys,
-            this.testData.layoutToCoordSuffix,
-            "Unrooted",
-            this.testData.yrscf,
             this.testData.biom,
             this.testData.fmCols,
             this.testData.tm,
@@ -104,12 +82,6 @@ require(["jquery", "Empress", "UtilitiesForTesting"], function (
 
         var empressWithNoFM = new Empress(
             this.testData.tree,
-            this.testData.treeData,
-            this.testData.tdToInd,
-            this.testData.nameToKeys,
-            this.testData.layoutToCoordSuffix,
-            "Unrooted",
-            this.testData.yrscf,
             this.testData.biom,
             [],
             {},

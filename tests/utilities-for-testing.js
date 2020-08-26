@@ -24,24 +24,12 @@ define(["Empress", "BPTree", "BiomTable"], function (
         // ((1,(2,3)4)5,6)7;
         var tree = new BPTree(
             new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]),
-            ["root", "internal", "1", "internal", "2", "3", "EmpressNode6"],
-            [7, 5, 1, 4, 2, 3, 6],
+            // see https://github.com/biocore/empress/issues/311
+            ["", "1", "2", "3", "internal", "internal", "EmpressNode6", "root"],
+            [0, 1, 2, 3, 4, 5, 6, 7],
             null
         );
-        var layoutToCoordSuffix = {
-            Rectangular: "r",
-            Circular: "c1",
-            Unrooted: "2",
-        };
 
-        var nameToKeys = {
-            root: [7],
-            EmpressNode6: [6],
-            internal: [5, 4],
-            "2": [2],
-            "3": [3],
-            "1": [1],
-        };
         // Note: the coordinates for each layout are "random". i.e.
         // they will not make an actual tree. They were created to
         // make testing easier.
@@ -50,31 +38,36 @@ define(["Empress", "BPTree", "BiomTable"], function (
         var treeData = [
             0, // this is blank since empress uses 1-based index. This
             // will be addressed with #223
-            ["1", 29, 30, 1, 2, 15, 16, 0, 0, 0],
-            ["2", 31, 32, 3, 4, 17, 18, 0, 0, 0.5],
-            ["3", 33, 34, 5, 6, 19, 20, 0, 0, 1],
-            ["internal", 35, 36, 7, 8, 21, 22, 0, 0, 0],
-            ["internal", 37, 38, 9, 10, 23, 24, 0, 0, 0],
-            ["EmpressNode6", 39, 40, 11, 12, 25, 26, 0, 0, 0],
-            ["root", 41, 42, 13, 14, 27, 28, 0, 0, 0],
+            [[0.75, 0.75, 0.75], false, true, 29, 30, 1, 2, 15, 16, 0, 0, 0],
+            [[0.75, 0.75, 0.75], false, true, 31, 32, 3, 4, 17, 18, 0, 0, 0.5],
+            [[0.75, 0.75, 0.75], false, true, 33, 34, 5, 6, 19, 20, 0, 0, 1],
+            [[0.75, 0.75, 0.75], false, true, 35, 36, 7, 8, 21, 22, 0, 0, 0],
+            [[0.75, 0.75, 0.75], false, true, 37, 38, 9, 10, 23, 24, 0, 0, 0],
+            [[0.75, 0.75, 0.75], false, true, 39, 40, 11, 12, 25, 26, 0, 0, 0],
+            [[0.75, 0.75, 0.75], false, true, 41, 42, 13, 14, 27, 28, 0, 0, 0],
         ];
         var tdToInd = {
-            name: 0,
-            x2: 1,
-            y2: 2,
-            xr: 3,
-            yr: 4,
-            xc1: 5,
-            yc1: 6,
-            xc0: 7,
-            yc0: 8,
-            angle: 9,
-            highestchildyr: 10,
-            lowestchildyr: 11,
-            arcx0: 12,
-            arcy0: 13,
-            arcstartangle: 14,
-            arcendangle: 15,
+            // all nodes
+            color: 0,
+            isColored: 1,
+            visible: 2,
+            x2: 3,
+            y2: 4,
+            xr: 5,
+            yr: 6,
+            xc1: 7,
+            yc1: 8,
+            xc0: 9,
+            yc0: 10,
+            angle: 11,
+            // all internal nodes
+            highestchildyr: 12,
+            lowestchildyr: 13,
+            // non-root internal nodes
+            arcx0: 14,
+            arcy0: 15,
+            arcstartangle: 16,
+            arcendangle: 17,
         };
 
         // data for the BiomTable object
@@ -83,7 +76,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
         // However, setting fIDs in this way is convenient b/c it means
         // the index of feature "1" is 1, of "2" is 2, etc.)
         var sIDs = ["s1", "s2", "s3", "s4", "s5", "s6", "s7"];
-        var fIDs = ["EmpressNode6", "1", "2", "3"];
+        var fIDs = [6, 1, 2, 3];
         var sID2Idx = {
             s1: 0,
             s2: 1,
@@ -94,10 +87,10 @@ define(["Empress", "BPTree", "BiomTable"], function (
             s7: 6,
         };
         var fID2Idx = {
-            EmpressNode6: 0,
-            "1": 1,
-            "2": 2,
-            "3": 3,
+            6: 0,
+            1: 1,
+            2: 2,
+            3: 3,
         };
         // See test-biom-table.js for details on this format. Briefly,
         // each inner array describes the feature indices present in a
@@ -123,13 +116,14 @@ define(["Empress", "BPTree", "BiomTable"], function (
         ];
         var featureColumns = ["f1", "f2"];
         var tipMetadata = {
-            "1": ["2", "2"],
-            "2": ["1", "2"],
-            "3": ["1", "2"],
-            EmpressNode6: ["2", "2"],
+            1: ["2", "2"],
+            2: ["1", "2"],
+            3: ["1", "2"],
+            6: ["2", "2"],
         };
         var intMetadata = {
-            internal: ["1", "1"],
+            4: ["1", "1"],
+            5: ["1", "1"],
         };
         var biom = new BiomTable(sIDs, fIDs, sID2Idx, fID2Idx, tbl, smCols, sm);
         var canvas = document.createElement("canvas");
@@ -141,12 +135,6 @@ define(["Empress", "BPTree", "BiomTable"], function (
         if (constructEmpress) {
             empress = new Empress(
                 tree,
-                treeData,
-                tdToInd,
-                nameToKeys,
-                layoutToCoordSuffix,
-                "Unrooted",
-                yrscf,
                 biom,
                 featureColumns,
                 tipMetadata,
@@ -162,9 +150,6 @@ define(["Empress", "BPTree", "BiomTable"], function (
             tree: tree,
             treeData: treeData,
             tdToInd: tdToInd,
-            nameToKeys: nameToKeys,
-            layoutToCoordSuffix: layoutToCoordSuffix,
-            yrscf: yrscf,
             biom: biom,
             fmCols: featureColumns,
             tm: tipMetadata,
@@ -173,5 +158,23 @@ define(["Empress", "BPTree", "BiomTable"], function (
         };
     }
 
-    return { getTestData: getTestData };
+    // Convert an array of numbers to an array of strings all formatted
+    // using .toFixed(4).
+    function toFixedIfy(arr) {
+        return _.map(arr, function (ele) {
+            return ele.toFixed(4);
+        });
+    }
+
+    // Given two arrays of numbers, calls toFixedIfy() on each and
+    // asserts deep equality on the results.
+    function approxDeepEqual(arr1, arr2, message) {
+        deepEqual(toFixedIfy(arr1), toFixedIfy(arr2), message);
+    }
+
+    return {
+        getTestData: getTestData,
+        toFixedIfy: toFixedIfy,
+        approxDeepEqual: approxDeepEqual,
+    };
 });

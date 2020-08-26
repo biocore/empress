@@ -32,7 +32,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 this.bpObj = new BPTree(
                     this.bpArray,
                     null,
-                    [11, 5, 1, 2, 4, 3, 6, 10, 9, 7, 8],
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                     null
                 );
 
@@ -201,11 +201,13 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
         });
 
         test("Test name/length set", function () {
-            var names = [...Array(this.bpObj.size).keys()];
+            // Note: 0 entry is blank because names uses 1-based index
+            // see https://github.com/biocore/empress/issues/311
+            var names = [0, ...Array(this.bpObj.size).keys()];
             var lengths = names.map((k) => parseInt(k));
             var resBP = new BPTree(this.bpArray, names, lengths, null);
-            for (var i = 0; i < this.bpObj.size; i++) {
-                var index = resBP.preorderselect(i + 1);
+            for (var i = 1; i <= this.bpObj.size; i++) {
+                var index = resBP.postorderselect(i);
                 equal(resBP.name(index), names[i], "Name");
                 equal(resBP.length(index), lengths[i], "Length");
             }
@@ -556,9 +558,9 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             equal(obj.b_.length, exp.length);
 
             // odds test
-            exp = [5, 0, 0, 0, 0];
+            exp = [5, 0, 0, 0];
             obj = new BPTree(exp);
-            equal(obj.b_.length, 51 + 4);
+            equal(obj.b_.length, 50 + 4);
 
             exp = [
                 5,
@@ -640,28 +642,47 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
         });
 
         test("Test findTips", function () {
-            var names = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"];
+            // Note: 0 entry is blank because names uses 1-based index
+            // see https://github.com/biocore/empress/issues/311
+            var names = [
+                "",
+                "a",
+                "b",
+                "c",
+                "d",
+                "e",
+                "f",
+                "g",
+                "h",
+                "i",
+                "j",
+                "k",
+            ];
             var resBP = new BPTree(this.bpArray, names, null, null);
 
-            // postorder positions
-            var index = [11, 5, 1, 2, 4, 3, 6, 10, 9, 7, 8];
             var intNodes = {
-                1: ["c", "d", "f"],
-                4: ["f"],
-                7: ["j", "k"],
-                8: ["j", "k"],
+                5: [1, 2, 3],
+                4: [3],
+                9: [7, 8],
+                10: [7, 8],
             };
 
             for (var node in intNodes) {
-                var i = index[node];
-                deepEqual(resBP.findTips(i), intNodes[node]);
+                deepEqual(resBP.findTips(node), intNodes[node], "node:" + node);
             }
 
             // ensure error is thrown if leaf node is passed to findTips
-            var leafNode = index[2];
+            var leafNode = 2;
             throws(function () {
                 resBP.findTips(leafNode);
             });
+        });
+
+        test("Test getNumTips", function () {
+            var expected = [undefined, 1, 1, 1, 1, 3, 1, 1, 1, 2, 2, 6];
+            for (var i = 1; i <= this.bpObj.size; i++) {
+                equal(this.bpObj.getNumTips(i), expected[i], "node " + i);
+            }
         });
 
         test("Test containsNode", function (assert) {

@@ -20,7 +20,7 @@ before_install:
   - source activate qiime2-dev
 install:
   - pip install -e .[all] --verbose
-  - npm install -g qunit-puppeteer jshint prettier
+  - npm install -g qunit-puppeteer jshint prettier@2.0.5
 script:
   - qiime dev refresh-cache
   - make test
