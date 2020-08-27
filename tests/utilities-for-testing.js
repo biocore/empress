@@ -299,10 +299,34 @@ define(["Empress", "BPTree", "BiomTable"], function (
         deepEqual(toFixedIfy(arr1), toFixedIfy(arr2), message);
     }
 
+    /**
+     * Calls .toFixed() on two numbers with a specified "digits" value and then
+     * asserts the results' equality.
+     *
+     * I already wrote something kind of like this for the JS layout tests --
+     * see the toFixedIfy() and approxDeepEqual() functions defined at the top
+     * of test-layouts-util.js as of writing. However, that branch is not
+     * merged into master yet, and this addresses a slightly simpler use case
+     * (just comparing individual numbers, not arrays of numbers). Eventually
+     * we may want to combine these functions, but this should be ok for now.
+     *
+     * @param {Number} n1
+     * @param {Number} n2
+     * @param {Number} digits Will be passed to .toFixed(). Named this way
+     *                        because the corresponding parameter in .toFixed()
+     *                        is also called "digits".
+     */
+    function approxEqual(n1, n2, digits = 4) {
+        var n1f = n1.toFixed(digits);
+        var n2f = n2.toFixed(digits);
+        equal(n1f, n2f);
+    }
+
     return {
         getTestData: getTestData,
         toFixedIfy: toFixedIfy,
         approxDeepEqual: approxDeepEqual,
+        approxEqual: approxEqual,
         getReferenceSVG: getReferenceSVG,
     };
 });

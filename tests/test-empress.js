@@ -1026,5 +1026,304 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 );
             }, /F. metadata coloring method "i'm invalid!" unrecognized./);
         });
+        test("Test _getNodeAngleInfo", function () {
+            var scope = this;
+            this.empress.updateLayout("Circular");
+            var node = this.empress._treeData[1];
+            // the halfAngleRange is 2pi / 4 (since there are 4 leaves in this
+            // test tree), or equivalently pi / 2.
+            var piover2 = Math.PI / 2;
+            var angleInfo = this.empress._getNodeAngleInfo(node, piover2);
+            equal(angleInfo.angle, 0);
+            equal(angleInfo.lowerAngle.toFixed(5), -piover2.toFixed(5));
+            equal(angleInfo.upperAngle.toFixed(5), piover2.toFixed(5));
+            equal(angleInfo.angleCos, 1);
+            equal(angleInfo.angleSin, 0);
+            equal(angleInfo.lowerAngleCos.toFixed(5), 0);
+            equal(angleInfo.lowerAngleSin.toFixed(5), -1);
+            equal(angleInfo.upperAngleCos.toFixed(5), 0);
+            equal(angleInfo.upperAngleSin.toFixed(5), 1);
+            // Test that this throws an error if the tree is not in the
+            // circular layout
+            this.empress.updateLayout("Rectangular");
+            // (Gotta escape the parens in the regex or else it breaks)
+            throws(function () {
+                scope.empress._getNodeAngleInfo(node, Math.PI / 2);
+            }, /_getNodeAngleInfo\(\) called when not in circular layout/);
+        });
+        test("Test _addCircularBarCoords", function () {
+            /**
+             * Utility function for checking that an x or y value is what it
+             * should be. See the comments later on in this test (before
+             * iterating through coords) for details on how coordinates are
+             * added in _addCircularBarCoords().
+             *
+             * The use of 200 and 100 (for the outer and inner radius,
+             * respectively) and of 0 for the node angle, pi / 2 for the
+             * half-angle range, etc. means that this function is hardcoded
+             * for the test example demonstrated here. However, this could be
+             * generalized to test _addCircularBarCoords() in more detail if
+             * desired.
+             *
+             * @param {Number} fiveTupleIdx A 0-based number indicating which
+             *                              [x, y, r, g, b] chunk in a coords
+             *                              array the input value is from.
+             * @param {Number} v A value in a coords array located at either
+             *                   the x or y position in one of those 5-tuples.
+             * @param {Boolean} isX truthy if this is supposed to be an
+             *                      x-coordinate value, falsy if this is
+             *                      supposed to be a y-coordinate value. The
+             *                      only difference this makes here is whether
+             *                      Polar -> Cartesian conversions are done
+             *                      with r*cos(theta) or r*sin(theta) (the
+             *                      former is for x, the latter is for y).
+             *
+             */
+            var checkCoordVal = function (fiveTupleIdx, v, isX) {
+                var trigFunc = isX ? Math.cos : Math.sin;
+                var piover2 = Math.PI / 2;
+                switch (fiveTupleIdx) {
+                    case 0:
+                    case 3:
+                        // tL on the lower rectangle
+                        UtilitiesForTesting.approxEqual(
+                            v,
+                            200 * trigFunc(-piover2)
+                        );
+                        break;
+                    case 1:
+                    case 7:
+                        // bL
+                        UtilitiesForTesting.approxEqual(v, 200 * trigFunc(0));
+                        break;
+                    case 2:
+                    case 5:
+                    case 8:
+                    case 11:
+                        // bR
+                        UtilitiesForTesting.approxEqual(v, 100 * trigFunc(0));
+                        break;
+                    case 4:
+                        // tR on the lower rectangle
+                        UtilitiesForTesting.approxEqual(
+                            v,
+                            100 * trigFunc(-piover2)
+                        );
+                        break;
+                    case 6:
+                    case 9:
+                        // tL on the upper rectangle
+                        UtilitiesForTesting.approxEqual(
+                            v,
+                            200 * trigFunc(piover2)
+                        );
+                        break;
+                    case 10:
+                        // tR on the upper rectangle
+                        UtilitiesForTesting.approxEqual(
+                            v,
+                            100 * trigFunc(piover2)
+                        );
+                        break;
+                    default:
+                        throw new Error(
+                            "This should never happen: index " +
+                                i +
+                                " has a floor(i / 5) value of " +
+                                floor
+                        );
+                }
+            };
+            var coords = ["preexisting thing in the array"];
+            this.empress.updateLayout("Circular");
+            var node = this.empress._treeData[1];
+            var angleInfo = this.empress._getNodeAngleInfo(node, Math.PI / 2);
+            // The [0.25, 0.5, 0.75] is the GL color we use. (Mostly chosen
+            // here so that each R/G/B value is distinct; apparently this is a
+            // weird shade of blue when you draw it.)
+            this.empress._addCircularBarCoords(coords, 100, 200, angleInfo, [
+                0.25,
+                0.5,
+                0.75,
+            ]);
+            // Each call of _addTriangleCoords() draws a rectangle with two
+            // triangles. This involves adding 6 positions to coords, and since
+            // positions take up 5 spaces in an array here (x, y, r, g, b),
+            // and since _addCircularBarCoords() creates two rectangles (four
+            // triangles), coords should contain 6*5 = 30 * 2 = 60 + 1 = 61
+            // elements. (The + 1 is for the preexisting thing in the array --
+            // it's in this test just to check that the input coords array
+            // is appended to, not overwritten.)
+            equal(coords.length, 61);
+
+            // Check the actual coordinate values.
+            // For reference, _addTriangleCoords() works by (given four
+            // "corners", tL / tR / bL / bR) adding coordinate info for two
+            // triangles:
+            //
+            //    tL--tR
+            //    | \  |
+            //    |  \ |
+            //    bL--bR
+            //
+            // The position information for these two triangles are added to
+            // coords in the following order. (This results in 6*5 = 30 values
+            // being added to coords, since each of these positions has its
+            // own x, y, r, g, b.)
+            //
+            // 1. tL -> bL -> bR
+            // 2. tL -> tR -> bR
+            //
+            // And there are two rectangles (or quadrilaterals?) being drawn
+            // in this function: one with tL and tR being on the lower angle,
+            // and one with tL and tL and tR being on the upper angle.
+            //
+            //    0     1     2
+            // 1. tL -> bL -> bR (t = lower angle)
+            //    3     4     5
+            // 2. tL -> tR -> bR (t = lower angle)
+            //    6     7     8
+            // 3. tL -> bL -> bR (t = upper angle)
+            //    9     10    11
+            // 4. tL -> tR -> bR (t = upper angle)
+            //
+            // Note that bL and bR remain consistent throughout all of the
+            // triangles drawn: these are always at the same angle as the node
+            // this bar is being drawn for.
+            //
+            // We consider "left" positions as those using the outer radius,
+            // and "right" positions as those using the inner radius.
+            // (Of course when you look at an opposite side of the circle left
+            // and right'll be switched around. We just stick to this notation
+            // here to make describing and testing this less difficult.)
+            _.each(coords, function (v, i) {
+                if (i === 0) {
+                    equal(v, "preexisting thing in the array");
+                } else {
+                    // Which group of 5 elements (x, y, r, g, b) does this
+                    // value fall in? We can figure this out by taking the
+                    // floor of i / 5. The 0th 5-tuple is tL in the lower
+                    // rectangle (covering [1, 5]), the 1th 5-tuple is bL in
+                    // the lower rectangle (covering [6, 10]), etc.
+                    // (This isn't necessary to compute for R / G / B values
+                    // since those are going to be the same at every point, but
+                    // this is needed for figuring out what the expected value
+                    // should be for an x or y value. checkCoordVal() does the
+                    // hard work in figuring that out.)
+                    var floor = Math.floor(i / 5);
+                    switch (i % 5) {
+                        case 1:
+                            // x coordinate
+                            checkCoordVal(floor, v, true);
+                            break;
+                        case 2:
+                            // y coordinate
+                            checkCoordVal(floor, v, false);
+                            break;
+                        case 3:
+                            // Red (constant)
+                            equal(v, 0.25);
+                            break;
+                        case 4:
+                            // Green (constant)
+                            equal(v, 0.5);
+                            break;
+                        case 0:
+                            // Blue (constant)
+                            // Note that although coords[0] is divisible by 5,
+                            // it shouldn't be 0.75 since it's filled in with a
+                            // preexisting value.
+                            equal(v, 0.75);
+                            break;
+                        default:
+                            throw new Error(
+                                "If this is encountered, something went " +
+                                    "very wrong."
+                            );
+                    }
+                }
+            });
+        });
+        test("Test _addRectangularBarCoords", function () {
+            var coords = [];
+            var lx = 0;
+            var rx = 1;
+            var by = 2;
+            var ty = 3;
+            var color = [0.3, 0.8, 0.9];
+            this.empress._addRectangularBarCoords(
+                coords,
+                lx,
+                rx,
+                by,
+                ty,
+                color
+            );
+            // Each point has 5 values (x, y, r, g, b) and there are 3
+            // triangles (6 points) added, so the length of coords should now
+            // be 6 * 5 = 30.
+            equal(coords.length, 30);
+            // We use a pared-down form of the iteration test used above in
+            // testing _addCircularBarCoords(). This function is simpler (it
+            // only calls _addTriangleCoords() once, so only one rectangle is
+            // added), and there isn't a preexisting element in coords, so
+            // checking things is much less involved.
+            _.each(coords, function (v, i) {
+                var floor = Math.floor(i / 5);
+                switch (i % 5) {
+                    case 0:
+                        // x coordinate
+                        // Same logic as in the circular bar coords test --
+                        // which 5-tuplet of (x, y, r, g, b) is this
+                        // x-coordinate present in? This will determine what it
+                        // SHOULD be (i.e. if this 5-tuplet is supposed to be
+                        // the "top left" of the rectangle being drawn, then
+                        // its x-coordinate should be the left x-coordinate)
+                        switch (floor) {
+                            case 0:
+                            case 1:
+                            case 3:
+                                // tL (0, 3) or bL (1)
+                                equal(v, lx);
+                                break;
+                            default:
+                                // bR (2, 5) or tR (4)
+                                equal(v, rx);
+                        }
+                        break;
+                    case 1:
+                        // y coordinate
+                        switch (floor) {
+                            case 0:
+                            case 3:
+                            case 4:
+                                // tL (0, 3) or tR (4)
+                                equal(v, ty);
+                                break;
+                            default:
+                                // bL (1) or bR (2, 5)
+                                equal(v, by);
+                        }
+                        break;
+                    case 2:
+                        // Red (constant)
+                        equal(v, 0.3);
+                        break;
+                    case 3:
+                        // Green (constant)
+                        equal(v, 0.8);
+                        break;
+                    case 4:
+                        // Blue (constant)
+                        equal(v, 0.9);
+                        break;
+                    default:
+                        throw new Error(
+                            "If this is encountered, something went " +
+                                "very wrong."
+                        );
+                }
+            });
+        });
     });
 });

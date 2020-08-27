@@ -80,7 +80,9 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
                 scope.addOptions.classList.remove("hidden");
                 scope.updateButton.classList.remove("hidden");
                 scope.enabled = true;
-                scope.empress.drawBarplots(scope.layers);
+                // We don't immediately draw barplots: see
+                // https://github.com/biocore/empress/issues/343. The user has
+                // to click "Update" first.
             } else {
                 scope.layerContainer.classList.add("hidden");
                 scope.addOptions.classList.add("hidden");
@@ -199,7 +201,7 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
     /**
      * Array containing the names of layouts compatible with barplots.
      */
-    BarplotPanel.SUPPORTED_LAYOUTS = ["Rectangular"];
+    BarplotPanel.SUPPORTED_LAYOUTS = ["Rectangular", "Circular"];
 
     return BarplotPanel;
 });
