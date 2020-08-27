@@ -63,6 +63,12 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
         // recently added
         this.layers = [];
 
+        // Incremented by 1 whenever a new layer is added. Notably, this is
+        // *not* changed when a layer is removed -- this allows us to assign
+        // each layer a guaranteed-unique number, which is useful for creating
+        // HTML elements with unique IDs where needed
+        this.numLayersCreated = 0;
+
         // Define behavior for turning barplots on/off (note that this is
         // different from the makeUnavailable() / makeAvailable() stuff -- the
         // barplot checkbox and the other things here are all contained within
@@ -103,12 +109,14 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
      */
     BarplotPanel.prototype.addLayer = function () {
         var layerNum = this.layers.length + 1;
+        this.numLayersCreated++;
         var newLayer = new BarplotLayer(
             this.fmCols,
             this.smCols,
             this,
             this.layerContainer,
-            layerNum
+            layerNum,
+            this.numLayersCreated
         );
         this.layers.push(newLayer);
     };

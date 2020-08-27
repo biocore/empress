@@ -64,11 +64,9 @@
       </div>
     </div>
 
-    <!-- color keys -->
+    <!-- Tree coloring legend -->
     <div id="legend-panel" class="unselectable-text">
-      <div id="tip-color-key" class="legend hidden" disabled="true"></div>
-      <div id="node-color-key" class="legend hidden" disabled="true"></div>
-      <div id="clade-color-key" class="legend hidden" disabled="true"></div>
+      <div id="legend-main" class="legend hidden"></div>
     </div>
   </body>
 
@@ -147,9 +145,7 @@
         );
         empress.initialize();
 
-        var legend = new Legend(document.getElementById('tip-color-key'),
-                                document.getElementById('node-color-key'),
-                                document.getElementById('clade-color-key'));
+        var legend = new Legend(document.getElementById('legend-main'));
 
         // The side menu
         var sPanel = new SidePanel(document.getElementById('side-panel'),
