@@ -285,19 +285,33 @@ define(["Empress", "BPTree", "BiomTable"], function (
         );
     }
 
-    // Convert an array of numbers to an array of strings all formatted
-    // using .toFixed(4).
+    /**
+     * Converts a number to a fixed-precision string.
+     *
+     * This just calls .toFixed(4) without doing any extra work. The reason
+     * it's its own function here is so that we can adjust the precision used
+     * easily in the future if desired.
+     *
+     * @param {Number} num
+     * @return {String} numStr
+     */
     function stringify(num) {
         return num.toFixed(4);
     }
 
+    /**
+     * Calls stringify() on each number in an array of numbers.
+     *
+     * @param {Array} arr Array; each element should be a Number.
+     * @return {Array} Array where the i-th element is equal to
+     *                 stringify(arr[i]).
+     */
     function stringifyMulti(arr) {
         return _.map(arr, stringify);
     }
 
     /**
-     * Calls .toFixed() on two numbers with a specified "digits" value and then
-     * asserts the results' equality.
+     * Calls stringify() on two numbers and calls deepEqual() on the result.
      *
      * @param {Number} n1
      * @param {Number} n2
@@ -307,8 +321,14 @@ define(["Empress", "BPTree", "BiomTable"], function (
         deepEqual(stringify(n1), stringify(n2), message);
     }
 
-    // Given two arrays of numbers, calls stringify() on each and
-    // asserts deep equality on the results.
+    /**
+     * Given two arrays of numbers, calls stringify() on each and
+     * then calls deepEqual() on the resulting two arrays of strings.
+     *
+     * @param {Array} arr1
+     * @param {Array} arr2
+     * @param {String} message (optional)
+     */
     function approxDeepEqualMulti(arr1, arr2, message) {
         deepEqual(stringifyMulti(arr1), stringifyMulti(arr2), message);
     }
