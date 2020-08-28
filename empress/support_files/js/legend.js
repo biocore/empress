@@ -168,6 +168,19 @@ define(["underscore", "util"], function (_, util) {
         this.unhide();
     };
 
+    /**
+     * Displays information in the legend about barplot length scaling.
+     *
+     * This just shows a minimum and maximum value. It's not very fancy yet!
+     *
+     * @param {String} name Text to show in the legend title.
+     * @param {Number} minVal Number to show next to a "Minimum" header.
+     *                        This should be the minimum value in the field
+     *                        that was used to perform length scaling.
+     * @param {Number} maxVal Number to show next to a "Maximum" header.
+     *                        This should be the maximum value in the field
+     *                        that was used to perform length scaling.
+     */
     Legend.prototype.addLengthKey = function (name, minVal, maxVal) {
         this.clear();
         this.addTitle(name);

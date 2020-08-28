@@ -642,6 +642,20 @@ define([
         this.colorLegend.clear();
     };
 
+    /**
+     * Populates the legend with information about the current length scaling
+     * in use.
+     *
+     * The circumstances in which this function is called are similar to those
+     * of populateColorLegend().
+     *
+     * @param {Number} minVal Minimum numeric value of the field used for
+     *                        length scaling.
+     * @param {Number} maxVal Maximum numeric value of the field used for
+     *                        length scaling.
+     * @throws {Error} If the current barplotType is not "fm". (Length scaling
+     *                 isn't supported for sample metadata barplots yet.)
+     */
     BarplotLayer.prototype.populateLengthLegend = function (minVal, maxVal) {
         var title;
         if (this.barplotType === "fm") {
@@ -655,6 +669,17 @@ define([
         }
     };
 
+    /**
+     * Clears this layer's length legend.
+     *
+     * This is used when no length scaling is used for this layer -- this will
+     * (currently) always be the case for a sample metadata barplot layer.
+     *
+     * The circumstances in which this function is called are similar to those
+     * of clearColorLegend() (so, for example, this is called for each layer
+     * every time the barplots are updated; it's an inefficiency, but probably
+     * not a large one).
+     */
     BarplotLayer.prototype.clearLengthLegend = function () {
         this.lengthLegend.clear();
     };
