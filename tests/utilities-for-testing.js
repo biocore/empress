@@ -287,46 +287,36 @@ define(["Empress", "BPTree", "BiomTable"], function (
 
     // Convert an array of numbers to an array of strings all formatted
     // using .toFixed(4).
-    function toFixedIfy(arr) {
-        return _.map(arr, function (ele) {
-            return ele.toFixed(4);
-        });
+    function stringify(num) {
+        return num.toFixed(4);
     }
 
-    // Given two arrays of numbers, calls toFixedIfy() on each and
-    // asserts deep equality on the results.
-    function approxDeepEqual(arr1, arr2, message) {
-        deepEqual(toFixedIfy(arr1), toFixedIfy(arr2), message);
+    function stringifyMulti(arr) {
+        return _.map(arr, stringify);
     }
 
     /**
      * Calls .toFixed() on two numbers with a specified "digits" value and then
      * asserts the results' equality.
      *
-     * I already wrote something kind of like this for the JS layout tests --
-     * see the toFixedIfy() and approxDeepEqual() functions defined at the top
-     * of test-layouts-util.js as of writing. However, that branch is not
-     * merged into master yet, and this addresses a slightly simpler use case
-     * (just comparing individual numbers, not arrays of numbers). Eventually
-     * we may want to combine these functions, but this should be ok for now.
-     *
      * @param {Number} n1
      * @param {Number} n2
-     * @param {Number} digits Will be passed to .toFixed(). Named this way
-     *                        because the corresponding parameter in .toFixed()
-     *                        is also called "digits".
+     * @param {String} message (optional)
      */
-    function approxEqual(n1, n2, digits = 4) {
-        var n1f = n1.toFixed(digits);
-        var n2f = n2.toFixed(digits);
-        equal(n1f, n2f);
+    function approxDeepEqual(n1, n2, message) {
+        deepEqual(stringify(n1), stringify(n2), message);
+    }
+
+    // Given two arrays of numbers, calls stringify() on each and
+    // asserts deep equality on the results.
+    function approxDeepEqualMulti(arr1, arr2, message) {
+        deepEqual(stringifyMulti(arr1), stringifyMulti(arr2), message);
     }
 
     return {
         getTestData: getTestData,
-        toFixedIfy: toFixedIfy,
         approxDeepEqual: approxDeepEqual,
-        approxEqual: approxEqual,
+        approxDeepEqualMulti: approxDeepEqualMulti,
         getReferenceSVG: getReferenceSVG,
     };
 });

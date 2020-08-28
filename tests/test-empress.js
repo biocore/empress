@@ -1086,7 +1086,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                     case 0:
                     case 3:
                         // tL on the lower rectangle
-                        UtilitiesForTesting.approxEqual(
+                        UtilitiesForTesting.approxDeepEqual(
                             v,
                             200 * trigFunc(-piover2)
                         );
@@ -1094,18 +1094,24 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                     case 1:
                     case 7:
                         // bL
-                        UtilitiesForTesting.approxEqual(v, 200 * trigFunc(0));
+                        UtilitiesForTesting.approxDeepEqual(
+                            v,
+                            200 * trigFunc(0)
+                        );
                         break;
                     case 2:
                     case 5:
                     case 8:
                     case 11:
                         // bR
-                        UtilitiesForTesting.approxEqual(v, 100 * trigFunc(0));
+                        UtilitiesForTesting.approxDeepEqual(
+                            v,
+                            100 * trigFunc(0)
+                        );
                         break;
                     case 4:
                         // tR on the lower rectangle
-                        UtilitiesForTesting.approxEqual(
+                        UtilitiesForTesting.approxDeepEqual(
                             v,
                             100 * trigFunc(-piover2)
                         );
@@ -1113,14 +1119,14 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                     case 6:
                     case 9:
                         // tL on the upper rectangle
-                        UtilitiesForTesting.approxEqual(
+                        UtilitiesForTesting.approxDeepEqual(
                             v,
                             200 * trigFunc(piover2)
                         );
                         break;
                     case 10:
                         // tR on the upper rectangle
-                        UtilitiesForTesting.approxEqual(
+                        UtilitiesForTesting.approxDeepEqual(
                             v,
                             100 * trigFunc(piover2)
                         );
