@@ -312,7 +312,7 @@ require(["jquery", "underscore", "util"], function ($, _, util) {
                 1,
                 100,
                 "testField"
-            );
+            )[0];
             deepEqual(_.keys(fm2length).length, 4);
             deepEqual(fm2length["1"], 0);
             deepEqual(fm2length["2"], 1 / 3);
@@ -326,14 +326,14 @@ require(["jquery", "underscore", "util"], function ($, _, util) {
                 1,
                 100,
                 "testField"
-            );
+            )[0];
             deepEqual(_.keys(fm2length).length, 4);
             deepEqual(fm2length["-4"], 0);
             deepEqual(fm2length["-3"], 1 / 3);
             deepEqual(fm2length["-2"], 2 / 3);
             deepEqual(fm2length["-1"], 1);
             // Check that mixed negative / positive values are handled normally
-            var o = util.assignBarplotLengths(["1", "0", "-1"], 1, 5, 1, "t");
+            var o = util.assignBarplotLengths(["1", "0", "-1"], 1, 5, 1, "t")[0];
             deepEqual(_.keys(o).length, 3);
             deepEqual(o["-1"], 1);
             deepEqual(o["0"], 3);
