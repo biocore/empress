@@ -913,11 +913,9 @@ define([
                 upperAngleSin: upperAngleSin,
             };
         } else {
-            // When layouts are ported to JS in the future, catching this error
-            // will be more important -- since then the node's angle
-            // attribute won't even be accessible, and this function would
-            // likely just fail silently otherwise (returning an Object with a
-            // bunch of undefined / NaN values)
+            // We need to throw this error, because if we're not in the
+            // rectangular layout then nodes will not have a meaningful "angle"
+            // attribute.
             throw new Error(
                 "_getNodeAngleInfo() called when not in circular layout"
             );
