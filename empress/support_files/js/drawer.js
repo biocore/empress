@@ -113,17 +113,21 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         s.isSingle = c.getUniformLocation(s, "isSingle");
         s.pointSize = c.getUniformLocation(s, "pointSize");
 
+        // We are using 
+        //
+        //
+
         // buffer object for tree coordinates
-        s.treeVertBuff = c.createBuffer();
-        this.treeVertSize = 0;
+        s.treeCoordBuff = c.createBuffer();
+        this.treeCoordSize = 0;
 
         // buffer object to store tree color
-        s.colorTreeBuff = c.createBuffer()
-        this.colorTreeSize = 0;
+        s.treeColorBuff = c.createBuffer()
+        this.treeColorSize = 0;
 
-        // element object
-        s.treeElements = c.createBuffer();
-        this.treeElmSize = 0;
+        // the index buffer for treeCoorBuff and treeColor buffer
+        s.treeIndexBuff = c.createBuffer();
+        this.treeIndexSize = 0;
 
         // buffer object used to thicken node lines
         s.thickNodeBuff = c.createBuffer();
@@ -345,8 +349,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      */
     Drawer.prototype.loadTreeBuff = function (data) {
         data = new Float32Array(data);
-        this.treeVertSize = data.length / 5;
-        this.fillBufferData_(this.sProg_.treeVertBuff, data);
+        this.treeCoordSize = data.length / 5;
+        this.fillBufferData_(this.sProg_.treeCoordBuff, data);
     };
 
     /**
@@ -356,8 +360,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      */
     Drawer.prototype.loadTreeCoordsBuff = function (data) {
         data = new Float32Array(data);
-        this.treeVertSize = data.length / 2;
-        this.fillBufferData_(this.sProg_.treeVertBuff, data);
+        this.treeCoordSize = data.length / 2;
+        this.fillBufferData_(this.sProg_.treeCoordBuff, data);
     };
 
     /**
@@ -367,8 +371,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      */
     Drawer.prototype.loadTreeColorBuff = function (data) {
         data = new Float32Array(data);
-        this.colorTreeSize = data.length / 3;
-        this.fillBufferData_(this.sProg_.colorTreeBuff, data);
+        this.treeColorSize = data.length / 3;
+        this.fillBufferData_(this.sProg_.treeColorBuff, data);
     };
 
     /**
@@ -377,8 +381,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @param {Array} data The coordinate and color data to fill tree buffer
      */
     Drawer.prototype.loadTreeElemBuff = function (data) {
-        this.treeElmSize = data.length;
-        this.fillElemData_(this.sProg_.treeElements, data);
+        this.treeIndexSize = data.length;
+        this.fillElemData_(this.sProg_.treeIndexBuff, data);
     };
 
     /**
@@ -484,12 +488,13 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 
         c.uniform1i(s.isSingle, 0);
-        // this.bindBuffer(s.treeVertBuff);
-        // c.drawArrays(c.LINES, 0, this.treeVertSize);
-        this.bindElemBuffer(s.treeElements);
-        this.bindCoordBuffer(s.treeVertBuff);
-        this.bindColorBuffer(s.colorTreeBuff);
-        c.drawElements(c.LINES, this.treeElmSize, c.UNSIGNED_INT, 0);
+        // this.bindBuffer(s.treeCoordBuff);
+        // c.drawArrays(c.LINES, 0, this.treeCoordSize);
+        // this.bindElemBuffer(s.treeIndexBuff);
+        this.bindCoordBuffer(s.treeCoordBuff);
+        this.bindColorBuffer(s.treeColorBuff);
+        // c.drawElements(c.LINES, this.treeIndexSize, c.UNSIGNED_INT, 0);
+        c.drawArrays(c.LINES, 0, this.treeCoordSize);
 
         this.bindBuffer(s.thickNodeBuff);
         c.drawArrays(c.TRIANGLES, 0, this.thickNodeSize);
