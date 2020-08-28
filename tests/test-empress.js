@@ -1029,7 +1029,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
         test("Test _getNodeAngleInfo", function () {
             var scope = this;
             this.empress.updateLayout("Circular");
-            var node = this.empress._treeData[1];
+            var node = 1;
             // the halfAngleRange is 2pi / 4 (since there are 4 leaves in this
             // test tree), or equivalently pi / 2.
             var piover2 = Math.PI / 2;
@@ -1142,7 +1142,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             };
             var coords = ["preexisting thing in the array"];
             this.empress.updateLayout("Circular");
-            var node = this.empress._treeData[1];
+            var node = 1;
             var angleInfo = this.empress._getNodeAngleInfo(node, Math.PI / 2);
             // The [0.25, 0.5, 0.75] is the GL color we use. (Mostly chosen
             // here so that each R/G/B value is distinct; apparently this is a
