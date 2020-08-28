@@ -1371,29 +1371,19 @@ define([
 
         _.each(layers, function (layer) {
             var layerInfo;
+            // Normally I'd just set addLayerFunc as a reference to
+            // scope.addSMBarplotLayerCoords (or ...FM...), but that apparently
+            // breaks references to "this". Using func names is a workaround.
+            var addLayerFunc;
             if (layer.barplotType === "sm") {
-                layerInfo = scope.addSMBarplotLayerCoords(
-                    layer,
-                    coords,
-                    prevLayerMaxD
-                );
-                // Currently, length-scaling is only supported for feature
-                // metadata barplots; however, it'd totally be possible to
-                // extend this to sample metadata barplots in the future (see
-                // e.g. https://github.com/biocore/empress/issues/353). If/when
-                // this is supported, making this work will just be a matter of
-                // having addSMBarplotLayerCoords() return an extra thing.
-                lengthLegendsToPopulate.push(null);
+                addLayerFunc = "addSMBarplotLayerCoords";
             } else {
-                layerInfo = scope.addFMBarplotLayerCoords(
-                    layer,
-                    coords,
-                    prevLayerMaxD
-                );
-                lengthLegendsToPopulate.push(layerInfo[2]);
+                addLayerFunc = "addFMBarplotLayerCoords";
             }
+            layerInfo = scope[addLayerFunc](layer, coords, prevLayerMaxD);
             prevLayerMaxD = layerInfo[0];
             colorLegendsToPopulate.push(layerInfo[1]);
+            lengthLegendsToPopulate.push(layerInfo[2]);
         });
         // NOTE that we purposefuly don't clear the barplot buffer until we
         // know all of the barplots are valid. If we were to call
@@ -1437,7 +1427,7 @@ define([
      * @param {Number} prevLayerMaxX The leftmost x-coordinate to use for each
      *                               bar within this layer.
      *
-     * @return {Array} layerInfo An array containing two elements:
+     * @return {Array} layerInfo An array containing three elements:
      *                           1. The rightmost x-coordinate present within
      *                              this layer (this should really just be
      *                              prevLayerMaxX + layer.lengthSM, since all
@@ -1445,6 +1435,11 @@ define([
      *                              barplot have the same length)
      *                           2. The Colorer used to assign colors to sample
      *                              metadata values
+     *                           3. Just null (in the future, this could be
+     *                              changed to provide length-scaling legend
+     *                              information, as is done in
+     *                              addFMBarplotLayerCoords(); however for now
+     *                              that isn't supported.)
      */
     Empress.prototype.addSMBarplotLayerCoords = function (
         layer,
@@ -1560,8 +1555,17 @@ define([
             }
         });
         // The bar lengths are identical for all tips in this layer, so no need
-        // to do anything fancy to compute the maximum displacement.
-        return [prevLayerMaxD + layer.lengthSM, colorer];
+        // to do anything fancy to compute the maximum displacement. (So the
+        // max displacement is just the initial max displacement plus the
+        // length for each bar in this layer.)
+        //
+        // null is the final element in this list because, as mentioned above,
+        // length-scaling is currently not supported for sample metadata
+        // barplots. The null indicates that no length legend should be drawn
+        // for this layer. When we get around to supporting scaling sample
+        // metadata barplots by length (see issue #353 on GitHub), we'll just
+        // need to replace the null.
+        return [prevLayerMaxD + layer.lengthSM, colorer, null];
     };
 
     /**
@@ -1573,7 +1577,7 @@ define([
      * @param {Number} prevLayerMaxX The leftmost x-coordinate to use for each
      *                               bar within this layer.
      *
-     * @return {Array} layerInfo An array containing two elements:
+     * @return {Array} layerInfo An array containing three elements:
      *                           1. The rightmost x-coordinate present within
      *                              this layer
      *                           2. The Colorer used to assign colors to
@@ -1582,6 +1586,16 @@ define([
      *                              then this will just be null, indicating
      *                              that no color legend should be shown for
      *                              this layer.)
+     *                           3. If layer.scaleLengthByFM is truthy, an
+     *                              array containing two elements:
+     *                              1. the minimum value in the layer's
+     *                                 layer.scaleLengthByFMField field.
+     *                              2. the maximum value in the layer's
+     *                                 layer.scaleLengthByFMField field.
+     *                              If layer.scaleLengthByFM is falsy, then
+     *                              this will just be null, indicating that no
+     *                              length legend should be shown for this
+     *                              layer.
      *
      * @throws {Error} If continuous color or length scaling is requested, but
      *                 the feature metadata field used for either scaling
