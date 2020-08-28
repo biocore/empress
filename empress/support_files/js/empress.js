@@ -1276,6 +1276,55 @@ define([
     };
 
     /**
+     * Given a node and an arbitrary number, returns the maximum of the node's
+     * x-coordinate and the arbitrary number.
+     *
+     * Assumes that the tree is in the Rectangular layout.
+     *
+     * @param {Number} node Postorder position of a node in the tree
+     * @param {Number} m Arbitrary number
+     *
+     * @return {Number} maximum of (node's x-coordinate, m)
+     */
+    Empress.prototype.getMaxOfXAndNumber = function (node, m) {
+        var x = this.getX(node);
+        return Math.max(x, m);
+    };
+
+    /**
+     * Given a node and an arbitrary number, returns the maximum of the node's
+     * radius (its distance from (0, 0)) in the circular layout and the
+     * arbitrary number.
+     *
+     * Assumes that the tree is in the Circular layout.
+     *
+     * NOTE that by radius we do not mean "the size of the node's circle"
+     * -- instead we're referring to part of its polar coordinate position
+     * (since those can be written as (radius, theta)).
+     *
+     * @param {Number} node Postorder position of a node in the tree
+     * @param {Number} m Arbitrary number
+     *
+     * @return {Number} maximum of (node's radius, m)
+     */
+    Empress.prototype.getMaxOfRadiusAndNumber = function (node, m) {
+        // We don't currently store nodes' radii, so we figure this
+        // out by looking at the node's x-coordinate and angle.
+        // Since x-coordinates are equal to r*cos(theta), we can
+        // divide a given node's x-coordinate by cos(theta) to get
+        // its radius. I know we can get the same result by
+        // computing sqrt(x^2 + y^2) (a.k.a. distance from the
+        // root at (0, 0)), but this seems faster. (There is still
+        // probably an even faster way to do this though; maybe a
+        // preorder traversal through the tree to see which tip has
+        // the largest cumulative length, then scale that to the
+        // radius value in the layout? Not sure if this step is a
+        // bottleneck worth spending time working on, though.)
+        var r = this.getX(node) / Math.cos(this.getNodeInfo(node, "angle"));
+        return Math.max(r, m);
+    };
+
+    /**
      * Clears the barplot buffer and re-draws the tree.
      *
      * This is useful for immediately disabling barplots, for example if the
@@ -1315,35 +1364,17 @@ define([
         // to the root node we can start drawing barplots without crossing over
         // any nodes.
         var maxD = -Infinity;
+        var compFunc;
+        if (this._currentLayout === "Rectangular") {
+            compFunc = "getMaxOfXAndNumber";
+        } else if (this._currentLayout === "Circular") {
+            compFunc = "getMaxOfRadiusAndNumber";
+        } else {
+            throw new Error("Unsupported barplot layout");
+        }
         for (var node = 1; node < this._tree.size; node++) {
             if (this._tree.isleaf(this._tree.postorderselect(node))) {
-                if (this._currentLayout === "Rectangular") {
-                    var x = this.getX(node);
-                    if (x > maxD) {
-                        maxD = x;
-                    }
-                } else if (this._currentLayout === "Circular") {
-                    // We don't currently store nodes' radii, so we figure this
-                    // out by looking at the node's x-coordinate and angle.
-                    // Since x-coordinates are equal to r*cos(theta), we can
-                    // divide a given node's x-coordinate by cos(theta) to get
-                    // its radius. I know we can get the same result by
-                    // computing sqrt(x^2 + y^2) (a.k.a. distance from the
-                    // root at (0, 0)), but this seems faster. (There is still
-                    // probably an even faster way to do this though; maybe a
-                    // preorder traversal through the tree to see which tip has
-                    // the largest cumulative length, then scale that to the
-                    // radius value in the layout? Not sure if this step is a
-                    // bottleneck worth spending time working on, though.)
-                    var r =
-                        this.getX(node) /
-                        Math.cos(this.getNodeInfo(node, "angle"));
-                    if (r > maxD) {
-                        maxD = r;
-                    }
-                } else {
-                    throw new Error("Unsupported barplot layout");
-                }
+                maxD = this[compFunc](node, maxD);
             }
         }
         // Add on a gap between the rightmost node and the leftmost point of
