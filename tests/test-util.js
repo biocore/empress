@@ -335,8 +335,8 @@ require(["jquery", "underscore", "UtilitiesForTesting", "util"], function (
             deepEqual(minVal, 1, "Minimum value correct");
 
             // The third is maxVal, which is like minVal but the maximum
-            var minVal = lengthInfo[2];
-            deepEqual(minVal, 4, "Maximum value correct");
+            var maxVal = lengthInfo[2];
+            deepEqual(maxVal, 4, "Maximum value correct");
         });
         test("Test assignBarplotLengths (negative values)", function () {
             var lengthInfo = util.assignBarplotLengths(
