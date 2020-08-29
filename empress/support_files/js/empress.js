@@ -209,8 +209,7 @@ define([
          * this is the rightmost x-coordinate; for the circular layout, this is
          * the maximum distance from the root of the tree (a.k.a. the maximum
          * radius in polar coordinates). For layouts which do not support
-         * barplots (e.g. the unrooted layout), the value of this can be
-         * arbitrary.
+         * barplots (e.g. the unrooted layout), the value of this is arbitrary.
          * Used for determining the "closest-to-the-root" point at which we can
          * start drawing barplots.
          * @private
