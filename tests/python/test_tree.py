@@ -7,7 +7,6 @@
 # ----------------------------------------------------------------------------
 
 import unittest
-from skbio import TreeNode
 from bp import parse_newick
 from empress.tree import TreeFormatWarning, validate_tree
 
