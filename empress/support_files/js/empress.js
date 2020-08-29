@@ -1450,13 +1450,15 @@ define([
      * @param {BarplotLayer} layer The layer to be drawn.
      * @param {Array} coords The array to which the coordinates for this layer
      *                       will be added.
-     * @param {Number} prevLayerMaxX The leftmost x-coordinate to use for each
-     *                               bar within this layer.
+     * @param {Number} prevLayerMaxD The "displacement" (either in
+     *                               x-coordinates, or in radius coordinates) to
+     *                               use as the starting point for drawing this
+     *                               layer's bars.
      *
      * @return {Array} layerInfo An array containing three elements:
-     *                           1. The rightmost x-coordinate present within
+     *                           1. The maximum displacement of a bar within
      *                              this layer (this should really just be
-     *                              prevLayerMaxX + layer.lengthSM, since all
+     *                              prevLayerMaxD + layer.lengthSM, since all
      *                              tips' bars in a stacked sample metadata
      *                              barplot have the same length)
      *                           2. The Colorer used to assign colors to sample
@@ -1503,9 +1505,10 @@ define([
         // (We implicitly ignore [and don't draw anything for] tips that
         // *aren't* in the BIOM table.)
         _.each(feature2freqs, function (freqs, node) {
-            // This variable defines the left x-coordinate for drawing the next
-            // "section" of the stacked barplot. It'll be updated as we iterate
-            // through the unique values in this sample metadata field below.
+            // This variable defines the left x-coordinate (or inner radius)
+            // for drawing the next "section" of the stacked barplot.
+            // It'll be updated as we iterate through the unique values in this
+            // sample metadata field below.
             var prevSectionMaxD = prevLayerMaxD;
 
             // Compute y-coordinate / angle information up front. Doing this
@@ -1600,11 +1603,13 @@ define([
      * @param {BarplotLayer} layer The layer to be drawn.
      * @param {Array} coords The array to which the coordinates for this layer
      *                       will be added.
-     * @param {Number} prevLayerMaxX The leftmost x-coordinate to use for each
-     *                               bar within this layer.
+     * @param {Number} prevLayerMaxD The "displacement" (either in
+     *                               x-coordinates, or in radius coordinates) to
+     *                               use as the starting point for drawing this
+     *                               layer's bars.
      *
      * @return {Array} layerInfo An array containing three elements:
-     *                           1. The rightmost x-coordinate present within
+     *                           1. The maximum displacement of a bar within
      *                              this layer
      *                           2. The Colorer used to assign colors to
      *                              feature metadata values, if layer.colorByFM
@@ -1771,12 +1776,13 @@ define([
                 } else {
                     length = layer.defaultLength;
                 }
+
                 // Update maxD if needed
-                if (length + prevLayerMaxD > maxD) {
-                    maxD = length + prevLayerMaxD;
+                var thisLayerMaxD = prevLayerMaxD + length;
+                if (thisLayerMaxD > maxD) {
+                    maxD = thisLayerMaxD;
                 }
 
-                var thisLayerMaxD = prevLayerMaxD + length;
                 // Finally, add this tip's bar data to to an array of data
                 // describing the bars to draw
                 if (this._currentLayout === "Rectangular") {
