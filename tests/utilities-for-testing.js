@@ -290,7 +290,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
      *
      * @param {Number} n1
      * @param {Number} n2
-     * @param {String} message (defaults to undefined)
+     * @param {String} message
      * @param {Number} epsilon In order for this test to not fail, the
      *                         absolute difference between n1 and n2 must be
      *                         less than this value. Defaults to 1e-5.
@@ -311,17 +311,12 @@ define(["Empress", "BPTree", "BiomTable"], function (
      *
      * @param {Array} arr1
      * @param {Array} arr2
-     * @param {String} message (optional)
+     * @param {String} message
      * @param {Number} epsilon In order for this test to not fail, the
      *                         absolute difference between n1 and n2 must be
      *                         less than this value. Defaults to 1e-5.
      */
-    function approxDeepEqualMulti(
-        arr1,
-        arr2,
-        message,
-        epsilon = 1e-5
-    ) {
+    function approxDeepEqualMulti(arr1, arr2, message, epsilon = 1e-5) {
         deepEqual(arr1.length, arr2.length);
         for (var i = 0; i < arr1.length; i++) {
             approxDeepEqual(arr1[i], arr2[i], message, epsilon);
