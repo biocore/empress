@@ -201,7 +201,8 @@ require([
             UtilitiesForTesting.approxDeepEqualMulti(
                 obs.y0,
                 [0, 0, 1.7321, 0, 0, 0],
-                "y0"
+                "y0",
+                1e-4
             );
 
             // Check ending positions.
@@ -215,7 +216,8 @@ require([
             UtilitiesForTesting.approxDeepEqualMulti(
                 obs.y1,
                 [0, 0, 4.3301, 1.7321, -0.866, 0],
-                "y1"
+                "y1",
+                1e-4
             );
 
             // Check angles. There are just 3 tips so they get assigned
@@ -243,7 +245,8 @@ require([
             UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcy0,
                 [0, 0, 0, 1.7321, 0, 0],
-                "arcy0"
+                "arcy0",
+                1e-4
             );
             // Check arc start and end angles. We've defined the "start" angle
             // to be the largest angle of an internal node's children, and the
@@ -422,7 +425,8 @@ require([
             UtilitiesForTesting.approxDeepEqualMulti(
                 obs.y1,
                 [0, 0, -1.7321, -0.866, 0.866, 0],
-                "y1"
+                "y1",
+                1e-4
             );
 
             // Check angles. Now things start at 3pi.
@@ -452,7 +456,8 @@ require([
             UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcy0,
                 [0, 0, 0, -0.866, 0, 0],
-                "arcy0"
+                "arcy0",
+                1e-4
             );
             // Check arc start and end (largest and smallest) angles.
             UtilitiesForTesting.approxDeepEqualMulti(

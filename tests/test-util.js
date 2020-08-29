@@ -389,10 +389,10 @@ require(["jquery", "underscore", "UtilitiesForTesting", "util"], function (
             // between -4 and 123. (The expected lengths should look, well,
             // expected -- they're all mostly short since 123 is an outlier.)
             UtilitiesForTesting.approxDeepEqual(fm2length["-4"], 0);
-            UtilitiesForTesting.approxDeepEqual(fm2length["0"], 3.1496);
-            UtilitiesForTesting.approxDeepEqual(fm2length["0.5"], 3.5433);
-            UtilitiesForTesting.approxDeepEqual(fm2length["4"], 6.2992);
-            UtilitiesForTesting.approxDeepEqual(fm2length["9"], 10.2362);
+            UtilitiesForTesting.approxDeepEqual(fm2length["0"], 3.149606299);
+            UtilitiesForTesting.approxDeepEqual(fm2length["0.5"], 3.543307087);
+            UtilitiesForTesting.approxDeepEqual(fm2length["4"], 6.299212598);
+            UtilitiesForTesting.approxDeepEqual(fm2length["9"], 10.23622047);
             UtilitiesForTesting.approxDeepEqual(fm2length["123"], 100);
             deepEqual(lengthInfo[1], -4);
             deepEqual(lengthInfo[2], 123);

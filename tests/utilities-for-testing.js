@@ -286,51 +286,46 @@ define(["Empress", "BPTree", "BiomTable"], function (
     }
 
     /**
-     * Converts a number to a fixed-precision string.
-     *
-     * This just calls .toFixed(4) without doing any extra work. The reason
-     * it's its own function here is so that we can adjust the precision used
-     * easily in the future if desired.
-     *
-     * @param {Number} num
-     * @return {String} numStr
-     */
-    function stringify(num) {
-        return num.toFixed(4);
-    }
-
-    /**
-     * Calls stringify() on each number in an array of numbers.
-     *
-     * @param {Array} arr Array; each element should be a Number.
-     * @return {Array} Array where the i-th element is equal to
-     *                 stringify(arr[i]).
-     */
-    function stringifyMulti(arr) {
-        return _.map(arr, stringify);
-    }
-
-    /**
-     * Calls stringify() on two numbers and calls deepEqual() on the result.
+     * Checks that |n2 - n1| is less than epsilon.
      *
      * @param {Number} n1
      * @param {Number} n2
-     * @param {String} message (optional)
+     * @param {String} message (defaults to undefined)
+     * @param {Number} epsilon In order for this test to not fail, the
+     *                         absolute difference between n1 and n2 must be
+     *                         less than this value. Defaults to 1e-5.
      */
-    function approxDeepEqual(n1, n2, message) {
-        deepEqual(stringify(n1), stringify(n2), message);
+    function approxDeepEqual(n1, n2, message, epsilon = 1e-5) {
+        var diff = Math.abs(n2 - n1);
+        // For debugging: uncomment to log what the difference was
+        // if (diff >= epsilon) {
+        //     console.log(diff, epsilon, message);
+        // }
+        ok(diff < epsilon, message);
     }
 
     /**
-     * Given two arrays of numbers, calls stringify() on each and
-     * then calls deepEqual() on the resulting two arrays of strings.
+     * Given two arrays of numbers, checks that the arrays are of equal length
+     * and that (for every position i in the arrays) the i-th number within
+     * both arrays are approximately equal.
      *
      * @param {Array} arr1
      * @param {Array} arr2
      * @param {String} message (optional)
+     * @param {Number} epsilon In order for this test to not fail, the
+     *                         absolute difference between n1 and n2 must be
+     *                         less than this value. Defaults to 1e-5.
      */
-    function approxDeepEqualMulti(arr1, arr2, message) {
-        deepEqual(stringifyMulti(arr1), stringifyMulti(arr2), message);
+    function approxDeepEqualMulti(
+        arr1,
+        arr2,
+        message,
+        epsilon = 1e-5
+    ) {
+        deepEqual(arr1.length, arr2.length);
+        for (var i = 0; i < arr1.length; i++) {
+            approxDeepEqual(arr1[i], arr2[i], message, epsilon);
+        }
     }
 
     return {
