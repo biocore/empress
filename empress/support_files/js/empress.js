@@ -1371,7 +1371,7 @@ define([
             }
         }
         this._maxDisplacement = maxD;
-    }
+    };
 
     /**
      * Clears the barplot buffer and re-draws the tree.
