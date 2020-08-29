@@ -204,6 +204,20 @@ define([
         this._yrscf = null;
 
         /**
+         * @type {Number}
+         * For the rectangular layout (assuming no rotation has been done),
+         * this is the rightmost x-coordinate; for the circular layout, this is
+         * the maximum distance from the root of the tree (a.k.a. the maximum
+         * radius in polar coordinates). For layouts which do not support
+         * barplots (e.g. the unrooted layout), the value of this can be
+         * arbitrary.
+         * Used for determining the "closest-to-the-root" point at which we can
+         * start drawing barplots.
+         * @private
+         */
+        this._maxDisplacement = null;
+
+        /**
          * @type{Boolean}
          * Indicates whether or not barplots are currently drawn.
          * @private
@@ -297,7 +311,9 @@ define([
     }
 
     /**
-     * Computes the current tree layout and fills _treeData
+     * Computes the current tree layout and fills _treeData.
+     *
+     * Also updates this._maxDisplacement.
      */
     Empress.prototype.getLayoutInfo = function () {
         var data, i;
@@ -347,6 +363,7 @@ define([
                 this._treeData[i][this._tdToInd.y2] = data.yCoord[i];
             }
         }
+        this._computeMaxDisplacement();
     };
 
     /**
@@ -1283,7 +1300,7 @@ define([
      *
      * @return {Number} maximum of (node's x-coordinate, m)
      */
-    Empress.prototype.getMaxOfXAndNumber = function (node, m) {
+    Empress.prototype._getMaxOfXAndNumber = function (node, m) {
         var x = this.getX(node);
         return Math.max(x, m);
     };
@@ -1304,7 +1321,7 @@ define([
      *
      * @return {Number} maximum of (node's radius, m)
      */
-    Empress.prototype.getMaxOfRadiusAndNumber = function (node, m) {
+    Empress.prototype._getMaxOfRadiusAndNumber = function (node, m) {
         // We don't currently store nodes' radii, so we figure this
         // out by looking at the node's x-coordinate and angle.
         // Since x-coordinates are equal to r*cos(theta), we can
@@ -1320,6 +1337,41 @@ define([
         var r = this.getX(node) / Math.cos(this.getNodeInfo(node, "angle"));
         return Math.max(r, m);
     };
+
+    /**
+     * Computes the closest-to-the-root point at which we can start drawing
+     * barplots in the current layout.
+     *
+     * For the rectangular layout, this means looking for the rightmost node's
+     * x-coordinate; for the circular layout, this means looking for the node
+     * farthest away from the root's distance from the root (a.k.a. radius,
+     * since the root is (0, 0) so we can think of the circular layout in terms
+     * of polar coordinates).
+     *
+     * This function doesn't return anything; its only effect is updating
+     * this._maxDisplacement.
+     *
+     * If the current layout does not support barplots, then
+     * this._maxDisplacement is set to null.
+     */
+    Empress.prototype._computeMaxDisplacement = function () {
+        var maxD = -Infinity;
+        var compFunc;
+        if (this._currentLayout === "Rectangular") {
+            compFunc = "_getMaxOfXAndNumber";
+        } else if (this._currentLayout === "Circular") {
+            compFunc = "_getMaxOfRadiusAndNumber";
+        } else {
+            this._maxDisplacement = null;
+            return;
+        }
+        for (var node = 1; node < this._tree.size; node++) {
+            if (this._tree.isleaf(this._tree.postorderselect(node))) {
+                maxD = this[compFunc](node, maxD);
+            }
+        }
+        this._maxDisplacement = maxD;
+    }
 
     /**
      * Clears the barplot buffer and re-draws the tree.
@@ -1352,33 +1404,12 @@ define([
     Empress.prototype.drawBarplots = function (layers) {
         var scope = this;
         var coords = [];
-        // The "D" stands for displacement. For the rectangular layout, this
-        // variable represents the rightmost node's x-coordinate; for the
-        // circular layout, this variable represents the node farthest away
-        // from the root's distance from the root (a.k.a. radius, since the
-        // root is (0, 0)).
-        // In any case, the maxD value is used when determining how "close"
-        // to the root node we can start drawing barplots without crossing over
-        // any nodes.
-        var maxD = -Infinity;
-        var compFunc;
-        if (this._currentLayout === "Rectangular") {
-            compFunc = "getMaxOfXAndNumber";
-        } else if (this._currentLayout === "Circular") {
-            compFunc = "getMaxOfRadiusAndNumber";
-        } else {
-            throw new Error("Unsupported barplot layout");
-        }
-        for (var node = 1; node < this._tree.size; node++) {
-            if (this._tree.isleaf(this._tree.postorderselect(node))) {
-                maxD = this[compFunc](node, maxD);
-            }
-        }
-        // Add on a gap between the rightmost node and the leftmost point of
-        // the first barplot layer. This could be made into a
-        // barplot-panel-level configurable thing if desired. (Note that, as
-        // with the barplot lengths, the units here are arbitrary.)
-        maxD += 100;
+
+        // Add on a gap between the closest-to-the-root point at which we can
+        // start drawing barplots, and the first barplot layer. This could be
+        // made into a barplot-panel-level configurable thing if desired.
+        // (Note that, as with barplot lengths, the units here are arbitrary.)
+        var maxD = this._maxDisplacement + 100;
 
         // As we iterate through the layers, we'll store the "previous layer
         // max D" as a separate variable. This will help us easily work with
