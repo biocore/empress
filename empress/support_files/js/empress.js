@@ -861,10 +861,7 @@ define([
      * Returns an Object describing circular layout angle information for a
      * node.
      *
-     * @param {Array} node An array that holds all the attributes for a given
-     *                    node. As with the "node" parameter of
-     *                    this.getNodeInfo(), this is an entry in the tree
-     *                    data.
+     * @param {Number} node Postorder position of a node in the tree.
      * @param {Number} halfAngleRange A number equal to (2pi) / (# leaves in
      *                                the tree), used to determine the lower
      *                                and upper angles. This is accepted as a
