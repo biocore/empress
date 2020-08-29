@@ -22,6 +22,8 @@ def validate_tree(tree):
         The tree to validate
     """
 
+    # this is currently untested since we can't actually parse a tree of this
+    # nature: https://github.com/wasade/improved-octo-waddle/issues/29
     if len(tree) <= 1:
         raise ValueError("Tree must contain at least 2 nodes.")
 
@@ -31,7 +33,9 @@ def validate_tree(tree):
     tip_names = []
     internal_node_names = []
     max_branch_length = 0
-    for i in range(1, len(tree) + 1):
+
+    # do not include the root in these checks
+    for i in range(1, len(tree)):
         node = tree.postorderselect(i)
         name = tree.name(node)
         length = tree.length(node)
@@ -41,10 +45,6 @@ def validate_tree(tree):
                 tip_names.append(name)
             else:
                 internal_node_names.append(name)
-        if length is None:
-            raise ValueError(
-                "Non-root branches of the tree must have lengths."
-            )
 
         if length < 0:
             raise ValueError(

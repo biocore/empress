@@ -273,7 +273,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             for (var i = 0; i < ids.length; i++) {
                 var word = ids[i];
 
-                // ignore null nodes
+                // ignore nodes without a name
                 if (word === null) {
                     continue;
                 }
