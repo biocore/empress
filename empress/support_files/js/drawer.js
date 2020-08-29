@@ -319,8 +319,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     /**
      * Display the tree nodes.
      * Note: Currently Empress will only display the nodes that had an assigned
-     * name in the newick string. (I.E. Empress will not show any node that
-     * starts with EmpressNode)
+     * name in the newick string.
      *
      * Note: this will only take effect after draw() is called.
      *
