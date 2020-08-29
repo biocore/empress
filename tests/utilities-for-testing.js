@@ -25,7 +25,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
         var tree = new BPTree(
             new Uint8Array([1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0]),
             // see https://github.com/biocore/empress/issues/311
-            ["", "1", "2", "3", "internal", "internal", "EmpressNode6", "root"],
+            ["", "1", "2", "3", "internal", "internal", null, "root"],
             [0, 1, 2, 3, 4, 5, 6, 7],
             null
         );
