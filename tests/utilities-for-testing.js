@@ -313,8 +313,9 @@ define(["Empress", "BPTree", "BiomTable"], function (
      * @param {Array} arr2
      * @param {String} message
      * @param {Number} epsilon In order for this test to not fail, the
-     *                         absolute difference between n1 and n2 must be
-     *                         less than this value. Defaults to 1e-5.
+     *                         absolute difference between the i-th element in
+     *                         arr1 and the i-th element in arr2 must be less
+     *                         than this value. Defaults to 1e-5.
      */
     function approxDeepEqualMulti(arr1, arr2, message, epsilon = 1e-5) {
         deepEqual(arr1.length, arr2.length);
