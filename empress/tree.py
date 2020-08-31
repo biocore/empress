@@ -56,7 +56,7 @@ def validate_tree(tree):
     # We didn't consider the root node in the above traversal since we
     # don't care about its length. However, we do care about its name,
     # so we add the root's name to internal_node_names.
-    internal_node_names.append(name)
+    internal_node_names.append(tree.name(tree.postorderselect(i + 1)))
 
     if max_branch_length == 0:
         raise ValueError(

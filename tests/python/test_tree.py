@@ -18,8 +18,6 @@ class TestTree(unittest.TestCase):
         self.tree = parse_newick(self.nwk)
 
     def test_validate_tree(self):
-
-        # tree is valide
         validate_tree(self.tree)
 
         # check the tree is still equivalent
