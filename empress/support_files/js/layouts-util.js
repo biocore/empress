@@ -29,6 +29,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                       displayed.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
+     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
+     *                                layout; otherwise, a uniform length of 1
+     *                                is used.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -39,7 +42,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                  maps to an Array where data for each node is stored in
      *                  postorder. yScalingFactor maps to a Number.
      */
-    function rectangularLayout(tree, width, height, normalize = true) {
+    function rectangularLayout(tree, width, height, normalize = true, ignoreLengths = false) {
         // NOTE: This doesn't draw a horizontal line leading to the root "node"
         // of the graph. See https://github.com/biocore/empress/issues/141 for
         // context.
@@ -83,7 +86,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var node = tree.postorder(tree.preorderselect(i));
             parent = tree.postorder(tree.parent(tree.preorderselect(i)));
 
-            xCoord[node] = xCoord[parent] + tree.length(tree.preorderselect(i));
+            var nodeLen = ignoreLengths ? 1 : tree.length(tree.preorderselect(i));
+            xCoord[node] = xCoord[parent] + nodeLen;
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
             }
@@ -435,13 +439,16 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                       displayed.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
+     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
+     *                                layout; otherwise, a uniform length of 1
+     *                                is used.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
      *                  Each of these properties maps to an Array where data for
      *                  each node is stored in postorder.
      */
-    function unrootedLayout(tree, width, height, normalize = true) {
+    function unrootedLayout(tree, width, height, normalize = true, ignoreLengths = false) {
         var angle = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
         var x2Arr = new Array(tree.size + 1).fill(0);
@@ -454,8 +461,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             y1 = 0,
             a = 0,
             da = angle;
-        var x2 = x1 + tree.length(n) * Math.sin(a);
-        var y2 = y1 + tree.length(n) * Math.cos(a);
+        var rootLen = ignoreLengths ? 1 : tree.length(n);
+        var x2 = x1 + rootLen * Math.sin(a);
+        var y2 = y1 + rootLen * Math.cos(a);
         x1Arr[tree.size] = x1;
         x2Arr[tree.size] = x2;
         y1Arr[tree.size] = y1;
@@ -482,8 +490,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             a += (tree.getNumTips(node) * da) / 2;
 
             n = tree.postorderselect(node);
-            x2 = x1 + tree.length(n) * Math.sin(a);
-            y2 = y1 + tree.length(n) * Math.cos(a);
+            var nodeLen = ignoreLengths ? 1 : tree.length(n);
+            x2 = x1 + nodeLen * Math.sin(a);
+            y2 = y1 + nodeLen * Math.cos(a);
             x1Arr[node] = x1;
             x2Arr[node] = x2;
             y1Arr[node] = y1;
