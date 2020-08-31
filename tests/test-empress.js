@@ -56,7 +56,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
         });
 
         test("Test getNodeCoords", function () {
-            // Note: node 6's name is EmpressNode6 which means it will not be
+            // Note: node 6's name is null which means it will not be
             // included in the getNodeCoords()
             // prettier-ignore
             var rectCoords = new Float32Array([
@@ -989,7 +989,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 new Set(f1Info.uniqueValueToFeatures["1"]),
                 new Set([2, 3])
             );
-            // Tips 1 and EmpressNode6 have a f1 value of 2
+            // Tips 1 and null have a f1 value of 2
             deepEqual(
                 new Set(f1Info.uniqueValueToFeatures["2"]),
                 new Set([1, 6])
@@ -1005,7 +1005,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 new Set(f1Info.uniqueValueToFeatures["1"]),
                 new Set([4, 5, 2, 3])
             );
-            // Tips 1 and EmpressNode6 have a f1 value of 2
+            // Tips 1 and null have a f1 value of 2
             deepEqual(
                 new Set(f1Info.uniqueValueToFeatures["2"]),
                 new Set([1, 6])

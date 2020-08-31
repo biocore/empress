@@ -356,7 +356,7 @@ define([
         this._drawer.initialize();
         this._events.setMouseEvents();
         var nodeNames = this._tree.getAllNames();
-        nodeNames = nodeNames.filter((n) => !n.startsWith("EmpressNode"));
+        nodeNames = nodeNames.filter((n) => n !== null);
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
 
@@ -694,7 +694,7 @@ define([
             if (!this.getNodeInfo(node, "visible")) {
                 continue;
             }
-            if (!this.getNodeInfo(node, "name").startsWith("EmpressNode")) {
+            if (this.getNodeInfo(node, "name") !== null) {
                 coords.push(
                     this.getX(node),
                     this.getY(node),
@@ -1941,8 +1941,7 @@ define([
     /**
      * Display the tree nodes.
      * Note: Currently Empress will only display the nodes that had an assigned
-     * name in the newick string. (I.E. Empress will not show any node that
-     * starts with EmpressNode)
+     * name in the newick string.
      *
      * @param{Boolean} showTreeNodes If true then empress will display the tree
      *                               nodes.

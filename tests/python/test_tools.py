@@ -11,7 +11,7 @@ from pandas.testing import assert_frame_equal
 import biom
 import numpy as np
 from skbio import TreeNode, OrdinationResults
-from empress import Tree, tools
+from empress import tools
 from empress.taxonomy_utils import split_taxonomy
 from bp import parse_newick, from_skbio_treenode
 
@@ -95,14 +95,6 @@ class TestTools(unittest.TestCase):
                 eigvals,
                 samples_df,
                 proportion_explained=proportion_explained)
-
-    def test_fill_missing_node_names(self):
-        t = Tree.from_tree(self.tree)
-        tools.fill_missing_node_names(t)
-        names = ['a', 'e', 'EmpressNode0', 'b', 'g', 'EmpressNode1', 'd', 'h',
-                 'EmpressNode2']
-        for i, node in enumerate(t.postorder()):
-            self.assertEqual(node.name, names[i])
 
     def test_match_inputs_nothing_dropped(self):
         filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
