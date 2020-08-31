@@ -205,10 +205,23 @@ define(["underscore"], function (_) {
      *                           by sortedUniqueValues. As with layerNum, this
      *                           will only be used if this throws an error
      *                           message.
-     * @return {Object} fm2length Maps the numeric items in sortedUniqueValues
-     *                            to their corresponding barplot lengths.
-     *                            Each length is guaranteed to be within the
-     *                            inclusive range [minLength, maxLength].
+     * @return {Array} lengthInfo An Array with three elements. In order:
+     *                            1. fm2length: Object that maps the numeric
+     *                               items in sortedUniqueValues to their
+     *                               corresponding barplot lengths. Each length
+     *                               is guaranteed to be within the inclusive
+     *                               range [minLength, maxLength].
+     *                            2. valMin: Number corresponding to the
+     *                               minimum numeric value in
+     *                               sortedUniqueValues. Note that this is a
+     *                               Number, not a String: i.e. parseFloat()
+     *                               has been called on it (so mapping this
+     *                               back to a String in sortedUniqueValues is
+     *                               neither straightforward nor recommended).
+     *                               Should be used when creating a legend.
+     *                            3. valMax: Number corresponding to the max
+     *                               numeric value in sortedUniqueValues.
+     *                               Analogous to valMin.
      */
     function assignBarplotLengths(
         sortedUniqueValues,
@@ -259,7 +272,7 @@ define(["underscore"], function (_) {
             fm2length[n] =
                 ((parseFloat(n) - valMin) / valRange) * lengthRange + minLength;
         });
-        return fm2length;
+        return [fm2length, valMin, valMax];
     }
 
     return {

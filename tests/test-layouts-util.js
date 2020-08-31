@@ -192,30 +192,32 @@ require([
             // e.g. tip "d"'s parent node is b, which has a total radius from
             // the root of 2. The angle d was assigned is 0, so d's x0 position
             // is 2*cos(0) = 2*1 = 2.
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.x0,
                 [0, 2, -1, 0, 0, 0],
                 "x0"
             );
             // Should be equal to (total radius to parent node)*sin(node angle)
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.y0,
                 [0, 0, 1.7321, 0, 0, 0],
-                "y0"
+                "y0",
+                1e-4
             );
 
             // Check ending positions.
             // Should be equal to (total radius to node)*cos(node angle).
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.x1,
                 [0, 6, -2.5, 1, -0.5, 0],
                 "x1"
             );
             // Should be equal to (total radius to node)*sin(node angle).
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.y1,
                 [0, 0, 4.3301, 1.7321, -0.866, 0],
-                "y1"
+                "y1",
+                1e-4
             );
 
             // Check angles. There are just 3 tips so they get assigned
@@ -224,7 +226,7 @@ require([
             // child angles (i.e. 0 and 2pi/3, so just pi/3). And finally, the
             // root gets an angle of 0 (but the root's angle isn't used for
             // anything anyway).
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.angle,
                 [0, 0, (2 * Math.PI) / 3, Math.PI / 3, (4 * Math.PI) / 3, 0],
                 "angle"
@@ -235,27 +237,28 @@ require([
             // Should be equal to
             // (total radius to b = 2) * op(largest child angle of b = 2pi/3),
             // where "op" is cos() for x and sin() for y.
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcx0,
                 [0, 0, 0, -1, 0, 0],
                 "arcx0"
             );
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcy0,
                 [0, 0, 0, 1.7321, 0, 0],
-                "arcy0"
+                "arcy0",
+                1e-4
             );
             // Check arc start and end angles. We've defined the "start" angle
             // to be the largest angle of an internal node's children, and the
             // "end" angle to be the smallest angle of these children.
             // In the case of b, it just has two children (with angles 2pi/3
             // and 0), so determining this is pretty straightforward...
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcStartAngle,
                 [0, 0, 0, (2 * Math.PI) / 3, 0, 0],
                 "arc start angle"
             );
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcEndAngle,
                 [0, 0, 0, 0, 0, 0],
                 "arc end angle"
@@ -342,11 +345,19 @@ require([
             //  a
             //  |
             // root
-            UtilitiesForTesting.approxDeepEqual(obs.x0, [0, 0, 0, 0], "x0");
+            UtilitiesForTesting.approxDeepEqualMulti(
+                obs.x0,
+                [0, 0, 0, 0],
+                "x0"
+            );
             deepEqual(obs.y0, [0, 1, 0, 0], "y0");
-            UtilitiesForTesting.approxDeepEqual(obs.x1, [0, 0, 0, 0], "x1");
+            UtilitiesForTesting.approxDeepEqualMulti(
+                obs.x1,
+                [0, 0, 0, 0],
+                "x1"
+            );
             deepEqual(obs.y1, [0, 3, 1, 0], "y1");
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.angle,
                 [0, piover2, piover2, 0],
                 "angle"
@@ -354,22 +365,22 @@ require([
             // As with the above test, this arc will be invisible when drawn
             // since a only has 1 child (b). This is clear from how a's
             // arcStartAngle is equal to its arcEndAngle...
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcx0,
                 [0, 0, 0, 0],
                 "arcx0"
             );
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcy0,
                 [0, 0, 1, 0],
                 "arcy0"
             );
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcStartAngle,
                 [0, 0, piover2, 0],
                 "arcStartAngle"
             );
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcEndAngle,
                 [0, 0, piover2, 0],
                 "arcEndAngle"
@@ -391,13 +402,13 @@ require([
             // Should be equal to (# non-root ancestor nodes)*cos(node angle)
             // ... For d and c, there's only 1 non-root ancestor node. For all
             // other nodes it's 0. Hence, you know, all the zeroes.
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.x0,
                 [0, -1, 0.5, 0, 0, 0],
                 "x0"
             );
             // Should be equal to (# non-root ancestor nodes)*sin(node angle)
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.y0,
                 [0, 0, -0.866025, 0, 0, 0],
                 "y0"
@@ -405,22 +416,23 @@ require([
 
             // Check ending positions.
             // Should be equal to (# non-root ancestor nodes+1)*cos(node angle)
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.x1,
                 [0, -2, 1, -0.5, 0.5, 0],
                 "x1"
             );
             // Should be equal to (# non-root ancestor nodes+1)*sin(node angle)
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.y1,
                 [0, 0, -1.7321, -0.866, 0.866, 0],
-                "y1"
+                "y1",
+                1e-4
             );
 
             // Check angles. Now things start at 3pi.
             var tpi = 3 * Math.PI;
             var tpiPlusDelta = tpi + (2 * Math.PI) / 3;
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.angle,
                 [
                     0,
@@ -436,23 +448,24 @@ require([
             // Check arc start points (just for b).
             // Should be equal to 1 * op(tpiPlusDelta),
             // where "op" is cos() for x and sin() for y.
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcx0,
                 [0, 0, 0, 0.5, 0, 0],
                 "arcx0"
             );
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcy0,
                 [0, 0, 0, -0.866, 0, 0],
-                "arcy0"
+                "arcy0",
+                1e-4
             );
             // Check arc start and end (largest and smallest) angles.
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcStartAngle,
                 [0, 0, 0, tpiPlusDelta, 0, 0],
                 "arc start angle"
             );
-            UtilitiesForTesting.approxDeepEqual(
+            UtilitiesForTesting.approxDeepEqualMulti(
                 obs.arcEndAngle,
                 [0, 0, 0, tpi, 0, 0],
                 "arc end angle"

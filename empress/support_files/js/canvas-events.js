@@ -405,7 +405,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             // like the user searching for this name). Therefore, if there are
             // multiple nodes with this same name, things will be ambiguous.
             var nodeKeys = this.empress._tree.getNodesWithName(nodeName);
-            if (nodeKeys !== undefined) {
+            if (nodeKeys.length > 0) {
                 // At least one node with this name exists
                 openMenu(nodeKeys);
             } else {

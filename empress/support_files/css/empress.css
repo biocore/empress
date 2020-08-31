@@ -254,6 +254,10 @@ select:-moz-focusring {
     background-color: white;
 }
 
+.header-cell {
+    font-weight: bold;
+}
+
 .menu-table tr td button:only-child:hover {
     background-color: darkgray;
 }

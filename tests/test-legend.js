@@ -190,6 +190,32 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             // Legend should be visible
             notOk(this.containerEle.classList.contains("hidden"));
         });
+        test("addLengthKey", function () {
+            var legend = new Legend(this.containerEle);
+            legend.addLengthKey("LengthTest :O", -5.12345, 1000);
+
+            var title = this.containerEle.children[0];
+            equal(title.innerText, "LengthTest :O");
+
+            // The table created by this function should just have two rows,
+            // one for the min and one for the max val
+            var tbl = this.containerEle.children[1];
+            var rows = $(tbl).find("tr");
+            equal(rows.length, 2);
+
+            var row1cells = $(rows[0]).children();
+            equal(row1cells[0].innerText, "Minimum");
+            ok(row1cells[0].classList.contains("header-cell"));
+            equal(row1cells[1].innerText, "-5.12345");
+
+            var row2cells = $(rows[1]).children();
+            equal(row2cells[0].innerText, "Maximum");
+            ok(row2cells[0].classList.contains("header-cell"));
+            equal(row2cells[1].innerText, "1000");
+
+            // Legend should be visible
+            notOk(this.containerEle.classList.contains("hidden"));
+        });
         test("clear", function () {
             var legend = new Legend(this.containerEle);
             var funkyP = this.containerEle.appendChild(

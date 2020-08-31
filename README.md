@@ -120,7 +120,7 @@ The plot is now updated so each branch is now colored by its Phylum level classi
 
 ### Exploring a feature’s closest common ancestors  
 
-So far, we’ve looked at our data using the default unrooted tree view. To visually locate these features’ closest common ancestors, it may be easier to switch to a different layout. From the main menu, click *Layout* then select *Circular* (or *Rectangular*). Our plot automatically switches to a rooted circular cladogram.   
+So far, we’ve looked at our data using the default unrooted tree view. To visually locate these features’ closest common ancestors, it may be easier to switch to a different layout. From the main menu, click *Layout* then select *Circular* (or *Rectangular*). Our plot automatically switches to a rooted layout.
 
 Now zoom into the longest branch of the top cluster and click on the closest external node that has a different Phylum classification (light blue).   
 
@@ -155,7 +155,9 @@ obvious. To quote "Inferring Phylogenies" (Felsenstein 2004), pages 573–574:
 
 #### Diving into barplots: categorical feature metadata
 
-Barplots in Empress are currently only compatible with the rectangular layout, but support for circular-layout barplots is planned. To use barplots, change the layout to *Rectangular* (using the *Layout* section of the main menu), and then open up the *Barplots* section of the main menu and check the `Draw Barplots?` checkbox. By default, a red bar of uniform length will be drawn for every tip in the tree:
+Barplots in Empress are compatible with either the rectangular or circular layouts. Here we'll use the rectangular layout, but feel free to follow along with the circular layout if you prefer!
+
+First off, change the layout to *Rectangular* (using the *Layout* section of the main menu), and then open up the *Barplots* section of the main menu and check the `Draw Barplots?` checkbox. Click the *Update* button that appears. By default, a red bar of uniform length will be drawn for every tip in the tree:
 
 ![empress barplots initial view](docs/moving-pictures/img/empress_barplots_1.png)
 

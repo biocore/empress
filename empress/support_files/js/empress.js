@@ -204,6 +204,18 @@ define([
         this._yrscf = null;
 
         /**
+         * @type {Number}
+         * For the rectangular layout, this is the rightmost x-coordinate;
+         * for the circular layout, this is the maximum distance from the
+         * root of the tree (a.k.a. the maximum radius in polar coordinates).
+         * For layouts which do not support barplots (e.g. the unrooted
+         * layout), the value of this is arbitrary. Used for determining the
+         * "closest-to-the-root" point at which we can start drawing barplots.
+         * @private
+         */
+        this._maxDisplacement = null;
+
+        /**
          * @type{Boolean}
          * Indicates whether or not barplots are currently drawn.
          * @private
@@ -297,7 +309,9 @@ define([
     }
 
     /**
-     * Computes the current tree layout and fills _treeData
+     * Computes the current tree layout and fills _treeData.
+     *
+     * Also updates this._maxDisplacement.
      */
     Empress.prototype.getLayoutInfo = function () {
         var data, i;
@@ -347,6 +361,7 @@ define([
                 this._treeData[i][this._tdToInd.y2] = data.yCoord[i];
             }
         }
+        this._computeMaxDisplacement();
     };
 
     /**
@@ -365,7 +380,7 @@ define([
     };
 
     /**
-     * Retrive an attribute from a node.
+     * Retrieve an attribute from a node.
      *
      * @param{Number} node Postorder position of node.
      * @param{String} attr The attribute to retrieve from the node.
@@ -681,7 +696,7 @@ define([
     };
 
     /**
-     * Retrives the node coordinate info
+     * Retrieves the node coordinate info
      * format of node coordinate info: [x, y, red, green, blue, ...]
      *
      * @return {Array}
@@ -706,7 +721,7 @@ define([
     };
 
     /**
-     * Retrives the coordinate info of the tree.
+     * Retrieves the coordinate info of the tree.
      *  format of coordinate info: [x, y, red, green, blue, ...]
      *
      * @return {Array}
@@ -858,6 +873,170 @@ define([
     };
 
     /**
+     * Returns an Object describing circular layout angle information for a
+     * node.
+     *
+     * @param {Number} node Postorder position of a node in the tree.
+     * @param {Number} halfAngleRange A number equal to (2pi) / (# leaves in
+     *                                the tree), used to determine the lower
+     *                                and upper angles. This is accepted as a
+     *                                parameter rather than computed here so
+     *                                that, if this function is called multiple
+     *                                times in succession when drawing a
+     *                                barplot layer, this value can be computed
+     *                                just once for this layer up front.
+     *
+     * @return {Object} angleInfo An Object with the following keys:
+     *                             -angle
+     *                             -lowerAngle
+     *                             -upperAngle
+     *                             -angleCos
+     *                             -angleSin
+     *                             -lowerAngleCos
+     *                             -lowerAngleSin
+     *                             -upperAngleCos
+     *                             -upperAngleSin
+     *                            This Object can be passed directly into
+     *                            this._addCircularBarCoords() as its angleInfo
+     *                            parameter.
+     *
+     * @throws {Error} If the current layout is not "Circular".
+     */
+    Empress.prototype._getNodeAngleInfo = function (node, halfAngleRange) {
+        if (this._currentLayout === "Circular") {
+            var angle = this.getNodeInfo(node, "angle");
+            var lowerAngle = angle - halfAngleRange;
+            var upperAngle = angle + halfAngleRange;
+            var angleCos = Math.cos(angle);
+            var angleSin = Math.sin(angle);
+            var lowerAngleCos = Math.cos(lowerAngle);
+            var lowerAngleSin = Math.sin(lowerAngle);
+            var upperAngleCos = Math.cos(upperAngle);
+            var upperAngleSin = Math.sin(upperAngle);
+            return {
+                angle: angle,
+                lowerAngle: lowerAngle,
+                upperAngle: upperAngle,
+                angleCos: angleCos,
+                angleSin: angleSin,
+                lowerAngleCos: lowerAngleCos,
+                lowerAngleSin: lowerAngleSin,
+                upperAngleCos: upperAngleCos,
+                upperAngleSin: upperAngleSin,
+            };
+        } else {
+            // We need to throw this error, because if we're not in the
+            // rectangular layout then nodes will not have a meaningful "angle"
+            // attribute.
+            throw new Error(
+                "_getNodeAngleInfo() called when not in circular layout"
+            );
+        }
+    };
+
+    /**
+     * Adds to an array of coordinates / colors the data needed to draw four
+     * triangles (two rectangles) for a single bar in a circular layout
+     * barplot.
+     *
+     * Since this only draws two rectangles, the resulting barplots look jagged
+     * for small trees but look smooth enough for at least moderately-sized
+     * trees.
+     *
+     * For a node with an angle pointing at the bottom-left of the screen, the
+     * rectangles drawn here will look something like:
+     *
+     *     tR1        /
+     *     /  \      /
+     * tL1/    \    /
+     *    \     \  *
+     *     \     \bR-----tR2        (Inner radius)
+     *      \    /         |
+     *       \  /          |
+     *        bL---------tL2        (Outer radius)
+     *
+     * Here, tL1 and tR2 are on the "lower angle" and tL2 and tR2 are on the
+     * "upper angle," as specified in the angleInfo parameter.
+     *
+     * (This style of ASCII art [esp. the "using * to denote an arrow" thing]
+     * mimics http://mathforum.org/dr.math/faq/formulas/faq.polar.html.)
+     *
+     * @param {Array} coords Array containing coordinate + color data, to be
+     *                       passed to Drawer.loadBarplotBuff().
+     * @param {Number} r1 Inner radius of the bar to draw.
+     * @param {Number} r2 Outer radius of the bar to draw.
+     * @param {Object} angleInfo Object returned by this._getNodeAngleInfo()
+     *                           for the node this bar is being drawn for.
+     * @param {Array} color The GL color to draw / fill both triangles with.
+     */
+    Empress.prototype._addCircularBarCoords = function (
+        coords,
+        r1,
+        r2,
+        angleInfo,
+        color
+    ) {
+        // Polar coordinates (of the form (radius, theta)) can be converted
+        // to Cartesian coordinates (x, y) by using the formulae:
+        //  x = radius * cos(theta)
+        //  y = radius * sin(theta)
+        // Every coordinate defined by these arrays is being converted from
+        // Polar to Cartesian, since we know the radius and angle (theta) of
+        // these coordinates (and therefore the Polar coordinates).
+        // For more detail on this, see for example
+        // https://tutorial.math.lamar.edu/classes/calcii/polarcoordinates.aspx
+        var centerBL = [r2 * angleInfo.angleCos, r2 * angleInfo.angleSin];
+        var centerBR = [r1 * angleInfo.angleCos, r1 * angleInfo.angleSin];
+        var t1 = {
+            tL: [r2 * angleInfo.lowerAngleCos, r2 * angleInfo.lowerAngleSin],
+            tR: [r1 * angleInfo.lowerAngleCos, r1 * angleInfo.lowerAngleSin],
+            bL: centerBL,
+            bR: centerBR,
+        };
+        var t2 = {
+            tL: [r2 * angleInfo.upperAngleCos, r2 * angleInfo.upperAngleSin],
+            tR: [r1 * angleInfo.upperAngleCos, r1 * angleInfo.upperAngleSin],
+            bL: centerBL,
+            bR: centerBR,
+        };
+        this._addTriangleCoords(coords, t1, color);
+        this._addTriangleCoords(coords, t2, color);
+    };
+
+    /**
+     * Adds to an array of coordinates / colors the data needed to draw two
+     * triangles (one rectangle) for a single bar in a rectangular layout
+     * barplot.
+     *
+     * This is a simple convenience function that just calls
+     * Empress._addTriangleCoords() to do most of its work.
+     *
+     * @param {Array} coords Array containing coordinate + color data, to be
+     *                       passed to Drawer.loadBarplotBuff().
+     * @param {Number} lx Leftmost x-coordinate of the rectangle to draw.
+     * @param {Number} rx Rightmost x-coordinate of the rectangle to draw.
+     * @param {Number} by Bottommost y-coordinate of the rectangle to draw.
+     * @param {Number} ty Topmost y-coordinate of the rectangle to draw.
+     * @param {Array} color The GL color to draw / fill both triangles with.
+     */
+    Empress.prototype._addRectangularBarCoords = function (
+        coords,
+        lx,
+        rx,
+        by,
+        ty,
+        color
+    ) {
+        var corners = {
+            tL: [lx, ty],
+            tR: [rx, ty],
+            bL: [lx, by],
+            bR: [rx, by],
+        };
+        this._addTriangleCoords(coords, corners, color);
+    };
+
+    /**
      * Adds to an array of coordinates / colors the data needed to draw two
      * triangles.
      *
@@ -885,7 +1064,8 @@ define([
      * @param {Object} corners Object with tL, tR, bL, and bR entries (each
      *                         mapping to an array of the format [x, y]
      *                         indicating this position).
-     * @param {Array} color  the color to draw / fill both triangles with
+     * @param {Array} color The GL color to draw / fill both triangles with.
+     *                      Should be an RGB array (e.g. [1, 0, 0] for red).
      */
     Empress.prototype._addTriangleCoords = function (coords, corners, color) {
         // Triangle 1
@@ -1108,6 +1288,90 @@ define([
     };
 
     /**
+     * Given a node and an arbitrary number, returns the maximum of the node's
+     * x-coordinate and the arbitrary number.
+     *
+     * Assumes that the tree is in the Rectangular layout.
+     *
+     * @param {Number} node Postorder position of a node in the tree
+     * @param {Number} m Arbitrary number
+     *
+     * @return {Number} maximum of (node's x-coordinate, m)
+     */
+    Empress.prototype._getMaxOfXAndNumber = function (node, m) {
+        var x = this.getX(node);
+        return Math.max(x, m);
+    };
+
+    /**
+     * Given a node and an arbitrary number, returns the maximum of the node's
+     * radius (its distance from (0, 0)) in the circular layout and the
+     * arbitrary number.
+     *
+     * Assumes that the tree is in the Circular layout.
+     *
+     * NOTE that by radius we do not mean "the size of the node's circle"
+     * -- instead we're referring to part of its polar coordinate position
+     * (since those can be written as (radius, theta)).
+     *
+     * @param {Number} node Postorder position of a node in the tree
+     * @param {Number} m Arbitrary number
+     *
+     * @return {Number} maximum of (node's radius, m)
+     */
+    Empress.prototype._getMaxOfRadiusAndNumber = function (node, m) {
+        // We don't currently store nodes' radii, so we figure this
+        // out by looking at the node's x-coordinate and angle.
+        // Since x-coordinates are equal to r*cos(theta), we can
+        // divide a given node's x-coordinate by cos(theta) to get
+        // its radius. I know we can get the same result by
+        // computing sqrt(x^2 + y^2) (a.k.a. distance from the
+        // root at (0, 0)), but this seems faster. (There is still
+        // probably an even faster way to do this though; maybe a
+        // preorder traversal through the tree to see which tip has
+        // the largest cumulative length, then scale that to the
+        // radius value in the layout? Not sure if this step is a
+        // bottleneck worth spending time working on, though.)
+        var r = this.getX(node) / Math.cos(this.getNodeInfo(node, "angle"));
+        return Math.max(r, m);
+    };
+
+    /**
+     * Computes the closest-to-the-root point at which we can start drawing
+     * barplots in the current layout.
+     *
+     * For the rectangular layout, this means looking for the rightmost node's
+     * x-coordinate; for the circular layout, this means looking for the node
+     * farthest away from the root's distance from the root (a.k.a. radius,
+     * since the root is (0, 0) so we can think of the circular layout in terms
+     * of polar coordinates).
+     *
+     * This function doesn't return anything; its only effect is updating
+     * this._maxDisplacement.
+     *
+     * If the current layout does not support barplots, then
+     * this._maxDisplacement is set to null.
+     */
+    Empress.prototype._computeMaxDisplacement = function () {
+        var maxD = -Infinity;
+        var compFunc;
+        if (this._currentLayout === "Rectangular") {
+            compFunc = "_getMaxOfXAndNumber";
+        } else if (this._currentLayout === "Circular") {
+            compFunc = "_getMaxOfRadiusAndNumber";
+        } else {
+            this._maxDisplacement = null;
+            return;
+        }
+        for (var node = 1; node < this._tree.size; node++) {
+            if (this._tree.isleaf(this._tree.postorderselect(node))) {
+                maxD = this[compFunc](node, maxD);
+            }
+        }
+        this._maxDisplacement = maxD;
+    };
+
+    /**
      * Clears the barplot buffer and re-draws the tree.
      *
      * This is useful for immediately disabling barplots, for example if the
@@ -1137,55 +1401,44 @@ define([
      */
     Empress.prototype.drawBarplots = function (layers) {
         var scope = this;
-        // TODO: In order to add support for circular layout barplots, much of
-        // this function will need to be reworked to handle those (e.g.
-        // computing the maximum radius from the root node at (0, 0) rather
-        // than the maximum X; changing the position of barplots; likely
-        // altering how this._yrscf is used; etc.)
         var coords = [];
-        var maxX = -Infinity;
-        for (var node = 1; node < this._tree.size; node++) {
-            if (this._tree.isleaf(this._tree.postorderselect(node))) {
-                var x = this.getX(node);
-                if (x > maxX) {
-                    maxX = x;
-                }
-            }
-        }
-        // Add on a gap between the rightmost node and the leftmost point of
-        // the first barplot layer. This could be made into a
-        // barplot-panel-level configurable thing if desired.
-        maxX += 100;
+
+        // Add on a gap between the closest-to-the-root point at which we can
+        // start drawing barplots, and the first barplot layer. This could be
+        // made into a barplot-panel-level configurable thing if desired.
+        // (Note that, as with barplot lengths, the units here are arbitrary.)
+        var maxD = this._maxDisplacement + 100;
 
         // As we iterate through the layers, we'll store the "previous layer
-        // max X" as a separate variable. This will help us easily work with
+        // max D" as a separate variable. This will help us easily work with
         // layers of varying lengths.
-        var prevLayerMaxX = maxX;
+        var prevLayerMaxD = maxD;
 
         // As we iterate through the layers, we'll also store the Colorer
         // that was used for each layer (or null, if no Colorer was used --
         // i.e. for feature metadata barplots with no color encoding). At the
         // end of this function, when we know that all barplots are valid,
         // we'll populate / clear legends accordingly.
-        var legendsToPopulate = [];
+        var colorLegendsToPopulate = [];
+
+        // Also, we keep track of length-scaling information as well.
+        var lengthLegendsToPopulate = [];
 
         _.each(layers, function (layer) {
             var layerInfo;
+            // Normally I'd just set addLayerFunc as a reference to
+            // scope.addSMBarplotLayerCoords (or ...FM...), but that apparently
+            // breaks references to "this". Using func names is a workaround.
+            var addLayerFunc;
             if (layer.barplotType === "sm") {
-                layerInfo = scope.addSMBarplotLayerCoords(
-                    layer,
-                    coords,
-                    prevLayerMaxX
-                );
+                addLayerFunc = "addSMBarplotLayerCoords";
             } else {
-                layerInfo = scope.addFMBarplotLayerCoords(
-                    layer,
-                    coords,
-                    prevLayerMaxX
-                );
+                addLayerFunc = "addFMBarplotLayerCoords";
             }
-            prevLayerMaxX = layerInfo[0];
-            legendsToPopulate.push(layerInfo[1]);
+            layerInfo = scope[addLayerFunc](layer, coords, prevLayerMaxD);
+            prevLayerMaxD = layerInfo[0];
+            colorLegendsToPopulate.push(layerInfo[1]);
+            lengthLegendsToPopulate.push(layerInfo[2]);
         });
         // NOTE that we purposefuly don't clear the barplot buffer until we
         // know all of the barplots are valid. If we were to call
@@ -1201,11 +1454,18 @@ define([
 
         // By the same logic, now we can safely update the barplot legends to
         // match the barplots that are now drawn.
-        _.each(legendsToPopulate, function (colorer, layerIndex) {
+        _.each(colorLegendsToPopulate, function (colorer, layerIndex) {
             if (_.isNull(colorer)) {
-                layers[layerIndex].clearLegend();
+                layers[layerIndex].clearColorLegend();
             } else {
-                layers[layerIndex].populateLegend(colorer);
+                layers[layerIndex].populateColorLegend(colorer);
+            }
+        });
+        _.each(lengthLegendsToPopulate, function (valSpan, layerIndex) {
+            if (_.isNull(valSpan)) {
+                layers[layerIndex].clearLengthLegend();
+            } else {
+                layers[layerIndex].populateLengthLegend(...valSpan);
             }
         });
 
@@ -1219,22 +1479,29 @@ define([
      * @param {BarplotLayer} layer The layer to be drawn.
      * @param {Array} coords The array to which the coordinates for this layer
      *                       will be added.
-     * @param {Number} prevLayerMaxX The leftmost x-coordinate to use for each
-     *                               bar within this layer.
+     * @param {Number} prevLayerMaxD The "displacement" (either in
+     *                               x-coordinates, or in radius coordinates) to
+     *                               use as the starting point for drawing this
+     *                               layer's bars.
      *
-     * @return {Array} layerInfo An array containing two elements:
-     *                           1. The rightmost x-coordinate present within
+     * @return {Array} layerInfo An array containing three elements:
+     *                           1. The maximum displacement of a bar within
      *                              this layer (this should really just be
-     *                              prevLayerMaxX + layer.lengthSM, since all
+     *                              prevLayerMaxD + layer.lengthSM, since all
      *                              tips' bars in a stacked sample metadata
      *                              barplot have the same length)
      *                           2. The Colorer used to assign colors to sample
      *                              metadata values
+     *                           3. Just null (in the future, this could be
+     *                              changed to provide length-scaling legend
+     *                              information, as is done in
+     *                              addFMBarplotLayerCoords(); however for now
+     *                              that isn't supported.)
      */
     Empress.prototype.addSMBarplotLayerCoords = function (
         layer,
         coords,
-        prevLayerMaxX
+        prevLayerMaxD
     ) {
         var scope = this;
         var sortedUniqueValues = this.getUniqueSampleValues(
@@ -1245,16 +1512,53 @@ define([
         // Do most of the hard work: compute the frequencies for each tip (only
         // the tips present in the BIOM table, that is)
         var feature2freqs = this._biom.getFrequencyMap(layer.colorBySMField);
-        // Bar thickness
-        var halfyrscf = this._yrscf / 2;
+
+        // Only bother computing the halfyrscf / halfAngleRange value we need.
+        // (this._tree.numleaves() does iterate over the full tree, at least
+        // as of writing, so avoiding calling it if possible is a good idea.)
+        // NOTE: This code is duplicated between this function and
+        // addFMBarplotLayerCoords(). Not sure if it's worth the work to
+        // abstract it, though, since it boils down to ~6 lines.
+        var halfyrscf, halfAngleRange;
+        if (this._currentLayout === "Rectangular") {
+            // Bar thickness (rect layout barplots)
+            halfyrscf = this._yrscf / 2;
+        } else {
+            // Bar thickness (circular layout barplots)
+            // This is really (2pi / # leaves) / 2, but the 2s cancel
+            // out so it's just pi / # leaves
+            halfAngleRange = Math.PI / this._tree.numleaves();
+        }
+
         // For each tip in the BIOM table...
         // (We implicitly ignore [and don't draw anything for] tips that
         // *aren't* in the BIOM table.)
         _.each(feature2freqs, function (freqs, node) {
-            // This variable defines the left x-coordinate for drawing the next
-            // "section" of the stacked barplot. It'll be updated as we iterate
-            // through the unique values in this sample metadata field below.
-            var prevSectionMaxX = prevLayerMaxX;
+            // This variable defines the left x-coordinate (or inner radius)
+            // for drawing the next "section" of the stacked barplot.
+            // It'll be updated as we iterate through the unique values in this
+            // sample metadata field below.
+            var prevSectionMaxD = prevLayerMaxD;
+
+            // Compute y-coordinate / angle information up front. Doing this
+            // here lets us compute this only once per tip (per layer), rather
+            // than computing this for every section in the stacked barplot --
+            // doable b/c this information is constant through the sections.
+            var y, ty, by;
+            var angleInfo;
+            if (scope._currentLayout === "Rectangular") {
+                y = scope.getY(node);
+                ty = y + halfyrscf;
+                by = y - halfyrscf;
+            } else {
+                // NOTE: In this function and in addFMBarplotLayerCoords(), we
+                // don't bother checking if scope._currentLayout is not
+                // Rectangular / Circular. This should already have been
+                // checked for in drawBarplots(), so we can safely assume that
+                // we're in one of the supported layouts. (If not, it's the
+                // caller's problem.)
+                angleInfo = scope._getNodeAngleInfo(node, halfAngleRange);
+            }
 
             // For each unique value for this sample metadata field...
             // NOTE: currently we iterate through all of sortedUniqueValues
@@ -1281,28 +1585,45 @@ define([
                 // present in at least one sample with that value.
                 if (!_.isUndefined(freq)) {
                     var sectionColor = sm2color[smVal];
+                    var barSectionLen = layer.lengthSM * freq;
                     // Assign each unique sample metadata value a length
                     // proportional to its, well, proportion within the sample
                     // presence information for this tip.
-                    var barSectionLen = layer.lengthSM * freq;
-                    var thisSectionMaxX = prevSectionMaxX + barSectionLen;
-                    var y = scope.getY(node);
-                    var ty = y + halfyrscf;
-                    var by = y - halfyrscf;
-                    var corners = {
-                        tL: [prevSectionMaxX, ty],
-                        tR: [thisSectionMaxX, ty],
-                        bL: [prevSectionMaxX, by],
-                        bR: [thisSectionMaxX, by],
-                    };
-                    scope._addTriangleCoords(coords, corners, sectionColor);
-                    prevSectionMaxX = thisSectionMaxX;
+                    var thisSectionMaxD = prevSectionMaxD + barSectionLen;
+                    if (scope._currentLayout === "Rectangular") {
+                        scope._addRectangularBarCoords(
+                            coords,
+                            prevSectionMaxD,
+                            thisSectionMaxD,
+                            by,
+                            ty,
+                            sectionColor
+                        );
+                    } else {
+                        scope._addCircularBarCoords(
+                            coords,
+                            prevSectionMaxD,
+                            thisSectionMaxD,
+                            angleInfo,
+                            sectionColor
+                        );
+                    }
+                    prevSectionMaxD = thisSectionMaxD;
                 }
             }
         });
         // The bar lengths are identical for all tips in this layer, so no need
-        // to do anything fancy to compute the maximum X coordinate.
-        return [prevLayerMaxX + layer.lengthSM, colorer];
+        // to do anything fancy to compute the maximum displacement. (So the
+        // max displacement is just the initial max displacement plus the
+        // length for each bar in this layer.)
+        //
+        // null is the final element in this list because, as mentioned above,
+        // length-scaling is currently not supported for sample metadata
+        // barplots. The null indicates that no length legend should be drawn
+        // for this layer. When we get around to supporting scaling sample
+        // metadata barplots by length (see issue #353 on GitHub), we'll just
+        // need to replace the null.
+        return [prevLayerMaxD + layer.lengthSM, colorer, null];
     };
 
     /**
@@ -1311,11 +1632,13 @@ define([
      * @param {BarplotLayer} layer The layer to be drawn.
      * @param {Array} coords The array to which the coordinates for this layer
      *                       will be added.
-     * @param {Number} prevLayerMaxX The leftmost x-coordinate to use for each
-     *                               bar within this layer.
+     * @param {Number} prevLayerMaxD The "displacement" (either in
+     *                               x-coordinates, or in radius coordinates) to
+     *                               use as the starting point for drawing this
+     *                               layer's bars.
      *
-     * @return {Array} layerInfo An array containing two elements:
-     *                           1. The rightmost x-coordinate present within
+     * @return {Array} layerInfo An array containing three elements:
+     *                           1. The maximum displacement of a bar within
      *                              this layer
      *                           2. The Colorer used to assign colors to
      *                              feature metadata values, if layer.colorByFM
@@ -1323,6 +1646,16 @@ define([
      *                              then this will just be null, indicating
      *                              that no color legend should be shown for
      *                              this layer.)
+     *                           3. If layer.scaleLengthByFM is truthy, an
+     *                              array containing two elements:
+     *                              1. the minimum value in the layer's
+     *                                 layer.scaleLengthByFMField field.
+     *                              2. the maximum value in the layer's
+     *                                 layer.scaleLengthByFMField field.
+     *                              If layer.scaleLengthByFM is falsy, then
+     *                              this will just be null, indicating that no
+     *                              length legend should be shown for this
+     *                              layer.
      *
      * @throws {Error} If continuous color or length scaling is requested, but
      *                 the feature metadata field used for either scaling
@@ -1332,11 +1665,13 @@ define([
     Empress.prototype.addFMBarplotLayerCoords = function (
         layer,
         coords,
-        prevLayerMaxX
+        prevLayerMaxD
     ) {
-        var maxX = prevLayerMaxX;
+        var maxD = prevLayerMaxD;
         var colorer = null;
         var fm2color, colorFMIdx;
+        var lenValMin = null;
+        var lenValMax = null;
         var fm2length, lengthFMIdx;
         // Map feature metadata values to colors, if requested (i.e. if
         // layer.colorByFM is true). If not requested, we'll just use the
@@ -1400,7 +1735,7 @@ define([
                 layer.scaleLengthByFMField
             );
             try {
-                fm2length = util.assignBarplotLengths(
+                [fm2length, lenValMin, lenValMax] = util.assignBarplotLengths(
                     sortedUniqueLengthValues,
                     layer.scaleLengthByFMMin,
                     layer.scaleLengthByFMMax,
@@ -1417,9 +1752,15 @@ define([
 
         // Now that we know how to encode each tip's bar, we can finally go
         // iterate through the tree and create bars for the tips.
-        var halfyrscf = this._yrscf / 2;
-        for (var node = 1; node < this._tree.size; node++) {
+        var halfyrscf, halfAngleRange;
+        if (this._currentLayout === "Rectangular") {
+            halfyrscf = this._yrscf / 2;
+        } else {
+            halfAngleRange = Math.PI / this._tree.numleaves();
+        }
+        for (node = 1; node < this._tree.size; node++) {
             if (this._tree.isleaf(this._tree.postorderselect(node))) {
+                var name = this.getNodeInfo(node, "name");
                 var fm;
                 // Assign this tip's bar a color
                 var color;
@@ -1464,26 +1805,40 @@ define([
                 } else {
                     length = layer.defaultLength;
                 }
-                // Update maxX if needed
-                if (length + prevLayerMaxX > maxX) {
-                    maxX = length + prevLayerMaxX;
+
+                // Update maxD if needed
+                var thisLayerMaxD = prevLayerMaxD + length;
+                if (thisLayerMaxD > maxD) {
+                    maxD = thisLayerMaxD;
                 }
 
                 // Finally, add this tip's bar data to to an array of data
                 // describing the bars to draw
-                var y = this.getY(node);
-                var ty = y + halfyrscf;
-                var by = y - halfyrscf;
-                var corners = {
-                    tL: [prevLayerMaxX, ty],
-                    tR: [prevLayerMaxX + length, ty],
-                    bL: [prevLayerMaxX, by],
-                    bR: [prevLayerMaxX + length, by],
-                };
-                this._addTriangleCoords(coords, corners, color);
+                if (this._currentLayout === "Rectangular") {
+                    var y = this.getY(node);
+                    var ty = y + halfyrscf;
+                    var by = y - halfyrscf;
+                    this._addRectangularBarCoords(
+                        coords,
+                        prevLayerMaxD,
+                        thisLayerMaxD,
+                        by,
+                        ty,
+                        color
+                    );
+                } else {
+                    this._addCircularBarCoords(
+                        coords,
+                        prevLayerMaxD,
+                        thisLayerMaxD,
+                        this._getNodeAngleInfo(node, halfAngleRange),
+                        color
+                    );
+                }
             }
         }
-        return [maxX, colorer];
+        var lenValSpan = _.isNull(lenValMin) ? null : [lenValMin, lenValMax];
+        return [maxD, colorer, lenValSpan];
     };
 
     /**

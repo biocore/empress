@@ -169,6 +169,42 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
+     * Displays information in the legend about barplot length scaling.
+     *
+     * This just shows a minimum and maximum value. It's not very fancy yet!
+     *
+     * @param {String} name Text to show in the legend title.
+     * @param {Number} minVal Number to show next to a "Minimum" header.
+     *                        This should be the minimum value in the field
+     *                        that was used to perform length scaling.
+     * @param {Number} maxVal Number to show next to a "Maximum" header.
+     *                        This should be the maximum value in the field
+     *                        that was used to perform length scaling.
+     */
+    Legend.prototype.addLengthKey = function (name, minVal, maxVal) {
+        this.clear();
+        this.addTitle(name);
+
+        var infoTable = document.createElement("table");
+        var minRow = infoTable.insertRow(-1);
+        var minHeaderCell = minRow.insertCell(-1);
+        minHeaderCell.innerText = "Minimum";
+        minHeaderCell.classList.add("header-cell");
+        var minValCell = minRow.insertCell(-1);
+        minValCell.innerText = minVal;
+
+        var maxRow = infoTable.insertRow(-1);
+        var maxHeaderCell = maxRow.insertCell(-1);
+        maxHeaderCell.innerText = "Maximum";
+        maxHeaderCell.classList.add("header-cell");
+        var maxValCell = maxRow.insertCell(-1);
+        maxValCell.innerText = maxVal;
+
+        this._container.append(infoTable);
+        this.unhide();
+    };
+
+    /**
      * Hides, and removes all child HTML elements from, the container.
      *
      * Code to remove all child elements taken from

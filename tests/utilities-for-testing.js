@@ -285,24 +285,49 @@ define(["Empress", "BPTree", "BiomTable"], function (
         );
     }
 
-    // Convert an array of numbers to an array of strings all formatted
-    // using .toFixed(4).
-    function toFixedIfy(arr) {
-        return _.map(arr, function (ele) {
-            return ele.toFixed(4);
-        });
+    /**
+     * Checks that |n2 - n1| is less than epsilon.
+     *
+     * @param {Number} n1
+     * @param {Number} n2
+     * @param {String} message
+     * @param {Number} epsilon In order for this test to not fail, the
+     *                         absolute difference between n1 and n2 must be
+     *                         less than this value. Defaults to 1e-5.
+     */
+    function approxDeepEqual(n1, n2, message, epsilon = 1e-5) {
+        var diff = Math.abs(n2 - n1);
+        // For debugging: uncomment to log what the difference was
+        // if (diff >= epsilon) {
+        //     console.log(diff, epsilon, message);
+        // }
+        ok(diff < epsilon, message);
     }
 
-    // Given two arrays of numbers, calls toFixedIfy() on each and
-    // asserts deep equality on the results.
-    function approxDeepEqual(arr1, arr2, message) {
-        deepEqual(toFixedIfy(arr1), toFixedIfy(arr2), message);
+    /**
+     * Given two arrays of numbers, checks that the arrays are of equal length
+     * and that (for every position i in the arrays) the i-th number within
+     * both arrays are approximately equal.
+     *
+     * @param {Array} arr1
+     * @param {Array} arr2
+     * @param {String} message
+     * @param {Number} epsilon In order for this test to not fail, the
+     *                         absolute difference between the i-th element in
+     *                         arr1 and the i-th element in arr2 must be less
+     *                         than this value. Defaults to 1e-5.
+     */
+    function approxDeepEqualMulti(arr1, arr2, message, epsilon = 1e-5) {
+        deepEqual(arr1.length, arr2.length);
+        for (var i = 0; i < arr1.length; i++) {
+            approxDeepEqual(arr1[i], arr2[i], message, epsilon);
+        }
     }
 
     return {
         getTestData: getTestData,
-        toFixedIfy: toFixedIfy,
         approxDeepEqual: approxDeepEqual,
+        approxDeepEqualMulti: approxDeepEqualMulti,
         getReferenceSVG: getReferenceSVG,
     };
 });
