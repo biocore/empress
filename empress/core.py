@@ -6,10 +6,9 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from empress.tree import Tree
+from empress.tree import validate_tree
 from empress.tools import (
-    fill_missing_node_names, match_inputs, shifting,
-    filter_feature_metadata_to_tree
+    match_inputs, shifting, filter_feature_metadata_to_tree
 )
 from empress.compression_utils import (
     remove_empty_samples_and_features, compress_table,
@@ -22,7 +21,6 @@ import pandas as pd
 
 from shutil import copytree
 from emperor import Emperor
-from bp import to_skbio_treenode
 from jinja2 import Environment, FileSystemLoader
 
 SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
@@ -186,11 +184,7 @@ class Empress():
                     self.tip_md, self.int_md, self.tree
                 )
 
-        # extract balance parenthesis
-        self._bp_tree = list(self.tree.B)
-
-        self.tree = Tree.from_tree(to_skbio_treenode(self.tree))
-        fill_missing_node_names(self.tree)
+        validate_tree(self.tree)
 
     def copy_support_files(self, target=None):
         """Copies the support files to a target directory
@@ -279,26 +273,30 @@ class Empress():
         # bptree indices start at one, hence we pad the arrays
         names = [-1]
         lengths = [-1]
-        for i, node in enumerate(self.tree.postorder(include_self=True), 1):
-            names.append(node.name)
-            lengths.append(node.length)
-            if node.name in fid2idxs_t:
-                fid2idxs[i] = fid2idxs_t[node.name]
+        for i in range(1, len(self.tree) + 1):
+            node = self.tree.postorderselect(i)
+            name = self.tree.name(node)
+
+            names.append(name)
+            lengths.append(self.tree.length(node))
+
+            if name in fid2idxs_t:
+                fid2idxs[i] = fid2idxs_t[name]
                 f_ids[fid2idxs[i]] = i
 
-            if node.name in compressed_tm_tmp:
-                compressed_tm[i] = compressed_tm_tmp[node.name]
+            if name in compressed_tm_tmp:
+                compressed_tm[i] = compressed_tm_tmp[name]
 
             # Note: for internal metadata, node names may not be unique. Thus,
             # we duplicate the internal node metadata for each node in the
             # metadata with the same name.
-            if node.name in compressed_im_tmp:
-                compressed_im[i] = compressed_im_tmp[node.name]
+            if name in compressed_im_tmp:
+                compressed_im[i] = compressed_im_tmp[name]
 
         data_to_render = {
             'base_url': self.base_url,
             # tree info
-            'tree': shifting(self._bp_tree),
+            'tree': shifting(self.tree.B),
             'lengths': lengths,
             'names': names,
             # feature table
