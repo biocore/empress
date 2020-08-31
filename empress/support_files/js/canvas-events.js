@@ -273,11 +273,6 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             for (var i = 0; i < ids.length; i++) {
                 var word = ids[i];
 
-                // ignore nodes without a name
-                if (word === null) {
-                    continue;
-                }
-
                 // if node id begins with user query, add it to suggestionMenu
                 if (
                     word.substr(0, query.length).toUpperCase() ===
