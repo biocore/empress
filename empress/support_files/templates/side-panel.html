@@ -238,8 +238,16 @@
     If checked, this draws circles at the positions of all tree nodes
     which had a specified name in the input Newick file.
   </p>
-  <p class="side-panel-notes">
-    Clade Collapse Method
+  <hr />
+  <p>
+    <button id="center-tree-btn">Reset Camera</button>
+  </p>
+  <p class="side-panel-notes indented">
+    Repositions the camera at the center of the tree.
+  </p>
+  <hr />
+  <p class="side-panel-inner-header">
+    Clade Collapsing Method
   </p>
   <p>
     <label for="normal">Normal</label>
@@ -260,12 +268,7 @@
     the shape will be symmetric w.r.t. to the root of the clade. This option
     only applies to the Rectangular and Circular layouts.
   </p>
-  <p>
-    <button id="center-tree-btn">Reset Camera</button>
-  </p>
-  <p class="side-panel-notes indented">
-    Repositions the camera at the center of the tree.
-  </p>
+  <hr />
   <p>
     <label for="focus-on-node-chk">Focus on Selected Nodes?</label>
     <input id="focus-on-node-chk" type="checkbox" checked="true"
@@ -275,6 +278,7 @@
     If checked, the camera is focused on the node after an id is found via
     the searchbox, or when an arrow is clicked in a biplot.
   </p>
+  <hr />
   <p>
     <label for="absent-tip-chk">Ignore Absent Tips?</label>
     <input id="absent-tip-chk" type="checkbox" checked="true"
