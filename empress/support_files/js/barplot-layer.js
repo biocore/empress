@@ -140,14 +140,15 @@ define([
         // Add UI elements for switching between feature and sample metadata
         // barplots for this layer (only if feature metadata is available;
         // otherwise, things will just default to sample metadata barplots.)
+        var fmBtn, smBtn;
         if (this.fmAvailable && this.smAvailable) {
             var metadataChoiceP = this.layerDiv.appendChild(
                 document.createElement("p")
             );
-            var fmBtn = metadataChoiceP.appendChild(
+            fmBtn = metadataChoiceP.appendChild(
                 document.createElement("button")
             );
-            var smBtn = metadataChoiceP.appendChild(
+            smBtn = metadataChoiceP.appendChild(
                 document.createElement("button")
             );
             fmBtn.innerText = "Feature Metadata";

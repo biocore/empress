@@ -104,7 +104,7 @@ class Empress():
         """
 
         self.tree = tree
-        self.is_community_plot = table is not None and samples is not None
+        self.is_community_plot = not (table is None or sample_metadata is None)
 
         self.table = table
 
@@ -112,7 +112,6 @@ class Empress():
             self.samples = sample_metadata.copy()
         else:
             self.samples = None
-
 
         if feature_metadata is not None:
             self.features = feature_metadata.copy()
@@ -263,7 +262,7 @@ class Empress():
             object and the sample + feature metadata.
         """
 
-        s_ids = f_ids = sid2idxs = fid2idxs = compressed_table = None
+        s_ids = f_ids = sid2idxs = fid2idxs = cmp_table = None
         sm_cols = compressed_sm = None
         if self.is_community_plot:
             # The fid2idxs dict we get from compress_table() is temporary --
@@ -273,7 +272,7 @@ class Empress():
             # passing the tree to compress_table() so postorder positions can
             # immediately be used as keys / feature IDs without an intermediate
             # step.)
-            s_ids, f_ids, sid2idxs, fid2idxs_t, compressed_table = compress_table(
+            s_ids, f_ids, sid2idxs, fid2idxs_t, cmp_table = compress_table(
                 self.table
             )
             sm_cols, compressed_sm = compress_sample_metadata(
@@ -323,7 +322,7 @@ class Empress():
             'f_ids': f_ids,
             's_ids_to_indices': sid2idxs,
             'f_ids_to_indices': fid2idxs,
-            'compressed_table': compressed_table,
+            'compressed_table': cmp_table,
             # sample metadata
             'sample_metadata_columns': sm_cols,
             'compressed_sample_metadata': compressed_sm,
