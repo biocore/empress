@@ -70,7 +70,7 @@ require([
         });
 
         test("Test rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(this.tree, 1, 1, false);
+            var obs = LayoutsUtil.rectangularLayout(this.tree, 1, 1, false, false);
             /* Why do these coordinates look like this?
              *
              * There are a few steps to the layout.
@@ -140,6 +140,7 @@ require([
                 this.straightLineTree,
                 1,
                 1,
+                false,
                 false
             );
 
@@ -158,6 +159,7 @@ require([
                 this.noRootLength,
                 1,
                 1,
+                false,
                 false
             );
 
@@ -175,6 +177,7 @@ require([
                 this.circLayoutTestTree,
                 5,
                 5,
+                false,
                 false
             );
             // Check that there isn't extra junk included in obs' output
@@ -269,6 +272,7 @@ require([
                 this.circLayoutTestTree,
                 1,
                 1,
+                false,
                 false
             );
             // We skip root since we don't care about its length.
@@ -286,7 +290,7 @@ require([
             // length, the output data should be exactly the same.
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.circularLayout(tree, 1, 1, false);
+                var obs = LayoutsUtil.circularLayout(tree, 1, 1, false, false);
                 // The tree looks like:
                 // root -- a ---- b
                 deepEqual(obs.x0, [0, 1, 0, 0], "x0");
@@ -310,9 +314,8 @@ require([
                     tree,
                     1,
                     1,
-                    false,
-                    0,
-                    true
+                    true,
+                    false
                 );
                 // The tree looks like: (note the equal branch lengths)
                 // root -- a -- b
@@ -335,6 +338,7 @@ require([
                 this.straightLineTree,
                 1,
                 1,
+                false,
                 false,
                 piover2
             );
@@ -395,9 +399,9 @@ require([
                 this.circLayoutTestTree,
                 1,
                 1,
+                true,
                 false,
-                3 * Math.PI,
-                true
+                3 * Math.PI
             );
             // Should be equal to (# non-root ancestor nodes)*cos(node angle)
             // ... For d and c, there's only 1 non-root ancestor node. For all
@@ -473,7 +477,7 @@ require([
         });
 
         test("Test unrooted layout", function () {
-            var obs = LayoutsUtil.unrootedLayout(this.tree, 1, 1);
+            var obs = LayoutsUtil.unrootedLayout(this.tree, 1, 1, false);
             var exp = {
                 xCoord: [
                     0,
