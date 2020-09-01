@@ -2244,16 +2244,12 @@ define([
         var supported = this._barplotPanel.updateLayoutAvailability(
             this._currentLayout
         );
-        // TODO: don't call drawTree() from either of these barplot
-        // funcs, since it'll get called in centerLayoutAvgPoint anyway
         if (!supported && this._barplotsDrawn) {
             this.undrawBarplots();
         } else if (supported && this._barplotPanel.enabled) {
             this.drawBarplots(this._barplotPanel.layers);
         }
-        // recenter viewing window
-        // Note: this function calls drawTree()
-        this.centerLayoutAvgPoint();
+        this.drawTree();
     };
 
     /**
@@ -2265,6 +2261,11 @@ define([
                 // get new layout
                 this._currentLayout = newLayout;
                 this.reLayout();
+                // recenter viewing window
+                // NOTE: this function calls drawTree(), which is redundant
+                // since reLayout() already called it. Would be good to
+                // minimize redundant calls to that.
+                this.centerLayoutAvgPoint();
             } else {
                 // This should never happen under normal circumstances (the
                 // input to this function should always be an existing layout
@@ -2762,10 +2763,6 @@ define([
 
         // step 4)
         this.createCollapsedCladeShape(rootNode);
-
-        // We set the root of the clade to default otherwise, the branch that
-        // connects the root clade to its parent will still be colored
-        this.setNodeInfo(rootNode, "color", this.DEFAULT_COLOR);
     };
 
     /**

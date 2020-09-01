@@ -53,7 +53,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         };
         this.ignoreLengthsChk.onclick = function () {
             empress.ignoreLengths = this.checked;
-            console.log("ignoreLengths is " + empress.ignoreLengths);
             empress.reLayout();
         };
 
