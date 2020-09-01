@@ -309,7 +309,7 @@ define([
          *
          * This stores the group membership of a node. -1 means the node doesn't
          * belong to a group. This array is used to collapse clades by search
-         * for clades in this array that share the same group membershi[.
+         * for clades in this array that share the same group membership.
          */
         this._group = new Array(this._tree.size + 1).fill(-1);
     }
@@ -2433,21 +2433,16 @@ define([
     /**
      * Collapses all clades that share the same color into a quadrilateral.
      *
-     * Note: if a clade contains a node with DEFAULT_COLOR it will not be
-     *       collapsed
+     * NOTE: Previously, this checked this._collapsedClades to see if there
+     * were any "cached" clades. I've removed this for now because it's
+     * possible for the layout to stay the same but the clades still to
+     * need updating (e.g. if the "ignore lengths" setting of Empress
+     * changes). If collapsing clades is a bottleneck, we could try to add
+     * back caching.
      *
      * @return{Boolean} true if at least one clade was collapse. false otherwise
      */
     Empress.prototype.collapseClades = function () {
-        // first check if any collapsed clades have been cached
-        // TODO: the "ignoreLengths" checkbox breaks / is broken by this.
-        // Fix that!
-        if (Object.keys(this._collapsedClades).length != 0) {
-            for (var cladeRoot in this._collapsedClades) {
-                this.createCollapsedCladeShape(cladeRoot);
-            }
-            return;
-        }
         // The following algorithm consists of two parts: 1) find all clades
         // whose member nodes have the same color, 2) collapse the clades
 
@@ -2483,8 +2478,6 @@ define([
         // collaped.
         // Collapsing a clade will set the .visible property of members to
         // false and will then be skipped in the for loop.
-        // Note: if the root of a clade has DEFUALT_COLOR then it will not be
-        // collapsed (since all of its children will also have DEFAULT_COLOR)
         var inorder = this._tree.inOrderNodes();
         for (var node in inorder) {
             node = inorder[node];
@@ -2663,8 +2656,8 @@ define([
      * Collapse the clade at rootNode
      *
      * This method will set the .visible property for all nodes in the clade
-     * (execpt the root) to false. Also, the color of rootNode will be set to
-     * DEFAULT_COLOR and this._collapsedCladeBuffer will be modified.
+     * (except the root) to false. Also, this._collapsedCladeBuffer will be
+     * updated.
      *
      * Note: This method will cache the clade information. So, as long as
      *       the collapsed clades aren't changed, you do not need to call this
