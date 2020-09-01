@@ -89,12 +89,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         // iterates in preorder
         var parent;
         for (i = 2; i <= tree.size; i++) {
-            var node = tree.postorder(tree.preorderselect(i));
-            parent = tree.postorder(tree.parent(tree.preorderselect(i)));
+            var prepos = tree.preorderselect(i);
+            var node = tree.postorder(prepos);
+            parent = tree.postorder(tree.parent(prepos));
 
-            var nodeLen = ignoreLengths
-                ? 1
-                : tree.length(tree.preorderselect(i));
+            var nodeLen = ignoreLengths ? 1 : tree.length(prepos);
             xCoord[node] = xCoord[parent] + nodeLen;
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
@@ -314,15 +313,14 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         // Iterate over the tree in preorder, assigning radii
         // (The "i = 2" skips the root of the tree; its radius is implicitly 0)
         for (i = 2; i <= tree.size; i++) {
+            var prepos = tree.preorderselect(i);
             // Get the postorder position of this node, which we'll use when
             // writing to the radius array (which is stored in postorder, as
             // are the remainder of the "result" arrays defined above)
-            var node = tree.postorder(tree.preorderselect(i));
-            var parent = tree.postorder(tree.parent(tree.preorderselect(i)));
+            var node = tree.postorder(prepos);
+            var parent = tree.postorder(tree.parent(prepos));
 
-            var nodeLen = ignoreLengths
-                ? 1
-                : tree.length(tree.preorderselect(i));
+            var nodeLen = ignoreLengths ? 1 : tree.length(prepos);
             radius[node] = radius[parent] + nodeLen;
         }
 
@@ -474,6 +472,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             y1 = 0,
             a = 0,
             da = angle;
+        // NOTE: x2 will always be 0, since sin(0) = 0.
         var rootLen = ignoreLengths ? 1 : tree.length(n);
         var x2 = x1 + rootLen * Math.sin(a);
         var y2 = y1 + rootLen * Math.cos(a);
