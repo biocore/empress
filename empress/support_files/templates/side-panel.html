@@ -120,7 +120,8 @@
 </div>
 
 <!-- Barplot options -->
-<button class="side-header collapsible">Barplots</button>
+<button id="barplotOpenButton" class="side-header collapsible hidden">
+    Barplots</button>
 <div class="side-content control hidden" id="barplot-div">
   <p class="side-panel-notes">
     Annotate tips by feature and/or sample metadata.
@@ -229,6 +230,11 @@
 </div>
 
 <!-- Global Tree properties -->
+<!-- TODO: Depending on the amount of data available, the clade collapsing tab
+     and "ignore absent tips" options should be hidden. I think it makes sense
+     to hold off on these until https://github.com/biocore/empress/pull/363 is
+     merged in.
+-->
 <button class="side-header collapsible">Tree Properties</button>
 <div class="side-content control hidden">
   <p>

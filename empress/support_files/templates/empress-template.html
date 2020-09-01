@@ -171,7 +171,8 @@
             // Add animator GUI components
             var animationPanel = new AnimationPanel(animator);
             animationPanel.addAnimationTab();
-            document.getElementById("animationOpenButton").classList.remove("hidden");
+            document.getElementById("animationOpenButton").classList
+                .remove("hidden");
         }
 
         // Similarly, only show the feature metadata coloring panel if feature
@@ -181,7 +182,11 @@
             document.getElementById("fmOpenButton").classList.remove("hidden");
         }
 
-        // TODO: hide barplots unless at least is community plot or fm passed
+        // Only show barplots if sample or feature metadata is available
+        if (isCommunityPlot || fmCols.length > 0) {
+            document.getElementById("barplotOpenButton").classList
+                .remove("hidden");
+        }
 
         // make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {

@@ -47,8 +47,7 @@ define(["underscore", "util"], function (_, util) {
             };
             this.addBtn.onclick = click;
         } else {
-            // TODO hide stuff
-            // also hide fm stuff (?) or by default it stays hidden i guess
+            this.smSection.classList.add("hidden");
         }
     };
 
