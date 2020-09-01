@@ -2191,12 +2191,19 @@ define([
     };
 
     /**
-     * Returns a list of sample categories
+     * Returns a list of sample categories.
+     *
+     * If this.isCommunityPlot is false (no table / sample metadata were
+     * provided), this just returns [].
      *
      * @return {Array}
      */
     Empress.prototype.getSampleCategories = function () {
-        return this._biom.getSampleCategories();
+        if (this.isCommunityPlot) {
+            return this._biom.getSampleCategories();
+        } else {
+            return [];
+        }
     };
 
     /**
