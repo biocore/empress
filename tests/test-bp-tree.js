@@ -636,6 +636,20 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 "Total length from 3 to 11 should be 12."
             );
 
+            equal(
+                this.bpObj.getTotalLength(3, 11, true),
+                3,
+                "Total length from 3 to 11, ignoring lengths, should be 3."
+            );
+
+            // 10 is a child of 11 (the root node), so there should just be a
+            // length of 1 between them
+            equal(
+                this.bpObj.getTotalLength(10, 11, true),
+                1,
+                "Total length from 10 to 11, ignoring lengths, should be 1."
+            );
+
             throws(function () {
                 this.bpObj.getTotalLength(5, 3);
             });
