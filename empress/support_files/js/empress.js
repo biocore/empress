@@ -24,8 +24,11 @@ define([
     /**
      * @class EmpressTree
      *
-     * @param {BPTree} tree The phylogenetic tree
-     * @param {BIOMTable} biom The BIOM table used to color the tree
+     * @param {BPTree} tree The phylogenetic tree.
+     * @param {BIOMTable or null} biom The BIOM table used to color the tree.
+     *                                 If no table / sample metadata was passed
+     *                                 to Empress (i.e. using qiime empress
+     *                                 tree-plot), this should be null.
      * @param {Array} featureMetadataColumns Columns of the feature metadata.
      *                Note: The order of this array should match the order of
      *                      the arrays which are the values of tipMetadata and
@@ -33,11 +36,11 @@ define([
      *                      when generating an Empress visualization, this
      *                      parameter should be [] (and tipMetadata and
      *                      intMetadata should be {}s).
-     * @param {Object} tipMetadata Feature metadata for tips in the tree
+     * @param {Object} tipMetadata Feature metadata for tips in the tree.
      *                 Note: This should map tip names to an array of feature
      *                       metadata values. Each array should have the same
      *                       length as featureMetadataColumns.
-     * @param {Object} intMetadata Feature metadata for internal nodes in tree
+     * @param {Object} intMetadata Feature metadata for internal nodes in tree.
      *                 Note: Should be formatted analogously to tipMetadata.
      *                       Note that internal node names can be non-unique.
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
@@ -143,10 +146,13 @@ define([
         /**
          * @type {BiomTable}
          * BIOM table: includes feature presence information and sample-level
-         * metadata.
+         * metadata. Can be null if no table / sample metadata was passed to
+         * Empress.
          * @private
          */
         this._biom = biom;
+
+        this.isCommunityPlot = !_.isNull(this._biom);
 
         /**
          * @type{Array}
@@ -193,7 +199,10 @@ define([
          * Empress.undrawBarplots() when needed.
          * @private
          */
-        this._barplotPanel = new BarplotPanel(this, this._defaultLayout);
+        this._barplotPanel = null;
+        if (this.isCommunityPlot || this._featureMetadataColumns.length > 0) {
+            this._barplotPanel = new BarplotPanel(this, this._defaultLayout);
+        }
 
         /**
          * @type {Number}
@@ -2223,15 +2232,18 @@ define([
                 this.thickenColoredNodes(this._currentLineWidth);
 
                 // Undraw or redraw barplots as needed
-                var supported = this._barplotPanel.updateLayoutAvailability(
-                    newLayout
-                );
-                // TODO: don't call drawTree() from either of these barplot
-                // funcs, since it'll get called in centerLayoutAvgPoint anyway
-                if (!supported && this._barplotsDrawn) {
-                    this.undrawBarplots();
-                } else if (supported && this._barplotPanel.enabled) {
-                    this.drawBarplots(this._barplotPanel.layers);
+                if (!_.isNull(this._barplotPanel)) {
+                    var supported = this._barplotPanel.updateLayoutAvailability(
+                        newLayout
+                    );
+                    // TODO: don't call drawTree() from either of these barplot
+                    // funcs, since it'll get called in centerLayoutAvgPoint
+                    // anyway
+                    if (!supported && this._barplotsDrawn) {
+                        this.undrawBarplots();
+                    } else if (supported && this._barplotPanel.enabled) {
+                        this.drawBarplots(this._barplotPanel.layers);
+                    }
                 }
                 // recenter viewing window
                 // Note: this function calls drawTree()

@@ -25,14 +25,18 @@ SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
 
 
-def plot(output_dir: str, tree: NewickFormat, feature_table: biom.Table,
-         sample_metadata: qiime2.Metadata, pcoa: OrdinationResults = None,
-         feature_metadata: qiime2.Metadata = None,
-         ignore_missing_samples: bool = False,
-         filter_extra_samples: bool = False,
-         filter_missing_features: bool = False,
-         number_of_features: int = 5,
-         filter_unobserved_features_from_phylogeny: bool = True) -> None:
+def community_plot(
+    output_dir: str, tree: NewickFormat,
+    feature_table: biom.Table,
+    sample_metadata: qiime2.Metadata,
+    pcoa: OrdinationResults = None,
+    feature_metadata: qiime2.Metadata = None,
+    ignore_missing_samples: bool = False,
+    filter_extra_samples: bool = False,
+    filter_missing_features: bool = False,
+    number_of_features: int = 5,
+    filter_unobserved_features_from_phylogeny: bool = True
+) -> None:
 
     if pcoa is not None and pcoa.features is not None:
         # select the top N most important features based on the vector's
@@ -63,6 +67,29 @@ def plot(output_dir: str, tree: NewickFormat, feature_table: biom.Table,
                   filter_extra_samples=filter_extra_samples,
                   filter_missing_features=filter_missing_features,
                   filter_unobserved_features_from_phylogeny=trim_tree)
+
+    with open(os.path.join(output_dir, 'empress.html'), 'w') as file:
+        file.write(str(viz))
+
+    viz.copy_support_files(output_dir)
+
+    index = os.path.join(TEMPLATES, 'index.html')
+    q2templates.render(index, output_dir)
+
+
+def tree_plot(
+    output_dir: str,
+    tree: NewickFormat,
+    feature_metadata: qiime2.Metadata = None
+) -> None:
+
+    if feature_metadata is not None:
+        feature_metadata = feature_metadata.to_dataframe()
+
+    # path to the actual newick file
+    with open(str(tree)) as file:
+        t = parse_newick(file.readline())
+    viz = Empress(tree=t, feature_metadata=feature_metadata)
 
     with open(os.path.join(output_dir, 'empress.html'), 'w') as file:
         file.write(str(viz))

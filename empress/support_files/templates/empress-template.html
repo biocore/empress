@@ -126,15 +126,20 @@
 
         var canvas = document.getElementById('tree-surface');
 
-        var biom = new BIOMTable(
-          {{ s_ids | tojson }},
-          {{ f_ids | tojson }},
-          {{ s_ids_to_indices | tojson }},
-          {{ f_ids_to_indices | tojson }},
-          {{ compressed_table | tojson }},
-          {{ sample_metadata_columns | tojson }},
-          {{ compressed_sample_metadata | tojson }},
-        );
+        var isCommunityPlot = {{ is_community_plot | tojson }};
+
+        var biom = null;
+        if (isCommunityPlot) {
+            var biom = new BIOMTable(
+              {{ s_ids | tojson }},
+              {{ f_ids | tojson }},
+              {{ s_ids_to_indices | tojson }},
+              {{ f_ids_to_indices | tojson }},
+              {{ compressed_table | tojson }},
+              {{ sample_metadata_columns | tojson }},
+              {{ compressed_sample_metadata | tojson }},
+            );
+        }
         var empress = new Empress(
             tree,
             biom,
@@ -151,22 +156,32 @@
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress, legend);
         sPanel.addTreePropertiesTab();
-        sPanel.addSampleTab();
+        sPanel.addLayoutTab();
+        sPanel.addExportTab();
+
+        // Only show the sample metadata coloring / animation panels if a
+        // feature table and sample metadata file were provided
+        if (isCommunityPlot) {
+            sPanel.addSampleTab();
+            document.getElementById("smOpenButton").classList.remove("hidden");
+
+            // Create animator state machine
+            var animator = new Animator(empress, legend);
+
+            // Add animator GUI components
+            var animationPanel = new AnimationPanel(animator);
+            animationPanel.addAnimationTab();
+            document.getElementById("animationOpenButton").classList.remove("hidden");
+        }
+
+        // Similarly, only show the feature metadata coloring panel if feature
+        // metadata was provided
         if (fmCols.length > 0) {
             sPanel.addFeatureTab();
             document.getElementById("fmOpenButton").classList.remove("hidden");
         }
-        sPanel.addLayoutTab();
 
-        // Create animator state machine
-        var animator = new Animator(empress, legend);
-
-        // Add animator GUI components
-        var animationPanel = new AnimationPanel(animator);
-        animationPanel.addAnimationTab();
-
-        // add export drawing tab
-        sPanel.addExportTab();
+        // TODO: hide barplots unless at least is community plot or fm passed
 
         // make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {
