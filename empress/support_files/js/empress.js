@@ -248,6 +248,12 @@ define([
         this.ignoreAbsentTips = true;
 
         /**
+         * @type{Bool}
+         * Whether to ignore node lengths during layout or not
+         */
+        this.ignoreLengths = false;
+
+        /**
          * @type{CanvasEvents}
          * Handles user events
          */
@@ -317,7 +323,12 @@ define([
         var data, i;
         // Rectangular
         if (this._currentLayout === "Rectangular") {
-            data = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
+            data = LayoutsUtil.rectangularLayout(
+                this._tree,
+                4020,
+                4020,
+                this.ignoreLengths
+            );
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
@@ -332,7 +343,12 @@ define([
                     data.lowestChildYr[i];
             }
         } else if (this._currentLayout === "Circular") {
-            data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
+            data = LayoutsUtil.circularLayout(
+                this._tree,
+                4020,
+                4020,
+                this.ignoreLengths
+            );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
                 this._treeData[i].length = this._numNonLayoutParams;
@@ -351,7 +367,12 @@ define([
                     data.arcEndAngle[i];
             }
         } else {
-            data = LayoutsUtil.unrootedLayout(this._tree, 4020, 4020);
+            data = LayoutsUtil.unrootedLayout(
+                this._tree,
+                4020,
+                4020,
+                this.ignoreLengths
+            );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
                 this._treeData[i].length = this._numNonLayoutParams;
@@ -2200,6 +2221,42 @@ define([
     };
 
     /**
+     * Redraws the tree, using the current layout and any layout parameters
+     * that may have changed in the interim.
+     */
+    Empress.prototype.reLayout = function () {
+        this.getLayoutInfo();
+
+        // recollapse clades
+        if (Object.keys(this._collapsedClades).length != 0) {
+            this._collapsedCladeBuffer = [];
+            this.collapseClades();
+        }
+
+        // Adjust the thick-line stuff before calling drawTree() --
+        // this will get the buffer set up before it's actually drawn
+        // in drawTree(). Doing these calls out of order (draw tree,
+        // then call thickenColoredNodes()) causes the thick-line
+        // stuff to only change whenever the tree is redrawn.
+        this.thickenColoredNodes(this._currentLineWidth);
+
+        // Undraw or redraw barplots as needed
+        var supported = this._barplotPanel.updateLayoutAvailability(
+            this._currentLayout
+        );
+        // TODO: don't call drawTree() from either of these barplot
+        // funcs, since it'll get called in centerLayoutAvgPoint anyway
+        if (!supported && this._barplotsDrawn) {
+            this.undrawBarplots();
+        } else if (supported && this._barplotPanel.enabled) {
+            this.drawBarplots(this._barplotPanel.layers);
+        }
+        // recenter viewing window
+        // Note: this function calls drawTree()
+        this.centerLayoutAvgPoint();
+    };
+
+    /**
      * Redraws the tree with a new layout (if different from current layout).
      */
     Empress.prototype.updateLayout = function (newLayout) {
@@ -2207,35 +2264,7 @@ define([
             if (this._layoutToCoordSuffix.hasOwnProperty(newLayout)) {
                 // get new layout
                 this._currentLayout = newLayout;
-                this.getLayoutInfo();
-
-                // recollapse clades
-                if (Object.keys(this._collapsedClades).length != 0) {
-                    this._collapsedCladeBuffer = [];
-                    this.collapseClades();
-                }
-
-                // Adjust the thick-line stuff before calling drawTree() --
-                // this will get the buffer set up before it's actually drawn
-                // in drawTree(). Doing these calls out of order (draw tree,
-                // then call thickenColoredNodes()) causes the thick-line
-                // stuff to only change whenever the tree is redrawn.
-                this.thickenColoredNodes(this._currentLineWidth);
-
-                // Undraw or redraw barplots as needed
-                var supported = this._barplotPanel.updateLayoutAvailability(
-                    newLayout
-                );
-                // TODO: don't call drawTree() from either of these barplot
-                // funcs, since it'll get called in centerLayoutAvgPoint anyway
-                if (!supported && this._barplotsDrawn) {
-                    this.undrawBarplots();
-                } else if (supported && this._barplotPanel.enabled) {
-                    this.drawBarplots(this._barplotPanel.layers);
-                }
-                // recenter viewing window
-                // Note: this function calls drawTree()
-                this.centerLayoutAvgPoint();
+                this.reLayout();
             } else {
                 // This should never happen under normal circumstances (the
                 // input to this function should always be an existing layout
@@ -2410,6 +2439,8 @@ define([
      */
     Empress.prototype.collapseClades = function () {
         // first check if any collapsed clades have been cached
+        // TODO: the "ignoreLengths" checkbox breaks / is broken by this.
+        // Fix that!
         if (Object.keys(this._collapsedClades).length != 0) {
             for (var cladeRoot in this._collapsedClades) {
                 this.createCollapsedCladeShape(cladeRoot);
@@ -2669,7 +2700,11 @@ define([
             left: cladeNodes[0],
             right: cladeNodes[0],
             deepest: cladeNodes[0],
-            length: this._tree.getTotalLength(cladeNodes[0], rootNode),
+            length: this._tree.getTotalLength(
+                cladeNodes[0],
+                rootNode,
+                this.ignoreLengths
+            ),
             color: this.getNodeInfo(rootNode, "color"),
         };
 
@@ -2687,7 +2722,11 @@ define([
             var curLeft = currentCladeInfo.left;
             var curRight = currentCladeInfo.right;
             var curDeep = currentCladeInfo.deepest;
-            var length = this._tree.getTotalLength(cladeNode, rootNode);
+            var length = this._tree.getTotalLength(
+                cladeNode,
+                rootNode,
+                this.ignoreLengths
+            );
 
             // update deepest node
             if (length > currentCladeInfo.length) {

@@ -42,7 +42,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                  maps to an Array where data for each node is stored in
      *                  postorder. yScalingFactor maps to a Number.
      */
-    function rectangularLayout(tree, width, height, normalize = true, ignoreLengths = false) {
+    function rectangularLayout(
+        tree,
+        width,
+        height,
+        ignoreLengths,
+        normalize = true
+    ) {
         // NOTE: This doesn't draw a horizontal line leading to the root "node"
         // of the graph. See https://github.com/biocore/empress/issues/141 for
         // context.
@@ -86,7 +92,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var node = tree.postorder(tree.preorderselect(i));
             parent = tree.postorder(tree.parent(tree.preorderselect(i)));
 
-            var nodeLen = ignoreLengths ? 1 : tree.length(tree.preorderselect(i));
+            var nodeLen = ignoreLengths
+                ? 1
+                : tree.length(tree.preorderselect(i));
             xCoord[node] = xCoord[parent] + nodeLen;
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
@@ -253,9 +261,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         tree,
         width,
         height,
+        ignoreLengths,
         normalize = true,
-        startAngle = 0,
-        ignoreLengths = false
+        startAngle = 0
     ) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
@@ -311,12 +319,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             // are the remainder of the "result" arrays defined above)
             var node = tree.postorder(tree.preorderselect(i));
             var parent = tree.postorder(tree.parent(tree.preorderselect(i)));
-            if (ignoreLengths) {
-                radius[node] = radius[parent] + 1;
-            } else {
-                radius[node] =
-                    radius[parent] + tree.length(tree.preorderselect(i));
-            }
+
+            var nodeLen = ignoreLengths
+                ? 1
+                : tree.length(tree.preorderselect(i));
+            radius[node] = radius[parent] + nodeLen;
         }
 
         // Now that we have the polar coordinates of the nodes, convert them to
@@ -448,7 +455,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                  Each of these properties maps to an Array where data for
      *                  each node is stored in postorder.
      */
-    function unrootedLayout(tree, width, height, normalize = true, ignoreLengths = false) {
+    function unrootedLayout(
+        tree,
+        width,
+        height,
+        ignoreLengths,
+        normalize = true
+    ) {
         var angle = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
         var x2Arr = new Array(tree.size + 1).fill(0);

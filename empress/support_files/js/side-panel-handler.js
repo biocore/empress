@@ -38,6 +38,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.recenterBtn = document.getElementById("center-tree-btn");
         this.focusOnNodeChk = document.getElementById("focus-on-node-chk");
         this.absentTipChk = document.getElementById("absent-tip-chk");
+        this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
 
         this.focusOnNodeChk.onclick = function () {
             empress.focusOnSelectedNode = this.checked;
@@ -49,6 +50,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             if (scope.sChk.checked) {
                 scope.sUpdateBtn.click();
             }
+        };
+        this.ignoreLengthsChk.onclick = function () {
+            empress.ignoreLengths = this.checked;
+            console.log("ignoreLengths is " + empress.ignoreLengths);
+            empress.reLayout();
         };
 
         // sample GUI components
