@@ -27,11 +27,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
-     * @param {Boolean} normalize If true, then the tree will be scaled up to
-     *                            fill the bounds of width and height.
      * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
      *                                layout; otherwise, a uniform length of 1
      *                                is used.
+     * @param {Boolean} normalize If true, then the tree will be scaled up to
+     *                            fill the bounds of width and height.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -230,6 +230,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
+     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
+     *                                layout; otherwise, a uniform length of 1
+     *                                is used.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @param {Float} startAngle The first tip in the tree visited is assigned
@@ -240,9 +243,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                           that circle, etc.). I believe this is
      *                           analogous to how the "rotation" parameter of
      *                           iTOL works.
-     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
-     *                                layout; otherwise, a uniform length of 1
-     *                                is used.
      * @return {Object} Object with the following properties:
      *                   -x0, y0 ("starting point" x and y)
      *                   -x1, y1 ("ending point" x and y)
@@ -442,11 +442,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
-     * @param {Boolean} normalize If true, then the tree will be scaled up to
-     *                            fill the bounds of width and height.
      * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
      *                                layout; otherwise, a uniform length of 1
      *                                is used.
+     * @param {Boolean} normalize If true, then the tree will be scaled up to
+     *                            fill the bounds of width and height.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
