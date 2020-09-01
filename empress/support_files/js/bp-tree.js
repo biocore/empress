@@ -638,11 +638,10 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         var curNode = start;
         var totalLength = 0;
         while (curNode !== end) {
-            var nodeLen = ignoreLengths
-                ? 1
-                : this.length(this.postorderselect(curNode));
+            var popos = this.postorderselect(curNode);
+            var nodeLen = ignoreLengths ? 1 : this.length(popos);
             totalLength += nodeLen;
-            curNode = this.parent(this.postorderselect(curNode));
+            curNode = this.parent(popos);
             if (curNode === -1) {
                 throw "Node " + start + " must be a descendant of " + end;
             }
