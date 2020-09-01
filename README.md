@@ -34,7 +34,7 @@ In this tutorial we will be using Empress within the QIIME 2 environment, and de
 
 ## Downloading Input Artifacts and Metadata  
 
-Before we start, we’ll need to download the necessary input artifacts. The first four of these artifacts are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/), and the last artifact was produced afterwards using data from the tutorial. These artifacts are:
+Before we start, we’ll need to download the necessary input artifacts for running `qiime empress community-plot`. The first four of these artifacts are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/), and the last artifact was produced afterwards using data from the tutorial. These artifacts are:
 
 1. A feature table (a QIIME 2 artifact of type `FeatureTable[Frequency]`)
 2. A sample metadata file (a [tab-separated-value](https://en.wikipedia.org/wiki/Tab-separated_values) file)
@@ -76,7 +76,7 @@ We are now ready to create our interactive tree plot.
 We’ll start with a simple stand-alone tree visualization artifact and explore our tree using the various features in Empress.
 
 ```bash
-qiime empress plot \
+qiime empress community-plot \
     --i-tree rooted-tree.qza \
     --i-feature-table table.qza \
     --m-sample-metadata-file sample_metadata.tsv \
@@ -249,7 +249,7 @@ Once you are done customizing your tree, you can export the tree as an .SVG file
 Now that you are familiar with basics, let’s try something a bit more advanced. One of the unique features of Empress is its ability to integrate a tree plot with an [Emperor](http://biocore.github.io/emperor) PCoA plot and visualize them side-by-side (these plots are internally referred to as Empire plots). To achieve this we provide a PCoA matrix (`PCoAResults` type artifact), which can be any beta diversity distance matrix, including biplots. Ordination biplots that are made using the [`qiime diversity pcoa-biplot`](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin, incorporate feature loadings represented by arrows that describe explanatory variables in the dataset. This functionality is also compatible with [`DEICODE` biplots](https://github.com/biocore/deicode). In this example we’ll use a PCoA biplot calculated using Unweighted UniFrac distances. To create this new plot, run the following:
 
 ```bash
-qiime empress plot \
+qiime empress community-plot \
     --i-tree rooted-tree.qza \
     --i-pcoa biplot.qza \
     --i-feature-table table.qza \
