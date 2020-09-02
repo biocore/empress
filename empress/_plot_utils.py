@@ -17,7 +17,7 @@ SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
 
 
-def get_bp(newickpath):
+def get_bp(newickfmt):
     """Loads a bp.BP tree from a QIIME 2 NewickFormat object.
 
     This function, along with save_viz(), was moved here from _plot.py so it
@@ -25,13 +25,13 @@ def get_bp(newickpath):
 
     Parameters
     ----------
-    newickpath : q2_types.tree.NewickFormat
+    newickfmt : q2_types.tree.NewickFormat
 
     Returns
     -------
     bp.BP
     """
-    with open(str(newickpath)) as treefile:
+    with open(str(newickfmt)) as treefile:
         # The file will still be closed even though we return from within the
         # with block: see https://stackoverflow.com/a/9885287/10730311.
         return parse_newick(treefile.readline())
