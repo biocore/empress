@@ -400,6 +400,14 @@ def shifting(bitlist, size=51):
 def filter_feature_metadata_to_tree(tip_md, int_md, bp_tree):
     """Filters feature metadata DataFrames to describe the nodes in a tree.
 
+    This is sort of similar to match_tree_and_feature_metadata(), but it
+    doesn't call split_taxonomy(), assumes that feature metadata has already
+    been split into tip and internal node metadata, assumes that the
+    feature metadata's nodes are already a subset of the tree's nodes, and has
+    a different error message if no nodes are shared between the feature
+    metadata and tree. Basically, we could combine these two functions with
+    some effort, but it's probably not worth the headaches.
+
     Parameters
     ----------
     tip_md: pd.DataFrame
