@@ -6,23 +6,16 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import os
-import pkg_resources
-
 import qiime2
-import q2templates
 import numpy as np
 import biom
 
 from scipy.spatial.distance import euclidean
 from q2_types.tree import NewickFormat
 from skbio import OrdinationResults
-from bp import parse_newick
 
 from empress.core import Empress
-
-SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
-TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
+from empress._plot_utils import get_bp, save_viz
 
 
 def community_plot(
@@ -56,9 +49,7 @@ def community_plot(
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()
 
-    # path to the actual newick file
-    with open(str(tree)) as file:
-        t = parse_newick(file.readline())
+    t = get_bp(tree)
     trim_tree = filter_unobserved_features_from_phylogeny
     viz = Empress(tree=t, table=feature_table,
                   sample_metadata=sample_metadata,
@@ -67,14 +58,7 @@ def community_plot(
                   filter_extra_samples=filter_extra_samples,
                   filter_missing_features=filter_missing_features,
                   filter_unobserved_features_from_phylogeny=trim_tree)
-
-    with open(os.path.join(output_dir, 'empress.html'), 'w') as file:
-        file.write(str(viz))
-
-    viz.copy_support_files(output_dir)
-
-    index = os.path.join(TEMPLATES, 'index.html')
-    q2templates.render(index, output_dir)
+    save_viz(viz, output_dir)
 
 
 def tree_plot(
@@ -86,15 +70,6 @@ def tree_plot(
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()
 
-    # path to the actual newick file
-    with open(str(tree)) as file:
-        t = parse_newick(file.readline())
+    t = get_bp(tree)
     viz = Empress(tree=t, feature_metadata=feature_metadata)
-
-    with open(os.path.join(output_dir, 'empress.html'), 'w') as file:
-        file.write(str(viz))
-
-    viz.copy_support_files(output_dir)
-
-    index = os.path.join(TEMPLATES, 'index.html')
-    q2templates.render(index, output_dir)
+    save_viz(viz, output_dir)

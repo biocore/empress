@@ -45,7 +45,7 @@ class Empress():
 
         Parameters
         ----------
-        tree: bp.Tree
+        tree: bp.BP
             The phylogenetic tree to visualize.
         table: biom.Table, optional
             The matrix to visualize paired with the phylogenetic tree.
