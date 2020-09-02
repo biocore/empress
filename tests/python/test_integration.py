@@ -98,6 +98,18 @@ class TestIntegration(TestPluginBase):
         self.assertIsInstance(self.result, Results)
         self.assertIsInstance(self.result.visualization, Visualization)
 
+    def test_community_plot_fails_if_table_and_sm_not_provided(self):
+        with self.assertRaisesRegex(
+            TypeError,
+            "missing 1 required positional argument: 'sample_metadata'"
+        ):
+            self.community_plot(tree=self.tree, feature_table=self.table)
+        with self.assertRaisesRegex(
+            TypeError,
+            "missing 1 required positional argument: 'feature_table'"
+        ):
+            self.community_plot(tree=self.tree, sample_metadata=self.md)
+
     def test_tree_plot_execution_with_fm(self):
         """Checks that tree plot visualizer runs without errors, given fm."""
         self.result = self.tree_plot(tree=self.tree, feature_metadata=self.fmd)
