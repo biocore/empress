@@ -70,7 +70,8 @@ class TestIntegration(TestPluginBase):
         # Just for reference for anyone reading this, self.plugin is set upon
         # calling super().setUp() which looks at the "package" variable set
         # above
-        self.plot = self.plugin.visualizers["plot"]
+        self.community_plot = self.plugin.visualizers["community_plot"]
+        self.tree_plot = self.plugin.visualizers["tree_plot"]
 
         self.tree, self.table, self.md, self.fmd, _ = load_mp_data()
 
@@ -81,15 +82,30 @@ class TestIntegration(TestPluginBase):
         # during tearDown().
         self.output_path = os.path.join(PREFIX_DIR, "empress-tree.qzv")
 
-    def test_execution(self):
-        """Just checks that the visualizer at least runs without errors."""
-        self.result = self.plot(tree=self.tree, feature_table=self.table,
-                                sample_metadata=self.md,
-                                feature_metadata=self.fmd)
+    def test_community_plot_execution(self):
+        """Checks that the community plot visualizer runs without errors."""
+        self.result = self.community_plot(
+            tree=self.tree,
+            feature_table=self.table,
+            sample_metadata=self.md,
+            feature_metadata=self.fmd
+        )
         self.assertIsInstance(self.result, Results)
         self.assertIsInstance(self.result.visualization, Visualization)
         # TODO check details of viz more carefully (likely by digging into the
         # index HTML of self.result.visualization, etc.)
+
+    def test_tree_plot_execution_with_fm(self):
+        """Checks that tree plot visualizer runs without errors, given fm."""
+        self.result = self.tree_plot(tree=self.tree, feature_metadata=self.fmd)
+        self.assertIsInstance(self.result, Results)
+        self.assertIsInstance(self.result.visualization, Visualization)
+
+    def test_tree_plot_execution_no_fm(self):
+        """Checks that tree plot visualizer runs without errors; just tree."""
+        self.result = self.tree_plot(tree=self.tree)
+        self.assertIsInstance(self.result, Results)
+        self.assertIsInstance(self.result.visualization, Visualization)
 
     def tearDown(self):
         super().tearDown()
