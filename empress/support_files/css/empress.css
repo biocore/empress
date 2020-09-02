@@ -679,3 +679,10 @@ p.side-header button:hover,
 .selected-metadata-choice {
     background-color: #333 !important;
 }
+
+.side-panel-inner-header {
+    font-weight: bold;
+    justify-content: center !important;
+    margin-top: 0;
+    margin-bottom: 0;
+}

@@ -248,6 +248,12 @@ define([
         this.ignoreAbsentTips = true;
 
         /**
+         * @type{Bool}
+         * Whether to ignore node lengths during layout or not
+         */
+        this.ignoreLengths = false;
+
+        /**
          * @type{CanvasEvents}
          * Handles user events
          */
@@ -303,7 +309,7 @@ define([
          *
          * This stores the group membership of a node. -1 means the node doesn't
          * belong to a group. This array is used to collapse clades by search
-         * for clades in this array that share the same group membershi[.
+         * for clades in this array that share the same group membership.
          */
         this._group = new Array(this._tree.size + 1).fill(-1);
     }
@@ -317,7 +323,12 @@ define([
         var data, i;
         // Rectangular
         if (this._currentLayout === "Rectangular") {
-            data = LayoutsUtil.rectangularLayout(this._tree, 4020, 4020);
+            data = LayoutsUtil.rectangularLayout(
+                this._tree,
+                4020,
+                4020,
+                this.ignoreLengths
+            );
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
@@ -332,7 +343,12 @@ define([
                     data.lowestChildYr[i];
             }
         } else if (this._currentLayout === "Circular") {
-            data = LayoutsUtil.circularLayout(this._tree, 4020, 4020);
+            data = LayoutsUtil.circularLayout(
+                this._tree,
+                4020,
+                4020,
+                this.ignoreLengths
+            );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
                 this._treeData[i].length = this._numNonLayoutParams;
@@ -351,7 +367,12 @@ define([
                     data.arcEndAngle[i];
             }
         } else {
-            data = LayoutsUtil.unrootedLayout(this._tree, 4020, 4020);
+            data = LayoutsUtil.unrootedLayout(
+                this._tree,
+                4020,
+                4020,
+                this.ignoreLengths
+            );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
                 this._treeData[i].length = this._numNonLayoutParams;
@@ -2200,6 +2221,38 @@ define([
     };
 
     /**
+     * Redraws the tree, using the current layout and any layout parameters
+     * that may have changed in the interim.
+     */
+    Empress.prototype.reLayout = function () {
+        this.getLayoutInfo();
+
+        // recollapse clades
+        if (Object.keys(this._collapsedClades).length != 0) {
+            this._collapsedCladeBuffer = [];
+            this.collapseClades();
+        }
+
+        // Adjust the thick-line stuff before calling drawTree() --
+        // this will get the buffer set up before it's actually drawn
+        // in drawTree(). Doing these calls out of order (draw tree,
+        // then call thickenColoredNodes()) causes the thick-line
+        // stuff to only change whenever the tree is redrawn.
+        this.thickenColoredNodes(this._currentLineWidth);
+
+        // Undraw or redraw barplots as needed
+        var supported = this._barplotPanel.updateLayoutAvailability(
+            this._currentLayout
+        );
+        if (!supported && this._barplotsDrawn) {
+            this.undrawBarplots();
+        } else if (supported && this._barplotPanel.enabled) {
+            this.drawBarplots(this._barplotPanel.layers);
+        }
+        this.drawTree();
+    };
+
+    /**
      * Redraws the tree with a new layout (if different from current layout).
      */
     Empress.prototype.updateLayout = function (newLayout) {
@@ -2207,34 +2260,11 @@ define([
             if (this._layoutToCoordSuffix.hasOwnProperty(newLayout)) {
                 // get new layout
                 this._currentLayout = newLayout;
-                this.getLayoutInfo();
-
-                // recollapse clades
-                if (Object.keys(this._collapsedClades).length != 0) {
-                    this._collapsedCladeBuffer = [];
-                    this.collapseClades();
-                }
-
-                // Adjust the thick-line stuff before calling drawTree() --
-                // this will get the buffer set up before it's actually drawn
-                // in drawTree(). Doing these calls out of order (draw tree,
-                // then call thickenColoredNodes()) causes the thick-line
-                // stuff to only change whenever the tree is redrawn.
-                this.thickenColoredNodes(this._currentLineWidth);
-
-                // Undraw or redraw barplots as needed
-                var supported = this._barplotPanel.updateLayoutAvailability(
-                    newLayout
-                );
-                // TODO: don't call drawTree() from either of these barplot
-                // funcs, since it'll get called in centerLayoutAvgPoint anyway
-                if (!supported && this._barplotsDrawn) {
-                    this.undrawBarplots();
-                } else if (supported && this._barplotPanel.enabled) {
-                    this.drawBarplots(this._barplotPanel.layers);
-                }
+                this.reLayout();
                 // recenter viewing window
-                // Note: this function calls drawTree()
+                // NOTE: this function calls drawTree(), which is redundant
+                // since reLayout() already called it. Would be good to
+                // minimize redundant calls to that.
                 this.centerLayoutAvgPoint();
             } else {
                 // This should never happen under normal circumstances (the
@@ -2403,19 +2433,16 @@ define([
     /**
      * Collapses all clades that share the same color into a quadrilateral.
      *
-     * Note: if a clade contains a node with DEFAULT_COLOR it will not be
-     *       collapsed
+     * NOTE: Previously, this checked this._collapsedClades to see if there
+     * were any "cached" clades. I've removed this for now because it's
+     * possible for the layout to stay the same but the clades still to
+     * need updating (e.g. if the "ignore lengths" setting of Empress
+     * changes). If collapsing clades is a bottleneck, we could try to add
+     * back caching.
      *
      * @return{Boolean} true if at least one clade was collapse. false otherwise
      */
     Empress.prototype.collapseClades = function () {
-        // first check if any collapsed clades have been cached
-        if (Object.keys(this._collapsedClades).length != 0) {
-            for (var cladeRoot in this._collapsedClades) {
-                this.createCollapsedCladeShape(cladeRoot);
-            }
-            return;
-        }
         // The following algorithm consists of two parts: 1) find all clades
         // whose member nodes have the same color, 2) collapse the clades
 
@@ -2451,8 +2478,6 @@ define([
         // collaped.
         // Collapsing a clade will set the .visible property of members to
         // false and will then be skipped in the for loop.
-        // Note: if the root of a clade has DEFUALT_COLOR then it will not be
-        // collapsed (since all of its children will also have DEFAULT_COLOR)
         var inorder = this._tree.inOrderNodes();
         for (var node in inorder) {
             node = inorder[node];
@@ -2631,8 +2656,8 @@ define([
      * Collapse the clade at rootNode
      *
      * This method will set the .visible property for all nodes in the clade
-     * (execpt the root) to false. Also, the color of rootNode will be set to
-     * DEFAULT_COLOR and this._collapsedCladeBuffer will be modified.
+     * (except the root) to false. Also, this._collapsedCladeBuffer will be
+     * updated.
      *
      * Note: This method will cache the clade information. So, as long as
      *       the collapsed clades aren't changed, you do not need to call this
@@ -2669,7 +2694,11 @@ define([
             left: cladeNodes[0],
             right: cladeNodes[0],
             deepest: cladeNodes[0],
-            length: this._tree.getTotalLength(cladeNodes[0], rootNode),
+            length: this._tree.getTotalLength(
+                cladeNodes[0],
+                rootNode,
+                this.ignoreLengths
+            ),
             color: this.getNodeInfo(rootNode, "color"),
         };
 
@@ -2687,7 +2716,11 @@ define([
             var curLeft = currentCladeInfo.left;
             var curRight = currentCladeInfo.right;
             var curDeep = currentCladeInfo.deepest;
-            var length = this._tree.getTotalLength(cladeNode, rootNode);
+            var length = this._tree.getTotalLength(
+                cladeNode,
+                rootNode,
+                this.ignoreLengths
+            );
 
             // update deepest node
             if (length > currentCladeInfo.length) {
@@ -2723,10 +2756,6 @@ define([
 
         // step 4)
         this.createCollapsedCladeShape(rootNode);
-
-        // We set the root of the clade to default otherwise, the branch that
-        // connects the root clade to its parent will still be colored
-        this.setNodeInfo(rootNode, "color", this.DEFAULT_COLOR);
     };
 
     /**
