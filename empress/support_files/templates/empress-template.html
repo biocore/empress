@@ -130,7 +130,7 @@
 
         var biom = null;
         if (isCommunityPlot) {
-            var biom = new BIOMTable(
+            biom = new BIOMTable(
               {{ s_ids | tojson }},
               {{ f_ids | tojson }},
               {{ s_ids_to_indices | tojson }},
