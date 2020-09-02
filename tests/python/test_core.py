@@ -538,6 +538,7 @@ DICT_A = {
         None
     ],
     "lengths": [-1, 1.0, 2.0, 1.0, 2.0, 1.0, 1.0, 3.0, 2.0, 1.0],
+    "is_community_plot": True,
     "s_ids": ["Sample1", "Sample2", "Sample3", "Sample4"],
     "f_ids": [1, 4, 2, 7],
     "s_ids_to_indices": {
