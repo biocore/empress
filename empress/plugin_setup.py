@@ -8,9 +8,13 @@
 
 from ._plot import community_plot, tree_plot
 
-from qiime2.plugin import Plugin, Metadata, Bool, Citations, Int, Range
+from qiime2.plugin import (
+    Plugin, Metadata, Bool, Citations, Int, Range, TypeMatch
+)
 from q2_types.tree import Phylogeny, Rooted
-from q2_types.feature_table import FeatureTable, Frequency
+from q2_types.feature_table import (
+    FeatureTable, Frequency, RelativeFrequency, PresenceAbsence, Composition
+)
 from q2_types.ordination import PCoAResults
 
 import pkg_resources
@@ -37,11 +41,18 @@ FM_DESC = (
     'will be automatically filtered out of the visualization.'
 )
 
+# Accept various types of feature tables -- we (currently) convert things to
+# presence/absence, anyway. This line adapted from
+# https://github.com/qiime2/q2-feature-table/blob/9ed6160adad45445ec054e5ce034a3b3ba25a9b4/q2_feature_table/plugin_setup.py#L243.
+AcceptedTableTypes = TypeMatch([
+    Frequency, RelativeFrequency, PresenceAbsence, Composition
+])
+
 plugin.visualizers.register_function(
     function=community_plot,
     inputs={
         'tree': Phylogeny[Rooted],
-        'feature_table': FeatureTable[Frequency],
+        'feature_table': FeatureTable[AcceptedTableTypes],
         'pcoa': PCoAResults,
     },
     parameters={
@@ -55,13 +66,12 @@ plugin.visualizers.register_function(
     },
     input_descriptions={
         'tree': TREE_DESC,
-        'feature_table': 'A table containing the abundances of features '
-                         'within samples. This information allows us to '
-                         'decorate the phylogeny by sample metadata. It\'s '
-                         'expected that all features in the table are also '
-                         'present as tips in the tree, and that all samples '
-                         'in the table are also present in the sample '
-                         'metadata file.',
+        'feature_table': 'A table that documents which features are in which '
+                         'samples. This information allows us to decorate the '
+                         'phylogeny by sample metadata. It\'s expected that '
+                         'all features in the table are also present as tips '
+                         'in the tree, and that all samples in the table are '
+                         'also present in the sample metadata file.',
         'pcoa': 'Principal coordinates matrix to display simultaneously with '
                 'the phylogenetic tree using Emperor.'
     },
