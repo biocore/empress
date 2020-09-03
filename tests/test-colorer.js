@@ -497,8 +497,11 @@ require([
         });
         test("Test Colorer with custom colormaps", function () {
             var eles = ["red", "green", "blue cheese"];
-            var colormap = {"red": "#FF0000", "green": "#00FF00",
-                            "blue cheese": "#0000FF"};
+            var colormap = {
+                red: "#FF0000",
+                green: "#00FF00",
+                "blue cheese": "#0000FF",
+            };
             var colorer = new Colorer(colormap, eles);
 
             var expHexMap = colorer.getMapHex();
@@ -518,26 +521,29 @@ require([
                 colorer.assignOrdinalScaledColors();
             }, /Cannot call assignOrdinalScaledColors using a custom colormap/);
         });
-        test("Test Colorer with custom colormaps fails with missing values",
-             function () {
+        test("Test Colorer with custom colormaps fails with missing values", function () {
             var eles = ["red", "green", "blue cheese"];
-            var colormap = {"red": "#FF0000", "green": "#00FF00",
-                            "blue": "#0000FF"};
+            var colormap = {
+                red: "#FF0000",
+                green: "#00FF00",
+                blue: "#0000FF",
+            };
 
             throws(function () {
-              var colorer = new Colorer(colormap, eles);
+                var colorer = new Colorer(colormap, eles);
             }, /The custom colormap does not contain a mapping for all values/);
         });
-        test("Test Colorer with custom colormaps fails with quant scale",
-             function () {
+        test("Test Colorer with custom colormaps fails with quant scale", function () {
             var eles = ["red", "green", "blue cheese"];
-            var colormap = {"red": "#FF0000", "green": "#00FF00",
-                            "blue cheese": "#0000FF"};
+            var colormap = {
+                red: "#FF0000",
+                green: "#00FF00",
+                "blue cheese": "#0000FF",
+            };
 
             throws(function () {
-              var colorer = new Colorer(colormap, eles, true);
+                var colorer = new Colorer(colormap, eles, true);
             }, /Quantitative scales are not supported for custom colormaps/);
         });
-
     });
 });

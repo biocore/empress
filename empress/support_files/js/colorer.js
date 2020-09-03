@@ -63,20 +63,25 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // useQuantScale, assign colors accordingly
         if (_.isObject(this.color)) {
             if (useQuantScale) {
-              throw new Error('Quantitative scales are not supported for ' +
-                              'custom colormaps');
+                throw new Error(
+                    "Quantitative scales are not supported for " +
+                        "custom colormaps"
+                );
             }
 
             // check that all values are present in the colormap
-            var isValid = _.every(_.map(this.sortedUniqueValues, function(v) {
-              return scope.color[v] !== undefined;
-            }));
+            var isValid = _.every(
+                _.map(this.sortedUniqueValues, function (v) {
+                    return scope.color[v] !== undefined;
+                })
+            );
             if (!isValid) {
-                throw new Error('The custom colormap does not contain a ' +
-                                'mapping for all values');
+                throw new Error(
+                    "The custom colormap does not contain a " +
+                        "mapping for all values"
+                );
             }
             this.__valueToColor = this.color;
-
         } else if (Colorer.isColorMapDiscrete(this.color)) {
             this.assignDiscreteColors();
         } else {
@@ -102,8 +107,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      */
     Colorer.prototype.assignDiscreteColors = function () {
         if (_.isObject(this.color)) {
-            throw new Error('Cannot call assignDiscreteColors using a custom' +
-                            ' colormap');
+            throw new Error(
+                "Cannot call assignDiscreteColors using a custom" + " colormap"
+            );
         }
 
         var palette;
@@ -135,8 +141,10 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      */
     Colorer.prototype.assignOrdinalScaledColors = function () {
         if (_.isObject(this.color)) {
-            throw new Error('Cannot call assignOrdinalScaledColors using a ' +
-                            'custom colormap');
+            throw new Error(
+                "Cannot call assignOrdinalScaledColors using a " +
+                    "custom colormap"
+            );
         }
 
         if (this.sortedUniqueValues.length === 1) {
@@ -179,8 +187,10 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         var scope = this;
 
         if (_.isObject(this.color)) {
-            throw new Error('Cannot call assignContinuousScaledColors using a' +
-                            ' custom colormap');
+            throw new Error(
+                "Cannot call assignContinuousScaledColors using a" +
+                    " custom colormap"
+            );
         }
 
         var split = util.splitNumericValues(this.sortedUniqueValues);
