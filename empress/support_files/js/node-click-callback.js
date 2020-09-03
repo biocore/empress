@@ -51,7 +51,7 @@ ec.controllers.animations.addEventListener("animation-started", function (
     animator.setAnimationParameters(
         payload.message.trajectory,
         payload.message.gradient,
-        payload.target._colors,
+        payload.target.getColors(),
         animator.collapse,
         animator.lWidth
     );
