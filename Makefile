@@ -45,11 +45,11 @@ docs:
 	@# Assumes you're in a QIIME 2 conda environment
 	qiime empress tree-plot \
 		--i-tree docs/moving-pictures/rooted-tree.qza \
-		--o-visualization docs/moving-pictures/plain-empress-tree.qzv
+		--o-visualization docs/moving-pictures/plain.qzv
 	qiime empress tree-plot \
 		--i-tree docs/moving-pictures/rooted-tree.qza \
 		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
-		--o-visualization docs/moving-pictures/just-fm-empress-tree.qzv
+		--o-visualization docs/moving-pictures/just-fm.qzv
 	qiime empress community-plot \
 		--i-tree docs/moving-pictures/rooted-tree.qza \
 		--i-feature-table docs/moving-pictures/table.qza \
