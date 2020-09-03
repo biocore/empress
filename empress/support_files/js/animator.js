@@ -212,8 +212,6 @@ define(["Colorer", "util"], function (Colorer, util) {
 
     /**
      * Draws the current frame and updates the legend.
-     *
-     * @param{Boolean} showColors Whether the legend should be shown on screen.
      */
     Animator.prototype.drawFrame = function (showColors) {
         if (this.queuedFrames === null) {
@@ -229,7 +227,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         }
 
         // draw new legend
-        this.legend.addCategoricalKey(name, showColors ? keyInfo : {});
+        this.legend.addCategoricalKey(name, keyInfo);
 
         // draw tree
         this.empress.resetTree();
@@ -259,8 +257,7 @@ define(["Colorer", "util"], function (Colorer, util) {
             this._collectFrame(frame);
         }
 
-        // don't show legends for empire animations
-        this.drawFrame(false);
+        this.drawFrame();
     };
 
     /**
@@ -392,7 +389,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         if (this.curFrame < 0) {
             this.curFrame = 0;
         }
-        this.drawFrame(true);
+        this.drawFrame();
     };
 
     /**
@@ -406,7 +403,7 @@ define(["Colorer", "util"], function (Colorer, util) {
             this.curFrame = this.totalFrames - 1;
         }
         if (!this.framesRdy[this.curFrame]) this._collectFrame(this.curFrame);
-        this.drawFrame(true);
+        this.drawFrame();
     };
 
     /**
