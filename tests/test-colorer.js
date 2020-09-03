@@ -506,8 +506,8 @@ require([
 
             var expHexMap = colorer.getMapHex();
             equal(_.keys(expHexMap).length, 3);
-            equal(expHexMap["red"], "#FF0000");
-            equal(expHexMap["green"], "#00FF00");
+            equal(expHexMap.red, "#FF0000");
+            equal(expHexMap.green, "#00FF00");
             equal(expHexMap["blue cheese"], "#0000FF");
 
             // check that errors are raised when calling disallowed methods
