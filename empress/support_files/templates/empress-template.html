@@ -163,7 +163,6 @@
         // feature table and sample metadata file were provided
         if (isCommunityPlot) {
             sPanel.addSampleTab();
-            document.getElementById("smOpenButton").classList.remove("hidden");
 
             // Create animator state machine
             var animator = new Animator(empress, legend);
@@ -173,19 +172,22 @@
             animationPanel.addAnimationTab();
             document.getElementById("animationOpenButton").classList
                 .remove("hidden");
+        } else {
+            $(".needs-community-data").addClass("hidden");
+            if (fmCols.length === 0) {
+                // Neither feature nor sample metadata is available, so hide
+                // things that require at least one type of metadata (e.g.
+                // the barplot panel)
+                $(".needs-metadata").addClass("hidden");
+            }
         }
 
         // Similarly, only show the feature metadata coloring panel if feature
         // metadata was provided
         if (fmCols.length > 0) {
             sPanel.addFeatureTab();
-            document.getElementById("fmOpenButton").classList.remove("hidden");
-        }
-
-        // Only show barplots if sample or feature metadata is available
-        if (isCommunityPlot || fmCols.length > 0) {
-            document.getElementById("barplotOpenButton").classList
-                .remove("hidden");
+        } else {
+            $(".needs-feature-metadata").addClass("hidden");
         }
 
         // make all tabs collapsable
