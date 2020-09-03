@@ -30,7 +30,12 @@ def community_plot(
     number_of_features: int = 5,
     filter_unobserved_features_from_phylogeny: bool = True
 ) -> None:
+    """Visualizes a tree alongside community-level data.
 
+       The functionality available in this visualization is a superset of the
+       functionality in tree_plot() -- including sample metadata coloring /
+       barplots, animations, and Emperor integration support.
+    """
     if pcoa is not None and pcoa.features is not None:
         # select the top N most important features based on the vector's
         # magnitude (coped from q2-emperor)
@@ -66,6 +71,7 @@ def tree_plot(
     tree: NewickFormat,
     feature_metadata: qiime2.Metadata = None
 ) -> None:
+    """Visualizes a tree (optionally with feature metadata)."""
 
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()
