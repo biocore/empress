@@ -398,6 +398,7 @@ define([
 
         this.getLayoutInfo();
         this.centerLayoutAvgPoint();
+        // this.drawTree();
     };
 
     /**
@@ -748,6 +749,7 @@ define([
      * @return {Array}
      */
     Empress.prototype.getCoords = function () {
+        var d = new Date;
         var tree = this._tree;
 
         // The coordinates (and colors) of the tree's nodes.
@@ -857,10 +859,13 @@ define([
                     // arc spanned by rotating (arcx0, arcy0), the line whose
                     // origin is the root of the tree and endpoint is the start
                     // of the arc, by arcendangle - arcstartangle radians.
-                    var numSamples = 15;
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
+                    var numSamples = Math.floor(
+                        40 * Math.abs(arcDeltaAngle / (Math.PI))
+                    );
+                    numSamples = numSamples > 0 ? numSamples : 2;
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this.getNodeInfo(node, "arcx0");
                     var sY = this.getNodeInfo(node, "arcy0");
@@ -890,6 +895,8 @@ define([
                 addPoint(this.getX(node), this.getY(node));
             }
         }
+        var dt = new Date();
+        console.log("Circ time:", dt.getTime() - d.getTime());
         return new Float32Array(coords);
     };
 
@@ -2249,7 +2256,7 @@ define([
         } else if (supported && this._barplotPanel.enabled) {
             this.drawBarplots(this._barplotPanel.layers);
         }
-        this.drawTree();
+        this.centerLayoutAvgPoint();
     };
 
     /**
@@ -2265,7 +2272,6 @@ define([
                 // NOTE: this function calls drawTree(), which is redundant
                 // since reLayout() already called it. Would be good to
                 // minimize redundant calls to that.
-                this.centerLayoutAvgPoint();
             } else {
                 // This should never happen under normal circumstances (the
                 // input to this function should always be an existing layout
