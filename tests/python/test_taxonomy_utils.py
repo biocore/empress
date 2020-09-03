@@ -27,8 +27,10 @@ class TestTaxonomyUtils(unittest.TestCase):
                         "c__Gammaproteobacteria; o__Pasteurellales; "
                         "f__Pasteurellaceae; g__; s__"
                     ),
+                    # add a variable number of whitespace characters to check
+                    # these are all successfully removed
                     (
-                        "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                        "k__Bacteria;p__Bacteroidetes  ;     c__Bacteroidia; "
                         "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; "
                         "s__uniformis"
                     ),

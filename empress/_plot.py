@@ -12,7 +12,7 @@ import pkg_resources
 import qiime2
 import q2templates
 import numpy as np
-import pandas as pd
+import biom
 
 from scipy.spatial.distance import euclidean
 from q2_types.tree import NewickFormat
@@ -25,7 +25,7 @@ SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
 
 
-def plot(output_dir: str, tree: NewickFormat, feature_table: pd.DataFrame,
+def plot(output_dir: str, tree: NewickFormat, feature_table: biom.Table,
          sample_metadata: qiime2.Metadata, pcoa: OrdinationResults = None,
          feature_metadata: qiime2.Metadata = None,
          ignore_missing_samples: bool = False,

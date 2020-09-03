@@ -9,6 +9,7 @@
 .PHONY: test pytest jstest stylecheck jsstyle githook docs
 
 JSLOCS = empress/support_files/js/*.js tests/*.js
+CSSLOCS = empress/support_files/css/*.css
 
 test: pytest jstest
 
@@ -22,15 +23,15 @@ jstest:
 # Lints and checks code style
 stylecheck:
 	jshint $(JSLOCS)
-	prettier --check --tab-width 4 $(JSLOCS)
+	prettier --check --tab-width 4 $(JSLOCS) $(CSSLOCS)
 	flake8 empress/*.py tests/python/*.py setup.py
 
 # Auto-formats the JS code
 jsstyle:
 	@# To be extra safe, do a dry run of prettier and check that it hasn't
 	@# changed the code's abstract syntax tree (AST)
-	prettier --debug-check --tab-width 4 $(JSLOCS)
-	prettier --write --tab-width 4 $(JSLOCS)
+	prettier --debug-check --tab-width 4 $(JSLOCS) $(CSSLOCS)
+	prettier --write --tab-width 4 $(JSLOCS) $(CSSLOCS)
 
 githook:
 	@# Try to add in a pre-commit hook that runs "make stylecheck"

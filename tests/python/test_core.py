@@ -16,6 +16,7 @@ from skbio.util import assert_ordination_results_equal
 from pandas.util.testing import assert_frame_equal
 from os.path import exists
 from shutil import rmtree
+import biom
 
 from .test_integration import load_mp_data
 from emperor import Emperor
@@ -28,38 +29,26 @@ from skbio.tree import TreeNode
 
 class TestCore(unittest.TestCase):
 
-    def assert_almost_equal_tree_data(self, tree_data, exp):
-        # skip treeData[0] because currently nodes are stored in postorder
-        # position using 1-index. This will be addressed with #233
-        for node in range(len(tree_data), 1):
-            for attr in range(len(tree_data[node])):
-                self.assertAlmostEqual(tree_data[node][attr], exp[node][attr])
-
     def setUp(self):
         self.tree = parse_newick('(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2):1;')
         self.pruned_tree = TreeNode.read(
             StringIO('(((a:1)EmpressNode0:1,b:2)g:1,(d:3)h:2)EmpressNode1:1;')
         )
         # Test table/metadata (mostly) adapted from Qurro:
-        # the table is transposed to match QIIME2's expectation
-        self.table = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 0, 4],
-                "Sample2": [8, 7, 0, 5],
-                "Sample3": [1, 0, 0, 0],
-                "Sample4": [0, 0, 1, 0]
-            },
-            index=["a", "b", "e", "d"]
-        ).T
-        self.unrelated_table = pd.DataFrame(
-            {
-                "Sample1": [5, 2, 0, 2],
-                "Sample2": [2, 3, 0, 1],
-                "Sample3": [5, 2, 0, 0],
-                "Sample4": [4, 5, 0, 4]
-            },
-            index=["h", "i", "j", "k"]
-        ).T
+        self.table = biom.Table(np.array([[1, 2, 0, 4],
+                                          [8, 7, 0, 5],
+                                          [1, 0, 0, 0],
+                                          [0, 0, 1, 0]]).T,
+                                list('abed'),
+                                ['Sample1', 'Sample2', 'Sample3', 'Sample4'])
+
+        self.unrelated_table = biom.Table(np.array([[5, 2, 0, 2],
+                                                    [2, 3, 0, 1],
+                                                    [5, 2, 0, 0],
+                                                    [4, 5, 0, 4]]).T,
+                                          list("hijk"),
+                                          ['Sample1', 'Sample2', 'Sample3',
+                                           'Sample4'])
         self.sample_metadata = pd.DataFrame(
             {
                 "Metadata1": [0, 0, 0, 1],
@@ -67,7 +56,7 @@ class TestCore(unittest.TestCase):
                 "Metadata3": [1, 2, 3, 4],
                 "Metadata4": ["abc", "def", "ghi", "jkl"]
             },
-            index=list(self.table.index)
+            index=list(self.table.ids())
         )
         self.feature_metadata = pd.DataFrame(
             {
@@ -76,14 +65,11 @@ class TestCore(unittest.TestCase):
             },
             index=["a", "h"]
         )
-        self.filtered_table = pd.DataFrame(
-            {
-                "Sample1": [1, 2, 4],
-                "Sample2": [8, 7, 5],
-                "Sample3": [1, 0, 0],
-            },
-            index=["a", "b", "d"]
-        ).T
+        self.filtered_table = biom.Table(np.array([[1, 2, 4],
+                                                   [8, 7, 5],
+                                                   [1, 0, 0]]).T,
+                                         ['a', 'b', 'd'],
+                                         ['Sample1', 'Sample2', 'Sample3'])
         self.filtered_sample_metadata = pd.DataFrame(
             {
                 "Metadata1": [0, 0, 0],
@@ -134,15 +120,11 @@ class TestCore(unittest.TestCase):
             proportion_explained=proportion_explained)
         self.biplot_tree = parse_newick(
             '(((y:1,z:2):1,b:2)g:1,(:1,d:3)h:2):1;')
-        self.biplot_table = pd.DataFrame(
-            {
-                "Sample1": [1, 2],
-                "Sample2": [8, 7],
-                "Sample3": [1, 0],
-                "Sample4": [0, 3]
-            },
-            index=["y", "z"]
-        ).T
+        self.biplot_table = biom.Table(np.array([[1, 2], [8, 7],
+                                                 [1, 0], [0, 3]]).T,
+                                       ['y', 'z'],
+                                       ['Sample1', 'Sample2', 'Sample3',
+                                        'Sample4'])
 
         self.files_to_remove = []
         self.maxDiff = None
@@ -157,16 +139,16 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, 'support_files')
-        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
-                                        0, 1, 0, 0, 0])
+        self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1,
+                                            1, 0, 1, 0, 0, 0])
 
-        names = ['a', 'e', 'EmpressNode0', 'b', 'g', 'EmpressNode1', 'd', 'h',
-                 'EmpressNode2']
-        for i, node in enumerate(viz.tree.postorder()):
-            self.assertEqual(node.name, names[i])
+        names = ['a', 'e', None, 'b', 'g', None, 'd', 'h', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.table, viz.table.T)
+        self.assertEqual(self.table, viz.table)
         self.assertNotEqual(id(self.table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
@@ -182,16 +164,16 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, 'support_files')
-        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
-                                        0, 1, 0, 0, 0])
+        self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1,
+                                            1, 0, 1, 0, 0, 0])
 
-        names = ['a', 'e', 'EmpressNode0', 'b', 'g', 'EmpressNode1', 'd', 'h',
-                 'EmpressNode2']
-        for i, node in enumerate(viz.tree.postorder()):
-            self.assertEqual(node.name, names[i])
+        names = ['a', 'e', None, 'b', 'g', None, 'd', 'h', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.table, viz.table.T)
+        self.assertEqual(self.table, viz.table)
         self.assertNotEqual(id(self.table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
@@ -206,9 +188,14 @@ class TestCore(unittest.TestCase):
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
     def test_init_with_ordination_empty_samples_in_pcoa(self):
+        def make_bad(v, i, m):
+            if i in ['Sample2', 'Sample4']:
+                return np.zeros(len(v))
+            else:
+                return v
+
         bad_table = self.table.copy()
-        bad_table.loc["Sample4"] = 0
-        bad_table.loc["Sample2"] = 0
+        bad_table.transform(make_bad, inplace=True)
         with self.assertRaisesRegex(
             ValueError,
             (
@@ -253,6 +240,7 @@ class TestCore(unittest.TestCase):
     def test_to_dict(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       filter_unobserved_features_from_phylogeny=False)
+
         obs = viz._to_dict()
         dict_a_cp = copy.deepcopy(DICT_A)
 
@@ -264,13 +252,6 @@ class TestCore(unittest.TestCase):
         # with open("dictcode.py", "w") as f:
         #     f.write("DICT_A = {}".format(str(obs)))
 
-        tree_data = obs['tree_data']
-        exp = dict_a_cp['tree_data']
-
-        self.assert_almost_equal_tree_data(tree_data, exp)
-
-        dict_a_cp.pop('tree_data')
-        obs.pop('tree_data')
         self.assertEqual(obs, dict_a_cp)
 
     def test_to_dict_with_feature_metadata(self):
@@ -280,16 +261,10 @@ class TestCore(unittest.TestCase):
         )
         obs = viz._to_dict()
         dict_a_with_fm = copy.deepcopy(DICT_A)
-        dict_a_with_fm["compressed_tip_metadata"] = {"a": ["asdf", "qwer"]}
-        dict_a_with_fm["compressed_int_metadata"] = {"h": ["ghjk", "tyui"]}
+        dict_a_with_fm["compressed_tip_metadata"] = {1: ["asdf", "qwer"]}
+        dict_a_with_fm["compressed_int_metadata"] = {8: ["ghjk", "tyui"]}
         dict_a_with_fm["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
 
-        tree_data = obs['tree_data']
-        exp = dict_a_with_fm['tree_data']
-        self.assert_almost_equal_tree_data(tree_data, exp)
-
-        obs.pop('tree_data')
-        dict_a_with_fm.pop('tree_data')
         self.assertEqual(obs, dict_a_with_fm)
 
     def test_to_dict_with_metadata_nans(self):
@@ -308,16 +283,10 @@ class TestCore(unittest.TestCase):
         # [1][3] corresponds to Sample2, Metadata4
         dict_a_nan["compressed_sample_metadata"][1][3] = str(np.nan)
 
-        dict_a_nan["compressed_tip_metadata"] = {"a": ["asdf", str(np.nan)]}
-        dict_a_nan["compressed_int_metadata"] = {"h": [str(np.nan), "tyui"]}
+        dict_a_nan["compressed_tip_metadata"] = {1: ["asdf", str(np.nan)]}
+        dict_a_nan["compressed_int_metadata"] = {8: [str(np.nan), "tyui"]}
         dict_a_nan["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
 
-        tree_data = obs['tree_data']
-        exp = dict_a_nan['tree_data']
-        self.assert_almost_equal_tree_data(tree_data, exp)
-
-        dict_a_nan.pop('tree_data')
-        obs.pop('tree_data')
         self.assertEqual(obs, dict_a_nan)
 
         res = viz.make_empress()
@@ -343,11 +312,7 @@ class TestCore(unittest.TestCase):
         # values, this helps with tests not breaking if any character changes
         # in # Emperor
         for key, value in obs.items():
-            if key == 'tree_data':
-                tree_data = obs['tree_data']
-                exp = DICT_A['tree_data']
-                self.assert_almost_equal_tree_data(tree_data, exp)
-            elif not key.startswith('emperor_'):
+            if not key.startswith('emperor_'):
                 self.assertEqual(obs[key], DICT_A[key])
 
         exp = "    <div id='emperor-notebook"
@@ -372,15 +337,16 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.filtered_table,
                       self.filtered_sample_metadata,
                       filter_unobserved_features_from_phylogeny=True)
-        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
-                                        0, 0, 0])
+        self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
+                                            0, 0, 0])
 
-        names = ['a', 'EmpressNode0', 'b', 'g', 'd', 'h', 'EmpressNode1']
-        for i, node in enumerate(viz.tree.postorder()):
-            self.assertEqual(node.name, names[i])
+        names = ['a', None, 'b', 'g', 'd', 'h', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.filtered_table, viz.table.T)
+        self.assertEqual(self.filtered_table, viz.table)
         self.assertNotEqual(id(self.filtered_table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
@@ -399,12 +365,13 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=True)
         # Same as with the shearing test above, check that the tree was handled
         # as expected
-        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
-                                        0, 0, 0])
+        self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
+                                            0, 0, 0])
 
-        names = ['a', 'EmpressNode0', 'b', 'g', 'd', 'h', 'EmpressNode1']
-        for i, node in enumerate(viz.tree.postorder()):
-            self.assertEqual(node.name, names[i])
+        names = ['a', None, 'b', 'g', 'd', 'h', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
 
         # Now, the point of this test: verify that the feature metadata was
         # filtered to just stuff in the sheared tree ("e" was removed from the
@@ -413,7 +380,7 @@ class TestCore(unittest.TestCase):
         assert_frame_equal(extra_fm.loc[["h"]], viz.int_md)
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.filtered_table, viz.table.T)
+        self.assertEqual(self.filtered_table, viz.table)
         self.assertNotEqual(id(self.filtered_table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
@@ -488,7 +455,7 @@ class TestCore(unittest.TestCase):
         # Convert artifacts / metadata objects to "normal" types that we can
         # pass to Empress
         bp_tree = from_skbio_treenode(tree.view(TreeNode))
-        tbl_df = tbl.view(pd.DataFrame)
+        tbl_df = tbl.view(biom.Table)
         pcoa_skbio = pcoa.view(skbio.OrdinationResults)
         smd_df = smd.to_dataframe()
         fmd_df = fmd.to_dataframe()
@@ -508,8 +475,6 @@ class TestCore(unittest.TestCase):
         self.assertFalse(funky_tip in viz.tip_md.index)
 
     def test_no_intersection_between_tree_and_table(self):
-        bad_table = self.unrelated_table.copy()
-        bad_table.index = range(len(self.unrelated_table.index))
         with self.assertRaisesRegex(
             tools.DataMatchingError,
             "No features in the feature table are present as tips in the tree."
@@ -531,7 +496,7 @@ class TestCore(unittest.TestCase):
                       ordination=self.pcoa)
 
         # table should be unchanged and be a different id instance
-        assert_frame_equal(self.table, viz.table.T)
+        self.assertEqual(self.table, viz.table)
         self.assertNotEqual(id(self.table), id(viz.table))
 
         # sample metadata should be unchanged and be a different id instance
@@ -560,187 +525,28 @@ class TestCore(unittest.TestCase):
 DICT_A = {
     "base_url": "support_files",
     "tree": [250472],
-    "tree_data": [
-        0,
-        [
-            "a",
-            -82.19088834200284,
-            1568.2955749395592,
-            2412.0,
-            -2386.875,
-            2222.2013460901685,
-            0.0,
-            1481.4675640601124,
-            0.0,
-            0
-        ],
-        [
-            "e",
-            948.7236134182863,
-            2108.2845722271436,
-            3216.0,
-            -1381.875,
-            915.5973078196618,
-            2817.9187609585556,
-            457.7986539098309,
-            1408.9593804792778,
-            1.2566370614359172
-        ],
-        [
-            "EmpressNode0",
-            295.3117872853636,
-            1102.1185942229504,
-            1608.0,
-            -1884.375,
-            1198.5324359398871,
-            870.7847859041888,
-            599.2662179699436,
-            435.3923929520944,
-            0.6283185307179586,
-            -1381.875,
-            -2386.875,
-            457.7986539098309,
-            1408.9593804792778,
-            1.2566370614359172,
-            0
-        ],
-        [
-            "b",
-            1485.5419815224768,
-            192.57380029925002,
-            2412.0,
-            -376.875,
-            -1797.7986539098304,
-            1306.1771788562833,
-            -599.2662179699435,
-            435.3923929520945,
-            2.5132741228718345
-        ],
-        [
-            "g",
-            326.7059130664611,
-            503.08298900209684,
-            804.0,
-            -1130.625,
-            4.5356862759171076e-14,
-            740.7337820300562,
-            0.0,
-            0.0,
-            1.5707963267948966,
-            -376.875,
-            -1884.375,
-            -599.2662179699435,
-            435.3923929520945,
-            2.5132741228718345,
-            0.6283185307179586
-        ],
-        [
-            "EmpressNode1",
-            -622.0177003518252,
-            -1605.201583225047,
-            2412.0,
-            628.125,
-            -1797.7986539098308,
-            -1306.177178856283,
-            -1198.5324359398871,
-            -870.7847859041887,
-            3.7699111843077517
-        ],
-        [
-            "d",
-            -2333.458018477523,
-            -1651.0752884434787,
-            4020.0,
-            1633.125,
-            1144.4966347745763,
-            -3522.398451198195,
-            457.79865390983053,
-            -1408.9593804792778,
-            5.026548245743669
-        ],
-        [
-            "h",
-            -653.4118261329227,
-            -1006.1659780041933,
-            1608.0,
-            1130.625,
-            -457.79865390983105,
-            -1408.9593804792778,
-            -0.0,
-            -0.0,
-            4.39822971502571,
-            1633.125,
-            628.125,
-            457.79865390983053,
-            -1408.9593804792778,
-            5.026548245743669,
-            3.7699111843077517
-        ],
-        [
-            "EmpressNode2",
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            2.9845130209103035,
-            1130.625,
-            -1130.625
-        ]
-    ],
-    "td_to_ind": {
-        "angle": 9,
-        "arcendangle": 15,
-        "arcstartangle": 14,
-        "arcx0": 12,
-        "arcy0": 13,
-        "highestchildyr": 10,
-        "lowestchildyr": 11,
-        "name": 0,
-        "x2": 1,
-        "xc0": 7,
-        "xc1": 5,
-        "xr": 3,
-        "y2": 2,
-        "yc0": 8,
-        "yc1": 6,
-        "yr": 4
-    },
     "names": [
-        "EmpressNode2",
-        "g",
-        "EmpressNode0",
+        -1,
         "a",
         "e",
+        None,
         "b",
-        "h",
-        "EmpressNode1",
+        "g",
+        None,
         "d",
+        "h",
+        None
     ],
-    "lengths": [0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 1.0, 3.0],
-    "names_to_keys": {
-        "a": [1],
-        "e": [2],
-        "EmpressNode0": [3],
-        "b": [4],
-        "g": [5],
-        "EmpressNode1": [6],
-        "d": [7],
-        "h": [8],
-        "EmpressNode2": [9],
-    },
+    "lengths": [-1, 1.0, 2.0, 1.0, 2.0, 1.0, 1.0, 3.0, 2.0, 1.0],
     "s_ids": ["Sample1", "Sample2", "Sample3", "Sample4"],
-    "f_ids": ["a", "b", "e", "d"],
+    "f_ids": [1, 4, 2, 7],
     "s_ids_to_indices": {
         "Sample1": 0,
         "Sample2": 1,
         "Sample3": 2,
         "Sample4": 3,
     },
-    "f_ids_to_indices": {"a": 0, "b": 1, "e": 2, "d": 3},
+    "f_ids_to_indices": {1: 0, 4: 1, 2: 2, 7: 3},
     "compressed_table": [[0, 1, 3], [0, 1, 3], [0], [2]],
     "sample_metadata_columns": [
         "Metadata1",
@@ -757,13 +563,6 @@ DICT_A = {
     "feature_metadata_columns": [],
     "compressed_tip_metadata": {},
     "compressed_int_metadata": {},
-    "layout_to_coordsuffix": {
-        "Unrooted": "2",
-        "Rectangular": "r",
-        "Circular": "c1",
-    },
-    "yrscf": 1005,
-    "default_layout": "Unrooted",
     "emperor_div": "",
     "emperor_require_logic": "",
     "emperor_style": "",

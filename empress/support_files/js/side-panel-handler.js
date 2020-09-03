@@ -8,9 +8,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      * Additional tabs such as Sample Metadata can be added by calling their
      * initialization function.
      *
-     * @param {div} container Container where the side panel will live.
-     * @param {Empress} empress The empress tree
-     * @param {div} legend Container that holds the legend
+     * @param {HTMLElement} container Container where the side panel will live
+     * @param {Empress} empress Empress instance; used to redraw the tree, etc.
+     * @param {Legend} legend Reference to the main legend object
      *
      * @return {SidePanel}
      * @constructs SidePanel
@@ -38,6 +38,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.recenterBtn = document.getElementById("center-tree-btn");
         this.focusOnNodeChk = document.getElementById("focus-on-node-chk");
         this.absentTipChk = document.getElementById("absent-tip-chk");
+        this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
 
         this.focusOnNodeChk.onclick = function () {
             empress.focusOnSelectedNode = this.checked;
@@ -49,6 +50,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             if (scope.sChk.checked) {
                 scope.sUpdateBtn.click();
             }
+        };
+        this.ignoreLengthsChk.onclick = function () {
+            empress.ignoreLengths = this.checked;
+            empress.reLayout();
         };
 
         // sample GUI components
@@ -133,10 +138,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         _.each(elesToHide, function (ele) {
             ele.classList.add("hidden");
         });
-        // Reset tree and then clear legends
+        // Reset tree and then clear legend
         this.empress.resetTree();
         this.empress.drawTree();
-        this.legend.clearAllLegends();
+        this.legend.clear();
     };
 
     /* Resets the sample metadata coloring tab. */
@@ -208,9 +213,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     ) {
         this.empress.resetTree();
 
-        // clear legends
-        this.legend.clearAllLegends();
-
         // hide update button
         updateBtn.classList.add("hidden");
 
@@ -239,7 +241,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.sUpdateBtn.classList.remove("hidden");
             return;
         }
-        this.legend.addColorKey(colBy, keyInfo, "node", false);
+        this.legend.addCategoricalKey(colBy, keyInfo);
     };
 
     /**
@@ -254,7 +256,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             col,
             coloringMethod
         );
-        this.legend.addColorKey(colBy, keyInfo, "node", false);
+        this.legend.addCategoricalKey(colBy, keyInfo);
     };
 
     /**

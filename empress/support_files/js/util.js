@@ -13,41 +13,31 @@ define(["underscore"], function (_) {
     function keepUniqueKeys(keys, removeAll) {
         // get unique keys
         var items = Object.keys(keys);
-        var i;
-
-        // TODO: The current method to get the unique observations
-        // belonging to each sample category is slow. Refactoring it will lead
-        // to a nice speed boost.
-        // https://github.com/biocore/empress/issues/147
-        var uniqueKeysArray = _.chain(keys)
-            .values()
-            .map(function (item) {
-                return [...item];
-            })
-            .flatten()
-            .groupBy(function (key) {
-                return key;
-            })
-            .filter(function (key) {
-                return key.length === 1;
-            })
-            .flatten()
-            .value();
-        var uniqueKeys = new Set(uniqueKeysArray);
-        var isUnique = function (key) {
-            return uniqueKeys.has(key);
-        };
+        var allKeys = new Set();
+        var dupKeys = new Set();
+        var i, itemKeys;
+        for (var item in keys) {
+            itemKeys = Array.from(keys[item]);
+            for (i in itemKeys) {
+                var key = itemKeys[i];
+                if (allKeys.has(key)) {
+                    dupKeys.add(key);
+                } else {
+                    allKeys.add(key);
+                }
+            }
+        }
 
         // get the unique keys in each item
         var result = {};
         items = Object.keys(keys);
         for (i = 0; i < items.length; i++) {
-            var itemKeys = [...keys[items[i]]];
+            itemKeys = [...keys[items[i]]];
             var keep = new Set();
             for (var j = 0; j < itemKeys.length; j++) {
                 if (removeAll.has(itemKeys[j])) continue;
 
-                if (isUnique(itemKeys[j])) {
+                if (!dupKeys.has(itemKeys[j])) {
                     keep.add(itemKeys[j]);
                 }
             }
@@ -215,10 +205,23 @@ define(["underscore"], function (_) {
      *                           by sortedUniqueValues. As with layerNum, this
      *                           will only be used if this throws an error
      *                           message.
-     * @return {Object} fm2length Maps the numeric items in sortedUniqueValues
-     *                            to their corresponding barplot lengths.
-     *                            Each length is guaranteed to be within the
-     *                            inclusive range [minLength, maxLength].
+     * @return {Array} lengthInfo An Array with three elements. In order:
+     *                            1. fm2length: Object that maps the numeric
+     *                               items in sortedUniqueValues to their
+     *                               corresponding barplot lengths. Each length
+     *                               is guaranteed to be within the inclusive
+     *                               range [minLength, maxLength].
+     *                            2. valMin: Number corresponding to the
+     *                               minimum numeric value in
+     *                               sortedUniqueValues. Note that this is a
+     *                               Number, not a String: i.e. parseFloat()
+     *                               has been called on it (so mapping this
+     *                               back to a String in sortedUniqueValues is
+     *                               neither straightforward nor recommended).
+     *                               Should be used when creating a legend.
+     *                            3. valMax: Number corresponding to the max
+     *                               numeric value in sortedUniqueValues.
+     *                               Analogous to valMin.
      */
     function assignBarplotLengths(
         sortedUniqueValues,
@@ -269,7 +272,7 @@ define(["underscore"], function (_) {
             fm2length[n] =
                 ((parseFloat(n) - valMin) / valRange) * lengthRange + minLength;
         });
-        return fm2length;
+        return [fm2length, valMin, valMax];
     }
 
     return {

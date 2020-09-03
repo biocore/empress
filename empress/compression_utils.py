@@ -16,9 +16,8 @@ def remove_empty_samples_and_features(table, sample_metadata, ordination=None):
 
     Parameters
     ----------
-    table: pd.DataFrame
-        Representation of a feature table. The index should describe feature
-        IDs; the columns should describe sample IDs.
+    table: biom.Table
+        Representation of a feature table.
     sample_metadata: pd.DataFrame
         Sample metadata. The index should describe sample IDs, and the columns
         should describe sample metadata fields (e.g. "body site").
@@ -31,7 +30,7 @@ def remove_empty_samples_and_features(table, sample_metadata, ordination=None):
 
     Returns
     -------
-    filtered_table: pd.DataFrame
+    filtered_table: biom.Table
         Copy of the input feature table with empty samples and features
         removed.
     filtered_sample_metadata: pd.DataFrame
@@ -48,24 +47,25 @@ def remove_empty_samples_and_features(table, sample_metadata, ordination=None):
     ----------
         - Adapted from qurro._df_utils.remove_empty_samples_and_features().
     """
-    orig_tbl_samples = set(table.columns)
-    orig_tbl_features = set(table.index)
+    orig_tbl_samples = set(table.ids())
+    orig_tbl_features = set(table.ids(axis='observation'))
 
-    # (In Qurro, I used (table != 0) for this, but (table > 0) should also
-    # work. Should be able to assume a table won't have negative abundances.)
-    # This approach based on https://stackoverflow.com/a/21165116/10730311.
-    gt_0 = (table > 0)
-    filtered_table = table.loc[
-        gt_0.any(axis="columns"), gt_0.any(axis="index")
-    ]
-    if filtered_table.empty:
+    # this code is equivalent to the PR below, we should update once that gets
+    # merged and a newer BIOM release is publicly available
+    # https://github.com/biocore/biom-format/pull/847
+    filtered_table = table.copy()
+    for ax in {'observation', 'sample'}:
+        filtered_table = filtered_table.filter(
+            table.ids(axis=ax)[table.sum(axis=ax) > 0], axis=ax,
+            inplace=False)
+    if filtered_table.is_empty():
         raise ValueError("All samples / features in matched table are empty.")
 
     # Let user know about which samples/features may have been dropped, if any.
     # Also, if we dropped any empty samples, update the sample metadata.
     filtered_sample_metadata = sample_metadata
 
-    sample_diff = orig_tbl_samples - set(filtered_table.columns)
+    sample_diff = orig_tbl_samples - set(filtered_table.ids())
     if sample_diff:
         if ordination is not None:
             empty_samples_in_ord = sample_diff & set(ordination.samples.index)
@@ -77,11 +77,12 @@ def remove_empty_samples_and_features(table, sample_metadata, ordination=None):
                     ).format(", ".join(sorted(empty_samples_in_ord)))
                 )
         filtered_sample_metadata = filtered_sample_metadata.loc[
-            filtered_table.columns
+            filtered_table.ids()
         ]
         print("Removed {} empty sample(s).".format(len(sample_diff)))
 
-    feature_diff = orig_tbl_features - set(filtered_table.index)
+    feature_diff = orig_tbl_features - \
+        set(filtered_table.ids(axis='observation'))
     if feature_diff:
         if ordination is not None and ordination.features is not None:
             empty_feats_in_ord = feature_diff & set(ordination.features.index)
@@ -103,10 +104,9 @@ def compress_table(table):
 
     Parameters
     ----------
-    table: pd.DataFrame
-        Representation of a feature table. The index should describe feature
-        IDs; the columns should describe sample IDs. It is assumed that empty
-        samples / features have already been removed from the table.
+    table: biom.Table
+        Representation of a feature table.  It is assumed that empty samples /
+        features have already been removed from the table.
 
     Returns
     -------
@@ -134,43 +134,19 @@ def compress_table(table):
     ----------
         - Inspired by redbiom and Qurro's JSON data models.
     """
-    # Convert to a presence/absence table
-    # (hippity hoolean these are now booleans)
-    binarized_table = (table > 0)
+    feature_ids = table.ids(axis='observation')
+    sample_ids = table.ids()
 
-    # We set up the ID/index variables based on whatever the current order of
-    # samples / features in the table's columns / indices is.
-    feature_ids = list(binarized_table.index)
     f_ids_to_indices = {fid: idx for idx, fid in enumerate(feature_ids)}
-
-    sample_ids = list(binarized_table.columns)
     s_ids_to_indices = {sid: idx for idx, sid in enumerate(sample_ids)}
 
-    indexed_b_table = binarized_table.rename(
-        index=f_ids_to_indices, columns=s_ids_to_indices
-    )
-
     compressed_table = []
-
-    def populate_compressed_table(sample_column):
-        # Get a list of all feature indices present in this sample
-        # (This works because we've binarized the table, i.e. its entries are
-        # booleans; and because we replaced feature IDs with feature indices.)
-        present_feature_indices = list(sample_column[sample_column].index)
-
-        # Add this feature presence information to compressed_table.
-        compressed_table.append(present_feature_indices)
-
-        # We don't return anything -- this function's only purpose is to cause
-        # side effects within the scope of compress_table(). This is... kind
-        # of a cursed way of using df.apply() but it works, and it should be
-        # decently efficient since .apply() is faster than most iteration \._./
-
-    indexed_b_table.apply(populate_compressed_table, axis="index")
+    for vec in table.iter_data(axis='sample', dense=False):
+        compressed_table.append([int(i) for i in vec.indices])
 
     return (
-        sample_ids, feature_ids, s_ids_to_indices, f_ids_to_indices,
-        compressed_table
+        list(sample_ids), list(feature_ids), s_ids_to_indices,
+        f_ids_to_indices, compressed_table
     )
 
 

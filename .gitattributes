@@ -1,0 +1,2 @@
+empress/support_files/vendor/* linguist-vendored=true
+tests/vendor/* linguist-vendored=true
