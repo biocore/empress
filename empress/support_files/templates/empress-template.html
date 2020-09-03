@@ -29,7 +29,7 @@
         <div class="square"></div>
 
         <!-- Side panel -->
-        <div id="side-panel" class="unselectable-text">
+        <div id="side-panel" class="unselectable-text hidden">
           {% include 'side-panel.html'%}
         </div>
 
@@ -197,6 +197,12 @@
               document.querySelector(".side-content:not(.hidden)"));
           });
         });
+
+        // make side panel visible (this is done after hiding controls so that
+        // the user sees it all appear at once, rather than seeing certain
+        // input-data-dependent controls [e.g. s/f metadata, barplots,
+        // animation] pop in above)
+        document.getElementById("side-panel").classList.remove("hidden");
 
         document.getElementById("loading-screen").classList.add("hidden");
 
