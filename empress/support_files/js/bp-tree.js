@@ -629,15 +629,19 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      *
      * @param {Number} start The postorder position of a node
      * @param {Number} end The postorder position of a node
+     * @param {Boolean} ignoreLengths If truthy, treat all node lengths as 1;
+     *                                if falsy, actually consider node lengths
      *
      * @return {Number} the sum of length from start to end
      */
-    BPTree.prototype.getTotalLength = function (start, end) {
+    BPTree.prototype.getTotalLength = function (start, end, ignoreLengths) {
         var curNode = start;
         var totalLength = 0;
         while (curNode !== end) {
-            totalLength += this.length(this.postorderselect(curNode));
-            curNode = this.parent(this.postorderselect(curNode));
+            var popos = this.postorderselect(curNode);
+            var nodeLen = ignoreLengths ? 1 : this.length(popos);
+            totalLength += nodeLen;
+            curNode = this.parent(popos);
             if (curNode === -1) {
                 throw "Node " + start + " must be a descendant of " + end;
             }

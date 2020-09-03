@@ -237,6 +237,9 @@
 -->
 <button class="side-header collapsible">Tree Properties</button>
 <div class="side-content control hidden">
+  <p class="side-panel-inner-header">
+    Node circles
+  </p>
   <p>
     <label for="display-nodes-chk">Show node circles?</label>
     <input id="display-nodes-chk" type="checkbox" checked="true"
@@ -246,8 +249,41 @@
     If checked, this draws circles at the positions of all tree nodes
     which had a specified name in the input Newick file.
   </p>
-  <p class="side-panel-notes">
-    Clade Collapse Method
+  <hr />
+  <p class="side-panel-inner-header">
+    Camera
+  </p>
+  <p>
+    <button id="center-tree-btn">Reset Camera</button>
+  </p>
+  <p class="side-panel-notes indented">
+    Repositions the camera at the center of the tree.
+  </p>
+  <p>
+    <label for="focus-on-node-chk">Focus on selected nodes?</label>
+    <input id="focus-on-node-chk" type="checkbox" checked="true"
+           class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, the camera will automatically focus on nodes that are selected
+    via searching by name or by clicking on an arrow in a biplot.
+  </p>
+  <hr />
+  <p class="side-panel-inner-header">
+    Layout options
+  </p>
+  <p>
+    <label for="ignore-lengths-chk">Ignore branch lengths?</label>
+    <input id="ignore-lengths-chk" type="checkbox" class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, branch lengths are ignored when drawing the tree. Note that the
+    root node's length is always ignored, regardless of if this is checked or
+    not.
+  </p>
+  <hr />
+  <p class="side-panel-inner-header">
+    Clade collapsing method
   </p>
   <p>
     <label for="normal">Normal</label>
@@ -268,32 +304,21 @@
     the shape will be symmetric w.r.t. to the root of the clade. This option
     only applies to the Rectangular and Circular layouts.
   </p>
-  <p>
-    <button id="center-tree-btn">Reset Camera</button>
-  </p>
-  <p class="side-panel-notes indented">
-    Repositions the camera at the center of the tree.
+  <hr />
+  <p class="side-panel-inner-header">
+    Tree coloring
   </p>
   <p>
-    <label for="focus-on-node-chk">Focus on Selected Nodes?</label>
-    <input id="focus-on-node-chk" type="checkbox" checked="true"
-           class="empress-input">
-  </p>
-  <p class="side-panel-notes indented">
-    If checked, the camera is focused on the node after an id is found via
-    the searchbox, or when an arrow is clicked in a biplot.
-  </p>
-  <p>
-    <label for="absent-tip-chk">Ignore Absent Tips?</label>
+    <label for="absent-tip-chk">Ignore absent tips?</label>
     <input id="absent-tip-chk" type="checkbox" checked="true"
            class="empress-input">
   </p>
   <p class="side-panel-notes indented">
     If checked, tips not represented in the current sample selection are
     ignored when propagating the color of a clade. Applies to sample metadata
-    coloring, animations, and sample selections in Emperor. We recommend to
-    change this setting before starting an animation, otherwise this setting
-    might be partially applied.
+    coloring, animations, and sample selections in Emperor. We recommend
+    changing this setting before starting an animation; otherwise, this setting
+    may only be partially applied throughout the animation.
   </p>
 
 </div>
