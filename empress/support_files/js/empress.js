@@ -72,7 +72,7 @@ define([
          * @type {Array}
          * The default color of the tree
          */
-        this.DEFAULT_COLOR = [0.75, 0.75, 0.75];
+        this.DEFAULT_COLOR = [0, 0, 0];
 
         /**
          * @type {BPTree}
