@@ -101,7 +101,8 @@ class TestIntegration(TestPluginBase):
         References
         ----------
         Use of tempfile.TemporaryDirectory() (for inspecting the HTML) based
-        on the q2-taxa visualizer tests: https://github.com/qiime2/q2-taxa/blob/master/q2_taxa/tests/test_visualizer.py
+        on the q2-taxa visualizer tests:
+        https://github.com/qiime2/q2-taxa/blob/master/q2_taxa/tests/test_visualizer.py
         """
         with tempfile.TemporaryDirectory() as output_dir:
             self.result.visualization.export_data(output_dir)
