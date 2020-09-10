@@ -5,7 +5,7 @@
 
 # Introduction  
 
-Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki/Phylogenetic_tree) viewer that helps interactively explore the hierarchical relationships between features in a dataset. While historically these features often represented evolutionary relationships of species in community surveys, and are characterized by their phylogeny or genetic similarity/differences, you can in fact view any type of information with hierarchical organization. For example, you can view trees of [amplicon sequence variants (ASVs)](https://en.wikipedia.org/wiki/Amplicon_sequence_variant), or metabolite trees of LC-MS data using [q2-qemistree](https://github.com/biocore/q2-qemistree) ([ref](https://www.biorxiv.org/content/10.1101/2020.05.04.077636v1)).
+Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki/Phylogenetic_tree) viewer that helps interactively explore the hierarchical relationships between features in a dataset. While historically these features often represented evolutionary relationships of species in community surveys, and are characterized by their phylogeny or genetic similarity/differences, you can in fact view any type of information with hierarchical organization. For example, you can view trees of [amplicon sequence variants (ASVs)](https://en.wikipedia.org/wiki/Amplicon_sequence_variant) for 16S rRNA marker gene sequencing data, or metabolite trees of LC-MS data using [q2-qemistree](https://github.com/biocore/q2-qemistree) ([ref](https://www.biorxiv.org/content/10.1101/2020.05.04.077636v1)).
 
 # Installation   
 
@@ -30,7 +30,37 @@ If you see information about Empress' QIIME 2 plugin, the installation was succe
 
 # Example: Using Empress in QIIME 2   
 
-In this tutorial we will be using Empress within the QIIME 2 environment, and demonstrating its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/) dataset, a set of human microbiome samples from two individuals at four body sites across five timepoints.  
+In this tutorial we will be using Empress within the QIIME 2 environment, and demonstrating its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/) dataset, a set of human microbiome samples from two individuals at four body sites across five timepoints.
+
+## First, a note about Empress' commands
+
+Empress currently has two commands available through QIIME 2:
+
+```
+$ qiime empress --help
+Usage: qiime empress [OPTIONS] COMMAND [ARGS]...
+
+  Description: This QIIME 2 plugin wraps Empress and supports interactive
+  visualization of phylogenetic trees.
+
+  Plugin website: http://github.com/biocore/empress
+
+  Getting user support: Please post to the QIIME 2 forum for help with this
+  plugin: https://forum.qiime2.org
+
+Options:
+  --version    Show the version and exit.
+  --citations  Show citations and exit.
+  --help       Show this message and exit.
+
+Commands:
+  community-plot  Visualize phylogenies and community data with Empress (and,
+                  optionally, Emperor)
+
+  tree-plot       Visualize phylogenies with Empress
+```
+
+Both of these commands generate similar visualizations. The functionality available in a visualization created by `qiime empress community-plot` is a superset of the functionality available in a visualization created by `qiime empress tree-plot`: `tree-plot` is useful if you don't have a table and just want to visualize a tree (optionally with feature metadata). Here, we're going to be using `community-plot`, but much of this tutorial is also applicable to `tree-plot`.
 
 ## Downloading Input Artifacts and Metadata  
 
