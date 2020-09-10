@@ -6,6 +6,7 @@ define([
     "VectorOps",
     "CanvasEvents",
     "BarplotPanel",
+    "Legend",
     "util",
     "chroma",
     "LayoutsUtil",
@@ -17,6 +18,7 @@ define([
     VectorOps,
     CanvasEvents,
     BarplotPanel,
+    Legend,
     util,
     chroma,
     LayoutsUtil
@@ -139,6 +141,13 @@ define([
             this._treeData[i].splice(this._tdToInd.isColored, 0, false);
             this._treeData[i].splice(this._tdToInd.visible, 0, true);
         }
+
+        /**
+         * @type {Legend}
+         * Legend describing the way the tree is colored.
+         * @private
+         */
+        this._legend = new Legend(document.getElementById("legend-main"));
 
         /**
          * @type {BiomTable}
@@ -1978,6 +1987,8 @@ define([
         // color tree
         this._colorTree(obs, cm);
 
+        this.updateLegendCategorical(cat, keyInfo);
+
         return keyInfo;
     };
 
@@ -2098,6 +2109,8 @@ define([
 
         // color tree
         this._colorTree(obs, cm);
+
+        this.updateLegendCategorical(cat, keyInfo);
 
         return keyInfo;
     };
@@ -2226,6 +2239,29 @@ define([
         this._drawer.loadThickNodeBuff([]);
         this._drawer.loadCladeBuff([]);
         this._group = new Array(this._tree.size + 1).fill(-1);
+    };
+
+    /**
+     * Clears the legend.
+     */
+    Empress.prototype.clearLegend = function () {
+        this._legend.clear();
+    };
+
+    /**
+     * Updates the legend based on a categorical color key.
+     *
+     * This is set up as a public method so that the Animator can update the
+     * legend on its own (without having to reference this._legend from outside
+     * of Empress).
+     *
+     * @param {String} name Text to show in the legend title.
+     * @param {Object} keyInfo Color key information. Maps unique values (e.g.
+     *                         in sample or feature metadata) to their assigned
+     *                         color, expressed in hex format.
+     */
+    Empress.prototype.updateLegendCategorical = function (name, keyInfo) {
+        this._legend.addCategoricalKey(name, keyInfo);
     };
 
     /**

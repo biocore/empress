@@ -145,11 +145,9 @@
         );
         empress.initialize();
 
-        var legend = new Legend(document.getElementById('legend-main'));
-
         // The side menu
         var sPanel = new SidePanel(document.getElementById('side-panel'),
-                                   empress, legend);
+                                   empress);
         sPanel.addTreePropertiesTab();
         sPanel.addSampleTab();
         if (fmCols.length > 0) {
@@ -159,7 +157,7 @@
         sPanel.addLayoutTab();
 
         // Create animator state machine
-        var animator = new Animator(empress, legend);
+        var animator = new Animator(empress);
 
         // Add animator GUI components
         var animationPanel = new AnimationPanel(animator);

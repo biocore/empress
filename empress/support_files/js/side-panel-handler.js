@@ -10,12 +10,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      *
      * @param {HTMLElement} container Container where the side panel will live
      * @param {Empress} empress Empress instance; used to redraw the tree, etc.
-     * @param {Legend} legend Reference to the main legend object
      *
      * @return {SidePanel}
      * @constructs SidePanel
      */
-    function SidePanel(container, empress, legend) {
+    function SidePanel(container, empress) {
         // used in event closures
         var scope = this;
 
@@ -30,8 +29,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         // used to event triggers
         this.empress = empress;
-
-        this.legend = legend;
 
         // tree properties components
         this.treeNodesChk = document.getElementById("display-nodes-chk");
@@ -141,7 +138,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // Reset tree and then clear legend
         this.empress.resetTree();
         this.empress.drawTree();
-        this.legend.clear();
+        this.empress.clearLegend();
     };
 
     /* Resets the sample metadata coloring tab. */
@@ -241,7 +238,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.sUpdateBtn.classList.remove("hidden");
             return;
         }
-        this.legend.addCategoricalKey(colBy, keyInfo);
     };
 
     /**
@@ -251,12 +247,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var colBy = this.fSel.value;
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
-        var keyInfo = this.empress.colorByFeatureMetadata(
+        this.empress.colorByFeatureMetadata(
             colBy,
             col,
             coloringMethod
         );
-        this.legend.addCategoricalKey(colBy, keyInfo);
     };
 
     /**
