@@ -172,6 +172,23 @@ class TestCore(unittest.TestCase):
         assert_frame_equal(viz.tip_md, self.feature_metadata.loc[["a"]])
         assert_frame_equal(viz.int_md, self.feature_metadata.loc[["h"]])
 
+    def test_init_tree_plot_extra_fm(self):
+        # Checks that extra stuff in the feature metadata (which doesn't match
+        # any node in the tree) is filtered out of the visualization, even if
+        # tree-plot is used.
+        extra_fm = pd.DataFrame(
+            {
+                "fmdcol1": ["zxcv", "bnm,"],
+                "fmdcol2": ["zaq1", "xsw2"]
+            },
+            index=["weshould", "befiltered"]
+        )
+        smooshed_fm = self.feature_metadata.append(extra_fm)
+        viz = Empress(self.tree, feature_metadata=smooshed_fm)
+        self.assertFalse(viz.is_community_plot)
+        assert_frame_equal(viz.tip_md, self.feature_metadata.loc[["a"]])
+        assert_frame_equal(viz.int_md, self.feature_metadata.loc[["h"]])
+
     def test_init_tree_plot_fm_not_matching(self):
         # Mainly, this test validates that the matching done between the tree
         # nodes and feature metadata is still performed even if tree-plot is
