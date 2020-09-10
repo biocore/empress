@@ -4,8 +4,8 @@ define(["underscore", "util"], function (_, util) {
      * @class Legend
      *
      * Creates a legend within a given HTML element. (You'll need to call
-     * addCategoricalKey() or addContinuousKey() to populate the legend with
-     * data.)
+     * addCategoricalKey(), addContinuousKey(), or addLengthKey() to populate
+     * the legend with data.)
      *
      * Currently, this legend is only designed to show color variation.
      * However, extending it to show other sorts of encodings -- for example,
@@ -18,7 +18,23 @@ define(["underscore", "util"], function (_, util) {
      * @constructs Legend
      */
     function Legend(container) {
+        /**
+         * @type {HTMLElement}
+         * Reference to the element containing the legend.
+         * @private
+         */
         this._container = container;
+
+        /**
+         * @type {String}
+         * The "type" of the legend. Will be set when any of the
+         * Legend.add*Key() functions is called to be one of "continuous",
+         * "categorical", or "length". This will be null instead of a
+         * String before any of the add*Key() functions is called and after
+         * clear() is called.
+         * @public
+         */
+        this.legendType = null;
     }
 
     /**
@@ -103,6 +119,7 @@ define(["underscore", "util"], function (_, util) {
             warningP.setAttribute("style", "white-space: normal;");
             this._container.appendChild(warningP);
         }
+        this.legendType = "continuous";
         this.unhide();
     };
 
@@ -165,6 +182,7 @@ define(["underscore", "util"], function (_, util) {
             innerLabel.title = key;
         });
         this._container.appendChild(containerTable);
+        this.legendType = "categorical";
         this.unhide();
     };
 
@@ -201,6 +219,7 @@ define(["underscore", "util"], function (_, util) {
         maxValCell.innerText = maxVal;
 
         this._container.append(infoTable);
+        this.legendType = "length";
         this.unhide();
     };
 
@@ -215,6 +234,7 @@ define(["underscore", "util"], function (_, util) {
         while (this._container.firstChild) {
             this._container.removeChild(this._container.firstChild);
         }
+        this.legendType = null;
     };
 
     return Legend;

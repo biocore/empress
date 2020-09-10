@@ -20,10 +20,10 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                     );
                     // When rendering the SVG on the page, the browser replaces
                     // <stop .../> with <stop ...></stop> (and
-                    // <rect .../> with <rect ...></rect). I don't know why this is
-                    // happening, but so that we can directly compare the HTML strings
-                    // we just replace things in the observed SVG to make them
-                    // consistent.
+                    // <rect .../> with <rect ...></rect). I don't know why
+                    // this is happening, but so that we can directly compare
+                    // the HTML strings we just replace things in the observed
+                    // SVG to make them consistent.
                     var obsContainerSVGInnerHTML = obsContainerSVG.innerHTML
                         .split("></stop>")
                         .join("/>")
@@ -55,6 +55,10 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             var legend = new Legend(this.containerEle);
             equal(this.containerEle.firstChild, funkyP);
         });
+        test("On initialization, legendType is null", function () {
+            var legend = new Legend(this.containerEle);
+            equal(legend.legendType, null);
+        });
         test("addCategoricalKey", function () {
             var legend = new Legend(this.containerEle);
             var colorInfo = {
@@ -65,6 +69,9 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                 "Thing 5": "#000000",
             };
             legend.addCategoricalKey("qwerty", colorInfo);
+
+            // Check that the legend type was set correctly
+            equal(legend.legendType, "categorical");
 
             // There should only be two top-level elements added to the legend
             // container element
@@ -115,6 +122,8 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             var colorInfo = { hjkl: darkBrown };
             legend.addCategoricalKey("Single-color test", colorInfo);
 
+            equal(legend.legendType, "categorical");
+
             var title = this.containerEle.children[0];
             equal(title.innerText, "Single-color test");
 
@@ -140,6 +149,8 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                 false
             );
 
+            equal(legend.legendType, "continuous");
+
             // As with addCategoricalKey(), there are two children added to the
             // top level of the container element.
             equal(this.containerEle.children.length, 2);
@@ -161,6 +172,8 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             var legend = new Legend(this.containerEle);
             var refSVG = UtilitiesForTesting.getReferenceSVG();
             legend.addContinuousKey("howdy", refSVG, true);
+
+            equal(legend.legendType, "continuous");
 
             // There's a third top-level child element now -- a warning
             // message shown to the user.
@@ -193,6 +206,8 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
         test("addLengthKey", function () {
             var legend = new Legend(this.containerEle);
             legend.addLengthKey("LengthTest :O", -5.12345, 1000);
+
+            equal(legend.legendType, "length");
 
             var title = this.containerEle.children[0];
             equal(title.innerText, "LengthTest :O");
@@ -227,11 +242,16 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             );
             wackyDiv.innerText =
                 "I'm here to test that clear removes all children";
+            legend.legendType =
+                "I'm here to test that legendType is reset on clearing";
+
             legend.clear();
             // The legend container should now be hidden
             ok(this.containerEle.classList.contains("hidden"));
             // ... and all of its child elements should be removed
             equal(this.containerEle.firstChild, null);
+            // ... and the legendType should be null
+            equal(legend.legendType, null);
         });
         test("unhide", function () {
             var legend = new Legend(this.containerEle);
