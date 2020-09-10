@@ -55,9 +55,10 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             var legend = new Legend(this.containerEle);
             equal(this.containerEle.firstChild, funkyP);
         });
-        test("On initialization, legendType is null", function () {
+        test('On initialization, legendType is null and title is ""', function () {
             var legend = new Legend(this.containerEle);
             equal(legend.legendType, null);
+            equal(legend.title, "");
         });
         test("addCategoricalKey", function () {
             var legend = new Legend(this.containerEle);
@@ -79,6 +80,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
 
             // The first of these child elements should be a title
             this.validateTitleEle(this.containerEle.children[0], "qwerty");
+            equal(legend.title, "qwerty");
 
             // The second is a table containing the color map
             var tbl = this.containerEle.children[1];
@@ -126,6 +128,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
 
             var title = this.containerEle.children[0];
             equal(title.innerText, "Single-color test");
+            equal(legend.title, "Single-color test");
 
             var tbl = this.containerEle.children[1];
             var rows = $(tbl).find("tr");
@@ -160,6 +163,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                 this.containerEle.children[0],
                 "OMG this is a continuous legend!"
             );
+            equal(legend.title, "OMG this is a continuous legend!");
 
             // 2. A "container SVG" element containing the gradient SVG
             var cSVG = this.containerEle.children[1];
@@ -181,6 +185,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
 
             // 1. Check title
             this.validateTitleEle(this.containerEle.children[0], "howdy");
+            equal(legend.title, "howdy");
 
             // 2. Check SVG
             var cSVG = this.containerEle.children[1];
@@ -209,6 +214,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
 
             equal(legend.legendType, "length");
 
+            equal(legend.title, "LengthTest :O");
             var title = this.containerEle.children[0];
             equal(title.innerText, "LengthTest :O");
 
@@ -244,7 +250,8 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                 "I'm here to test that clear removes all children";
             legend.legendType =
                 "I'm here to test that legendType is reset on clearing";
-
+            legend.title =
+                "I'm here to test that title is reset on clearing";
             legend.clear();
             // The legend container should now be hidden
             ok(this.containerEle.classList.contains("hidden"));
@@ -252,6 +259,8 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             equal(this.containerEle.firstChild, null);
             // ... and the legendType should be null
             equal(legend.legendType, null);
+            // ... and the title should be ""
+            equal(legend.title, "");
         });
         test("unhide", function () {
             var legend = new Legend(this.containerEle);
@@ -264,21 +273,21 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
         });
         test("addTitle", function () {
             var legend = new Legend(this.containerEle);
-            legend.addTitle("Hi I'm a title");
+            var titleText1 = "Hi I'm a title";
+            legend.addTitle(titleText1);
             equal(this.containerEle.children.length, 1);
-            this.validateTitleEle(
-                this.containerEle.children[0],
-                "Hi I'm a title"
-            );
+            this.validateTitleEle(this.containerEle.children[0], titleText1);
+            equal(legend.title, titleText1);
 
             // Note that addTitle() sets the text using innerText, so HTML in
             // the text should be treated as just part of the string
-            var titleText =
+            var titleText2 =
                 "Two titles? In my <div></div>? It's more " +
                 "likely than you think.";
-            legend.addTitle(titleText);
+            legend.addTitle(titleText2);
             equal(this.containerEle.children.length, 2);
-            this.validateTitleEle(this.containerEle.children[1], titleText);
+            this.validateTitleEle(this.containerEle.children[1], titleText2);
+            equal(legend.title, titleText2);
         });
     });
 });

@@ -35,10 +35,20 @@ define(["underscore", "util"], function (_, util) {
          * @public
          */
         this.legendType = null;
+
+        /**
+         * @type {String}
+         * Contains the current title text for the legend. Will be "" if
+         * addTitle() hasn't been called yet / after clear() is called.
+         * @public
+         */
+        this.title = "";
     }
 
     /**
      * Adds a title element to the legend container.
+     *
+     * Also updates this.title to equal the input text.
      *
      * @param {String} name Text to show in the title.
      */
@@ -48,6 +58,7 @@ define(["underscore", "util"], function (_, util) {
         );
         titleDiv.classList.add("legend-title");
         titleDiv.innerText = name;
+        this.title = name;
     };
 
     /**
@@ -235,6 +246,7 @@ define(["underscore", "util"], function (_, util) {
             this._container.removeChild(this._container.firstChild);
         }
         this.legendType = null;
+        this.title = "";
     };
 
     return Legend;
