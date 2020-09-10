@@ -388,6 +388,32 @@ class TestCore(unittest.TestCase):
 
         self.assertTrue(obs['emperor_classes'], 'combined-plot-container')
 
+    def test_to_dict_tree_plot(self):
+        viz = Empress(self.tree)
+
+        obs = viz._to_dict()
+        dict_a_cp = copy.deepcopy(DICT_A)
+
+        dict_a_cp["is_community_plot"] = False
+
+        # When no table / s. metadata is passed, many values in the dict
+        # representation should just be None
+        for nfield in [
+            "s_ids", "f_ids", "compressed_table", "sample_metadata_columns",
+            "compressed_sample_metadata"
+        ]:
+            dict_a_cp[nfield] = None
+
+        # These dicts are represented as empty dicts, though. (The main reason
+        # for this is that making f_ids_to_indices be None would have taken
+        # some refactoring, so for the sake of consistency both default to {}.)
+        for efield in ["s_ids_to_indices", "f_ids_to_indices"]:
+            dict_a_cp[efield] = {}
+
+        # We don't need to reset the feature metadata stuff because that should
+        # already be empty, since the main to_dict test doesn't use f.m.
+        self.assertEqual(obs, dict_a_cp)
+
     def test_filter_unobserved_features_from_phylogeny(self):
 
         viz = Empress(self.tree, self.filtered_table,

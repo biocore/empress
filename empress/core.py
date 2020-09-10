@@ -276,8 +276,8 @@ class Empress():
             object and the sample + feature metadata.
         """
 
-        s_ids = f_ids = sid2idxs = fid2idxs = cmp_table = None
-        sm_cols = compressed_sm = None
+        s_ids = f_ids = cmp_table = sm_cols = compressed_sm = None
+        sid2idxs = fid2idxs = {}
         if self.is_community_plot:
             # The fid2idxs dict we get from compress_table() is temporary --
             # later, we'll restructure it so that the keys (feature IDs) are
@@ -297,7 +297,6 @@ class Empress():
 
         # Use nodes' postorder positions as their "IDs" for the BIOM table and
         # feature metadata
-        fid2idxs = {}
         compressed_tm = {}
         compressed_im = {}
         # bptree indices start at one, hence we pad the arrays
