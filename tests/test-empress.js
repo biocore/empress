@@ -1,9 +1,10 @@
-require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
-    $,
-    UtilitiesForTesting,
-    util,
-    chroma
-) {
+require([
+    "jquery",
+    "UtilitiesForTesting",
+    "util",
+    "chroma",
+    "Empress",
+], function ($, UtilitiesForTesting, util, chroma, Empress) {
     $(document).ready(function () {
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray
@@ -448,6 +449,21 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var result = this.empress.getSampleCategories();
             result = util.naturalSort(result);
             deepEqual(result, categories);
+
+            // Check getSampleCategories() if no sample metadata passed to
+            // Empress -- an empty array should be returned
+            testData = UtilitiesForTesting.getTestData();
+            var empWithJustFM = new Empress(
+                testData.tree,
+                null,
+                testData.fmCols,
+                testData.tm,
+                testData.im,
+                testData.canvas
+            );
+            // NOTE: for some reason this fails with equal() but succeeds with
+            // deepEqual(). I have no idea why ._.
+            deepEqual(empWithJustFM.getSampleCategories(), []);
         });
 
         test("Test getAvailableLayouts", function () {
