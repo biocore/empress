@@ -104,7 +104,21 @@ class Empress():
         """
 
         self.tree = tree
-        self.is_community_plot = not (table is None or sample_metadata is None)
+        # Use XOR to verify that either both or neither of the table and
+        # sample metadata are None. Parens needed for precedence stuff.
+        if (table is None) ^ (sample_metadata is None):
+            # The caller messed something up, so raise an error.
+            # It should not be possible for the user to pass *just* one of
+            # these things (qiime empress community-plot requires both, and
+            # qiime empress tree-plot accepts neither).
+            raise ValueError(
+                "Both the table and sample metadata should be specified or "
+                "None. However, only one of them is None."
+            )
+        elif table is not None and sample_metadata is not None:
+            self.is_community_plot = True
+        else:
+            self.is_community_plot = False
 
         self.table = table
 

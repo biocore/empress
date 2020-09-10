@@ -157,6 +157,26 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.features)
         self.assertIsNone(viz.ordination)
+        self.assertTrue(viz.is_community_plot)
+
+    def test_init_tree_plot(self):
+        # Simplest case (no feature metadata)
+        viz = Empress(self.tree)
+        self.assertFalse(viz.is_community_plot)
+
+        # Slightly less simple case (with feature metadata)
+        viz = Empress(self.tree, feature_metadata=self.feature_metadata)
+        self.assertFalse(viz.is_community_plot)
+
+    def test_init_only_one_of_table_and_sm_passed(self):
+        exp_errmsg = (
+            "Both the table and sample metadata should be specified or None. "
+            "However, only one of them is None."
+        )
+        with self.assertRaisesRegex(ValueError, exp_errmsg):
+            Empress(self.tree, self.table)
+        with self.assertRaisesRegex(ValueError, exp_errmsg):
+            Empress(self.tree, sample_metadata=self.sample_metadata)
 
     def test_init_with_ordination(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
