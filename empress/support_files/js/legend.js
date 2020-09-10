@@ -282,30 +282,25 @@ define(["underscore", "util"], function (_, util) {
      *                 supported. Currently only categorical legends can be
      *                 exported, but this will change soon.
      */
-    Legend.prototype.exportSVG = function (leftX, topY, row, context) {
+    Legend.prototype.exportSVG = function (leftX, topY, row, unit, lineHeight, context) {
         var scope = this;
 
-        // All distances are based on this variable. The scale of the resulting
-        // SVG can therefore be altered by changing this value.
-        var UNIT = 30;
-
-        // distance between two text lines as a multiplication factor of UNIT
-        var LINEHEIGHTSCALEFACTOR = 1.8;
-
-        var lineHeight = UNIT * LINEHEIGHTSCALEFACTOR;
+        // Style of the rect containing the legend SVG
+        var BGSTYLE = 'style="fill:#ffffff;stroke:#000000;stroke-width:1"';
 
         var legendSVG = "";
         var rowsUsed = row;
         if (this.legendType === "categorical") {
             var maxLineWidth = context.measureText(this.title).width;
             // First, add the title to the legend SVG
+            // TODO: center over the legend?
             legendSVG +=
                 '<text x="' +
-                (leftX + UNIT) +
+                (leftX + unit) +
                 '" y="' +
                 (topY + rowsUsed * lineHeight) +
                 '" style="font-weight:bold;font-size:' +
-                UNIT +
+                unit +
                 'pt;">' +
                 this.title +
                 "</text>\n";
@@ -321,28 +316,30 @@ define(["underscore", "util"], function (_, util) {
                     context.measureText(cat).width
                 );
                 // Add a square to the left of the label showing the color
+                // (TODO: make this resemble Empress' legends more closely,
+                // e.g. have colors snug with the left border)
                 legendSVG +=
                     '<rect x="' +
-                    (leftX + UNIT) +
+                    (leftX + unit) +
                     '" y="' +
-                    (topY + rowsUsed * lineHeight - UNIT) +
+                    (topY + rowsUsed * lineHeight - unit) +
                     '" width="' +
-                    UNIT +
+                    unit +
                     '" height="' +
-                    UNIT +
+                    unit +
                     '" style="fill:' +
                     color +
-                    '"/>\n';
+                    ';stroke:#000000;stroke-width:1"/>\n';
                 // Add text labelling the category
                 legendSVG +=
                     '<text x="' +
-                    (leftX + 2.5 * UNIT) +
+                    (leftX + 2.5 * unit) +
                     '" y="' +
                     (topY + rowsUsed * lineHeight) +
                     '" style="font-size:' +
-                    UNIT +
+                    unit +
                     'pt;">' +
-                    itemlabel +
+                    cat +
                     "</text>\n";
                 rowsUsed++;
             });
@@ -353,17 +350,25 @@ define(["underscore", "util"], function (_, util) {
             // rect shall have a certain padding, its height must exceed
             // the number of used text rows and width must be larger than
             // longest key text and/or legend title
-            var bbTopY = (topY + (rowsUsed - this._sortedCategories.length - 2) * lineHeight);
-            var bbWidth = (maxLineWidth + 2 * UNIT);
-            var bbHeight = ((this._sortedCategories.length + 1) * lineHeight) + UNIT;
-            var outputSVG = '<g>\n<rect x="' + leftX +
-                '" y="' + bbTopY +
-                '" width="' + bbWidth +
-                '" height="' + bbHeight +
-                '" style="fill:#eeeeee;stroke:#000000;stroke-width:1" ry="30" />\n' +
+            var numCats = this._sortedCategories.length;
+            var bbTopY = topY + (rowsUsed - numCats - 2) * lineHeight;
+            var bbWidth = maxLineWidth + 2 * unit;
+            var bbHeight = (numCats + 1) * lineHeight + unit;
+            var outputSVG =
+                '<g>\n<rect x="' +
+                leftX +
+                '" y="' +
+                bbTopY +
+                '" width="' +
+                bbWidth +
+                '" height="' +
+                bbHeight +
+                '" ' +
+                BGSTYLE +
+                ' />\n' +
                 legendSVG +
                 "</g>\n";
-            return {svg: outputSVG, rowsUsed: rowsUsed};
+            return { svg: outputSVG, rowsUsed: rowsUsed };
         } else {
             // Eventually, when we add support for exporting continuous /
             // length legends, this will only really happen if someone tries to

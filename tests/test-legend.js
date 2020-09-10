@@ -124,7 +124,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                 "Thing 2",
                 "Thing 3",
                 "Thing 4",
-                "Thing 5"
+                "Thing 5",
             ]);
             deepEqual(legend._category2color, colorInfo);
         });
@@ -264,8 +264,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                 "I'm here to test that clear removes all children";
             legend.legendType =
                 "I'm here to test that legendType is reset on clearing";
-            legend.title =
-                "I'm here to test that title is reset on clearing";
+            legend.title = "I'm here to test that title is reset on clearing";
             legend.clear();
             // The legend container should now be hidden
             ok(this.containerEle.classList.contains("hidden"));

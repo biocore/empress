@@ -612,6 +612,15 @@ define([
         // the SVG string to be generated
         var svg = "";
 
+        // All distances are based on this variable. The scale of the resulting
+        // SVG can therefore be altered by changing this value.
+        var unit = 30;
+
+        // distance between two text lines as a multiplication factor of UNIT
+        var lineHeightScaleFactor = 1.8;
+
+        var lineHeight = unit * lineHeightScaleFactor;
+
         // used as a rough estimate about the consumed width by text strings
         var myCanvas = document.createElement("canvas");
         var context = myCanvas.getContext("2d");
@@ -624,8 +633,10 @@ define([
 
         // Count the number of used rows
         var row = 1;
-        _.each(legends, function(legend) {
-            var legendSVGData = legend.exportSVG(leftX, topY, row, context);
+        _.each(legends, function (legend) {
+            var legendSVGData = legend.exportSVG(
+                leftX, topY, row, unit, lineHeight, context
+            );
             svg += legendSVGData.svg;
             // The +2 adds one blank row between two legends
             row = legendSVGData.rowsUsed + 2;
