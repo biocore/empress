@@ -282,7 +282,14 @@ define(["underscore", "util"], function (_, util) {
      *                 supported. Currently only categorical legends can be
      *                 exported, but this will change soon.
      */
-    Legend.prototype.exportSVG = function (leftX, topY, row, unit, lineHeight, context) {
+    Legend.prototype.exportSVG = function (
+        leftX,
+        topY,
+        row,
+        unit,
+        lineHeight,
+        context
+    ) {
         var scope = this;
 
         // Style of the rect containing the legend SVG
@@ -365,7 +372,7 @@ define(["underscore", "util"], function (_, util) {
                 bbHeight +
                 '" ' +
                 BGSTYLE +
-                ' />\n' +
+                " />\n" +
                 legendSVG +
                 "</g>\n";
             return { svg: outputSVG, rowsUsed: rowsUsed };

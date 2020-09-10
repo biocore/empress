@@ -635,7 +635,12 @@ define([
         var row = 1;
         _.each(legends, function (legend) {
             var legendSVGData = legend.exportSVG(
-                leftX, topY, row, unit, lineHeight, context
+                leftX,
+                topY,
+                row,
+                unit,
+                lineHeight,
+                context
             );
             svg += legendSVGData.svg;
             // The +2 adds one blank row between two legends
