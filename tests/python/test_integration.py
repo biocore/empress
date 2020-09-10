@@ -57,11 +57,6 @@ class TestIntegration(TestPluginBase):
 
     This assumes that tests are being run from the root directory of Empress.
 
-    NOTE that these tests are pretty basic -- most of them currently just run
-    Empress and verify that it produces a Visualization. It would be nice to
-    add tests that check the details of the visualization more carefully, for
-    example by digging into the index HTML of self.result.visualization.
-
     References
     ----------
 
