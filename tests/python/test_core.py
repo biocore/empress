@@ -388,12 +388,11 @@ class TestCore(unittest.TestCase):
 
         self.assertTrue(obs['emperor_classes'], 'combined-plot-container')
 
-    def test_to_dict_tree_plot(self):
-        viz = Empress(self.tree)
-
-        obs = viz._to_dict()
-        dict_a_cp = copy.deepcopy(DICT_A)
-
+    def _clear_copied_dict_a(self, dict_a_cp):
+        """Clears a copy of DICT_A to look as we'd expect it to look if
+           qiime empress tree-plot was used (i.e. no table / sample metadata
+           were specified).
+        """
         dict_a_cp["is_community_plot"] = False
 
         # When no table / s. metadata is passed, many values in the dict
@@ -404,14 +403,37 @@ class TestCore(unittest.TestCase):
         ]:
             dict_a_cp[nfield] = None
 
-        # These dicts are represented as empty dicts, though. (The main reason
-        # for this is that making f_ids_to_indices be None would have taken
-        # some refactoring, so for the sake of consistency both default to {}.)
+        # These things are represented as empty dicts, though. (The main reason
+        # for this is that making f_ids_to_indices be None in this case would
+        # have required some gross special-casing to refactor things, so for
+        # the sake of consistency and clean code both default to {}.)
         for efield in ["s_ids_to_indices", "f_ids_to_indices"]:
             dict_a_cp[efield] = {}
 
         # We don't need to reset the feature metadata stuff because that should
         # already be empty, since the main to_dict test doesn't use f.m.
+
+    def test_to_dict_tree_plot(self):
+        viz = Empress(self.tree)
+
+        dict_a_cp = copy.deepcopy(DICT_A)
+        self._clear_copied_dict_a(dict_a_cp)
+
+        obs = viz._to_dict()
+        self.assertEqual(obs, dict_a_cp)
+
+    def test_to_dict_tree_plot_with_feature_metadata(self):
+        viz = Empress(self.tree, feature_metadata=self.feature_metadata)
+
+        # Set up expected dict
+        dict_a_cp = copy.deepcopy(DICT_A)
+        self._clear_copied_dict_a(dict_a_cp)
+        # Copied from test_to_dict_with_feature_metadata() above
+        dict_a_cp["compressed_tip_metadata"] = {1: ["asdf", "qwer"]}
+        dict_a_cp["compressed_int_metadata"] = {8: ["ghjk", "tyui"]}
+        dict_a_cp["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
+
+        obs = viz._to_dict()
         self.assertEqual(obs, dict_a_cp)
 
     def test_filter_unobserved_features_from_phylogeny(self):
