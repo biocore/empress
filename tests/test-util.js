@@ -1,4 +1,9 @@
-require(["jquery", "underscore", "util"], function ($, _, util) {
+require(["jquery", "underscore", "UtilitiesForTesting", "util"], function (
+    $,
+    _,
+    UtilitiesForTesting,
+    util
+) {
     $(document).ready(function () {
         module("Utilities");
         /**
@@ -306,38 +311,91 @@ require(["jquery", "underscore", "util"], function ($, _, util) {
             deepEqual(tni.value, "1");
         });
         test("Test assignBarplotLengths", function () {
-            var fm2length = util.assignBarplotLengths(
+            var lengthInfo = util.assignBarplotLengths(
                 ["1", "2", "3", "4"],
                 0,
                 1,
                 100,
                 "testField"
             );
+            // The array returned should have 3 elements
+            deepEqual(lengthInfo.length, 3);
+
+            // The first is fm2length, which maps unique values to lengths
+            var fm2length = lengthInfo[0];
             deepEqual(_.keys(fm2length).length, 4);
             deepEqual(fm2length["1"], 0);
             deepEqual(fm2length["2"], 1 / 3);
             deepEqual(fm2length["3"], 2 / 3);
             deepEqual(fm2length["4"], 1);
+
+            // The second is minVal, the minimum numeric value in the input
+            // data
+            var minVal = lengthInfo[1];
+            deepEqual(minVal, 1, "Minimum value correct");
+
+            // The third is maxVal, which is like minVal but the maximum
+            var maxVal = lengthInfo[2];
+            deepEqual(maxVal, 4, "Maximum value correct");
         });
         test("Test assignBarplotLengths (negative values)", function () {
-            var fm2length = util.assignBarplotLengths(
+            var lengthInfo = util.assignBarplotLengths(
                 ["-1", "-2", "-3", "-4"],
                 0,
                 1,
                 100,
                 "testField"
             );
+            var fm2length = lengthInfo[0];
             deepEqual(_.keys(fm2length).length, 4);
             deepEqual(fm2length["-4"], 0);
             deepEqual(fm2length["-3"], 1 / 3);
             deepEqual(fm2length["-2"], 2 / 3);
             deepEqual(fm2length["-1"], 1);
-            // Check that mixed negative / positive values are handled normally
-            var o = util.assignBarplotLengths(["1", "0", "-1"], 1, 5, 1, "t");
-            deepEqual(_.keys(o).length, 3);
-            deepEqual(o["-1"], 1);
-            deepEqual(o["0"], 3);
-            deepEqual(o["1"], 5);
+            deepEqual(lengthInfo[1], -4);
+            deepEqual(lengthInfo[2], -1);
+        });
+        test("Test assignBarplotLengths (mixed negative / positive values)", function () {
+            var lengthInfo = util.assignBarplotLengths(
+                ["1", "0", "-1"],
+                1,
+                5,
+                1,
+                "t"
+            );
+            var fm2length = lengthInfo[0];
+            deepEqual(_.keys(fm2length).length, 3);
+            deepEqual(fm2length["-1"], 1);
+            deepEqual(fm2length["0"], 3);
+            deepEqual(fm2length["1"], 5);
+            deepEqual(lengthInfo[1], -1);
+            deepEqual(lengthInfo[2], 1);
+        });
+        test("Test assignBarplotLengths (mixed numeric / non-numeric values)", function () {
+            var lengthInfo = util.assignBarplotLengths(
+                ["-4", "4", "abc", "0", "123", "def", "9", "0.5", "four"],
+                0,
+                100,
+                42,
+                "testField"
+            );
+            var fm2length = lengthInfo[0];
+            // There are 6 numeric values (-4, 4, 0, 123, 9, 0.5). The
+            // non-numeric values should have been omitted.
+            deepEqual(_.keys(fm2length).length, 6);
+            // The expected lengths are computed using the formula:
+            // (value - (-4) / (123 - (-4)) * 100 + 0 ... or, simplified,
+            // ((value + 4) / 127) * 100. It's just linear interpolation
+            // between -4 and 123. (The expected lengths should look, well,
+            // expected -- they're all mostly short since 123 is an outlier.)
+            UtilitiesForTesting.approxDeepEqual(fm2length["-4"], 0);
+            UtilitiesForTesting.approxDeepEqual(fm2length["0"], 3.149606299);
+            UtilitiesForTesting.approxDeepEqual(fm2length["0.5"], 3.543307087);
+            UtilitiesForTesting.approxDeepEqual(fm2length["4"], 6.299212598);
+            UtilitiesForTesting.approxDeepEqual(fm2length["9"], 10.23622047);
+            UtilitiesForTesting.approxDeepEqual(fm2length["123"], 100);
+            deepEqual(lengthInfo[1], -4);
+            deepEqual(lengthInfo[2], 123);
         });
         test("Test assignBarplotLengths (non-numeric field error)", function () {
             throws(function () {

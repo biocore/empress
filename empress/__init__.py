@@ -6,6 +6,6 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from empress.tree import Tree
+from empress.core import Empress
 
-__all__ = ['Tree']
+__all__ = ['Empress']

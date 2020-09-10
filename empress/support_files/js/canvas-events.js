@@ -157,12 +157,11 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 var epsilon = 10;
                 var closestDist = Infinity;
                 var closeNode = null;
-                var xDist, yDist, closeNodeKey;
+                var xDist, yDist;
 
                 // Go through all the nodes in the tree and find the node
                 // closest to the (x, y) point that was clicked
-                for (var i = 1; i <= empress._tree.size; i++) {
-                    var node = empress._treeData[i];
+                for (var node = 1; node <= empress._tree.size; node++) {
                     if (!empress.getNodeInfo(node, "visible")) continue;
                     var nodeX = empress.getX(node);
                     var nodeY = empress.getY(node);
@@ -172,7 +171,6 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                     if (squareDist < closestDist) {
                         closestDist = squareDist;
                         closeNode = node;
-                        closeNodeKey = i;
                     }
                 }
 
@@ -188,7 +186,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 yDist = e.clientY - nY;
                 var screenDist = Math.sqrt(xDist * xDist + yDist * yDist);
                 if (screenDist < epsilon) {
-                    // We pass closeNodeKey so that placeNodeSelectionMenu()
+                    // We pass closeNode so that placeNodeSelectionMenu()
                     // knows which node was selected, even if the selected node
                     // has a duplicate name.
                     // (Not all places that call this function will know this
@@ -196,9 +194,9 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                     // only knows the name of the node the user specified. This
                     // is why we still have to provide the name here.)
                     scope.placeNodeSelectionMenu(
-                        closeNode.name,
+                        empress.getNodeInfo(closeNode, "name"),
                         false,
-                        closeNodeKey
+                        closeNode
                     );
                 }
             }
@@ -385,7 +383,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             // nodeKeys is. This is an arbitrary decision, but better than
             // nothing.
             if (moveTree && scope.empress.focusOnSelectedNode) {
-                var nodeToCenterOn = scope.empress._treeData[nodeKeys[0]];
+                var nodeToCenterOn = nodeKeys[0];
                 scope.drawer.centerCameraOn(
                     scope.empress.getX(nodeToCenterOn),
                     scope.empress.getY(nodeToCenterOn)
@@ -406,8 +404,8 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             // We only know the name of the node to select (due to something
             // like the user searching for this name). Therefore, if there are
             // multiple nodes with this same name, things will be ambiguous.
-            var nodeKeys = this.empress._nameToKeys[nodeName];
-            if (nodeKeys !== undefined) {
+            var nodeKeys = this.empress._tree.getNodesWithName(nodeName);
+            if (nodeKeys.length > 0) {
                 // At least one node with this name exists
                 openMenu(nodeKeys);
             } else {

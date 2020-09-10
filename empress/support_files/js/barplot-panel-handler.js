@@ -63,6 +63,12 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
         // recently added
         this.layers = [];
 
+        // Incremented by 1 whenever a new layer is added. Notably, this is
+        // *not* changed when a layer is removed -- this allows us to assign
+        // each layer a guaranteed-unique number, which is useful for creating
+        // HTML elements with unique IDs where needed
+        this.numLayersCreated = 0;
+
         // Define behavior for turning barplots on/off (note that this is
         // different from the makeUnavailable() / makeAvailable() stuff -- the
         // barplot checkbox and the other things here are all contained within
@@ -74,7 +80,9 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
                 scope.addOptions.classList.remove("hidden");
                 scope.updateButton.classList.remove("hidden");
                 scope.enabled = true;
-                scope.empress.drawBarplots(scope.layers);
+                // We don't immediately draw barplots: see
+                // https://github.com/biocore/empress/issues/343. The user has
+                // to click "Update" first.
             } else {
                 scope.layerContainer.classList.add("hidden");
                 scope.addOptions.classList.add("hidden");
@@ -103,12 +111,14 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
      */
     BarplotPanel.prototype.addLayer = function () {
         var layerNum = this.layers.length + 1;
+        this.numLayersCreated++;
         var newLayer = new BarplotLayer(
             this.fmCols,
             this.smCols,
             this,
             this.layerContainer,
-            layerNum
+            layerNum,
+            this.numLayersCreated
         );
         this.layers.push(newLayer);
     };
@@ -191,7 +201,7 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
     /**
      * Array containing the names of layouts compatible with barplots.
      */
-    BarplotPanel.SUPPORTED_LAYOUTS = ["Rectangular"];
+    BarplotPanel.SUPPORTED_LAYOUTS = ["Rectangular", "Circular"];
 
     return BarplotPanel;
 });

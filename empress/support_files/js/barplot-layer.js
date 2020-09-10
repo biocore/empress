@@ -1,10 +1,11 @@
-define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
-    $,
-    _,
-    spectrum,
-    Colorer,
-    util
-) {
+define([
+    "jquery",
+    "underscore",
+    "spectrum",
+    "Colorer",
+    "Legend",
+    "util",
+], function ($, _, spectrum, Colorer, Legend, util) {
     /**
      *
      * @class BarplotLayer
@@ -21,17 +22,45 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
      *                                     HTML should be added.
      * @param {Number} num The "number" of this layer. Layer 1 should be
      *                     the closest layer to the tips of the tree, and
-     *                     so on.
+     *                     so on. Shown in the title of this layer in the UI.
+     * @param {Number} uniqueNum An arbitrary number. This can be any number,
+     *                           so long as it is guaranteed to be unique to
+     *                           this barplot layer (no other layer on the page
+     *                           should have this as its unique number).
+     *                           Used when assigning IDs to HTML
+     *                           elements within this layer -- this ensures
+     *                           that one layer's elements don't trump another
+     *                           layer's elements. (This should not be the same
+     *                           thing as num above, unless the way that works
+     *                           is changed in the future! Consider the case
+     *                           where there are three layers, and Layer 1 is
+     *                           removed. Now, Layer 3's "num" will be
+     *                           decremented so that it is named Layer 2 --
+     *                           but its HTML elements (at least those assigned
+     *                           IDs) will still have uniqueNum in their IDs,
+     *                           so if the next layer added also has 3 for its
+     *                           uniqueNum, things are going to break.)
      *
      * @return {BarplotLayer}
      * @constructs BarplotLayer
      */
-    function BarplotLayer(fmCols, smCols, barplotPanel, layerContainer, num) {
+    function BarplotLayer(
+        fmCols,
+        smCols,
+        barplotPanel,
+        layerContainer,
+        num,
+        uniqueNum
+    ) {
         this.fmCols = fmCols;
         this.smCols = smCols;
         this.barplotPanel = barplotPanel;
         this.layerContainer = layerContainer;
         this.num = num;
+        this.uniqueNum = uniqueNum;
+
+        this.colorLegend = null;
+        this.lengthLegend = null;
 
         this.fmAvailable = this.fmCols.length > 0;
 
@@ -43,12 +72,23 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.barplotType = this.fmAvailable ? "fm" : "sm";
 
         // Various properties of the barplot layer state for feature metadata
+        //
+        // NOTE that the default color defaults to the (this.num)th "Classic
+        // QIIME Colors" color. The fact that we use this.num and not
+        // this.uniqueNum for this is a tradeoff; it ensures consistency (even
+        // if the user's added and removed hundreds of layers, a new Layer 1
+        // will always default to red, a new Layer 2 will always default to
+        // blue, etc.) at the cost of some possible silliness (it's possible
+        // to, say, add two layers, remove the first, and then add another one;
+        // and now both Layer 1 and Layer 2 will have their default color as
+        // blue). Shouldn't really impact most users anyway.
         this.initialDefaultColorHex = Colorer.getQIIMEColor(this.num - 1);
         this.defaultColor = Colorer.hex2RGB(this.initialDefaultColorHex);
         this.colorByFM = false;
         this.colorByFMField = null;
         this.colorByFMColorMap = null;
-        this.colorByFMScaleType = null;
+        this.colorByFMContinuous = false;
+        this.colorByFMColorMapDiscrete = true;
         this.defaultLength = BarplotLayer.DEFAULT_LENGTH;
         this.scaleLengthByFM = false;
         this.scaleLengthByFMField = null;
@@ -65,9 +105,14 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.layerDiv = null;
         this.fmDiv = null;
         this.smDiv = null;
+        this.colorLegendDiv = null;
+        this.lengthLegendDiv = null;
         this.initHTML();
     }
 
+    /**
+     * Initializes the HTML for this barplot layer.
+     */
     BarplotLayer.prototype.initHTML = function () {
         var scope = this;
         this.layerDiv = document.createElement("div");
@@ -135,13 +180,14 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         }
 
         this.initSMDiv();
+        this.initLegendDiv();
         // Add a row of UI elements that supports removing this layer
         var rmP = this.layerDiv.appendChild(document.createElement("p"));
         var rmLbl = rmP.appendChild(document.createElement("label"));
         rmLbl.innerText = "Remove this layer";
         var rmBtn = rmP.appendChild(document.createElement("button"));
         rmBtn.innerText = "-";
-        rmBtn.id = "barplot-layer-" + this.num + "-remove-button";
+        rmBtn.id = "barplot-layer-" + this.uniqueNum + "-remove-button";
         rmLbl.setAttribute("for", rmBtn.id);
         rmBtn.onclick = function () {
             scope.barplotPanel.removeLayer(scope.num);
@@ -154,6 +200,12 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         this.layerDiv.appendChild(document.createElement("hr"));
     };
 
+    /**
+     * Initializes the feature metadata <div> for this barplot layer.
+     *
+     * This should only be called if the visualization was provided feature
+     * metadata.
+     */
     BarplotLayer.prototype.initFMDiv = function () {
         var scope = this;
         this.fmDiv = this.layerDiv.appendChild(document.createElement("div"));
@@ -169,7 +221,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         dfltColorLbl.innerText = "Default color";
         var dfltColorInput = document.createElement("input");
         dfltColorInput.setAttribute("type", "text");
-        dfltColorInput.id = "barplot-layer-" + this.num + "-dfltcolor-input";
+        dfltColorInput.id =
+            "barplot-layer-" + this.uniqueNum + "-dfltcolor-input";
         dfltColorLbl.setAttribute("for", dfltColorInput.id);
         dfltColorP.appendChild(dfltColorInput);
         // Register dfltColorInput as a color selector with spectrum.js
@@ -195,7 +248,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         chgColorP.appendChild(chgColorLbl);
         // Add the checkbox, taking care to use a certain ID
         var chgColorCheckbox = document.createElement("input");
-        var chgColorCheckboxID = "barplot-layer-" + this.num + "-chgcolor-chk";
+        var chgColorCheckboxID =
+            "barplot-layer-" + this.uniqueNum + "-chgcolor-chk";
         chgColorCheckbox.id = chgColorCheckboxID;
         chgColorCheckbox.setAttribute("type", "checkbox");
         chgColorCheckbox.classList.add("empress-input");
@@ -238,7 +292,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         var colormapSelector = document.createElement("select");
         Colorer.addColorsToSelect(colormapSelector);
         colormapSC.appendChild(colormapSelector);
-        colormapSelector.id = "barplot-layer-" + this.num + "fm-colormap";
+        colormapSelector.id =
+            "barplot-layer-" + this.uniqueNum + "-fm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
         // Add a row for choosing the scale type (i.e. whether to use
@@ -255,7 +310,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             document.createElement("input")
         );
         continuousValCheckbox.id =
-            "barplot-layer-" + this.num + "-fmcolor-continuous-chk";
+            "barplot-layer-" + this.uniqueNum + "-fmcolor-continuous-chk";
         continuousValCheckbox.setAttribute("type", "checkbox");
         continuousValCheckbox.classList.add("empress-input");
         continuousValLbl.setAttribute("for", continuousValCheckbox.id);
@@ -263,6 +318,10 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         // colormap is discrete
         continuousValP.classList.add("hidden");
 
+        // Initialize defaults to match the UI defaults (e.g. the default
+        // feature metadata field for coloring is the first in the selector)
+        this.colorByFMField = chgColorFMFieldSelector.value;
+        this.colorByFMColorMap = colormapSelector.value;
         // Alter visibility of the color-changing details when the "Color
         // by..." checkbox is clicked
         $(chgColorCheckbox).change(function () {
@@ -298,8 +357,10 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             // hides/shows its "Continuous values" elements.
             if (Colorer.isColorMapDiscrete(scope.colorByFMColorMap)) {
                 continuousValP.classList.add("hidden");
+                scope.colorByFMColorMapDiscrete = true;
             } else {
                 continuousValP.classList.remove("hidden");
+                scope.colorByFMColorMapDiscrete = false;
             }
         });
         $(continuousValCheckbox).change(function () {
@@ -315,7 +376,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         dfltLenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
         dfltLenInput.classList.add("empress-input");
         dfltLenInput.value = this.defaultLength;
-        dfltLenInput.id = "barplot-layer-" + this.num + "-dfltlen-input";
+        dfltLenInput.id = "barplot-layer-" + this.uniqueNum + "-dfltlen-input";
         dfltLenLbl.setAttribute("for", dfltLenInput.id);
         $(dfltLenInput).change(function () {
             scope.defaultLength = util.parseAndValidateNum(
@@ -333,7 +394,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         chgLenP.appendChild(chgLenLbl);
         // Add the checkbox, taking care to use a certain ID
         var chgLenCheckbox = document.createElement("input");
-        var chgLenCheckboxID = "barplot-layer-" + this.num + "-chglen-chk";
+        var chgLenCheckboxID =
+            "barplot-layer-" + this.uniqueNum + "-chglen-chk";
         chgLenCheckbox.id = chgLenCheckboxID;
         chgLenCheckbox.setAttribute("type", "checkbox");
         chgLenCheckbox.classList.add("empress-input");
@@ -376,7 +438,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             );
         });
         minLenP.appendChild(minLenInput);
-        minLenInput.id = "barplot-layer-" + this.num + "fm-minlen-input";
+        minLenInput.id = "barplot-layer-" + this.uniqueNum + "-fm-minlen-input";
         minLenLbl.setAttribute("for", minLenInput.id);
 
         // Add max len stuff
@@ -395,18 +457,17 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             );
         });
         maxLenP.appendChild(maxLenInput);
-        maxLenInput.id = "barplot-layer-" + this.num + "fm-maxlen-input";
+        maxLenInput.id = "barplot-layer-" + this.uniqueNum + "-fm-maxlen-input";
         maxLenLbl.setAttribute("for", maxLenInput.id);
 
         lenDetailsDiv.appendChild(minLenP);
         lenDetailsDiv.appendChild(maxLenP);
 
+        this.scaleLengthByFMField = chgLenFMFieldSelector.value;
         $(chgLenCheckbox).change(function () {
             if (chgLenCheckbox.checked) {
                 chgLenFMFieldSelector.disabled = false;
                 scope.scaleLengthByFM = true;
-                // TODO rather than setting this here, have it be set to the
-                // first value in the selector on initialization
                 scope.scaleLengthByFMField = chgLenFMFieldSelector.value;
                 dfltLenP.classList.add("hidden");
                 lenDetailsDiv.classList.remove("hidden");
@@ -429,6 +490,9 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         // info to a selector (duplicated btwn color and length stuff)
     };
 
+    /**
+     * Initializes the sample metadata <div> for this barplot layer.
+     */
     BarplotLayer.prototype.initSMDiv = function () {
         var scope = this;
         this.smDiv = this.layerDiv.appendChild(document.createElement("div"));
@@ -454,7 +518,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
             chgFieldSMFieldSelector.appendChild(opt);
         });
         chgFieldSMFieldSelector.id =
-            "barplot-layer-" + this.num + "-chgsmfield";
+            "barplot-layer-" + this.uniqueNum + "-chgsmfield";
         chgFieldLbl.setAttribute("for", chgFieldSMFieldSelector.id);
         chgFieldSC.appendChild(chgFieldSMFieldSelector);
 
@@ -469,7 +533,8 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         var colormapSelector = document.createElement("select");
         Colorer.addColorsToSelect(colormapSelector);
         colormapSC.appendChild(colormapSelector);
-        colormapSelector.id = "barplot-layer-" + this.num + "sm-colormap";
+        colormapSelector.id =
+            "barplot-layer-" + this.uniqueNum + "-sm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
         var lenP = this.smDiv.appendChild(document.createElement("p"));
@@ -480,7 +545,7 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         lenInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
         lenInput.classList.add("empress-input");
         lenInput.value = this.defaultLength;
-        lenInput.id = "barplot-layer-" + this.num + "-smlength-input";
+        lenInput.id = "barplot-layer-" + this.uniqueNum + "-smlength-input";
         lenLbl.setAttribute("for", lenInput.id);
 
         // TODO initialize defaults more sanely
@@ -500,18 +565,190 @@ define(["jquery", "underscore", "spectrum", "Colorer", "util"], function (
         });
     };
 
+    /**
+     * Initializes a <div> for this barplot layer that'll contain legends.
+     */
+    BarplotLayer.prototype.initLegendDiv = function () {
+        this.colorLegendDiv = document.createElement("div");
+        this.colorLegendDiv.classList.add("hidden");
+        this.colorLegendDiv.classList.add("legend");
+        this.colorLegendDiv.classList.add("barplot-layer-legend");
+        this.colorLegend = new Legend(this.colorLegendDiv);
+        this.layerDiv.appendChild(this.colorLegendDiv);
+
+        this.lengthLegendDiv = document.createElement("div");
+        this.lengthLegendDiv.classList.add("hidden");
+        this.lengthLegendDiv.classList.add("legend");
+        this.lengthLegendDiv.classList.add("barplot-layer-legend");
+        this.lengthLegend = new Legend(this.lengthLegendDiv);
+        this.layerDiv.appendChild(this.lengthLegendDiv);
+
+        // TODO: if possible, making the legend text selectable (overriding
+        // the unselectable-text class on the side panel) would be nice, so
+        // users can do things like highlight and copy category names.
+        // Understandable if this isn't easily doable, though.
+    };
+
+    /**
+     * Populates the legend with information about the current coloring
+     * selection.
+     *
+     * This is currently called by the Empress object when drawing barplots; so
+     * the legend is only updated when the "Update" button is pressed, rather
+     * than whenever one of the UI elements changes. Restructuring things so
+     * this class creates the Colorer is possible, but would likely require
+     * this class having a reference to the Empress object.
+     *
+     * @param {Colorer} colorer Instance of a Colorer object defining the
+     *                          current color selection for this barplot.
+     */
+    BarplotLayer.prototype.populateColorLegend = function (colorer) {
+        var isFM = this.barplotType === "fm";
+        var title;
+        if (isFM) {
+            title = this.colorByFMField;
+        } else {
+            title = this.colorBySMField;
+        }
+        // Show a categorical legend *unless* the barplot is for feature
+        // metadata and the "Continuous values" checkbox is visible and checked
+        if (
+            isFM &&
+            this.colorByFMContinuous &&
+            !this.colorByFMColorMapDiscrete
+        ) {
+            var gradInfo = colorer.getGradientSVG();
+            this.colorLegend.addContinuousKey(title, gradInfo[0], gradInfo[1]);
+        } else {
+            this.colorLegend.addCategoricalKey(title, colorer.getMapHex());
+        }
+    };
+
+    /**
+     * Clears this layer's color legend.
+     *
+     * This is used when no color encoding is used for this layer -- this can
+     * happen when the layer is for feature metadata, but the "Color by..."
+     * checkbox is unchecked.
+     *
+     * NOTE that this is called even if the legend is already "cleared" --
+     * either this or populateColorLegend() is called once for every layer
+     * every time the barplots are redrawn. It'd be possible to try to save the
+     * state of the legend to avoid re-clearing / populating it, but I really
+     * doubt that this will be a bottleneck (unless there are, like, 1000
+     * barplot layers at once).
+     */
+    BarplotLayer.prototype.clearColorLegend = function () {
+        this.colorLegend.clear();
+    };
+
+    /**
+     * Populates the legend with information about the current length scaling
+     * in use.
+     *
+     * The circumstances in which this function is called are similar to those
+     * of populateColorLegend().
+     *
+     * @param {Number} minVal Minimum numeric value of the field used for
+     *                        length scaling.
+     * @param {Number} maxVal Maximum numeric value of the field used for
+     *                        length scaling.
+     * @throws {Error} If the current barplotType is not "fm". (Length scaling
+     *                 isn't supported for sample metadata barplots yet.)
+     */
+    BarplotLayer.prototype.populateLengthLegend = function (minVal, maxVal) {
+        var title;
+        if (this.barplotType === "fm") {
+            title = this.scaleLengthByFMField;
+            this.lengthLegend.addLengthKey(title, minVal, maxVal);
+        } else {
+            throw new Error(
+                "Length encoding is not supported for sample metadata " +
+                    "barplots yet."
+            );
+        }
+    };
+
+    /**
+     * Clears this layer's length legend.
+     *
+     * This is used when no length scaling is used for this layer -- this will
+     * (currently) always be the case for a sample metadata barplot layer.
+     *
+     * The circumstances in which this function is called are similar to those
+     * of clearColorLegend() (so, for example, this is called for each layer
+     * every time the barplots are updated; it's an inefficiency, but probably
+     * not a large one).
+     */
+    BarplotLayer.prototype.clearLengthLegend = function () {
+        this.lengthLegend.clear();
+    };
+
+    /**
+     * Updates the text in the layer's header based on the layer's number.
+     *
+     * Since the layer's number can change (e.g. when a layer with a lower
+     * number than it is removed), this function may be called many times
+     * throughout a layer's lifespan.
+     */
     BarplotLayer.prototype.updateHeader = function () {
         this.headerElement.innerText = "Layer " + this.num;
     };
 
+    /**
+     * Lowers this layer's number by 1 and calls this.updateHeader().
+     *
+     * This should be called when a layer with a lower number than this layer's
+     * number is removed. For example, if there are three layers (1, 2, 3), and
+     * layer 2 is removed, then layer 3 should be decremented to layer 2 --
+     * since it's now the second, rather than the third, layer.
+     *
+     * (Critically, this does NOT decrement this layer's "unique number". This
+     * is intentional.)
+     */
     BarplotLayer.prototype.decrement = function () {
         this.num--;
         this.updateHeader();
     };
 
+    /**
+     * @type{Number}
+     * The minimum length used for all of the length inputs: i.e. no length
+     * entered by the user can be below this. This could conceivably be
+     * increased to 1 or another small positive value, but it should probably
+     * stay at 0 so that 0 can be used as the minimum length for length
+     * scaling. (In any case, this should NOT be set to a negative number!
+     * That'll break things.)
+     * @public
+     */
     BarplotLayer.MIN_LENGTH = 0;
+
+    /**
+     * @type{Number}
+     * The default length used for the "Default length" input for feature
+     * metadata barplots and for the "Length" input for sample metadata
+     * barplots. (NOTE: this length, as with the other length values here,
+     * isn't in any particular units like pixels. A length of 100 will look
+     * somewhat different on two trees with drastically different sizes;
+     * however, from testing, it seems like a reasonable default.)
+     * @public
+     */
     BarplotLayer.DEFAULT_LENGTH = 100;
+
+    /**
+     * @type {Number}
+     * The default length used for the "Minimum length" input for length
+     * scaling in feature metadata barplots.
+     * @public
+     */
     BarplotLayer.DEFAULT_MIN_LENGTH = 1;
+
+    /**
+     * @type {Number}
+     * The default length used for the "Maximum length" input for length
+     * scaling in feature metadata barplots.
+     * @public
+     */
     BarplotLayer.DEFAULT_MAX_LENGTH = 100;
 
     return BarplotLayer;
