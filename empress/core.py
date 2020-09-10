@@ -43,6 +43,13 @@ class Empress():
         Use this object to interactively display a phylogenetic tree using the
         Empress GUI.
 
+        Note that the table and sample metadata must either both be specified
+        or both be None. If only one of them is None, this will raise a
+        ValueError. (Also, if both are None, then the values of the ordination,
+        ignore_missing_samples, filter_extra_samples, filter_missing_features,
+        and filter_unobserved_features_from_phylogeny arguments will be
+        ignored since no sample information is available.)
+
         Parameters
         ----------
         tree: bp.BP
