@@ -163,10 +163,29 @@ class TestCore(unittest.TestCase):
         # Simplest case (no feature metadata)
         viz = Empress(self.tree)
         self.assertFalse(viz.is_community_plot)
+        self.assertIsNone(viz.tip_md)
+        self.assertIsNone(viz.int_md)
 
         # Slightly less simple case (with feature metadata)
         viz = Empress(self.tree, feature_metadata=self.feature_metadata)
         self.assertFalse(viz.is_community_plot)
+        assert_frame_equal(viz.tip_md, self.feature_metadata.loc[["a"]])
+        assert_frame_equal(viz.int_md, self.feature_metadata.loc[["h"]])
+
+    def test_init_tree_plot_fm_not_matching(self):
+        # Mainly, this test validates that the matching done between the tree
+        # nodes and feature metadata is still performed even if tree-plot is
+        # used.
+        bad_fm = self.feature_metadata.copy()
+        bad_fm.index = ["idont", "match :O"]
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            (
+                "No features in the feature metadata are present in the tree, "
+                "either as tips or as internal nodes."
+            )
+        ):
+            Empress(self.tree, feature_metadata=bad_fm)
 
     def test_init_only_one_of_table_and_sm_passed(self):
         exp_errmsg = (
