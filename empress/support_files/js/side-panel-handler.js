@@ -247,11 +247,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var colBy = this.fSel.value;
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
-        this.empress.colorByFeatureMetadata(
-            colBy,
-            col,
-            coloringMethod
-        );
+        this.empress.colorByFeatureMetadata(colBy, col, coloringMethod);
     };
 
     /**
