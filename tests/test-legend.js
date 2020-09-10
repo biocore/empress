@@ -117,6 +117,16 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                 });
             // Legend should be visible
             notOk(this.containerEle.classList.contains("hidden"));
+
+            // Check that _sortedCategories and _category2color are defined
+            deepEqual(legend._sortedCategories, [
+                "Thing 1",
+                "Thing 2",
+                "Thing 3",
+                "Thing 4",
+                "Thing 5"
+            ]);
+            deepEqual(legend._category2color, colorInfo);
         });
         test("addCategoricalKey (just 1 color)", function () {
             var legend = new Legend(this.containerEle);
@@ -136,6 +146,10 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             var cells = $(rows[0]).children();
             equal(chroma($(cells[0]).css("background")).hex(), darkBrown);
             equal(cells[1].innerText, "hjkl");
+
+            // Check that _sortedCategories and _category2color are defined
+            deepEqual(legend._sortedCategories, ["hjkl"]);
+            deepEqual(legend._category2color, colorInfo);
         });
         test("addCategoricalKey (error: no categories)", function () {
             var legend = new Legend(this.containerEle);

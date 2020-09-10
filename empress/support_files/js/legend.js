@@ -43,6 +43,24 @@ define(["underscore", "util"], function (_, util) {
          * @public
          */
         this.title = "";
+
+        /**
+         * @type {Array}
+         * Sorted categories shown in the legend. Stored as a class-level
+         * variable so it can be retrieved when exporting a categorical legend
+         * to SVG.
+         * @private
+         */
+        this._sortedCategories = [];
+
+        /**
+         * @type {Object}
+         * Maps categories to hex colors. Same deal as with
+         * this._sortedCategories -- we store this in order to make exporting
+         * categorical legends easier.
+         * @private
+         */
+        this._category2color = {};
     }
 
     /**
@@ -142,6 +160,11 @@ define(["underscore", "util"], function (_, util) {
      * using util.naturalSort() on the keys (this should match the way colors
      * are assigned).
      *
+     * NOTE that this will assign values to this._sortedCategories and
+     * this._category2color. (The values of these attributes are arbitrary when
+     * you call another add*Key() function -- they're intended for internal
+     * use within the Legend class.)
+     *
      * @param {String} name Text to show in the legend title.
      * @param {Object} info Color key information. This should map unique
      *                      values (e.g. in sample or feature metadata) to
@@ -159,7 +182,8 @@ define(["underscore", "util"], function (_, util) {
         }
         this.clear();
         this.addTitle(name);
-        let sortedCategories = util.naturalSort(_.keys(info));
+        this._sortedCategories = util.naturalSort(_.keys(info));
+        this._category2color = info;
         var containerTable = document.createElement("table");
         // Remove border spacing, which seems to be a default for at least some
         // browsers. This prevents labels from appearing to the left of color
@@ -167,7 +191,7 @@ define(["underscore", "util"], function (_, util) {
         // kinda ugly, so by smooshing the colors to the left of the legend we
         // avoid this problem).
         containerTable.setAttribute("style", "border-spacing: 0;");
-        _.each(sortedCategories, function (key) {
+        _.each(this._sortedCategories, function (key) {
             var newRow = containerTable.insertRow(-1);
 
             // Add a color box (could totally be replaced by e.g. a Spectrum
@@ -247,6 +271,107 @@ define(["underscore", "util"], function (_, util) {
         }
         this.legendType = null;
         this.title = "";
+    };
+
+    /**
+     * Gets an SVG representation of the legend.
+     *
+     * @return {String} legendSVG
+     *
+     * @throws {Error} If the current legend type does not have SVG export
+     *                 supported. Currently only categorical legends can be
+     *                 exported, but this will change soon.
+     */
+    Legend.prototype.exportSVG = function (leftX, topY, row, context) {
+        var scope = this;
+
+        // All distances are based on this variable. The scale of the resulting
+        // SVG can therefore be altered by changing this value.
+        var UNIT = 30;
+
+        // distance between two text lines as a multiplication factor of UNIT
+        var LINEHEIGHTSCALEFACTOR = 1.8;
+
+        var lineHeight = UNIT * LINEHEIGHTSCALEFACTOR;
+
+        var legendSVG = "";
+        var rowsUsed = row;
+        if (this.legendType === "categorical") {
+            var maxLineWidth = context.measureText(this.title).width;
+            // First, add the title to the legend SVG
+            legendSVG +=
+                '<text x="' +
+                (leftX + UNIT) +
+                '" y="' +
+                (topY + rowsUsed * lineHeight) +
+                '" style="font-weight:bold;font-size:' +
+                UNIT +
+                'pt;">' +
+                this.title +
+                "</text>\n";
+            rowsUsed++;
+            // Go through each of the categories and add a row to the legend
+            // SVG. (Since the legend type is categorical,
+            // this._sortedCategories and this._category2color must be
+            // defined.)
+            _.each(this._sortedCategories, function (cat) {
+                var color = scope._category2color[cat];
+                maxLineWidth = Math.max(
+                    maxLineWidth,
+                    context.measureText(cat).width
+                );
+                // Add a square to the left of the label showing the color
+                legendSVG +=
+                    '<rect x="' +
+                    (leftX + UNIT) +
+                    '" y="' +
+                    (topY + rowsUsed * lineHeight - UNIT) +
+                    '" width="' +
+                    UNIT +
+                    '" height="' +
+                    UNIT +
+                    '" style="fill:' +
+                    color +
+                    '"/>\n';
+                // Add text labelling the category
+                legendSVG +=
+                    '<text x="' +
+                    (leftX + 2.5 * UNIT) +
+                    '" y="' +
+                    (topY + rowsUsed * lineHeight) +
+                    '" style="font-size:' +
+                    UNIT +
+                    'pt;">' +
+                    itemlabel +
+                    "</text>\n";
+                rowsUsed++;
+            });
+
+            // draw a rect behind, i.e. lower z-order, the legend title and
+            // colored keys to visually group the legend. Also actually put
+            // these elements into a group for easier manual editing.
+            // rect shall have a certain padding, its height must exceed
+            // the number of used text rows and width must be larger than
+            // longest key text and/or legend title
+            var bbTopY = (topY + (rowsUsed - this._sortedCategories.length - 2) * lineHeight);
+            var bbWidth = (maxLineWidth + 2 * UNIT);
+            var bbHeight = ((this._sortedCategories.length + 1) * lineHeight) + UNIT;
+            var outputSVG = '<g>\n<rect x="' + leftX +
+                '" y="' + bbTopY +
+                '" width="' + bbWidth +
+                '" height="' + bbHeight +
+                '" style="fill:#eeeeee;stroke:#000000;stroke-width:1" ry="30" />\n' +
+                legendSVG +
+                "</g>\n";
+            return {svg: outputSVG, rowsUsed: rowsUsed};
+        } else {
+            // Eventually, when we add support for exporting continuous /
+            // length legends, this will only really happen if someone tries to
+            // export a legend with an invalid legendType (e.g. null)
+            throw new Error(
+                "Only categorical legends can be exported right now."
+            );
+        }
     };
 
     return Legend;
