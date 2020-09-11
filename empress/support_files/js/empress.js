@@ -749,7 +749,6 @@ define([
      * @return {Array}
      */
     Empress.prototype.getCoords = function () {
-        var d = new Date();
         var tree = this._tree;
 
         // The coordinates (and colors) of the tree's nodes.
@@ -897,9 +896,6 @@ define([
                 addPoint(this.getX(node), this.getY(node));
             }
         }
-        var dt = new Date();
-        console.log("Circ time:", dt.getTime() - d.getTime());
-        console.log("coords length:", coords.length);
         return new Float32Array(coords);
     };
 
