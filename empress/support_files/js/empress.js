@@ -591,7 +591,7 @@ define([
      */
     Empress.prototype.exportLegendSVG = function (leftX, topY) {
         // the SVG string to be generated
-        var svg = "";
+        var svg = "<!-- legends -->\n";
 
         // All distances are based on this variable. The scale of the resulting
         // SVG can therefore be altered by changing this value.
@@ -605,12 +605,15 @@ define([
         // used as a rough estimate about the consumed width by text strings
         var myCanvas = document.createElement("canvas");
         var context = myCanvas.getContext("2d");
-        context.font = "bold " + unit + "pt verdana";
+        context.font = "bold " + unit + "pt arial";
 
+        var legends = [];
+        if (!_.isNull(this._legend.legendType)) {
+            legends.push(this._legend);
+        }
         // TODO: get legends from barplot panel, which should in turn get them
         // from each of its barplot layers. For now, we just export the tree
         // legend, since we don't support exporting barplots quite yet (soon!)
-        var legends = [this._legend];
 
         // Count the number of used rows
         var row = 1;
@@ -661,7 +664,7 @@ define([
             " " +
             treeMinY +
             " " +
-            legendMaxX +
+            (legendMaxX + treeWidth) +
             " " +
             vbHeight +
             '"';

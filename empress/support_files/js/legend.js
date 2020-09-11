@@ -308,7 +308,7 @@ define(["underscore", "util"], function (_, util) {
                 (topY + rowsUsed * lineHeight) +
                 '" style="font-weight:bold;font-size:' +
                 unit +
-                'pt;">' +
+                'pt;" font-family="Arial,Helvetica,sans-serif">' +
                 this.title +
                 "</text>\n";
             rowsUsed++;
@@ -338,6 +338,8 @@ define(["underscore", "util"], function (_, util) {
                     color +
                     ';stroke:#000000;stroke-width:1"/>\n';
                 // Add text labelling the category
+                // We specify the font family so that it should roughly match
+                // what Empress uses in its body CSS
                 legendSVG +=
                     '<text x="' +
                     (leftX + 2.5 * unit) +
@@ -345,7 +347,7 @@ define(["underscore", "util"], function (_, util) {
                     (topY + rowsUsed * lineHeight) +
                     '" style="font-size:' +
                     unit +
-                    'pt;">' +
+                    'pt;" font-family="Arial,Helvetica,sans-serif">' +
                     cat +
                     "</text>\n";
                 rowsUsed++;
