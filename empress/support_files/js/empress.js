@@ -570,9 +570,9 @@ define([
         return {
             svg: svg,
             minX: minX,
-            maxX: maxX + (2 * NODE_RADIUS),
+            maxX: maxX + 2 * NODE_RADIUS,
             minY: minY,
-            maxY: maxY + (2 * NODE_RADIUS),
+            maxY: maxY + 2 * NODE_RADIUS,
         };
     };
 
