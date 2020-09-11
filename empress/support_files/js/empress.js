@@ -564,8 +564,8 @@ define([
             }
         }
 
-        var minX = minX - NODE_RADIUS;
-        var minY = minY - NODE_RADIUS;
+        minX -= NODE_RADIUS;
+        minY -= NODE_RADIUS;
         var width = maxX - minX + 2 * NODE_RADIUS;
         var height = maxY - minY + 2 * NODE_RADIUS;
 
