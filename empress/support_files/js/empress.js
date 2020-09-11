@@ -566,15 +566,13 @@ define([
 
         minX -= NODE_RADIUS;
         minY -= NODE_RADIUS;
-        var width = maxX - minX + 2 * NODE_RADIUS;
-        var height = maxY - minY + 2 * NODE_RADIUS;
 
         return {
             svg: svg,
             minX: minX,
+            maxX: maxX + (2 * NODE_RADIUS),
             minY: minY,
-            width: width,
-            height: height,
+            maxY: maxY + (2 * NODE_RADIUS),
         };
     };
 
@@ -639,7 +637,7 @@ define([
             // Based on the width of this legend's bounding box, try to update
             // maxWidth
             maxWidth = Math.max(maxWidth, legendSVGData.bbWidth);
-            maxHeight = Math.max(maxHeight, legendSVGData.bbHeight);
+            maxHeight = legendSVGData.bbHeight;
         });
         var maxX = leftX + maxWidth;
         var maxY = topY + maxHeight;
@@ -651,22 +649,24 @@ define([
     // added to the SVG header.
     Empress.prototype.getSVGViewBoxText = function (
         treeMinX,
+        treeMaxX,
         treeMinY,
-        treeWidth,
-        treeHeight,
+        treeMaxY,
         legendMaxX,
         legendMaxY
     ) {
-        var vbHeight = Math.max(treeHeight, legendMaxY);
+        var maxY = Math.max(treeMaxY, legendMaxY);
         var vbText =
             'viewBox="' +
             treeMinX +
             " " +
             treeMinY +
             " " +
-            (legendMaxX + treeWidth) +
+            // TODO get node radius from somewhere (pass to here? or store as
+            // const in empress)
+            (legendMaxX - treeMinX + 2 * 4) +
             " " +
-            vbHeight +
+            (maxY - treeMinY + 2 * 4) +
             '"';
         return vbText;
     };
@@ -685,7 +685,7 @@ define([
         //            |            |
         //            +------------+
         var legendSVGInfo = this.exportLegendSVG(
-            treeSVGInfo.width,
+            treeSVGInfo.maxX,
             treeSVGInfo.minY
         );
 
@@ -698,9 +698,9 @@ define([
         // will still show everything. (This is mostly useful for debugging.)
         var viewBox = this.getSVGViewBoxText(
             treeSVGInfo.minX,
+            treeSVGInfo.maxX,
             treeSVGInfo.minY,
-            treeSVGInfo.width,
-            treeSVGInfo.height,
+            treeSVGInfo.maxY,
             legendSVGInfo.maxX,
             legendSVGInfo.maxY
         );
