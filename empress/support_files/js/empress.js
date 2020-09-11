@@ -855,15 +855,17 @@ define([
                     !this._tree.isleaf(this._tree.postorderselect(node)) &&
                     !this._collapsedClades.hasOwnProperty(node)
                 ) {
-                    // arcs are created by sampling 15 small lines along the
-                    // arc spanned by rotating (arcx0, arcy0), the line whose
-                    // origin is the root of the tree and endpoint is the start
-                    // of the arc, by arcendangle - arcstartangle radians.
+                    // An arc will be created for all internal nodes.
+                    // arcs are created by sampling upto 60 small lines along
+                    // the arc spanned by rotating the line (arcx0, arcy0)
+                    // arcendangle - arcstartangle radians. This will create an
+                    // that starts at each internal node's right most child
+                    // and ends on the left most child.
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
                     var numSamples = Math.floor(
-                        40 * Math.abs(arcDeltaAngle / (Math.PI))
+                        60 * Math.abs(arcDeltaAngle / (Math.PI))
                     );
                     numSamples = numSamples > 0 ? numSamples : 2;
                     var sampleAngle = arcDeltaAngle / numSamples;
@@ -1252,14 +1254,19 @@ define([
                 // (TODO: this will need to be adapted when the arc is changed
                 // to be a bezier curve)
                 if (!this._tree.isleaf(this._tree.postorderselect(node))) {
-                    // arcs are created by sampling 15 small lines along the
-                    // arc spanned by rotating arcx0, the line whose origin
-                    // is the root of the tree and endpoint is the start of the
-                    // arc, by arcendangle - arcstartangle radians.
-                    var numSamples = 15;
+                    // An arc will be created for all internal nodes.
+                    // arcs are created by sampling upto 60 small lines along
+                    // the arc spanned by rotating the line (arcx0, arcy0)
+                    // arcendangle - arcstartangle radians. This will create an
+                    // that starts at each internal node's right most child
+                    // and ends on the left most child.
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
+                    var numSamples = Math.floor(
+                        60 * Math.abs(arcDeltaAngle / (Math.PI))
+                    );
+                    numSamples = numSamples > 0 ? numSamples : 2;
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this.getNodeInfo(node, "arcx0");
                     var sY = this.getNodeInfo(node, "arcy0");
