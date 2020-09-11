@@ -505,11 +505,11 @@ define([
                 '<line x1="' +
                 coords[i] +
                 '" y1="' +
-                coords[i + 1] +
+                -coords[i + 1] +
                 '" x2="' +
                 coords[i + this._drawer.VERTEX_SIZE] +
                 '" y2="' +
-                coords[i + 1 + this._drawer.VERTEX_SIZE] +
+                -coords[i + 1 + this._drawer.VERTEX_SIZE] +
                 '" stroke="' +
                 chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css() +
                 '" style="stroke-width:' +
@@ -530,13 +530,13 @@ define([
 
             minY = Math.min(
                 minY,
-                coords[i + 1],
-                coords[i + 1 + this._drawer.VERTEX_SIZE]
+                -coords[i + 1],
+                -coords[i + 1 + this._drawer.VERTEX_SIZE]
             );
             maxY = Math.max(
                 maxY,
-                coords[i + 1],
-                coords[i + 1 + this._drawer.VERTEX_SIZE]
+                -coords[i + 1],
+                -coords[i + 1 + this._drawer.VERTEX_SIZE]
             );
         }
 
@@ -553,7 +553,7 @@ define([
                     '<circle cx="' +
                     coords[i] +
                     '" cy="' +
-                    coords[i + 1] +
+                    -coords[i + 1] +
                     '" r="' +
                     NODE_RADIUS +
                     '" style="fill:' +
