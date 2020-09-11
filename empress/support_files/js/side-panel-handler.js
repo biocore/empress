@@ -328,24 +328,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var scope = this;
 
         this.exportSVGBtn.onclick = function () {
-            // Get the SVG for the tree visualization, along with the viewBox
-            // and dimensions
-            var svgInfo = scope.empress.exportSVG();
-            // create SVG tags for legend, collected from the HTML document
-            var legendSVG = scope.empress.exportSVGLegend(
-                svgInfo.legendLeftX,
-                svgInfo.legendTopY
-            );
-            // add all SVG elements into one string...
-            var totalSVG =
-                '<svg xmlns="http://www.w3.org/2000/svg" ' +
-                svgInfo.viewBoxText +
-                " >\n" +
-                svgInfo.svg +
-                "\n" +
-                legendSVG +
-                "</svg>\n";
-            // ... and present user as a downloadable file
+            var totalSVG = scope.empress.exportSVG();
+            // Present SVG to user as downloadable file
             var blob = new Blob([totalSVG], { type: "image/svg+xml" });
             saveAs(blob, "empress-tree.svg");
         };

@@ -375,7 +375,12 @@ define(["underscore", "util"], function (_, util) {
                 " />\n" +
                 legendSVG +
                 "</g>\n";
-            return { svg: outputSVG, rowsUsed: rowsUsed };
+            return {
+                svg: outputSVG,
+                rowsUsed: rowsUsed,
+                bbWidth: bbWidth,
+                bbHeight: bbHeight,
+            };
         } else {
             // Eventually, when we add support for exporting continuous /
             // length legends, this will only really happen if someone tries to

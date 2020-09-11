@@ -466,7 +466,7 @@ define([
      *                           topmost y-coordinate at which legends should
      *                           be placed in relation to the SVG.
      */
-    Empress.prototype.exportSVG = function () {
+    Empress.prototype.exportTreeSVG = function () {
         // TODO: use the same value as the actual WebGL drawing engine, but
         // right now this value is hard coded on line 327 of drawer.js
         var NODE_RADIUS = 4;
@@ -564,38 +564,19 @@ define([
             }
         }
 
-        // Determine viewBox information; construct a "declaration" that can be
-        // added to the SVG header. TODO: expand based on legend dimensions.
-        var vbMinX = minX - NODE_RADIUS;
-        var vbMinY = minY - NODE_RADIUS;
-        var vbWidth = maxX - minX + 2 * NODE_RADIUS;
-        var vbHeight = maxY - minY + 2 * NODE_RADIUS;
-        var vbText =
-            'viewBox="' +
-            vbMinX +
-            " " +
-            vbMinY +
-            " " +
-            vbWidth +
-            " " +
-            vbHeight +
-            '"';
+        var minX = minX - NODE_RADIUS;
+        var minY = minY - NODE_RADIUS;
+        var width = maxX - minX + 2 * NODE_RADIUS;
+        var height = maxY - minY + 2 * NODE_RADIUS;
+
         return {
             svg: svg,
-            viewBoxText: vbText,
-            legendLeftX: maxX,
-            legendTopY: minY,
+            minX: minX,
+            minY: minY,
+            width: width,
+            height: height,
         };
     };
-
-    Empress.prototype.getViewBoxText = function (
-        mainMinX,
-        mainMinY,
-        mainWidth,
-        mainHeight,
-        legendMaxX,
-        legendMaxY
-    ) {};
 
     /**
      * Creates an SVG string to export legends.
@@ -608,7 +589,7 @@ define([
      * @return {String} svg The SVG code representing all legend(s) for the
      *                      tree visualization.
      */
-    Empress.prototype.exportSVGLegend = function (leftX, topY) {
+    Empress.prototype.exportLegendSVG = function (leftX, topY) {
         // the SVG string to be generated
         var svg = "";
 
@@ -633,6 +614,13 @@ define([
 
         // Count the number of used rows
         var row = 1;
+
+        // Also keep track of the maximum-width legend SVG, so that (when
+        // merging this SVG with the tree SVG) we can resize the viewbox
+        // accordingly
+        var maxWidth = 0;
+        var maxHeight = 0;
+
         _.each(legends, function (legend) {
             var legendSVGData = legend.exportSVG(
                 leftX,
@@ -645,9 +633,84 @@ define([
             svg += legendSVGData.svg;
             // The +2 adds one blank row between two legends
             row = legendSVGData.rowsUsed + 2;
+            // Based on the width of this legend's bounding box, try to update
+            // maxWidth
+            maxWidth = Math.max(maxWidth, legendSVGData.bbWidth);
+            maxHeight = Math.max(maxHeight, legendSVGData.bbHeight);
         });
+        var maxX = leftX + maxWidth;
+        var maxY = topY + maxHeight;
 
-        return svg;
+        return { svg: svg, maxX: maxX, maxY: maxY };
+    };
+
+    // Determine viewBox information; construct a "declaration" that can be
+    // added to the SVG header.
+    Empress.prototype.getSVGViewBoxText = function (
+        treeMinX,
+        treeMinY,
+        treeWidth,
+        treeHeight,
+        legendMaxX,
+        legendMaxY
+    ) {
+        var vbHeight = Math.max(treeHeight, legendMaxY);
+        var vbText =
+            'viewBox="' +
+            treeMinX +
+            " " +
+            treeMinY +
+            " " +
+            legendMaxX +
+            " " +
+            vbHeight +
+            '"';
+        return vbText;
+    };
+
+    Empress.prototype.exportSVG = function () {
+        // Get the SVG for the tree visualization
+        var treeSVGInfo = this.exportTreeSVG();
+
+        // Get SVG for the legend(s). Position things so that the top-left
+        // corner of the legend SVG is at the top-right corner of the tree SVG.
+        // Should look something like:
+        //
+        // +----------+------------+
+        // | tree SVG | legend SVG |
+        // +----------+            |
+        //            |            |
+        //            +------------+
+        var legendSVGInfo = this.exportLegendSVG(
+            treeSVGInfo.width,
+            treeSVGInfo.minY
+        );
+
+        // Based on the tree and legend SVG, update the viewbox (defining
+        // the dimensions of the SVG) accordingly.
+        //
+        // NOTE that the way the viewbox is interpreted seems to vary across
+        // SVG viewers; for example, if the viewbox is too small, GIMP will
+        // cut off the stuff still in the SVG but outside of it, but Chromium
+        // will still show everything. (This is mostly useful for debugging.)
+        var viewBox = this.getSVGViewBoxText(
+            treeSVGInfo.minX,
+            treeSVGInfo.minY,
+            treeSVGInfo.width,
+            treeSVGInfo.height,
+            legendSVGInfo.maxX,
+            legendSVGInfo.maxY
+        );
+        // add all SVG elements into one string...
+        var totalSVG =
+            '<svg xmlns="http://www.w3.org/2000/svg" ' +
+            viewBox +
+            " >\n" +
+            treeSVGInfo.svg +
+            "\n" +
+            legendSVGInfo.svg +
+            "</svg>\n";
+        return totalSVG;
     };
 
     /**
