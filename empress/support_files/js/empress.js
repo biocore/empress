@@ -749,7 +749,7 @@ define([
      * @return {Array}
      */
     Empress.prototype.getCoords = function () {
-        var d = new Date;
+        var d = new Date();
         var tree = this._tree;
 
         // The coordinates (and colors) of the tree's nodes.
@@ -865,7 +865,7 @@ define([
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
                     var numSamples = Math.floor(
-                        60 * Math.abs(arcDeltaAngle / (Math.PI))
+                        60 * Math.abs(arcDeltaAngle / Math.PI)
                     );
                     numSamples = numSamples > 0 ? numSamples : 2;
                     var sampleAngle = arcDeltaAngle / numSamples;
@@ -899,6 +899,7 @@ define([
         }
         var dt = new Date();
         console.log("Circ time:", dt.getTime() - d.getTime());
+        console.log("coords length:", coords.length);
         return new Float32Array(coords);
     };
 
@@ -1264,7 +1265,7 @@ define([
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
                     var numSamples = Math.floor(
-                        60 * Math.abs(arcDeltaAngle / (Math.PI))
+                        60 * Math.abs(arcDeltaAngle / Math.PI)
                     );
                     numSamples = numSamples > 0 ? numSamples : 2;
                     var sampleAngle = arcDeltaAngle / numSamples;
