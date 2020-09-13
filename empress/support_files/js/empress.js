@@ -398,7 +398,7 @@ define([
 
         this.getLayoutInfo();
         this.centerLayoutAvgPoint();
-        // this.drawTree();
+        // centerLayoutAvgPoint() calls drawTree(), so no need to call it here
     };
 
     /**
@@ -855,11 +855,11 @@ define([
                     !this._collapsedClades.hasOwnProperty(node)
                 ) {
                     // An arc will be created for all internal nodes.
-                    // arcs are created by sampling upto 60 small lines along
+                    // arcs are created by sampling up to 60 small lines along
                     // the arc spanned by rotating the line (arcx0, arcy0)
                     // arcendangle - arcstartangle radians. This will create an
-                    // that starts at each internal node's right most child
-                    // and ends on the left most child.
+                    // that starts at each internal node's rightmost child
+                    // and ends on the leftmost child.
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
