@@ -48,6 +48,11 @@ ec.sceneViews[0].on("click", function (name, object) {
 ec.controllers.animations.addEventListener("animation-started", function (
     payload
 ) {
+    // reset and disable the animation controls once an Emperor-driven
+    // animation starts
+    animationPanel.startOptions();
+    animationPanel.setEnabled(false);
+
     animator.setAnimationParameters(
         payload.message.trajectory,
         payload.message.gradient,
@@ -68,5 +73,15 @@ ec.controllers.animations.addEventListener(
 ec.controllers.animations.addEventListener("animation-cancelled", function (
     payload
 ) {
+    // if the animation is cancelled enable the animation controls
+    animationPanel.setEnabled(true);
     animator.stopAnimation();
+});
+
+ec.controllers.animations.addEventListener("animation-ended", function (
+    payload
+) {
+    // if the animation ends enable the controls
+    animationPanel.setEnabled(true);
+    util.toastMsg("Animation Complete.");
 });

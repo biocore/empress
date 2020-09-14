@@ -118,9 +118,58 @@ require([
         },
     });
 
-    test("__startOptions", function () {
-        this.panel.__startOptions();
-        // the followinng should be hidden
+    test("startOptions", function () {
+        notOk(this.panel.colorSelect.disabled);
+        notOk(this.panel.gradient.disabled);
+        notOk(this.panel.trajectory.disabled);
+
+        notOk(this.panel.collapseChk.disabled);
+        notOk(this.panel.lWidth.disabled);
+
+        notOk(this.panel.pauseBtn.disabled);
+        notOk(this.panel.startBtn.disabled);
+        notOk(this.panel.stopBtn.disabled);
+        notOk(this.panel.resumeBtn.disabled);
+        notOk(this.panel.prevFrameBtn.disabled);
+        notOk(this.panel.nextFrameBtn.disabled);
+
+        this.panel.setEnabled(true);
+
+        notOk(this.panel.colorSelect.disabled);
+        notOk(this.panel.gradient.disabled);
+        notOk(this.panel.trajectory.disabled);
+
+        notOk(this.panel.collapseChk.disabled);
+        notOk(this.panel.lWidth.disabled);
+
+        notOk(this.panel.pauseBtn.disabled);
+        notOk(this.panel.startBtn.disabled);
+        notOk(this.panel.stopBtn.disabled);
+        notOk(this.panel.resumeBtn.disabled);
+        notOk(this.panel.prevFrameBtn.disabled);
+        notOk(this.panel.nextFrameBtn.disabled);
+
+        this.panel.setEnabled(false);
+
+        ok(this.panel.colorSelect.disabled);
+        ok(this.panel.gradient.disabled);
+        ok(this.panel.trajectory.disabled);
+
+        ok(this.panel.collapseChk.disabled);
+        ok(this.panel.lWidth.disabled);
+
+        ok(this.panel.pauseBtn.disabled);
+        ok(this.panel.startBtn.disabled);
+        ok(this.panel.stopBtn.disabled);
+        ok(this.panel.resumeBtn.disabled);
+        ok(this.panel.prevFrameBtn.disabled);
+        ok(this.panel.nextFrameBtn.disabled);
+    });
+
+
+    test("startOptions", function () {
+        this.panel.startOptions();
+        // the following should be hidden
         ok(this.panel.stopBtn.classList.contains("hidden"));
         ok(this.panel.pauseBtn.classList.contains("hidden"));
         ok(this.panel.resumeBtn.classList.contains("hidden"));
@@ -133,7 +182,7 @@ require([
 
     test("__pauseOptions", function () {
         this.panel.__pauseOptions();
-        // the followinng should be hidden
+        // the following should be hidden
         ok(this.panel.startBtn.classList.contains("hidden"));
         ok(this.panel.resumeBtn.classList.contains("hidden"));
         ok(this.panel.prevFrameBtn.classList.contains("hidden"));

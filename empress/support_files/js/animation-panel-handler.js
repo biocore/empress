@@ -31,10 +31,8 @@ define(["Colorer", "util"], function (Colorer, util) {
     /**
      * Makes the play button visible. This is the menu shown before user has
      * started the animation.
-     *
-     * @private
      */
-    AnimationPanel.prototype.__startOptions = function () {
+    AnimationPanel.prototype.startOptions = function () {
         // hide the following buttons
         this.stopBtn.classList.add("hidden");
         this.pauseBtn.classList.add("hidden");
@@ -101,6 +99,29 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.trajectory.disabled = disableStatus;
     };
 
+
+    /**
+     * Enable/disable all the UI elements in the panel.
+     *
+     * @param{Bool} enabled Whether controls should be enabled (true) or
+     *                      disabled (false).
+     */
+    AnimationPanel.prototype.setEnabled = function (enabled) {
+        this.colorSelect.disabled = !enabled;
+        this.gradient.disabled = !enabled;
+        this.trajectory.disabled = !enabled;
+
+        this.collapseChk.disabled = !enabled;
+        this.lWidth.disabled = !enabled;
+
+        this.pauseBtn.disabled = !enabled;
+        this.startBtn.disabled = !enabled;
+        this.stopBtn.disabled = !enabled;
+        this.resumeBtn.disabled = !enabled;
+        this.prevFrameBtn.disabled = !enabled;
+        this.nextFrameBtn.disabled = !enabled;
+    };
+
     /**
      * Initializes GUI components/set up callback events
      */
@@ -109,7 +130,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         var scope = this;
 
         // hide play/pause/next/previous/stop buttons
-        this.__startOptions();
+        this.startOptions();
 
         // The color map selector
         Colorer.addColorsToSelect(this.colorSelect);
@@ -204,7 +225,7 @@ define(["Colorer", "util"], function (Colorer, util) {
          */
         this.stopBtn.onclick = function () {
             scope._toggleSelects(false);
-            scope.__startOptions();
+            scope.startOptions();
             scope.animator.stopAnimation();
         };
 
