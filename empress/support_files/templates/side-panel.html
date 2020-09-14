@@ -218,11 +218,38 @@
 <!-- options to export plot into e.g. SVG -->
 <button class="side-header collapsible">Export</button>
 <div class="side-content control hidden" id="export-div">
-  <p>
-    <button id="export-btn-svg">Export tree as SVG</button>
+  <p class="side-panel-notes">
+    Export an image of the tree.
   </p>
-  <p class="side-panel-notes indented">
-    Export the tree as a vector graphics figure.
+  <!-- Applying the margin: 0 auto; style to the exterior <p> doesn't work;
+       the centering requires it be applied to each of the buttons
+  -->
+  <p>
+    <button style="margin: 0 auto;" id="export-btn-svg">Export as SVG</button>
+    <button style="margin: 0 auto;" id="export-btn-png">Export as PNG</button>
+  </p>
+  <p class="side-panel-inner-header">
+    Elements to include in the exported image
+  </p>
+  <p>
+    <label for="export-tree-chk">Tree</label>
+    <input id="export-tree-chk" type="checkbox" checked="true"
+           class="empress-input">
+  </p>
+  <p>
+    <label for="export-legend-chk">Tree Legend</label>
+    <input id="export-legend-chk" type="checkbox" checked="true"
+           class="empress-input">
+  </p>
+  <p>
+    <label for="export-barplot-chk">Barplots</label>
+    <input id="export-barplot-chk" type="checkbox" checked="true"
+           class="empress-input">
+  </p>
+  <p>
+    <label for="export-barplot-legend-chk">Barplot Legends</label>
+    <input id="export-barplot-legend-chk" type="checkbox" checked="true"
+           class="empress-input">
   </p>
 </div>
 
