@@ -27,7 +27,7 @@ ec.controllers.color.addEventListener("value-double-clicked", function (
     payload
 ) {
     // when dealing with a biplot ignore arrow-emitted events
-    if (payload.target.decompositionName() !== 'scatter') {
+    if (payload.target.decompositionName() !== "scatter") {
         return;
     }
 
