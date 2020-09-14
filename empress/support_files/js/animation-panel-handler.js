@@ -99,7 +99,6 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.trajectory.disabled = disableStatus;
     };
 
-
     /**
      * Enable/disable all the UI elements in the panel.
      *

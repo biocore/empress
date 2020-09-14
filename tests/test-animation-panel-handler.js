@@ -166,7 +166,6 @@ require([
         ok(this.panel.nextFrameBtn.disabled);
     });
 
-
     test("startOptions", function () {
         this.panel.startOptions();
         // the following should be hidden
