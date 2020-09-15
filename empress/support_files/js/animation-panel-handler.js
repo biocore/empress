@@ -106,19 +106,20 @@ define(["Colorer", "util"], function (Colorer, util) {
      *                      disabled (false).
      */
     AnimationPanel.prototype.setEnabled = function (enabled) {
-        this.colorSelect.disabled = !enabled;
-        this.gradient.disabled = !enabled;
-        this.trajectory.disabled = !enabled;
+        var isDisabled = !enabled;
+        this.colorSelect.disabled = isDisabled;
+        this.gradient.disabled = isDisabled;
+        this.trajectory.disabled = isDisabled;
 
-        this.collapseChk.disabled = !enabled;
-        this.lWidth.disabled = !enabled;
+        this.collapseChk.disabled = isDisabled;
+        this.lWidth.disabled = isDisabled;
 
-        this.pauseBtn.disabled = !enabled;
-        this.startBtn.disabled = !enabled;
-        this.stopBtn.disabled = !enabled;
-        this.resumeBtn.disabled = !enabled;
-        this.prevFrameBtn.disabled = !enabled;
-        this.nextFrameBtn.disabled = !enabled;
+        this.pauseBtn.disabled = isDisabled;
+        this.startBtn.disabled = isDisabled;
+        this.stopBtn.disabled = isDisabled;
+        this.resumeBtn.disabled = isDisabled;
+        this.prevFrameBtn.disabled = isDisabled;
+        this.nextFrameBtn.disabled = isDisabled;
     };
 
     /**
