@@ -118,7 +118,35 @@ require([
         },
     });
 
-    test("startOptions", function () {
+    test("setOnAnimationStarted", function (assert) {
+        assert.expect(2);
+        this.panel.addAnimationTab();
+
+        this.panel.setOnAnimationStarted(function() {
+            assert.ok(true);
+        });
+
+        ok(this.panel._onAnimationStarted !== null);
+        // note we can't call startBtn because this module does not create a
+        // working animator object (see notes in the setUp)
+        this.panel._onAnimationStarted();
+    });
+
+    test("setOnAnimationStopped", function (assert) {
+        assert.expect(2);
+        this.panel.addAnimationTab();
+
+        this.panel.setOnAnimationStopped(function() {
+            assert.ok(true);
+        });
+
+        ok(this.panel._onAnimationStopped !== null);
+        // note we can't call stopBtn because this module does not create a
+        // working animator object (see notes in the setUp)
+        this.panel._onAnimationStopped();
+    });
+
+    test("setEnabled", function () {
         notOk(this.panel.colorSelect.disabled);
         notOk(this.panel.gradient.disabled);
         notOk(this.panel.trajectory.disabled);

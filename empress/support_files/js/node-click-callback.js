@@ -14,6 +14,26 @@ empress.setOnNodeMenuHiddenCallback(function (samples) {
     ec.sceneViews[0].needsUpdate = true;
 });
 
+// These animationPanel callbacks disable Emperor's UI controls when an Empress
+// animation is started, and re-enables them once the animation is stopped.
+animationPanel.setOnAnimationStarted(function () {
+    ec.controllers.animations.setEnabled(false);
+
+    ec.controllers.animations.$gradientSelect.prop('disabled', true).trigger('chosen:updated');
+    ec.controllers.animations.$trajectorySelect.prop('disabled', true).trigger('chosen:updated');
+});
+
+animationPanel.setOnAnimationStopped(function () {
+    // we can only re-enable all controls if these values are selected
+    if (ec.controllers.animations.getGradientCategory() !== '' &&
+        ec.controllers.animations.getTrajectoryCategory() !== '') {
+        ec.controllers.animations.setEnabled(true);
+    }
+
+    ec.controllers.animations.$gradientSelect.prop('disabled', false).trigger('chosen:updated');
+    ec.controllers.animations.$trajectorySelect.prop('disabled', false).trigger('chosen:updated');
+});
+
 ec.sceneViews[0].on("click", function (name, object) {
     // this click callback should only handle arrow objects being clicked
     if (object.parent.type !== "ArrowHelper") {

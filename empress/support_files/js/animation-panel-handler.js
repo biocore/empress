@@ -26,6 +26,20 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.resumeBtn = document.getElementById("animate-resume-btn");
         this.prevFrameBtn = document.getElementById("animate-prev-btn");
         this.nextFrameBtn = document.getElementById("animate-next-btn");
+
+        /**
+         * @type {Function}
+         * Function to execute when an animation starts.
+         * @private
+         */
+        this._onAnimationStarted = null;
+
+        /**
+         * @type {Function}
+         * Function to execute when an animation stops.
+         * @private
+         */
+        this._onAnimationStopped = null;
     }
 
     /**
@@ -123,6 +137,25 @@ define(["Colorer", "util"], function (Colorer, util) {
     };
 
     /**
+     * Set a callback to execute when an animation is started.
+     *
+     * @param {Function} callback Callback to execute when an animation starts.
+     */
+    AnimationPanel.prototype.setOnAnimationStarted = function (callback) {
+          this._onAnimationStarted = callback;
+    };
+
+    /**
+     * Set a callback to execute when an animation completes.
+     *
+     * @param {Function} callback Callback to execute when an animation
+     *                            stops.
+     */
+    AnimationPanel.prototype.setOnAnimationStopped = function (callback) {
+          this._onAnimationStopped = callback;
+    };
+
+    /**
      * Initializes GUI components/set up callback events
      */
     AnimationPanel.prototype.addAnimationTab = function () {
@@ -181,6 +214,11 @@ define(["Colorer", "util"], function (Colorer, util) {
             scope._toggleSelects(true);
             scope.__pauseOptions();
 
+            // run a callback once the animation starts
+            if (scope._onAnimationStarted !== null) {
+                scope._onAnimationStarted();
+            }
+
             // collect starting conditions for the animation
             var gradient = scope.gradient.value;
             var trajectory = scope.trajectory.value;
@@ -227,6 +265,11 @@ define(["Colorer", "util"], function (Colorer, util) {
             scope._toggleSelects(false);
             scope.startOptions();
             scope.animator.stopAnimation();
+
+            // run a callback once the animation starts
+            if (scope._onAnimationStopped !== null) {
+                scope._onAnimationStopped();
+            }
         };
 
         /**
