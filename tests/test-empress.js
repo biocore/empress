@@ -795,11 +795,12 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             sX = x * cos - y * sin;
             sY = x * Math.sin(langle - dangle) + y * Math.cos(langle - dangle);
 
-            // create 15 triangles to approximate sector
-            var deltaAngle = totalAngle / 15;
-            cos = Math.cos(deltaAngle);
-            sin = Math.sin(deltaAngle);
-            for (var line = 0; line < 15; line++) {
+            // create triangles to approximate sector
+            var numSamp = this.empress._numSampToApproximate(totalAngle);
+            var deltaAngle = totalAngle / numSamp;
+            cos = Math.cos(0);
+            sin = Math.sin(0);
+            for (var line = 0; line < numSamp; line++) {
                 // root of clade
                 exp.push(...[0, 1, 1, 1, 1]);
 
