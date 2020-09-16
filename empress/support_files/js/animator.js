@@ -289,7 +289,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * Initialize the animation properties.
      */
     Animator.prototype.initAnimation = function () {
-        this.curFrame = 0;
+        this.curFrame = -1;
         this.pause = false;
         this.framesRdy = new Array(this.totalFrames).fill(false);
         this.queuedFrames = [];
