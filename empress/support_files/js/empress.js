@@ -750,13 +750,11 @@ define([
      * @return {Number} The number of lines/triangles to approximate the arc
      *                  or wedge.
      */
-    Empress.prototype._numSampToApproximate = function(totalAngle) {
-        var numSamples = Math.floor(
-            60 * Math.abs(totalAngle / Math.PI)
-        );
+    Empress.prototype._numSampToApproximate = function (totalAngle) {
+        var numSamples = Math.floor(60 * Math.abs(totalAngle / Math.PI));
         numSamples = numSamples >= 2 ? numSamples : 2;
         return numSamples;
-    } 
+    };
 
     /**
      * Retrieves the coordinate info of the tree.
