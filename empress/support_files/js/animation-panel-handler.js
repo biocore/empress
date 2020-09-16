@@ -142,7 +142,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @param {Function} callback Callback to execute when an animation starts.
      */
     AnimationPanel.prototype.setOnAnimationStarted = function (callback) {
-          this._onAnimationStarted = callback;
+        this._onAnimationStarted = callback;
     };
 
     /**
@@ -152,7 +152,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      *                            stops.
      */
     AnimationPanel.prototype.setOnAnimationStopped = function (callback) {
-          this._onAnimationStopped = callback;
+        this._onAnimationStopped = callback;
     };
 
     /**

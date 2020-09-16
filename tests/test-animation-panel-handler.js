@@ -122,7 +122,7 @@ require([
         assert.expect(2);
         this.panel.addAnimationTab();
 
-        this.panel.setOnAnimationStarted(function() {
+        this.panel.setOnAnimationStarted(function () {
             assert.ok(true);
         });
 
@@ -136,7 +136,7 @@ require([
         assert.expect(2);
         this.panel.addAnimationTab();
 
-        this.panel.setOnAnimationStopped(function() {
+        this.panel.setOnAnimationStopped(function () {
             assert.ok(true);
         });
 

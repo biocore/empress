@@ -19,19 +19,29 @@ empress.setOnNodeMenuHiddenCallback(function (samples) {
 animationPanel.setOnAnimationStarted(function () {
     ec.controllers.animations.setEnabled(false);
 
-    ec.controllers.animations.$gradientSelect.prop('disabled', true).trigger('chosen:updated');
-    ec.controllers.animations.$trajectorySelect.prop('disabled', true).trigger('chosen:updated');
+    ec.controllers.animations.$gradientSelect
+        .prop("disabled", true)
+        .trigger("chosen:updated");
+    ec.controllers.animations.$trajectorySelect
+        .prop("disabled", true)
+        .trigger("chosen:updated");
 });
 
 animationPanel.setOnAnimationStopped(function () {
     // we can only re-enable all controls if these values are selected
-    if (ec.controllers.animations.getGradientCategory() !== '' &&
-        ec.controllers.animations.getTrajectoryCategory() !== '') {
+    if (
+        ec.controllers.animations.getGradientCategory() !== "" &&
+        ec.controllers.animations.getTrajectoryCategory() !== ""
+    ) {
         ec.controllers.animations.setEnabled(true);
     }
 
-    ec.controllers.animations.$gradientSelect.prop('disabled', false).trigger('chosen:updated');
-    ec.controllers.animations.$trajectorySelect.prop('disabled', false).trigger('chosen:updated');
+    ec.controllers.animations.$gradientSelect
+        .prop("disabled", false)
+        .trigger("chosen:updated");
+    ec.controllers.animations.$trajectorySelect
+        .prop("disabled", false)
+        .trigger("chosen:updated");
 });
 
 ec.sceneViews[0].on("click", function (name, object) {
