@@ -743,6 +743,22 @@ define([
     };
 
     /**
+     * Returns the number of lines/trianges to approximate an arc/wedge given
+     * the total angle of the arc/wedge.
+     *
+     * @param {Number} totalAngle The total angle of the arc/wedge
+     * @return {Number} The number of lines/triangles to approximate the arc
+     *                  or wedge.
+     */
+    Empress.prototype._numSampToApproximate = function(totalAngle) {
+        var numSamples = Math.floor(
+            60 * Math.abs(totalAngle / Math.PI)
+        );
+        numSamples = numSamples >= 2 ? numSamples : 2;
+        return numSamples;
+    } 
+
+    /**
      * Retrieves the coordinate info of the tree.
      *  format of coordinate info: [x, y, red, green, blue, ...]
      *
@@ -863,10 +879,7 @@ define([
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
-                    var numSamples = Math.floor(
-                        60 * Math.abs(arcDeltaAngle / Math.PI)
-                    );
-                    numSamples = numSamples > 0 ? numSamples : 2;
+                    var numSamples = this._numSampToApproximate(arcDeltaAngle);
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this.getNodeInfo(node, "arcx0");
                     var sY = this.getNodeInfo(node, "arcy0");
@@ -1260,10 +1273,7 @@ define([
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
-                    var numSamples = Math.floor(
-                        60 * Math.abs(arcDeltaAngle / Math.PI)
-                    );
-                    numSamples = numSamples > 0 ? numSamples : 2;
+                    var numSamples = this._numSampToApproximate(arcDeltaAngle);
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this.getNodeInfo(node, "arcx0");
                     var sY = this.getNodeInfo(node, "arcy0");
@@ -2640,11 +2650,12 @@ define([
             cladeInfo.sY = sY;
             cladeInfo.totalAngle = totalAngle;
 
-            // create 15 triangles to approximate sector
-            var deltaAngle = totalAngle / 15;
+            // create triangles to approximate sector
+            var numSamples = this._numSampToApproximate(totalAngle);
+            var deltaAngle = totalAngle / numSamples;
             cos = Math.cos(0);
             sin = Math.sin(0);
-            for (var line = 0; line < 15; line++) {
+            for (var line = 0; line < numSamples; line++) {
                 addPoint(getCoords(rootNode));
 
                 x = sX * cos - sY * sin;
