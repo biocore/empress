@@ -119,6 +119,7 @@ require([
     });
 
     test("setOnAnimationStarted", function (assert) {
+        // Exactly two assertions should be run within this test
         assert.expect(2);
         this.panel.addAnimationTab();
 
