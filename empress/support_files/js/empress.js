@@ -2642,8 +2642,8 @@ define([
 
             // create 15 triangles to approximate sector
             var deltaAngle = totalAngle / 15;
-            cos = Math.cos(deltaAngle);
-            sin = Math.sin(deltaAngle);
+            cos = Math.cos(0);
+            sin = Math.sin(0);
             for (var line = 0; line < 15; line++) {
                 addPoint(getCoords(rootNode));
 
