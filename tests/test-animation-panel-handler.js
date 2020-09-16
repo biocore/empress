@@ -184,8 +184,8 @@ require([
         ok(this.panel.gradient.disabled);
         ok(this.panel.trajectory.disabled);
 
-        ok(this.panel.collapseChk.disabled);
-        ok(this.panel.lWidth.disabled);
+        notOk(this.panel.collapseChk.disabled);
+        notOk(this.panel.lWidth.disabled);
 
         ok(this.panel.pauseBtn.disabled);
         ok(this.panel.startBtn.disabled);

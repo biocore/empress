@@ -114,7 +114,8 @@ define(["Colorer", "util"], function (Colorer, util) {
     };
 
     /**
-     * Enable/disable all the UI elements in the panel.
+     * Enable/disable all the UI elements in the panel except for the line
+     * width control and the clade collapsing checkbox.
      *
      * @param{Bool} enabled Whether controls should be enabled (true) or
      *                      disabled (false).
@@ -124,9 +125,6 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.colorSelect.disabled = isDisabled;
         this.gradient.disabled = isDisabled;
         this.trajectory.disabled = isDisabled;
-
-        this.collapseChk.disabled = isDisabled;
-        this.lWidth.disabled = isDisabled;
 
         this.pauseBtn.disabled = isDisabled;
         this.startBtn.disabled = isDisabled;
