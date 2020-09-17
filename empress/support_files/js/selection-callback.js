@@ -4,6 +4,9 @@
  *
  */
 
+// cancel any ongoing timers
+clearTimeout(empress.timer);
+
 // if there's any coloring setup remove it, and re-enable the update button
 sPanel.sUpdateBtn.classList.remove("hidden");
 sPanel.fUpdateBtn.classList.remove("hidden");
@@ -22,8 +25,8 @@ for (var key in groups) {
 }
 empress.colorSampleGroups(namesOnly);
 
-// 3 seconds before resetting
-setTimeout(function () {
+// 4 seconds before resetting
+empress.timer = setTimeout(function () {
     empress.resetTree();
     empress.drawTree();
 

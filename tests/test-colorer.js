@@ -495,5 +495,55 @@ require([
                 colorer.getGradientSVG();
             }, expectedErrorRegex);
         });
+        test("Test Colorer with custom colormaps", function () {
+            var eles = ["red", "green", "blue cheese"];
+            var colormap = {
+                red: "#FF0000",
+                green: "#00FF00",
+                "blue cheese": "#0000FF",
+            };
+            var colorer = new Colorer(colormap, eles);
+
+            var expHexMap = colorer.getMapHex();
+            equal(_.keys(expHexMap).length, 3);
+            equal(expHexMap.red, "#FF0000");
+            equal(expHexMap.green, "#00FF00");
+            equal(expHexMap["blue cheese"], "#0000FF");
+
+            // check that errors are raised when calling disallowed methods
+            throws(function () {
+                colorer.assignDiscreteColors();
+            }, /Cannot call assignDiscreteColors using a custom colormap/);
+            throws(function () {
+                colorer.assignContinuousScaledColors();
+            }, /Cannot call assignContinuousScaledColors using a custom colormap/);
+            throws(function () {
+                colorer.assignOrdinalScaledColors();
+            }, /Cannot call assignOrdinalScaledColors using a custom colormap/);
+        });
+        test("Test Colorer with custom colormaps fails with missing values", function () {
+            var eles = ["red", "green", "blue cheese"];
+            var colormap = {
+                red: "#FF0000",
+                green: "#00FF00",
+                blue: "#0000FF",
+            };
+
+            throws(function () {
+                var colorer = new Colorer(colormap, eles);
+            }, /The custom colormap does not contain a mapping for all values/);
+        });
+        test("Test Colorer with custom colormaps fails with quant scale", function () {
+            var eles = ["red", "green", "blue cheese"];
+            var colormap = {
+                red: "#FF0000",
+                green: "#00FF00",
+                "blue cheese": "#0000FF",
+            };
+
+            throws(function () {
+                var colorer = new Colorer(colormap, eles, true);
+            }, /Quantitative scales are not supported for custom colormaps/);
+        });
     });
 });
