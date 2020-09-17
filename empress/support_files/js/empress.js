@@ -742,10 +742,11 @@ define([
     };
 
     /**
-     * Retrieves the node coordinate info
-     * format of node coordinate info: [x, y, red, green, blue, ...]
+     * Retrieves the node coordinate info (for drawing node circles).
      *
-     * @return {Array}
+     * @return {Array} Node coordinate info, formatted like
+     *                 [x, y, red, green, blue, ...] for every node circle to
+     *                 be drawn.
      */
     Empress.prototype.getNodeCoords = function () {
         var tree = this._tree;
