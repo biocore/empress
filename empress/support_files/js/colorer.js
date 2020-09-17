@@ -6,7 +6,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * color map.
      *
      * @param{String} color The color map to draw colors from.
-     *                      This should be an id in Colorer.__Colormaps.
+     *                      This can be an id in Colorer.__Colormaps, or an
+     *                      object mapping all elements in the values array to
+     *                      hex colors (for example "#FF0000" for red).
      * @param{Array} values The values in a metadata field for which colors
      *                      will be generated.
      * @param{Boolean} useQuantScale Defaults to false. If true, this'll
@@ -35,6 +37,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         useQuantScale = false,
         gradientIDSuffix = 0
     ) {
+        var scope = this;
+
         // Remove duplicate values and sort the values sanely
         this.sortedUniqueValues = util.naturalSort(_.uniq(values));
 
@@ -55,9 +59,30 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // continuous scaling was done)
         this._missingNonNumerics = false;
 
-        // Based on the color map type and the value of useQuantScale, assign
-        // colors accordingly
-        if (Colorer.isColorMapDiscrete(this.color)) {
+        // Based on the color map, container, type and the value of
+        // useQuantScale, assign colors accordingly
+        if (_.isObject(this.color)) {
+            if (useQuantScale) {
+                throw new Error(
+                    "Quantitative scales are not supported for " +
+                        "custom colormaps"
+                );
+            }
+
+            // check that all values are present in the colormap
+            var isValid = _.every(
+                _.map(this.sortedUniqueValues, function (v) {
+                    return scope.color[v] !== undefined;
+                })
+            );
+            if (!isValid) {
+                throw new Error(
+                    "The custom colormap does not contain a " +
+                        "mapping for all values"
+                );
+            }
+            this.__valueToColor = this.color;
+        } else if (Colorer.isColorMapDiscrete(this.color)) {
             this.assignDiscreteColors();
         } else {
             if (useQuantScale) {
@@ -77,8 +102,16 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * example, if the color palette has 10 colors and there are 15 elements in
      * this.sortedUniqueValues, the last 5 of those 15 elements will be
      * assigned the first 5 colors from the color palette.
+     *
+     * @throws Error if this method is called when using a custom colormap.
      */
     Colorer.prototype.assignDiscreteColors = function () {
+        if (_.isObject(this.color)) {
+            throw new Error(
+                "Cannot call assignDiscreteColors using a custom" + " colormap"
+            );
+        }
+
         var palette;
         if (this.color === Colorer.__QIIME_COLOR) {
             palette = Colorer.__qiimeDiscrete;
@@ -103,8 +136,17 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * that values interpretable as numbers will get sorted correctly).
      * So, as an example of that, the values [1, 2, 3, 100] will get assigned
      * the same colors as [1, 2, 3, 4] or [a, b, 1, 2] or [a, b, c, d].
+     *
+     * @throws Error if this method is called when using a custom colormap.
      */
     Colorer.prototype.assignOrdinalScaledColors = function () {
+        if (_.isObject(this.color)) {
+            throw new Error(
+                "Cannot call assignOrdinalScaledColors using a " +
+                    "custom colormap"
+            );
+        }
+
         if (this.sortedUniqueValues.length === 1) {
             // If there's only 1 unique value, set its color as the first in
             // the color map. This matches the behavior of Emperor.
@@ -138,9 +180,19 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *
      * This code was based on ColorViewController.getScaledColors() in Emperor:
      * https://github.com/biocore/emperor/blob/b959aed7ffcb9fa3e4d019c6e93a1af3850564d9/emperor/support_files/js/color-view-controller.js#L398
+     *
+     * @throws Error if this method is called when using a custom colormap.
      */
     Colorer.prototype.assignContinuousScaledColors = function () {
         var scope = this;
+
+        if (_.isObject(this.color)) {
+            throw new Error(
+                "Cannot call assignContinuousScaledColors using a" +
+                    " custom colormap"
+            );
+        }
+
         var split = util.splitNumericValues(this.sortedUniqueValues);
         if (split.numeric.length < 2) {
             throw new Error("Category has less than 2 unique numeric values.");
