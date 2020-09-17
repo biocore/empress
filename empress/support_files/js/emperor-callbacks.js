@@ -1,3 +1,7 @@
+/*
+ * This File is intended to be used only with Emperor
+ */
+
 empress.setOnNodeMenuVisibleCallback(function (samples) {
     // reset emissive settings for all markers
     ec.decViews.scatter.setEmissive(0x000000);
@@ -54,12 +58,6 @@ plotView.on("click", function (name, object) {
 });
 
 plotView.on('select', function(samples, view){
-    /*
-     *
-     * This File is intended to be used only with Emperor
-     *
-     */
-
     // cancel any ongoing timers
     clearTimeout(empress.timer);
 
