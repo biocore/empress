@@ -25,10 +25,8 @@ from jinja2 import Environment, FileSystemLoader
 
 SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
-SELECTION_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
-                                       'selection-callback.js')
-NODE_CLICK_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
-                                        'node-click-callback.js')
+EMPEROR_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
+                                     'emperor-callbacks.js')
 
 
 class Empress():
@@ -362,7 +360,7 @@ class Empress():
         emperor_div = self._emperor.render_html('emperor-in-empire')
 
         # main js script for emperor, including additional callbacks
-        with open(NODE_CLICK_CALLBACK_PATH) as f:
+        with open(EMPEROR_CALLBACK_PATH) as f:
             self._emperor.js_on_ready = f.read()
         emperor_require_logic = self._emperor.render_js('emperor-in-empire')
 
