@@ -57,7 +57,7 @@ plotView.on("click", function (name, object) {
     empress.showNodeMenuForName(name);
 });
 
-plotView.on('select', function(samples, view){
+plotView.on("select", function (samples, view) {
     // cancel any ongoing timers
     clearTimeout(empress.timer);
 
