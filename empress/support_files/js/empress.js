@@ -401,6 +401,8 @@ define([
         this._drawer.initialize();
         this._events.setMouseEvents();
         var nodeNames = this._tree.getAllNames();
+        // Don't include nodes with the name null (i.e. nodes without a
+        // specified name in the Newick file) in the auto-complete.
         nodeNames = nodeNames.filter((n) => n !== null);
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
@@ -753,13 +755,14 @@ define([
             if (!this.getNodeInfo(node, "visible")) {
                 continue;
             }
-            if (this.getNodeInfo(node, "name") !== null) {
-                coords.push(
-                    this.getX(node),
-                    this.getY(node),
-                    ...this.getNodeInfo(node, "color")
-                );
-            }
+            // In the past, we only drew circles for nodes with an assigned
+            // name (i.e. where the name of a node was not null). Now, we
+            // just draw circles for all nodes.
+            coords.push(
+                this.getX(node),
+                this.getY(node),
+                ...this.getNodeInfo(node, "color")
+            );
         }
         return new Float32Array(coords);
     };
@@ -2387,11 +2390,9 @@ define([
 
     /**
      * Display the tree nodes.
-     * Note: Currently Empress will only display the nodes that had an assigned
-     * name in the newick string.
      *
-     * @param{Boolean} showTreeNodes If true then empress will display the tree
-     *                               nodes.
+     * @param{Boolean} showTreeNodes If true, then Empress will draw circles at
+     *                               each node's position.
      */
     Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
         this._drawer.setTreeNodeVisibility(showTreeNodes);

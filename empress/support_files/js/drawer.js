@@ -62,7 +62,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // the dimension of the canvas
         this.dim = null;
 
-        this.showTreeNodes = true;
+        this.showTreeNodes = false;
     }
 
     /**
@@ -317,18 +317,17 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
-     * Display the tree nodes.
-     * Note: Currently Empress will only display the nodes that had an assigned
-     * name in the newick string.
+     * Determine whether or not to draw circles for each node in the tree.
      *
      * Note: this will only take effect after draw() is called.
      *
-     * @param{Boolean} showTreeNodes If true the empress with display the tree
-     *                               nodes.
+     * @param{Boolean} showTreeNodes If true then Empress will draw node
+     *                               circles.
      */
     Drawer.prototype.setTreeNodeVisibility = function (showTreeNodes) {
         this.showTreeNodes = showTreeNodes;
     };
+
     /**
      * Draws tree and other metadata
      */
