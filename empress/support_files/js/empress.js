@@ -743,7 +743,7 @@ define([
     };
 
     /**
-     * Returns the number of lines/trianges to approximate an arc/wedge given
+     * Returns the number of lines/triangles to approximate an arc/wedge given
      * the total angle of the arc/wedge.
      *
      * @param {Number} totalAngle The total angle of the arc/wedge
@@ -752,8 +752,7 @@ define([
      */
     Empress.prototype._numSampToApproximate = function (totalAngle) {
         var numSamples = Math.floor(60 * Math.abs(totalAngle / Math.PI));
-        numSamples = numSamples >= 2 ? numSamples : 2;
-        return numSamples;
+        return numSamples >= 2 ? numSamples : 2;
     };
 
     /**
@@ -872,7 +871,7 @@ define([
                     // arcs are created by sampling up to 60 small lines along
                     // the arc spanned by rotating the line (arcx0, arcy0)
                     // arcendangle - arcstartangle radians. This will create an
-                    // that starts at each internal node's rightmost child
+                    // arc that starts at each internal node's rightmost child
                     // and ends on the leftmost child.
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
@@ -1263,11 +1262,7 @@ define([
                 // to be a bezier curve)
                 if (!this._tree.isleaf(this._tree.postorderselect(node))) {
                     // An arc will be created for all internal nodes.
-                    // arcs are created by sampling upto 60 small lines along
-                    // the arc spanned by rotating the line (arcx0, arcy0)
-                    // arcendangle - arcstartangle radians. This will create an
-                    // that starts at each internal node's right most child
-                    // and ends on the left most child.
+                    // See getCoords() for details on how arcs are drawn.
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
@@ -2651,8 +2646,8 @@ define([
             // create triangles to approximate sector
             var numSamples = this._numSampToApproximate(totalAngle);
             var deltaAngle = totalAngle / numSamples;
-            cos = Math.cos(0);
-            sin = Math.sin(0);
+            cos = 1; // Math.cos(0)
+            sin = 0; // Math.sin(0)
             for (var line = 0; line < numSamples; line++) {
                 addPoint(getCoords(rootNode));
 
