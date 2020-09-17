@@ -719,6 +719,15 @@ define([
         return totalSVG;
     };
 
+    Empress.prototype.exportPNG = function (callback) {
+        // Draw the tree immediately before calling toBlob(), to ensure that
+        // the buffer hasn't been cleared. This is analogous to "solution 1"
+        // for taking screenshots of a canvas in this tutorial:
+        // https://webglfundamentals.org/webgl/lessons/webgl-tips.html.
+        this.drawTree();
+        this._canvas.toBlob(callback);
+    };
+
     /**
      * Retrieves x coordinate of node in the current layout.
      *

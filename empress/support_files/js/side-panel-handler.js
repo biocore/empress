@@ -86,6 +86,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         // export GUI components
         this.exportSVGBtn = document.getElementById("export-btn-svg");
+        this.exportPNGBtn = document.getElementById("export-btn-png");
+        this.exportTreeChk = document.getElementById("export-tree-chk");
+        this.exportLegendChk = document.getElementById("export-legend-chk");
 
         // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
@@ -328,10 +331,18 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var scope = this;
 
         this.exportSVGBtn.onclick = function () {
-            var totalSVG = scope.empress.exportSVG();
+            var totalSVG = scope.empress.exportSVG(
+                scope.exportTreeChk.checked, scope.exportLegendChk.checked
+            );
             // Present SVG to user as downloadable file
             var blob = new Blob([totalSVG], { type: "image/svg+xml" });
             saveAs(blob, "empress-tree.svg");
+        };
+        this.exportPNGBtn.onclick = function () {
+            var callback = function (blob) {
+                saveAs(blob, "empress-tree.png");
+            };
+            scope.empress.exportPNG(callback);
         };
     };
 
