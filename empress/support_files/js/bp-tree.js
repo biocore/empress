@@ -708,7 +708,8 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         return numTips;
     };
 
-    /** True if name is in the names array for the tree
+    /**
+     * True if name is in the names array for the tree
      *
      * @param {String} name The name to search for.
      * @return {Boolean} If the name is in the tree.
@@ -720,6 +721,12 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     /**
      * Returns all nodes with a given name. Once a name has been searched for,
      * the returned object is cached in this._nameToNodes.
+     *
+     * NOTE: Care should be taken to make sure that this._nameToNodes is not
+     * populated with a literal null at any point, since Objects in JS store
+     * all keys as Strings (so having a literal null in this._nameToNodes [due
+     * to unnamed nodes] will cause this null to get confused with node(s)
+     * literally named "null" in the Newick file.
      *
      * @param {String} name The name of node(s)
      * @return {Array} An array of postorder positions of nodes with a given
