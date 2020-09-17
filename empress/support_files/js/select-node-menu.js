@@ -312,8 +312,8 @@ define(["underscore", "util"], function (_, util) {
                     "above name.";
             }
         } else {
-            this.warning.textContent = "This node had no name in the " +
-                                       "input tree file.";
+            this.warning.textContent =
+                "This node had no name in the input tree file.";
         }
 
         // 1. Add feature metadata information (if present) for this node
