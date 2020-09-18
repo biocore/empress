@@ -287,6 +287,8 @@ define(["underscore", "util"], function (_, util) {
 
         // Style of the rect containing the legend SVG
         var BGSTYLE = 'style="fill:#ffffff;stroke:#000000;stroke-width:1"';
+        // Figure out the rect's top Y position
+        var topY = (row - 1) * lineHeight;
 
         var legendSVG = "";
         var rowsUsed = row;
@@ -353,7 +355,6 @@ define(["underscore", "util"], function (_, util) {
             // the number of used text rows and width must be larger than
             // longest key text and/or legend title
             var numCats = this._sortedCategories.length;
-            var topY = (rowsUsed - numCats - 2) * lineHeight;
             var width = maxLineWidth + 2 * unit;
             var height = (numCats + 1) * lineHeight + unit;
             var outputSVG =
