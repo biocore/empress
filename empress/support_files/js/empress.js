@@ -462,6 +462,19 @@ define([
      * @return {String}
      */
     Empress.prototype.exportTreeSVG = function () {
+        /**
+         * Given coords and a start position in it (the start of a series of 5
+         * elements), return an RGB triplet representation of the color at
+         * this position.
+         *
+         * @param {Array} coords
+         * @param {Number} i
+         * @return {String}
+         */
+        var getRGB = function (coords, i) {
+            return chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css();
+        };
+
         var NODE_RADIUS = this._drawer.NODE_CIRCLE_RADIUS;
 
         var minX = Number.POSITIVE_INFINITY;
@@ -502,9 +515,7 @@ define([
             var y1 = -coords[i + 1];
             var x2 = coords[i + this._drawer.VERTEX_SIZE];
             var y2 = -coords[i + 1 + this._drawer.VERTEX_SIZE];
-            var rgbColor = chroma.gl(
-                coords[i + 2], coords[i + 3], coords[i + 4]
-            ).css();
+            var color = getRGB(coords, i);
 
             // Add the branch to the SVG
             svg +=
@@ -517,7 +528,7 @@ define([
                 '" y2="' +
                 y2 +
                 '" stroke="' +
-                rgbColor +
+                color +
                 '" style="stroke-width:' +
                 linewidth +
                 '" />\n';
@@ -546,9 +557,7 @@ define([
                     '" r="' +
                     NODE_RADIUS +
                     '" style="fill:' +
-                    chroma
-                    .gl(coords[i + 2], coords[i + 3], coords[i + 4])
-                    .css() +
+                    getRGB(coords, i) +
                     '"/>\n';
             }
             // The edge of the bounding box should coincide with the "end" of a
@@ -660,15 +669,9 @@ define([
      *                  value).
      */
     Empress.prototype.getSVGViewBox = function (minX, minY, width, height) {
-        return 'viewBox="' +
-            minX +
-            " " +
-            minY +
-            " " +
-            width +
-            " " +
-            height +
-            '"';
+        return (
+            'viewBox="' + minX + " " + minY + " " + width + " " + height + '"'
+        );
     };
 
     /**
