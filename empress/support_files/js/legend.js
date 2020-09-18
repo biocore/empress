@@ -308,6 +308,11 @@ define(["underscore", "util"], function (_, util) {
 
         // Style of the rect containing the legend SVG
         var BGSTYLE = 'style="fill:#ffffff;stroke:#000000;stroke-width:1"';
+
+        // Font family for the legend title and entries. This should
+        // roughly match what Empress uses in its body CSS.
+        var FONTFAM = 'font-family="Arial,Helvetica,sans-serif"';
+
         // Figure out the rect's top Y position
         var topY = (row - 1) * lineHeight;
 
@@ -324,7 +329,9 @@ define(["underscore", "util"], function (_, util) {
                 rowsUsed * lineHeight +
                 '" text-anchor="middle" style="font-weight:bold;font-size:' +
                 unit +
-                'pt;" font-family="Arial,Helvetica,sans-serif">' +
+                'pt;" ' +
+                FONTFAM +
+                ">" +
                 this.title +
                 "</text>\n";
             rowsUsed++;
@@ -350,9 +357,12 @@ define(["underscore", "util"], function (_, util) {
                     '" style="fill:' +
                     color +
                     ';stroke:#000000;stroke-width:1"/>\n';
-                // Add text labelling the category
-                // We specify the font family so that it should roughly match
-                // what Empress uses in its body CSS
+                // Add text labelling the category. We set dominant-baseline
+                // to "hanging" so that we can reference the top position of
+                // the text, not the bottom position of the text. (The default
+                // for <rect> is that y points to top, the default for <text>
+                // is that y points to baseline. I don't know why...) Soln c/o
+                // https://stackoverflow.com/a/45914139/10730311.
                 legendSVG +=
                     '<text dominant-baseline="hanging" x="' +
                     (lineHeight + unit) +
@@ -360,7 +370,9 @@ define(["underscore", "util"], function (_, util) {
                     (rowTopY + (unit / 2)) +
                     '" style="font-size:' +
                     unit +
-                    'pt;" font-family="Arial,Helvetica,sans-serif">' +
+                    'pt;" ' +
+                    FONTFAM +
+                    '>' +
                     cat +
                     "</text>\n";
                 rowsUsed++;
@@ -373,7 +385,11 @@ define(["underscore", "util"], function (_, util) {
             // the number of used text rows and width must be larger than
             // longest key text and/or legend title
             var numCats = this._sortedCategories.length;
-            var width = maxLineWidth + 2 * unit;
+            // The maximum line width is the max text width plus (in the likely
+            // event that the max text width is from a category line, not from
+            // the title line) the width of a color square (lineHeight) plus
+            // the padding btwn. the color square and start of the text (unit)
+            var width = maxLineWidth + lineHeight + unit;
             var height = (numCats + 1) * lineHeight + unit;
             var outputSVG =
                 '<g>\n<rect x="0" y="' +
