@@ -695,7 +695,7 @@ define([
      * We could use async/await stuff to halt within this function until
      * toBlob() produces the PNG, and then return that to the caller of this
      * function, but for the sake of simplicity we just have the caller specify
-     * a callback in this function. Phew!
+     * a callback to this function. Phew!
      *
      * NOTE: Currently, this will be limited to how the tree is currently drawn
      * -- so if the user is zoomed in really far, then the exported PNG will
