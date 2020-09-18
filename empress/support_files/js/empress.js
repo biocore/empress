@@ -75,7 +75,7 @@ define([
          * @type {Array}
          * The default color of the tree
          */
-        this.DEFAULT_COLOR = [0.75, 0.75, 0.75];
+        this.DEFAULT_COLOR = [0.25, 0.25, 0.25];
 
         /**
          * @type {BPTree}
@@ -408,6 +408,7 @@ define([
 
         this.getLayoutInfo();
         this.centerLayoutAvgPoint();
+        // centerLayoutAvgPoint() calls drawTree(), so no need to call it here
     };
 
     /**
@@ -752,6 +753,19 @@ define([
     };
 
     /**
+     * Returns the number of lines/triangles to approximate an arc/wedge given
+     * the total angle of the arc/wedge.
+     *
+     * @param {Number} totalAngle The total angle of the arc/wedge
+     * @return {Number} The number of lines/triangles to approximate the arc
+     *                  or wedge.
+     */
+    Empress.prototype._numSampToApproximate = function (totalAngle) {
+        var numSamples = Math.floor(60 * Math.abs(totalAngle / Math.PI));
+        return numSamples >= 2 ? numSamples : 2;
+    };
+
+    /**
      * Retrieves the coordinate info of the tree.
      *  format of coordinate info: [x, y, red, green, blue, ...]
      *
@@ -863,14 +877,16 @@ define([
                     !this._tree.isleaf(this._tree.postorderselect(node)) &&
                     !this._collapsedClades.hasOwnProperty(node)
                 ) {
-                    // arcs are created by sampling 15 small lines along the
-                    // arc spanned by rotating (arcx0, arcy0), the line whose
-                    // origin is the root of the tree and endpoint is the start
-                    // of the arc, by arcendangle - arcstartangle radians.
-                    var numSamples = 15;
+                    // An arc will be created for all internal nodes.
+                    // arcs are created by sampling up to 60 small lines along
+                    // the arc spanned by rotating the line (arcx0, arcy0)
+                    // arcendangle - arcstartangle radians. This will create an
+                    // arc that starts at each internal node's rightmost child
+                    // and ends on the leftmost child.
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
+                    var numSamples = this._numSampToApproximate(arcDeltaAngle);
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this.getNodeInfo(node, "arcx0");
                     var sY = this.getNodeInfo(node, "arcy0");
@@ -1255,14 +1271,12 @@ define([
                 // (TODO: this will need to be adapted when the arc is changed
                 // to be a bezier curve)
                 if (!this._tree.isleaf(this._tree.postorderselect(node))) {
-                    // arcs are created by sampling 15 small lines along the
-                    // arc spanned by rotating arcx0, the line whose origin
-                    // is the root of the tree and endpoint is the start of the
-                    // arc, by arcendangle - arcstartangle radians.
-                    var numSamples = 15;
+                    // An arc will be created for all internal nodes.
+                    // See getCoords() for details on how arcs are drawn.
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
+                    var numSamples = this._numSampToApproximate(arcDeltaAngle);
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this.getNodeInfo(node, "arcx0");
                     var sY = this.getNodeInfo(node, "arcy0");
@@ -2270,7 +2284,7 @@ define([
                 this.drawBarplots(this._barplotPanel.layers);
             }
         }
-        this.drawTree();
+        this.centerLayoutAvgPoint();
     };
 
     /**
@@ -2292,7 +2306,6 @@ define([
                 // NOTE: this function calls drawTree(), which is redundant
                 // since reLayout() already called it. Would be good to
                 // minimize redundant calls to that.
-                this.centerLayoutAvgPoint();
             } else {
                 // This should never happen under normal circumstances (the
                 // input to this function should always be an existing layout
@@ -2657,11 +2670,12 @@ define([
             cladeInfo.sY = sY;
             cladeInfo.totalAngle = totalAngle;
 
-            // create 15 triangles to approximate sector
-            var deltaAngle = totalAngle / 15;
-            cos = Math.cos(deltaAngle);
-            sin = Math.sin(deltaAngle);
-            for (var line = 0; line < 15; line++) {
+            // create triangles to approximate sector
+            var numSamples = this._numSampToApproximate(totalAngle);
+            var deltaAngle = totalAngle / numSamples;
+            cos = 1; // Math.cos(0)
+            sin = 0; // Math.sin(0)
+            for (var line = 0; line < numSamples; line++) {
                 addPoint(getCoords(rootNode));
 
                 x = sX * cos - sY * sin;
