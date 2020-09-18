@@ -274,9 +274,30 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
-     * Gets an SVG representation of the legend.
+     * Gets an SVG representation of the legend, along with some other details.
      *
-     * @return {Object}
+     * Please see Empress.exportLegendSVG() for details on how the parameters
+     * here are created; this function was spun off from code that was
+     * originally there.
+     *
+     * @param {Number} row Current row this legend will be created on. (Long
+     *                     story short, if only one legend is getting exported
+     *                     this should just be 1.)
+     * @param {Number} unit Number used to scale all distances in the SVG.
+     * @param {Number} lineHeight Result of multiplying unit by some factor.
+     *                            Has to do with the distance between two text
+     *                            lines.
+     * @param {CanvasRenderingContext2D} context Result of calling
+     *                                           canvas.getContext("2d").
+     *
+     * @return {Object} Contains four keys:
+     *                  -svg: String containing the legend SVG
+     *                  -rowsUsed: Number describing the number of rows used in
+     *                             this legend (plus row)
+     *                  -width: The width of the legend SVG
+     *                  -height: The height of the legend SVG. Honestly, I
+     *                   think this is slightly too large -- not sure what's
+     *                   going on. At least things work right now!
      *
      * @throws {Error} If the current legend type does not have SVG export
      *                 supported. Currently only categorical legends can be

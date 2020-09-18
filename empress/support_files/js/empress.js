@@ -457,7 +457,7 @@ define([
      * Creates an SVG string to export the current stuff on the canvas.
      *
      * NOTE that this currently does not include collapsed clades or barplots.
-     * Fixing this is planned.
+     * Support for this is planned!
      *
      * @return {String}
      */
@@ -573,10 +573,24 @@ define([
             maxX += NODE_RADIUS;
             maxY += NODE_RADIUS;
         }
-        return this.finalizeSVG(svg, minX, minY, maxX, maxY);
+        return this._finalizeSVG(svg, minX, minY, maxX, maxY);
     };
 
-    Empress.prototype.finalizeSVG = function (svg, minX, minY, maxX, maxY) {
+    /**
+     * Given a SVG string and min/max x/y positions, creates an exportable SVG.
+     *
+     * Mostly this just creates a viewBox attribute and wraps everything in an
+     * <svg></svg>.
+     *
+     * @param {String} svg An SVG string to wrap within a <svg></svg>.
+     * @param {Number} minX
+     * @param {Number} minY
+     * @param {Number} maxX
+     * @param {Number} maxY
+     *
+     * @return {String} A "finished" SVG string that can be saved to a file.
+     */
+    Empress.prototype._finalizeSVG = function (svg, minX, minY, maxX, maxY) {
         var width = maxX - minX;
         var height = maxY - minY;
         var viewBox =
@@ -597,7 +611,7 @@ define([
      *                      tree visualization. (If no legends are active, this
      *                      will just return null.)
      */
-    Empress.prototype.exportLegendSVG = function (leftX, topY) {
+    Empress.prototype.exportLegendSVG = function () {
         // the SVG string to be generated
         var svg = "";
 
@@ -668,7 +682,7 @@ define([
         // minX and minY are always going to be 0. (In the tree export, the
         // root node is (0, 0) so there are usually negative coordinates; here,
         // we have the luxury of being able to keep everything positive.)
-        return this.finalizeSVG(svg, 0, 0, maxX, maxY);
+        return this._finalizeSVG(svg, 0, 0, maxX, maxY);
     };
 
     /**
