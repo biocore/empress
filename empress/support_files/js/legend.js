@@ -345,7 +345,7 @@ define(["underscore", "util"], function (_, util) {
                     maxLineWidth,
                     context.measureText(cat).width
                 );
-                var rowTopY = (((rowsUsed - 1) * lineHeight) + unit);
+                var rowTopY = (rowsUsed - 1) * lineHeight + unit;
                 // Add a square to the left of the label showing the color
                 legendSVG +=
                     '<rect x="0" y="' +
@@ -367,12 +367,12 @@ define(["underscore", "util"], function (_, util) {
                     '<text dominant-baseline="hanging" x="' +
                     (lineHeight + unit) +
                     '" y="' +
-                    (rowTopY + (unit / 2)) +
+                    (rowTopY + unit / 2) +
                     '" style="font-size:' +
                     unit +
                     'pt;" ' +
                     FONTFAM +
-                    '>' +
+                    ">" +
                     cat +
                     "</text>\n";
                 rowsUsed++;
