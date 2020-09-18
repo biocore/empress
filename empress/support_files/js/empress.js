@@ -662,9 +662,10 @@ define([
 
         // Slice off extra vertical space below the bottom legend. The height
         // of this space seems to always be equal to exactly 2 * unit. I think
-        // this may come from topY (in Legend.exportSVG()) starting at row - 1;
-        // would be good to adjust so that this ugly step isn't required.
-        maxY -= ((legends.length - 1) * unit);
+        // this may come from topY (in Legend.exportSVG()) starting at row - 1,
+        // but I haven't been able to get things exactly right yet. It would be
+        // good to adjust things so that this ugly step isn't required.
+        maxY -= (legends.length - 1) * unit;
 
         // minX and minY are always going to be 0. (In the tree export, the
         // root node is (0, 0) so there are usually negative coordinates; here,
