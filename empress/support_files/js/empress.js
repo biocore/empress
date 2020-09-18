@@ -618,8 +618,6 @@ define([
         var legends = [];
         if (!_.isNull(this._legend.legendType)) {
             legends.push(this._legend);
-            legends.push(this._legend);
-            legends.push(this._legend);
         }
         // TODO: get legends from barplot panel, which should in turn get them
         // from each of its barplot layers. For now, we just export the tree
