@@ -44,9 +44,7 @@ FM_DESC = (
 # Accept various types of feature tables -- we (currently) convert things to
 # presence/absence, anyway. This line adapted from
 # https://github.com/qiime2/q2-feature-table/blob/9ed6160adad45445ec054e5ce034a3b3ba25a9b4/q2_feature_table/plugin_setup.py#L243.
-AcceptedTableTypes = TypeMatch([
-    Frequency, RelativeFrequency, PresenceAbsence, Composition
-])
+AcceptedTableTypes = TypeMatch([Frequency, RelativeFrequency, PresenceAbsence])
 
 plugin.visualizers.register_function(
     function=community_plot,
