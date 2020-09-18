@@ -367,6 +367,10 @@ define(["underscore", "util"], function (_, util) {
                     '<text dominant-baseline="hanging" x="' +
                     (lineHeight + unit) +
                     '" y="' +
+                    // The + unit / 2 is a crude way of vertically aligning
+                    // this text with the color square in its row. (We know the
+                    // font size is "unit", so we should be able to safely push
+                    // the text down by unit / 2.)
                     (rowTopY + unit / 2) +
                     '" style="font-size:' +
                     unit +
