@@ -13,7 +13,7 @@ from qiime2.plugin import (
 )
 from q2_types.tree import Phylogeny, Rooted
 from q2_types.feature_table import (
-    FeatureTable, Frequency, RelativeFrequency, PresenceAbsence, Composition
+    FeatureTable, Frequency, RelativeFrequency, PresenceAbsence
 )
 from q2_types.ordination import PCoAResults
 
