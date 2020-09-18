@@ -573,33 +573,33 @@ define([
             maxX += NODE_RADIUS;
             maxY += NODE_RADIUS;
         }
+        return this.finalizeSVG(svg, minX, minY, maxX, maxY);
+    };
 
+    Empress.prototype.finalizeSVG = function (svg, minX, minY, maxX, maxY) {
         var width = maxX - minX;
         var height = maxY - minY;
-        var viewBox = this.getSVGViewBox(minX, minY, width, height);
-        var totalSVG =
+        var viewBox =
+            'viewBox="' + minX + " " + minY + " " + width + " " + height + '"';
+        return (
             '<svg xmlns="http://www.w3.org/2000/svg" ' +
             viewBox +
             ">\n" +
             svg +
-            "</svg>\n";
-        return totalSVG;
+            "</svg>\n"
+        );
     };
 
     /**
      * Creates an SVG string to export legends.
      *
-     * @param {Number} leftX The leftmost x-coordinate to place legends at.
-     * @param {Number} topY The topmost y-coordinate to place legends at. (If
-     *                      there are multiple legends, they will be positioned
-     *                      below each other.)
-     *
      * @return {String} svg The SVG code representing all legend(s) for the
-     *                      tree visualization.
+     *                      tree visualization. (If no legends are active, this
+     *                      will just return null.)
      */
     Empress.prototype.exportLegendSVG = function (leftX, topY) {
         // the SVG string to be generated
-        var svg = "<!-- legends -->\n";
+        var svg = "";
 
         // All distances are based on this variable. The scale of the resulting
         // SVG can therefore be altered by changing this value.
@@ -618,10 +618,16 @@ define([
         var legends = [];
         if (!_.isNull(this._legend.legendType)) {
             legends.push(this._legend);
+            legends.push(this._legend);
+            legends.push(this._legend);
         }
         // TODO: get legends from barplot panel, which should in turn get them
         // from each of its barplot layers. For now, we just export the tree
         // legend, since we don't support exporting barplots quite yet (soon!)
+        if (legends.length === 0) {
+            util.toastMsg("No active legends to export.", 5000);
+            return null;
+        }
 
         // Count the number of used rows
         var row = 1;
@@ -629,99 +635,35 @@ define([
         // Also keep track of the maximum-width legend SVG, so that (when
         // merging this SVG with the tree SVG) we can resize the viewbox
         // accordingly
-        var maxWidth = 0;
-        var maxHeight = 0;
+        var maxX = 0;
+        var maxY = 0;
 
-        _.each(legends, function (legend) {
+        _.each(legends, function (legend, legendIndex) {
+            if (legendIndex > 0) {
+                // Add space between adjacent legends
+                row++;
+                maxY += lineHeight;
+            }
             var legendSVGData = legend.exportSVG(
-                leftX,
-                topY,
                 row,
                 unit,
                 lineHeight,
                 context
             );
             svg += legendSVGData.svg;
-            // The +2 adds one blank row between two legends
-            row = legendSVGData.rowsUsed + 2;
+            row = legendSVGData.rowsUsed;
             // Based on the width of this legend's bounding box, try to update
-            // maxWidth
-            maxWidth = Math.max(maxWidth, legendSVGData.bbWidth);
-            maxHeight = legendSVGData.bbHeight;
+            // maxX. (Different legends may have different widths, so this
+            // isn't always going to be updated; however, we just place legends
+            // below each other, so maxY will always get updated.)
+            maxX = Math.max(maxX, legendSVGData.width);
+            maxY += legendSVGData.height;
         });
-        var maxX = leftX + maxWidth;
-        var maxY = topY + maxHeight;
 
-        return { svg: svg, maxX: maxX, maxY: maxY };
-    };
-
-    /**
-     * Construct an SVG viewBox attribute that can be added to a SVG header.
-     *
-     * This is a convenience function used by multiple SVG exporting functions.
-     *
-     * @param {Number} minX
-     * @param {Number} minY
-     * @param {Number} width
-     * @param {Number} height
-     * @return {String} String of the format 'viewBox="minX minY width height"'
-     *                  (where each variable is replaced with its numeric
-     *                  value).
-     */
-    Empress.prototype.getSVGViewBox = function (minX, minY, width, height) {
-        return (
-            'viewBox="' + minX + " " + minY + " " + width + " " + height + '"'
-        );
-    };
-
-    /**
-     * Exports a SVG image of the canvas.
-     *
-     * @return {String} XML representation of the SVG image.
-     */
-    Empress.prototype.exportSVG = function () {
-        // Get the SVG for the tree visualization
-        var treeSVGInfo = this.exportTreeSVG();
-
-        // Get SVG for the legend(s). Position things so that the top-left
-        // corner of the legend SVG is at the top-right corner of the tree SVG.
-        // Should look something like:
-        //
-        // +----------+------------+
-        // | tree SVG | legend SVG |
-        // +----------+            |
-        //            |            |
-        //            +------------+
-        var legendSVGInfo = this.exportLegendSVG(
-            treeSVGInfo.maxX,
-            treeSVGInfo.minY
-        );
-
-        // Based on the tree and legend SVG, update the viewbox (defining
-        // the dimensions of the SVG) accordingly.
-        //
-        // NOTE that the way the viewbox is interpreted seems to vary across
-        // SVG viewers; for example, if the viewbox is too small, GIMP will
-        // cut off the stuff still in the SVG but outside of it, but Chromium
-        // will still show everything. (This is mostly useful for debugging.)
-        var viewBox = this.getSVGViewBoxText(
-            treeSVGInfo.minX,
-            treeSVGInfo.maxX,
-            treeSVGInfo.minY,
-            treeSVGInfo.maxY,
-            legendSVGInfo.maxX,
-            legendSVGInfo.maxY
-        );
-        // add all SVG elements into one string...
-        var totalSVG =
-            '<svg xmlns="http://www.w3.org/2000/svg" ' +
-            viewBox +
-            " >\n" +
-            treeSVGInfo.svg +
-            "\n" +
-            legendSVGInfo.svg +
-            "</svg>\n";
-        return totalSVG;
+        // minX and minY are always going to be 0. (In the tree export, the
+        // root node is (0, 0) so there are usually negative coordinates; here,
+        // we have the luxury of being able to keep everything positive.)
+        return this.finalizeSVG(svg, 0, 0, maxX, maxY);
     };
 
     /**

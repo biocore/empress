@@ -349,7 +349,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         };
         this.exportLegendSVGBtn.onclick = function () {
             var svg = scope.empress.exportLegendSVG();
-            saveSVGBlob(svg, "empress-legends.svg");
+            // If no legends are currently shown, exportLegendSVG() will just
+            // return null -- in which case nothing more needs to be done.
+            if (svg !== null) {
+                saveSVGBlob(svg, "empress-legends.svg");
+            }
         };
     };
 

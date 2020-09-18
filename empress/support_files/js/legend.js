@@ -276,20 +276,13 @@ define(["underscore", "util"], function (_, util) {
     /**
      * Gets an SVG representation of the legend.
      *
-     * @return {String} legendSVG
+     * @return {Object}
      *
      * @throws {Error} If the current legend type does not have SVG export
      *                 supported. Currently only categorical legends can be
      *                 exported, but this will change soon.
      */
-    Legend.prototype.exportSVG = function (
-        leftX,
-        topY,
-        row,
-        unit,
-        lineHeight,
-        context
-    ) {
+    Legend.prototype.exportSVG = function (row, unit, lineHeight, context) {
         var scope = this;
 
         // Style of the rect containing the legend SVG
@@ -303,9 +296,9 @@ define(["underscore", "util"], function (_, util) {
             // TODO: center over the legend?
             legendSVG +=
                 '<text x="' +
-                (leftX + unit) +
+                unit +
                 '" y="' +
-                (topY + rowsUsed * lineHeight) +
+                rowsUsed * lineHeight +
                 '" style="font-weight:bold;font-size:' +
                 unit +
                 'pt;" font-family="Arial,Helvetica,sans-serif">' +
@@ -327,9 +320,9 @@ define(["underscore", "util"], function (_, util) {
                 // e.g. have colors snug with the left border)
                 legendSVG +=
                     '<rect x="' +
-                    (leftX + unit) +
+                    unit +
                     '" y="' +
-                    (topY + rowsUsed * lineHeight - unit) +
+                    (rowsUsed * lineHeight - unit) +
                     '" width="' +
                     unit +
                     '" height="' +
@@ -342,9 +335,9 @@ define(["underscore", "util"], function (_, util) {
                 // what Empress uses in its body CSS
                 legendSVG +=
                     '<text x="' +
-                    (leftX + 2.5 * unit) +
+                    2.5 * unit +
                     '" y="' +
-                    (topY + rowsUsed * lineHeight) +
+                    rowsUsed * lineHeight +
                     '" style="font-size:' +
                     unit +
                     'pt;" font-family="Arial,Helvetica,sans-serif">' +
@@ -360,18 +353,16 @@ define(["underscore", "util"], function (_, util) {
             // the number of used text rows and width must be larger than
             // longest key text and/or legend title
             var numCats = this._sortedCategories.length;
-            var bbTopY = topY + (rowsUsed - numCats - 2) * lineHeight;
-            var bbWidth = maxLineWidth + 2 * unit;
-            var bbHeight = (numCats + 1) * lineHeight + unit;
+            var topY = (rowsUsed - numCats - 2) * lineHeight;
+            var width = maxLineWidth + 2 * unit;
+            var height = (numCats + 1) * lineHeight + unit;
             var outputSVG =
-                '<g>\n<rect x="' +
-                leftX +
-                '" y="' +
-                bbTopY +
+                '<g>\n<rect x="0" y="' +
+                topY +
                 '" width="' +
-                bbWidth +
+                width +
                 '" height="' +
-                bbHeight +
+                height +
                 '" ' +
                 BGSTYLE +
                 " />\n" +
@@ -380,8 +371,8 @@ define(["underscore", "util"], function (_, util) {
             return {
                 svg: outputSVG,
                 rowsUsed: rowsUsed,
-                bbWidth: bbWidth,
-                bbHeight: bbHeight,
+                width: width,
+                height: height,
             };
         } else {
             // Eventually, when we add support for exporting continuous /
