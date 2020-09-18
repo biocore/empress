@@ -626,11 +626,6 @@ define([
 
         var lineHeight = unit * lineHeightScaleFactor;
 
-        // used as a rough estimate about the consumed width by text strings
-        var myCanvas = document.createElement("canvas");
-        var context = myCanvas.getContext("2d");
-        context.font = "bold " + unit + "pt arial";
-
         var legends = [];
         if (!_.isNull(this._legend.legendType)) {
             legends.push(this._legend);
@@ -658,12 +653,7 @@ define([
                 row++;
                 maxY += lineHeight;
             }
-            var legendSVGData = legend.exportSVG(
-                row,
-                unit,
-                lineHeight,
-                context
-            );
+            var legendSVGData = legend.exportSVG(row, unit, lineHeight);
             svg += legendSVGData.svg;
             row = legendSVGData.rowsUsed;
             // Based on the width of this legend's bounding box, try to update

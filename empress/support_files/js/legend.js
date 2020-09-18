@@ -287,8 +287,6 @@ define(["underscore", "util"], function (_, util) {
      * @param {Number} lineHeight Result of multiplying unit by some factor.
      *                            Has to do with the distance between two text
      *                            lines.
-     * @param {CanvasRenderingContext2D} context Result of calling
-     *                                           canvas.getContext("2d").
      *
      * @return {Object} Contains four keys:
      *                  -svg: String containing the legend SVG
@@ -303,7 +301,7 @@ define(["underscore", "util"], function (_, util) {
      *                 supported. Currently only categorical legends can be
      *                 exported, but this will change soon.
      */
-    Legend.prototype.exportSVG = function (row, unit, lineHeight, context) {
+    Legend.prototype.exportSVG = function (row, unit, lineHeight) {
         var scope = this;
 
         // Style of the rect containing the legend SVG (in addition to the
@@ -312,10 +310,15 @@ define(["underscore", "util"], function (_, util) {
 
         // Font family for the legend title and entries. Should match what
         // Empress uses in its body CSS.
-        var TEXTSTYLE =
-            "font-size: " +
-            unit +
-            "pt; font-family: Arial,Helvetica,sans-serif;";
+        var FONT = unit + "pt Arial,Helvetica,sans-serif";
+
+        // Used as a rough estimate about the consumed width by text strings.
+        var tmpCanvas = document.createElement("canvas");
+        var context = tmpCanvas.getContext("2d");
+        // Fun fact: if you accidentally include a semicolon at the end of the
+        // font then this will break context.measureText()! No idea why, but
+        // that was a fun ten minutes.
+        context.font = "bold " + FONT;
 
         // Figure out the rect's top Y position
         var topY = (row - 1) * lineHeight;
@@ -326,7 +329,7 @@ define(["underscore", "util"], function (_, util) {
         var legendSVG = [
             "<style>",
             ".title { font-weight: bold; }",
-            "text { " + TEXTSTYLE + " }",
+            "text { font: " + FONT + "; }",
             "rect { stroke: #000000; stroke-width: 1; }",
             "</style>",
         ].join("\n");
