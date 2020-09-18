@@ -312,8 +312,10 @@ define(["underscore", "util"], function (_, util) {
 
         // Font family for the legend title and entries. Should match what
         // Empress uses in its body CSS.
-        var TEXTSTYLE = "font-size: " + unit +
-            'pt; font-family: Arial,Helvetica,sans-serif;';
+        var TEXTSTYLE =
+            "font-size: " +
+            unit +
+            "pt; font-family: Arial,Helvetica,sans-serif;";
 
         // Figure out the rect's top Y position
         var topY = (row - 1) * lineHeight;
@@ -326,7 +328,7 @@ define(["underscore", "util"], function (_, util) {
             ".title { font-weight: bold; }",
             "text { " + TEXTSTYLE + " }",
             "rect { stroke: #000000; stroke-width: 1; }",
-            "</style>"
+            "</style>",
         ].join("\n");
 
         var rowsUsed = row;
