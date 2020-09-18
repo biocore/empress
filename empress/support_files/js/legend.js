@@ -308,7 +308,7 @@ define(["underscore", "util"], function (_, util) {
         // global rect style applied below)
         var BGSTYLE = 'style="fill:#ffffff;"';
 
-        // Font family for the legend title and entries. Should match what
+        // Font style for the legend title and entries. Should match what
         // Empress uses in its body CSS.
         var FONT = unit + "pt Arial,Helvetica,sans-serif";
 
