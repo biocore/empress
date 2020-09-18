@@ -306,17 +306,29 @@ define(["underscore", "util"], function (_, util) {
     Legend.prototype.exportSVG = function (row, unit, lineHeight, context) {
         var scope = this;
 
-        // Style of the rect containing the legend SVG
-        var BGSTYLE = 'style="fill:#ffffff;stroke:#000000;stroke-width:1"';
+        // Style of the rect containing the legend SVG (in addition to the
+        // global rect style applied below)
+        var BGSTYLE = 'style="fill:#ffffff;"';
 
-        // Font family for the legend title and entries. This should
-        // roughly match what Empress uses in its body CSS.
-        var FONTFAM = 'font-family="Arial,Helvetica,sans-serif"';
+        // Font family for the legend title and entries. Should match what
+        // Empress uses in its body CSS.
+        var TEXTSTYLE = "font-size: " + unit +
+            'pt; font-family: Arial,Helvetica,sans-serif;';
 
         // Figure out the rect's top Y position
         var topY = (row - 1) * lineHeight;
 
-        var legendSVG = "";
+        // Set global styling for the SVG, cutting down a bit on redundant text
+        // in the output SVG. (This is based on how the vertex/fragment shader
+        // code in drawer.js is constructed as an array of strings.)
+        var legendSVG = [
+            "<style>",
+            ".title { font-weight: bold; }",
+            "text { " + TEXTSTYLE + " }",
+            "rect { stroke: #000000; stroke-width: 1; }",
+            "</style>"
+        ].join("\n");
+
         var rowsUsed = row;
         if (this.legendType === "categorical") {
             var maxLineWidth = context.measureText(this.title).width;
@@ -327,11 +339,7 @@ define(["underscore", "util"], function (_, util) {
             legendSVG +=
                 '<text x="50%" y="' +
                 rowsUsed * lineHeight +
-                '" text-anchor="middle" style="font-weight:bold;font-size:' +
-                unit +
-                'pt;" ' +
-                FONTFAM +
-                ">" +
+                '" text-anchor="middle" class="title">' +
                 this.title +
                 "</text>\n";
             rowsUsed++;
@@ -356,7 +364,7 @@ define(["underscore", "util"], function (_, util) {
                     lineHeight +
                     '" style="fill:' +
                     color +
-                    ';stroke:#000000;stroke-width:1"/>\n';
+                    ';"/>\n';
                 // Add text labelling the category. We set dominant-baseline
                 // to "hanging" so that we can reference the top position of
                 // the text, not the bottom position of the text. (The default
@@ -372,11 +380,7 @@ define(["underscore", "util"], function (_, util) {
                     // font size is "unit", so we should be able to safely push
                     // the text down by unit / 2.)
                     (rowTopY + unit / 2) +
-                    '" style="font-size:' +
-                    unit +
-                    'pt;" ' +
-                    FONTFAM +
-                    ">" +
+                    '">' +
                     cat +
                     "</text>\n";
                 rowsUsed++;
