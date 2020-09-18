@@ -511,6 +511,8 @@ define([
             ) {
                 linewidth = 1;
             }
+            // NOTE: we negate the y coordinates in order to match the way the
+            // tree is drawn. See #334 on GitHub for discussion.
             var x1 = coords[i];
             var y1 = -coords[i + 1];
             var x2 = coords[i + this._drawer.VERTEX_SIZE];
