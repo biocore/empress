@@ -726,7 +726,8 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      * populated with a literal null at any point, since Objects in JS store
      * all keys as Strings (so having a literal null in this._nameToNodes [due
      * to unnamed nodes] will cause this null to get confused with node(s)
-     * literally named "null" in the Newick file.
+     * literally named "null" in the Newick file). I don't think this is a
+     * possibility but we should probably add tests for it.
      *
      * @param {String} name The name of node(s)
      * @return {Array} An array of postorder positions of nodes with a given
