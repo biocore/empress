@@ -62,6 +62,13 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // the dimension of the canvas
         this.dim = null;
 
+        // Radii of normal node circles and selected node circles. Note that,
+        // since these are constant values, they take up the same screen space
+        // regardless of zoom level. It would be possible to adjust these as
+        // the user zooms; would help unclutter the tree when it's zoomed out.
+        this.NODE_CIRCLE_RADIUS = 4.0;
+        this.SELECTED_NODE_CIRCLE_RADIUS = 9.0;
+
         this.showTreeNodes = false;
     }
 
@@ -350,16 +357,21 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // set the mvp attribute
         c.uniformMatrix4fv(s.mvpMat, false, mvp);
 
+        // This seems to determine whether or not points are drawn as squares
+        // or as circles (1 = circle, 0 = square). We set it to 1 so that node
+        // circles and the selected node are both drawn as circles, and then
+        // set it to 0 afterwards.
+
+        c.uniform1i(s.isSingle, 1);
         // draw tree node circles, if requested
         if (this.showTreeNodes) {
-            c.uniform1i(s.isSingle, 1);
-            c.uniform1f(s.pointSize, 4.0);
+            c.uniform1f(s.pointSize, this.NODE_CIRCLE_RADIUS);
             this.bindBuffer(s.nodeVertBuff);
             c.drawArrays(c.POINTS, 0, this.nodeSize);
         }
 
         // draw selected node
-        c.uniform1f(s.pointSize, 9.0);
+        c.uniform1f(s.pointSize, this.SELECTED_NODE_CIRCLE_RADIUS);
         this.bindBuffer(s.selectedNodeBuff);
         c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 
