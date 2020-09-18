@@ -315,14 +315,14 @@ define(["underscore", "util"], function (_, util) {
         var rowsUsed = row;
         if (this.legendType === "categorical") {
             var maxLineWidth = context.measureText(this.title).width;
-            // First, add the title to the legend SVG
-            // TODO: center over the legend?
+            // First, add the title to the legend SVG.
+            // The x="50%" and text-anchor="middle" center the title over the
+            // legend: solution from
+            // https://stackoverflow.com/a/31522006/10730311.
             legendSVG +=
-                '<text x="' +
-                unit +
-                '" y="' +
+                '<text x="50%" y="' +
                 rowsUsed * lineHeight +
-                '" style="font-weight:bold;font-size:' +
+                '" text-anchor="middle" style="font-weight:bold;font-size:' +
                 unit +
                 'pt;" font-family="Arial,Helvetica,sans-serif">' +
                 this.title +
