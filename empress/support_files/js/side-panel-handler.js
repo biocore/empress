@@ -85,10 +85,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.symmetricCladeMethod = document.getElementById("symmetric");
 
         // export GUI components
-        this.exportSVGBtn = document.getElementById("export-btn-svg");
-        this.exportPNGBtn = document.getElementById("export-btn-png");
-        this.exportTreeChk = document.getElementById("export-tree-chk");
-        this.exportLegendChk = document.getElementById("export-legend-chk");
+        this.exportTreeSVGBtn = document.getElementById("export-tree-svg-btn");
+        this.exportTreePNGBtn = document.getElementById("export-tree-png-btn");
+        this.exportLegendSVGBtn = document.getElementById(
+            "export-legend-svg-btn"
+        );
 
         // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
@@ -330,19 +331,25 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // for use in closures
         var scope = this;
 
-        this.exportSVGBtn.onclick = function () {
-            var totalSVG = scope.empress.exportSVG(
-                scope.exportTreeChk.checked, scope.exportLegendChk.checked
-            );
-            // Present SVG to user as downloadable file
-            var blob = new Blob([totalSVG], { type: "image/svg+xml" });
-            saveAs(blob, "empress-tree.svg");
+        // Presents SVG to user as a downloadable file
+        var saveSVGBlob = function (svg, filename) {
+            var blob = new Blob([svg], { type: "image/svg+xml" });
+            saveAs(blob, filename);
         };
-        this.exportPNGBtn.onclick = function () {
+
+        this.exportTreeSVGBtn.onclick = function () {
+            var svg = scope.empress.exportTreeSVG();
+            saveSVGBlob(svg, "empress-tree.svg");
+        };
+        this.exportTreePNGBtn.onclick = function () {
             var callback = function (blob) {
                 saveAs(blob, "empress-tree.png");
             };
-            scope.empress.exportPNG(callback);
+            scope.empress.exportTreePNG(callback);
+        };
+        this.exportLegendSVGBtn.onclick = function () {
+            var svg = scope.empress.exportLegendSVG();
+            saveSVGBlob(svg, "empress-legends.svg");
         };
     };
 

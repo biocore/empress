@@ -219,54 +219,20 @@
 <button class="side-header collapsible">Export</button>
 <div class="side-content control hidden" id="export-div">
   <p class="side-panel-notes">
-    Export an image of the tree.
+    Export images of the tree and its legends. Note that SVG exports do not
+    include barplots or collapsed clades yet (this will be fixed soon), and
+    that PNG exports will change as the tree is zoomed and panned.
   </p>
   <!-- Applying the margin: 0 auto; style to the exterior <p> doesn't work;
        the centering requires it be applied to each of the buttons
   -->
   <p>
-    <button style="margin: 0 auto;" id="export-btn-svg">Export as SVG</button>
-    <button style="margin: 0 auto;" id="export-btn-png">Export as PNG</button>
-  </p>
-  <p class="side-panel-inner-header">
-    Elements to include
+    <button style="margin: 0 auto;" id="export-tree-svg-btn">Export tree as SVG</button>
+    <button style="margin: 0 auto;" id="export-tree-png-btn">Export tree as PNG</button>
   </p>
   <p>
-    <label for="export-tree-chk">Tree</label>
-    <input id="export-tree-chk" type="checkbox" checked="true"
-           class="empress-input">
+    <button style="margin: 0 auto;" id="export-legend-svg-btn">Export legends as SVG</button>
   </p>
-  <p>
-    <label for="export-legend-chk">Tree Legend</label>
-    <input id="export-legend-chk" type="checkbox" checked="true"
-           class="empress-input">
-  </p>
-  <!-- NOTE: this comment block is stuff I'll uncomment later when we support
-       more comprehensive SVG exporting (soon!)
-  <p>
-    <label for="export-barplot-chk">Barplots</label>
-    <input id="export-barplot-chk" type="checkbox" checked="true"
-           class="empress-input">
-  </p>
-  <p>
-    <label for="export-barplot-legend-chk">Barplot Legends</label>
-    <input id="export-barplot-legend-chk" type="checkbox" checked="true"
-           class="empress-input">
-  </p>
-  <p class="side-panel-inner-header">
-    Dimensions
-  </p>
-  <p>
-    <label for="export-width">Width</label>
-    <input id="export-width" type="number" value="188" min="100"
-           step="1" class="empress-input">
-  </p>
-  <p>
-    <label for="export-height">Height</label>
-    <input id="export-height" type="number" value="188" min="100"
-           step="1" class="empress-input">
-  </p>
-  -->
 </div>
 
 <!-- Global Tree properties -->

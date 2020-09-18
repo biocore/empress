@@ -454,36 +454,25 @@ define([
     };
 
     /**
-     * Creates an SVG string to export the current drawing.
+     * Creates an SVG string to export the current stuff on the canvas.
      *
-     * @return {Object} svgInfo An Object containing four keys:
-     *                          -svg: Maps to a String containing the SVG code
-     *                           representing the current tree visualization.
-     *                          -viewBoxText: Maps to a String containing the
-     *                           SVG's "viewBox" attribute declaration and
-     *                           information.
-     *                          -legendLeftX: Maps to a Number indicating the
-     *                           leftmost x-coordinate at which legends should
-     *                           be placed in relation to the SVG.
-     *                          -legendTopY: Maps to a Number indicating the
-     *                           topmost y-coordinate at which legends should
-     *                           be placed in relation to the SVG.
+     * NOTE that this currently does not include collapsed clades or barplots.
+     * Fixing this is planned.
+     *
+     * @return {String}
      */
     Empress.prototype.exportTreeSVG = function () {
-        // TODO: use the same value as the actual WebGL drawing engine, but
-        // right now this value is hard coded on line 327 of drawer.js
-        var NODE_RADIUS = 4;
+        var NODE_RADIUS = this._drawer.NODE_CIRCLE_RADIUS;
 
-        var minX = 0;
-        var maxX = 0;
-        var minY = 0;
-        var maxY = 0;
-        var svg = "";
+        var minX = Number.POSITIVE_INFINITY;
+        var maxX = Number.NEGATIVE_INFINITY;
+        var minY = Number.POSITIVE_INFINITY;
+        var maxY = Number.NEGATIVE_INFINITY;
+        var svg = "<!-- tree branches -->\n";
 
         // create a line from x1,y1 to x2,y2 for every two consecutive coordinates
         // 5 array elements encode one coordinate:
         // i=x, i+1=y, i+2=red, i+3=green, i+4=blue
-        svg += "<!-- tree branches -->\n";
         var coords = this.getCoords();
         for (
             var i = 0;
@@ -496,6 +485,11 @@ define([
             // So, if coords[i+2] == DEFAULT_COLOR then coords[i+2+5] will
             // also be equal to DEFAULT_COLOR. Thus, we can save checking three
             // array elements here.
+            // TODO: instead, adjust line width based on a node's isColored
+            // tree data attribute, in corner-case where dflt node color is
+            // included in a color map.
+            // (Also: I'm not confident that SVG stroke width and line width in
+            // the Empress visualization are comparable, at least now?)
             var linewidth = 1 + this._currentLineWidth;
             if (
                 coords[i + 2] == this.DEFAULT_COLOR[0] &&
@@ -504,43 +498,35 @@ define([
             ) {
                 linewidth = 1;
             }
+            var x1 = coords[i];
+            var y1 = -coords[i + 1];
+            var x2 = coords[i + this._drawer.VERTEX_SIZE];
+            var y2 = -coords[i + 1 + this._drawer.VERTEX_SIZE];
+            var rgbColor = chroma.gl(
+                coords[i + 2], coords[i + 3], coords[i + 4]
+            ).css();
+
+            // Add the branch to the SVG
             svg +=
                 '<line x1="' +
-                coords[i] +
+                x1 +
                 '" y1="' +
-                -coords[i + 1] +
+                y1 +
                 '" x2="' +
-                coords[i + this._drawer.VERTEX_SIZE] +
+                x2 +
                 '" y2="' +
-                -coords[i + 1 + this._drawer.VERTEX_SIZE] +
+                y2 +
                 '" stroke="' +
-                chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css() +
+                rgbColor +
                 '" style="stroke-width:' +
                 linewidth +
                 '" />\n';
 
-            // obtain viewport from tree coordinates
-            minX = Math.min(
-                minX,
-                coords[i],
-                coords[i + this._drawer.VERTEX_SIZE]
-            );
-            maxX = Math.max(
-                maxX,
-                coords[i],
-                coords[i + this._drawer.VERTEX_SIZE]
-            );
-
-            minY = Math.min(
-                minY,
-                -coords[i + 1],
-                -coords[i + 1 + this._drawer.VERTEX_SIZE]
-            );
-            maxY = Math.max(
-                maxY,
-                -coords[i + 1],
-                -coords[i + 1 + this._drawer.VERTEX_SIZE]
-            );
+            // Update bounding box based on tree coordinates
+            minX = Math.min(minX, x1, x2);
+            maxX = Math.max(maxX, x1, x2);
+            minY = Math.min(minY, y1, y2);
+            maxY = Math.max(maxY, y1, y2);
         }
 
         // create a circle for each node
@@ -561,22 +547,34 @@ define([
                     NODE_RADIUS +
                     '" style="fill:' +
                     chroma
-                        .gl(coords[i + 2], coords[i + 3], coords[i + 4])
-                        .css() +
+                    .gl(coords[i + 2], coords[i + 3], coords[i + 4])
+                    .css() +
                     '"/>\n';
             }
+            // The edge of the bounding box should coincide with the "end" of a
+            // node. So we expand each side of the bounding box by the node
+            // radius to avoid cutting off nodes.
+            // (That a node has to be present at each edge of the bounding box
+            // isn't guaranteed, esp. when we will draw collapsed clades /
+            // barplots. However, even if this isn't the case, it'll just make
+            // the exported image very slightly larger -- not a huge deal. Best
+            // to be safe.)
+            minX -= NODE_RADIUS;
+            minY -= NODE_RADIUS;
+            maxX += NODE_RADIUS;
+            maxY += NODE_RADIUS;
         }
 
-        minX -= NODE_RADIUS;
-        minY -= NODE_RADIUS;
-
-        return {
-            svg: svg,
-            minX: minX,
-            maxX: maxX + 2 * NODE_RADIUS,
-            minY: minY,
-            maxY: maxY + 2 * NODE_RADIUS,
-        };
+        var width = maxX - minX;
+        var height = maxY - minY;
+        var viewBox = this.getSVGViewBox(minX, minY, width, height);
+        var totalSVG =
+            '<svg xmlns="http://www.w3.org/2000/svg" ' +
+            viewBox +
+            ">\n" +
+            svg +
+            "</svg>\n";
+        return totalSVG;
     };
 
     /**
@@ -648,32 +646,36 @@ define([
         return { svg: svg, maxX: maxX, maxY: maxY };
     };
 
-    // Determine viewBox information; construct a "declaration" that can be
-    // added to the SVG header.
-    Empress.prototype.getSVGViewBoxText = function (
-        treeMinX,
-        treeMaxX,
-        treeMinY,
-        treeMaxY,
-        legendMaxX,
-        legendMaxY
-    ) {
-        var maxY = Math.max(treeMaxY, legendMaxY);
-        var vbText =
-            'viewBox="' +
-            treeMinX +
+    /**
+     * Construct an SVG viewBox attribute that can be added to a SVG header.
+     *
+     * This is a convenience function used by multiple SVG exporting functions.
+     *
+     * @param {Number} minX
+     * @param {Number} minY
+     * @param {Number} width
+     * @param {Number} height
+     * @return {String} String of the format 'viewBox="minX minY width height"'
+     *                  (where each variable is replaced with its numeric
+     *                  value).
+     */
+    Empress.prototype.getSVGViewBox = function (minX, minY, width, height) {
+        return 'viewBox="' +
+            minX +
             " " +
-            treeMinY +
+            minY +
             " " +
-            // TODO get node radius from somewhere (pass to here? or store as
-            // const in empress)
-            (legendMaxX - treeMinX + 2 * 4) +
+            width +
             " " +
-            (maxY - treeMinY + 2 * 4) +
+            height +
             '"';
-        return vbText;
     };
 
+    /**
+     * Exports a SVG image of the canvas.
+     *
+     * @return {String} XML representation of the SVG image.
+     */
     Empress.prototype.exportSVG = function () {
         // Get the SVG for the tree visualization
         var treeSVGInfo = this.exportTreeSVG();
@@ -719,7 +721,27 @@ define([
         return totalSVG;
     };
 
-    Empress.prototype.exportPNG = function (callback) {
+    /**
+     * Exports a PNG image of the canvas.
+     *
+     * This uses the canvas toBlob() method, which requires that the caller
+     * provide a callback function (to which the output blob will be passed).
+     * We could use async/await stuff to halt within this function until
+     * toBlob() produces the PNG, and then return that to the caller of this
+     * function, but for the sake of simplicity we just have the caller specify
+     * a callback in this function. Phew!
+     *
+     * NOTE: Currently, this will be limited to how the tree is currently drawn
+     * -- so if the user is zoomed in really far, then the exported PNG will
+     * just show things at the current zoom level. Ideally, we'll want to add
+     * an option to get around this. (Calling this.centerLayoutAvgPoint()) in
+     * lieu of this.drawTree() works, but the user will see the canvas shift;
+     * not sure if there's a way to do this without disrupting the UI.)
+     *
+     * @param {Function} callback Function that will be called with a Blob
+     *                            representing the exported PNG image.
+     */
+    Empress.prototype.exportTreePNG = function (callback) {
         // Draw the tree immediately before calling toBlob(), to ensure that
         // the buffer hasn't been cleared. This is analogous to "solution 1"
         // for taking screenshots of a canvas in this tutorial:
