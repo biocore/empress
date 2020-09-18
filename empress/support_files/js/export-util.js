@@ -1,5 +1,4 @@
 define(["underscore", "chroma"], function (_, chroma) {
-
     /**
      * Given a SVG string and min/max x/y positions, creates an exportable SVG.
      *
@@ -14,7 +13,7 @@ define(["underscore", "chroma"], function (_, chroma) {
      *
      * @return {String} A "finished" SVG string that can be saved to a file.
      */
-    function _finalizeSVG (svg, minX, minY, maxX, maxY) {
+    function _finalizeSVG(svg, minX, minY, maxX, maxY) {
         var width = maxX - minX;
         var height = maxY - minY;
         var viewBox =
@@ -39,7 +38,7 @@ define(["underscore", "chroma"], function (_, chroma) {
      *
      * @return {String}
      */
-    function exportTreeSVG (empress, drawer) {
+    function exportTreeSVG(empress, drawer) {
         /**
          * Given coords and a start position in it (the start of a series of 5
          * elements), return an RGB triplet representation of the color at
@@ -165,7 +164,7 @@ define(["underscore", "chroma"], function (_, chroma) {
      *
      * @return {String} svg SVG code representing all the specified legends.
      */
-    function exportLegendSVG (legends) {
+    function exportLegendSVG(legends) {
         // the SVG string to be generated
         var svg = "";
 
@@ -251,6 +250,6 @@ define(["underscore", "chroma"], function (_, chroma) {
     return {
         exportTreeSVG: exportTreeSVG,
         exportTreePNG: exportTreePNG,
-        exportLegendSVG: exportLegendSVG
+        exportLegendSVG: exportLegendSVG,
     };
 });

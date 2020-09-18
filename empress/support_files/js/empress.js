@@ -455,7 +455,6 @@ define([
         this._drawer.draw();
     };
 
-
     /**
      * Exports a SVG image of the tree.
      *
