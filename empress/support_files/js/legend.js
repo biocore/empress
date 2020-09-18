@@ -338,18 +338,15 @@ define(["underscore", "util"], function (_, util) {
                     maxLineWidth,
                     context.measureText(cat).width
                 );
+                var rowTopY = (((rowsUsed - 1) * lineHeight) + unit);
                 // Add a square to the left of the label showing the color
-                // (TODO: make this resemble Empress' legends more closely,
-                // e.g. have colors snug with the left border)
                 legendSVG +=
-                    '<rect x="' +
-                    unit +
-                    '" y="' +
-                    (rowsUsed * lineHeight - unit) +
+                    '<rect x="0" y="' +
+                    rowTopY +
                     '" width="' +
-                    unit +
+                    lineHeight +
                     '" height="' +
-                    unit +
+                    lineHeight +
                     '" style="fill:' +
                     color +
                     ';stroke:#000000;stroke-width:1"/>\n';
@@ -357,10 +354,10 @@ define(["underscore", "util"], function (_, util) {
                 // We specify the font family so that it should roughly match
                 // what Empress uses in its body CSS
                 legendSVG +=
-                    '<text x="' +
-                    2.5 * unit +
+                    '<text dominant-baseline="hanging" x="' +
+                    (lineHeight + unit) +
                     '" y="' +
-                    rowsUsed * lineHeight +
+                    (rowTopY + (unit / 2)) +
                     '" style="font-size:' +
                     unit +
                     'pt;" font-family="Arial,Helvetica,sans-serif">' +
