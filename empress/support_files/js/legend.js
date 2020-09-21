@@ -276,13 +276,14 @@ define(["underscore", "util"], function (_, util) {
     /**
      * Gets an SVG representation of the legend, along with some other details.
      *
-     * Please see Empress.exportLegendSVG() for details on how the parameters
-     * here are created; this function was spun off from code that was
-     * originally there.
+     * Please see ExportUtil.exportLegendSVG() for details on the parameters to
+     * this function.
      *
      * @param {Number} row Current row this legend will be created on. (Long
      *                     story short, if only one legend is getting exported
-     *                     this should just be 1.)
+     *                     this should just be 1. This is used to determine the
+     *                     vertical position of this legend and its elements in
+     *                     a SVG image.)
      * @param {Number} unit Number used to scale all distances in the SVG.
      * @param {Number} lineHeight Result of multiplying unit by some factor.
      *                            Has to do with the distance between two text
