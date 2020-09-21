@@ -1577,6 +1577,8 @@ define([
             halfAngleRange = Math.PI / this._tree.numleaves();
         }
 
+        var layerLength = layer.lengthSM * this._barplotUnit;
+
         // For each tip in the BIOM table...
         // (We implicitly ignore [and don't draw anything for] tips that
         // *aren't* in the BIOM table.)
@@ -1632,8 +1634,7 @@ define([
                 // present in at least one sample with that value.
                 if (!_.isUndefined(freq)) {
                     var sectionColor = sm2color[smVal];
-                    var barSectionLen =
-                        layer.lengthSM * scope._barplotUnit * freq;
+                    var barSectionLen = layerLength * freq;
                     // Assign each unique sample metadata value a length
                     // proportional to its, well, proportion within the sample
                     // presence information for this tip.
@@ -1671,7 +1672,7 @@ define([
         // for this layer. When we get around to supporting scaling sample
         // metadata barplots by length (see issue #353 on GitHub), we'll just
         // need to replace the null.
-        return [prevLayerMaxD + layer.lengthSM, colorer, null];
+        return [prevLayerMaxD + layerLength, colorer, null];
     };
 
     /**
