@@ -216,6 +216,14 @@ define([
         this._maxDisplacement = null;
 
         /**
+         * @type {Number}
+         * A multiple of this._maxDisplacement. This is used as the unit for
+         * barplot lengths.
+         * @private
+         */
+        this._barplotUnit = null;
+
+        /**
          * @type{Boolean}
          * Indicates whether or not barplots are currently drawn.
          * @private
@@ -1390,10 +1398,13 @@ define([
     Empress.prototype._computeMaxDisplacement = function () {
         var maxD = -Infinity;
         var compFunc;
+        var layoutFactor;
         if (this._currentLayout === "Rectangular") {
             compFunc = "_getMaxOfXAndNumber";
+            layoutFactor = 1;
         } else if (this._currentLayout === "Circular") {
             compFunc = "_getMaxOfRadiusAndNumber";
+            layoutFactor = 2;
         } else {
             this._maxDisplacement = null;
             return;
@@ -1404,6 +1415,7 @@ define([
             }
         }
         this._maxDisplacement = maxD;
+        this._barplotUnit = (this._maxDisplacement / 1000) * layoutFactor;
     };
 
     /**
@@ -1442,7 +1454,7 @@ define([
         // start drawing barplots, and the first barplot layer. This could be
         // made into a barplot-panel-level configurable thing if desired.
         // (Note that, as with barplot lengths, the units here are arbitrary.)
-        var maxD = this._maxDisplacement + 100;
+        var maxD = 1.1 * this._maxDisplacement;
 
         // As we iterate through the layers, we'll store the "previous layer
         // max D" as a separate variable. This will help us easily work with
@@ -1620,7 +1632,8 @@ define([
                 // present in at least one sample with that value.
                 if (!_.isUndefined(freq)) {
                     var sectionColor = sm2color[smVal];
-                    var barSectionLen = layer.lengthSM * freq;
+                    var barSectionLen =
+                        layer.lengthSM * scope._barplotUnit * freq;
                     // Assign each unique sample metadata value a length
                     // proportional to its, well, proportion within the sample
                     // presence information for this tip.
@@ -1842,7 +1855,7 @@ define([
                 }
 
                 // Update maxD if needed
-                var thisLayerMaxD = prevLayerMaxD + length;
+                var thisLayerMaxD = prevLayerMaxD + length * this._barplotUnit;
                 if (thisLayerMaxD > maxD) {
                     maxD = thisLayerMaxD;
                 }
