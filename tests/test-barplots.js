@@ -60,7 +60,8 @@ require([
         var empress = this.initTestEmpress();
         deepEqual(empress._barplotPanel.borderColor, [1, 1, 1]);
         deepEqual(
-            empress._barplotPanel.borderLength, BarplotLayer.DEFAULT_LENGTH / 2
+            empress._barplotPanel.borderLength,
+            BarplotLayer.DEFAULT_LENGTH / 2
         );
         // Gotta convert to numbers since getAttribute() seems to return "0"
         deepEqual(
