@@ -7,26 +7,16 @@ define(["Colorer", "util"], function (Colorer, util) {
      *
      * @param{Empress} empress The core class. Entry point for all metadata and
      *                tree operations.
-     * @param{Legend} legend Display on the left side of screen. The legend will
-     *                show the current time frame and the color assigned the
-     *                trajectories.
      *
      * @returns{Animator}
      * @constructs Animator
      */
-    function Animator(empress, legend) {
+    function Animator(empress) {
         /**
          * @type {Empress}
          * The Empress state machine
          */
         this.empress = empress;
-
-        /**
-         * @type {Legend}
-         * Used to display current time frame and the color assigned the
-         * trajectories.
-         */
-        this.legend = legend;
 
         /**
          * @type {Object}
@@ -227,7 +217,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         }
 
         // draw new legend
-        this.legend.addCategoricalKey(name, keyInfo);
+        this.empress.updateLegendCategorical(name, keyInfo);
 
         // draw tree
         this.empress.resetTree();
@@ -329,7 +319,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      */
     Animator.prototype.stopAnimation = function () {
         this.__resetParams();
-        this.legend.clear();
+        this.empress.clearLegend();
         this.empress.resetTree();
         this.empress.drawTree();
     };
