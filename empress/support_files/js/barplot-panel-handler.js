@@ -269,10 +269,11 @@ define([
         // string: so we have to convert it to hex first here (only to later
         // convert it back to RGB on change events). Eesh!
         // A SILLY NOTE: Apparently chroma.gl() modifies the input RGB array if
-        // you pass it in directly, converting it into a weird Object that
-        // looks like "(4) [255, 255, 255, undefined, _clipped: false,
-        // _unclipped: Array(3)]". Unpacking the array using ... (as done
-        // above) seems to avoid this problem.
+        // you pass it in directly, converting it into a weird thing that
+        // is represented in the browser console as "(4) [255, 255, 255,
+        // undefined, _clipped: false, _unclipped: Array(3)]". Unpacking the
+        // input array using ... (as done here with this.borderColor) seems to
+        // avoid this problem.
         var startingColor = chroma.gl(...this.borderColor).hex();
 
         $(this.borderColorPicker).spectrum({
