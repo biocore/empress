@@ -248,6 +248,12 @@ define([
 
         /**
          * @type{Bool}
+         * Whether or not to draw node circles.
+         */
+        this.drawNodeCircles = false;
+
+        /**
+         * @type{Bool}
          * Whether the camera is focused on a selected node.
          */
         this.focusOnSelectedNode = true;
@@ -450,7 +456,12 @@ define([
      */
     Empress.prototype.drawTree = function () {
         this._drawer.loadTreeBuff(this.getCoords());
-        this._drawer.loadNodeBuff(this.getNodeCoords());
+        if (this.drawNodeCircles) {
+            this._drawer.loadNodeBuff(this.getNodeCoords());
+        } else {
+            // Clear the node circle buffer to save some memory / space
+            this._drawer.loadNodeBuff([]);
+        }
         this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
     };
@@ -2181,6 +2192,7 @@ define([
      *                               each node's position.
      */
     Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
+        this.drawNodeCircles = showTreeNodes;
         this._drawer.setTreeNodeVisibility(showTreeNodes);
         this.drawTree();
     };
