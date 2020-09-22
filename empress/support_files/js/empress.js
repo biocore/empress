@@ -1911,6 +1911,8 @@ define([
         // color is added. Basically, we get a "freebie" if the border color
         // matches the background color, and we don't need to draw anything --
         // we can just increase the displacement and leave it at that.
+        // (This works out very well if this is the "outermost" border -- then
+        // we really don't need to do anything.)
         if (
             borderColor[0] === 1 &&
             borderColor[1] === 1 &&
