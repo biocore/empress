@@ -246,7 +246,7 @@ define(["underscore", "util"], function (_, util) {
         if (this.empress.isCommunityPlot) {
             // 2. Add sample presence information for this tip
             // TODO: handle case where tip isn't in table, which happens if
-            // --p-no-filter-unobserved-features-from-phylogeny is passed
+            // --p-no-shear-to-table is passed
             // (https://github.com/biocore/empress/issues/314)
             var ctData = this.empress.computeTipSamplePresence(
                 node,
