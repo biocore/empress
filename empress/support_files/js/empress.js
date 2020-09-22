@@ -1907,11 +1907,10 @@ define([
         var borderColor = this._barplotPanel.borderColor;
         var borderLength = this._barplotPanel.borderLength;
         var maxD = prevLayerMaxD + borderLength;
-        // TODO: Should be changed when the ability to change the
-        // background color is changed. Basically, we get a "freebie" if the
-        // border color matches the background color, and we don't need to draw
-        // anything -- we can just increase the displacement and leave it at
-        // that.
+        // TODO: Should be changed when the ability to change the background
+        // color is added. Basically, we get a "freebie" if the border color
+        // matches the background color, and we don't need to draw anything --
+        // we can just increase the displacement and leave it at that.
         if (
             borderColor[0] === 1 &&
             borderColor[1] === 1 &&
