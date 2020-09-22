@@ -1282,6 +1282,12 @@ define([
         var lengthLegendsToPopulate = [];
 
         _.each(layers, function (layer) {
+            if (scope._barplotPanel.useBorders) {
+                prevLayerMaxD = scope.addBorderBarplotLayerCoords(
+                    coords,
+                    prevLayerMaxD
+                );
+            }
             var layerInfo;
             // Normally I'd just set addLayerFunc as a reference to
             // scope.addSMBarplotLayerCoords (or ...FM...), but that apparently
@@ -1297,6 +1303,10 @@ define([
             colorLegendsToPopulate.push(layerInfo[1]);
             lengthLegendsToPopulate.push(layerInfo[2]);
         });
+        // Add a border on the outside of the outermost layer
+        if (scope._barplotPanel.useBorders) {
+            scope.addBorderBarplotLayerCoords(coords, prevLayerMaxD);
+        }
         // NOTE that we purposefuly don't clear the barplot buffer until we
         // know all of the barplots are valid. If we were to call
         // this.loadBarplotBuff([]) at the start of this function, then if we'd
@@ -1337,9 +1347,9 @@ define([
      * @param {Array} coords The array to which the coordinates for this layer
      *                       will be added.
      * @param {Number} prevLayerMaxD The "displacement" (either in
-     *                               x-coordinates, or in radius coordinates) to
-     *                               use as the starting point for drawing this
-     *                               layer's bars.
+     *                               x-coordinates, or in radius coordinates)
+     *                               to use as the starting point for drawing
+     *                               this layer's bars.
      *
      * @return {Array} layerInfo An array containing three elements:
      *                           1. The maximum displacement of a bar within
@@ -1490,9 +1500,9 @@ define([
      * @param {Array} coords The array to which the coordinates for this layer
      *                       will be added.
      * @param {Number} prevLayerMaxD The "displacement" (either in
-     *                               x-coordinates, or in radius coordinates) to
-     *                               use as the starting point for drawing this
-     *                               layer's bars.
+     *                               x-coordinates, or in radius coordinates)
+     *                               to use as the starting point for drawing
+     *                               this layer's bars.
      *
      * @return {Array} layerInfo An array containing three elements:
      *                           1. The maximum displacement of a bar within
@@ -1669,7 +1679,7 @@ define([
                     maxD = thisLayerMaxD;
                 }
 
-                // Finally, add this tip's bar data to to an array of data
+                // Finally, add this tip's bar data to an array of data
                 // describing the bars to draw
                 if (this._currentLayout === "Rectangular") {
                     var y = this.getY(node);
@@ -1696,6 +1706,82 @@ define([
         }
         var lenValSpan = _.isNull(lenValMin) ? null : [lenValMin, lenValMax];
         return [maxD, colorer, lenValSpan];
+    };
+
+    /**
+     * Adds coordinates for a "border" barplot layer to an array.
+     *
+     * @param {Array} coords The array to which the coordinates for this
+     *                       "layer" will be added.
+     * @param {Number} prevLayerMaxD The "displacement" (either in
+     *                               x-coordinates, or in radius coordinates)
+     *                               to use as the starting point for drawing
+     *                               this layer's bars.
+     *
+     * @return {Number} maxD The maximum displacement of a bar within this
+     *                       layer. This is really just prevLayerMaxD +
+     *                       this._barplotPanel.borderLength.
+     */
+    Empress.prototype.addBorderBarplotLayerCoords = function (
+        coords,
+        prevLayerMaxD
+    ) {
+        var borderColor = this._barplotPanel.borderColor;
+        var borderLength = this._barplotPanel.borderLength;
+        var maxD = prevLayerMaxD + borderLength;
+        // TODO: Should be changed when the ability to change the background
+        // color is added. Basically, we get a "freebie" if the border color
+        // matches the background color, and we don't need to draw anything --
+        // we can just increase the displacement and leave it at that.
+        // (This works out very well if this is the "outermost" border -- then
+        // we really don't need to do anything.)
+        if (
+            borderColor[0] === 1 &&
+            borderColor[1] === 1 &&
+            borderColor[2] === 1
+        ) {
+            return maxD;
+        }
+        // ... Otherwise, we actually have to go and create bars
+        var halfyrscf, halfAngleRange;
+        if (this._currentLayout === "Rectangular") {
+            halfyrscf = this._yrscf / 2;
+        } else {
+            halfAngleRange = Math.PI / this._tree.numleaves();
+        }
+        // Currently, this just draws a bar for every tip. This is relatively
+        // slow! For the rectangular layout, it should be possible to speed
+        // this up by figuring out the topmost and bottommost node and then
+        // drawing just two triangles (one rectangle, based on their y-values).
+        // For the circular layout, how to speed this up is less clear -- I
+        // suspect it should be possible using WebGL and some fancy
+        // trigonometry somehow, but I'm not sure.
+        for (var node = 1; node < this._tree.size; node++) {
+            if (this._tree.isleaf(this._tree.postorderselect(node))) {
+                if (this._currentLayout === "Rectangular") {
+                    var y = this.getY(node);
+                    var ty = y + halfyrscf;
+                    var by = y - halfyrscf;
+                    this._addRectangularBarCoords(
+                        coords,
+                        prevLayerMaxD,
+                        maxD,
+                        by,
+                        ty,
+                        borderColor
+                    );
+                } else {
+                    this._addCircularBarCoords(
+                        coords,
+                        prevLayerMaxD,
+                        maxD,
+                        this._getNodeAngleInfo(node, halfAngleRange),
+                        borderColor
+                    );
+                }
+            }
+        }
+        return maxD;
     };
 
     /**
