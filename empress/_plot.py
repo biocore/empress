@@ -28,7 +28,7 @@ def community_plot(
     filter_extra_samples: bool = False,
     filter_missing_features: bool = False,
     number_of_features: int = 5,
-    filter_unobserved_features_from_phylogeny: bool = True
+    shear_to_table: bool = True
 ) -> None:
     """Visualizes a tree alongside community-level data.
 
@@ -55,14 +55,13 @@ def community_plot(
         feature_metadata = feature_metadata.to_dataframe()
 
     t = get_bp(tree)
-    trim_tree = filter_unobserved_features_from_phylogeny
     viz = Empress(tree=t, table=feature_table,
                   sample_metadata=sample_metadata,
                   feature_metadata=feature_metadata, ordination=pcoa,
                   ignore_missing_samples=ignore_missing_samples,
                   filter_extra_samples=filter_extra_samples,
                   filter_missing_features=filter_missing_features,
-                  filter_unobserved_features_from_phylogeny=trim_tree)
+                  shear_to_table=shear_to_table)
     save_viz(viz, output_dir)
 
 

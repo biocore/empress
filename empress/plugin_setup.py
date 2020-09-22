@@ -60,7 +60,7 @@ plugin.visualizers.register_function(
         'filter_extra_samples': Bool,
         'filter_missing_features': Bool,
         'number_of_features': Int % Range(1, None),
-        'filter_unobserved_features_from_phylogeny': Bool
+        'shear_to_table': Bool
     },
     input_descriptions={
         'tree': TREE_DESC,
@@ -114,10 +114,10 @@ plugin.visualizers.register_function(
                               '(euclidean distance from origin). Note, this '
                               'parameter is only honored when a biplot is '
                               'inputed.',
-        'filter_unobserved_features_from_phylogeny': (
-            'If this flag is passed, filters features from the phylogeny '
-            'that are not present as features in feature table. '
-            'Default is True.'
+        'shear_to_table': (
+            'Determines whether or not to shear the tree to only the tips '
+            'that are present as features in the feature table. By default, '
+            'shears the tree.'
         )
     },
     name=(

@@ -37,7 +37,7 @@ class Empress():
                  feature_metadata=None, ordination=None,
                  ignore_missing_samples=False, filter_extra_samples=False,
                  filter_missing_features=False, resource_path=None,
-                 filter_unobserved_features_from_phylogeny=True):
+                 shear_to_table=True):
         """Visualize a phylogenetic tree
 
         Use this object to interactively display a phylogenetic tree using the
@@ -47,8 +47,8 @@ class Empress():
         or both be None. If only one of them is None, this will raise a
         ValueError. (Also, if both are None, then the values of the ordination,
         ignore_missing_samples, filter_extra_samples, filter_missing_features,
-        and filter_unobserved_features_from_phylogeny arguments will be
-        ignored since no sample information is available.)
+        and shear_to_table arguments will be ignored since no sample
+        information is available.)
 
         Parameters
         ----------
@@ -88,10 +88,9 @@ class Empress():
         resource_path: str, optional
             Load the resources from a user-specified remote location. If set to
             None resources are loaded from the current directory.
-        filter_unobserved_features_from_phylogeny: bool, optional
-            If True, filters features from the phylogeny that aren't present as
-            features in feature table. features in feature table. Otherwise,
-            the phylogeny is not filtered.
+        shear_to_table: bool, optional
+            If True, shears the tree to just the tips that are present as
+            features in the feature table. Otherwise, the tree is not shorn.
 
 
         Attributes
@@ -149,7 +148,7 @@ class Empress():
             ignore_missing_samples,
             filter_extra_samples,
             filter_missing_features,
-            filter_unobserved_features_from_phylogeny
+            shear_to_table
         )
 
         if self.ordination is not None:
@@ -181,7 +180,7 @@ class Empress():
     def _validate_and_match_data(self, ignore_missing_samples,
                                  filter_extra_samples,
                                  filter_missing_features,
-                                 filter_unobserved_features_from_phylogeny):
+                                 shear_to_table):
 
         if self.is_community_plot:
             self.table, self.samples, self.tip_md, self.int_md = match_inputs(
@@ -201,8 +200,8 @@ class Empress():
             self.table, self.samples = remove_empty_samples_and_features(
                 self.table, self.samples, self.ordination
             )
-            # remove unobserved features from the phylogeny
-            if filter_unobserved_features_from_phylogeny:
+            # remove unobserved features from the phylogeny (shear the tree)
+            if shear_to_table:
                 features = set(self.table.ids(axis='observation'))
                 self.tree = self.tree.shear(features)
                 # Remove features in the feature metadata that are no longer
