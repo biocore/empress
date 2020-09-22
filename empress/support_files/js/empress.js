@@ -1462,7 +1462,8 @@ define([
         _.each(layers, function (layer) {
             if (scope._barplotPanel.useBorders) {
                 prevLayerMaxD = scope.addBorderBarplotLayerCoords(
-                    coords, prevLayerMaxD
+                    coords,
+                    prevLayerMaxD
                 );
             }
             var layerInfo;
@@ -1911,7 +1912,11 @@ define([
         // border color matches the background color, and we don't need to draw
         // anything -- we can just increase the displacement and leave it at
         // that.
-        if (borderColor[0] === 1 && borderColor[1] === 1 && borderColor[2] === 1) {
+        if (
+            borderColor[0] === 1 &&
+            borderColor[1] === 1 &&
+            borderColor[2] === 1
+        ) {
             return maxD;
         }
         // ... Otherwise, we actually have to go and create bars

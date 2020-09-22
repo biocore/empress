@@ -158,7 +158,6 @@ define([
             }
         };
 
-
         // To get things started off with, let's add a layer
         this.addLayer();
     }
