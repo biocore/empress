@@ -1,8 +1,11 @@
-define(["underscore", "BarplotLayer", "Colorer"], function (
-    _,
-    BarplotLayer,
-    Colorer
-) {
+define([
+    "jquery",
+    "underscore",
+    "spectrum",
+    "BarplotLayer",
+    "Colorer",
+    "util",
+], function ($, _, spectrum, BarplotLayer, Colorer, util) {
     /**
      *
      * @class BarplotPanel
@@ -35,16 +38,40 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
         this.smCols = this.empress.getSampleCategories();
 
         // References to various DOM elements
+
+        // Toggles the visibility of the barplot UI
         this.barplotCheckbox = document.getElementById("barplot-chk");
+
+        // Controls for adding additional layers
         this.addOptions = document.getElementById("barplot-add-options");
         this.addButton = document.getElementById("barplot-add-btn");
+
+        // Controls for re-drawing barplots
+        this.updateOptions = document.getElementById("barplot-update-options");
         this.updateButton = document.getElementById("barplot-update");
+
+        // Controls for adjusting the barplot borders
+        this.borderContent = document.getElementById("barplot-border-content");
+        this.borderCheckbox = document.getElementById("barplot-border-chk");
+        this.borderOptions = document.getElementById("barplot-border-options");
+        this.borderColorPicker = document.getElementById(
+            "barplot-border-color"
+        );
+        this.borderLengthInput = document.getElementById(
+            "barplot-border-length"
+        );
+
+        // Contains the UI of each of the barplot layers
         this.layerContainer = document.getElementById(
             "barplot-layer-container"
         );
+
+        // Shown when the current layout supports barplots
         this.availContent = document.getElementById(
             "barplot-available-content"
         );
+
+        // Shown when the current layout does not support barplots
         this.unavailContent = document.getElementById(
             "barplot-unavailable-content"
         );
@@ -77,18 +104,30 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
         this.barplotCheckbox.onclick = function () {
             if (scope.barplotCheckbox.checked) {
                 scope.layerContainer.classList.remove("hidden");
+                scope.borderContent.classList.remove("hidden");
                 scope.addOptions.classList.remove("hidden");
-                scope.updateButton.classList.remove("hidden");
+                scope.updateOptions.classList.remove("hidden");
                 scope.enabled = true;
                 // We don't immediately draw barplots: see
                 // https://github.com/biocore/empress/issues/343. The user has
                 // to click "Update" first.
             } else {
                 scope.layerContainer.classList.add("hidden");
+                scope.borderContent.classList.add("hidden");
                 scope.addOptions.classList.add("hidden");
-                scope.updateButton.classList.add("hidden");
+                scope.updateOptions.classList.add("hidden");
                 scope.enabled = false;
                 scope.empress.undrawBarplots();
+            }
+        };
+
+        // When the "Add a border around barplot layers?" checkbox is checked,
+        // toggle the visibility of the border options
+        this.borderCheckbox.onclick = function () {
+            if (scope.borderCheckbox.checked) {
+                scope.borderOptions.classList.remove("hidden");
+            } else {
+                scope.borderOptions.classList.add("hidden");
             }
         };
 
@@ -101,6 +140,14 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
         this.updateButton.onclick = function () {
             scope.empress.drawBarplots(scope.layers);
         };
+
+        // Borders (when enabled) default to white
+        this.borderColor = "#ffffff";
+        // ... and to having a length of whatever the default barplot layer
+        // length divided by 2 is :)
+        this.borderLength = BarplotLayer.DEFAULT_LENGTH / 2;
+        // Now, initialize the border options UI accordingly
+        this.initBorderOptions();
 
         // To get things started off with, let's add a layer
         this.addLayer();
@@ -196,6 +243,33 @@ define(["underscore", "BarplotLayer", "Colorer"], function (
     BarplotPanel.prototype.markAvailable = function () {
         this.availContent.classList.remove("hidden");
         this.unavailContent.classList.add("hidden");
+    };
+
+    /**
+     * Initializes the border options.
+     *
+     * This mostly includes setting up the color picker and adding a reasonable
+     * default / minimum to the length input (to mimic the sort of properties
+     * added to the barplot layer length inputs).
+     */
+    BarplotPanel.prototype.initBorderOptions = function () {
+        var scope = this;
+
+        $(this.borderColorPicker).spectrum({
+            color: scope.borderColor,
+            change: function (newColor) {
+                scope.borderColor = Colorer.hex2RGB(newColor.toHexString());
+            },
+        });
+
+        this.borderLengthInput.setAttribute("min", BarplotLayer.MIN_LENGTH);
+        this.borderLengthInput.value = this.borderLength;
+        $(this.borderLengthInput).change(function () {
+            scope.borderLength = util.parseAndValidateNum(
+                scope.borderLengthInput,
+                BarplotLayer.MIN_LENGTH
+            );
+        });
     };
 
     /**
