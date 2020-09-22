@@ -56,6 +56,18 @@ require([
             empress._barplotPanel.unavailContent.classList.contains("hidden")
         );
     });
+    test("Barplot panel border option initialization", function () {
+        var empress = this.initTestEmpress();
+        deepEqual(empress._barplotPanel.borderColor, [1, 1, 1]);
+        deepEqual(
+            empress._barplotPanel.borderLength, BarplotLayer.DEFAULT_LENGTH / 2
+        );
+        // Gotta convert to numbers since getAttribute() seems to return "0"
+        deepEqual(
+            +empress._barplotPanel.borderLengthInput.getAttribute("min"),
+            +BarplotLayer.MIN_LENGTH
+        );
+    });
     test("Barplot layers default to feature metadata layers, but only if feature metadata is available", function () {
         // (Sample metadata should always be available. (... That is, until we
         // support visualizing a tree without table / sample metadata info.)
