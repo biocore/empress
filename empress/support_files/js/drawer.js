@@ -62,12 +62,13 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // the dimension of the canvas
         this.dim = null;
 
-        // Radii of normal node circles and selected node circles. Note that,
-        // since these are constant values, they take up the same screen space
-        // regardless of zoom level. It would be possible to adjust these as
-        // the user zooms; would help unclutter the tree when it's zoomed out.
-        this.NODE_CIRCLE_RADIUS = 4.0;
-        this.SELECTED_NODE_CIRCLE_RADIUS = 9.0;
+        // Diameters of normal node circles and selected node circles. Note
+        // that, since these are constant values, they take up the same screen
+        // space regardless of zoom level. It would be possible to adjust these
+        // as the user zooms; would help unclutter the tree when it's zoomed
+        // out.
+        this.NODE_CIRCLE_DIAMETER = 4.0;
+        this.SELECTED_NODE_CIRCLE_DIAMETER = 9.0;
 
         this.showTreeNodes = false;
     }
@@ -365,13 +366,13 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         c.uniform1i(s.isSingle, 1);
         // draw tree node circles, if requested
         if (this.showTreeNodes) {
-            c.uniform1f(s.pointSize, this.NODE_CIRCLE_RADIUS);
+            c.uniform1f(s.pointSize, this.NODE_CIRCLE_DIAMETER);
             this.bindBuffer(s.nodeVertBuff);
             c.drawArrays(c.POINTS, 0, this.nodeSize);
         }
 
         // draw selected node
-        c.uniform1f(s.pointSize, this.SELECTED_NODE_CIRCLE_RADIUS);
+        c.uniform1f(s.pointSize, this.SELECTED_NODE_CIRCLE_DIAMETER);
         this.bindBuffer(s.selectedNodeBuff);
         c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 

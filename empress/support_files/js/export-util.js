@@ -119,6 +119,7 @@ define(["underscore", "chroma"], function (_, chroma) {
 
         // create a circle for each node
         if (drawer.showTreeNodes) {
+            radius = drawer.NODE_CIRCLE_DIAMETER / 2;
             svg += "<!-- tree nodes -->\n";
             coords = empress.getNodeCoords();
             for (
@@ -132,7 +133,7 @@ define(["underscore", "chroma"], function (_, chroma) {
                     '" cy="' +
                     -coords[i + 1] +
                     '" r="' +
-                    drawer.NODE_CIRCLE_RADIUS +
+                    radius +
                     '" style="fill:' +
                     getRGB(coords, i) +
                     '"/>\n';
@@ -145,10 +146,10 @@ define(["underscore", "chroma"], function (_, chroma) {
             // barplots. However, even if this isn't the case, it'll just make
             // the exported image very slightly larger -- not a huge deal. Best
             // to be safe.)
-            minX -= drawer.NODE_CIRCLE_RADIUS;
-            minY -= drawer.NODE_CIRCLE_RADIUS;
-            maxX += drawer.NODE_CIRCLE_RADIUS;
-            maxY += drawer.NODE_CIRCLE_RADIUS;
+            minX -= radius;
+            minY -= radius;
+            maxX += radius;
+            maxY += radius;
         }
         return _finalizeSVG(svg, minX, minY, maxX, maxY);
     }
