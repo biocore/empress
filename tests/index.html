@@ -48,6 +48,10 @@
     </p>
   </div>
 
+  <!-- The main legend; Empress gets a reference to this on initialization -->
+  <div id="legend-main" class="legend">
+  </div>
+
   <!-- The tree canvas need for use in test-empress -->
   <div id="tree-container" class="{{ emperor_classes }}">
     <div class="container {{ emperor_classes }}">
@@ -114,6 +118,7 @@
           'CanvasEvents' : './support_files/js/canvas-events',
           'SelectedNodeMenu' : './support_files/js/select-node-menu',
           'LayoutsUtil' : './support_files/js/layouts-util',
+          'ExportUtil' : './support_files/js/export-util',
 
           /* test utility code */
           'UtilitiesForTesting' : './../tests/utilities-for-testing',
@@ -155,6 +160,7 @@
          'Empress',
          'Legend',
          'LayoutsUtil',
+         'ExportUtil',
          'UtilitiesForTesting',
          'testBPTree',
          'testByteTree',
@@ -192,6 +198,7 @@
           Empress,
           Legend,
           LayoutsUtil,
+          ExportUtil,
           UtilitiesForTesting,
           testBPTree,
           testByteTree,

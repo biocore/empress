@@ -6,9 +6,11 @@ define([
     "VectorOps",
     "CanvasEvents",
     "BarplotPanel",
+    "Legend",
     "util",
     "chroma",
     "LayoutsUtil",
+    "ExportUtil",
 ], function (
     _,
     Camera,
@@ -17,9 +19,11 @@ define([
     VectorOps,
     CanvasEvents,
     BarplotPanel,
+    Legend,
     util,
     chroma,
-    LayoutsUtil
+    LayoutsUtil,
+    ExportUtil
 ) {
     /**
      * @class EmpressTree
@@ -72,7 +76,7 @@ define([
          * @type {Array}
          * The default color of the tree
          */
-        this.DEFAULT_COLOR = [0.75, 0.75, 0.75];
+        this.DEFAULT_COLOR = [0.25, 0.25, 0.25];
 
         /**
          * @type {BPTree}
@@ -139,6 +143,13 @@ define([
             this._treeData[i].splice(this._tdToInd.isColored, 0, false);
             this._treeData[i].splice(this._tdToInd.visible, 0, true);
         }
+
+        /**
+         * @type {Legend}
+         * Legend describing the way the tree is colored.
+         * @private
+         */
+        this._legend = new Legend(document.getElementById("legend-main"));
 
         /**
          * @type {BiomTable}
@@ -234,6 +245,12 @@ define([
          * Can be passed as input to this.thickenColoredNodes().
          */
         this._currentLineWidth = 0;
+
+        /**
+         * @type{Bool}
+         * Whether or not to draw node circles.
+         */
+        this.drawNodeCircles = false;
 
         /**
          * @type{Bool}
@@ -392,12 +409,15 @@ define([
         this._drawer.initialize();
         this._events.setMouseEvents();
         var nodeNames = this._tree.getAllNames();
+        // Don't include nodes with the name null (i.e. nodes without a
+        // specified name in the Newick file) in the auto-complete.
         nodeNames = nodeNames.filter((n) => n !== null);
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
 
         this.getLayoutInfo();
         this.centerLayoutAvgPoint();
+        // centerLayoutAvgPoint() calls drawTree(), so no need to call it here
     };
 
     /**
@@ -436,262 +456,63 @@ define([
      */
     Empress.prototype.drawTree = function () {
         this._drawer.loadTreeBuff(this.getCoords());
-        this._drawer.loadNodeBuff(this.getNodeCoords());
+        if (this.drawNodeCircles) {
+            this._drawer.loadNodeBuff(this.getNodeCoords());
+        } else {
+            // Clear the node circle buffer to save some memory / space
+            this._drawer.loadNodeBuff([]);
+        }
         this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
     };
 
     /**
-     * Creates an SVG string to export the current drawing
+     * Exports a SVG image of the tree.
+     *
+     * @return {String} svg
      */
-    Empress.prototype.exportSvg = function () {
-        // TODO: use the same value as the actual WebGL drawing engine, but
-        // right now this value is hard coded on line 327 of drawer.js
-        NODE_RADIUS = 4;
-
-        minX = 0;
-        maxX = 0;
-        minY = 0;
-        maxY = 0;
-        svg = "";
-
-        // create a line from x1,y1 to x2,y2 for every two consecutive coordinates
-        // 5 array elements encode one coordinate:
-        // i=x, i+1=y, i+2=red, i+3=green, i+4=blue
-        svg += "<!-- tree branches -->\n";
-        coords = this.getCoords();
-        for (
-            i = 0;
-            i + 2 * this._drawer.VERTEX_SIZE <= coords.length;
-            i += 2 * this._drawer.VERTEX_SIZE
-        ) {
-            // "normal" lines have a default color,
-            // all other lines have a user defined thickness
-            // All lines are defined using the information from the child node.
-            // So, if coords[i+2] == DEFAULT_COLOR then coords[i+2+5] will
-            // also be equal to DEFAULT_COLOR. Thus, we can save checking three
-            // array elements here.
-            linewidth = 1 + this._currentLineWidth;
-            if (
-                coords[i + 2] == this.DEFAULT_COLOR[0] &&
-                coords[i + 3] == this.DEFAULT_COLOR[1] &&
-                coords[i + 4] == this.DEFAULT_COLOR[2]
-            ) {
-                linewidth = 1;
-            }
-            svg +=
-                '<line x1="' +
-                coords[i] +
-                '" y1="' +
-                coords[i + 1] +
-                '" x2="' +
-                coords[i + this._drawer.VERTEX_SIZE] +
-                '" y2="' +
-                coords[i + 1 + this._drawer.VERTEX_SIZE] +
-                '" stroke="' +
-                chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css() +
-                '" style="stroke-width:' +
-                linewidth +
-                '" />\n';
-
-            // obtain viewport from tree coordinates
-            minX = Math.min(
-                minX,
-                coords[i],
-                coords[i + this._drawer.VERTEX_SIZE]
-            );
-            maxX = Math.max(
-                maxX,
-                coords[i],
-                coords[i + this._drawer.VERTEX_SIZE]
-            );
-
-            minY = Math.min(
-                minY,
-                coords[i + 1],
-                coords[i + 1 + this._drawer.VERTEX_SIZE]
-            );
-            maxY = Math.max(
-                maxY,
-                coords[i + 1],
-                coords[i + 1 + this._drawer.VERTEX_SIZE]
-            );
-        }
-
-        // create a circle for each node
-        if (this._drawer.showTreeNodes) {
-            svg += "<!-- tree nodes -->\n";
-            coords = this.getNodeCoords();
-            for (
-                i = 0;
-                i + this._drawer.VERTEX_SIZE <= coords.length;
-                i += this._drawer.VERTEX_SIZE
-            ) {
-                // getNodeCoords array seem to be larger than necessary and
-                // elements are initialized with 0.  Thus, nodes at (0, 0) will
-                // be skipped (root will always be positioned at 0,0 and drawn
-                // below) This is a known issue and will be resolved with #142
-                if (coords[i] == 0 && coords[i + 1] == 0) {
-                    continue;
-                }
-                svg +=
-                    '<circle cx="' +
-                    coords[i] +
-                    '" cy="' +
-                    coords[i + 1] +
-                    '" r="' +
-                    NODE_RADIUS +
-                    '" style="fill:' +
-                    chroma
-                        .gl(coords[i + 2], coords[i + 3], coords[i + 4])
-                        .css() +
-                    '"/>\n';
-            }
-        }
-
-        // add one black circle to indicate the root
-        // Not sure if this speacial treatment for root is necessary once #142
-        // is merged.
-        svg += "<!-- root node -->\n";
-        svg +=
-            '<circle cx="0" cy="0" r="' +
-            NODE_RADIUS +
-            '" fill="rgb(0,0,0)"/>\n';
-
-        return [
-            svg,
-            'viewBox="' +
-                (minX - NODE_RADIUS) +
-                " " +
-                (minY - NODE_RADIUS) +
-                " " +
-                (maxX - minX + 2 * NODE_RADIUS) +
-                " " +
-                (maxY - minY + 2 * NODE_RADIUS) +
-                '"',
-        ];
+    Empress.prototype.exportTreeSVG = function () {
+        return ExportUtil.exportTreeSVG(this, this._drawer);
     };
 
     /**
-     * Creates an SVG string to export legends
+     * Exports a SVG image of the active legends.
+     *
+     * Currently this just includes the legend used for tree coloring, but
+     * eventually this'll be expanded to include all the barplot legends as
+     * well.
+     *
+     * @return {String} svg
      */
-    Empress.prototype.exportSVG_legend = function (dom) {
-        // top left position of legends, multiple legends are placed below
-        // each other.
-        top_left_x = 0;
-        top_left_y = 0;
-        unit = 30; // all distances are based on this variable, thus "zooming"
-        // can be realised by just increasing this single value
-        factor_lineheight = 1.8; // distance between two text lines as a
-        // multiplication factor of unit
-        svg = ""; // the svg string to be generated
-
-        // used as a rough estimate about the consumed width by text strings
-        var myCanvas = document.createElement("canvas");
-        var context = myCanvas.getContext("2d");
-        context.font = "bold " + unit + "pt verdana";
-
-        // the document can have up to three legends, of which at most one shall
-        // be visible at any given timepoint. This might change and thus this
-        // method can draw multiple legends
-        row = 1; // count the number of used rows
-        for (let legend of dom.getElementsByClassName("legend")) {
-            max_line_width = 0;
-            title = legend.getElementsByClassName("legend-title");
-            svg_legend = "";
-            if (title.length > 0) {
-                titlelabel = title.item(0).innerHTML;
-                max_line_width = Math.max(
-                    max_line_width,
-                    context.measureText(titlelabel).width
-                );
-                svg_legend +=
-                    '<text x="' +
-                    (top_left_x + unit) +
-                    '" y="' +
-                    (top_left_y + row * (unit * factor_lineheight)) +
-                    '" style="font-weight:bold;font-size:' +
-                    unit +
-                    'pt;">' +
-                    titlelabel +
-                    "</text>\n";
-                row++;
-                for (let item of legend.getElementsByClassName(
-                    "gradient-bar"
-                )) {
-                    color = item
-                        .getElementsByClassName("category-color")
-                        .item(0)
-                        .getAttribute("style")
-                        .split(":")[1]
-                        .split(";")[0];
-                    itemlabel = item
-                        .getElementsByClassName("gradient-label")
-                        .item(0)
-                        .getAttribute("title");
-                    max_line_width = Math.max(
-                        max_line_width,
-                        context.measureText(itemlabel).width
-                    );
-
-                    // a rect left of the label to indicate the used color
-                    svg_legend +=
-                        '<rect x="' +
-                        (top_left_x + unit) +
-                        '" y="' +
-                        (top_left_y + row * (unit * factor_lineheight) - unit) +
-                        '" width="' +
-                        unit +
-                        '" height="' +
-                        unit +
-                        '" style="fill:' +
-                        color +
-                        '"/>\n';
-                    // the key label
-                    svg_legend +=
-                        '<text x="' +
-                        (top_left_x + 2.5 * unit) +
-                        '" y="' +
-                        (top_left_y + row * (unit * factor_lineheight)) +
-                        '" style="font-size:' +
-                        unit +
-                        'pt;">' +
-                        itemlabel +
-                        "</text>\n";
-                    row++;
-                }
-                // draw a rect behind, i.e. lower z-order, the legend title and
-                // colored keys to visually group the legend. Also acutally put
-                // these elements into a group for easier manual editing
-                // rect shall have a certain padding, its height must exceed
-                //number of used text rows and width must be larger than longest
-                // key text and/or legend title
-                svg +=
-                    '<g>\n<rect x="' +
-                    top_left_x +
-                    '" y="' +
-                    (top_left_y +
-                        (row -
-                            legend.getElementsByClassName("gradient-bar")
-                                .length -
-                            2) *
-                            (unit * factor_lineheight)) +
-                    '" width="' +
-                    (max_line_width + 2 * unit) +
-                    '" height="' +
-                    ((legend.getElementsByClassName("gradient-bar").length +
-                        1) *
-                        unit *
-                        factor_lineheight +
-                        unit) +
-                    '" style="fill:#eeeeee;stroke:#000000;stroke-width:1" ry="30" />\n' +
-                    svg_legend +
-                    "</g>\n";
-                row += 2; // one blank row between two legends
-            }
+    Empress.prototype.exportLegendSVG = function () {
+        var legends = [];
+        if (!_.isNull(this._legend.legendType)) {
+            legends.push(this._legend);
         }
+        // TODO: get legends from barplot panel, which should in turn get them
+        // from each of its barplot layers. For now, we just export the tree
+        // legend, since we don't support exporting barplots quite yet (soon!)
+        if (legends.length === 0) {
+            util.toastMsg("No active legends to export.", 5000);
+            return null;
+        } else {
+            return ExportUtil.exportLegendSVG(legends);
+        }
+    };
 
-        return svg;
+    /**
+     * Exports a PNG image of the canvas.
+     *
+     * This works a bit differently from the SVG exporting functions -- instead
+     * of returning a string with the SVG, the specified callback will be
+     * called with the Blob representation of the PNG. See
+     * ExportUtil.exportTreePNG() for details.
+     *
+     * @param {Function} callback Function that will be called with a Blob
+     *                            representing the exported PNG image.
+     */
+    Empress.prototype.exportTreePNG = function (callback) {
+        ExportUtil.exportTreePNG(this, this._canvas, callback);
     };
 
     /**
@@ -717,10 +538,11 @@ define([
     };
 
     /**
-     * Retrieves the node coordinate info
-     * format of node coordinate info: [x, y, red, green, blue, ...]
+     * Retrieves the node coordinate info (for drawing node circles).
      *
-     * @return {Array}
+     * @return {Array} Node coordinate info, formatted like
+     *                 [x, y, red, green, blue, ...] for every node circle to
+     *                 be drawn.
      */
     Empress.prototype.getNodeCoords = function () {
         var tree = this._tree;
@@ -730,15 +552,29 @@ define([
             if (!this.getNodeInfo(node, "visible")) {
                 continue;
             }
-            if (this.getNodeInfo(node, "name") !== null) {
-                coords.push(
-                    this.getX(node),
-                    this.getY(node),
-                    ...this.getNodeInfo(node, "color")
-                );
-            }
+            // In the past, we only drew circles for nodes with an assigned
+            // name (i.e. where the name of a node was not null). Now, we
+            // just draw circles for all nodes.
+            coords.push(
+                this.getX(node),
+                this.getY(node),
+                ...this.getNodeInfo(node, "color")
+            );
         }
         return new Float32Array(coords);
+    };
+
+    /**
+     * Returns the number of lines/triangles to approximate an arc/wedge given
+     * the total angle of the arc/wedge.
+     *
+     * @param {Number} totalAngle The total angle of the arc/wedge
+     * @return {Number} The number of lines/triangles to approximate the arc
+     *                  or wedge.
+     */
+    Empress.prototype._numSampToApproximate = function (totalAngle) {
+        var numSamples = Math.floor(60 * Math.abs(totalAngle / Math.PI));
+        return numSamples >= 2 ? numSamples : 2;
     };
 
     /**
@@ -853,14 +689,16 @@ define([
                     !this._tree.isleaf(this._tree.postorderselect(node)) &&
                     !this._collapsedClades.hasOwnProperty(node)
                 ) {
-                    // arcs are created by sampling 15 small lines along the
-                    // arc spanned by rotating (arcx0, arcy0), the line whose
-                    // origin is the root of the tree and endpoint is the start
-                    // of the arc, by arcendangle - arcstartangle radians.
-                    var numSamples = 15;
+                    // An arc will be created for all internal nodes.
+                    // arcs are created by sampling up to 60 small lines along
+                    // the arc spanned by rotating the line (arcx0, arcy0)
+                    // arcendangle - arcstartangle radians. This will create an
+                    // arc that starts at each internal node's rightmost child
+                    // and ends on the leftmost child.
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
+                    var numSamples = this._numSampToApproximate(arcDeltaAngle);
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this.getNodeInfo(node, "arcx0");
                     var sY = this.getNodeInfo(node, "arcy0");
@@ -1245,14 +1083,12 @@ define([
                 // (TODO: this will need to be adapted when the arc is changed
                 // to be a bezier curve)
                 if (!this._tree.isleaf(this._tree.postorderselect(node))) {
-                    // arcs are created by sampling 15 small lines along the
-                    // arc spanned by rotating arcx0, the line whose origin
-                    // is the root of the tree and endpoint is the start of the
-                    // arc, by arcendangle - arcstartangle radians.
-                    var numSamples = 15;
+                    // An arc will be created for all internal nodes.
+                    // See getCoords() for details on how arcs are drawn.
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
+                    var numSamples = this._numSampToApproximate(arcDeltaAngle);
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this.getNodeInfo(node, "arcx0");
                     var sY = this.getNodeInfo(node, "arcy0");
@@ -1952,6 +1788,8 @@ define([
         // color tree
         this._colorTree(obs, cm);
 
+        this.updateLegendCategorical(cat, keyInfo);
+
         return keyInfo;
     };
 
@@ -2072,6 +1910,8 @@ define([
 
         // color tree
         this._colorTree(obs, cm);
+
+        this.updateLegendCategorical(cat, keyInfo);
 
         return keyInfo;
     };
@@ -2203,6 +2043,29 @@ define([
     };
 
     /**
+     * Clears the legend.
+     */
+    Empress.prototype.clearLegend = function () {
+        this._legend.clear();
+    };
+
+    /**
+     * Updates the legend based on a categorical color key.
+     *
+     * This is set up as a public method so that the Animator can update the
+     * legend on its own (without having to reference this._legend from outside
+     * of Empress).
+     *
+     * @param {String} name Text to show in the legend title.
+     * @param {Object} keyInfo Color key information. Maps unique values (e.g.
+     *                         in sample or feature metadata) to their assigned
+     *                         color, expressed in hex format.
+     */
+    Empress.prototype.updateLegendCategorical = function (name, keyInfo) {
+        this._legend.addCategoricalKey(name, keyInfo);
+    };
+
+    /**
      * Returns a list of sample categories
      *
      * @return {Array}
@@ -2249,7 +2112,7 @@ define([
         } else if (supported && this._barplotPanel.enabled) {
             this.drawBarplots(this._barplotPanel.layers);
         }
-        this.drawTree();
+        this.centerLayoutAvgPoint();
     };
 
     /**
@@ -2265,7 +2128,6 @@ define([
                 // NOTE: this function calls drawTree(), which is redundant
                 // since reLayout() already called it. Would be good to
                 // minimize redundant calls to that.
-                this.centerLayoutAvgPoint();
             } else {
                 // This should never happen under normal circumstances (the
                 // input to this function should always be an existing layout
@@ -2325,13 +2187,12 @@ define([
 
     /**
      * Display the tree nodes.
-     * Note: Currently Empress will only display the nodes that had an assigned
-     * name in the newick string.
      *
-     * @param{Boolean} showTreeNodes If true then empress will display the tree
-     *                               nodes.
+     * @param{Boolean} showTreeNodes If true, then Empress will draw circles at
+     *                               each node's position.
      */
     Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
+        this.drawNodeCircles = showTreeNodes;
         this._drawer.setTreeNodeVisibility(showTreeNodes);
         this.drawTree();
     };
@@ -2630,11 +2491,12 @@ define([
             cladeInfo.sY = sY;
             cladeInfo.totalAngle = totalAngle;
 
-            // create 15 triangles to approximate sector
-            var deltaAngle = totalAngle / 15;
-            cos = Math.cos(deltaAngle);
-            sin = Math.sin(deltaAngle);
-            for (var line = 0; line < 15; line++) {
+            // create triangles to approximate sector
+            var numSamples = this._numSampToApproximate(totalAngle);
+            var deltaAngle = totalAngle / numSamples;
+            cos = 1; // Math.cos(0)
+            sin = 0; // Math.sin(0)
+            for (var line = 0; line < numSamples; line++) {
                 addPoint(getCoords(rootNode));
 
                 x = sX * cos - sY * sin;

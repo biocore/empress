@@ -10,12 +10,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      *
      * @param {HTMLElement} container Container where the side panel will live
      * @param {Empress} empress Empress instance; used to redraw the tree, etc.
-     * @param {Legend} legend Reference to the main legend object
      *
      * @return {SidePanel}
      * @constructs SidePanel
      */
-    function SidePanel(container, empress, legend) {
+    function SidePanel(container, empress) {
         // used in event closures
         var scope = this;
 
@@ -30,8 +29,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         // used to event triggers
         this.empress = empress;
-
-        this.legend = legend;
 
         // tree properties components
         this.treeNodesChk = document.getElementById("display-nodes-chk");
@@ -88,7 +85,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.symmetricCladeMethod = document.getElementById("symmetric");
 
         // export GUI components
-        this.eExportSvgBtn = document.getElementById("export-btn-svg");
+        this.exportTreeSVGBtn = document.getElementById("export-tree-svg-btn");
+        this.exportTreePNGBtn = document.getElementById("export-tree-png-btn");
+        this.exportLegendSVGBtn = document.getElementById(
+            "export-legend-svg-btn"
+        );
 
         // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
@@ -141,7 +142,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // Reset tree and then clear legend
         this.empress.resetTree();
         this.empress.drawTree();
-        this.legend.clear();
+        this.empress.clearLegend();
     };
 
     /* Resets the sample metadata coloring tab. */
@@ -241,7 +242,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.sUpdateBtn.classList.remove("hidden");
             return;
         }
-        this.legend.addCategoricalKey(colBy, keyInfo);
     };
 
     /**
@@ -251,12 +251,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var colBy = this.fSel.value;
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
-        var keyInfo = this.empress.colorByFeatureMetadata(
-            colBy,
-            col,
-            coloringMethod
-        );
-        this.legend.addCategoricalKey(colBy, keyInfo);
+        this.empress.colorByFeatureMetadata(colBy, col, coloringMethod);
     };
 
     /**
@@ -330,29 +325,35 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     };
 
     /**
-     * Initializes export components
+     * Initializes exporting options.
      */
     SidePanel.prototype.addExportTab = function () {
         // for use in closures
         var scope = this;
 
-        this.eExportSvgBtn.onclick = function () {
-            // create SVG tags to draw the tree and determine viewbox for whole figure
-            [svg_tree, svg_viewbox] = scope.empress.exportSvg();
-            // create SVG tags for legend, collected from the HTML document
-            svg_legend = scope.empress.exportSVG_legend(document);
-            // add all SVG elements into one string ...
-            svg =
-                '<svg xmlns="http://www.w3.org/2000/svg" ' +
-                svg_viewbox +
-                " >\n" +
-                svg_tree +
-                "\n" +
-                svg_legend +
-                "</svg>\n";
-            // ... and present user as a downloadable file
+        // Presents SVG to user as a downloadable file
+        var saveSVGBlob = function (svg, filename) {
             var blob = new Blob([svg], { type: "image/svg+xml" });
-            saveAs(blob, "empress-tree.svg");
+            saveAs(blob, filename);
+        };
+
+        this.exportTreeSVGBtn.onclick = function () {
+            var svg = scope.empress.exportTreeSVG();
+            saveSVGBlob(svg, "empress-tree.svg");
+        };
+        this.exportTreePNGBtn.onclick = function () {
+            var callback = function (blob) {
+                saveAs(blob, "empress-tree.png");
+            };
+            scope.empress.exportTreePNG(callback);
+        };
+        this.exportLegendSVGBtn.onclick = function () {
+            var svg = scope.empress.exportLegendSVG();
+            // If no legends are currently shown, exportLegendSVG() will just
+            // return null -- in which case nothing more needs to be done.
+            if (svg !== null) {
+                saveSVGBlob(svg, "empress-legends.svg");
+            }
         };
     };
 

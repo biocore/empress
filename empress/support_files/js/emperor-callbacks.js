@@ -64,7 +64,7 @@ plotView.on("select", function (samples, view) {
     // if there's any coloring setup remove it, and re-enable the update button
     sPanel.sUpdateBtn.classList.remove("hidden");
     sPanel.fUpdateBtn.classList.remove("hidden");
-    legend.clear();
+    empress.clearLegend();
     empress.resetTree();
 
     // fetch a mapping of colors to plottable objects
@@ -174,7 +174,7 @@ ec.controllers.color.addEventListener("value-double-clicked", function (
     // if there's any coloring setup remove it, and re-enable the update button
     sPanel.sUpdateBtn.classList.remove("hidden");
     sPanel.fUpdateBtn.classList.remove("hidden");
-    legend.clear();
+    empress.clearLegend();
     empress.resetTree();
 
     var names = _.map(payload.message.group, function (item) {

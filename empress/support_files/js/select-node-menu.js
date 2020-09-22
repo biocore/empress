@@ -184,7 +184,11 @@ define(["underscore", "util"], function (_, util) {
         var node = nodeKeys[0];
         var name = emp.getNodeInfo(node, "name");
 
-        this.nodeNameLabel.textContent = "Name: " + name;
+        if (name === null) {
+            this.nodeNameLabel.textContent = "Unnamed node";
+        } else {
+            this.nodeNameLabel.textContent = "Name: " + name;
+        }
 
         this.notes.textContent = "";
         this.warning.textContent = "";
@@ -296,13 +300,20 @@ define(["underscore", "util"], function (_, util) {
         // The reason we try to figure this out here is so that we can
         // determine whether or not to show a warning about duplicate names
         // in the menu.
-        var keysOfNodesWithThisName = this.empress._tree.getNodesWithName(name);
-        if (keysOfNodesWithThisName.length > 1) {
+        if (name !== null) {
+            var keysOfNodesWithThisName = this.empress._tree.getNodesWithName(
+                name
+            );
+            if (keysOfNodesWithThisName.length > 1) {
+                this.warning.textContent =
+                    "Warning: " +
+                    keysOfNodesWithThisName.length +
+                    " nodes exist with the " +
+                    "above name.";
+            }
+        } else {
             this.warning.textContent =
-                "Warning: " +
-                keysOfNodesWithThisName.length +
-                " nodes exist with the " +
-                "above name.";
+                "No name was provided for this node in the input tree file.";
         }
 
         // 1. Add feature metadata information (if present) for this node

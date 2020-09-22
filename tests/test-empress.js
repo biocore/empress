@@ -56,8 +56,9 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
         });
 
         test("Test getNodeCoords", function () {
-            // Note: node 6's name is null which means it will not be
-            // included in the getNodeCoords()
+            // Note: node 6's name is null, which would indicate that it didn't
+            // have an assigned name in the input Newick file. However, for
+            // #348, we still want to draw a circle for it.
             // prettier-ignore
             var rectCoords = new Float32Array([
                 1, 2, 0.75, 0.75, 0.75,
@@ -65,6 +66,8 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 5, 6, 0.75, 0.75, 0.75,
                 7, 8, 0.75, 0.75, 0.75,
                 9, 10, 0.75, 0.75, 0.75,
+                // This next row contains coordinate data for node 6
+                11, 12, 0.75, 0.75, 0.75,
                 13, 14, 0.75, 0.75, 0.75,
             ]);
             this.empress._currentLayout = "Rectangular";
@@ -78,6 +81,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 19, 20, 0.75, 0.75, 0.75,
                 21, 22, 0.75, 0.75, 0.75,
                 23, 24, 0.75, 0.75, 0.75,
+                25, 26, 0.75, 0.75, 0.75,
                 27, 28, 0.75, 0.75, 0.75,
             ]);
             this.empress._currentLayout = "Circular";
@@ -91,6 +95,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 33, 34, 0.75, 0.75, 0.75,
                 35, 36, 0.75, 0.75, 0.75,
                 37, 38, 0.75, 0.75, 0.75,
+                39, 40, 0.75, 0.75, 0.75,
                 41, 42, 0.75, 0.75, 0.75,
             ]);
             this.empress._currentLayout = "Unrooted";
@@ -795,11 +800,12 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             sX = x * cos - y * sin;
             sY = x * Math.sin(langle - dangle) + y * Math.cos(langle - dangle);
 
-            // create 15 triangles to approximate sector
-            var deltaAngle = totalAngle / 15;
-            cos = Math.cos(deltaAngle);
-            sin = Math.sin(deltaAngle);
-            for (var line = 0; line < 15; line++) {
+            // create triangles to approximate sector
+            var numSamp = this.empress._numSampToApproximate(totalAngle);
+            var deltaAngle = totalAngle / numSamp;
+            cos = Math.cos(0);
+            sin = Math.sin(0);
+            for (var line = 0; line < numSamp; line++) {
                 // root of clade
                 exp.push(...[0, 1, 1, 1, 1]);
 
