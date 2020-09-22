@@ -27,7 +27,9 @@ ARG_TYPE = click.Path(exists=True, dir_okay=False, file_okay=True)
 @click.option('--ignore-missing-samples', is_flag=True)
 @click.option('--filter-extra-samples', is_flag=True)
 @click.option('--filter-missing-features', is_flag=True)
-@click.option('--shear-to-table/--no-shear-to-table', is_flag=True, default=True)
+@click.option(
+    '--shear-to-table/--no-shear-to-table', is_flag=True, default=True
+)
 @click.option('--number-of-features', default=10, type=click.IntRange(0, None),
               show_default=True)
 def main(tree, table, sample_metadata, feature_metadata, ordination,
