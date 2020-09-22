@@ -1927,6 +1927,13 @@ define([
         } else {
             halfAngleRange = Math.PI / this._tree.numleaves();
         }
+        // Currently, this just draws a bar for every tip. This is relatively
+        // slow! For the rectangular layout, it should be possible to speed
+        // this up by figuring out the topmost and bottommost node and then
+        // drawing just two triangles (one rectangle, based on their y-values).
+        // For the circular layout, how to speed this up is less clear -- I
+        // suspect it should be possible using WebGL and some fancy
+        // trigonometry somehow, but I'm not sure.
         for (node = 1; node < this._tree.size; node++) {
             if (this._tree.isleaf(this._tree.postorderselect(node))) {
                 if (this._currentLayout === "Rectangular") {
