@@ -2,10 +2,11 @@ define([
     "jquery",
     "underscore",
     "spectrum",
+    "chroma",
     "BarplotLayer",
     "Colorer",
     "util",
-], function ($, _, spectrum, BarplotLayer, Colorer, util) {
+], function ($, _, spectrum, chroma, BarplotLayer, Colorer, util) {
     /**
      *
      * @class BarplotPanel
@@ -121,16 +122,6 @@ define([
             }
         };
 
-        // When the "Add a border around barplot layers?" checkbox is checked,
-        // toggle the visibility of the border options
-        this.borderCheckbox.onclick = function () {
-            if (scope.borderCheckbox.checked) {
-                scope.borderOptions.classList.remove("hidden");
-            } else {
-                scope.borderOptions.classList.add("hidden");
-            }
-        };
-
         // Define behavior for adding a new layer
         this.addButton.onclick = function () {
             scope.addLayer();
@@ -141,13 +132,32 @@ define([
             scope.empress.drawBarplots(scope.layers);
         };
 
-        // Borders (when enabled) default to white
-        this.borderColor = "#ffffff";
+        // By default, don't draw barplot borders (all barplot layers are right
+        // next to each other).
+        this.useBorders = false;
+
+        // Borders (when enabled) default to white. (This is an RGB array.)
+        this.borderColor = [1, 1, 1];
+
         // ... and to having a length of whatever the default barplot layer
         // length divided by 2 is :)
         this.borderLength = BarplotLayer.DEFAULT_LENGTH / 2;
+
         // Now, initialize the border options UI accordingly
         this.initBorderOptions();
+
+        // When the "Add a border around barplot layers?" checkbox is checked,
+        // toggle the visibility of the border options
+        this.borderCheckbox.onclick = function () {
+            if (scope.borderCheckbox.checked) {
+                scope.borderOptions.classList.remove("hidden");
+                scope.useBorders = true;
+            } else {
+                scope.borderOptions.classList.add("hidden");
+                scope.useBorders = false;
+            }
+        };
+
 
         // To get things started off with, let's add a layer
         this.addLayer();
@@ -255,8 +265,19 @@ define([
     BarplotPanel.prototype.initBorderOptions = function () {
         var scope = this;
 
+        // this.borderColor is always a RGB array, for the sake of everyone's
+        // sanity. However, spectrum requires that the specified color is a hex
+        // string: so we have to convert it to hex first here (only to later
+        // convert it back to RGB on change events). Eesh!
+        // A SILLY NOTE: Apparently chroma.gl() modifies the input RGB array if
+        // you pass it in directly, converting it into a weird Object that
+        // looks like "(4) [255, 255, 255, undefined, _clipped: false,
+        // _unclipped: Array(3)]". Unpacking the array using ... (as done
+        // above) seems to avoid this problem.
+        var startingColor = chroma.gl(...this.borderColor).hex();
+
         $(this.borderColorPicker).spectrum({
-            color: scope.borderColor,
+            color: startingColor,
             change: function (newColor) {
                 scope.borderColor = Colorer.hex2RGB(newColor.toHexString());
             },
