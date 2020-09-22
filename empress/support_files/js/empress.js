@@ -1934,7 +1934,7 @@ define([
         // For the circular layout, how to speed this up is less clear -- I
         // suspect it should be possible using WebGL and some fancy
         // trigonometry somehow, but I'm not sure.
-        for (node = 1; node < this._tree.size; node++) {
+        for (var node = 1; node < this._tree.size; node++) {
             if (this._tree.isleaf(this._tree.postorderselect(node))) {
                 if (this._currentLayout === "Rectangular") {
                     var y = this.getY(node);
