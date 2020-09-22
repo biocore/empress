@@ -1,10 +1,11 @@
 require([
     "jquery",
     "underscore",
+    "spectrum",
     "Empress",
     "BarplotLayer",
     "UtilitiesForTesting",
-], function ($, _, Empress, BarplotLayer, UtilitiesForTesting) {
+], function ($, _, spectrum, Empress, BarplotLayer, UtilitiesForTesting) {
     module("Barplots", {
         setup: function () {
             this.testData = UtilitiesForTesting.getTestData();
@@ -60,6 +61,12 @@ require([
         var empress = this.initTestEmpress();
 
         deepEqual(empress._barplotPanel.borderColor, [1, 1, 1]);
+
+        // Color picker should correctly default to white
+        var obsColor = $(empress._barplotPanel.borderColorPicker)
+            .spectrum("get")
+            .toHexString();
+        deepEqual(obsColor, "#ffffff");
 
         var expBorderLen = BarplotLayer.DEFAULT_LENGTH / 2;
         deepEqual(empress._barplotPanel.borderLength, expBorderLen);
