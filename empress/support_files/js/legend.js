@@ -350,8 +350,11 @@ define(["underscore", "util"], function (_, util) {
         // code in drawer.js is constructed as an array of strings.)
         var styleSVG = [
             "<style>",
+            "text {",
+            "font-family: " + FONTFAM + ";",
+            "font-size: " + FONTSIZE + ";",
+            "}",
             ".title { font-weight: bold; }",
-            "text { font-family: " + FONTFAM + "; font-size: " + FONTSIZE + "; }",
             "rect { stroke: #000000; stroke-width: 1; }",
             "</style>",
         ].join("\n");
