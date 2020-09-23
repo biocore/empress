@@ -323,7 +323,16 @@ define(["underscore", "util"], function (_, util) {
 
         // Font style for the legend title and entries. Should match what
         // Empress uses in its body CSS.
-        var FONT = unit + "pt Arial,Helvetica,sans-serif";
+        // The context font apparently needs to be set as just "font", but
+        // setting the actual text styles in the SVG that way seems to cause
+        // some problems for Inkscape and GIMP's SVG importers (e.g. in
+        // Inkscape it overrides the title font-weight, and in GIMP the entire
+        // thing is ignored -- the font shows up as some small serif font). So
+        // we set the context font and <style> font stuff different ways.
+        var FONTSIZE = unit + "pt";
+        var FONTFAM = "Arial,Helvetica,sans-serif";
+
+        var FONT = FONTSIZE + " " + FONTFAM;
 
         // Used as a rough estimate about the consumed width by text strings.
         var tmpCanvas = document.createElement("canvas");
@@ -339,17 +348,15 @@ define(["underscore", "util"], function (_, util) {
         // Set global styling for the SVG, cutting down a bit on redundant text
         // in the output SVG. (This is based on how the vertex/fragment shader
         // code in drawer.js is constructed as an array of strings.)
-        var legendSVG = [
+        var styleSVG = [
             "<style>",
             ".title { font-weight: bold; }",
-            "text { font: " + FONT + "; }",
+            "text { font-family: " + FONTFAM + "; font-size: " + FONTSIZE + "; }",
             "rect { stroke: #000000; stroke-width: 1; }",
             "</style>",
         ].join("\n");
 
-        // .join() doesn't add a trailing newline after </style>, so we add
-        // another one
-        legendSVG += "\n";
+        var legendSVG = "";
 
         var rowsUsed = row;
         if (this.legendType === "categorical") {
@@ -393,6 +400,9 @@ define(["underscore", "util"], function (_, util) {
                 // for <rect> is that y points to top, the default for <text>
                 // is that y points to baseline. I don't know why...) Soln c/o
                 // https://stackoverflow.com/a/45914139/10730311.
+                // (GIMP's SVG importer doesn't seem to interpret this
+                // correctly, but Inkscape can handle it ok. So this seems like
+                // Not Our Problem.)
                 legendSVG +=
                     '<text dominant-baseline="hanging" x="' +
                     (lineHeight + unit) +
@@ -430,7 +440,9 @@ define(["underscore", "util"], function (_, util) {
             var outputSVG =
                 '<svg width="' +
                 width +
-                '">\n<rect x="0" y="' +
+                '">\n' +
+                styleSVG +
+                '\n<rect x="0" y="' +
                 topY +
                 '" width="' +
                 width +
