@@ -36,8 +36,7 @@ with open('README.md') as f:
 
 base = ["numpy", "scipy", "pandas", "click",
         "jinja2", "scikit-bio", "biom-format", "iow",
-        "emperor @ "
-        "git+https://github.com/biocore/emperor.git@master#egg=emperor"]
+        "emperor @ https://www.github.com/biocore/emperor/archive/master.zip"]
 test = ["pep8", "flake8", "nose"]
 all_deps = base + test
 

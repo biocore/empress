@@ -21,6 +21,7 @@ You can replace `qiime2-2020.6` above with whichever version of QIIME 2 you have
 Now we are ready to install Empress. Run the following commands:
 
 ```
+pip uninstall emperor
 pip install git+https://github.com/biocore/empress.git
 qiime dev refresh-cache
 qiime empress --help
