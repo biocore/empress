@@ -272,7 +272,9 @@ This was a brief introduction to some of the barplot functionality available in 
 
 ## Exporting Plots  
 
-Once you are done customizing your tree, you can export the tree as an .SVG file by going to the *Export* section in the main menu and clicking on `Export tree as SVG`. Currently, certain elements of the display (e.g. barplots) are not exported; we're working on making this functionality more comprehensive.
+Once you are done customizing your tree, you can export the tree as an SVG or PNG file by going to the *Export* section in the main menu and clicking on `Export tree as SVG` or `Export tree as PNG`. You can also export the legend used for tree coloring, if the tree has been colored, using the `Export legend as SVG` button.
+
+Currently, certain elements of the display (e.g. barplots, collapsed clades) are not included in the SVG export; we're working on making this functionality more comprehensive. Also, note that the SVG export does not change as you zoom / pan the tree, while the PNG export will change as you zoom / pan the tree.
 
 ## Empire plots! Side-by-side integration of tree and PCoA plots  
 

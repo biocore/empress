@@ -1,10 +1,11 @@
 require([
     "jquery",
     "underscore",
+    "spectrum",
     "Empress",
     "BarplotLayer",
     "UtilitiesForTesting",
-], function ($, _, Empress, BarplotLayer, UtilitiesForTesting) {
+], function ($, _, spectrum, Empress, BarplotLayer, UtilitiesForTesting) {
     module("Barplots", {
         setup: function () {
             // Clear any prior layer HTML stuff so as to not mess up other
@@ -60,6 +61,35 @@ require([
         ok(empress._barplotPanel.availContent.classList.contains("hidden"));
         notOk(
             empress._barplotPanel.unavailContent.classList.contains("hidden")
+        );
+    });
+    test("Barplot panel border option initialization (incl. initBorderOptions)", function () {
+        var empress = this.initTestEmpress();
+
+        deepEqual(empress._barplotPanel.borderColor, [1, 1, 1]);
+
+        // Color picker should correctly default to white
+        var obsColor = $(empress._barplotPanel.borderColorPicker)
+            .spectrum("get")
+            .toHexString();
+        deepEqual(obsColor, "#ffffff");
+
+        // Test that the border length defaults to half the default barplot
+        // layer length
+        var expBorderLen = BarplotLayer.DEFAULT_LENGTH / 2;
+        deepEqual(empress._barplotPanel.borderLength, expBorderLen);
+
+        // Test that the border length input's default value and minimum value
+        // are set properly
+        // (The +s convert things to numbers, since value / getAttribute()
+        // seem to just provide Strings [e.g. "50"].)
+        deepEqual(
+            +empress._barplotPanel.borderLengthInput.value,
+            +expBorderLen
+        );
+        deepEqual(
+            +empress._barplotPanel.borderLengthInput.getAttribute("min"),
+            +BarplotLayer.MIN_LENGTH
         );
     });
     test("Barplot layers default to feature metadata layers, but only if feature metadata is available", function () {

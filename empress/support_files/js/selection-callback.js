@@ -10,7 +10,7 @@ clearTimeout(empress.timer);
 // if there's any coloring setup remove it, and re-enable the update button
 sPanel.sUpdateBtn.classList.remove("hidden");
 sPanel.fUpdateBtn.classList.remove("hidden");
-legend.clear();
+empress.clearLegend();
 empress.resetTree();
 
 // fetch a mapping of colors to plottable objects

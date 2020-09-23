@@ -8,8 +8,6 @@
 
 import warnings
 import pandas as pd
-import skbio
-from skbio import TreeNode
 from empress import taxonomy_utils
 from empress.tree import bp_tree_tips, bp_tree_non_tips
 from itertools import zip_longest
@@ -21,16 +19,6 @@ class DataMatchingError(Exception):
 
 class DataMatchingWarning(Warning):
     pass
-
-
-def read(file_name, file_format='newick'):
-    """ Reads in contents from a file.
-    """
-
-    if file_format == 'newick':
-        tree = skbio.read(file_name, file_format, into=TreeNode)
-        return tree
-    return None
 
 
 def match_tree_and_feature_metadata(bp_tree, feature_metadata=None):

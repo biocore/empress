@@ -141,12 +141,35 @@
     <div id="barplot-layer-container" class="hidden">
       <hr />
     </div>
-    <p id="barplot-add-options" class="hidden">
-      <label for="barplot-add-btn">Add another layer</label>
-      <button id="barplot-add-btn">+</button>
-    </p>
-    <p>
-      <button id="barplot-update" class="hidden">Update</button>
+    <div id="barplot-add-options" class="hidden">
+      <p>
+        <label for="barplot-add-btn">Add another layer</label>
+        <button id="barplot-add-btn">+</button>
+      </p>
+    </div>
+    <div id="barplot-border-content" class="hidden">
+      <p>
+        <label for="barplot-border-chk">Add a border around barplot layers?</label>
+        <input id="barplot-border-chk" type="checkbox" class="empress-input">
+      </p>
+      <div id="barplot-border-options" class="hidden">
+        <p>
+          <label for="barplot-border-color">Border color</label>
+          <!-- Will get turned into a Spectrum color picker by
+               BarplotPanelHandler
+          -->
+          <input id="barplot-border-color" type="text">
+        </p>
+        <p>
+          <label for="barplot-border-length">Length</label>
+          <!-- Minimum, default, etc will be applied by BarplotPanelHandler -->
+          <input id="barplot-border-length" type="number" class="empress-input">
+        </p>
+      </div>
+      <hr />
+    </div>
+    <p id="barplot-update-options" class="hidden">
+      <button id="barplot-update">Update</button>
     </p>
   </div>
   <div id="barplot-unavailable-content">
@@ -221,11 +244,20 @@
 <!-- options to export plot into e.g. SVG -->
 <button class="side-header collapsible">Export</button>
 <div class="side-content control hidden" id="export-div">
-  <p>
-    <button id="export-btn-svg">Export tree as SVG</button>
+  <p class="side-panel-notes">
+    Export images of the tree and its legends. Note that SVG exports do not
+    include barplots or collapsed clades yet (this will be fixed soon), and
+    that PNG exports will change as the tree is zoomed and panned.
   </p>
-  <p class="side-panel-notes indented">
-    Export the tree as a vector graphics figure.
+  <!-- Applying the margin: 0 auto; style to the exterior <p> doesn't work;
+       the centering requires it be applied to each of the buttons
+  -->
+  <p>
+    <button style="margin: 0 auto;" id="export-tree-svg-btn">Export tree as SVG</button>
+    <button style="margin: 0 auto;" id="export-tree-png-btn">Export tree as PNG</button>
+  </p>
+  <p>
+    <button style="margin: 0 auto;" id="export-legend-svg-btn">Export legend as SVG</button>
   </p>
 </div>
 
@@ -242,12 +274,10 @@
   </p>
   <p>
     <label for="display-nodes-chk">Show node circles?</label>
-    <input id="display-nodes-chk" type="checkbox" checked="true"
-           class="empress-input">
+    <input id="display-nodes-chk" type="checkbox" class="empress-input">
   </p>
   <p class="side-panel-notes indented">
-    If checked, this draws circles at the positions of all tree nodes
-    which had a specified name in the input Newick file.
+    If checked, this draws circles at all nodes' positions.
   </p>
   <hr />
   <p class="side-panel-inner-header">
