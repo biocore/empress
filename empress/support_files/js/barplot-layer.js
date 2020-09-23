@@ -685,6 +685,28 @@ define([
     };
 
     /**
+     * Returns an Array containing all of the active legends in this layer.
+     *
+     * Currently, this just returns the color legend and length legends
+     * (assuming both are in use), since those are the only legends barplot
+     * layers own. However, if more sorts of encodings could be used at the
+     * same time (e.g. encoding bars' color, length, and ... opacity, I
+     * guess?), then this Array should be expanded.
+     *
+     * Inactive legends (e.g. the length legend, if no length encoding is in
+     * effect) will be excluded from the Array. However, if all legends are
+     * active, the order in the Array will always be color then length.
+     *
+     * @return {Array} Array of Legend objects
+     */
+    BarplotLayer.prototype.getLegends = function () {
+        var containedLegends = [this.colorLegend, this.lengthLegend];
+        return _.filter(containedLegends, function (legend) {
+            return legend.isActive();
+        });
+    };
+
+    /**
      * Updates the text in the layer's header based on the layer's number.
      *
      * Since the layer's number can change (e.g. when a layer with a lower

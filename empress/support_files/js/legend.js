@@ -274,6 +274,18 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
+     * Returns true if the legend is currently being used, false otherwise.
+     *
+     * This is just a convenience function, to avoid users having to manually
+     * check if legendType is null.
+     *
+     * @return {Boolean}
+     */
+    Legend.prototype.isActive = function () {
+        return !_.isNull(this.legendType);
+    };
+
+    /**
      * Gets an SVG representation of the legend, along with some other details.
      *
      * Please see ExportUtil.exportLegendSVG() for details on the parameters to

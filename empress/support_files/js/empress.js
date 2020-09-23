@@ -486,12 +486,20 @@ define([
      */
     Empress.prototype.exportLegendSVG = function () {
         var legends = [];
-        if (!_.isNull(this._legend.legendType)) {
+        // Add the legend used for coloring the tree (if shown).
+        if (this._legend.isActive()) {
             legends.push(this._legend);
         }
-        // TODO: get legends from barplot panel, which should in turn get them
-        // from each of its barplot layers. For now, we just export the tree
-        // legend, since we don't support exporting barplots quite yet (soon!)
+        // Add all the active legends from all the barplot layers.
+        // NOTE: Since we expect there to be many more barplot legends than
+        // just the one tree-coloring legend, we could potentially save a tiny
+        // bit of time by just setting legends to the output of getLegends()
+        // and then calling unshift() to add this._legend to the start of the
+        // array. However, I don't think the speed gain would be worth making
+        // this code much less readable ._.
+        if (this._barplotsDrawn) {
+            legends.push(...this._barplotPanel.getLegends());
+        }
         if (legends.length === 0) {
             util.toastMsg("No active legends to export.", 5000);
             return null;

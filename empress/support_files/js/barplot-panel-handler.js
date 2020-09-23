@@ -294,6 +294,24 @@ define([
     };
 
     /**
+     * Returns an Array containing all active legends owned by barplot layers.
+     *
+     * This Array is ordered (it starts with the first barplot layer's legends,
+     * then the second layer's legends, etc.). The ordering of legends within a
+     * layer (e.g. color then length legends) is dependent on how
+     * BarplotLayer.getLegends() works.
+     *
+     * @return {Array} Array of Legend objects
+     */
+    BarplotPanel.prototype.getLegends = function () {
+        var legends = [];
+        _.each(this.layers, function (layer) {
+            legends.push(...layer.getLegends());
+        });
+        return legends;
+    };
+
+    /**
      * Array containing the names of layouts compatible with barplots.
      */
     BarplotPanel.SUPPORTED_LAYOUTS = ["Rectangular", "Circular"];
