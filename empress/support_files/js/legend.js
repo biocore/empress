@@ -347,6 +347,10 @@ define(["underscore", "util"], function (_, util) {
             "</style>",
         ].join("\n");
 
+        // .join() doesn't add a trailing newline after </style>, so we add
+        // another one
+        legendSVG += "\n";
+
         var rowsUsed = row;
         if (this.legendType === "categorical") {
             var maxLineWidth = context.measureText(this.title).width;
@@ -417,8 +421,16 @@ define(["underscore", "util"], function (_, util) {
             // the padding btwn. the color square and start of the text (unit)
             var width = maxLineWidth + lineHeight + unit;
             var height = (numCats + 1) * lineHeight + unit;
+            // We need to apply width to the inner SVG in order to be able to
+            // center the legend titles using x="50%" (done above); otherwise,
+            // the legend titles are centered relative to the entire SVG
+            // (containing all legends), which looks bad if multiple legends
+            // have different lengths (the smaller legend titles will stick
+            // out of the outer <rect>)
             var outputSVG =
-                '<g>\n<rect x="0" y="' +
+                '<svg width="' +
+                width +
+                '">\n<rect x="0" y="' +
                 topY +
                 '" width="' +
                 width +
@@ -428,7 +440,7 @@ define(["underscore", "util"], function (_, util) {
                 BGSTYLE +
                 " />\n" +
                 legendSVG +
-                "</g>\n";
+                "</svg>\n";
             return {
                 svg: outputSVG,
                 rowsUsed: rowsUsed,
