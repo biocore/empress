@@ -131,18 +131,20 @@
     root node's length is always ignored, regardless of if this is checked or
     not.
   </p>
-  <p>
-    <label for="leaf-sorting-select">Sort clades based on tip count?</label>
-    <label class="select-container">
-      <select id="leaf-sorting-select">
-        <option value="none">No sorting</option>
-        <option value="ascending">Sort (ascending)</option>
-        <option value="descending" selected>Sort (descending)</option>
-      </select>
-    </label>
-  </p>
-  <p class="side-panel-notes indented" id="leaf-sorting-desc">
-  </p>
+  <div id="leaf-sorting-container">
+    <p>
+      <label for="leaf-sorting-select">Sort clades based on tip count?</label>
+      <label class="select-container">
+        <select id="leaf-sorting-select">
+          <option value="none">No sorting</option>
+          <option value="ascending">Sort (ascending)</option>
+          <option value="descending" selected>Sort (descending)</option>
+        </select>
+      </label>
+    </p>
+    <p class="side-panel-notes indented" id="leaf-sorting-desc">
+    </p>
+  </div>
 </div>
 
 <!-- Barplot options -->

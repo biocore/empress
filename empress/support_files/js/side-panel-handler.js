@@ -78,6 +78,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             "layout-method-container"
         );
         this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
+        this.leafSortingContainer = document.getElementById("leaf-sorting-container");
         this.leafSortingSel = document.getElementById("leaf-sorting-select");
         this.leafSortingDesc = document.getElementById("leaf-sorting-desc");
         this.ignoreLengthsChk.onclick = function () {
@@ -92,7 +93,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // Initialize the leaf sorting description and disabled status, based
         // on defaults
         this.updateLeafSortingDesc(this.leafSortingSel.value);
-        this.updateLeafSortingDisabled(this.empress.getDefaultLayout());
+        this.updateLeafSortingAvail(this.empress.getDefaultLayout());
 
         // global clade collapse GUI
         this.normalCladeMethod = document.getElementById("normal");
@@ -291,9 +292,13 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.leafSortingDesc.textContent = newText + disclaimerText;
     };
 
-    SidePanel.prototype.updateLeafSortingDisabled = function (currLayout) {
-        // Selectively disable the leaf sorting stuff based on layout
-        this.leafSortingSel.disabled = (currLayout === "Unrooted");
+    SidePanel.prototype.updateLeafSortingAvail = function (currLayout) {
+        // Selectively hide/show the leaf sorting stuff based on layout
+        if (currLayout === "Unrooted") {
+            this.leafSortingContainer.classList.add("hidden");
+        } else {
+            this.leafSortingContainer.classList.remove("hidden");
+        }
     };
 
     /**
@@ -311,7 +316,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         var radioBtnOnClickFunc = function () {
             scope.empress.updateLayout(this.value);
-            scope.updateLeafSortingDisabled(this.value);
+            scope.updateLeafSortingAvail(this.value);
         };
 
         for (var i = 0; i < layouts.length; i++) {
