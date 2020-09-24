@@ -613,46 +613,70 @@ define(["underscore", "util"], function (_, util) {
             // gradientTopY.
             height = gradientHeight + lineHeight + unit;
         } else if (this.legendType === "length") {
-            var minText = "Minimum " + this._minLengthVal;
-            var maxText = "Maximum " + this._maxLengthVal;
 
-            // Try to increase max line width
-            _.each([minText, maxText], function (text) {
-                maxLineWidth = Math.max(
-                    maxLineWidth,
+            // We're basically simulating a table here, so just adding two
+            // rows of text won't cut it.
+            // First, figure out which header is bigger (it's probably gonna
+            // be "Maximum " but may as well be safe for weird fonts), and set
+            // this to be the left x-coordinate of the value text.
+            var maxHeaderWidth = 0;
+            _.each(["Minimum ", "Maximum "], function (headerText) {
+                maxHeaderWidth = Math.max(
+                    maxHeaderWidth,
+                    context.measureText(headerText).width
+                );
+            });
+
+            // Now, figure out which value is bigger. Used for updating the
+            // max line width.
+            var maxValWidth = 0;
+            _.each([this._minLengthVal, this._maxLengthVal], function (text) {
+                maxValWidth = Math.max(
+                    maxValWidth,
                     context.measureText(text).width
                 );
             });
 
-            // Now that we're done measuring text, add on <tspan>s to the row
-            // headers to make them bold
-            minText = '<tspan class="btext">Minimum</tspan> ' + this._minLengthVal;
-            maxText = '<tspan class="btext">Maximum</tspan> ' + this._maxLengthVal;
-
-            // ... And, finally, add the rows in
+            // Finally, add the rows in. It's four separate <text> tags to
+            // accommodate funky positioning stuff.
             var minRowY = rowsUsed * lineHeight + unit;
             innerSVG +=
-                '<text x="' +
+                '<text class="btext" x="' +
                 unit +
                 '" y="' +
                 minRowY +
+                '">Minimum</text>\n"';
+            innerSVG +=
+                '<text x="' +
+                (unit + maxHeaderWidth) +
+                '" y="' +
+                minRowY +
                 '">' +
-                minText +
+                this._minLengthVal +
                 "</text>\n";
             rowsUsed++;
 
             var maxRowY = rowsUsed * lineHeight + unit;
             innerSVG +=
-                '<text x="' +
+                '<text class="btext" x="' +
                 unit +
                 '" y="' +
                 maxRowY +
+                '">Maximum</text>\n"';
+            innerSVG +=
+                '<text x="' +
+                (unit + maxHeaderWidth) +
+                '" y="' +
+                maxRowY +
                 '">' +
-                maxText +
+                this._maxLengthVal +
                 "</text>\n";
             rowsUsed++;
 
-            width = maxLineWidth + (2 * unit);
+            // Max header width, max value width, and left and right padding
+            width = maxHeaderWidth + maxValWidth + (2 * unit);
+            // Three lines (title, min row, max row) plus unit padding between
+            // title and min row
             height = 3 * lineHeight + unit;
         } else {
             // Eventually, when we add support for exporting continuous /
