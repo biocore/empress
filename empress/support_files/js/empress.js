@@ -271,6 +271,12 @@ define([
         this.ignoreLengths = false;
 
         /**
+         * @type{String}
+         * Leaf sorting method: one of "none", "ascending", or "descending"
+         */
+        this.leafSorting = "descending";
+
+        /**
          * @type{CanvasEvents}
          * Handles user events
          */
@@ -346,7 +352,7 @@ define([
                 4020,
                 4020,
                 this.ignoreLengths,
-                "ascending"
+                this.leafSorting
             );
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
@@ -367,7 +373,7 @@ define([
                 4020,
                 4020,
                 this.ignoreLengths,
-                "none"
+                this.leafSorting
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information

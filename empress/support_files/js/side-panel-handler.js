@@ -35,7 +35,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.recenterBtn = document.getElementById("center-tree-btn");
         this.focusOnNodeChk = document.getElementById("focus-on-node-chk");
         this.absentTipChk = document.getElementById("absent-tip-chk");
-        this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
 
         this.focusOnNodeChk.onclick = function () {
             empress.focusOnSelectedNode = this.checked;
@@ -47,10 +46,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             if (scope.sChk.checked) {
                 scope.sUpdateBtn.click();
             }
-        };
-        this.ignoreLengthsChk.onclick = function () {
-            empress.ignoreLengths = this.checked;
-            empress.reLayout();
         };
 
         // sample GUI components
@@ -82,6 +77,16 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.layoutMethodContainer = document.getElementById(
             "layout-method-container"
         );
+        this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
+        this.leafSortingSel = document.getElementById("leaf-sorting-select");
+        this.ignoreLengthsChk.onclick = function () {
+            empress.ignoreLengths = this.checked;
+            empress.reLayout();
+        };
+        this.leafSortingSel.onchange = function () {
+            empress.leafSorting = this.value;
+            empress.reLayout();
+        };
 
         // global clade collapse GUI
         this.normalCladeMethod = document.getElementById("normal");
