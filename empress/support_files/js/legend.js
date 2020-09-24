@@ -159,8 +159,8 @@ define(["underscore", "util"], function (_, util) {
         this._gradientSoloSVG = colorer.gradientSoloSVG;
         this._gradientID = colorer.gradientID;
         this._minValStr = colorer.minValStr;
-        this._midValStr = colorer.minValStr;
-        this._maxValStr = colorer.minValStr;
+        this._midValStr = colorer.midValStr;
+        this._maxValStr = colorer.maxValStr;
         this._nonNumericWarningShown = colorer.missingNonNumerics;
 
         // We only save this to a local variable (not an attribute of the
@@ -512,9 +512,9 @@ define(["underscore", "util"], function (_, util) {
             innerSVG += this._gradientSoloSVG;
 
             // Define the height of the gradient -- let's say it takes up 10
-            // lines (so this would look identically to drawing a categorical
+            // rows (so this would look identically to drawing a categorical
             // legend for a field with 10 unique values).
-            var gradHeight = 10 * lineHeight;
+            var gradientHeight = 10 * lineHeight;
 
             // Set analogously to rowTopY in the above branch
             var gradientTopY = (rowsUsed - 1) * lineHeight + unit;
@@ -527,19 +527,78 @@ define(["underscore", "util"], function (_, util) {
                 '" width="' +
                 lineHeight +
                 '" height="' +
-                gradHeight +
+                gradientHeight +
                 '" fill="url(#' +
                 this._gradientID +
                 ')" />\n';
-            // TODO: add min/mid/max text and increase maxlinewidth accordingly
+
+            rowsUsed += 10;
+
+            // Add min/mid/max value text along the gradient
+            var textLeftX = lineHeight + unit;
+
+            // Max value text goes at the top of the gradient
+            // (... For now, at least -- see
+            // https://github.com/biocore/emperor/issues/782.)
+            innerSVG +=
+                '<text x="' +
+                textLeftX +
+                '" y="' +
+                gradientTopY +
+                '" dominant-baseline="hanging">' +
+                this._maxValStr +
+                "</text>\n";
+
+            // Mid value text goes halfway through the gradient
+            // The way to think about this is that this y-coordinate is the
+            // average of two y-coords: the topmost y-coord on the gradient
+            // (gradientTopY) and the bottommost y-coord on the gradient
+            // (gradientTopY + gradientHeight). Once we average these, we can
+            // just set the mid value to this y-coordinate (using
+            // dominant-baseline="middle" to vertically align it here).
+            var midY = (2 * gradientTopY + gradientHeight) / 2;
+            innerSVG +=
+                '<text x="' +
+                textLeftX +
+                '" y="' +
+                midY +
+                '" dominant-baseline="middle">' +
+                this._midValStr +
+                "</text>\n";
+
+            // Min value text goes at the bottom of the gradient
+            innerSVG +=
+                '<text x="' +
+                textLeftX +
+                '" y="' +
+                (gradientTopY + gradientHeight) +
+                '" dominant-baseline="baseline">' +
+                this._minValStr +
+                "</text>\n";
+
+            // Try to increase the maximum line width based on the values. (We
+            // will account for the extra horizontal space of the gradient
+            // rect's width later.)
+            var valStrs = [this._maxValStr, this._midValStr, this._minValStr];
+            _.each(valStrs, function (valStr) {
+                maxLineWidth = Math.max(
+                    maxLineWidth,
+                    context.measureText(valStr).width
+                );
+            });
 
             // Similar to categorical legends: max line width is the max text
             // width plus (in event that max text width is from the min / mid /
-            // max value, not from the title line) the width of the gradient
-            // (lineHeight) plus the padding between the gradient right side
-            // and the start of the text (unit)
-            width = maxLineWidth + lineHeight + unit;
-            height = gradHeight + lineHeight + unit;
+            // max value, not from the title line) the text left x coordinate.
+            // (We add on an extra unit so that there is some extra padding on
+            // the right-hand side between the rightmost character and the
+            // rect border.)
+            width = maxLineWidth + textLeftX + unit;
+
+            // And the height is just the height of the gradient plus the
+            // height of the title row plus the unit padding contained in
+            // gradientTopY.
+            height = gradientHeight + lineHeight + unit;
         } else if (this.legendType === "length") {
             // TODO: this should really just be a very simplified version of
             // the categorical legend code
