@@ -338,7 +338,6 @@ define([
      */
     Empress.prototype.getLayoutInfo = function () {
         var data, i;
-        // TODO get leaf sorting thingimajig
         // Rectangular
         if (this._currentLayout === "Rectangular") {
             data = LayoutsUtil.rectangularLayout(
