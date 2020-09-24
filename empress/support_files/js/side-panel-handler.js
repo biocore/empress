@@ -89,8 +89,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             empress.reLayout();
             scope.updateLeafSortingDesc(this.value);
         };
-        // Initialize the leaf sorting description
+        // Initialize the leaf sorting description and disabled status, based
+        // on defaults
         this.updateLeafSortingDesc(this.leafSortingSel.value);
+        this.updateLeafSortingDisabled(this.empress.getDefaultLayout());
 
         // global clade collapse GUI
         this.normalCladeMethod = document.getElementById("normal");
@@ -289,12 +291,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.leafSortingDesc.textContent = newText + disclaimerText;
     };
 
-    /**
-     * Redraws the tree with a different layout.
-     */
-    SidePanel.prototype._updateLayout = function () {
-        this.empress.resetTree();
-        this.empress.drawTree();
+    SidePanel.prototype.updateLeafSortingDisabled = function (currLayout) {
+        // Selectively disable the leaf sorting stuff based on layout
+        this.leafSortingSel.disabled = (currLayout === "Unrooted");
     };
 
     /**
@@ -312,6 +311,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         var radioBtnOnClickFunc = function () {
             scope.empress.updateLayout(this.value);
+            scope.updateLeafSortingDisabled(this.value);
         };
 
         for (var i = 0; i < layouts.length; i++) {
