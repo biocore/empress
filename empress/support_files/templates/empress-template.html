@@ -64,11 +64,9 @@
       </div>
     </div>
 
-    <!-- color keys -->
+    <!-- Tree coloring legend -->
     <div id="legend-panel" class="unselectable-text">
-      <div id="tip-color-key" class="legend hidden" disabled="true"></div>
-      <div id="node-color-key" class="legend hidden" disabled="true"></div>
-      <div id="clade-color-key" class="legend hidden" disabled="true"></div>
+      <div id="legend-main" class="legend hidden"></div>
     </div>
   </body>
 
@@ -104,6 +102,7 @@
             'SelectedNodeMenu' : './js/select-node-menu',
             'util' : './js/util',
             'LayoutsUtil': './js/layouts-util',
+            'ExportUtil': './js/export-util',
         }
     });
 
@@ -112,11 +111,12 @@
                     'SidePanel', 'AnimationPanel', 'Animator', 'BarplotLayer',
                     'BarplotPanel', 'BIOMTable', 'Empress', 'Legend',
                     'Colorer', 'VectorOps', 'CanvasEvents', 'SelectedNodeMenu',
-                    'util', 'LayoutsUtil'],
+                    'util', 'LayoutsUtil', 'ExportUtil'],
         function($, gl, chroma, underscore, spectrum, filesaver, ByteArray,
                  BPTree, Camera, Drawer, SidePanel, AnimationPanel, Animator,
                  BarplotLayer, BarplotPanel, BIOMTable, Empress, Legend,
-                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util, LayoutsUtil) {
+                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util,
+                 LayoutsUtil, ExportUtil) {
         // initialze the tree and model
         var tree = new BPTree(
           {{ tree  }},
@@ -147,13 +147,9 @@
         );
         empress.initialize();
 
-        var legend = new Legend(document.getElementById('tip-color-key'),
-                                document.getElementById('node-color-key'),
-                                document.getElementById('clade-color-key'));
-
         // The side menu
         var sPanel = new SidePanel(document.getElementById('side-panel'),
-                                   empress, legend);
+                                   empress);
         sPanel.addTreePropertiesTab();
         sPanel.addSampleTab();
         if (fmCols.length > 0) {
@@ -163,7 +159,7 @@
         sPanel.addLayoutTab();
 
         // Create animator state machine
-        var animator = new Animator(empress, legend);
+        var animator = new Animator(empress);
 
         // Add animator GUI components
         var animationPanel = new AnimationPanel(animator);

@@ -8,8 +8,6 @@
 
 import warnings
 import pandas as pd
-import skbio
-from skbio import TreeNode
 from empress import taxonomy_utils
 from empress.tree import bp_tree_tips, bp_tree_non_tips
 from itertools import zip_longest
@@ -21,38 +19,6 @@ class DataMatchingError(Exception):
 
 class DataMatchingWarning(Warning):
     pass
-
-
-def fill_missing_node_names(tree):
-    """ Names nodes in the tree without a name.
-
-     Parameters
-     ----------
-     tree : skbio.TreeNode or empress.Tree
-        Input tree with potentially unnamed nodes (i.e. nodes' .name attributes
-        can be None).
-
-    Returns
-    -------
-    skbio.TreeNode or empress.Tree
-        Tree with all nodes assigned a name.
-    """
-    current_unlabeled_node = 0
-    for n in tree.postorder(include_self=True):
-        if n.name is None:
-            new_name = 'EmpressNode{}'.format(current_unlabeled_node)
-            n.name = new_name
-            current_unlabeled_node += 1
-
-
-def read(file_name, file_format='newick'):
-    """ Reads in contents from a file.
-    """
-
-    if file_format == 'newick':
-        tree = skbio.read(file_name, file_format, into=TreeNode)
-        return tree
-    return None
 
 
 def match_inputs(

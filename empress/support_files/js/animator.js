@@ -7,26 +7,16 @@ define(["Colorer", "util"], function (Colorer, util) {
      *
      * @param{Empress} empress The core class. Entry point for all metadata and
      *                tree operations.
-     * @param{Legend} legend Display on the left side of screen. The legend will
-     *                show the current time frame and the color assigned the
-     *                trajectories.
      *
      * @returns{Animator}
      * @constructs Animator
      */
-    function Animator(empress, legend) {
+    function Animator(empress) {
         /**
          * @type {Empress}
          * The Empress state machine
          */
         this.empress = empress;
-
-        /**
-         * @type {Legend}
-         * Used to display current time frame and the color assigned the
-         * trajectories.
-         */
-        this.legend = legend;
 
         /**
          * @type {Object}
@@ -112,13 +102,13 @@ define(["Colorer", "util"], function (Colorer, util) {
          * @type {Boolean}
          * Collapse clades if true.
          */
-        this.collapse = null;
+        this.collapse = false;
 
         /**
          * @type {Number}
-         * How thick to make branches
+         * Extra width for branches.
          */
-        this.lWidth = null;
+        this.lWidth = 0;
     }
 
     /**
@@ -169,8 +159,8 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.gradientSteps = null;
         this.totalFrames = null;
         this.curFrame = null;
-        this.collapse = null;
-        this.lWidth = null;
+        this.lWidth = 0;
+        this.collapse = false;
         this.timePerFram = -1;
         this.framesRdy = null;
         this.queuedFrames = null;
@@ -205,7 +195,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @private
      */
     Animator.prototype._collectFrame = function (frame) {
-        if (frame < 0 || frame > this.totalFrames) throw "Invalid Frame";
+        if (frame < 0 || frame >= this.totalFrames) throw "Invalid Frame";
         this.queuedFrames[frame] = this.retriveFrame(frame);
         this.framesRdy[frame] = true;
     };
@@ -213,7 +203,7 @@ define(["Colorer", "util"], function (Colorer, util) {
     /**
      * Draws the current frame and updates the legend.
      */
-    Animator.prototype.drawFrame = function () {
+    Animator.prototype.drawFrame = function (showColors) {
         if (this.queuedFrames === null) {
             return;
         }
@@ -227,8 +217,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         }
 
         // draw new legend
-        this.legend.clearAllLegends();
-        this.legend.addColorKey(name, keyInfo, "node", false);
+        this.empress.updateLegendCategorical(name, keyInfo);
 
         // draw tree
         this.empress.resetTree();
@@ -239,6 +228,26 @@ define(["Colorer", "util"], function (Colorer, util) {
         }
         this.empress.thickenColoredNodes(this.lWidth);
         this.empress.drawTree();
+    };
+
+    /**
+     * Draw the tree corresponding a given frame.
+     *
+     * This method is used in empire plots, and won't draw a legend since the
+     * color values are visible in Emperor.
+     *
+     * @param{Number} frame The frame to retrieve. frame must be in the range
+     *                      [0, this.totalFrames) else an error will be thrown.
+     */
+    Animator.prototype.showAnimationFrameAtIndex = function (frame) {
+        if (frame < 0 || frame >= this.totalFrames) throw "Invalid Frame";
+
+        this.curFrame = frame;
+        if (!this.framesRdy[frame]) {
+            this._collectFrame(frame);
+        }
+
+        this.drawFrame();
     };
 
     /**
@@ -267,14 +276,21 @@ define(["Colorer", "util"], function (Colorer, util) {
     };
 
     /**
-     * This method is the entry point for the animation. This method will
-     * start the animation loop.
+     * Initialize the animation properties.
      */
-    Animator.prototype.startAnimation = function () {
+    Animator.prototype.initAnimation = function () {
         this.curFrame = -1;
         this.pause = false;
         this.framesRdy = new Array(this.totalFrames).fill(false);
         this.queuedFrames = [];
+    };
+
+    /**
+     * This method is the entry point for the animation. This method will
+     * start the animation loop.
+     */
+    Animator.prototype.startAnimation = function () {
+        this.initAnimation();
 
         // start animation loop
         // Note: This method is async and will create timeout events until
@@ -303,7 +319,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      */
     Animator.prototype.stopAnimation = function () {
         this.__resetParams();
-        this.legend.clearAllLegends();
+        this.empress.clearLegend();
         this.empress.resetTree();
         this.empress.drawTree();
     };

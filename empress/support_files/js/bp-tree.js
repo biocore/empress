@@ -629,15 +629,19 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      *
      * @param {Number} start The postorder position of a node
      * @param {Number} end The postorder position of a node
+     * @param {Boolean} ignoreLengths If truthy, treat all node lengths as 1;
+     *                                if falsy, actually consider node lengths
      *
      * @return {Number} the sum of length from start to end
      */
-    BPTree.prototype.getTotalLength = function (start, end) {
+    BPTree.prototype.getTotalLength = function (start, end, ignoreLengths) {
         var curNode = start;
         var totalLength = 0;
         while (curNode !== end) {
-            totalLength += this.length(this.postorderselect(curNode));
-            curNode = this.parent(this.postorderselect(curNode));
+            var popos = this.postorderselect(curNode);
+            var nodeLen = ignoreLengths ? 1 : this.length(popos);
+            totalLength += nodeLen;
+            curNode = this.parent(popos);
             if (curNode === -1) {
                 throw "Node " + start + " must be a descendant of " + end;
             }
@@ -704,7 +708,8 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         return numTips;
     };
 
-    /** True if name is in the names array for the tree
+    /**
+     * True if name is in the names array for the tree
      *
      * @param {String} name The name to search for.
      * @return {Boolean} If the name is in the tree.
@@ -714,11 +719,21 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     };
 
     /**
-     * Returns all node with a given name. Once a name has been searched for,
+     * Returns all nodes with a given name. Once a name has been searched for,
      * the returned object is cached in this._nameToNodes.
      *
+     * NOTE: Care should be taken to make sure that this._nameToNodes is not
+     * populated with a literal null at any point, since Objects in JS store
+     * all keys as Strings (so having a literal null in this._nameToNodes [due
+     * to unnamed nodes] will cause this null to get confused with node(s)
+     * literally named "null" in the Newick file). I don't think this is
+     * currently possible in the code, but we should probably add tests that
+     * verify this.
+     *
      * @param {String} name The name of node(s)
-     * @return {Array} An array of postorder position of nodes with a given name
+     * @return {Array} An array of postorder positions of nodes with a given
+     *                 name. If no nodes have the specified name, this will be
+     *                 an empty array.
      */
     BPTree.prototype.getNodesWithName = function (name) {
         if (name in this._nameToNodes) {

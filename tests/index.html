@@ -24,6 +24,9 @@
   <!-- Barplot GUI elements, which are automatically accessed when initializing
        BarplotPanel (which is done from within Empress).
        We use "display: none;" to avoid having this junk take up any space.
+       (For reference, I've literally just copied in the contents of
+       barplot-available-content in the side-panel.html template here and
+       removed comments.)
   -->
   <div id="barplot-available-content" style="display: none;">
     <p>
@@ -33,12 +36,31 @@
     <div id="barplot-layer-container" class="hidden">
       <hr />
     </div>
-    <p id="barplot-add-options" class="hidden">
-      <label for="barplot-add-btn">Add another layer</label>
-      <button id="barplot-add-btn">+</button>
-    </p>
-    <p>
-      <button id="barplot-update" class="hidden">Update</button>
+    <div id="barplot-add-options" class="hidden">
+      <p>
+        <label for="barplot-add-btn">Add another layer</label>
+        <button id="barplot-add-btn">+</button>
+      </p>
+    </div>
+    <div id="barplot-border-content" class="hidden">
+      <p>
+        <label for="barplot-border-chk">Add a border around barplot layers?</label>
+        <input id="barplot-border-chk" type="checkbox" class="empress-input">
+      </p>
+      <div id="barplot-border-options" class="hidden">
+        <p>
+          <label for="barplot-border-color">Border color</label>
+          <input id="barplot-border-color" type="text">
+        </p>
+        <p>
+          <label for="barplot-border-length">Length</label>
+          <input id="barplot-border-length" type="number" class="empress-input">
+        </p>
+      </div>
+      <hr />
+    </div>
+    <p id="barplot-update-options" class="hidden">
+      <button id="barplot-update">Update</button>
     </p>
   </div>
   <div id="barplot-unavailable-content" style="display: none;">
@@ -46,6 +68,10 @@
       Barplots are currently only supported in the rectangular layout. Please
       change the layout in order to use barplots.
     </p>
+  </div>
+
+  <!-- The main legend; Empress gets a reference to this on initialization -->
+  <div id="legend-main" class="legend">
   </div>
 
   <!-- The tree canvas need for use in test-empress -->
@@ -114,6 +140,7 @@
           'CanvasEvents' : './support_files/js/canvas-events',
           'SelectedNodeMenu' : './support_files/js/select-node-menu',
           'LayoutsUtil' : './support_files/js/layouts-util',
+          'ExportUtil' : './support_files/js/export-util',
 
           /* test utility code */
           'UtilitiesForTesting' : './../tests/utilities-for-testing',
@@ -130,8 +157,9 @@
           'testEmpress' : './../tests/test-empress',
           'testExport': './../tests/test-export',
           'testAnimationHandler': './../tests/test-animation-panel-handler',
-          'testLayoutsUtil': './../tests/test-layouts-util',
-          'testBarplotPanelHandler': './../tests/test-barplot-panel-handler'
+          'testBarplots': './../tests/test-barplots',
+          'testLegend': './../tests/test-legend',
+          'testLayoutsUtil': './../tests/test-layouts-util'
         }
     });
 
@@ -154,6 +182,7 @@
          'Empress',
          'Legend',
          'LayoutsUtil',
+         'ExportUtil',
          'UtilitiesForTesting',
          'testBPTree',
          'testByteTree',
@@ -166,8 +195,9 @@
          'testEmpress',
          'testExport',
          'testAnimationHandler',
+         'testBarplots',
+         'testLegend',
          'testLayoutsUtil',
-         'testBarplotPanelHandler',
          ],
 
         // start tests
@@ -190,6 +220,7 @@
           Empress,
           Legend,
           LayoutsUtil,
+          ExportUtil,
           UtilitiesForTesting,
           testBPTree,
           testByteTree,
@@ -201,8 +232,9 @@
           testEmpress,
           testExport,
           testAnimationHandler,
-          testLayoutUtils,
-          testBarplotPanelHandler,
+          testBarplots,
+          testLegend,
+          testLayoutsUtil,
         ) {
             $(document).ready(function() {
                 QUnit.start();

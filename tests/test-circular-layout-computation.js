@@ -128,7 +128,7 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                 // the BarplotPanel can call Empress.getSampleCategories()
                 // without crashing.
                 var sIDs = ["s1", "s2", "s3", "s4", "s5", "s6", "s7"];
-                var fIDs = ["EmpressNode6", "1", "2", "3"];
+                var fIDs = [null, "1", "2", "3"];
                 var sID2Idx = {
                     s1: 0,
                     s2: 1,
@@ -139,7 +139,7 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                     s7: 6,
                 };
                 var fID2Idx = {
-                    EmpressNode6: 0,
+                    null: 0,
                     1: 1,
                     2: 2,
                     3: 3,
@@ -226,8 +226,8 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
             ok(Math.abs(coords[30] - 2) < 1.0e-15); // start x arc position
             ok(Math.abs(coords[31 - 0]) < 1.0e-15); //start y arc position
             // prettier-ignore
-            ok(Math.abs(coords[175] - (-2)) < 1.0e-15); // end x arc position
-            ok(Math.abs(coords[176] - 0 < 1.0e-15)); // end y arc position
+            ok(Math.abs(coords[625] - (-2)) < 1.0e-15); // end x arc position
+            ok(Math.abs(coords[626] - 0 < 1.0e-15)); // end y arc position
         });
     });
 });

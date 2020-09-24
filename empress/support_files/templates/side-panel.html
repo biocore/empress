@@ -139,18 +139,41 @@
     <div id="barplot-layer-container" class="hidden">
       <hr />
     </div>
-    <p id="barplot-add-options" class="hidden">
-      <label for="barplot-add-btn">Add another layer</label>
-      <button id="barplot-add-btn">+</button>
-    </p>
-    <p>
-      <button id="barplot-update" class="hidden">Update</button>
+    <div id="barplot-add-options" class="hidden">
+      <p>
+        <label for="barplot-add-btn">Add another layer</label>
+        <button id="barplot-add-btn">+</button>
+      </p>
+    </div>
+    <div id="barplot-border-content" class="hidden">
+      <p>
+        <label for="barplot-border-chk">Add a border around barplot layers?</label>
+        <input id="barplot-border-chk" type="checkbox" class="empress-input">
+      </p>
+      <div id="barplot-border-options" class="hidden">
+        <p>
+          <label for="barplot-border-color">Border color</label>
+          <!-- Will get turned into a Spectrum color picker by
+               BarplotPanelHandler
+          -->
+          <input id="barplot-border-color" type="text">
+        </p>
+        <p>
+          <label for="barplot-border-length">Length</label>
+          <!-- Minimum, default, etc will be applied by BarplotPanelHandler -->
+          <input id="barplot-border-length" type="number" class="empress-input">
+        </p>
+      </div>
+      <hr />
+    </div>
+    <p id="barplot-update-options" class="hidden">
+      <button id="barplot-update">Update</button>
     </p>
   </div>
   <div id="barplot-unavailable-content">
     <p class="side-panel-notes" style="font-weight: bold;">
-      Barplots are currently only supported in the rectangular layout. Please
-      change the layout in order to use barplots.
+      Barplots are only supported in the rectangular and circular layouts.
+      Please change the layout in order to use barplots.
     </p>
   </div>
 </div>
@@ -218,28 +241,71 @@
 <!-- options to export plot into e.g. SVG -->
 <button class="side-header collapsible">Export</button>
 <div class="side-content control hidden" id="export-div">
-  <p>
-    <button id="export-btn-svg">Export tree as SVG</button>
+  <p class="side-panel-notes">
+    Export images of the tree and its legends. Note that SVG exports do not
+    include barplots or collapsed clades yet (this will be fixed soon), and
+    that PNG exports will change as the tree is zoomed and panned.
   </p>
-  <p class="side-panel-notes indented">
-    Export the tree as a vector graphics figure.
+  <!-- Applying the margin: 0 auto; style to the exterior <p> doesn't work;
+       the centering requires it be applied to each of the buttons
+  -->
+  <p>
+    <button style="margin: 0 auto;" id="export-tree-svg-btn">Export tree as SVG</button>
+    <button style="margin: 0 auto;" id="export-tree-png-btn">Export tree as PNG</button>
+  </p>
+  <p>
+    <button style="margin: 0 auto;" id="export-legend-svg-btn">Export legend as SVG</button>
   </p>
 </div>
 
 <!-- Global Tree properties -->
 <button class="side-header collapsible">Tree Properties</button>
 <div class="side-content control hidden">
+  <p class="side-panel-inner-header">
+    Node circles
+  </p>
   <p>
     <label for="display-nodes-chk">Show node circles?</label>
-    <input id="display-nodes-chk" type="checkbox" checked="true"
+    <input id="display-nodes-chk" type="checkbox" class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, this draws circles at all nodes' positions.
+  </p>
+  <hr />
+  <p class="side-panel-inner-header">
+    Camera
+  </p>
+  <p>
+    <button id="center-tree-btn">Reset Camera</button>
+  </p>
+  <p class="side-panel-notes indented">
+    Repositions the camera at the center of the tree.
+  </p>
+  <p>
+    <label for="focus-on-node-chk">Focus on selected nodes?</label>
+    <input id="focus-on-node-chk" type="checkbox" checked="true"
            class="empress-input">
   </p>
   <p class="side-panel-notes indented">
-    If checked, this draws circles at the positions of all tree nodes
-    which had a specified name in the input Newick file.
+    If checked, the camera will automatically focus on nodes that are selected
+    via searching by name or by clicking on an arrow in a biplot.
   </p>
-  <p class="side-panel-notes">
-    Clade Collapse Method
+  <hr />
+  <p class="side-panel-inner-header">
+    Layout options
+  </p>
+  <p>
+    <label for="ignore-lengths-chk">Ignore branch lengths?</label>
+    <input id="ignore-lengths-chk" type="checkbox" class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, branch lengths are ignored when drawing the tree. Note that the
+    root node's length is always ignored, regardless of if this is checked or
+    not.
+  </p>
+  <hr />
+  <p class="side-panel-inner-header">
+    Clade collapsing method
   </p>
   <p>
     <label for="normal">Normal</label>
@@ -260,32 +326,21 @@
     the shape will be symmetric w.r.t. to the root of the clade. This option
     only applies to the Rectangular and Circular layouts.
   </p>
-  <p>
-    <button id="center-tree-btn">Reset Camera</button>
-  </p>
-  <p class="side-panel-notes indented">
-    Repositions the camera at the center of the tree.
+  <hr />
+  <p class="side-panel-inner-header">
+    Tree coloring
   </p>
   <p>
-    <label for="focus-on-node-chk">Focus on Selected Nodes?</label>
-    <input id="focus-on-node-chk" type="checkbox" checked="true"
-           class="empress-input">
-  </p>
-  <p class="side-panel-notes indented">
-    If checked, the camera is focused on the node after an id is found via
-    the searchbox, or when an arrow is clicked in a biplot.
-  </p>
-  <p>
-    <label for="absent-tip-chk">Ignore Absent Tips?</label>
+    <label for="absent-tip-chk">Ignore absent tips?</label>
     <input id="absent-tip-chk" type="checkbox" checked="true"
            class="empress-input">
   </p>
   <p class="side-panel-notes indented">
     If checked, tips not represented in the current sample selection are
     ignored when propagating the color of a clade. Applies to sample metadata
-    coloring, animations, and sample selections in Emperor. We recommend to
-    change this setting before starting an animation, otherwise this setting
-    might be partially applied.
+    coloring, animations, and sample selections in Emperor. We recommend
+    changing this setting before starting an animation; otherwise, this setting
+    may only be partially applied throughout the animation.
   </p>
 
 </div>

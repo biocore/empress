@@ -1,10 +1,11 @@
-require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
-    $,
-    chroma,
-    _,
-    Colorer,
-    util
-) {
+require([
+    "jquery",
+    "chroma",
+    "underscore",
+    "Colorer",
+    "util",
+    "UtilitiesForTesting",
+], function ($, chroma, _, Colorer, util, UtilitiesForTesting) {
     $(document).ready(function () {
         module("Colorer");
         test("Test that default QIIME colors are correct", function () {
@@ -433,6 +434,116 @@ require(["jquery", "chroma", "underscore", "Colorer", "util"], function (
                 0.152941,
                 0.552941,
             ]);
+        });
+        test("Test Colorer.getGradientSVG (all numeric values)", function () {
+            var eles = ["0", "1", "2", "3", "4"];
+            var colorer = new Colorer("Viridis", eles, true);
+            var gradInfo = colorer.getGradientSVG();
+
+            equal(gradInfo[0], UtilitiesForTesting.getReferenceSVG());
+            // The missingNonNumerics value should be false, since all of the
+            // values we passed to Colorer are numeric
+            notOk(gradInfo[1]);
+        });
+        test("Test Colorer.getGradientSVG (numeric + non-numeric values)", function () {
+            var eles = ["0", "1", "2", "3", "asdf", "4"];
+            var colorer = new Colorer("Viridis", eles, true);
+            var gradInfo = colorer.getGradientSVG();
+            equal(gradInfo[0], UtilitiesForTesting.getReferenceSVG());
+            // Should be true -- since the values we passed are not all numeric
+            ok(gradInfo[1]);
+        });
+        test("Test Colorer.getGradientSVG (custom gradientIDSuffix)", function () {
+            var eles = ["0", "1", "2", "3", "4"];
+            var colorer = new Colorer("Viridis", eles, true, 5);
+            var gradInfo = colorer.getGradientSVG();
+
+            // The "Gradient0" IDs in the reference SVG should be replaced with
+            // "Gradient5". The split/join thing is a way of replacing one
+            // sequence with another, since JS' standard library doesn't seem
+            // to have an easy cross-browser-supported way to do this as of
+            // writing: see https://stackoverflow.com/a/1145525/10730311.
+            equal(
+                gradInfo[0],
+                UtilitiesForTesting.getReferenceSVG()
+                    .split("Gradient0")
+                    .join("Gradient5")
+            );
+            notOk(gradInfo[1]);
+        });
+        test("Test Colorer.getGradientSVG (error: no gradient defined)", function () {
+            var expectedErrorRegex = /No gradient defined for this Colorer; check that useQuantScale is true and that the selected color map is not discrete./;
+
+            // Error case 1: useQuantScale is false
+            var eles = ["0", "1", "2", "3", "4"];
+            var colorer = new Colorer("Viridis", eles);
+            throws(function () {
+                colorer.getGradientSVG();
+            }, expectedErrorRegex);
+
+            // Error case 2: useQuantScale is true, but the color map is
+            // discrete
+            colorer = new Colorer("Paired", eles, true);
+            throws(function () {
+                colorer.getGradientSVG();
+            }, expectedErrorRegex);
+
+            // Error case 3: useQuantScale is false and the color map is
+            // discrete
+            colorer = new Colorer("Pastel2", eles);
+            throws(function () {
+                colorer.getGradientSVG();
+            }, expectedErrorRegex);
+        });
+        test("Test Colorer with custom colormaps", function () {
+            var eles = ["red", "green", "blue cheese"];
+            var colormap = {
+                red: "#FF0000",
+                green: "#00FF00",
+                "blue cheese": "#0000FF",
+            };
+            var colorer = new Colorer(colormap, eles);
+
+            var expHexMap = colorer.getMapHex();
+            equal(_.keys(expHexMap).length, 3);
+            equal(expHexMap.red, "#FF0000");
+            equal(expHexMap.green, "#00FF00");
+            equal(expHexMap["blue cheese"], "#0000FF");
+
+            // check that errors are raised when calling disallowed methods
+            throws(function () {
+                colorer.assignDiscreteColors();
+            }, /Cannot call assignDiscreteColors using a custom colormap/);
+            throws(function () {
+                colorer.assignContinuousScaledColors();
+            }, /Cannot call assignContinuousScaledColors using a custom colormap/);
+            throws(function () {
+                colorer.assignOrdinalScaledColors();
+            }, /Cannot call assignOrdinalScaledColors using a custom colormap/);
+        });
+        test("Test Colorer with custom colormaps fails with missing values", function () {
+            var eles = ["red", "green", "blue cheese"];
+            var colormap = {
+                red: "#FF0000",
+                green: "#00FF00",
+                blue: "#0000FF",
+            };
+
+            throws(function () {
+                var colorer = new Colorer(colormap, eles);
+            }, /The custom colormap does not contain a mapping for all values/);
+        });
+        test("Test Colorer with custom colormaps fails with quant scale", function () {
+            var eles = ["red", "green", "blue cheese"];
+            var colormap = {
+                red: "#FF0000",
+                green: "#00FF00",
+                "blue cheese": "#0000FF",
+            };
+
+            throws(function () {
+                var colorer = new Colorer(colormap, eles, true);
+            }, /Quantitative scales are not supported for custom colormaps/);
         });
     });
 });

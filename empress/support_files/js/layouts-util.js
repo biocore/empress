@@ -27,6 +27,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
+     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
+     *                                layout; otherwise, a uniform length of 1
+     *                                is used.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @return {Object} Object with the following properties:
@@ -39,7 +42,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                  maps to an Array where data for each node is stored in
      *                  postorder. yScalingFactor maps to a Number.
      */
-    function rectangularLayout(tree, width, height, normalize = true) {
+    function rectangularLayout(
+        tree,
+        width,
+        height,
+        ignoreLengths,
+        normalize = true
+    ) {
         // NOTE: This doesn't draw a horizontal line leading to the root "node"
         // of the graph. See https://github.com/biocore/empress/issues/141 for
         // context.
@@ -80,10 +89,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         // iterates in preorder
         var parent;
         for (i = 2; i <= tree.size; i++) {
-            var node = tree.postorder(tree.preorderselect(i));
-            parent = tree.postorder(tree.parent(tree.preorderselect(i)));
+            var prepos = tree.preorderselect(i);
+            var node = tree.postorder(prepos);
+            parent = tree.postorder(tree.parent(prepos));
 
-            xCoord[node] = xCoord[parent] + tree.length(tree.preorderselect(i));
+            var nodeLen = ignoreLengths ? 1 : tree.length(prepos);
+            xCoord[node] = xCoord[parent] + nodeLen;
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
             }
@@ -219,6 +230,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
+     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
+     *                                layout; otherwise, a uniform length of 1
+     *                                is used.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @param {Float} startAngle The first tip in the tree visited is assigned
@@ -229,9 +243,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                           that circle, etc.). I believe this is
      *                           analogous to how the "rotation" parameter of
      *                           iTOL works.
-     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
-     *                                layout; otherwise, a uniform length of 1
-     *                                is used.
      * @return {Object} Object with the following properties:
      *                   -x0, y0 ("starting point" x and y)
      *                   -x1, y1 ("ending point" x and y)
@@ -249,9 +260,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         tree,
         width,
         height,
+        ignoreLengths,
         normalize = true,
-        startAngle = 0,
-        ignoreLengths = false
+        startAngle = 0
     ) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
@@ -302,17 +313,15 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         // Iterate over the tree in preorder, assigning radii
         // (The "i = 2" skips the root of the tree; its radius is implicitly 0)
         for (i = 2; i <= tree.size; i++) {
+            var prepos = tree.preorderselect(i);
             // Get the postorder position of this node, which we'll use when
             // writing to the radius array (which is stored in postorder, as
             // are the remainder of the "result" arrays defined above)
-            var node = tree.postorder(tree.preorderselect(i));
-            var parent = tree.postorder(tree.parent(tree.preorderselect(i)));
-            if (ignoreLengths) {
-                radius[node] = radius[parent] + 1;
-            } else {
-                radius[node] =
-                    radius[parent] + tree.length(tree.preorderselect(i));
-            }
+            var node = tree.postorder(prepos);
+            var parent = tree.postorder(tree.parent(prepos));
+
+            var nodeLen = ignoreLengths ? 1 : tree.length(prepos);
+            radius[node] = radius[parent] + nodeLen;
         }
 
         // Now that we have the polar coordinates of the nodes, convert them to
@@ -433,6 +442,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
+     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
+     *                                layout; otherwise, a uniform length of 1
+     *                                is used.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @return {Object} Object with the following properties:
@@ -441,7 +453,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                  Each of these properties maps to an Array where data for
      *                  each node is stored in postorder.
      */
-    function unrootedLayout(tree, width, height, normalize = true) {
+    function unrootedLayout(
+        tree,
+        width,
+        height,
+        ignoreLengths,
+        normalize = true
+    ) {
         var angle = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
         var x2Arr = new Array(tree.size + 1).fill(0);
@@ -454,8 +472,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             y1 = 0,
             a = 0,
             da = angle;
-        var x2 = x1 + tree.length(n) * Math.sin(a);
-        var y2 = y1 + tree.length(n) * Math.cos(a);
+        // NOTE: x2 will always be 0, since sin(0) = 0.
+        var rootLen = ignoreLengths ? 1 : tree.length(n);
+        var x2 = x1 + rootLen * Math.sin(a);
+        var y2 = y1 + rootLen * Math.cos(a);
         x1Arr[tree.size] = x1;
         x2Arr[tree.size] = x2;
         y1Arr[tree.size] = y1;
@@ -482,8 +502,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             a += (tree.getNumTips(node) * da) / 2;
 
             n = tree.postorderselect(node);
-            x2 = x1 + tree.length(n) * Math.sin(a);
-            y2 = y1 + tree.length(n) * Math.cos(a);
+            var nodeLen = ignoreLengths ? 1 : tree.length(n);
+            x2 = x1 + nodeLen * Math.sin(a);
+            y2 = y1 + nodeLen * Math.cos(a);
             x1Arr[node] = x1;
             x2Arr[node] = x2;
             y1Arr[node] = y1;

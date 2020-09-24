@@ -139,13 +139,13 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, 'support_files')
-        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
-                                        0, 1, 0, 0, 0])
+        self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1,
+                                            1, 0, 1, 0, 0, 0])
 
-        names = ['a', 'e', 'EmpressNode0', 'b', 'g', 'EmpressNode1', 'd', 'h',
-                 'EmpressNode2']
-        for i, node in enumerate(viz.tree.postorder()):
-            self.assertEqual(node.name, names[i])
+        names = ['a', 'e', None, 'b', 'g', None, 'd', 'h', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
 
         # table should be unchanged and be a different id instance
         self.assertEqual(self.table, viz.table)
@@ -164,13 +164,13 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=False)
 
         self.assertEqual(viz.base_url, 'support_files')
-        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1,
-                                        0, 1, 0, 0, 0])
+        self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1,
+                                            1, 0, 1, 0, 0, 0])
 
-        names = ['a', 'e', 'EmpressNode0', 'b', 'g', 'EmpressNode1', 'd', 'h',
-                 'EmpressNode2']
-        for i, node in enumerate(viz.tree.postorder()):
-            self.assertEqual(node.name, names[i])
+        names = ['a', 'e', None, 'b', 'g', None, 'd', 'h', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
 
         # table should be unchanged and be a different id instance
         self.assertEqual(self.table, viz.table)
@@ -337,12 +337,13 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.filtered_table,
                       self.filtered_sample_metadata,
                       filter_unobserved_features_from_phylogeny=True)
-        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
-                                        0, 0, 0])
+        self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
+                                            0, 0, 0])
 
-        names = ['a', 'EmpressNode0', 'b', 'g', 'd', 'h', 'EmpressNode1']
-        for i, node in enumerate(viz.tree.postorder()):
-            self.assertEqual(node.name, names[i])
+        names = ['a', None, 'b', 'g', 'd', 'h', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
 
         # table should be unchanged and be a different id instance
         self.assertEqual(self.filtered_table, viz.table)
@@ -364,12 +365,13 @@ class TestCore(unittest.TestCase):
                       filter_unobserved_features_from_phylogeny=True)
         # Same as with the shearing test above, check that the tree was handled
         # as expected
-        self.assertEqual(viz._bp_tree, [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
-                                        0, 0, 0])
+        self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
+                                            0, 0, 0])
 
-        names = ['a', 'EmpressNode0', 'b', 'g', 'd', 'h', 'EmpressNode1']
-        for i, node in enumerate(viz.tree.postorder()):
-            self.assertEqual(node.name, names[i])
+        names = ['a', None, 'b', 'g', 'd', 'h', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
 
         # Now, the point of this test: verify that the feature metadata was
         # filtered to just stuff in the sheared tree ("e" was removed from the
@@ -527,15 +529,15 @@ DICT_A = {
         -1,
         "a",
         "e",
-        "EmpressNode0",
+        None,
         "b",
         "g",
-        "EmpressNode1",
+        None,
         "d",
         "h",
-        "EmpressNode2"
+        None
     ],
-    "lengths": [-1, 1.0, 2.0, 1.0, 2.0, 1.0, 1.0, 3.0, 2.0, None],
+    "lengths": [-1, 1.0, 2.0, 1.0, 2.0, 1.0, 1.0, 3.0, 2.0, 1.0],
     "s_ids": ["Sample1", "Sample2", "Sample3", "Sample4"],
     "f_ids": [1, 4, 2, 7],
     "s_ids_to_indices": {

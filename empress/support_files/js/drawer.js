@@ -71,7 +71,15 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // the dimension of the canvas
         this.dim = null;
 
-        this.showTreeNodes = true;
+        // Diameters of normal node circles and selected node circles. Note
+        // that, since these are constant values, they take up the same screen
+        // space regardless of zoom level. It would be possible to adjust these
+        // as the user zooms; would help unclutter the tree when it's zoomed
+        // out.
+        this.NODE_CIRCLE_DIAMETER = 4.0;
+        this.SELECTED_NODE_CIRCLE_DIAMETER = 9.0;
+
+        this.showTreeNodes = false;
     }
 
     /**
@@ -416,26 +424,27 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
-     * Display the tree nodes.
-     * Note: Currently Empress will only display the nodes that had an assigned
-     * name in the newick string. (I.E. Empress will not show any node that
-     * starts with EmpressNode)
+     * Determine whether or not to draw circles for each node in the tree.
      *
      * Note: this will only take effect after draw() is called.
      *
-     * @param{Boolean} showTreeNodes If true the empress with display the tree
-     *                               nodes.
+     * @param{Boolean} showTreeNodes If true then Empress will draw node
+     *                               circles.
      */
     Drawer.prototype.setTreeNodeVisibility = function (showTreeNodes) {
         this.showTreeNodes = showTreeNodes;
     };
+
     /**
      * Draws tree and other metadata
      */
     Drawer.prototype.draw = function () {
         var c = this.contex_;
         var s = this.sProg_;
-        c.viewport(0, 0, c.canvas.width, c.canvas.height);
+        // Using c.drawingBufferWidth/Height instead of c.canvas.width/height
+        // has a few advantages in corner-cases, as described in #1 on
+        // https://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
+        c.viewport(0, 0, c.drawingBufferWidth, c.drawingBufferHeight);
 
         // create MVP matrix
         var mvp = gl.mat4.create();
@@ -448,16 +457,21 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // set the mvp attribute
         c.uniformMatrix4fv(s.mvpMat, false, mvp);
 
+        // This seems to determine whether or not points are drawn as squares
+        // or as circles (1 = circle, 0 = square). We set it to 1 so that node
+        // circles and the selected node are both drawn as circles, and then
+        // set it to 0 afterwards.
+
+        c.uniform1i(s.isSingle, 1);
         // draw tree node circles, if requested
         if (this.showTreeNodes) {
-            c.uniform1i(s.isSingle, 1);
-            c.uniform1f(s.pointSize, 4.0);
+            c.uniform1f(s.pointSize, this.NODE_CIRCLE_DIAMETER);
             this.bindBuffer(s.nodeVertBuff);
             c.drawArrays(c.POINTS, 0, this.nodeSize);
         }
 
         // draw selected node
-        c.uniform1f(s.pointSize, 9.0);
+        c.uniform1f(s.pointSize, this.SELECTED_NODE_CIRCLE_DIAMETER);
         this.bindBuffer(s.selectedNodeBuff);
         c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 
