@@ -97,6 +97,15 @@ define(["underscore", "util"], function (_, util) {
         this._minValStr = "";
         this._midValStr = "";
         this._maxValStr = "";
+
+        /**
+         * @type {Number}
+         * The minimum and maximum value in a length legend. Used for
+         * exporting.
+         * @private
+         */
+        this._minLengthVal = null;
+        this._maxLengthVal = null;
     }
 
     /**
@@ -289,6 +298,9 @@ define(["underscore", "util"], function (_, util) {
         this.clear();
         this.addTitle(name);
 
+        this._minLengthVal = minVal;
+        this._maxLengthVal = maxVal;
+
         var infoTable = document.createElement("table");
         var minRow = infoTable.insertRow(-1);
         var minHeaderCell = minRow.insertCell(-1);
@@ -412,7 +424,7 @@ define(["underscore", "util"], function (_, util) {
             "font-family: " + FONTFAM + ";",
             "font-size: " + FONTSIZE + ";",
             "}",
-            ".title { font-weight: bold; }",
+            ".btext { font-weight: bold; }",
             ".blackborder { stroke: #000000; stroke-width: 1; }",
             "</style>",
         ].join("\n");
@@ -427,7 +439,7 @@ define(["underscore", "util"], function (_, util) {
         var innerSVG =
             '<text x="50%" y="' +
             row * lineHeight +
-            '" text-anchor="middle" class="title">' +
+            '" text-anchor="middle" class="btext">' +
             this.title +
             "</text>\n";
 
@@ -601,8 +613,47 @@ define(["underscore", "util"], function (_, util) {
             // gradientTopY.
             height = gradientHeight + lineHeight + unit;
         } else if (this.legendType === "length") {
-            // TODO: this should really just be a very simplified version of
-            // the categorical legend code
+            var minText = "Minimum " + this._minLengthVal;
+            var maxText = "Maximum " + this._maxLengthVal;
+
+            // Try to increase max line width
+            _.each([minText, maxText], function (text) {
+                maxLineWidth = Math.max(
+                    maxLineWidth,
+                    context.measureText(text).width
+                );
+            });
+
+            // Now that we're done measuring text, add on <tspan>s to the row
+            // headers to make them bold
+            minText = '<tspan class="btext">Minimum</tspan> ' + this._minLengthVal;
+            maxText = '<tspan class="btext">Maximum</tspan> ' + this._maxLengthVal;
+
+            // ... And, finally, add the rows in
+            var minRowY = rowsUsed * lineHeight + unit;
+            innerSVG +=
+                '<text x="' +
+                unit +
+                '" y="' +
+                minRowY +
+                '">' +
+                minText +
+                "</text>\n";
+            rowsUsed++;
+
+            var maxRowY = rowsUsed * lineHeight + unit;
+            innerSVG +=
+                '<text x="' +
+                unit +
+                '" y="' +
+                maxRowY +
+                '">' +
+                maxText +
+                "</text>\n";
+            rowsUsed++;
+
+            width = maxLineWidth + (2 * unit);
+            height = 3 * lineHeight + unit;
         } else {
             // Eventually, when we add support for exporting continuous /
             // length legends, this will only really happen if someone tries to
