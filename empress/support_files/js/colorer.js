@@ -239,26 +239,26 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
                 '"/>';
         }
         gradientSVG +=
-            "</linearGradient></defs><rect " +
+            "</linearGradient></defs>\n<rect " +
             'width="20" height="95%" fill="url(#' +
             gID +
-            ')"/>';
+            ')"/>\n';
 
         gradientSVG +=
             '<text x="25" y="12px" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
             max +
-            "</text>";
+            "</text>\n";
         gradientSVG +=
             '<text x="25" y="50%" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
             mid +
-            "</text>";
+            "</text>\n";
         gradientSVG +=
             '<text x="25" y="95%" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
             min +
-            "</text>";
+            "</text>\n";
 
         this._gradientSVG = gradientSVG;
     };
