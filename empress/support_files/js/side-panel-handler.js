@@ -79,6 +79,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         );
         this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
         this.leafSortingSel = document.getElementById("leaf-sorting-select");
+        this.leafSortingDesc = document.getElementById("leaf-sorting-desc");
         this.ignoreLengthsChk.onclick = function () {
             empress.ignoreLengths = this.checked;
             empress.reLayout();
@@ -86,7 +87,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.leafSortingSel.onchange = function () {
             empress.leafSorting = this.value;
             empress.reLayout();
+            scope.updateLeafSortingDesc(this.value);
         };
+        // Initialize the leaf sorting description
+        this.updateLeafSortingDesc(this.leafSortingSel.value);
 
         // global clade collapse GUI
         this.normalCladeMethod = document.getElementById("normal");
@@ -260,6 +264,29 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
         this.empress.colorByFeatureMetadata(colBy, col, coloringMethod);
+    };
+
+    SidePanel.prototype.updateLeafSortingDesc = function (leafSortingMethod) {
+        var newText;
+        if (leafSortingMethod === "descending") {
+            newText =
+                "Clades are sorted in the tree layout in descending order " +
+                "by the number of descendant tips they contain.";
+        } else if (leafSortingMethod === "ascending") {
+            newText =
+                "Clades are sorted in the tree layout in ascending order " +
+                "by the number of descendant tips they contain.";
+        } else if (leafSortingMethod === "none") {
+            newText =
+                "Clades are sorted in the tree layout based on the order " +
+                "given in the input tree file.";
+        } else {
+            throw new Error("Invalid leaf sorting method: " + leafSortingMethod);
+        }
+        // Worded the same as for the symmetric clade collapsing method desc
+        var disclaimerText =
+            " This option only applies to the Rectangular and Circular layouts.";
+        this.leafSortingDesc.textContent = newText + disclaimerText;
     };
 
     /**
