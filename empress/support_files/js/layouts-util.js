@@ -1,4 +1,18 @@
 define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
+
+    function getPostOrderNodes(tree, leafSorting) {
+        var postOrderNodes = [];
+        if (leafSorting === "ascending" || leafSorting === "descending") {
+            postOrderNodes = tree.postorderLeafSortedNodes(leafSorting);
+        } else if (leafSorting === "none") {
+            postOrderNodes = _.range(1, tree.size + 1);
+        } else {
+            throw new Error("Unrecognized leaf sorting method " + leafSorting);
+        }
+        return postOrderNodes;
+    }
+
+
     /**
      * Rectangular layout.
      *
@@ -36,16 +50,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                                is used.
      * @param {String} leafSorting One of the following three options:
      *                             -"none": Lay out the tree's clades in the
-     *                              same order as was specified in the input
-     *                              tree.
-     *                             -"ascending": When going through all of the
-     *                              clades on the same level, this will lay
-     *                              them out starting with the clade with the
-     *                              fewest tips and ending with the clade with
-     *                              the most tips (ties broken arbitrarily).
-     *                             -"descending": Opposite of "ascending"
-     *                              (start with most-tip clades then go down,
-     *                              ties broken arbitrarily).
+     *                              same order as specified in the input tree.
+     *                             -"ascending": Use leaf sorting with
+     *                              "ascending" order. See
+     *                              BPTree.postorderLeafSortedNodes() for
+     *                              details.
+     *                             -"descending": Use leaf sorting with
+     *                              "descending" order. Again, see BPTree.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @return {Object} Object with the following properties:
@@ -66,13 +77,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         leafSorting,
         normalize = true
     ) {
-        var postOrderNodes = [];
-        if (leafSorting === "ascending" || leafSorting === "descending") {
-            postOrderNodes = tree.postorderLeafSortedNodes(leafSorting);
-        } else {
-            postOrderNodes = _.range(1, tree.size + 1);
-        }
-
         var maxWidth = 0;
         var maxHeight = 0;
         var prevY = 0;
@@ -81,7 +85,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var highestChildYr = new Array(tree.size + 1);
         var lowestChildYr = new Array(tree.size + 1);
 
-        // postorder
+        var postOrderNodes = getPostOrderNodes(tree, leafSorting);
         var i;
         for (var p = 0; p < postOrderNodes.length; p++) {
             i = postOrderNodes[p];
@@ -255,6 +259,15 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
      *                                layout; otherwise, a uniform length of 1
      *                                is used.
+     * @param {String} leafSorting One of the following three options:
+     *                             -"none": Lay out the tree's clades in the
+     *                              same order as specified in the input tree.
+     *                             -"ascending": Use leaf sorting with
+     *                              "ascending" order. See
+     *                              BPTree.postorderLeafSortedNodes() for
+     *                              details.
+     *                             -"descending": Use leaf sorting with
+     *                              "descending" order. Again, see BPTree.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @param {Float} startAngle The first tip in the tree visited is assigned
@@ -287,13 +300,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         normalize = true,
         startAngle = 0
     ) {
-        var postOrderNodes = [];
-        if (leafSorting === "ascending" || leafSorting === "descending") {
-            postOrderNodes = tree.postorderLeafSortedNodes(leafSorting);
-        } else {
-            postOrderNodes = _.range(1, tree.size + 1);
-        }
-
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
         var y0 = new Array(tree.size + 1).fill(0);
@@ -318,8 +324,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minY = Number.POSITIVE_INFINITY;
 
         // Iterate over the tree in postorder, assigning angles
-        // Note that we skip the root (using "i < tree.size" and not "<="),
-        // since the root's angle is irrelevant
+        // Note that we skip the root (using "i < postOrderNodes.length" and
+        // not "<="), since the root's angle is irrelevant.
+        var postOrderNodes = getPostOrderNodes(tree, leafSorting);
         var i;
         for (var p = 0; p < postOrderNodes.length; p++) {
             i = postOrderNodes[p];

@@ -165,13 +165,23 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
          * Stores the order of nodes in an in-order traversal. Elements in this
          * array are node ids
          *
-         * Note: In-order is stored because bp-tree doesn't not have
+         * Note: In-order is stored because bp-tree doesn't have
          *       an efficient way of convert a nodes in-order position to tree
          *       index and vice versa like it does with post order through
          *       the use of postorderselect() and postorder(). So it is more
          *       efficient to cache an in-order tree traversal.
          */
         this._inorder = null;
+
+        /**
+         * @type{Array}
+         * @private
+         *
+         * Stores the order of nodes in ascending and descending-leaf-sorted
+         * postorder traversals. Elements in this array are node IDs.
+         */
+        this._ascendingLeafSorted = null;
+        this._descendingLeafSorted = null;
 
         /**
          * @type {Object}
@@ -709,13 +719,54 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     };
 
     /**
+     * Returns a list of nodes' postorder positions in the tree, using "leaf
+     * sorting" -- clades at the same level are sorted by the number of leaves
+     * they contain.
      *
-     * Analogous to BPTree.inOrderNodes().
+     * This (usually) makes the tree look pretty.
      *
-     * Returns postorder positions
+     * This code behaves similarly to this.inOrderNodes(), in that it caches
+     * the result once computed. Therefore, this function should be faster the
+     * second time it's called (assuming the sortingMethod is the same).
+     *
+     * @param {String} sortingMethod Either "ascending" or "descending". Any
+     *                               other values will trigger an error.
+     *                               -"ascending": Order clades starting with
+     *                                the clade with the fewest tips and ending
+     *                                with the clade with the most tips (ties
+     *                                broken arbitrarily).
+     *                               -"descending": Opposite of "ascending"
+     *                                (start with most-tip clades then go down;
+     *                                ties broken arbitrarily).
+     * @return {Array} Array of nodes' postorder positions in the tree, sorted
+     *                 as specified.
+     * @throws {Error} if sortingMethod is not "ascending" or "descending".
+     *
+     * REFERENCES
+     * ----------
+     * Based on this Python code to do leaf-sorted postorder traversal
+     * over a scikit-bio TreeNode:
+     * https://github.com/biocore/empress/commit/2b3d90f52fc3118b3641ddc6378d3659abdb0d05
+     *
+     * That code is in turn a very slightly modified version of scikit-bio's
+     * postorder tree traversal code:
+     * https://github.com/biocore/scikit-bio/blob/6ccba4076f1b96843fa2428804cc5a91bf4b76b8/skbio/tree/_tree.py#L1085-L1154
+     *
+     * And this functionality was inspired by iTOL's use of it, of course:
+     * https://itol.embl.de/help.cgi (see the "Leaf sorting:" text)
      */
     BPTree.prototype.postorderLeafSortedNodes = function (sortingMethod) {
-        // TODO cache like inorder nodes are
+        if (sortingMethod === "ascending") {
+            if (this._ascendingLeafSorted !== null) {
+                return this._ascendingLeafSorted;
+            }
+        } else if (sortingMethod === "descending") {
+            if (this._descendingLeafSorted !== null) {
+                return this._descendingLeafSorted;
+            }
+        } else {
+            throw new Error("Unrecognized leaf sorting method " + sortingMethod);
+        }
         var outputNodes = [];
         var childIdxStack = [0];
         var rootNode = this.preorderselect(1);
@@ -754,6 +805,12 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
                 childIdxStack.pop();
                 childIdxStack[childIdxStack.length - 1]++;
             }
+        }
+        // Cache the results so we don't have to do all that again
+        if (sortingMethod === "ascending") {
+            this._ascendingLeafSorted = outputNodes;
+        } else {
+            this._descendingLeafSorted = outputNodes;
         }
         return outputNodes;
     };
