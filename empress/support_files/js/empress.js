@@ -76,7 +76,7 @@ define([
          * @type {Array}
          * The default color of the tree
          */
-        this.DEFAULT_COLOR = Colorer.rbgToFloat([, 50, 50]);
+        this.DEFAULT_COLOR = Colorer.rbgToFloat([50, 50, 50]);
 
         /**
          * @type {BPTree}
@@ -408,7 +408,6 @@ define([
      * Initializes WebGL and then draws the tree
      */
     Empress.prototype.initialize = function () {
-        console.log('???')
         var d = new Date();
         this._drawer.initialize();
         this._events.setMouseEvents();
@@ -2052,6 +2051,7 @@ define([
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
     Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+        var d = new Date();
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -2083,6 +2083,8 @@ define([
         this._colorTree(obs, cm);
 
         this.updateLegendCategorical(cat, keyInfo);
+        var dt = new Date();
+        console.log("color", dt.getTime() - d.getTime());
 
         return keyInfo;
     };
@@ -2290,6 +2292,7 @@ define([
      * Redraws the tree with a new layout (if different from current layout).
      */
     Empress.prototype.updateLayout = function (newLayout) {
+        var d = new Date();
         if (this._currentLayout !== newLayout) {
             if (this._layoutToCoordSuffix.hasOwnProperty(newLayout)) {
                 // get new layout
@@ -2306,6 +2309,8 @@ define([
                 throw "Layout " + newLayout + " doesn't have coordinate data.";
             }
         }
+        var dt = new Date();
+        console.log("update layout", dt.getTime() - d.getTime())
     };
 
     /**
