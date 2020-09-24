@@ -598,7 +598,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     };
 
     /**
-     * Returns an array of nodes sorted by their inoder position.
+     * Returns an array of nodes sorted by their inorder position.
      *
      * Note: empress uses a nodes postorder position as its key in _treeData
      *       so this method will use a nodes postorder position to represent
@@ -620,11 +620,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             this._inorder.push(this.postorder(curNode));
 
             // append children to stack
-            var child = this.fchild(curNode);
-            while (child !== 0) {
-                nodeStack.push(child);
-                child = this.nsibling(child);
-            }
+            nodeStack = nodeStack.concat(this.getChildren(curNode));
         }
         return this._inorder;
     };
@@ -820,9 +816,18 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         return outputNodes;
     };
 
-    BPTree.prototype.getChildren = function (internalNode) {
+    /**
+     * Returns an array containing the children of a node.
+     *
+     * If the input node has no children (i.e. it's a leaf / tip), this will
+     * return an empty Array.
+     *
+     * @param {Number} node
+     * @return {Array} children
+     */
+    BPTree.prototype.getChildren = function (node) {
         var children = [];
-        var child = this.fchild(internalNode);
+        var child = this.fchild(node);
         while (child !== 0) {
             children.push(child);
             child = this.nsibling(child);
@@ -830,22 +835,36 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         return children;
     };
 
-    BPTree.prototype.getSortedChildren = function (
-        internalNode,
-        sortingMethod
-    ) {
-        var children = this.getChildren(internalNode);
+    /**
+     * Returns an array containing the children of a node, sorted by the number
+     * of tips their subtrees contain.
+     *
+     * If the input node has no children (i.e. it's a leaf / tip), this will
+     * return an empty Array.
+     *
+     * Ties (e.g. when an internal node's children are all tips, and thus
+     * "contain" 1 tip) are broken arbitrarily.
+     *
+     * @param {Number} node
+     * @return {Array} children
+     */
+    BPTree.prototype.getSortedChildren = function (node, sortingMethod) {
+        var children = this.getChildren(node);
         // By default, sort ascending.
         // Use of bind based on https://stackoverflow.com/a/27232217/10730311
         var scope = this;
         var sFunc = function (childIdx) {
-            return scope.getNumTips(scope.postorder(childIdx));
+            var numTips = scope.getNumTips(scope.postorder(childIdx));
+            if (sortingMethod === "descending") {
+                // Flip things around; sort in descending order. This should be
+                // quicker than sorting in ascending order and then reversing
+                // it afterwards.
+                return -numTips;
+            } else {
+                return numTips;
+            }
         };
-        var sortedChildren = _.sortBy(children, sFunc);
-        if (sortingMethod === "descending") {
-            sortedChildren.reverse();
-        }
-        return sortedChildren;
+        return _.sortBy(children, sFunc);
     };
 
     /**
