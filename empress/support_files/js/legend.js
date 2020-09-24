@@ -64,20 +64,39 @@ define(["underscore", "util"], function (_, util) {
 
         /**
          * @type {String}
-         * Copy of the gradient SVG shown in a continous legend. Stored as a
-         * class-level variable to make exporting a continuous legend easier.
+         * Copy of the gradient SVG shown in a continous legend (just the
+         * gradient stuff, not the <rect> / <text> stuff -- see the Colorer
+         * object for details.) Used for exporting.
          * @private
          */
-        this._gradientSVG = "";
+        this._gradientSoloSVG = "";
+
+        /**
+         * @type {String}
+         * Refers to the ID of the <linearGradient> used in a gradient for a
+         * continuous legend. Helps with referring to this gradient within a
+         * new containing element; used for exporting.
+         * @private
+         */
+        this._gradientID = "";
 
         /**
          * @type {Boolean}
          * Whether or not a warning about non-numeric values missing from a
-         * continuous legend is shown. Same as with this._gradientSVG, stored
-         * in order to simplify continuous legend exporting.
+         * continuous legend is shown. Used for exporting.
          * @private
          */
         this._nonNumericWarningShown = false;
+
+        /**
+         * @type {String}
+         * Representations of the min, mid (aka (min + max) / 2), and max
+         * values used in a (continuous) legend. Used for exporting.
+         * @private
+         */
+        this._minValStr = "";
+        this._midValStr = "";
+        this._maxValStr = "";
     }
 
     /**
@@ -108,30 +127,47 @@ define(["underscore", "util"], function (_, util) {
      * Displays a continuous color key.
      *
      * This function takes as input the gradient SVG to display, so it doesn't
-     * do much actual work. (Colorer.getGradientSVG() does the work of
-     * computing this.)
+     * do much actual work. (Colorer.assignContinuousScaledColors() does most
+     * of the work here.)
      *
      * The creation of the SVG container was based on Emperor's code:
      * https://github.com/biocore/emperor/blob/00c73f80c9d504826e61ddcc8b2c0b93f344819f/emperor/support_files/js/color-view-controller.js#L54-L56
      *
      * @param {String} name Text to show in the legend title.
-     * @param {String} gradientSVG SVG defining a color gradient; will be shown
-     *                             in the legend.
+     * @param {Colorer} colorer Reference to the colorer used for mapping
+     *                          values to colors.
      * @param {Boolean} showNonNumericWarning If true, a warning will be shown
      *                                        below the gradient about some
      *                                        values being omitted from the
      *                                        gradient due to being
      *                                        non-numeric.
      */
-    Legend.prototype.addContinuousKey = function (
-        name,
-        gradientSVG,
-        showNonNumericWarning
-    ) {
+    Legend.prototype.addContinuousKey = function (name, colorer) {
+        // We just check if this one property of the colorer is specified, and
+        // assume if it's ok then the other properties needed are also ok.
+        if (_.isNull(colorer.gradientSoloSVG)) {
+            throw new Error(
+                "Can't create a continuous legend when the colorer does not " +
+                    "have SVG defined."
+            );
+        }
         this.clear();
         this.addTitle(name);
-        this._gradientSVG = gradientSVG;
-        this._nonNumericWarningShown = showNonNumericWarning;
+
+        // Save relevant data from the specified Colorer. We store these to
+        // make life easier when exporting SVG for this legend.
+        this._gradientSoloSVG = colorer.gradientSoloSVG;
+        this._gradientID = colorer.gradientID;
+        this._minValStr = colorer.minValStr;
+        this._midValStr = colorer.minValStr;
+        this._maxValStr = colorer.minValStr;
+        this._nonNumericWarningShown = colorer.missingNonNumerics;
+
+        // We only save this to a local variable (not an attribute of the
+        // class) since we only use it for the HTML representation of the
+        // gradient, not for the SVG-exported representation of the gradient.
+        var totalHTMLSVG = this._gradientSoloSVG + colorer.gradientHTMLSVG;
+
         // Apparently we need to use createElementNS() (not just
         // createElement()) for SVGs. I am not sure why this is the case, but
         // it made the SVG show up (before I added this, nothing was showing up
@@ -148,7 +184,7 @@ define(["underscore", "util"], function (_, util) {
         containerSVG.setAttribute("height", "100%");
         containerSVG.setAttribute("style", "display: block; margin: auto;");
         // just kinda plop the SVG code into containerSVG's HTML
-        containerSVG.innerHTML = this._gradientSVG;
+        containerSVG.innerHTML = totalHTMLSVG;
         this._container.appendChild(containerSVG);
         if (this._nonNumericWarningShown) {
             var warningP = document.createElement("p");
@@ -286,6 +322,13 @@ define(["underscore", "util"], function (_, util) {
         }
         this.legendType = null;
         this.title = "";
+        // We don't *need* to, but we clear a few potentially-large temporary
+        // attributes to avoid keeping them in memory.
+        // (All of these are only guaranteed to be meaningful if the legend
+        // type is set -- since it is now null, we can clear them freely.)
+        this._sortedCategories = [];
+        this._category2color = {};
+        this._gradientSoloSVG = "";
     };
 
     /**
@@ -465,7 +508,38 @@ define(["underscore", "util"], function (_, util) {
             width = maxLineWidth + lineHeight + unit;
             height = (numCats + 1) * lineHeight + unit;
         } else if (this.legendType === "continuous") {
-            innerSVG += this._gradientSVG;
+            // Add linear gradient to SVG
+            innerSVG += this._gradientSoloSVG;
+
+            // Define the height of the gradient -- let's say it takes up 10
+            // lines (so this would look identically to drawing a categorical
+            // legend for a field with 10 unique values).
+            var gradHeight = 10 * lineHeight;
+
+            // Set analogously to rowTopY in the above branch
+            var gradientTopY = (rowsUsed - 1) * lineHeight + unit;
+
+            // Add a <rect> containing said gradient, which we have the luxury
+            // of defining the dimensions of :D
+            innerSVG +=
+                '<rect x="0" y="' +
+                gradientTopY +
+                '" width="' +
+                lineHeight +
+                '" height="' +
+                gradHeight +
+                '" fill="url(#' +
+                this._gradientID +
+                ')" />\n';
+            // TODO: add min/mid/max text and increase maxlinewidth accordingly
+
+            // Similar to categorical legends: max line width is the max text
+            // width plus (in event that max text width is from the min / mid /
+            // max value, not from the title line) the width of the gradient
+            // (lineHeight) plus the padding between the gradient right side
+            // and the start of the text (unit)
+            width = maxLineWidth + lineHeight + unit;
+            height = gradHeight + lineHeight + unit;
         } else if (this.legendType === "length") {
             // TODO: this should really just be a very simplified version of
             // the categorical legend code

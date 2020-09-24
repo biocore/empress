@@ -617,8 +617,9 @@ define([
             this.colorByFMContinuous &&
             !this.colorByFMColorMapDiscrete
         ) {
-            var gradInfo = colorer.getGradientSVG();
-            this.colorLegend.addContinuousKey(title, gradInfo[0], gradInfo[1]);
+            // We just pass the colorer directly to addContinuousKey, rather
+            // than having that return an array/object with like six entries
+            this.colorLegend.addContinuousKey(title, colorer);
         } else {
             this.colorLegend.addCategoricalKey(title, colorer.getMapHex());
         }

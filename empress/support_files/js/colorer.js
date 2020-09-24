@@ -47,17 +47,36 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
 
-        // Will be set to a string containing the SVG for a gradient, if
-        // continuous scaling is done (i.e. useQuantScale is true and the
-        // input color map is sequential / diverging)
-        this._gradientSVG = null;
+        // Only used for continuous scaling, but we set it here for simplicity
+        this.gradientID = "Gradient" + gradientIDSuffix;
 
-        this._gradientIDSuffix = gradientIDSuffix;
+        /* The following public values will be set only if continuous      *
+         * scaling is done (i.e. useQuantScale is true and the input color *
+         * map is sequential / diverging)                                  */
+
+        // Will be set to a string containing just the SVG defining the
+        // gradient (i.e. just the <defs>...</defs> stuff).
+        this.gradientSoloSVG = null;
+
+        // Will be set to a string describing the <rect> containing the
+        // gradient and the <text> representations of the min/mid/max values
+        // alongside it. Used to display the gradient in the page HTML.
+        this.gradientHTMLSVG = null;
+
+        // Will be set to strings describing the minimum, middle, and maximum
+        // values along the gradient. Designed for use with
+        // this.gradientSoloSVG (so they can be scaled as needed for SVG
+        // exporting).
+        this.minValStr = null;
+        this.midValStr = null;
+        this.maxValStr = null;
 
         // Will be set to true if there were any non-numeric elements included
-        // in the input values that couldn't be assigned colors (only if
-        // continuous scaling was done)
-        this._missingNonNumerics = false;
+        // in the input values that couldn't be assigned colors (controls
+        // whether or not to show a warning)
+        this.missingNonNumerics = false;
+
+        /* End continuous-scaling-specific things */
 
         // Based on the color map, container, type and the value of
         // useQuantScale, assign colors accordingly
@@ -173,8 +192,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * by this.color) for every value in this.sortedUniqueValues, taking into
      * account the magnitudes/etc. of the numeric values in
      * this.sortedUniqueValues. This will populate this.__valueToColor with
-     * this information. This will also populate this._gradientSVG with a
-     * String describing this gradient.
+     * this information. This will also populate this.gradientSoloSVG,
+     * this.gradientHTMLSVG, this.missingNonNumerics, this.minValStr,
+     * this.midValStr, and this.maxValStr.
      *
      * Non-numeric values will not be assigned a color.
      *
@@ -206,7 +226,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         });
         // Figure out if we should show a warning message about missing values
         // to the user
-        this._missingNonNumerics = split.nonNumeric.length > 0;
+        this.missingNonNumerics = split.nonNumeric.length > 0;
 
         // Create SVG describing the gradient
         var mid = (min + max) / 2;
@@ -215,12 +235,13 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         for (var s = min; s <= max; s += step) {
             stopColors.push(interpolator(s).hex());
         }
-        var gradientSVG = "<defs>";
+        var gradientSoloSVG = "<defs>";
         // We append a number to the gradient ID so that multiple gradients can
         // be present on the same page without overriding each other
-        var gID = "Gradient" + this._gradientIDSuffix;
-        gradientSVG +=
-            '<linearGradient id="' + gID + '" x1="0" x2="0" y1="1" y2="0">';
+        gradientSoloSVG +=
+            '<linearGradient id="' +
+            this.gradientID +
+            '" x1="0" x2="0" y1="1" y2="0">';
         for (var pos = 0; pos < stopColors.length; pos++) {
             // "stop" tags are written here as <stop .../>. This matches what
             // Emperor does, and also the example on MDN here:
@@ -231,73 +252,43 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             // document.createElementNS(). Anyway, we keep things shorter for
             // now for consistency, but replacing '"/>' with '"></stop>' works
             // fine also.
-            gradientSVG +=
+            gradientSoloSVG +=
                 '<stop offset="' +
                 pos +
                 '%" stop-color="' +
                 stopColors[pos] +
                 '"/>';
         }
-        gradientSVG +=
-            "</linearGradient></defs>\n<rect " +
-            'width="20" height="95%" fill="url(#' +
-            gID +
+        gradientSoloSVG += "</linearGradient></defs>\n";
+        this.gradientSoloSVG = gradientSoloSVG;
+
+        // Add a rect containing the gradient. This'll only be used in the
+        // in-app representation of the gradient (not in the SVG export!)
+        var gradientHTMLSVG =
+            '<rect width="20" height="95%" fill="url(#' +
+            this.gradientID +
             ')"/>\n';
 
-        gradientSVG +=
+        this.minValStr = min.toString();
+        this.midValStr = mid.toString();
+        this.maxValStr = max.toString();
+        gradientHTMLSVG +=
             '<text x="25" y="12px" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
-            max +
+            this.maxValStr +
             "</text>\n";
-        gradientSVG +=
+        gradientHTMLSVG +=
             '<text x="25" y="50%" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
-            mid +
+            this.midValStr +
             "</text>\n";
-        gradientSVG +=
+        gradientHTMLSVG +=
             '<text x="25" y="95%" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
-            min +
+            this.minValStr +
             "</text>\n";
 
-        this._gradientSVG = gradientSVG;
-    };
-
-    /**
-     * Returns an array containing SVG information and a flag about non-numeric
-     * values, to be used when creating a legend based on continuous scaling.
-     *
-     * This function should only be called if, on Colorer construction,
-     * useQuantScale is true and the input color map is sequential or
-     * diverging. If this is not the case (a.k.a. assignContinuousScaledColors
-     * was not called during construction), then this function will throw an
-     * error.
-     *
-     * @return{Array} gradientInfo An array containing two elements:
-     *                             1. gradientSVG: a String containing the SVG
-     *                                describing this Colorer's gradient. This
-     *                                will include information about the
-     *                                input numeric values along this gradient.
-     *                             2. missingNonNumerics: a Boolean value that
-     *                                is true if any of the values passed to
-     *                                this Colorer were not numeric (and
-     *                                therefore not assignable to any colors on
-     *                                the gradient), and false otherwise. If
-     *                                this is true, it's recommended that the
-     *                                caller show a warning along with the
-     *                                gradient that some value(s) have been
-     *                                omitted from the color map.
-     */
-    Colorer.prototype.getGradientSVG = function () {
-        if (_.isNull(this._gradientSVG)) {
-            throw new Error(
-                "No gradient defined for this Colorer; check that " +
-                    "useQuantScale is true and that the selected color map " +
-                    "is not discrete."
-            );
-        } else {
-            return [this._gradientSVG, this._missingNonNumerics];
-        }
+        this.gradientHTMLSVG = gradientHTMLSVG;
     };
 
     /**
