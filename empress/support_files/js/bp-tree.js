@@ -772,7 +772,11 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         var children = this.getChildren(internalNode);
         // By default, sort ascending.
         // Use of bind based on https://stackoverflow.com/a/27232217/10730311
-        var sortedChildren = _.sortBy(children, this.getNumTips.bind(this));
+        var scope = this;
+        var sFunc = function (childIdx) {
+            return scope.getNumTips(scope.postorder(childIdx));
+        };
+        var sortedChildren = _.sortBy(children, sFunc);
         if (sortingMethod === "descending") {
             sortedChildren.reverse();
         }
