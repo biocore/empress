@@ -505,7 +505,8 @@ define(["underscore", "util"], function (_, util) {
             // event that the max text width is from a category line, not from
             // the title line) the width of a color square (lineHeight) plus
             // the padding btwn. the color square and start of the text (unit)
-            width = maxLineWidth + lineHeight + unit;
+            // plus some extra padding at the right-hand side (the other unit)
+            width = maxLineWidth + lineHeight + (2 * unit);
             height = (numCats + 1) * lineHeight + unit;
         } else if (this.legendType === "continuous") {
             // Add linear gradient to SVG
