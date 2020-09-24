@@ -370,26 +370,40 @@ define(["underscore", "util"], function (_, util) {
             "font-size: " + FONTSIZE + ";",
             "}",
             ".title { font-weight: bold; }",
-            "rect { stroke: #000000; stroke-width: 1; }",
+            ".blackborder { stroke: #000000; stroke-width: 1; }",
             "</style>",
         ].join("\n");
 
-        var legendSVG = "";
+        // Add trailing newline to style SVG, since .join() doesn't add it
+        styleSVG += "\n";
 
+        // First, add the title to the inner legend SVG.
+        // The x="50%" and text-anchor="middle" center the title over the
+        // legend: solution from
+        // https://stackoverflow.com/a/31522006/10730311.
+        var innerSVG =
+            '<text x="50%" y="' +
+            row * lineHeight +
+            '" text-anchor="middle" class="title">' +
+            this.title +
+            "</text>\n";
+
+        // Keep track of the number of rows used (including those already
+        // represented in the input row parameter). Each branch of the if
+        // statement below is responsible for updating this.
         var rowsUsed = row;
+        // To start off: count the title line as a row used.
+        rowsUsed++;
+
+        // Keep track of the max-length line -- start off with the title as the
+        // max, but this may change if a line below is longer
+        var maxLineWidth = context.measureText(this.title).width;
+
+        // Each branch of the if statement below is responsible for setting
+        // the width and height.
+        var width, height;
+
         if (this.legendType === "categorical") {
-            var maxLineWidth = context.measureText(this.title).width;
-            // First, add the title to the legend SVG.
-            // The x="50%" and text-anchor="middle" center the title over the
-            // legend: solution from
-            // https://stackoverflow.com/a/31522006/10730311.
-            legendSVG +=
-                '<text x="50%" y="' +
-                rowsUsed * lineHeight +
-                '" text-anchor="middle" class="title">' +
-                this.title +
-                "</text>\n";
-            rowsUsed++;
             // Go through each of the categories and add a row to the legend
             // SVG. (Since the legend type is categorical,
             // this._sortedCategories and this._category2color must be
@@ -402,8 +416,8 @@ define(["underscore", "util"], function (_, util) {
                 );
                 var rowTopY = (rowsUsed - 1) * lineHeight + unit;
                 // Add a square to the left of the label showing the color
-                legendSVG +=
-                    '<rect x="0" y="' +
+                innerSVG +=
+                    '<rect class="blackborder" x="0" y="' +
                     rowTopY +
                     '" width="' +
                     lineHeight +
@@ -421,7 +435,7 @@ define(["underscore", "util"], function (_, util) {
                 // (GIMP's SVG importer doesn't seem to interpret this
                 // correctly, but Inkscape can handle it ok. So this seems like
                 // Not Our Problem.)
-                legendSVG +=
+                innerSVG +=
                     '<text dominant-baseline="hanging" x="' +
                     (lineHeight + unit) +
                     '" y="' +
@@ -443,44 +457,18 @@ define(["underscore", "util"], function (_, util) {
             // the number of used text rows and width must be larger than
             // longest key text and/or legend title
             var numCats = this._sortedCategories.length;
+
             // The maximum line width is the max text width plus (in the likely
             // event that the max text width is from a category line, not from
             // the title line) the width of a color square (lineHeight) plus
             // the padding btwn. the color square and start of the text (unit)
-            var width = maxLineWidth + lineHeight + unit;
-            var height = (numCats + 1) * lineHeight + unit;
-            // We need to apply width to the inner SVG in order to be able to
-            // center the legend titles using x="50%" (done above); otherwise,
-            // the legend titles are centered relative to the entire SVG
-            // (containing all legends), which looks bad if multiple legends
-            // have different lengths (the smaller legend titles will stick
-            // out of the outer <rect>)
-            var outputSVG =
-                '<svg width="' +
-                width +
-                '">\n' +
-                styleSVG +
-                '\n<rect x="0" y="' +
-                topY +
-                '" width="' +
-                width +
-                '" height="' +
-                height +
-                '" ' +
-                BGSTYLE +
-                " />\n" +
-                legendSVG +
-                "</svg>\n";
-            return {
-                svg: outputSVG,
-                rowsUsed: rowsUsed,
-                width: width,
-                height: height,
-            };
+            width = maxLineWidth + lineHeight + unit;
+            height = (numCats + 1) * lineHeight + unit;
         } else if (this.legendType === "continuous") {
-
+            innerSVG += this._gradientSVG;
         } else if (this.legendType === "length") {
-
+            // TODO: this should really just be a very simplified version of
+            // the categorical legend code
         } else {
             // Eventually, when we add support for exporting continuous /
             // length legends, this will only really happen if someone tries to
@@ -489,6 +477,37 @@ define(["underscore", "util"], function (_, util) {
                 "Only categorical legends can be exported right now."
             );
         }
+
+        // Build up the output SVG based on everything we have.
+        // We need to apply width to this SVG in order to be able to
+        // center the legend titles using x="50%" (done up around the start
+        // of this function); otherwise, the legend titles are centered
+        // relative to the parent SVG (containing *all* legends), which looks
+        // bad if multiple legends have different lengths (the smaller legend
+        // titles will stick out of the border <rect>).
+        var outputSVG = '<svg width="' + width + '">\n' + styleSVG;
+
+        // Add a white rectangle behind the legend with a black border.
+        outputSVG +=
+            '<rect class="blackborder" x="0" y="' +
+            topY +
+            '" width="' +
+            width +
+            '" height="' +
+            height +
+            '" ' +
+            BGSTYLE +
+            " />\n";
+
+        // Finally, add the interior of the legend SVG and close out the tag.
+        outputSVG += innerSVG + "</svg>\n";
+
+        return {
+            svg: outputSVG,
+            rowsUsed: rowsUsed,
+            width: width,
+            height: height,
+        };
     };
 
     Legend.CONTINUOUS_NON_NUMERIC_WARNING =
