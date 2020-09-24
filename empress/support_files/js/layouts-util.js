@@ -1,5 +1,4 @@
 define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
-
     function getPostOrderNodes(tree, leafSorting) {
         var postOrderNodes = [];
         if (leafSorting === "ascending" || leafSorting === "descending") {
@@ -11,7 +10,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         }
         return postOrderNodes;
     }
-
 
     /**
      * Rectangular layout.

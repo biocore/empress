@@ -765,7 +765,9 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
                 return this._descendingLeafSorted;
             }
         } else {
-            throw new Error("Unrecognized leaf sorting method " + sortingMethod);
+            throw new Error(
+                "Unrecognized leaf sorting method " + sortingMethod
+            );
         }
         var outputNodes = [];
         var childIdxStack = [0];
@@ -783,7 +785,10 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
                 if (!this.isleaf(currChild)) {
                     childIdxStack.push(0);
                     currNode = currChild;
-                    currChildren = this.getSortedChildren(currNode, sortingMethod);
+                    currChildren = this.getSortedChildren(
+                        currNode,
+                        sortingMethod
+                    );
                     currChildrenLen = currChildren.length;
                     currIdx = 0;
                 }
@@ -825,7 +830,10 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         return children;
     };
 
-    BPTree.prototype.getSortedChildren = function (internalNode, sortingMethod) {
+    BPTree.prototype.getSortedChildren = function (
+        internalNode,
+        sortingMethod
+    ) {
         var children = this.getChildren(internalNode);
         // By default, sort ascending.
         // Use of bind based on https://stackoverflow.com/a/27232217/10730311

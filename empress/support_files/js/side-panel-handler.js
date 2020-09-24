@@ -78,7 +78,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             "layout-method-container"
         );
         this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
-        this.leafSortingContainer = document.getElementById("leaf-sorting-container");
+        this.leafSortingContainer = document.getElementById(
+            "leaf-sorting-container"
+        );
         this.leafSortingSel = document.getElementById("leaf-sorting-select");
         this.leafSortingDesc = document.getElementById("leaf-sorting-desc");
         this.ignoreLengthsChk.onclick = function () {
@@ -284,7 +286,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 "Clades are sorted in the tree layout based on the order " +
                 "given in the input tree file.";
         } else {
-            throw new Error("Invalid leaf sorting method: " + leafSortingMethod);
+            throw new Error(
+                "Invalid leaf sorting method: " + leafSortingMethod
+            );
         }
         // Worded the same as for the symmetric clade collapsing method desc
         var disclaimerText =
