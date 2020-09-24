@@ -12,11 +12,10 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         "vec3 unpackColor(float f) {",
         "  vec3 color;",
         "  color.b = floor(f / 256.0 / 256.0);",
-        "    color.g = floor((f - color.b * 256.0 * 256.0) / 256.0);",
-        "    color.r = floor(f - color.b * 256.0 * 256.0 - color.g * 256.0);",
-        "    // now we have a vec3 with the 3 components in range [0..255]. ",
-        "    // Let's normalize it!",
-        "    return color / 255.0;",
+        "  color.g = floor((f - color.b * 256.0 * 256.0) / 256.0);",
+        "  color.r = floor(f - color.b * 256.0 * 256.0 - color.g * 256.0);",
+        "  // rgb are in range [0...255] but they need to be [0...1]",
+        "  return color / 255.0;",
         "}",
         "",
         "void main()",
@@ -60,7 +59,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.treeContainer = document.getElementById("tree-container");
         this.contex_ = canvas.getContext("webgl");
         this.cam = cam;
-        this.VERTEX_SIZE = 5;
+        this.VERTEX_SIZE = 3;
 
         // sets empress to light mode
         this.CLR_COL = 1;
@@ -112,10 +111,6 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         s.mvpMat = c.getUniformLocation(s, "mvpMat");
         s.isSingle = c.getUniformLocation(s, "isSingle");
         s.pointSize = c.getUniformLocation(s, "pointSize");
-
-        // We are using 
-        //
-        //
 
         // buffer object for tree coordinates
         s.treeCoordBuff = c.createBuffer();
@@ -246,10 +241,10 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @param {WebGLBuffer} buffer The Buffer to bind
      */
     Drawer.prototype.bindBuffer = function (buffer) {
-        // defines constants for a vertex. A vertex is the form [x, y, r, g, b]
+        // defines constants for a vertex. A vertex is the form [x, y, rgb]
         const COORD_SIZE = 2;
         const COORD_OFFSET = 0;
-        const COLOR_SIZE = 3;
+        const COLOR_SIZE = 1;
         const COLOR_OFFSET = 2;
 
         var c = this.contex_;
@@ -347,17 +342,6 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      *
      * @param {Array} data The coordinate and color data to fill tree buffer
      */
-    Drawer.prototype.loadTreeBuff = function (data) {
-        data = new Float32Array(data);
-        this.treeCoordSize = data.length / 5;
-        this.fillBufferData_(this.sProg_.treeCoordBuff, data);
-    };
-
-    /**
-     * Fills the buffer used to draw the tree
-     *
-     * @param {Array} data The coordinate and color data to fill tree buffer
-     */
     Drawer.prototype.loadTreeCoordsBuff = function (data) {
         data = new Float32Array(data);
         this.treeCoordSize = data.length / 2;
@@ -371,18 +355,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      */
     Drawer.prototype.loadTreeColorBuff = function (data) {
         data = new Float32Array(data);
-        this.treeColorSize = data.length / 3;
+        this.treeColorSize = data.length;
         this.fillBufferData_(this.sProg_.treeColorBuff, data);
-    };
-
-    /**
-     * Fills the buffer used to draw the tree
-     *
-     * @param {Array} data The coordinate and color data to fill tree buffer
-     */
-    Drawer.prototype.loadTreeElemBuff = function (data) {
-        this.treeIndexSize = data.length;
-        this.fillElemData_(this.sProg_.treeIndexBuff, data);
     };
 
     /**
@@ -392,7 +366,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      */
     Drawer.prototype.loadThickNodeBuff = function (data) {
         data = new Float32Array(data);
-        this.thickNodeSize = data.length / 5;
+        this.thickNodeSize = data.length / this.VERTEX_SIZE;
         this.fillBufferData_(this.sProg_.thickNodeBuff, data);
     };
 
@@ -404,7 +378,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      */
     Drawer.prototype.loadBarplotBuff = function (data) {
         data = new Float32Array(data);
-        this.barplotSize = data.length / 5;
+        this.barplotSize = data.length / this.VERTEX_SIZE;
         this.fillBufferData_(this.sProg_.barplotBuff, data);
     };
 
@@ -426,7 +400,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      */
     Drawer.prototype.loadNodeBuff = function (data) {
         data = new Float32Array(data);
-        this.nodeSize = data.length / 5;
+        this.nodeSize = data.length / this.VERTEX_SIZE;
         this.fillBufferData_(this.sProg_.nodeVertBuff, data);
     };
 
@@ -437,7 +411,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      */
     Drawer.prototype.loadCladeBuff = function (data) {
         data = new Float32Array(data);
-        this.cladeVertSize = data.length / 5;
+        this.cladeVertSize = data.length / this.VERTEX_SIZE;
         this.fillBufferData_(this.sProg_.cladeBuff, data);
     };
 

@@ -72,7 +72,7 @@ define([
          * @type {Array}
          * The default color of the tree
          */
-        this.DEFAULT_COLOR = Colorer.rbgToFloat([191, 191, 191]);
+        this.DEFAULT_COLOR = Colorer.rbgToFloat([, 50, 50]);
 
         /**
          * @type {BPTree}
@@ -356,6 +356,7 @@ define([
      * Initializes WebGL and then draws the tree
      */
     Empress.prototype.initialize = function () {
+        console.log('???')
         var d = new Date();
         this._drawer.initialize();
         this._events.setMouseEvents();
@@ -406,8 +407,7 @@ define([
      */
     Empress.prototype.drawTree = function () {
         this._drawer.loadTreeColorBuff(this.getTreeColor());
-        // this._drawer.loadTreeBuff(this.getCoords());
-        // this._drawer.loadNodeBuff(this.getNodeCoords());
+        this._drawer.loadNodeBuff(this.getNodeCoords());
         this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
     };
@@ -938,7 +938,7 @@ define([
                 coords.push(
                     this.getX(node),
                     this.getY(node),
-                    ...this.getNodeInfo(node, "color")
+                    this.getNodeInfo(node, "color")
                 );
             }
         }
@@ -978,18 +978,18 @@ define([
     Empress.prototype._addTriangleCoords = function (coords, corners, color) {
         // Triangle 1
         coords.push(...corners.tL);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.bL);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.bR);
-        coords.push(...color);
+        coords.push(color);
         // Triangle 2
         coords.push(...corners.tL);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.tR);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.bR);
-        coords.push(...color);
+        coords.push(color);
     };
 
     /* Adds coordinate/color info for a vertical line for a given node in the
@@ -2131,6 +2131,7 @@ define([
                 this._collapseClade(node);
             }
         }
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
     };
 
     /**
@@ -2166,7 +2167,7 @@ define([
         //          left  - the tip with the smallest angle
         //          right - the tip with the largest angle
         var addPoint = function (point) {
-            cladeBuffer.push(...point, ...color);
+            cladeBuffer.push(...point, color);
         };
         var getCoords = function (node) {
             return [scope.getX(node), scope.getY(node)];
