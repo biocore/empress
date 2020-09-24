@@ -15,6 +15,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * |___|
      *     |___
      *
+     * NOTE: This doesn't draw a horizontal line leading to the root "node"
+     * of the graph (as with the other layout methods). See
+     * https://github.com/biocore/empress/issues/141 for context.
+     *
      * For other resources see:
      *
      *  https://rachel53461.wordpress.com/2014/04/20/algorithm-for-drawing-trees/
@@ -30,6 +34,18 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
      *                                layout; otherwise, a uniform length of 1
      *                                is used.
+     * @param {String} leafSorting One of the following three options:
+     *                             -"none": Lay out the tree's clades in the
+     *                              same order as was specified in the input
+     *                              tree.
+     *                             -"ascending": When going through all of the
+     *                              clades on the same level, this will lay
+     *                              them out starting with the clade with the
+     *                              fewest tips and ending with the clade with
+     *                              the most tips (ties broken arbitrarily).
+     *                             -"descending": Opposite of "ascending"
+     *                              (start with most-tip clades then go down,
+     *                              ties broken arbitrarily).
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @return {Object} Object with the following properties:
@@ -47,11 +63,15 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         width,
         height,
         ignoreLengths,
+        leafSorting,
         normalize = true
     ) {
-        // NOTE: This doesn't draw a horizontal line leading to the root "node"
-        // of the graph. See https://github.com/biocore/empress/issues/141 for
-        // context.
+        var postOrderNodes = [];
+        if (leafSorting === "ascending" || leafSorting === "descending") {
+            postOrderNodes = tree.postorderLeafSortedNodes(leafSorting);
+        } else {
+            postOrderNodes = _.range(1, tree.size + 1);
+        }
 
         var maxWidth = 0;
         var maxHeight = 0;
@@ -62,7 +82,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var lowestChildYr = new Array(tree.size + 1);
 
         // postorder
-        for (var i = 1; i <= tree.size; i++) {
+        var i;
+        for (var p = 0; p < postOrderNodes.length; p++) {
+            i = postOrderNodes[p];
             if (tree.isleaf(tree.postorderselect(i))) {
                 yCoord[i] = prevY;
                 prevY += 1;
@@ -261,9 +283,17 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         width,
         height,
         ignoreLengths,
+        leafSorting,
         normalize = true,
         startAngle = 0
     ) {
+        var postOrderNodes = [];
+        if (leafSorting === "ascending" || leafSorting === "descending") {
+            postOrderNodes = tree.postorderLeafSortedNodes(leafSorting);
+        } else {
+            postOrderNodes = _.range(1, tree.size + 1);
+        }
+
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
         var y0 = new Array(tree.size + 1).fill(0);
@@ -290,7 +320,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         // Iterate over the tree in postorder, assigning angles
         // Note that we skip the root (using "i < tree.size" and not "<="),
         // since the root's angle is irrelevant
-        for (var i = 1; i < tree.size; i++) {
+        var i;
+        for (var p = 0; p < postOrderNodes.length; p++) {
+            i = postOrderNodes[p];
             if (tree.isleaf(tree.postorderselect(i))) {
                 angle[i] = prevAngle;
                 prevAngle += anglePerTip;

@@ -709,6 +709,77 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     };
 
     /**
+     *
+     * Analogous to BPTree.inOrderNodes().
+     *
+     * Returns postorder positions
+     */
+    BPTree.prototype.postorderLeafSortedNodes = function (sortingMethod) {
+        // TODO cache like inorder nodes are
+        var outputNodes = [];
+        var childIdxStack = [0];
+        var rootNode = this.preorderselect(1);
+        var currNode = rootNode;
+        var currChildren = this.getSortedChildren(currNode, sortingMethod);
+        var currChildrenLen = currChildren.length;
+        var currIdx, currChild;
+        while (true) {
+            currIdx = childIdxStack[childIdxStack.length - 1];
+            // If children left, process them.
+            if (currIdx < currChildrenLen) {
+                currChild = currChildren[currIdx];
+                // If currChild has children, go there.
+                if (!this.isleaf(currChild)) {
+                    childIdxStack.push(0);
+                    currNode = currChild;
+                    currChildren = this.getSortedChildren(currNode, sortingMethod);
+                    currChildrenLen = currChildren.length;
+                    currIdx = 0;
+                }
+                // Otherwise, add this child.
+                else {
+                    outputNodes.push(this.postorder(currChild));
+                    childIdxStack[childIdxStack.length - 1]++;
+                }
+            }
+            // If no children left, add self and move on to self's parent
+            else {
+                outputNodes.push(this.postorder(currNode));
+                if (currNode === rootNode) {
+                    break;
+                }
+                currNode = this.parent(currNode);
+                currChildren = this.getSortedChildren(currNode, sortingMethod);
+                currChildrenLen = currChildren.length;
+                childIdxStack.pop();
+                childIdxStack[childIdxStack.length - 1]++;
+            }
+        }
+        return outputNodes;
+    };
+
+    BPTree.prototype.getChildren = function (internalNode) {
+        var children = [];
+        var child = this.fchild(internalNode);
+        while (child !== 0) {
+            children.push(child);
+            child = this.nsibling(child);
+        }
+        return children;
+    };
+
+    BPTree.prototype.getSortedChildren = function (internalNode, sortingMethod) {
+        var children = this.getChildren(internalNode);
+        // By default, sort ascending.
+        // Use of bind based on https://stackoverflow.com/a/27232217/10730311
+        var sortedChildren = _.sortBy(children, this.getNumTips.bind(this));
+        if (sortingMethod === "descending") {
+            sortedChildren.reverse();
+        }
+        return sortedChildren;
+    };
+
+    /**
      * True if name is in the names array for the tree
      *
      * @param {String} name The name to search for.

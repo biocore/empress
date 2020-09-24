@@ -338,13 +338,15 @@ define([
      */
     Empress.prototype.getLayoutInfo = function () {
         var data, i;
+        // TODO get leaf sorting thingimajig
         // Rectangular
         if (this._currentLayout === "Rectangular") {
             data = LayoutsUtil.rectangularLayout(
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths
+                this.ignoreLengths,
+                "ascending"
             );
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
@@ -364,7 +366,8 @@ define([
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths
+                this.ignoreLengths,
+                "none"
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
