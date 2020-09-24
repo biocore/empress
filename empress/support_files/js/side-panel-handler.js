@@ -79,6 +79,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
+        this.layoutMethodContainer = document.getElementById(
+            "layout-method-container"
+        );
 
         // global clade collapse GUI
         this.normalCladeMethod = document.getElementById("normal");
@@ -320,7 +323,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             // Now that we've created these three elements, add them!
             pele.appendChild(lele);
             pele.appendChild(iele);
-            this.layoutDiv.appendChild(pele);
+            this.layoutMethodContainer.appendChild(pele);
         }
     };
 
