@@ -46,9 +46,9 @@ define(["underscore", "util"], function (_, util) {
 
         /**
          * @type {Array}
-         * Sorted categories shown in the legend. Stored as a class-level
-         * variable so it can be retrieved when exporting a categorical legend
-         * to SVG.
+         * Sorted categories shown in a categorical legend. Stored as a
+         * class-level variable so it can be retrieved when exporting a
+         * categorical legend to SVG.
          * @private
          */
         this._sortedCategories = [];
@@ -61,6 +61,23 @@ define(["underscore", "util"], function (_, util) {
          * @private
          */
         this._category2color = {};
+
+        /**
+         * @type {String}
+         * Copy of the gradient SVG shown in a continous legend. Stored as a
+         * class-level variable to make exporting a continuous legend easier.
+         * @private
+         */
+        this._gradientSVG = "";
+
+        /**
+         * @type {Boolean}
+         * Whether or not a warning about non-numeric values missing from a
+         * continuous legend is shown. Same as with this._gradientSVG, stored
+         * in order to simplify continuous legend exporting.
+         * @private
+         */
+        this._nonNumericWarningShown = false;
     }
 
     /**
@@ -113,6 +130,8 @@ define(["underscore", "util"], function (_, util) {
     ) {
         this.clear();
         this.addTitle(name);
+        this._gradientSVG = gradientSVG;
+        this._nonNumericWarningShown = showNonNumericWarning;
         // Apparently we need to use createElementNS() (not just
         // createElement()) for SVGs. I am not sure why this is the case, but
         // it made the SVG show up (before I added this, nothing was showing up
@@ -129,15 +148,11 @@ define(["underscore", "util"], function (_, util) {
         containerSVG.setAttribute("height", "100%");
         containerSVG.setAttribute("style", "display: block; margin: auto;");
         // just kinda plop the SVG code into containerSVG's HTML
-        containerSVG.innerHTML = gradientSVG;
+        containerSVG.innerHTML = this._gradientSVG;
         this._container.appendChild(containerSVG);
-        if (showNonNumericWarning) {
+        if (this._nonNumericWarningShown) {
             var warningP = document.createElement("p");
-            warningP.innerText =
-                "Some value(s) in this field were not " +
-                "numeric. These value(s) have been left " +
-                "out of the gradient, and no bar(s) " +
-                "have been drawn for them.";
+            warningP.innerText = Legend.CONTINUOUS_NON_NUMERIC_WARNING;
             warningP.classList.add("side-panel-notes");
             // All legends have white-space: nowrap; set to prevent color
             // labels from breaking onto the next line (which would look
@@ -462,6 +477,10 @@ define(["underscore", "util"], function (_, util) {
                 width: width,
                 height: height,
             };
+        } else if (this.legendType === "continuous") {
+
+        } else if (this.legendType === "length") {
+
         } else {
             // Eventually, when we add support for exporting continuous /
             // length legends, this will only really happen if someone tries to
@@ -471,6 +490,11 @@ define(["underscore", "util"], function (_, util) {
             );
         }
     };
+
+    Legend.CONTINUOUS_NON_NUMERIC_WARNING =
+        "Some value(s) in this field were not numeric. These value(s) have " +
+        "been left out of the gradient, and no bar(s) have been drawn for " +
+        "them.";
 
     return Legend;
 });

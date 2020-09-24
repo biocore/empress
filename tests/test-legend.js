@@ -185,6 +185,10 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
 
             // Legend should be visible
             notOk(this.containerEle.classList.contains("hidden"));
+
+            // Check SVG exporting attributes are set ok
+            ok(legend._gradientSVG.includes("<linearGradient"));
+            notOk(legend._nonNumericWarningShown);
         });
         test("addContinuousKey (with non-numeric warning)", function () {
             var legend = new Legend(this.containerEle);
@@ -208,19 +212,21 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             // 3. Check non-numeric warning
             var warning = this.containerEle.children[2];
             equal(warning.tagName, "P");
-            equal(
-                warning.innerText,
-                "Some value(s) in this field were not " +
-                    "numeric. These value(s) have been left " +
-                    "out of the gradient, and no bar(s) " +
-                    "have been drawn for them."
-            );
+            equal(warning.innerText, Legend.CONTINUOUS_NON_NUMERIC_WARNING);
             // Verify that the warning <p> has white-space: normal; set so it
             // has line breaks, like normal text
             equal($(warning).css("white-space"), "normal");
 
             // Legend should be visible
             notOk(this.containerEle.classList.contains("hidden"));
+
+            // Check that legend._gradientSVG and
+            // legend._nonNumericWarningShown are properly set
+            // (The gradientSVG check is extremely cursory -- this just
+            // verifies that it kinda looks like a gradient. The actual
+            // gradient SVG being correct is tested in test-colorer.js.)
+            ok(legend._gradientSVG.includes("<linearGradient"));
+            ok(legend._nonNumericWarningShown);
         });
         test("addLengthKey", function () {
             var legend = new Legend(this.containerEle);
