@@ -518,7 +518,7 @@ define(["underscore", "util"], function (_, util) {
             // the title line) the width of a color square (lineHeight) plus
             // the padding btwn. the color square and start of the text (unit)
             // plus some extra padding at the right-hand side (the other unit)
-            width = maxLineWidth + lineHeight + (2 * unit);
+            width = maxLineWidth + lineHeight + 2 * unit;
             height = (numCats + 1) * lineHeight + unit;
         } else if (this.legendType === "continuous") {
             // Add linear gradient to SVG
@@ -613,7 +613,6 @@ define(["underscore", "util"], function (_, util) {
             // gradientTopY.
             height = gradientHeight + lineHeight + unit;
         } else if (this.legendType === "length") {
-
             // We're basically simulating a table here, so just adding two
             // rows of text won't cut it.
             // First, figure out which header is bigger (it's probably gonna
@@ -674,7 +673,7 @@ define(["underscore", "util"], function (_, util) {
             rowsUsed++;
 
             // Max header width, max value width, and left and right padding
-            width = maxHeaderWidth + maxValWidth + (2 * unit);
+            width = maxHeaderWidth + maxValWidth + 2 * unit;
             // Three lines (title, min row, max row) plus unit padding between
             // title and min row
             height = 3 * lineHeight + unit;
