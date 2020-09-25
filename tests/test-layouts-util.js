@@ -430,6 +430,31 @@ require([
                 deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
             });
         });
+        test("Test straightline tree circular layout (all leaf sorting options)", function () {
+            // Spoiler alert: should all look the same
+            var scope = this;
+            var opts = ["none", "ascending", "descending"];
+            _.each(opts, function (opt) {
+                var obs = LayoutsUtil.circularLayout(
+                    scope.straightLineTree,
+                    1,
+                    1,
+                    false,
+                    opt,
+                    false
+                );
+                // I just copied these assertions from the above test
+                deepEqual(obs.x0, [0, 1, 0, 0], "x0");
+                deepEqual(obs.y0, [0, 0, 0, 0], "y0");
+                deepEqual(obs.x1, [0, 3, 1, 0], "x1");
+                deepEqual(obs.y1, [0, 0, 0, 0], "y1");
+                deepEqual(obs.angle, [0, 0, 0, 0], "angle");
+                deepEqual(obs.arcx0, [0, 0, 1, 0], "arcx0");
+                deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
+                deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
+                deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
+            });
+        });
         test("Test straightline tree circular layout: ignoreLengths", function () {
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
