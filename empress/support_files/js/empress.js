@@ -120,7 +120,7 @@ define([
          * @type {Number}
          * @private
          */
-        this._numOfNonLayoutParam = 3
+        this._numOfNonLayoutParam = 3;
 
         /**
          * @type {Array}
@@ -408,6 +408,7 @@ define([
      * Initializes WebGL and then draws the tree
      */
     Empress.prototype.initialize = function () {
+        console.log("size", this._tree.size);
         var d = new Date();
         this._drawer.initialize();
         this._events.setMouseEvents();
@@ -475,11 +476,11 @@ define([
      *
      * We used to interlace the coorinate information with the color information
      * i.e. [x1, y1, red1, green1, blue1, x2, y2, red2, green2, blue2,...]
-     * However, for large trees 
+     * However, for large trees
      *
      * @return {Array}
      */
-    Empress.prototype.getTreeCoords = function() {
+    Empress.prototype.getTreeCoords = function () {
         var tree = this._tree;
         var coords = [];
 
@@ -575,14 +576,16 @@ define([
                     !this._tree.isleaf(this._tree.postorderselect(node)) &&
                     !this._collapsedClades.hasOwnProperty(node)
                 ) {
-                    // arcs are created by sampling 15 small lines along the
-                    // arc spanned by rotating (arcx0, arcy0), the line whose
-                    // origin is the root of the tree and endpoint is the start
-                    // of the arc, by arcendangle - arcstartangle radians.
-                    var numSamples = 15;
+                    // An arc will be created for all internal nodes.
+                    // arcs are created by sampling up to 60 small lines along
+                    // the arc spanned by rotating the line (arcx0, arcy0)
+                    // arcendangle - arcstartangle radians. This will create an
+                    // arc that starts at each internal node's rightmost child
+                    // and ends on the leftmost child.
                     var arcDeltaAngle =
                         this.getNodeInfo(node, "arcendangle") -
                         this.getNodeInfo(node, "arcstartangle");
+                    var numSamples = this._numSampToApproximate(arcDeltaAngle);
                     var sampleAngle = arcDeltaAngle / numSamples;
                     var sX = this.getNodeInfo(node, "arcx0");
                     var sY = this.getNodeInfo(node, "arcy0");
@@ -610,9 +613,9 @@ define([
             }
         }
         return new Float32Array(coords);
-    }
+    };
 
-    Empress.prototype.getTreeColor = function() {
+    Empress.prototype.getTreeColor = function () {
         var tree = this._tree;
 
         var coords = [];
@@ -638,7 +641,6 @@ define([
         }
         // iterate through the tree in postorder, skip root
         for (var node = 1; node < tree.size; node++) {
-
             if (!this.getNodeInfo(node, "visible")) {
                 continue;
             }
@@ -689,7 +691,16 @@ define([
                     !this._tree.isleaf(this._tree.postorderselect(node)) &&
                     !this._collapsedClades.hasOwnProperty(node)
                 ) {
-                    var numSamples = 15;
+                    // An arc will be created for all internal nodes.
+                    // arcs are created by sampling up to 60 small lines along
+                    // the arc spanned by rotating the line (arcx0, arcy0)
+                    // arcendangle - arcstartangle radians. This will create an
+                    // arc that starts at each internal node's rightmost child
+                    // and ends on the leftmost child.
+                    var arcDeltaAngle =
+                        this.getNodeInfo(node, "arcendangle") -
+                        this.getNodeInfo(node, "arcstartangle");
+                    var numSamples = this._numSampToApproximate(arcDeltaAngle);
                     for (var line = 0; line < numSamples; line++) {
                         addPoint();
                     }
@@ -701,7 +712,7 @@ define([
             }
         }
         return new Float32Array(coords);
-    }
+    };
 
     /**
      * Creates an SVG string to export the current drawing
@@ -2310,7 +2321,7 @@ define([
             }
         }
         var dt = new Date();
-        console.log("update layout", dt.getTime() - d.getTime())
+        console.log("update layout", dt.getTime() - d.getTime());
     };
 
     /**
