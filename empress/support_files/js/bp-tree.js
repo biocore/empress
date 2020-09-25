@@ -849,11 +849,13 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      * @return {Array} children
      */
     BPTree.prototype.getSortedChildren = function (node, sortingMethod) {
-        var children = this.getChildren(node);
-        // By default, sort ascending.
-        // Use of bind based on https://stackoverflow.com/a/27232217/10730311
         var scope = this;
-        var sFunc = function (childIdx) {
+
+        var children = this.getChildren(node);
+        // Define a function mapping a node index to the number of tips its
+        // subtree contains. This function will be used to sort the array
+        // of children.
+        var child2numTips = function (childIdx) {
             var numTips = scope.getNumTips(scope.postorder(childIdx));
             if (sortingMethod === "descending") {
                 // Flip things around; sort in descending order. This should be
@@ -864,7 +866,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
                 return numTips;
             }
         };
-        return _.sortBy(children, sFunc);
+        return _.sortBy(children, child2numTips);
     };
 
     /**
