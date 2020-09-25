@@ -1,5 +1,5 @@
 /*
- * This File is intended to be used only with Emperor
+ * This file is intended to be used only with Emperor
  */
 
 empress.setOnNodeMenuVisibleCallback(function (samples) {
