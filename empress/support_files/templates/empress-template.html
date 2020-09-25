@@ -29,7 +29,7 @@
         <div class="square"></div>
 
         <!-- Side panel -->
-        <div id="side-panel" class="unselectable-text">
+        <div id="side-panel" class="unselectable-text hidden">
           {% include 'side-panel.html'%}
         </div>
 
@@ -128,15 +128,23 @@
 
         var canvas = document.getElementById('tree-surface');
 
-        var biom = new BIOMTable(
-          {{ s_ids | tojson }},
-          {{ f_ids | tojson }},
-          {{ s_ids_to_indices | tojson }},
-          {{ f_ids_to_indices | tojson }},
-          {{ compressed_table | tojson }},
-          {{ sample_metadata_columns | tojson }},
-          {{ compressed_sample_metadata | tojson }},
-        );
+        // NOTE: the contents of this line are validated in the python
+        // integration tests. If this line is changed somehow, the integration
+        // tests will need to be updated accordingly.
+        var isCommunityPlot = {{ is_community_plot | tojson }};
+
+        var biom = null;
+        if (isCommunityPlot) {
+            biom = new BIOMTable(
+              {{ s_ids | tojson }},
+              {{ f_ids | tojson }},
+              {{ s_ids_to_indices | tojson }},
+              {{ f_ids_to_indices | tojson }},
+              {{ compressed_table | tojson }},
+              {{ sample_metadata_columns | tojson }},
+              {{ compressed_sample_metadata | tojson }},
+            );
+        }
         var empress = new Empress(
             tree,
             biom,
@@ -151,22 +159,39 @@
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress);
         sPanel.addTreePropertiesTab();
-        sPanel.addSampleTab();
+        sPanel.addLayoutTab();
+        sPanel.addExportTab();
+
+        // Only show the sample metadata coloring / animation panels if a
+        // feature table and sample metadata file were provided
+        if (isCommunityPlot) {
+            sPanel.addSampleTab();
+
+            // Create animator state machine
+            var animator = new Animator(empress);
+
+            // Add animator GUI components
+            var animationPanel = new AnimationPanel(animator);
+            animationPanel.addAnimationTab();
+            document.getElementById("animationOpenButton").classList
+                .remove("hidden");
+        } else {
+            $(".needs-community-data").addClass("hidden");
+            if (fmCols.length === 0) {
+                // Neither feature nor sample metadata is available, so hide
+                // things that require at least one type of metadata (e.g.
+                // the barplot panel)
+                $(".needs-metadata").addClass("hidden");
+            }
+        }
+
+        // Similarly, only show the feature metadata coloring panel if feature
+        // metadata was provided
         if (fmCols.length > 0) {
             sPanel.addFeatureTab();
-            document.getElementById("fmOpenButton").classList.remove("hidden");
+        } else {
+            $(".needs-feature-metadata").addClass("hidden");
         }
-        sPanel.addLayoutTab();
-
-        // Create animator state machine
-        var animator = new Animator(empress);
-
-        // Add animator GUI components
-        var animationPanel = new AnimationPanel(animator);
-        animationPanel.addAnimationTab();
-
-        // add export drawing tab
-        sPanel.addExportTab();
 
         // make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {
@@ -177,6 +202,12 @@
               document.querySelector(".side-content:not(.hidden)"));
           });
         });
+
+        // make side panel visible (this is done after hiding controls so that
+        // the user sees it all appear at once, rather than seeing certain
+        // input-data-dependent controls [e.g. s/f metadata, barplots,
+        // animation] pop in above)
+        document.getElementById("side-panel").classList.remove("hidden");
 
         document.getElementById("loading-screen").classList.add("hidden");
 

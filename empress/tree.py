@@ -14,11 +14,11 @@ class TreeFormatWarning(Warning):
 
 
 def validate_tree(tree):
-    """Check for the validty of the tree
+    """Checks the validty of the tree.
 
     Parameters
     ----------
-    tree : bp.BPTree
+    tree : bp.BP
         The tree to validate
     """
 
@@ -131,7 +131,7 @@ def bp_tree_non_tips(bp_tree):
 def isleaf(bp_tree, i):
     """ Checks if node at position i belongs to a leaf node or not
 
-        Parameters
+       Parameters
        ----------
        bp_tree : bp.BP
            Input BP tree

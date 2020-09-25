@@ -63,6 +63,13 @@ define([
         this.lengthLegend = null;
 
         this.fmAvailable = this.fmCols.length > 0;
+        this.smAvailable = this.smCols.length > 0;
+
+        // If neither feature nor sample metadata information are available,
+        // barplots are not possible.
+        if (!this.fmAvailable && !this.smAvailable) {
+            throw new Error("No feature or sample metadata columns available");
+        }
 
         // This should be "fm" if the barplot is for feature metadata; "sm" if
         // the barplot is for sample metadata. (The default is to use feature
@@ -133,14 +140,15 @@ define([
         // Add UI elements for switching between feature and sample metadata
         // barplots for this layer (only if feature metadata is available;
         // otherwise, things will just default to sample metadata barplots.)
-        if (this.fmAvailable) {
+        var fmBtn, smBtn;
+        if (this.fmAvailable && this.smAvailable) {
             var metadataChoiceP = this.layerDiv.appendChild(
                 document.createElement("p")
             );
-            var fmBtn = metadataChoiceP.appendChild(
+            fmBtn = metadataChoiceP.appendChild(
                 document.createElement("button")
             );
-            var smBtn = metadataChoiceP.appendChild(
+            smBtn = metadataChoiceP.appendChild(
                 document.createElement("button")
             );
             fmBtn.innerText = "Feature Metadata";
@@ -151,14 +159,23 @@ define([
             // Since we default to feature metadata barplot layers, we mark the
             // feature metadata button as "selected" (a.k.a. we darken it a bit)
             fmBtn.classList.add("selected-metadata-choice");
+        }
 
-            // We delay calling initFMDiv() (and initSMDiv(), although that
-            // isn't in this block because it doesn't depend on feature
-            // metadata being available) until after we create the
-            // "type switching" choice buttons above. This is so that the
-            // buttons are placed above the FM / SM divs in the page layout.
+        // We delay calling initFMDiv() / initSMDiv() until after we create the
+        // "type switching" choice buttons above. This is so that the
+        // buttons are placed above the FM / SM divs in the page layout.
+        if (this.fmAvailable) {
             this.initFMDiv();
+        }
+        if (this.smAvailable) {
+            this.initSMDiv();
+        }
+        this.initLegendDiv();
 
+        // We don't set the callbacks until fmDiv / smDiv are created, although
+        // I doubt anyone would be able to click on these buttons fast enough
+        // to break things anyway
+        if (this.fmAvailable && this.smAvailable) {
             fmBtn.onclick = function () {
                 if (scope.barplotType !== "fm") {
                     scope.smDiv.classList.add("hidden");
@@ -178,9 +195,6 @@ define([
                 }
             };
         }
-
-        this.initSMDiv();
-        this.initLegendDiv();
         // Add a row of UI elements that supports removing this layer
         var rmP = this.layerDiv.appendChild(document.createElement("p"));
         var rmLbl = rmP.appendChild(document.createElement("label"));

@@ -1,4 +1,4 @@
-define(["underscore", "util"], function (_, util) {
+define(["jquery", "underscore", "util"], function ($, _, util) {
     /**
      *
      * @class Legend
@@ -266,9 +266,7 @@ define(["underscore", "util"], function (_, util) {
      */
     Legend.prototype.clear = function () {
         this._container.classList.add("hidden");
-        while (this._container.firstChild) {
-            this._container.removeChild(this._container.firstChild);
-        }
+        $(this._container).empty();
         this.legendType = null;
         this.title = "";
     };
