@@ -322,11 +322,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minY = Number.POSITIVE_INFINITY;
 
         // Iterate over the tree in postorder, assigning angles
-        // Note that we skip the root (using "i < postOrderNodes.length" and
-        // not "<="), since the root's angle is irrelevant.
+        // Note that we skip the root (using "p < postOrderNodes.length - 1"),
+        // since the root's angle is irrelevant.
         var postOrderNodes = getPostOrderNodes(tree, leafSorting);
         var i;
-        for (var p = 0; p < postOrderNodes.length; p++) {
+        for (var p = 0; p < postOrderNodes.length - 1; p++) {
             i = postOrderNodes[p];
             if (tree.isleaf(tree.postorderselect(i))) {
                 angle[i] = prevAngle;
