@@ -271,21 +271,27 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.empress.colorByFeatureMetadata(colBy, col, coloringMethod);
     };
 
+    /**
+     * Updates the description shown below the leaf sorting controls.
+     *
+     * This should be called when the selected leaf sorting method is changed
+     * (and when starting Empress).
+     */
     SidePanel.prototype.updateLeafSortingDesc = function (leafSortingMethod) {
         var newText;
         if (leafSortingMethod === "descending") {
             newText =
-                "Clades are not sorted in the tree layout by the number of " +
-                "descendant tips they contain. The ordering should thus " +
-                "match the order of clades in the input tree file.";
+                "Clades are sorted in the tree layout in descending order " +
+                "by the number of descendant tips they contain.";
         } else if (leafSortingMethod === "ascending") {
             newText =
                 "Clades are sorted in the tree layout in ascending order " +
                 "by the number of descendant tips they contain.";
         } else if (leafSortingMethod === "none") {
             newText =
-                "Clades are sorted in the tree layout based on the order " +
-                "given in the input tree file.";
+                "Clades are not sorted in the tree layout by the number of " +
+                "descendant tips they contain. The ordering should thus " +
+                "match the order of clades in the input tree file.";
         } else {
             throw new Error(
                 "Invalid leaf sorting method: " + leafSortingMethod
@@ -297,8 +303,13 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.leafSortingDesc.textContent = newText + disclaimerText;
     };
 
+    /**
+     * Hides / shows the leaf sorting controls depending on the current layout.
+     *
+     * This should be called when the current layout is changed
+     * (and when starting Empress).
+     */
     SidePanel.prototype.updateLeafSortingAvail = function (currLayout) {
-        // Selectively hide/show the leaf sorting stuff based on layout
         if (currLayout === "Unrooted") {
             this.leafSortingContainer.classList.add("hidden");
         } else {
