@@ -740,11 +740,11 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      *
      * REFERENCES
      * ----------
-     * Based on this Python code to do leaf-sorted postorder traversal
-     * over a scikit-bio TreeNode:
+     * This was translated from this Python code to do leaf-sorted postorder
+     * traversal over a scikit-bio TreeNode:
      * https://github.com/biocore/empress/commit/2b3d90f52fc3118b3641ddc6378d3659abdb0d05
      *
-     * That code is in turn a very slightly modified version of scikit-bio's
+     * That code was in turn a slightly modified version of scikit-bio's
      * postorder tree traversal code:
      * https://github.com/biocore/scikit-bio/blob/6ccba4076f1b96843fa2428804cc5a91bf4b76b8/skbio/tree/_tree.py#L1085-L1154
      *
