@@ -517,46 +517,29 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
         });
 
         test("Test centerLayoutAvgPoint", function () {
-            // cache average point for all layouts
             this.empress._currentLayout = "Rectangular";
-            this.empress.centerLayoutAvgPoint();
-            this.empress._currentLayout = "Circular";
-            this.empress.centerLayoutAvgPoint();
-            this.empress._currentLayout = "Unrooted";
-            this.empress.centerLayoutAvgPoint();
+            var avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for rectangular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Rectangular[0] - 7) <=
-                    1.0e-15
-            );
-            // y coor for rectangular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Rectangular[1] - 8) <=
-                    1.0e-15
-            );
+            ok(Math.abs(avgPt[0] - 7) <= 1.0e-15);
+            // y coord for rectangular layout
+            ok(Math.abs(avgPt[1] - 8) <= 1.0e-15);
+
+            this.empress._currentLayout = "Circular";
+            avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for circular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Circular[0] - 21) <=
-                    1.0e-15
-            );
-            // y coor for circular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Circular[1] - 22) <=
-                    1.0e-15
-            );
+            ok(Math.abs(avgPt[0] - 21) <= 1.0e-15);
+            // y coord for circular layout
+            ok(Math.abs(avgPt[1] - 22) <= 1.0e-15);
+
+            this.empress._currentLayout = "Unrooted";
+            avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for Unrooted layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Unrooted[0] - 35) <=
-                    1.0e-15
-            );
-            // y coor for Unrooted layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Unrooted[1] - 36) <=
-                    1.0e-15
-            );
+            ok(Math.abs(avgPt[0] - 35) <= 1.0e-15);
+            // y coord for Unrooted layout
+            ok(Math.abs(avgPt[1] - 36) <= 1.0e-15);
         });
 
         test("Test assignGroups", function () {

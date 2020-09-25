@@ -2287,6 +2287,29 @@ define([
 
     /**
      * Centers the viewing window at the average of the current layout.
+     *
+     * The layout's average point is defined as [x, y, zoomAmount], where:
+     *
+     * -x is the average of all x coordinates
+     * -y is the average of all y coordinates
+     * -zoomAmount takes the largest x or y coordinate and normalizes it by
+     *  dim / 2 (where dim is the dimension of the canvas).
+     *
+     * zoomAmount is defined be a simple heuristic that should allow the
+     * majority of the tree to be visible in the viewing window.
+     *
+     * NOTE: Previously, layoutAvgPoint was cached for each layout. This
+     * behavior has been removed, because (with the advent of leaf sorting and
+     * "ignore lengths") a given "layout" (e.g. Rectangular) can now have
+     * pretty drastically different locations across all the options available.
+     *
+     * @return {Array} Contains three elements, in the following order:
+     *                 1. Average x-coordinate
+     *                 2. Average y-coordinate
+     *                 3. zoomAmount
+     *                 As of writing, nothing in Empress that I'm aware of
+     *                 consumes the output of this function. The main reason we
+     *                 return this is to make testing this easier.
      */
     Empress.prototype.centerLayoutAvgPoint = function () {
         var layoutAvgPoint = [];
@@ -2306,14 +2329,6 @@ define([
             );
         }
 
-        // the layout's average point is defined as followed:
-        // [x, y, zoomAmount] where x is the average of all x coordinates,
-        // y is the average of all y coordinates, and zoomAmount takes the
-        // largest x or y coordinate and normalizes it by dim / 2 (where
-        // dim is the dimension of the canvas).
-        // Note: zoomAmount is defined be a simple heuristic that should
-        // allow the majority of the tree to be visible in the viewing
-        // window.
         layoutAvgPoint = [
             x / this._tree.size,
             y / this._tree.size,
@@ -2332,6 +2347,7 @@ define([
             layoutAvgPoint[2]
         );
         this.drawTree();
+        return layoutAvgPoint;
     };
 
     /**
