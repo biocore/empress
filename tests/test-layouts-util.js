@@ -224,7 +224,6 @@ require([
             deepEqual(obs, exp);
         });
 
-
         test("Test straightline tree rectangular layout", function () {
             var obs = LayoutsUtil.rectangularLayout(
                 this.straightLineTree,
