@@ -733,6 +733,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             assert.ok(!tree.containsNode("hello"));
             assert.ok(!tree.containsNode(0xa));
         });
+
         test("Test postorderLeafSortedNodes", function () {
             var scope = this;
             // Real quick: assert that BPTree doesn't already have these
@@ -799,6 +800,52 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             // paranoid with JavaScript." Socrates said that, right?
             deepEqual(this.bpObj._ascendingLeafSorted, obsAsc);
             deepEqual(this.bpObj._descendingLeafSorted, obsDsc);
+        });
+
+        test("Test getChildren", function () {
+            // Root's children
+            deepEqual(this.bpObj.getChildren(0), [1, 11, 13]);
+
+            // Node at index 1's children. Note that the order matches the
+            // order of stuff in the tree.
+            deepEqual(this.bpObj.getChildren(1), [2, 4, 6]);
+            // (Real quick, check that the node indices point to the postorder
+            // node names we expect -- mostly just a sanity check that the
+            // surrounding test data hasn't changed)
+            deepEqual(this.bpObj.postorder(2), 1);
+            deepEqual(this.bpObj.postorder(4), 2);
+            deepEqual(this.bpObj.postorder(6), 4);
+
+            // Node at index 11's children (it's a tip, so should return an
+            // empty array)
+            deepEqual(this.bpObj.getChildren(11), []);
+
+            // Node at index 13's children (it just has one immediate child)
+            deepEqual(this.bpObj.getChildren(13), [14]);
+        });
+
+        test("Test getSortedChildren", function () {
+            // Root's children -- see pretty ASCII diagram in
+            // postorderLeafSortedNodes test above
+            deepEqual(this.bpObj.getSortedChildren(0, "ascending"), [11, 13, 1]);
+            deepEqual(this.bpObj.getSortedChildren(0, "descending"), [1, 13, 11]);
+
+            // Node at index 1's children -- all have the same number of tips
+            // Note that getSortedChildren() uses a stable sort, so the
+            // original relative ordering is preserved! Phew.
+            deepEqual(this.bpObj.getSortedChildren(1, "ascending"), [2, 4, 6]);
+            deepEqual(this.bpObj.getSortedChildren(1, "descending"), [2, 4, 6]);
+
+            // Node at index 11's children (it's a tip, so should return an
+            // empty array)
+            deepEqual(this.bpObj.getSortedChildren(11), []);
+
+            // Node at index 13's children (it just has one immediate child)
+            deepEqual(this.bpObj.getSortedChildren(13), [14]);
+
+            // Node at index 14's children -- all have the same number of tips,
+            // so again the original ordering is preserved
+            deepEqual(this.bpObj.getSortedChildren(14), [15, 17]);
         });
     });
 });

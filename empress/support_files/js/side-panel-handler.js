@@ -275,8 +275,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var newText;
         if (leafSortingMethod === "descending") {
             newText =
-                "Clades are sorted in the tree layout in descending order " +
-                "by the number of descendant tips they contain.";
+                "Clades are not sorted in the tree layout by the number of " +
+                "descendant tips they contain. The ordering should thus " +
+                "match the order of clades in the input tree file.";
         } else if (leafSortingMethod === "ascending") {
             newText =
                 "Clades are sorted in the tree layout in ascending order " +

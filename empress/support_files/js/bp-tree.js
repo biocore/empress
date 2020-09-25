@@ -819,11 +819,21 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     /**
      * Returns an array containing the children of a node.
      *
+     * The order of the array is based on fchild and nsibling, which I think
+     * should match what done in the input Newick file.
+     *
      * If the input node has no children (i.e. it's a leaf / tip), this will
      * return an empty Array.
      *
-     * @param {Number} node
-     * @return {Array} children
+     * @param {Number} node Index of the node. "Index" here refers to the
+     *                      0-indexed position in the balanced parentheses of
+     *                      the opening paren for the node in question, e.g.
+     *                      0 1  2  3 4  5
+     *                      ( () () ( () () ) )
+     * @return {Array} children Array of child indices, specified analogously
+     *                          to the node index above. As an example, the
+     *                          children of node 3 in the tree above would be
+     *                          4 and 5.
      */
     BPTree.prototype.getChildren = function (node) {
         var children = [];
@@ -843,9 +853,23 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      * return an empty Array.
      *
      * Ties (e.g. when an internal node's children are all tips, and thus
-     * "contain" 1 tip) are broken arbitrarily.
+     * "contain" 1 tip) should respect the ordering in the initial Newick file,
+     * since _.sortBy() is a stable sort: https://underscorejs.org/#sortBy
+     *
+     * (That said, we don't make any claims in the UI about this [at least not
+     * for the ascending/descending leaf sorting options], so it's not a huge
+     * deal.)
      *
      * @param {Number} node
+     * @param {String} sortingMethod Should be one of "ascending" or
+     *                               "descending". We don't bother validating
+     *                               it at this point -- if another string is
+     *                               passed in then the behavior of this
+     *                               function is undefined (realistically it'll
+     *                               probably just sort things in ascending
+     *                               order, which is what it currently does in
+     *                               that case, but we can't guarantee that
+     *                               won't change).
      * @return {Array} children
      */
     BPTree.prototype.getSortedChildren = function (node, sortingMethod) {
