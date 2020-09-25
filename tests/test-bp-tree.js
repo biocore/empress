@@ -732,5 +732,40 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             assert.ok(!tree.containsNode("hello"));
             assert.ok(!tree.containsNode(0xa));
         });
+        test("Test postorderLeafSortedNodes", function () {
+            // So here is an ASCII rendering of the test tree (nodes labeled by
+            // their [normal] postorder position, no leaf sorting used).
+            //
+            //      11
+            //     /|\
+            //    / | \
+            //   5  6  10
+            //  /|\     |
+            // 1 2 4    9
+            //     |   / \
+            //     3  7   8
+            //
+            // Basically, what leaf sorting does is flip around the order in
+            // which clades are visited. In a normal postorder traversal we'd
+            // visit node 5's clade first since it's the first one specified
+            // in the tree (based on how the balanced parens representation of
+            // the tree is written out at the top of this file) -- but here,
+            // when choosing which of the three root children to visit (5, 6,
+            // 10), we start with 6 because it has the smallest number of tips
+            // (1). Then, we go to 10's clade (it has 2 tips), and finally 5's
+            // clade (3 tips).
+            //
+            // (This process is iterative -- we always visit the clade with the
+            // smallest number of tips first, not just the ones at the top of
+            // the tree -- but the test tree doesn't have any branches
+            // where any path has more than one tip after the root.)
+            var obsAsc = this.bpObj.postorderLeafSortedNodes("ascending");
+            deepEqual(obsAsc, [6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 11]);
+
+            // With descending leaf sorting, we visit clades in the opposite
+            // order: start at 5's clade, then 10's clade, then 6's clade.
+            var obsDsc = this.bpObj.postorderLeafSortedNodes("descending");
+            deepEqual(obsDsc, [1, 2, 3, 4, 5, 7, 8, 9, 10, 6, 11]);
+        });
     });
 });
