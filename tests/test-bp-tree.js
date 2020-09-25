@@ -827,8 +827,16 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
         test("Test getSortedChildren", function () {
             // Root's children -- see pretty ASCII diagram in
             // postorderLeafSortedNodes test above
-            deepEqual(this.bpObj.getSortedChildren(0, "ascending"), [11, 13, 1]);
-            deepEqual(this.bpObj.getSortedChildren(0, "descending"), [1, 13, 11]);
+            deepEqual(this.bpObj.getSortedChildren(0, "ascending"), [
+                11,
+                13,
+                1,
+            ]);
+            deepEqual(this.bpObj.getSortedChildren(0, "descending"), [
+                1,
+                13,
+                11,
+            ]);
 
             // Node at index 1's children -- all have the same number of tips
             // Note that getSortedChildren() uses a stable sort, so the
