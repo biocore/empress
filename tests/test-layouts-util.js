@@ -324,7 +324,14 @@ require([
             // length, the output data should be exactly the same.
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.circularLayout(tree, 1, 1, false, "none", false);
+                var obs = LayoutsUtil.circularLayout(
+                    tree,
+                    1,
+                    1,
+                    false,
+                    "none",
+                    false
+                );
                 // The tree looks like:
                 // root -- a ---- b
                 deepEqual(obs.x0, [0, 1, 0, 0], "x0");
@@ -344,7 +351,14 @@ require([
         test("Test straightline tree circular layout: ignoreLengths", function () {
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.circularLayout(tree, 1, 1, true, "none", false);
+                var obs = LayoutsUtil.circularLayout(
+                    tree,
+                    1,
+                    1,
+                    true,
+                    "none",
+                    false
+                );
                 // The tree looks like: (note the equal branch lengths)
                 // root -- a -- b
                 deepEqual(obs.x0, [0, 1, 0, 0], "x0");
