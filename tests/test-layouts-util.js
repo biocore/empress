@@ -550,5 +550,39 @@ require([
             };
             deepEqual(obs, exp);
         });
+
+        test("Test getPostOrderNodes (ascending)", function () {
+            var po = LayoutsUtil.getPostOrderNodes(this.tree, "ascending");
+            // Two explicit "choices" (all other choices, I think, are between
+            // clades of equal numbers of tips) --
+            // 1. Visit h (8)'s clade first, since it has 2 tips and
+            //    g (5)'s clade has 3 tips.
+            // 2. Visit b (4)'s clade first, since it has 1 tip (itself) and
+            //    f (3)'s clade has 2 tips.
+            deepEqual(po, [6, 7, 8, 4, 1, 2, 3, 5, 9]);
+        });
+
+        test("Test getPostOrderNodes (descending)", function () {
+            var po = LayoutsUtil.getPostOrderNodes(this.tree, "descending");
+            // Same logic as above, in reverse. Coincidentally, the tree was
+            // already stored in a descending leaf-sorted way! That's why all
+            // the numbers are monotonically increasing (since the numbers are
+            // the normal postorder positions).
+            deepEqual(po, [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        });
+
+        test("Test getPostOrderNodes (no leaf sorting)", function () {
+            var po = LayoutsUtil.getPostOrderNodes(this.tree, "descending");
+            // Identical to descending leaf-sorting (not normally, just for
+            // this particular tree...)
+            deepEqual(po, [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        });
+
+        test("Test getPostOrderNodes (error on bad leaf sorting method)", function () {
+            var scope = this;
+            throws(function () {
+                LayoutsUtil.getPostOrderNodes(scope.tree, "bluhbluhbluh");
+            }, /Unrecognized leaf sorting method bluhbluhbluh/);
+        });
     });
 });

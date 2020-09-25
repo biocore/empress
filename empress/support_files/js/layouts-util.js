@@ -1,9 +1,30 @@
 define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
+    /**
+     * Given a tree and leaf sorting method, returns an Array of the tree's
+     * nodes in postorder (using the given leaf sorting method).
+     *
+     * @param {BPTree} tree The tree to be traversed
+     * @param {String} leafSorting One of the following three options:
+     *                             -"none": Lay out the tree's clades in the
+     *                              same order as specified in the input tree.
+     *                             -"ascending": Use leaf sorting with
+     *                              "ascending" order. See
+     *                              BPTree.postorderLeafSortedNodes() for
+     *                              details.
+     *                             -"descending": Use leaf sorting with
+     *                              "descending" order. Again, see BPTree.
+     *                             If any other value is passed in for this
+     *                             parameter, this will throw an error.
+     * @return {Array} postOrderNodes
+     * @throws {Error} If the leafSorting parameter is invalid
+     */
     function getPostOrderNodes(tree, leafSorting) {
         var postOrderNodes = [];
         if (leafSorting === "ascending" || leafSorting === "descending") {
             postOrderNodes = tree.postorderLeafSortedNodes(leafSorting);
         } else if (leafSorting === "none") {
+            // Nodes are already stored as their postorder position, so we can
+            // just return an array in the range [1, tree.size]
             postOrderNodes = _.range(1, tree.size + 1);
         } else {
             throw new Error("Unrecognized leaf sorting method " + leafSorting);
@@ -46,15 +67,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
      *                                layout; otherwise, a uniform length of 1
      *                                is used.
-     * @param {String} leafSorting One of the following three options:
-     *                             -"none": Lay out the tree's clades in the
-     *                              same order as specified in the input tree.
-     *                             -"ascending": Use leaf sorting with
-     *                              "ascending" order. See
-     *                              BPTree.postorderLeafSortedNodes() for
-     *                              details.
-     *                             -"descending": Use leaf sorting with
-     *                              "descending" order. Again, see BPTree.
+     * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @return {Object} Object with the following properties:
@@ -257,15 +270,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
      *                                layout; otherwise, a uniform length of 1
      *                                is used.
-     * @param {String} leafSorting One of the following three options:
-     *                             -"none": Lay out the tree's clades in the
-     *                              same order as specified in the input tree.
-     *                             -"ascending": Use leaf sorting with
-     *                              "ascending" order. See
-     *                              BPTree.postorderLeafSortedNodes() for
-     *                              details.
-     *                             -"descending": Use leaf sorting with
-     *                              "descending" order. Again, see BPTree.
+     * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @param {Float} startAngle The first tip in the tree visited is assigned
@@ -575,6 +580,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     return {
+        getPostOrderNodes: getPostOrderNodes,
         rectangularLayout: rectangularLayout,
         circularLayout: circularLayout,
         unrootedLayout: unrootedLayout,
