@@ -69,7 +69,7 @@ require([
             },
         });
 
-        test("Test rectangular layout", function () {
+        test("Test rectangular layout (none and descending leaf sorting)", function () {
             var obs = LayoutsUtil.rectangularLayout(
                 this.tree,
                 1,
@@ -140,68 +140,18 @@ require([
                 yScalingFactor: 0.25,
             };
             deepEqual(obs, exp);
-        });
 
-        test("Test straightline tree rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(
-                this.straightLineTree,
+            // Coincidentally, the output is the same between none and
+            // descending leaf sorting for this particular tree...
+            obs2 = LayoutsUtil.rectangularLayout(
+                this.tree,
                 1,
                 1,
                 false,
-                "none",
+                "descending",
                 false
             );
-
-            var exp = {
-                highestChildYr: [undefined, undefined, 0, 0],
-                lowestChildYr: [undefined, undefined, 0, 0],
-                xCoord: [0, 3, 1, 0],
-                yCoord: [0, 0, 0, 0],
-                yScalingFactor: 1,
-            };
-            deepEqual(obs, exp);
-        });
-
-        test("Test straightline tree rectangular layout: ignoreLengths", function () {
-            var obs = LayoutsUtil.rectangularLayout(
-                this.straightLineTree,
-                1,
-                1,
-                true,
-                "none",
-                false
-            );
-
-            // The only difference in output is that the one tip node in the
-            // tree (at postorder position 1) is at x = 2, not x = 3.
-            var exp = {
-                highestChildYr: [undefined, undefined, 0, 0],
-                lowestChildYr: [undefined, undefined, 0, 0],
-                xCoord: [0, 2, 1, 0],
-                yCoord: [0, 0, 0, 0],
-                yScalingFactor: 1,
-            };
-            deepEqual(obs, exp);
-        });
-
-        test("Test missing root length rectangular layout", function () {
-            var obs = LayoutsUtil.rectangularLayout(
-                this.noRootLength,
-                1,
-                1,
-                false,
-                "none",
-                false
-            );
-
-            var exp = {
-                highestChildYr: [undefined, undefined, 0, 0],
-                lowestChildYr: [undefined, undefined, 0, 0],
-                xCoord: [0, 3, 1, 0],
-                yCoord: [0, 0, 0, 0],
-                yScalingFactor: 1,
-            };
-            deepEqual(obs, exp);
+            deepEqual(obs2, exp);
         });
 
         test("Test rectangular layout (ascending leaf sorting)", function () {
@@ -270,6 +220,69 @@ require([
                     0.0,
                 ],
                 yScalingFactor: 0.25,
+            };
+            deepEqual(obs, exp);
+        });
+
+
+        test("Test straightline tree rectangular layout", function () {
+            var obs = LayoutsUtil.rectangularLayout(
+                this.straightLineTree,
+                1,
+                1,
+                false,
+                "none",
+                false
+            );
+
+            var exp = {
+                highestChildYr: [undefined, undefined, 0, 0],
+                lowestChildYr: [undefined, undefined, 0, 0],
+                xCoord: [0, 3, 1, 0],
+                yCoord: [0, 0, 0, 0],
+                yScalingFactor: 1,
+            };
+            deepEqual(obs, exp);
+        });
+
+        test("Test straightline tree rectangular layout: ignoreLengths", function () {
+            var obs = LayoutsUtil.rectangularLayout(
+                this.straightLineTree,
+                1,
+                1,
+                true,
+                "none",
+                false
+            );
+
+            // The only difference in output is that the one tip node in the
+            // tree (at postorder position 1) is at x = 2, not x = 3.
+            var exp = {
+                highestChildYr: [undefined, undefined, 0, 0],
+                lowestChildYr: [undefined, undefined, 0, 0],
+                xCoord: [0, 2, 1, 0],
+                yCoord: [0, 0, 0, 0],
+                yScalingFactor: 1,
+            };
+            deepEqual(obs, exp);
+        });
+
+        test("Test missing root length rectangular layout", function () {
+            var obs = LayoutsUtil.rectangularLayout(
+                this.noRootLength,
+                1,
+                1,
+                false,
+                "none",
+                false
+            );
+
+            var exp = {
+                highestChildYr: [undefined, undefined, 0, 0],
+                lowestChildYr: [undefined, undefined, 0, 0],
+                xCoord: [0, 3, 1, 0],
+                yCoord: [0, 0, 0, 0],
+                yScalingFactor: 1,
             };
             deepEqual(obs, exp);
         });
