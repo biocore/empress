@@ -204,6 +204,76 @@ require([
             deepEqual(obs, exp);
         });
 
+        test("Test rectangular layout (ascending leaf sorting)", function () {
+            var obs = LayoutsUtil.rectangularLayout(
+                this.tree,
+                1,
+                1,
+                false,
+                "ascending",
+                false
+            );
+            // Initial y-coords:
+            // c, d, b, a, e
+            // 0, 1, 2, 3, 4
+            //
+            // f = a+e / 2 = 3.5
+            // g = f+b / 2 = 2.75
+            // h = d+c / 2 = 0.5
+            // i = h+g / 2 = 1.625
+            //
+            // Initial x-coords:
+            // i, g, f, e, a, b, h, d, c
+            // 0, 1, 2, 4, 3, 3, 2, 5, 3
+            //
+            // So all y-coords are subtracted by 1.625, and all x-coords are
+            // subtracted by 0 (nothing happens).
+            //
+            // The output arrays are in postorder.
+            // (empty space), a, e, f, b, g, c, d, h, i (root)
+            var exp = {
+                highestChildYr: [
+                    undefined,
+                    undefined,
+                    undefined,
+                    2.375,
+                    undefined,
+                    1.875,
+                    undefined,
+                    undefined,
+                    -0.625,
+                    1.125,
+                ],
+                lowestChildYr: [
+                    undefined,
+                    undefined,
+                    undefined,
+                    1.375,
+                    undefined,
+                    0.375,
+                    undefined,
+                    undefined,
+                    -1.625,
+                    -1.125,
+                ],
+                xCoord: [0, 3, 4, 2, 3, 1, 3, 5, 2, 0],
+                yCoord: [
+                    0,
+                    1.375,
+                    2.375,
+                    1.875,
+                    0.375,
+                    1.125,
+                    -1.625,
+                    -0.625,
+                    -1.125,
+                    0.0,
+                ],
+                yScalingFactor: 0.25,
+            };
+            deepEqual(obs, exp);
+        });
+
         test("Test circular layout", function () {
             var obs = LayoutsUtil.circularLayout(
                 this.circLayoutTestTree,
