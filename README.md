@@ -146,9 +146,15 @@ Similarly to other tree visualization tools like [iTOL](https://itol.embl.de/), 
 #### First: a small warning about barplots
 
 Although barplots are very useful for identifying patterns, be wary of
-reading too much into them! The ordering of tips / clades on the same level of
-the tree is [currently arbitrary](https://github.com/biocore/empress/issues/170),
-and this can impact the way barplots look in ways that might not be immediately
+reading too much into them! The way the rectangular and circular layouts work
+means that a tip that looks "next" to another tip may actually be somewhat far
+away from that tip (e.g. in the rectangular layout if one tip is at the top of
+its clade, and another tip just "above" it is at the bottom of its clade). An
+example of this is shown below with the mustard and lavender clades:
+
+![Example of this phenomenon on the moving pictures dataset](docs/moving-pictures/img/empress_funky_barplot_example.png)
+
+This can impact the way barplots look in ways that might not be immediately
 obvious. To quote "Inferring Phylogenies" (Felsenstein 2004), pages 573–574:
 
 > It is worth noting that by reordering tips, you can change the viewer's impression of the closeness of relationships. [...] A little judicious flipping may create a Great Chain of Being marching nicely along the sequence of names, even though the tree supports no such thing.
