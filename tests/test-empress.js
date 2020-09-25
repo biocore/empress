@@ -517,29 +517,31 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
         });
 
         test("Test centerLayoutAvgPoint", function () {
+            // Epsilon for approximate equality tests
+            var e = 1.0e-15;
             this.empress._currentLayout = "Rectangular";
             var avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for rectangular layout
-            ok(Math.abs(avgPt[0] - 7) <= 1.0e-15);
+            UtilitiesForTesting.approxDeepEqual(avgPt[0], 7, e);
             // y coord for rectangular layout
-            ok(Math.abs(avgPt[1] - 8) <= 1.0e-15);
+            UtilitiesForTesting.approxDeepEqual(avgPt[1], 8, e);
 
             this.empress._currentLayout = "Circular";
             avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for circular layout
-            ok(Math.abs(avgPt[0] - 21) <= 1.0e-15);
+            UtilitiesForTesting.approxDeepEqual(avgPt[0], 21, e);
             // y coord for circular layout
-            ok(Math.abs(avgPt[1] - 22) <= 1.0e-15);
+            UtilitiesForTesting.approxDeepEqual(avgPt[1], 22, e);
 
             this.empress._currentLayout = "Unrooted";
             avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for Unrooted layout
-            ok(Math.abs(avgPt[0] - 35) <= 1.0e-15);
+            UtilitiesForTesting.approxDeepEqual(avgPt[0], 35, e);
             // y coord for Unrooted layout
-            ok(Math.abs(avgPt[1] - 36) <= 1.0e-15);
+            UtilitiesForTesting.approxDeepEqual(avgPt[1], 36, e);
         });
 
         test("Test assignGroups", function () {
