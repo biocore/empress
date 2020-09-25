@@ -630,6 +630,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
         });
 
         test("Test getTotalLength", function () {
+            var scope = this;
             equal(
                 this.bpObj.getTotalLength(3, 11),
                 12,
@@ -651,7 +652,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             );
 
             throws(function () {
-                this.bpObj.getTotalLength(5, 3);
+                scope.bpObj.getTotalLength(5, 3);
             });
         });
 
@@ -733,6 +734,12 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             assert.ok(!tree.containsNode(0xa));
         });
         test("Test postorderLeafSortedNodes", function () {
+            var scope = this;
+            // Real quick: assert that BPTree doesn't already have these
+            // results cached. We'll check that they *do* get cached later on.
+            deepEqual(this.bpObj._ascendingLeafSorted, null);
+            deepEqual(this.bpObj._descendingLeafSorted, null);
+
             // So here is an ASCII rendering of the test tree (nodes labeled by
             // their [normal] postorder position, no leaf sorting used).
             //
@@ -762,10 +769,36 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             var obsAsc = this.bpObj.postorderLeafSortedNodes("ascending");
             deepEqual(obsAsc, [6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 11]);
 
+            // Check that this was cached (i.e. only needs to be computed once
+            // -- so toggling between leaf sorting methods shouldn't be super
+            // slow, at least not for this reason)
+            deepEqual(this.bpObj._ascendingLeafSorted, obsAsc);
+            deepEqual(this.bpObj._descendingLeafSorted, null);
+
             // With descending leaf sorting, we visit clades in the opposite
             // order: start at 5's clade, then 10's clade, then 6's clade.
             var obsDsc = this.bpObj.postorderLeafSortedNodes("descending");
             deepEqual(obsDsc, [1, 2, 3, 4, 5, 7, 8, 9, 10, 6, 11]);
+
+            // Check caching
+            deepEqual(this.bpObj._ascendingLeafSorted, obsAsc);
+            deepEqual(this.bpObj._descendingLeafSorted, obsDsc);
+
+            // Verify that _using_ the cache works
+            obsAsc2 = this.bpObj.postorderLeafSortedNodes("ascending");
+            deepEqual(obsAsc2, obsAsc);
+
+            // Finally, check the error case (if the leaf sorting method is
+            // bogus)
+            throws(function () {
+                scope.bpObj.postorderLeafSortedNodes("none");
+            }, /Unrecognized leaf sorting method none/);
+
+            // ... And verify that this didn't mess up the caches. Not sure
+            // why this would happen, but to quote Socrates, "you can't be too
+            // paranoid with JavaScript." Socrates said that, right?
+            deepEqual(this.bpObj._ascendingLeafSorted, obsAsc);
+            deepEqual(this.bpObj._descendingLeafSorted, obsDsc);
         });
     });
 });
