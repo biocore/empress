@@ -28,7 +28,7 @@ def community_plot(
     filter_extra_samples: bool = False,
     filter_missing_features: bool = False,
     number_of_features: int = 5,
-    shear_to_table: bool = True
+    shear_tree: bool = True
 ) -> None:
     """Visualizes a tree alongside community-level data.
 
@@ -61,7 +61,7 @@ def community_plot(
                   ignore_missing_samples=ignore_missing_samples,
                   filter_extra_samples=filter_extra_samples,
                   filter_missing_features=filter_missing_features,
-                  shear_to_table=shear_to_table)
+                  shear_tree=shear_tree)
     save_viz(viz, output_dir)
 
 

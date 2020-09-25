@@ -37,7 +37,7 @@ class Empress():
                  feature_metadata=None, ordination=None,
                  ignore_missing_samples=False, filter_extra_samples=False,
                  filter_missing_features=False, resource_path=None,
-                 shear_to_table=True):
+                 shear_tree=True):
         """Visualize a phylogenetic tree
 
         Use this object to interactively display a phylogenetic tree using the
@@ -47,7 +47,7 @@ class Empress():
         or both be None. If only one of them is None, this will raise a
         ValueError. If both are None, then the values of the ordination,
         ignore_missing_samples, filter_extra_samples, filter_missing_features,
-        and shear_to_table arguments will be ignored since no sample
+        and shear_tree arguments will be ignored since no sample
         information is available.
 
         Parameters
@@ -88,7 +88,7 @@ class Empress():
         resource_path: str, optional
             Load the resources from a user-specified remote location. If set to
             None resources are loaded from the current directory.
-        shear_to_table: bool, optional
+        shear_tree: bool, optional
             If True, shears the tree to just the tips that are present as
             features in the feature table. Otherwise, the tree is not shorn.
 
@@ -148,7 +148,7 @@ class Empress():
             ignore_missing_samples,
             filter_extra_samples,
             filter_missing_features,
-            shear_to_table
+            shear_tree
         )
 
         if self.ordination is not None:
@@ -180,7 +180,7 @@ class Empress():
     def _validate_and_match_data(self, ignore_missing_samples,
                                  filter_extra_samples,
                                  filter_missing_features,
-                                 shear_to_table):
+                                 shear_tree):
 
         if self.is_community_plot:
             self.table, self.samples, self.tip_md, self.int_md = match_inputs(
@@ -201,7 +201,7 @@ class Empress():
                 self.table, self.samples, self.ordination
             )
             # remove unobserved features from the phylogeny (shear the tree)
-            if shear_to_table:
+            if shear_tree:
                 features = set(self.table.ids(axis='observation'))
                 self.tree = self.tree.shear(features)
                 # Remove features in the feature metadata that are no longer
