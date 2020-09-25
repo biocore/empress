@@ -45,10 +45,10 @@ class Empress():
 
         Note that the table and sample metadata must either both be specified
         or both be None. If only one of them is None, this will raise a
-        ValueError. (Also, if both are None, then the values of the ordination,
+        ValueError. If both are None, then the values of the ordination,
         ignore_missing_samples, filter_extra_samples, filter_missing_features,
         and shear_to_table arguments will be ignored since no sample
-        information is available.)
+        information is available.
 
         Parameters
         ----------
