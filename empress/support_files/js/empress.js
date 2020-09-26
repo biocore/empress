@@ -28,8 +28,11 @@ define([
     /**
      * @class EmpressTree
      *
-     * @param {BPTree} tree The phylogenetic tree
-     * @param {BIOMTable} biom The BIOM table used to color the tree
+     * @param {BPTree} tree The phylogenetic tree.
+     * @param {BIOMTable or null} biom The BIOM table used to color the tree.
+     *                                 If no table / sample metadata was passed
+     *                                 to Empress (i.e. using qiime empress
+     *                                 tree-plot), this should be null.
      * @param {Array} featureMetadataColumns Columns of the feature metadata.
      *                Note: The order of this array should match the order of
      *                      the arrays which are the values of tipMetadata and
@@ -37,11 +40,11 @@ define([
      *                      when generating an Empress visualization, this
      *                      parameter should be [] (and tipMetadata and
      *                      intMetadata should be {}s).
-     * @param {Object} tipMetadata Feature metadata for tips in the tree
+     * @param {Object} tipMetadata Feature metadata for tips in the tree.
      *                 Note: This should map tip names to an array of feature
      *                       metadata values. Each array should have the same
      *                       length as featureMetadataColumns.
-     * @param {Object} intMetadata Feature metadata for internal nodes in tree
+     * @param {Object} intMetadata Feature metadata for internal nodes in tree.
      *                 Note: Should be formatted analogously to tipMetadata.
      *                       Note that internal node names can be non-unique.
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
@@ -154,10 +157,13 @@ define([
         /**
          * @type {BiomTable}
          * BIOM table: includes feature presence information and sample-level
-         * metadata.
+         * metadata. Can be null if no table / sample metadata was passed to
+         * Empress.
          * @private
          */
         this._biom = biom;
+
+        this.isCommunityPlot = !_.isNull(this._biom);
 
         /**
          * @type{Array}
@@ -201,10 +207,14 @@ define([
          * @type {BarplotPanel}
          * Manages a collection of BarplotLayers, as well as the state of the
          * barplot panel. Also can call Empress.drawBarplots() /
-         * Empress.undrawBarplots() when needed.
+         * Empress.undrawBarplots() when needed. Can be null if no feature or
+         * sample metadata was passed to Empress.
          * @private
          */
-        this._barplotPanel = new BarplotPanel(this, this._defaultLayout);
+        this._barplotPanel = null;
+        if (this.isCommunityPlot || this._featureMetadataColumns.length > 0) {
+            this._barplotPanel = new BarplotPanel(this, this._defaultLayout);
+        }
 
         /**
          * @type {Number}
@@ -2160,12 +2170,19 @@ define([
     };
 
     /**
-     * Returns a list of sample categories
+     * Returns a list of sample categories.
+     *
+     * If this.isCommunityPlot is false (no table / sample metadata were
+     * provided), this just returns [].
      *
      * @return {Array}
      */
     Empress.prototype.getSampleCategories = function () {
-        return this._biom.getSampleCategories();
+        if (this.isCommunityPlot) {
+            return this._biom.getSampleCategories();
+        } else {
+            return [];
+        }
     };
 
     /**
@@ -2197,20 +2214,30 @@ define([
         // stuff to only change whenever the tree is redrawn.
         this.thickenColoredNodes(this._currentLineWidth);
 
-        // Undraw or redraw barplots as needed
-        var supported = this._barplotPanel.updateLayoutAvailability(
-            this._currentLayout
-        );
-        if (!supported && this._barplotsDrawn) {
-            this.undrawBarplots();
-        } else if (supported && this._barplotPanel.enabled) {
-            this.drawBarplots(this._barplotPanel.layers);
+        // Undraw or redraw barplots as needed (assuming barplots are supported
+        // in the first place, of course; if no feature or sample metadata at
+        // all was passed then barplots are not available :()
+        if (!_.isNull(this._barplotPanel)) {
+            var supported = this._barplotPanel.updateLayoutAvailability(
+                this._currentLayout
+            );
+            if (!supported && this._barplotsDrawn) {
+                this.undrawBarplots();
+            } else if (supported && this._barplotPanel.enabled) {
+                this.drawBarplots(this._barplotPanel.layers);
+            }
         }
         this.centerLayoutAvgPoint();
     };
 
     /**
      * Redraws the tree with a new layout (if different from current layout).
+     *
+     * Note that this not always called when the tree is redrawn in a different
+     * way; it's possible to change certain layout parameters (e.g. to ignore
+     * branch lengths) and then call reLayout() without touching this method.
+     * This is by design, since whether or not to ignore branch lengths is a
+     * separate decision from what layout the tree is currently using.
      */
     Empress.prototype.updateLayout = function (newLayout) {
         if (this._currentLayout !== newLayout) {

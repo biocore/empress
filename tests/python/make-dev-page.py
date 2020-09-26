@@ -27,12 +27,14 @@ ARG_TYPE = click.Path(exists=True, dir_okay=False, file_okay=True)
 @click.option('--ignore-missing-samples', is_flag=True)
 @click.option('--filter-extra-samples', is_flag=True)
 @click.option('--filter-missing-features', is_flag=True)
-@click.option('--filter-unobserved-features-from-phylogeny', is_flag=True)
+@click.option(
+    '--shear-tree/--no-shear-tree', is_flag=True, default=True
+)
 @click.option('--number-of-features', default=10, type=click.IntRange(0, None),
               show_default=True)
 def main(tree, table, sample_metadata, feature_metadata, ordination,
          ignore_missing_samples, filter_extra_samples, filter_missing_features,
-         filter_unobserved_features_from_phylogeny, number_of_features):
+         shear_tree, number_of_features):
     """Generate a development plot
 
     If no arguments are provided the moving pictures dataset will be loaded,
@@ -91,8 +93,6 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
                                                         'support_files')
     emperor_resources = get_emperor_support_files_dir()
 
-    # this variable is too long for PEP8
-    unobserved = filter_unobserved_features_from_phylogeny
     viz = Empress(table=table, tree=tree, ordination=ordination,
                   feature_metadata=feature_metadata,
                   sample_metadata=sample_metadata,
@@ -100,7 +100,7 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
                   ignore_missing_samples=ignore_missing_samples,
                   filter_extra_samples=filter_extra_samples,
                   filter_missing_features=filter_missing_features,
-                  filter_unobserved_features_from_phylogeny=unobserved)
+                  shear_tree=shear_tree)
 
     if ordination is not None:
         viz._emperor.base_url = emperor_resources

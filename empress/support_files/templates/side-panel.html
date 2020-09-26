@@ -10,7 +10,8 @@
 </div>
 
 <!-- Sample Coloring Options -->
-<button class="side-header collapsible">Sample Metadata Coloring</button>
+<button id="smOpenButton" class="side-header collapsible needs-community-data">
+    Sample Metadata Coloring</button>
 <div class="side-content control hidden">
   <p class="side-panel-notes">
     Color tips in the tree that are unique to certain groups of samples.
@@ -54,8 +55,8 @@
 </div>
 
 <!-- Feature Metadata Coloring Options -->
-<button id="fmOpenButton" class="side-header collapsible hidden">Feature
-    Metadata Coloring</button>
+<button id="fmOpenButton" class="side-header collapsible needs-feature-metadata">
+    Feature Metadata Coloring</button>
 <div class="side-content control hidden">
   <p class="side-panel-notes">
     Color nodes in the tree based on feature metadata: for example,
@@ -119,10 +120,11 @@
 </div>
 
 <!-- Barplot options -->
-<button class="side-header collapsible">Barplots</button>
+<button id="barplotOpenButton" class="side-header collapsible needs-metadata">
+    Barplots</button>
 <div class="side-content control hidden" id="barplot-div">
   <p class="side-panel-notes">
-    Annotate tips by feature and/or sample metadata.
+    Annotate tips by metadata.
   </p>
   <!-- Depending on the current layout, one of the below divs
       (#barplot-available-content or #barplot-unavailable-content) will be
@@ -179,7 +181,8 @@
 </div>
 
 <!-- animate Options -->
-<button class="side-header collapsible">Animation</button>
+<button id="animationOpenButton" class="side-header collapsible hidden">
+    Animation</button>
 <div class="side-content control hidden">
   <p class="side-panel-notes">
     Color nodes in the tree that are unique to certain groups of samples
@@ -253,9 +256,11 @@
     <button style="margin: 0 auto;" id="export-tree-svg-btn">Export tree as SVG</button>
     <button style="margin: 0 auto;" id="export-tree-png-btn">Export tree as PNG</button>
   </p>
-  <p>
-    <button style="margin: 0 auto;" id="export-legend-svg-btn">Export legends as SVG</button>
-  </p>
+  <div class="needs-metadata">
+    <p>
+      <button style="margin: 0 auto;" id="export-legend-svg-btn">Export legends as SVG</button>
+    </p>
+  </div>
 </div>
 
 <!-- Global Tree properties -->
@@ -303,44 +308,48 @@
     root node's length is always ignored, regardless of if this is checked or
     not.
   </p>
-  <hr />
-  <p class="side-panel-inner-header">
-    Clade collapsing method
-  </p>
-  <p>
-    <label for="normal">Normal</label>
-    <input type="radio" id="normal" name="collapse-radio" value="normal"
-           checked="true" class="empress-input">
-  </p>
-  <p class="side-panel-notes indented">
-    The shape of the collapsed clade will show both the depth and width of the
-    clade. This option applies to all layouts.
-  </p>
-  <p>
-    <label for="symmetric">Symmetric</label>
-    <input type="radio" id="symmetric" name="collapse-radio" value="symmetric"
-           class="empress-input">
-  </p>
-  <p class="side-panel-notes indented">
-    The shape of the collapsed clade will only show the depth of the clade but
-    the shape will be symmetric w.r.t. to the root of the clade. This option
-    only applies to the Rectangular and Circular layouts.
-  </p>
-  <hr />
-  <p class="side-panel-inner-header">
-    Tree coloring
-  </p>
-  <p>
-    <label for="absent-tip-chk">Ignore absent tips?</label>
-    <input id="absent-tip-chk" type="checkbox" checked="true"
-           class="empress-input">
-  </p>
-  <p class="side-panel-notes indented">
-    If checked, tips not represented in the current sample selection are
-    ignored when propagating the color of a clade. Applies to sample metadata
-    coloring, animations, and sample selections in Emperor. We recommend
-    changing this setting before starting an animation; otherwise, this setting
-    may only be partially applied throughout the animation.
-  </p>
+  <div class="needs-metadata">
+    <hr />
+    <p class="side-panel-inner-header">
+      Clade collapsing method
+    </p>
+    <p>
+      <label for="normal">Normal</label>
+      <input type="radio" id="normal" name="collapse-radio" value="normal"
+             checked="true" class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      The shape of the collapsed clade will show both the depth and width of the
+      clade. This option applies to all layouts.
+    </p>
+    <p>
+      <label for="symmetric">Symmetric</label>
+      <input type="radio" id="symmetric" name="collapse-radio" value="symmetric"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      The shape of the collapsed clade will only show the depth of the clade but
+      the shape will be symmetric w.r.t. to the root of the clade. This option
+      only applies to the Rectangular and Circular layouts.
+    </p>
+  </div>
+  <div class="needs-community-data">
+    <hr />
+    <p class="side-panel-inner-header">
+      Tree coloring
+    </p>
+    <p>
+      <label for="absent-tip-chk">Ignore absent tips?</label>
+      <input id="absent-tip-chk" type="checkbox" checked="true"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      If checked, tips not represented in the current sample selection are
+      ignored when propagating the color of a clade. Applies to sample metadata
+      coloring, animations, and sample selections in Emperor. We recommend
+      changing this setting before starting an animation; otherwise, this
+      setting may only be partially applied throughout the animation.
+    </p>
+  </div>
 
 </div>
