@@ -3078,7 +3078,8 @@ define([
         return samplePresence;
     };
 
-    /** Show the node menu for a node name
+    /**
+     * Show the node menu for a node name
      *
      * @param {String} nodeName The name of the node to show.
      */
@@ -3092,6 +3093,16 @@ define([
 
         this._events.selectedNodeMenu.clearSelectedNode();
         this._events.placeNodeSelectionMenu(nodeName, this.focusOnSelectedNode);
+    };
+
+    /**
+     * Returns the length corresponding to a node key.
+     *
+     * @param {Number} nodeKey Postorder position of a node in the tree.
+     * @return {Number} The length of the node.
+     */
+    Empress.prototype.getNodeLength = function (nodeKey) {
+        return this._tree.length(this._tree.postorderselect(nodeKey));
     };
 
     return Empress;

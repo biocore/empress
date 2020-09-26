@@ -89,7 +89,34 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
          * provided then lengths will be set to 0.
          * Note: lengths are assumed to be smaller that 3.4 * 10^38
          */
-        this.lengths_ = lengths ? new Float32Array(lengths) : null;
+        this.lengths_ = lengths ? lengths : null;
+
+        if (this.lengths_ !== null) {
+            // non-root lengths should be guaranteed to be nonnegative, and
+            // at least one non-root length should be positive
+            var min = 0, max = 0, sum = 0;
+            // NOTE: not sure this way of indexing is correct (whomstever
+            // reviews this pls check)
+            // By x = 1, we skip the first element (lengths_ is 1-indexed);
+            // by x < this.lengths_.length - 1, we skip the last element
+            // (corresponding to the root length, which we ignore on purpose)
+            for (var x = 1; x < this.lengths_.length - 1; x++) {
+                min = Math.min(min, this.lengths_[x]);
+                max = Math.max(max, this.lengths_[x]);
+                sum += this.lengths_[x];
+            }
+            this.minLength_ = min;
+            this.maxLength_ = max;
+            this.avgLength_ = sum / (this.size - 1);
+            // TODO: actually show in UI somewhere!
+            console.log("min length: ", this.minLength_);
+            console.log("max length: ", this.maxLength_);
+            console.log("avg length: ", this.avgLength_);
+        } else {
+            this.minLength_ = null;
+            this.maxLength_ = null;
+            this.avgLength_ = null;
+        }
 
         /**
          * @type {Uint32Array}
