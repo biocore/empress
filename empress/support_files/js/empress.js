@@ -425,9 +425,25 @@ define([
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
 
+        this._populateTreeStats();
+
         this.getLayoutInfo();
         this.centerLayoutAvgPoint();
         // centerLayoutAvgPoint() calls drawTree(), so no need to call it here
+    };
+
+    /**
+     * Populates the tree statistics on the side panel.
+     */
+    Empress.prototype._populateTreeStats = function () {
+        var numTips = this._tree.getNumTips(this._tree.size);
+        document.getElementById("stats-tip-count").textContent = numTips;
+        document.getElementById("stats-int-count").textContent = this._tree.size - numTips;
+        document.getElementById("stats-total-count").textContent = this._tree.size;
+        document.getElementById("stats-min-length").textContent = this._tree.minLength_;
+        document.getElementById("stats-max-length").textContent = this._tree.maxLength_;
+        document.getElementById("stats-avg-length").textContent = this._tree.avgLength_;
+
     };
 
     /**
