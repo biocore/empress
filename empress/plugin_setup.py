@@ -6,11 +6,15 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from ._plot import plot
+from ._plot import community_plot, tree_plot
 
-from qiime2.plugin import Plugin, Metadata, Bool, Citations, Int, Range
+from qiime2.plugin import (
+    Plugin, Metadata, Bool, Citations, Int, Range, TypeMatch
+)
 from q2_types.tree import Phylogeny, Rooted
-from q2_types.feature_table import FeatureTable, Frequency
+from q2_types.feature_table import (
+    FeatureTable, Frequency, RelativeFrequency, PresenceAbsence
+)
 from q2_types.ordination import PCoAResults
 
 import pkg_resources
@@ -28,11 +32,25 @@ plugin = Plugin(
     short_description='Plugin for visualizing phylogenies with Empress.'
 )
 
+TREE_DESC = 'The phylogenetic tree to visualize.'
+
+FM_DESC = (
+    'Feature metadata. Can be used to color nodes (tips and/or '
+    'internal nodes) in the tree, and to display tip-level barplots. '
+    'Features described in the metadata that are not present in the tree '
+    'will be automatically filtered out of the visualization.'
+)
+
+# Accept various types of feature tables -- we (currently) convert things to
+# presence/absence, anyway. This line adapted from
+# https://github.com/qiime2/q2-feature-table/blob/9ed6160adad45445ec054e5ce034a3b3ba25a9b4/q2_feature_table/plugin_setup.py#L243.
+AcceptedTableTypes = TypeMatch([Frequency, RelativeFrequency, PresenceAbsence])
+
 plugin.visualizers.register_function(
-    function=plot,
+    function=community_plot,
     inputs={
         'tree': Phylogeny[Rooted],
-        'feature_table': FeatureTable[Frequency],
+        'feature_table': FeatureTable[AcceptedTableTypes],
         'pcoa': PCoAResults,
     },
     parameters={
@@ -42,33 +60,28 @@ plugin.visualizers.register_function(
         'filter_extra_samples': Bool,
         'filter_missing_features': Bool,
         'number_of_features': Int % Range(1, None),
-        'filter_unobserved_features_from_phylogeny': Bool
+        'shear_tree': Bool
     },
     input_descriptions={
-        'tree': 'The phylogenetic tree to visualize.',
-        'feature_table': 'A table containing the abundances of features '
-                         'within samples. This information allows us to '
-                         'decorate the phylogeny by sample metadata. It\'s '
-                         'expected that all features in the table are also '
-                         'present as tips in the tree, and that all samples '
-                         'in the table are also present in the sample '
-                         'metadata file.',
+        'tree': TREE_DESC,
+        'feature_table': 'A table that documents which features are in which '
+                         'samples. This information allows us to decorate the '
+                         'phylogeny by sample metadata. It\'s expected that '
+                         'all features in the table are also present as tips '
+                         'in the tree, and that all samples in the table are '
+                         'also present in the sample metadata file.',
         'pcoa': 'Principal coordinates matrix to display simultaneously with '
-                'the phylogenetic tree.'
+                'the phylogenetic tree using Emperor.'
     },
     parameter_descriptions={
         'sample_metadata': (
             'Sample metadata. Can be used to color tips in the tree by '
-            'the samples they are unique to. Samples described in the '
-            'metadata that are not present in the feature table will '
-            'be automatically filtered out of the visualization.'
-        ),
-        'feature_metadata': (
-            'Feature metadata. Can be used to color nodes (tips and/or '
-            'internal nodes) in the tree. Features described in the metadata '
-            'that are not present in the tree will be automatically filtered '
+            'the samples they are unique to, and to display animations and '
+            'tip-level barplots. Samples described in the metadata that are '
+            'not present in the feature table will be automatically filtered '
             'out of the visualization.'
         ),
+        'feature_metadata': FM_DESC,
         # Parameter descriptions adapted from q2-emperor's
         # --p-ignore-missing-samples flag.
         'ignore_missing_samples': (
@@ -101,15 +114,40 @@ plugin.visualizers.register_function(
                               '(euclidean distance from origin). Note, this '
                               'parameter is only honored when a biplot is '
                               'inputed.',
-        'filter_unobserved_features_from_phylogeny': (
-            'If this flag is passed, filters features from the phylogeny '
-            'that are not present as features in feature table. '
-            'Default is True.'
+        'shear_tree': (
+            'Determines whether or not to shear the tree to only the tips '
+            'that are present as features in the feature table. By default, '
+            'shears the tree.'
         )
     },
-    name='Visualize and Explore Phylogenies with Empress',
+    name=(
+        'Visualize phylogenies and community data with Empress (and, '
+        'optionally, Emperor)'
+    ),
     description=(
         'Generates an interactive phylogenetic tree visualization '
-        'supporting interaction with sample and feature metadata.'
+        'supporting interaction with sample and feature metadata and, '
+        'optionally, Emperor integration.'
+    )
+)
+
+plugin.visualizers.register_function(
+    function=tree_plot,
+    inputs={
+        'tree': Phylogeny[Rooted]
+    },
+    parameters={
+        'feature_metadata': Metadata
+    },
+    input_descriptions={
+        'tree': TREE_DESC
+    },
+    parameter_descriptions={
+        'feature_metadata': FM_DESC
+    },
+    name='Visualize phylogenies with Empress',
+    description=(
+        'Generates an interactive phylogenetic tree visualization '
+        'supporting interaction with feature metadata.'
     )
 )
