@@ -83,14 +83,25 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         this._numTips = new Array(this.size + 1).fill(0);
 
         /**
-         * @type{Float32Array}
+         * @type {Array}
          * @private
-         * stores the length of the nodes in preorder. If lengths are not
-         * provided then lengths will be set to 0.
-         * Note: lengths are assumed to be smaller that 3.4 * 10^38
+         * Stores the length of the nodes in preorder. If lengths are not
+         * provided then lengths will be set to null.
          */
         this.lengths_ = lengths ? lengths : null;
 
+        /**
+         * @type {Number}
+         * @private
+         * Computed minimum, maximum, and average of all non-root node lengths.
+         * Will remain null if this.lengths_ is also null (i.e. no length
+         * information was provided; this should only happen during testing).
+         */
+        this.minLength_ = null;
+        this.maxLength_ = null;
+        this.avgLength_ = null;
+
+        // Update the above variables if possible
         if (this.lengths_ !== null) {
             // non-root lengths should be guaranteed to be nonnegative, and
             // at least one non-root length should be positive
@@ -110,14 +121,6 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             this.minLength_ = min;
             this.maxLength_ = max;
             this.avgLength_ = sum / (this.size - 1);
-            // TODO: actually show in UI somewhere!
-            console.log("min length: ", this.minLength_);
-            console.log("max length: ", this.maxLength_);
-            console.log("avg length: ", this.avgLength_);
-        } else {
-            this.minLength_ = null;
-            this.maxLength_ = null;
-            this.avgLength_ = null;
         }
 
         /**
