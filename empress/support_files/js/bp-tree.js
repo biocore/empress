@@ -94,7 +94,9 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         if (this.lengths_ !== null) {
             // non-root lengths should be guaranteed to be nonnegative, and
             // at least one non-root length should be positive
-            var min = 0, max = 0, sum = 0;
+            var min = 0,
+                max = 0,
+                sum = 0;
             // NOTE: not sure this way of indexing is correct (whomstever
             // reviews this pls check)
             // By x = 1, we skip the first element (lengths_ is 1-indexed);
