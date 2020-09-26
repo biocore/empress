@@ -354,6 +354,9 @@ define(["underscore", "util"], function (_, util) {
         if (isUnambiguous) {
             // this.nodeKeys has a length of 1
             var nodeKey = this.nodeKeys[0];
+            // NOTE: Will show node length for the root. QUESTION: does this
+            // mean the node length stats should include the root? (I suspect
+            // as long as we're explicit about what's done it doesn't matter.)
             this.setNodeLengthLabel(nodeKey);
             if (this.empress.isCommunityPlot) {
                 var tips = this.empress._tree.findTips(nodeKey);
