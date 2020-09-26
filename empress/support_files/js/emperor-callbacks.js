@@ -1,5 +1,7 @@
 /*
- * This File is intended to be used only with Emperor
+ * This File is intended to be used only with Emperor. For more information
+ * about these and other events see this document:
+ * https://github.com/biocore/emperor/blob/master/doc/source/js_integration.rst
  */
 
 empress.setOnNodeMenuVisibleCallback(function (samples) {
