@@ -19,6 +19,7 @@ before_install:
   - travis_retry conda env create -n qiime2-dev --file qiime2-latest-py36-linux-conda.yml
   - source activate qiime2-dev
 install:
+  - pip uninstall emperor --yes
   - pip install -e .[all] --verbose
   - npm install -g qunit-puppeteer jshint prettier@2.0.5
 script:

@@ -371,7 +371,7 @@ class TestCore(unittest.TestCase):
             if not key.startswith('emperor_'):
                 self.assertEqual(obs[key], DICT_A[key])
 
-        exp = "    <div id='emperor-notebook"
+        exp = "<div id='emperor-in-empire'"
         self.assertTrue(obs['emperor_div'].startswith(exp))
 
         exp = "// When running in the Jupyter"
@@ -380,8 +380,7 @@ class TestCore(unittest.TestCase):
         exp = "}); // END REQUIRE.JS block"
         self.assertTrue(obs['emperor_require_logic'].endswith(exp))
 
-        exp = '<link id="emperor-css" rel="stylesheet"'
-        self.assertTrue(obs['emperor_style'].startswith(exp))
+        self.assertTrue('"#emperor-css"' in obs['emperor_style'])
 
         exp = "vendor/js/jquery-"
         self.assertEqual(obs['emperor_base_dependencies'].count(exp), 1)

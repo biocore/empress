@@ -26,10 +26,8 @@ from jinja2 import Environment, FileSystemLoader
 
 SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
-SELECTION_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
-                                       'selection-callback.js')
-NODE_CLICK_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
-                                        'node-click-callback.js')
+EMPEROR_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
+                                     'emperor-callbacks.js')
 
 
 class Empress():
@@ -389,34 +387,19 @@ class Empress():
         self._emperor.set_background_color('white')
         self._emperor.set_axes(color='black')
 
-        html = self._emperor.make_emperor(standalone=True)
-        html = html.split('\n')
-
         # The following line references will be replace with API calls to the
         # Emperor object, however those are not implemented yet
-        emperor_base_dependencies = html[6]
+        emperor_base_dependencies = self._emperor.render_base_dependencies()
 
-        # line 14 is where the CSS includes start, but it is surrounded by
-        # unnecessary tags so we strip those out
-        style = '\n'.join([line.strip().replace("'", '').replace(',', '')
-                           for line in html[14:20]])
+        style = self._emperor.render_style()
 
         # main divs for emperor
-        emperor_div = '\n'.join(html[39:44])
+        emperor_div = self._emperor.render_html('emperor-in-empire')
 
-        # main js script for emperor
-        emperor_require_logic = '\n'.join(html[45:-3])
-
-        # once everything is loaded replace the callback tag for custom JS
-        with open(SELECTION_CALLBACK_PATH) as f:
-            selection_callback = f.read()
-        with open(NODE_CLICK_CALLBACK_PATH) as f:
-            node_click_callback = f.read()
-
-        emperor_require_logic = emperor_require_logic.replace(
-            '/*__select_callback__*/', selection_callback)
-        emperor_require_logic = emperor_require_logic.replace(
-            '/*__custom_on_ready_code__*/', node_click_callback)
+        # main js script for emperor, including additional callbacks
+        with open(EMPEROR_CALLBACK_PATH) as f:
+            self._emperor.js_on_ready = f.read()
+        emperor_require_logic = self._emperor.render_js('emperor-in-empire')
 
         emperor_data = {
             'emperor_div': emperor_div,
