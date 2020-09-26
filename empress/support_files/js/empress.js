@@ -3120,13 +3120,22 @@ define([
     };
 
     /**
-     * Returns the length corresponding to a node key.
+     * Returns the length corresponding to a node key, or null if the node key
+     * corresponds to the root of the tree.
+     *
+     * (The reason for the null thing is that the root node's length is not
+     * currently validated, so we don't want to show whatever the value
+     * there is stored as internally to the user.)
      *
      * @param {Number} nodeKey Postorder position of a node in the tree.
      * @return {Number} The length of the node.
      */
     Empress.prototype.getNodeLength = function (nodeKey) {
-        return this._tree.length(this._tree.postorderselect(nodeKey));
+        if (nodeKey === this._tree.size) {
+            return null;
+        } else {
+            return this._tree.length(this._tree.postorderselect(nodeKey));
+        }
     };
 
     return Empress;

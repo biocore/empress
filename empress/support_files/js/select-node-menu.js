@@ -354,9 +354,6 @@ define(["underscore", "util"], function (_, util) {
         if (isUnambiguous) {
             // this.nodeKeys has a length of 1
             var nodeKey = this.nodeKeys[0];
-            // NOTE: Will show node length for the root. QUESTION: does this
-            // mean the node length stats should include the root? (I suspect
-            // as long as we're explicit about what's done it doesn't matter.)
             this.setNodeLengthLabel(nodeKey);
             if (this.empress.isCommunityPlot) {
                 var tips = this.empress._tree.findTips(nodeKey);
@@ -417,11 +414,20 @@ define(["underscore", "util"], function (_, util) {
     /**
      * Updates and shows the node length UI elements for a given node.
      *
+     * (If the node is the root of the tree, this will actually hide the UI
+     * elements. See Empress.getNodeLength() for details.)
+     *
      * @param {Number} nodeKey Postorder position of a node in the tree.
      */
     SelectedNodeMenu.prototype.setNodeLengthLabel = function (nodeKey) {
-        this.nodeLengthLabel.textContent = this.empress.getNodeLength(nodeKey);
-        this.nodeLengthContainer.classList.remove("hidden");
+        var nodeLength = this.empress.getNodeLength(nodeKey);
+        if (nodeLength !== null) {
+            this.nodeLengthLabel.textContent = nodeLength;
+            this.nodeLengthContainer.classList.remove("hidden");
+        } else {
+            // Don't show the length for the root node
+            this.nodeLengthContainer.classList.add("hidden");
+        }
     };
 
     /**
