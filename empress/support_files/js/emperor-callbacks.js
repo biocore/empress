@@ -1,5 +1,5 @@
 /*
- * This File is intended to be used only with Emperor. For more information
+ * This file is intended to be used only with Emperor. For more information
  * about these and other events see this document:
  * https://github.com/biocore/emperor/blob/master/doc/source/js_integration.rst
  */
