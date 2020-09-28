@@ -197,13 +197,23 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
          * Stores the order of nodes in an in-order traversal. Elements in this
          * array are node ids
          *
-         * Note: In-order is stored because bp-tree doesn't not have
+         * Note: In-order is stored because bp-tree doesn't have
          *       an efficient way of convert a nodes in-order position to tree
          *       index and vice versa like it does with post order through
          *       the use of postorderselect() and postorder(). So it is more
          *       efficient to cache an in-order tree traversal.
          */
         this._inorder = null;
+
+        /**
+         * @type{Array}
+         * @private
+         *
+         * Stores the order of nodes in ascending and descending-leaf-sorted
+         * postorder traversals. Elements in this array are node IDs.
+         */
+        this._ascendingLeafSorted = null;
+        this._descendingLeafSorted = null;
 
         /**
          * @type {Object}
@@ -620,7 +630,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     };
 
     /**
-     * Returns an array of nodes sorted by their inoder position.
+     * Returns an array of nodes sorted by their inorder position.
      *
      * Note: empress uses a nodes postorder position as its key in _treeData
      *       so this method will use a nodes postorder position to represent
@@ -642,11 +652,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             this._inorder.push(this.postorder(curNode));
 
             // append children to stack
-            var child = this.fchild(curNode);
-            while (child !== 0) {
-                nodeStack.push(child);
-                child = this.nsibling(child);
-            }
+            nodeStack = nodeStack.concat(this.getChildren(curNode));
         }
         return this._inorder;
     };
@@ -738,6 +744,185 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         }
         this._numTips[nodeKey] = numTips;
         return numTips;
+    };
+
+    /**
+     * Returns a list of nodes' postorder positions in the tree, using "leaf
+     * sorting" -- clades at the same level are sorted by the number of leaves
+     * they contain.
+     *
+     * This (usually) makes the tree look pretty.
+     *
+     * This code behaves similarly to this.inOrderNodes(), in that it caches
+     * the result once computed. Therefore, this function should be faster the
+     * second time it's called (assuming the sortingMethod is the same).
+     *
+     * @param {String} sortingMethod Either "ascending" or "descending". Any
+     *                               other values will trigger an error.
+     *                               -"ascending": Order clades starting with
+     *                                the clade with the fewest tips and ending
+     *                                with the clade with the most tips (ties
+     *                                broken arbitrarily).
+     *                               -"descending": Opposite of "ascending"
+     *                                (start with most-tip clades then go down;
+     *                                ties broken arbitrarily).
+     * @return {Array} Array of nodes' postorder positions in the tree, sorted
+     *                 as specified.
+     * @throws {Error} if sortingMethod is not "ascending" or "descending".
+     *
+     * REFERENCES
+     * ----------
+     * This was translated from this Python code to do leaf-sorted postorder
+     * traversal over a scikit-bio TreeNode:
+     * https://github.com/biocore/empress/commit/2b3d90f52fc3118b3641ddc6378d3659abdb0d05
+     *
+     * That code was in turn a slightly modified version of scikit-bio's
+     * postorder tree traversal code:
+     * https://github.com/biocore/scikit-bio/blob/6ccba4076f1b96843fa2428804cc5a91bf4b76b8/skbio/tree/_tree.py#L1085-L1154
+     *
+     * And this functionality was inspired by iTOL's use of it, of course:
+     * https://itol.embl.de/help.cgi (see the "Leaf sorting:" text)
+     */
+    BPTree.prototype.postorderLeafSortedNodes = function (sortingMethod) {
+        if (sortingMethod === "ascending") {
+            if (this._ascendingLeafSorted !== null) {
+                return this._ascendingLeafSorted;
+            }
+        } else if (sortingMethod === "descending") {
+            if (this._descendingLeafSorted !== null) {
+                return this._descendingLeafSorted;
+            }
+        } else {
+            throw new Error(
+                "Unrecognized leaf sorting method " + sortingMethod
+            );
+        }
+        var outputNodes = [];
+        var childIdxStack = [0];
+        var rootNode = this.preorderselect(1);
+        var currNode = rootNode;
+        var currChildren = this.getSortedChildren(currNode, sortingMethod);
+        var currChildrenLen = currChildren.length;
+        var currIdx, currChild;
+        while (true) {
+            currIdx = childIdxStack[childIdxStack.length - 1];
+            // If children left, process them.
+            if (currIdx < currChildrenLen) {
+                currChild = currChildren[currIdx];
+                // If currChild has children, go there.
+                if (!this.isleaf(currChild)) {
+                    childIdxStack.push(0);
+                    currNode = currChild;
+                    currChildren = this.getSortedChildren(
+                        currNode,
+                        sortingMethod
+                    );
+                    currChildrenLen = currChildren.length;
+                    currIdx = 0;
+                }
+                // Otherwise, add this child.
+                else {
+                    outputNodes.push(this.postorder(currChild));
+                    childIdxStack[childIdxStack.length - 1]++;
+                }
+            }
+            // If no children left, add self and move on to self's parent
+            else {
+                outputNodes.push(this.postorder(currNode));
+                if (currNode === rootNode) {
+                    break;
+                }
+                currNode = this.parent(currNode);
+                currChildren = this.getSortedChildren(currNode, sortingMethod);
+                currChildrenLen = currChildren.length;
+                childIdxStack.pop();
+                childIdxStack[childIdxStack.length - 1]++;
+            }
+        }
+        // Cache the results so we don't have to do all that again
+        if (sortingMethod === "ascending") {
+            this._ascendingLeafSorted = outputNodes;
+        } else {
+            this._descendingLeafSorted = outputNodes;
+        }
+        return outputNodes;
+    };
+
+    /**
+     * Returns an array containing the children of a node.
+     *
+     * The order of the array is based on fchild and nsibling, which I think
+     * should match what done in the input Newick file.
+     *
+     * If the input node has no children (i.e. it's a leaf / tip), this will
+     * return an empty Array.
+     *
+     * @param {Number} node Index of the node. "Index" here refers to the
+     *                      0-indexed position in the balanced parentheses of
+     *                      the opening paren for the node in question, e.g.
+     *                      0 1  2  3 4  5
+     *                      ( () () ( () () ) )
+     * @return {Array} children Array of child indices, specified analogously
+     *                          to the node index above. As an example, the
+     *                          children of node 3 in the tree above would be
+     *                          4 and 5.
+     */
+    BPTree.prototype.getChildren = function (node) {
+        var children = [];
+        var child = this.fchild(node);
+        while (child !== 0) {
+            children.push(child);
+            child = this.nsibling(child);
+        }
+        return children;
+    };
+
+    /**
+     * Returns an array containing the children of a node, sorted by the number
+     * of tips their subtrees contain.
+     *
+     * If the input node has no children (i.e. it's a leaf / tip), this will
+     * return an empty Array.
+     *
+     * Ties (e.g. when an internal node's children are all tips, and thus
+     * "contain" 1 tip) should respect the ordering in the initial Newick file,
+     * since _.sortBy() is a stable sort: https://underscorejs.org/#sortBy
+     *
+     * (That said, we don't make any claims in the UI about this [at least not
+     * for the ascending/descending leaf sorting options], so it's not a huge
+     * deal.)
+     *
+     * @param {Number} node
+     * @param {String} sortingMethod Should be one of "ascending" or
+     *                               "descending". We don't bother validating
+     *                               it at this point -- if another string is
+     *                               passed in then the behavior of this
+     *                               function is undefined (realistically it'll
+     *                               probably just sort things in ascending
+     *                               order, which is what it currently does in
+     *                               that case, but we can't guarantee that
+     *                               won't change).
+     * @return {Array} children
+     */
+    BPTree.prototype.getSortedChildren = function (node, sortingMethod) {
+        var scope = this;
+
+        var children = this.getChildren(node);
+        // Define a function mapping a node index to the number of tips its
+        // subtree contains. This function will be used to sort the array
+        // of children.
+        var child2numTips = function (childIdx) {
+            var numTips = scope.getNumTips(scope.postorder(childIdx));
+            if (sortingMethod === "descending") {
+                // Flip things around; sort in descending order. This should be
+                // quicker than sorting in ascending order and then reversing
+                // it afterwards.
+                return -numTips;
+            } else {
+                return numTips;
+            }
+        };
+        return _.sortBy(children, child2numTips);
     };
 
     /**

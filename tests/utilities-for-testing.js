@@ -141,6 +141,10 @@ define(["Empress", "BPTree", "BiomTable"], function (
                 intMetadata,
                 canvas
             );
+            // Set leafSorting to none -- this is no longer the default, but it
+            // previously was. (This avoids all of the rect / circular layout
+            // JS tests being broken...)
+            empress.leafSorting = "none";
         } else {
             empress = null;
         }

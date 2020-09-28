@@ -35,7 +35,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.recenterBtn = document.getElementById("center-tree-btn");
         this.focusOnNodeChk = document.getElementById("focus-on-node-chk");
         this.absentTipChk = document.getElementById("absent-tip-chk");
-        this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
 
         this.focusOnNodeChk.onclick = function () {
             empress.focusOnSelectedNode = this.checked;
@@ -47,10 +46,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             if (scope.sChk.checked) {
                 scope.sUpdateBtn.click();
             }
-        };
-        this.ignoreLengthsChk.onclick = function () {
-            empress.ignoreLengths = this.checked;
-            empress.reLayout();
         };
 
         // sample GUI components
@@ -79,6 +74,28 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         // layout GUI components
         this.layoutDiv = document.getElementById("layout-div");
+        this.layoutMethodContainer = document.getElementById(
+            "layout-method-container"
+        );
+        this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
+        this.leafSortingContainer = document.getElementById(
+            "leaf-sorting-container"
+        );
+        this.leafSortingSel = document.getElementById("leaf-sorting-select");
+        this.leafSortingDesc = document.getElementById("leaf-sorting-desc");
+        this.ignoreLengthsChk.onclick = function () {
+            empress.ignoreLengths = this.checked;
+            empress.reLayout();
+        };
+        this.leafSortingSel.onchange = function () {
+            empress.leafSorting = this.value;
+            empress.reLayout();
+            scope.updateLeafSortingDesc(this.value);
+        };
+        // Initialize the leaf sorting description and disabled status, based
+        // on defaults
+        this.updateLeafSortingDesc(this.leafSortingSel.value);
+        this.updateLeafSortingAvail(this.empress.getDefaultLayout());
 
         // global clade collapse GUI
         this.normalCladeMethod = document.getElementById("normal");
@@ -255,11 +272,49 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     };
 
     /**
-     * Redraws the tree with a different layout.
+     * Updates the description shown below the leaf sorting controls.
+     *
+     * This should be called when the selected leaf sorting method is changed
+     * (and when starting Empress).
      */
-    SidePanel.prototype._updateLayout = function () {
-        this.empress.resetTree();
-        this.empress.drawTree();
+    SidePanel.prototype.updateLeafSortingDesc = function (leafSortingMethod) {
+        var newText;
+        if (leafSortingMethod === "descending") {
+            newText =
+                "Clades are sorted in the tree layout in descending order " +
+                "by the number of descendant tips they contain.";
+        } else if (leafSortingMethod === "ascending") {
+            newText =
+                "Clades are sorted in the tree layout in ascending order " +
+                "by the number of descendant tips they contain.";
+        } else if (leafSortingMethod === "none") {
+            newText =
+                "Clades are not sorted in the tree layout by the number of " +
+                "descendant tips they contain. The ordering should thus " +
+                "match the order of clades in the input tree file.";
+        } else {
+            throw new Error(
+                "Invalid leaf sorting method: " + leafSortingMethod
+            );
+        }
+        // Worded the same as for the symmetric clade collapsing method desc
+        var disclaimerText =
+            " This option only applies to the Rectangular and Circular layouts.";
+        this.leafSortingDesc.textContent = newText + disclaimerText;
+    };
+
+    /**
+     * Hides / shows the leaf sorting controls depending on the current layout.
+     *
+     * This should be called when the current layout is changed
+     * (and when starting Empress).
+     */
+    SidePanel.prototype.updateLeafSortingAvail = function (currLayout) {
+        if (currLayout === "Unrooted") {
+            this.leafSortingContainer.classList.add("hidden");
+        } else {
+            this.leafSortingContainer.classList.remove("hidden");
+        }
     };
 
     /**
@@ -277,6 +332,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         var radioBtnOnClickFunc = function () {
             scope.empress.updateLayout(this.value);
+            scope.updateLeafSortingAvail(this.value);
         };
 
         for (var i = 0; i < layouts.length; i++) {
@@ -320,7 +376,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             // Now that we've created these three elements, add them!
             pele.appendChild(lele);
             pele.appendChild(iele);
-            this.layoutDiv.appendChild(pele);
+            this.layoutMethodContainer.appendChild(pele);
         }
     };
 

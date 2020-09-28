@@ -244,12 +244,6 @@ define([
         this._barplotsDrawn = false;
 
         /**
-         * type {Object}
-         * Maps tree layouts to the average point of each layout
-         */
-        this.layoutAvgPoint = {};
-
-        /**
          * @type{Number}
          * The (not-yet-scaled) line width used for drawing "thick" lines.
          * Can be passed as input to this.thickenColoredNodes().
@@ -279,6 +273,12 @@ define([
          * Whether to ignore node lengths during layout or not
          */
         this.ignoreLengths = false;
+
+        /**
+         * @type{String}
+         * Leaf sorting method: one of "none", "ascending", or "descending"
+         */
+        this.leafSorting = "descending";
 
         /**
          * @type{CanvasEvents}
@@ -354,7 +354,8 @@ define([
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths
+                this.ignoreLengths,
+                this.leafSorting
             );
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
@@ -374,7 +375,8 @@ define([
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths
+                this.ignoreLengths,
+                this.leafSorting
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
@@ -2336,52 +2338,67 @@ define([
 
     /**
      * Centers the viewing window at the average of the current layout.
+     *
+     * The layout's average point is defined as [x, y, zoomAmount], where:
+     *
+     * -x is the average of all x coordinates
+     * -y is the average of all y coordinates
+     * -zoomAmount takes the largest x or y coordinate and normalizes it by
+     *  dim / 2 (where dim is the dimension of the canvas).
+     *
+     * zoomAmount is defined be a simple heuristic that should allow the
+     * majority of the tree to be visible in the viewing window.
+     *
+     * NOTE: Previously, layoutAvgPoint was cached for each layout. This
+     * behavior has been removed, because (with the advent of leaf sorting and
+     * "ignore lengths") a given "layout" (e.g. Rectangular) can now have
+     * pretty drastically different locations across all the options available.
+     *
+     * @return {Array} Contains three elements, in the following order:
+     *                 1. Average x-coordinate
+     *                 2. Average y-coordinate
+     *                 3. zoomAmount
+     *                 As of writing, nothing in Empress that I'm aware of
+     *                 consumes the output of this function. The main reason we
+     *                 return this is to make testing this easier.
      */
     Empress.prototype.centerLayoutAvgPoint = function () {
-        if (!(this._currentLayout in this.layoutAvgPoint)) {
-            // Add up x and y coordinates of all nodes in the tree (using
-            // current layout).
-            var x = 0,
-                y = 0,
-                zoomAmount = 0;
-            for (var node = 1; node <= this._tree.size; node++) {
-                // node = this._treeData[node];
-                x += this.getX(node);
-                y += this.getY(node);
-                zoomAmount = Math.max(
-                    zoomAmount,
-                    Math.abs(this.getX(node)),
-                    Math.abs(this.getY(node))
-                );
-            }
-
-            // each layout's avegerage point is define as followed:
-            // [x, y, zoomAmount] where x is the average of all x coordinates,
-            // y is the average of all y coordinates, and zoomAmount takes the
-            // largest x or y coordinate and normaizes it by dim / 2 (where
-            // dim is the dimension of the canvas).
-            // Note: zoomAmount is defined be a simple heuristic that should
-            // allow the majority of the tree to be visible in the viewing
-            // window.
-            this.layoutAvgPoint[this._currentLayout] = [
-                x / this._tree.size,
-                y / this._tree.size,
-                (2 * zoomAmount) / this._drawer.dim,
-            ];
+        var layoutAvgPoint = [];
+        // Add up x and y coordinates of all nodes in the tree (using
+        // current layout).
+        var x = 0,
+            y = 0,
+            zoomAmount = 0;
+        for (var node = 1; node <= this._tree.size; node++) {
+            // node = this._treeData[node];
+            x += this.getX(node);
+            y += this.getY(node);
+            zoomAmount = Math.max(
+                zoomAmount,
+                Math.abs(this.getX(node)),
+                Math.abs(this.getY(node))
+            );
         }
+
+        layoutAvgPoint = [
+            x / this._tree.size,
+            y / this._tree.size,
+            (2 * zoomAmount) / this._drawer.dim,
+        ];
 
         // center the viewing window on the average point of the current layout
         // and zoom out so the majority of the tree is visible.
-        var cX = this.layoutAvgPoint[this._currentLayout][0],
-            cY = this.layoutAvgPoint[this._currentLayout][1];
+        var cX = layoutAvgPoint[0],
+            cY = layoutAvgPoint[1];
         this._drawer.centerCameraOn(cX, cY);
         this._drawer.zoom(
             this._drawer.treeSpaceCenterX,
             this._drawer.treeSpaceCenterY,
             false,
-            this.layoutAvgPoint[this._currentLayout][2]
+            layoutAvgPoint[2]
         );
         this.drawTree();
+        return layoutAvgPoint;
     };
 
     /**
