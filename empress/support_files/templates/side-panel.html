@@ -108,15 +108,44 @@
   </p>
 </div>
 
-<!-- Layout options; shamelessly copied from above.
-     Stuff will be added to the #layout-div element below when
-     SidePanel.addLayoutTab() is called :)
--->
+<!-- Layout methods and options; shamelessly copied from above. -->
 <button class="side-header collapsible">Layout</button>
-<div class="side-content control hidden" id="layout-div">
+<div class="side-content control hidden">
   <p class="side-panel-notes">
     Change how the tree is drawn.
   </p>
+  <!-- Layout methods (e.g. Rectangular, Circular, Unrooted) will be added to
+       this <div> when SidePanel.addLayoutTab() is called.
+  -->
+  <div id="layout-method-container">
+  </div>
+  <hr />
+  <p class="side-panel-inner-header">
+    Layout options
+  </p>
+  <p>
+    <label for="ignore-lengths-chk">Ignore branch lengths?</label>
+    <input id="ignore-lengths-chk" type="checkbox" class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, branch lengths are ignored when drawing the tree. Note that the
+    root node's length is always ignored, regardless of if this is checked or
+    not.
+  </p>
+  <div id="leaf-sorting-container">
+    <p>
+      <label for="leaf-sorting-select">Sort clades based on tip count?</label>
+      <label class="select-container">
+        <select id="leaf-sorting-select">
+          <option value="none">No sorting</option>
+          <option value="ascending">Sort (ascending)</option>
+          <option value="descending" selected>Sort (descending)</option>
+        </select>
+      </label>
+    </p>
+    <p class="side-panel-notes indented" id="leaf-sorting-desc">
+    </p>
+  </div>
 </div>
 
 <!-- Barplot options -->
@@ -295,19 +324,6 @@
     If checked, the camera will automatically focus on nodes that are selected
     via searching by name or by clicking on an arrow in a biplot.
   </p>
-  <hr />
-  <p class="side-panel-inner-header">
-    Layout options
-  </p>
-  <p>
-    <label for="ignore-lengths-chk">Ignore branch lengths?</label>
-    <input id="ignore-lengths-chk" type="checkbox" class="empress-input">
-  </p>
-  <p class="side-panel-notes indented">
-    If checked, branch lengths are ignored when drawing the tree. Note that the
-    root node's length is always ignored, regardless of if this is checked or
-    not.
-  </p>
   <div class="needs-metadata">
     <hr />
     <p class="side-panel-inner-header">
@@ -351,5 +367,4 @@
       setting may only be partially applied throughout the animation.
     </p>
   </div>
-
 </div>

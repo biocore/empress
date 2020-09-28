@@ -630,6 +630,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
         });
 
         test("Test getTotalLength", function () {
+            var scope = this;
             equal(
                 this.bpObj.getTotalLength(3, 11),
                 12,
@@ -651,7 +652,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             );
 
             throws(function () {
-                this.bpObj.getTotalLength(5, 3);
+                scope.bpObj.getTotalLength(5, 3);
             });
         });
 
@@ -731,6 +732,128 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             assert.ok(!tree.containsNode("x"));
             assert.ok(!tree.containsNode("hello"));
             assert.ok(!tree.containsNode(0xa));
+        });
+
+        test("Test postorderLeafSortedNodes", function () {
+            var scope = this;
+            // Real quick: assert that BPTree doesn't already have these
+            // results cached. We'll check that they *do* get cached later on.
+            deepEqual(this.bpObj._ascendingLeafSorted, null);
+            deepEqual(this.bpObj._descendingLeafSorted, null);
+
+            // So here is an ASCII rendering of the test tree (nodes labeled by
+            // their [normal] postorder position, no leaf sorting used).
+            //
+            //      11
+            //     /|\
+            //    / | \
+            //   5  6  10
+            //  /|\     |
+            // 1 2 4    9
+            //     |   / \
+            //     3  7   8
+            //
+            // Basically, what leaf sorting does is flip around the order in
+            // which clades are visited. In a normal postorder traversal we'd
+            // visit node 5's clade first since it's the first one specified
+            // in the tree (based on how the balanced parens representation of
+            // the tree is written out at the top of this file) -- but here,
+            // when choosing which of the three root children to visit (5, 6,
+            // 10), we start with 6 because it has the smallest number of tips
+            // (1). Then, we go to 10's clade (it has 2 tips), and finally 5's
+            // clade (3 tips).
+            //
+            // (This process is iterative -- we always visit the clade with the
+            // smallest number of tips first, not just the ones at the top of
+            // the tree -- but the test tree doesn't have any branches
+            // where any path has more than one tip after the root.)
+            var obsAsc = this.bpObj.postorderLeafSortedNodes("ascending");
+            deepEqual(obsAsc, [6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 11]);
+
+            // Check that this was cached (i.e. only needs to be computed once
+            // -- so toggling between leaf sorting methods shouldn't be super
+            // slow, at least not for this reason)
+            deepEqual(this.bpObj._ascendingLeafSorted, obsAsc);
+            deepEqual(this.bpObj._descendingLeafSorted, null);
+
+            // With descending leaf sorting, we visit clades in the opposite
+            // order: start at 5's clade, then 10's clade, then 6's clade.
+            var obsDsc = this.bpObj.postorderLeafSortedNodes("descending");
+            deepEqual(obsDsc, [1, 2, 3, 4, 5, 7, 8, 9, 10, 6, 11]);
+
+            // Check caching
+            deepEqual(this.bpObj._ascendingLeafSorted, obsAsc);
+            deepEqual(this.bpObj._descendingLeafSorted, obsDsc);
+
+            // Verify that _using_ the cache works
+            obsAsc2 = this.bpObj.postorderLeafSortedNodes("ascending");
+            deepEqual(obsAsc2, obsAsc);
+
+            // Finally, check the error case (if the leaf sorting method is
+            // bogus)
+            throws(function () {
+                scope.bpObj.postorderLeafSortedNodes("none");
+            }, /Unrecognized leaf sorting method none/);
+
+            // ... And verify that this didn't mess up the caches. Not sure
+            // why this would happen, but to quote Socrates, "you can't be too
+            // paranoid with JavaScript." Socrates said that, right?
+            deepEqual(this.bpObj._ascendingLeafSorted, obsAsc);
+            deepEqual(this.bpObj._descendingLeafSorted, obsDsc);
+        });
+
+        test("Test getChildren", function () {
+            // Root's children
+            deepEqual(this.bpObj.getChildren(0), [1, 11, 13]);
+
+            // Node at index 1's children. Note that the order matches the
+            // order of stuff in the tree.
+            deepEqual(this.bpObj.getChildren(1), [2, 4, 6]);
+            // (Real quick, check that the node indices point to the postorder
+            // node names we expect -- mostly just a sanity check that the
+            // surrounding test data hasn't changed)
+            deepEqual(this.bpObj.postorder(2), 1);
+            deepEqual(this.bpObj.postorder(4), 2);
+            deepEqual(this.bpObj.postorder(6), 4);
+
+            // Node at index 11's children (it's a tip, so should return an
+            // empty array)
+            deepEqual(this.bpObj.getChildren(11), []);
+
+            // Node at index 13's children (it just has one immediate child)
+            deepEqual(this.bpObj.getChildren(13), [14]);
+        });
+
+        test("Test getSortedChildren", function () {
+            // Root's children -- see pretty ASCII diagram in
+            // postorderLeafSortedNodes test above
+            deepEqual(this.bpObj.getSortedChildren(0, "ascending"), [
+                11,
+                13,
+                1,
+            ]);
+            deepEqual(this.bpObj.getSortedChildren(0, "descending"), [
+                1,
+                13,
+                11,
+            ]);
+
+            // Node at index 1's children -- all have the same number of tips
+            // Note that getSortedChildren() uses a stable sort, so the
+            // original relative ordering is preserved! Phew.
+            deepEqual(this.bpObj.getSortedChildren(1, "ascending"), [2, 4, 6]);
+            deepEqual(this.bpObj.getSortedChildren(1, "descending"), [2, 4, 6]);
+
+            // Node at index 11's children (it's a tip, so should return an
+            // empty array)
+            deepEqual(this.bpObj.getSortedChildren(11), []);
+
+            // Node at index 13's children (it just has one immediate child)
+            deepEqual(this.bpObj.getSortedChildren(13), [14]);
+
+            // Node at index 14's children -- all have the same number of tips,
+            // so again the original ordering is preserved
+            deepEqual(this.bpObj.getSortedChildren(14), [15, 17]);
         });
     });
 });

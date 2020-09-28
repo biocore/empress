@@ -69,12 +69,13 @@ require([
             },
         });
 
-        test("Test rectangular layout", function () {
+        test("Test rectangular layout (none and descending leaf sorting)", function () {
             var obs = LayoutsUtil.rectangularLayout(
                 this.tree,
                 1,
                 1,
                 false,
+                "none",
                 false
             );
             /* Why do these coordinates look like this?
@@ -139,6 +140,88 @@ require([
                 yScalingFactor: 0.25,
             };
             deepEqual(obs, exp);
+
+            // Coincidentally, the output is the same between none and
+            // descending leaf sorting for this particular tree...
+            obs2 = LayoutsUtil.rectangularLayout(
+                this.tree,
+                1,
+                1,
+                false,
+                "descending",
+                false
+            );
+            deepEqual(obs2, exp);
+        });
+
+        test("Test rectangular layout (ascending leaf sorting)", function () {
+            var obs = LayoutsUtil.rectangularLayout(
+                this.tree,
+                1,
+                1,
+                false,
+                "ascending",
+                false
+            );
+            // Initial y-coords:
+            // c, d, b, a, e
+            // 0, 1, 2, 3, 4
+            //
+            // f = a+e / 2 = 3.5
+            // g = f+b / 2 = 2.75
+            // h = d+c / 2 = 0.5
+            // i = h+g / 2 = 1.625
+            //
+            // Initial x-coords:
+            // i, g, f, e, a, b, h, d, c
+            // 0, 1, 2, 4, 3, 3, 2, 5, 3
+            //
+            // So all y-coords are subtracted by 1.625, and all x-coords are
+            // subtracted by 0 (nothing happens).
+            //
+            // The output arrays are in postorder.
+            // (empty space), a, e, f, b, g, c, d, h, i (root)
+            var exp = {
+                highestChildYr: [
+                    undefined,
+                    undefined,
+                    undefined,
+                    2.375,
+                    undefined,
+                    1.875,
+                    undefined,
+                    undefined,
+                    -0.625,
+                    1.125,
+                ],
+                lowestChildYr: [
+                    undefined,
+                    undefined,
+                    undefined,
+                    1.375,
+                    undefined,
+                    0.375,
+                    undefined,
+                    undefined,
+                    -1.625,
+                    -1.125,
+                ],
+                xCoord: [0, 3, 4, 2, 3, 1, 3, 5, 2, 0],
+                yCoord: [
+                    0,
+                    1.375,
+                    2.375,
+                    1.875,
+                    0.375,
+                    1.125,
+                    -1.625,
+                    -0.625,
+                    -1.125,
+                    0.0,
+                ],
+                yScalingFactor: 0.25,
+            };
+            deepEqual(obs, exp);
         });
 
         test("Test straightline tree rectangular layout", function () {
@@ -147,6 +230,7 @@ require([
                 1,
                 1,
                 false,
+                "none",
                 false
             );
 
@@ -166,6 +250,7 @@ require([
                 1,
                 1,
                 true,
+                "none",
                 false
             );
 
@@ -187,6 +272,7 @@ require([
                 1,
                 1,
                 false,
+                "none",
                 false
             );
 
@@ -206,6 +292,7 @@ require([
                 5,
                 5,
                 false,
+                "none",
                 false
             );
             // Check that there isn't extra junk included in obs' output
@@ -301,6 +388,7 @@ require([
                 1,
                 1,
                 false,
+                "none",
                 false
             );
             // We skip root since we don't care about its length.
@@ -318,7 +406,14 @@ require([
             // length, the output data should be exactly the same.
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.circularLayout(tree, 1, 1, false, false);
+                var obs = LayoutsUtil.circularLayout(
+                    tree,
+                    1,
+                    1,
+                    false,
+                    "none",
+                    false
+                );
                 // The tree looks like:
                 // root -- a ---- b
                 deepEqual(obs.x0, [0, 1, 0, 0], "x0");
@@ -335,10 +430,42 @@ require([
                 deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
             });
         });
+        test("Test straightline tree circular layout (all leaf sorting options)", function () {
+            // Spoiler alert: should all look the same
+            var scope = this;
+            var opts = ["none", "ascending", "descending"];
+            _.each(opts, function (opt) {
+                var obs = LayoutsUtil.circularLayout(
+                    scope.straightLineTree,
+                    1,
+                    1,
+                    false,
+                    opt,
+                    false
+                );
+                // I just copied these assertions from the above test
+                deepEqual(obs.x0, [0, 1, 0, 0], "x0");
+                deepEqual(obs.y0, [0, 0, 0, 0], "y0");
+                deepEqual(obs.x1, [0, 3, 1, 0], "x1");
+                deepEqual(obs.y1, [0, 0, 0, 0], "y1");
+                deepEqual(obs.angle, [0, 0, 0, 0], "angle");
+                deepEqual(obs.arcx0, [0, 0, 1, 0], "arcx0");
+                deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
+                deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
+                deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
+            });
+        });
         test("Test straightline tree circular layout: ignoreLengths", function () {
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.circularLayout(tree, 1, 1, true, false);
+                var obs = LayoutsUtil.circularLayout(
+                    tree,
+                    1,
+                    1,
+                    true,
+                    "none",
+                    false
+                );
                 // The tree looks like: (note the equal branch lengths)
                 // root -- a -- b
                 deepEqual(obs.x0, [0, 1, 0, 0], "x0");
@@ -361,6 +488,7 @@ require([
                 1,
                 1,
                 false,
+                "none",
                 false,
                 piover2
             );
@@ -422,6 +550,7 @@ require([
                 1,
                 1,
                 true,
+                "none",
                 false,
                 3 * Math.PI
             );
@@ -527,6 +656,40 @@ require([
                 ],
             };
             deepEqual(obs, exp);
+        });
+
+        test("Test getPostOrderNodes (ascending)", function () {
+            var po = LayoutsUtil.getPostOrderNodes(this.tree, "ascending");
+            // Two explicit "choices" (all other choices, I think, are between
+            // clades of equal numbers of tips) --
+            // 1. Visit h (8)'s clade first, since it has 2 tips and
+            //    g (5)'s clade has 3 tips.
+            // 2. Visit b (4)'s clade first, since it has 1 tip (itself) and
+            //    f (3)'s clade has 2 tips.
+            deepEqual(po, [6, 7, 8, 4, 1, 2, 3, 5, 9]);
+        });
+
+        test("Test getPostOrderNodes (descending)", function () {
+            var po = LayoutsUtil.getPostOrderNodes(this.tree, "descending");
+            // Same logic as above, in reverse. Coincidentally, the tree was
+            // already stored in a descending leaf-sorted way! That's why all
+            // the numbers are monotonically increasing (since the numbers are
+            // the normal postorder positions).
+            deepEqual(po, [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        });
+
+        test("Test getPostOrderNodes (no leaf sorting)", function () {
+            var po = LayoutsUtil.getPostOrderNodes(this.tree, "descending");
+            // Identical to descending leaf-sorting (not normally, just for
+            // this particular tree...)
+            deepEqual(po, [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        });
+
+        test("Test getPostOrderNodes (error on bad leaf sorting method)", function () {
+            var scope = this;
+            throws(function () {
+                LayoutsUtil.getPostOrderNodes(scope.tree, "bluhbluhbluh");
+            }, /Unrecognized leaf sorting method bluhbluhbluh/);
         });
     });
 });
