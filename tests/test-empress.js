@@ -1338,5 +1338,21 @@ require([
                 }
             });
         });
+        test("Test getNodeLength", function () {
+            // The test tree's lengths are the same as the postorder position
+            // of each node, so this is very simple to test
+            for (var i = 1; i < 7; i++) {
+                deepEqual(this.empress.getNodeLength(i), i);
+            }
+            deepEqual(
+                this.empress.getNodeLength(7),
+                null,
+                "Root length always returned as null"
+            );
+            // We don't check it here, but if you pass in 0 then you get back
+            // undefined (at least as of writing). This should probably throw
+            // an error -- I think delegating that to BPTree.length() would
+            // make more sense.
+        });
     });
 });
