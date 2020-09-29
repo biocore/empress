@@ -1354,5 +1354,14 @@ require([
             // an error -- I think delegating that to BPTree.length() would
             // make more sense.
         });
+        test("Test getTreeStats", function () {
+            var stats = this.empress.getTreeStats();
+            deepEqual(stats.min, 1, "Minimum length");
+            deepEqual(stats.max, 6, "Maximum length");
+            deepEqual(stats.avg, 3.5, "Average length");
+            deepEqual(stats.tipCt, 4, "Tip count");
+            deepEqual(stats.intCt, 3, "Internal node count");
+            deepEqual(stats.allCt, 7, "Total node count");
+        });
     });
 });

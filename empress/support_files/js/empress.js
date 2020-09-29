@@ -427,30 +427,9 @@ define([
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
 
-        this._populateTreeStats();
-
         this.getLayoutInfo();
         this.centerLayoutAvgPoint();
         // centerLayoutAvgPoint() calls drawTree(), so no need to call it here
-    };
-
-    /**
-     * Populates the tree statistics on the side panel.
-     */
-    Empress.prototype._populateTreeStats = function () {
-        // Compute node counts
-        var numTotal = this._tree.size;
-        var numTips = this._tree.getNumTips(this._tree.size);
-        var numInts = numTotal - numTips;
-        // Get length statistics
-        var lenStats = this._tree.getLengthStats();
-        // Update the corresponding HTML elements
-        document.getElementById("stats-tip-count").textContent = numTips;
-        document.getElementById("stats-int-count").textContent = numInts;
-        document.getElementById("stats-total-count").textContent = numTotal;
-        document.getElementById("stats-min-length").textContent = lenStats.min;
-        document.getElementById("stats-max-length").textContent = lenStats.max;
-        document.getElementById("stats-avg-length").textContent = lenStats.avg;
     };
 
     /**
@@ -3131,6 +3110,38 @@ define([
 
         this._events.selectedNodeMenu.clearSelectedNode();
         this._events.placeNodeSelectionMenu(nodeName, this.focusOnSelectedNode);
+    };
+
+    /**
+     * Returns an Object describing various tree-level statistics.
+     *
+     * @return {Object} Contains six keys:
+     *                  -min: Minimum non-root node length
+     *                  -max: Maximum non-root node length
+     *                  -avg: Average non-root node length
+     *                  -tipCt: Number of tips in the tree
+     *                  -intCt: Number of internal nodes in the tree (incl.
+     *                          root)
+     *                  -allCt: Number of all nodes in the tree (incl. root)
+     * @throws {Error} If the tree does not have length information, this will
+     *                 be unable to call BPTree.getLengthStats() and will thus
+     *                 fail.
+     */
+    Empress.prototype.getTreeStats = function () {
+        // Compute node counts
+        var allCt = this._tree.size;
+        var tipCt = this._tree.getNumTips(this._tree.size);
+        var intCt = allCt - tipCt;
+        // Get length statistics
+        var lenStats = this._tree.getLengthStats();
+        return {
+            min: lenStats.min,
+            max: lenStats.max,
+            avg: lenStats.avg,
+            tipCt: tipCt,
+            intCt: intCt,
+            allCt: allCt,
+        };
     };
 
     /**

@@ -108,6 +108,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             "export-legend-svg-btn"
         );
 
+        // Add info to the tree statistics tab
+        this.populateTreeStats();
+
         // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
         collapse.onclick = function () {
@@ -558,6 +561,20 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.fCollapseCladesChk.onclick = function () {
             scope.fUpdateBtn.click();
         };
+    };
+
+    /**
+     * Fills in tree statistics in various HTML elements on the side panel.
+     */
+    SidePanel.prototype.populateTreeStats = function () {
+        var stats = this.empress.getTreeStats();
+        // Update the corresponding HTML elements
+        document.getElementById("stats-tip-count").textContent = stats.tipCt;
+        document.getElementById("stats-int-count").textContent = stats.intCt;
+        document.getElementById("stats-total-count").textContent = stats.allCt;
+        document.getElementById("stats-min-length").textContent = stats.min;
+        document.getElementById("stats-max-length").textContent = stats.max;
+        document.getElementById("stats-avg-length").textContent = stats.avg;
     };
 
     return SidePanel;
