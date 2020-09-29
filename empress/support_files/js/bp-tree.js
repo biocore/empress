@@ -223,7 +223,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             min = min;
             max = max;
             avg = sum / (this.size - 1);
-            return {min: min, max: max, avg: avg};
+            return { min: min, max: max, avg: avg };
         } else {
             throw new Error("No length information defined for this tree.");
         }
