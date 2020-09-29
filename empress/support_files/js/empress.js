@@ -438,22 +438,19 @@ define([
      * Populates the tree statistics on the side panel.
      */
     Empress.prototype._populateTreeStats = function () {
+        // Compute node counts
+        var numTotal = this._tree.size;
         var numTips = this._tree.getNumTips(this._tree.size);
+        var numInts = numTotal - numTips;
+        // Get length statistics
+        var lenStats = this._tree.getLengthStats();
+        // Update the corresponding HTML elements
         document.getElementById("stats-tip-count").textContent = numTips;
-        document.getElementById("stats-int-count").textContent =
-            this._tree.size - numTips;
-        document.getElementById(
-            "stats-total-count"
-        ).textContent = this._tree.size;
-        document.getElementById(
-            "stats-min-length"
-        ).textContent = this._tree.minLength_;
-        document.getElementById(
-            "stats-max-length"
-        ).textContent = this._tree.maxLength_;
-        document.getElementById(
-            "stats-avg-length"
-        ).textContent = this._tree.avgLength_;
+        document.getElementById("stats-int-count").textContent = numInts;
+        document.getElementById("stats-total-count").textContent = numTotal;
+        document.getElementById("stats-min-length").textContent = lenStats.min;
+        document.getElementById("stats-max-length").textContent = lenStats.max;
+        document.getElementById("stats-avg-length").textContent = lenStats.avg;
     };
 
     /**

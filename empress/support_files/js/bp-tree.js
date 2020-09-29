@@ -91,39 +91,6 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         this.lengths_ = lengths ? lengths : null;
 
         /**
-         * @type {Number}
-         * @private
-         * Computed minimum, maximum, and average of all non-root node lengths.
-         * Will remain null if this.lengths_ is also null (i.e. no length
-         * information was provided; this should only happen during testing).
-         */
-        this.minLength_ = null;
-        this.maxLength_ = null;
-        this.avgLength_ = null;
-
-        // Update the above variables if possible
-        if (this.lengths_ !== null) {
-            // non-root lengths should be guaranteed to be nonnegative, and
-            // at least one non-root length should be positive
-            var min = 0,
-                max = 0,
-                sum = 0;
-            // NOTE: not sure this way of indexing is correct (whomstever
-            // reviews this pls check)
-            // By x = 1, we skip the first element (lengths_ is 1-indexed);
-            // by x < this.lengths_.length - 1, we skip the last element
-            // (corresponding to the root length, which we ignore on purpose)
-            for (var x = 1; x < this.lengths_.length - 1; x++) {
-                min = Math.min(min, this.lengths_[x]);
-                max = Math.max(max, this.lengths_[x]);
-                sum += this.lengths_[x];
-            }
-            this.minLength_ = min;
-            this.maxLength_ = max;
-            this.avgLength_ = sum / (this.size - 1);
-        }
-
-        /**
          * @type {Uint32Array}
          * @private
          * r0Cache[i] represents rank(0,i) in this.b
@@ -224,6 +191,43 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
          */
         this._nameToNodes = {};
     }
+
+    /**
+     * Returns an Object describing the minimum, maximum, and average of all
+     * non-root node lengths.
+     *
+     * @return {Object} Contains three keys: "min", "max", and "avg", mapping
+     *                  to Numbers representing the minimum, maximum, and
+     *                  average non-root node length in the tree.
+     * @throws {Error} If this tree does not have length information (i.e.
+     *                 this.lengths_ is null; this should only happen during
+     *                 testing).
+     */
+    BPTree.prototype.getLengthStats = function () {
+        if (this.lengths_ !== null) {
+            var min = Number.POSITIVE_INFINITY,
+                max = Number.NEGATIVE_INFINITY,
+                sum = 0,
+                avg = 0;
+            // non-root lengths should be guaranteed to be nonnegative, and
+            // at least one non-root length should be positive.
+            //
+            // The x = 1, skips the first element (lengths_ is 1-indexed);
+            // the x < this.lengths_.length - 1 skips the last element
+            // (corresponding to the root length, which we ignore on purpose)
+            for (var x = 1; x < this.lengths_.length - 1; x++) {
+                min = Math.min(min, this.lengths_[x]);
+                max = Math.max(max, this.lengths_[x]);
+                sum += this.lengths_[x];
+            }
+            min = min;
+            max = max;
+            avg = sum / (this.size - 1);
+            return {min: min, max: max, avg: avg};
+        } else {
+            throw new Error("No length information defined for this tree.");
+        }
+    };
 
     /**
      *
