@@ -30,7 +30,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // used to event triggers
         this.empress = empress;
 
-        // tree properties components
+        // settings components
         this.treeNodesChk = document.getElementById("display-nodes-chk");
         this.recenterBtn = document.getElementById("center-tree-btn");
         this.focusOnNodeChk = document.getElementById("focus-on-node-chk");
@@ -470,13 +470,13 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     };
 
     /**
-     * Add the callback events for the global tree properties tab. The callback
-     * events include things like centering the tree and showing tree nodes.
+     * Add the callback events for the settings tab. The callback events
+     * include things like centering the tree and showing tree nodes.
      *
      * Other things such as changing the defualt color of the tree will be
      * added.
      */
-    SidePanel.prototype.addTreePropertiesTab = function () {
+    SidePanel.prototype.addSettingsTab = function () {
         var scope = this;
         this.treeNodesChk.onchange = function () {
             scope.empress.setTreeNodeVisibility(scope.treeNodesChk.checked);
