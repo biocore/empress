@@ -554,8 +554,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
         }
-        var rX = x2Arr[tree.size];
-        var rY = y2Arr[tree.size];
         var scale;
         if (normalize) {
             var widthScale = width / (maxX - minX);
@@ -566,11 +564,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         }
         // skip the first element since the tree is zero-indexed
         for (var i = 1; i <= tree.size - 1; i++) {
-            x2Arr[i] -= rX;
-            y2Arr[i] -= rY;
             x2Arr[i] *= scale;
             y2Arr[i] *= scale;
         }
+        // Don't need to reposition coordinates relative to the root because
+        // the root is already at (0, 0)
 
         return { xCoord: x2Arr, yCoord: y2Arr };
     }
