@@ -567,14 +567,21 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      * Fills in tree statistics in various HTML elements on the side panel.
      */
     SidePanel.prototype.populateTreeStats = function () {
+        var populate = function (htmlID, val) {
+            document.getElementById(htmlID).textContent = val;
+        };
+        var populateWithFixedPrecision = function (htmlID, val) {
+            populate(htmlID, val.toFixed(4));
+        };
         var stats = this.empress.getTreeStats();
-        // Update the corresponding HTML elements
-        document.getElementById("stats-tip-count").textContent = stats.tipCt;
-        document.getElementById("stats-int-count").textContent = stats.intCt;
-        document.getElementById("stats-total-count").textContent = stats.allCt;
-        document.getElementById("stats-min-length").textContent = stats.min;
-        document.getElementById("stats-max-length").textContent = stats.max;
-        document.getElementById("stats-avg-length").textContent = stats.avg;
+        // only call toFixed on the length stats; the node counts are all
+        // integers
+        populate("stats-tip-count", stats.tipCt);
+        populate("stats-int-count", stats.intCt);
+        populate("stats-total-count", stats.allCt);
+        populateWithFixedPrecision("stats-min-length", stats.min);
+        populateWithFixedPrecision("stats-max-length", stats.max);
+        populateWithFixedPrecision("stats-avg-length", stats.avg);
     };
 
     return SidePanel;
