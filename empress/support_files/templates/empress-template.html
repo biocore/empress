@@ -199,10 +199,20 @@
         // make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {
             btn.addEventListener("click", function() {
-            this.classList.toggle("active");
-            this.nextElementSibling.classList.toggle("hidden");
-            document.getElementById("side-panel").classList.toggle("panel-active",
-              document.querySelector(".side-content:not(.hidden)"));
+                // Only compute tree stats the first time the user opens up
+                // the tree statistics tab
+                if (
+                    this.id === "stats-btn" &&
+                    this.classList.contains("unpopulated")
+                ) {
+                    sPanel.populateTreeStats();
+                    this.classList.remove("unpopulated");
+                }
+
+                this.classList.toggle("active");
+                this.nextElementSibling.classList.toggle("hidden");
+                document.getElementById("side-panel").classList.toggle("panel-active",
+                  document.querySelector(".side-content:not(.hidden)"));
           });
         });
 

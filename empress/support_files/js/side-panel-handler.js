@@ -120,7 +120,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             document.getElementById(scope.SHOW_ID).classList.remove("hidden");
         };
 
-        // // shows the side menu
+        // shows the side menu
         var show = document.getElementById(this.SHOW_ID);
         show.onclick = function () {
             document.getElementById(scope.SHOW_ID).classList.add("hidden");
