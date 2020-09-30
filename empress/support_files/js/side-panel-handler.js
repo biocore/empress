@@ -108,9 +108,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             "export-legend-svg-btn"
         );
 
-        // Add info to the tree statistics tab
-        this.populateTreeStats();
-
         // hides the side menu
         var collapse = document.getElementById(this.COLLAPSE_ID);
         collapse.onclick = function () {
