@@ -56,6 +56,7 @@ setup(
     packages=find_packages(),
     package_data={
         'empress': ['support_files/vendor/*.js',
+                    'support_files/vendor/*.css',
                     'support_files/css/*.css',
                     'support_files/js/*.js',
                     'support_files/templates/*.html',
