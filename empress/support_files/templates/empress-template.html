@@ -211,8 +211,10 @@
 
                 this.classList.toggle("active");
                 this.nextElementSibling.classList.toggle("hidden");
-                document.getElementById("side-panel").classList.toggle("panel-active",
-                  document.querySelector(".side-content:not(.hidden)"));
+                document.getElementById("side-panel").classList.toggle(
+                    "panel-active",
+                    document.querySelector(".side-content:not(.hidden)")
+                );
           });
         });
 
