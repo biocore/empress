@@ -83,13 +83,12 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         this._numTips = new Array(this.size + 1).fill(0);
 
         /**
-         * @type{Float32Array}
+         * @type {Array}
          * @private
-         * stores the length of the nodes in preorder. If lengths are not
-         * provided then lengths will be set to 0.
-         * Note: lengths are assumed to be smaller that 3.4 * 10^38
+         * Stores the length of the nodes in preorder. If lengths are not
+         * provided then lengths will be set to null.
          */
-        this.lengths_ = lengths ? new Float32Array(lengths) : null;
+        this.lengths_ = lengths ? lengths : null;
 
         /**
          * @type {Uint32Array}
@@ -192,6 +191,43 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
          */
         this._nameToNodes = {};
     }
+
+    /**
+     * Returns an Object describing the minimum, maximum, and average of all
+     * non-root node lengths.
+     *
+     * @return {Object} Contains three keys: "min", "max", and "avg", mapping
+     *                  to Numbers representing the minimum, maximum, and
+     *                  average non-root node length in the tree.
+     * @throws {Error} If this tree does not have length information (i.e.
+     *                 this.lengths_ is null; this should only happen during
+     *                 testing).
+     */
+    BPTree.prototype.getLengthStats = function () {
+        if (this.lengths_ !== null) {
+            var min = Number.POSITIVE_INFINITY,
+                max = Number.NEGATIVE_INFINITY,
+                sum = 0,
+                avg = 0;
+            // non-root lengths should be guaranteed to be nonnegative, and
+            // at least one non-root length should be positive.
+            //
+            // The x = 1, skips the first element (lengths_ is 1-indexed);
+            // the x < this.lengths_.length - 1 skips the last element
+            // (corresponding to the root length, which we ignore on purpose)
+            for (var x = 1; x < this.lengths_.length - 1; x++) {
+                min = Math.min(min, this.lengths_[x]);
+                max = Math.max(max, this.lengths_[x]);
+                sum += this.lengths_[x];
+            }
+            min = min;
+            max = max;
+            avg = sum / (this.size - 1);
+            return { min: min, max: max, avg: avg };
+        } else {
+            throw new Error("No length information defined for this tree.");
+        }
+    };
 
     /**
      *

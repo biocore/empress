@@ -502,7 +502,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         ignoreLengths,
         normalize = true
     ) {
-        var angle = (2 * Math.PI) / tree.numleaves();
+        var da = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
         var x2Arr = new Array(tree.size + 1).fill(0);
         var y1Arr = new Array(tree.size + 1);
@@ -510,19 +510,15 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var aArr = new Array(tree.size + 1);
 
         var n = tree.postorderselect(tree.size);
-        var x1 = 0,
-            y1 = 0,
-            a = 0,
-            da = angle;
-        // NOTE: x2 will always be 0, since sin(0) = 0.
-        var rootLen = ignoreLengths ? 1 : tree.length(n);
-        var x2 = x1 + rootLen * Math.sin(a);
-        var y2 = y1 + rootLen * Math.cos(a);
-        x1Arr[tree.size] = x1;
-        x2Arr[tree.size] = x2;
-        y1Arr[tree.size] = y1;
-        y2Arr[tree.size] = y2;
-        aArr[tree.size] = a;
+        var x1, y1, a;
+        // Position the root at (0, 0) and ignore any length it might
+        // ostensibly have in the tree:
+        // https://github.com/biocore/empress/issues/374
+        x1Arr[tree.size] = 0;
+        x2Arr[tree.size] = 0;
+        y1Arr[tree.size] = 0;
+        y2Arr[tree.size] = 0;
+        aArr[tree.size] = 0;
         var maxX = x2Arr[tree.size],
             minX = x2Arr[tree.size];
         var maxY = y2Arr[tree.size],
@@ -558,8 +554,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
         }
-        var rX = x2Arr[tree.size];
-        var rY = y2Arr[tree.size];
         var scale;
         if (normalize) {
             var widthScale = width / (maxX - minX);
@@ -570,11 +564,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         }
         // skip the first element since the tree is zero-indexed
         for (var i = 1; i <= tree.size - 1; i++) {
-            x2Arr[i] -= rX;
-            y2Arr[i] -= rY;
             x2Arr[i] *= scale;
             y2Arr[i] *= scale;
         }
+        // Don't need to reposition coordinates relative to the root because
+        // the root is already at (0, 0)
 
         return { xCoord: x2Arr, yCoord: y2Arr };
     }

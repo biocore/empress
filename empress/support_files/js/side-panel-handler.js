@@ -30,7 +30,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // used to event triggers
         this.empress = empress;
 
-        // tree properties components
+        // settings components
         this.treeNodesChk = document.getElementById("display-nodes-chk");
         this.recenterBtn = document.getElementById("center-tree-btn");
         this.focusOnNodeChk = document.getElementById("focus-on-node-chk");
@@ -117,7 +117,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             document.getElementById(scope.SHOW_ID).classList.remove("hidden");
         };
 
-        // // shows the side menu
+        // shows the side menu
         var show = document.getElementById(this.SHOW_ID);
         show.onclick = function () {
             document.getElementById(scope.SHOW_ID).classList.add("hidden");
@@ -467,13 +467,13 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     };
 
     /**
-     * Add the callback events for the global tree properties tab. The callback
-     * events include things like centering the tree and showing tree nodes.
+     * Add the callback events for the settings tab. The callback events
+     * include things like centering the tree and showing tree nodes.
      *
      * Other things such as changing the defualt color of the tree will be
      * added.
      */
-    SidePanel.prototype.addTreePropertiesTab = function () {
+    SidePanel.prototype.addSettingsTab = function () {
         var scope = this;
         this.treeNodesChk.onchange = function () {
             scope.empress.setTreeNodeVisibility(scope.treeNodesChk.checked);
@@ -558,6 +558,27 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.fCollapseCladesChk.onclick = function () {
             scope.fUpdateBtn.click();
         };
+    };
+
+    /**
+     * Fills in tree statistics in various HTML elements on the side panel.
+     */
+    SidePanel.prototype.populateTreeStats = function () {
+        var populate = function (htmlID, val) {
+            document.getElementById(htmlID).textContent = val;
+        };
+        var populateWithFixedPrecision = function (htmlID, val) {
+            populate(htmlID, val.toFixed(4));
+        };
+        var stats = this.empress.getTreeStats();
+        // only call toFixed on the length stats; the node counts are all
+        // integers
+        populate("stats-tip-count", stats.tipCt);
+        populate("stats-int-count", stats.intCt);
+        populate("stats-total-count", stats.allCt);
+        populateWithFixedPrecision("stats-min-length", stats.min);
+        populateWithFixedPrecision("stats-max-length", stats.max);
+        populateWithFixedPrecision("stats-avg-length", stats.avg);
     };
 
     return SidePanel;

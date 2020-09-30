@@ -129,8 +129,8 @@
   </p>
   <p class="side-panel-notes indented">
     If checked, branch lengths are ignored when drawing the tree. Note that the
-    root node's length is always ignored, regardless of if this is checked or
-    not.
+    root node is never drawn with any length, regardless of if this
+    is checked or not.
   </p>
   <div id="leaf-sorting-container">
     <p>
@@ -292,8 +292,63 @@
   </div>
 </div>
 
-<!-- Global Tree properties -->
-<button class="side-header collapsible">Tree Properties</button>
+<!-- Tree statistics -->
+<button class="side-header collapsible unpopulated" id="stats-btn">Tree Statistics</button>
+<div class="side-content control hidden">
+  <p class="side-panel-notes">
+    Information about the tree's topology.
+  </p>
+  <p>
+    <table style="margin: 0 auto;">
+      <tbody>
+        <!-- Lord, forgive me not for what I've done but what I'm about to do -->
+        <tr>
+          <td class="header-cell" style="text-align: center;" colspan="2">Node counts</td>
+          <!-- Add padding between the two horizontally separated "halves" of the
+               table. Based on alternate option listed at
+               https://stackoverflow.com/a/11801090/10730311.
+          -->
+          <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td class="header-cell" style="text-align: center;" colspan="2">Node lengths</td>
+        </tr>
+        <tr>
+          <td class="header-cell">Tips</td>
+          <td id="stats-tip-count"></td>
+          <td></td>
+          <td class="header-cell">Minimum</td>
+          <td id="stats-min-length"></td>
+        </tr>
+        <tr>
+          <td class="header-cell">Internal nodes</td>
+          <td id="stats-int-count"></td>
+          <td></td>
+          <td class="header-cell">Maximum</td>
+          <td id="stats-max-length"></td>
+        </tr>
+        <tr>
+          <td class="header-cell">Total</td>
+          <td id="stats-total-count"></td>
+          <td></td>
+          <td class="header-cell">Average</td>
+          <td id="stats-avg-length"></td>
+        </tr>
+      </tbody>
+    </table>
+  </p>
+  <p class="side-panel-notes">
+    Please note that the root node's length, even
+    if specified, is not included in the node length statistics. Node length
+    statistics are rounded to four decimal places.
+  </p>
+  <p class="needs-community-data side-panel-notes">
+    Also note that these statistics only pertain to the tree shown here; if the
+    tree was sheared to a table, for example, the node counts shown here will
+    be lower than for the full tree.
+  </p>
+</div>
+
+<!-- Global settings -->
+<button class="side-header collapsible">Settings</button>
 <div class="side-content control hidden">
   <p class="side-panel-inner-header">
     Node circles

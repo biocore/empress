@@ -652,10 +652,11 @@ require([
                     -0.04136942678222631,
                     -0.4076585497973588,
                     -0.08273885356445265,
-                    1,
+                    0,
                 ],
             };
-            deepEqual(obs, exp);
+            UtilitiesForTesting.approxDeepEqualMulti(obs.xCoord, exp.xCoord);
+            UtilitiesForTesting.approxDeepEqualMulti(obs.yCoord, exp.yCoord);
         });
 
         test("Test getPostOrderNodes (ascending)", function () {

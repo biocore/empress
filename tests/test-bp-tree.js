@@ -855,5 +855,27 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             // so again the original ordering is preserved
             deepEqual(this.bpObj.getSortedChildren(14), [15, 17]);
         });
+        test("Test getLengthStats", function () {
+            var ls = this.bpObj.getLengthStats();
+            // There is a 0 in the input lengths at the first position, but
+            // this is a placeholder -- lengths is 1-indexed. So we should
+            // ignore that, and end up with a min of 1 instead.
+            deepEqual(ls.min, 1, "Min is correct");
+            // The root node has a length of 11, but we ignore it because the
+            // root length is not validated in Python
+            deepEqual(ls.max, 10, "Max is correct");
+            // sum(range(1, 11)) is 55
+            deepEqual(ls.avg, 5.5, "Avg is correct");
+
+            // Test silly error case when the input lengths are null
+            var wackyTree = new BPTree(this.bpArray, null, null, null);
+            throws(
+                function () {
+                    wackyTree.getLengthStats();
+                },
+                /No length information defined for this tree./,
+                "Error thrown when no length info given"
+            );
+        });
     });
 });
