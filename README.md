@@ -331,7 +331,7 @@ This is a good example of when your data can tell you something about your metad
 
 ## Additional Considerations
 
-### Providing multiple metadata files can be problematic
+### Providing multiple metadata files
 
 QIIME 2 allows you to specify multiple metadata files at once by just
 repeating `--m-feature-metadata-file` (or `--m-sample-metadata-file`). For
@@ -359,7 +359,12 @@ less taxonomy information will be available in the Empress interface!
 
 In the interim, the way to get around this (and to include multiple sources of
 feature or sample metadata in Empress) is to merge metadata yourself before
-creating an Empress visualization. This should be doable in many different programming languages or spreadsheet tools; see
+creating an Empress visualization. Of course, you'll need to determine what
+value(s) to assign to indicate that a given entry is "missing"; for
+quantitative metadata, `NaN` or an empty value are both reasonable options.
+
+Merging metadata files should be doable in many different programming
+languages or spreadsheet tools; see
 [this GitHub issue](https://github.com/biocore/empress/issues/393) for some
 example Python code that does this.
 
