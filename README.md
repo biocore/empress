@@ -1,5 +1,5 @@
 # Empress
- [![Build Status](https://travis-ci.org/biocore/empress.svg?branch=master)](https://travis-ci.org/biocore/empress)
+[![Build Status](https://travis-ci.org/biocore/empress.svg?branch=master)](https://travis-ci.org/biocore/empress)
 
 <!---Empress Logo--->
 
@@ -18,7 +18,10 @@ conda activate qiime2-2020.6
 
 You can replace `qiime2-2020.6` above with whichever version of QIIME 2 you have currently installed.  
 
-Now we are ready to install Empress. Run the following commands:
+Now we are ready to install Empress. Run the following commands to do so. (Note
+that Emperor will be _re-installed_ when the second command is run; the reason
+we uninstall it first is so that we can ensure the most up-to-date version of
+it is available.)
 
 ```
 pip uninstall --yes emperor
