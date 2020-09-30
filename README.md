@@ -331,6 +331,38 @@ This is a good example of when your data can tell you something about your metad
 
 ## Additional Considerations
 
+### Providing multiple metadata files can be problematic
+
+QIIME 2 allows you to specify multiple metadata files at once by just
+repeating `--m-feature-metadata-file` (or `--m-sample-metadata-file`). For
+example, we may want to visualize feature importances on a tree
+in addition to taxonomic annotations:
+
+```bash
+qiime empress community-plot \
+    --i-tree rooted-tree.qza \
+    --i-feature-table table.qza \
+    --m-sample-metadata-file sample_metadata.tsv \
+    --m-feature-metadata-file taxonomy.qza \
+    --m-feature-metadata-file feature_importance.qza \
+    --o-visualization empress-tree.qzv
+```
+
+However, what QIIME 2 will do internally ([as of writing](https://forum.qiime2.org/t/support-other-metadata-merging-strategies/15907))
+is filter the metadata to
+_just_ the entries contained in _all_ of the input metadata files. So, in the
+example above, if the `feature_importance.qza` file only has entries for a
+couple of features (compared to the `taxonomy.qza` file), then the feature
+metadata Empress receives will be limited to just the features contained in
+both the feature importance and taxonomy metadata files -- which will mean that
+less taxonomy information will be available in the Empress interface!
+
+In the interim, the way to get around this (and to include multiple sources of
+feature or sample metadata in Empress) is to merge metadata yourself before
+creating an Empress visualization. This should be doable in many different programming languages or spreadsheet tools; see
+[this GitHub issue](https://github.com/biocore/empress/issues/393) for some
+example Python code that does this.
+
 ### Filtered vs. raw table?
 
 When your ordination was created from a subset of your original dataset (e.g. the feature table was rarefied, or certain low-frequency features or samples were otherwise filtered out), we recommend that you carefully consider *which* feature table you would like to visualize in Empress. You can use either:
