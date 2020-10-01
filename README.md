@@ -1,5 +1,5 @@
 # Empress
- [![Build Status](https://travis-ci.org/biocore/empress.svg?branch=master)](https://travis-ci.org/biocore/empress)
+[![Build Status](https://travis-ci.org/biocore/empress.svg?branch=master)](https://travis-ci.org/biocore/empress)
 
 <!---Empress Logo--->
 
@@ -18,7 +18,10 @@ conda activate qiime2-2020.6
 
 You can replace `qiime2-2020.6` above with whichever version of QIIME 2 you have currently installed.  
 
-Now we are ready to install Empress. Run the following commands:
+Now we are ready to install Empress. Run the following commands to do so. (Note
+that Emperor will be _re-installed_ when the second command is run; the reason
+we uninstall it first is so that we can ensure the most up-to-date version of
+it is available.)
 
 ```
 pip uninstall --yes emperor
@@ -327,6 +330,43 @@ Once the samples have been deselected (within a couple of seconds), select the o
 This is a good example of when your data can tell you something about your metadata that you may have missed. In reality, in this experiment, this palm sample was in fact mislabelled by accident.  
 
 ## Additional Considerations
+
+### Providing multiple metadata files
+
+QIIME 2 allows you to specify multiple metadata files at once by just
+repeating `--m-feature-metadata-file` (or `--m-sample-metadata-file`). For
+example, we may want to visualize feature importances on a tree
+in addition to taxonomic annotations:
+
+```bash
+qiime empress community-plot \
+    --i-tree rooted-tree.qza \
+    --i-feature-table table.qza \
+    --m-sample-metadata-file sample_metadata.tsv \
+    --m-feature-metadata-file taxonomy.qza \
+    --m-feature-metadata-file feature_importance.qza \
+    --o-visualization empress-tree.qzv
+```
+
+However, what QIIME 2 will do internally ([as of writing](https://forum.qiime2.org/t/support-other-metadata-merging-strategies/15907))
+is filter the metadata to
+_just_ the entries contained in _all_ of the input metadata files. So, in the
+example above, if the `feature_importance.qza` file only has entries for a
+couple of features (compared to the `taxonomy.qza` file), then the feature
+metadata Empress receives will be limited to just the features contained in
+both the feature importance and taxonomy metadata files -- which will mean that
+less taxonomy information will be available in the Empress interface!
+
+In the interim, the way to get around this (and to include multiple sources of
+feature or sample metadata in Empress) is to merge metadata yourself before
+creating an Empress visualization. Of course, you'll need to determine what
+value(s) to assign to indicate that a given entry is "missing"; for
+quantitative metadata, `NaN` or an empty value are both reasonable options.
+
+Merging metadata files should be doable in many different programming
+languages or spreadsheet tools; see
+[this GitHub issue](https://github.com/biocore/empress/issues/393) for some
+example Python code that does this.
 
 ### Filtered vs. raw table?
 
