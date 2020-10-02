@@ -202,9 +202,23 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             }
         };
 
+        // uncollapses a clade if double clicked on
+        var doubleClick = function (e) {
+            var treeSpace = drawer.toTreeCoords(e.clientX, e.clientY);
+            var x = treeSpace.x;
+            var y = treeSpace.y;
+
+            var clade = empress.getRootNodeForPointInClade([x, y]);
+            if (clade === -1) {
+                return;
+            }
+            empress.dontCollapseClade(clade);
+        };
+
         canvas.onmousedown = mouseDown;
         canvas.onclick = mouseClick;
         canvas.onwheel = zoomTree;
+        canvas.ondblclick = doubleClick;
     };
 
     /**
