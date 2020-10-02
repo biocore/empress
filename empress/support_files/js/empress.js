@@ -313,6 +313,14 @@ define([
         this._collapsedClades = {};
 
         /**
+         * @type(Set)
+         * @private
+         * Clades that should will not be collapse. Currently, clades are only
+         * cleared from this set when resetTree() is called.
+         */
+        this._dontCollapse = new Set();
+
+        /**
          * @type{Array}
          * @private
          *
@@ -2134,6 +2142,7 @@ define([
             this.setNodeInfo(node, "visible", true);
         }
         this._collapsedClades = {};
+        this._dontCollapse = new Set();
         this._collapsedCladeBuffer = [];
         this._drawer.loadThickNodeBuff([]);
         this._drawer.loadCladeBuff([]);
@@ -2422,6 +2431,29 @@ define([
     };
 
     /**
+     * Adds clade to the "do not collapse list"
+     *
+     * @param{Number/String} clade The postorder position of a node (clade).
+     *                             This can either be an integer or a string.
+     */
+    Empress.prototype.dontCollapseClade = function (clade) {
+        var scope = this;
+        var nodes = this.getCladeNodes(parseInt(clade));
+        nodes.forEach(function (node) {
+            scope._dontCollapse.add(node);
+        });
+        this._collapsedClades = {};
+        // Note: currently collapseClades is the only method that set
+        // the node visibility property.
+        for (var i = 1; i <= this._tree.size; i++) {
+            this.setNodeInfo(i, "visible", true);
+        }
+
+        this._collapsedCladeBuffer = [];
+        this.collapseClades();
+        this.drawTree();
+    };
+    /**
      * Collapses all clades that share the same color into a quadrilateral.
      *
      * NOTE: Previously, this checked this._collapsedClades to see if there
@@ -2472,6 +2504,11 @@ define([
         var inorder = this._tree.inOrderNodes();
         for (var node in inorder) {
             node = inorder[node];
+
+            // dont collapse clade
+            if (this._dontCollapse.has(node)) {
+                continue;
+            }
             var visible = this.getNodeInfo(node, "visible");
             var isTip = this._tree.isleaf(this._tree.postorderselect(node));
 
