@@ -2439,7 +2439,9 @@ define([
     Empress.prototype.dontCollapseClade = function (clade) {
         var scope = this;
         var nodes = this.getCladeNodes(parseInt(clade));
-        nodes.forEach(function(node) {scope._dontCollapse.add(node)})
+        nodes.forEach(function (node) {
+            scope._dontCollapse.add(node);
+        });
         this._collapsedClades = {};
         // Note: currently collapseClades is the only method that set
         // the node visibility property.
