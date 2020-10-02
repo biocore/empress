@@ -2503,7 +2503,6 @@ define([
 
             // dont collapse clade
             if (this._dontCollapse.has(node)) {
-                console.log(node);
                 continue;
             }
             var visible = this.getNodeInfo(node, "visible");
