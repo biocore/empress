@@ -171,7 +171,6 @@ ec.controllers.color.addEventListener("value-double-clicked", function (
     // reset emissive settings for all markers since an ongoing timer may have
     // been cancelled
     ec.decViews.scatter.setEmissive(0x000000);
-    ec.decViews.scatter.setScale(1);
     plotView.needsUpdate = true;
 
     // if there's any coloring setup remove it, and re-enable the update button
