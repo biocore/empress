@@ -10,7 +10,12 @@ empress.setOnNodeMenuVisibleCallback(function (samples) {
 
     // retrieve the plotting objects
     samples = ec.decModels.models.scatter.getPlottableByIDs(samples);
-    ec.decViews.scatter.setScale(2, samples);
+    if(ec.UIState['view.usesPointCloud']) {
+        ec.decViews.scatter.setScale(10, samples);
+    }
+    else {
+        ec.decViews.scatter.setScale(2, samples);
+    }
     ec.sceneViews[0].needsUpdate = true;
 });
 
