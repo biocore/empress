@@ -2513,7 +2513,7 @@ define([
             var isTip = this._tree.isleaf(this._tree.postorderselect(node));
 
             if (visible && !isTip && this._group[node] !== -1) {
-                if (this._tree.getNumTips(node) > 2) {
+                if (this._tree.getNumTips(node) > 1) {
                     this._collapseClade(node);
                 } else {
                     this._dontCollapse.add(node);
