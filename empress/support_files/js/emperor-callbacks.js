@@ -10,10 +10,9 @@ empress.setOnNodeMenuVisibleCallback(function (samples) {
 
     // retrieve the plotting objects
     samples = ec.decModels.models.scatter.getPlottableByIDs(samples);
-    if(ec.UIState['view.usesPointCloud']) {
+    if (ec.UIState["view.usesPointCloud"]) {
         ec.decViews.scatter.setScale(10, samples);
-    }
-    else {
+    } else {
         ec.decViews.scatter.setScale(2, samples);
     }
     ec.sceneViews[0].needsUpdate = true;
