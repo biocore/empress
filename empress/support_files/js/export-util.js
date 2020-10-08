@@ -125,34 +125,81 @@ define(["underscore", "chroma"], function (_, chroma) {
         // for now this should be a reasonable solution.
         // TODO add a func to empress that returns this
         var cladeCoords = empress._collapsedCladeBuffer;
-        for (
-            i = 0;
-            i + 3 * drawer.VERTEX_SIZE <= cladeCoords.length;
-            i += 3 * drawer.VERTEX_SIZE
-        ) {
-            var x1 = cladeCoords[i];
-            var y1 = -cladeCoords[i + 1];
-            var x2 = cladeCoords[i + drawer.VERTEX_SIZE];
-            var y2 = -cladeCoords[i + 1 + drawer.VERTEX_SIZE];
-            var x3 = cladeCoords[i + 2 * drawer.VERTEX_SIZE];
-            var y3 = -cladeCoords[i + 1 + 2 * drawer.VERTEX_SIZE];
-            var color = getRGB(cladeCoords, i);
+        var currLayout = empress._currentLayout;
+        if (currLayout === "Rectangular" || currLayout === "Circular") {
+            // Draw triangles
+            for (
+                i = 0;
+                i + 3 * drawer.VERTEX_SIZE <= cladeCoords.length;
+                i += 3 * drawer.VERTEX_SIZE
+            ) {
+                var x1 = cladeCoords[i];
+                var y1 = -cladeCoords[i + 1];
+                var x2 = cladeCoords[i + drawer.VERTEX_SIZE];
+                var y2 = -cladeCoords[i + 1 + drawer.VERTEX_SIZE];
+                var x3 = cladeCoords[i + 2 * drawer.VERTEX_SIZE];
+                var y3 = -cladeCoords[i + 1 + 2 * drawer.VERTEX_SIZE];
+                var color = getRGB(cladeCoords, i);
 
-            // Draw this triangle as a polygon in the SVG
-            var points =
-                x1 + "," +
-                y1 + " " +
-                x2 + "," +
-                y2 + " " +
-                x3 + "," +
-                y3;
-            svg += '<polygon points="' + points + '" fill="' + color + '" />\n';
+                // Draw this triangle as a polygon in the SVG
+                var points =
+                    x1 + "," +
+                    y1 + " " +
+                    x2 + "," +
+                    y2 + " " +
+                    x3 + "," +
+                    y3;
+                svg += '<polygon points="' + points + '" fill="' + color + '" />\n';
 
-            // Update bounding box
-            minX = Math.min(minX, x1, x2, x3);
-            maxX = Math.max(maxX, x1, x2, x3);
-            minY = Math.min(minY, y1, y2, y3);
-            maxY = Math.max(maxY, y1, y2, y3);
+                // Update bounding box
+                minX = Math.min(minX, x1, x2, x3);
+                maxX = Math.max(maxX, x1, x2, x3);
+                minY = Math.min(minY, y1, y2, y3);
+                maxY = Math.max(maxY, y1, y2, y3);
+            }
+        } else if (empress._currentLayout === "Unrooted") {
+            // Draw rectangles
+            for (
+                i = 0;
+                i + 6 * drawer.VERTEX_SIZE <= cladeCoords.length;
+                i += 6 * drawer.VERTEX_SIZE
+            ) {
+                var x1 = cladeCoords[i];
+                var y1 = -cladeCoords[i + 1];
+                var x2 = cladeCoords[i + drawer.VERTEX_SIZE];
+                var y2 = -cladeCoords[i + 1 + drawer.VERTEX_SIZE];
+                var x3 = cladeCoords[i + 2 * drawer.VERTEX_SIZE];
+                var y3 = -cladeCoords[i + 1 + 2 * drawer.VERTEX_SIZE];
+                var x4 = cladeCoords[i + 3 * drawer.VERTEX_SIZE];
+                var y4 = -cladeCoords[i + 1 + 3 * drawer.VERTEX_SIZE];
+                var x5 = cladeCoords[i + 4 * drawer.VERTEX_SIZE];
+                var y5 = -cladeCoords[i + 1 + 4 * drawer.VERTEX_SIZE];
+                var x6 = cladeCoords[i + 5 * drawer.VERTEX_SIZE];
+                var y6 = -cladeCoords[i + 1 + 5 * drawer.VERTEX_SIZE];
+                var color = getRGB(cladeCoords, i);
+
+                // Draw this triangle as a polygon in the SVG
+                var points =
+                    x1 + "," +
+                    y1 + " " +
+                    x2 + "," +
+                    y2 + " " +
+                    x3 + "," +
+                    y3 + " " +
+                    x4 + "," +
+                    y4 + " " +
+                    x5 + "," +
+                    y5 + " " +
+                    x6 + "," +
+                    y6;
+                svg += '<polygon points="' + points + '" fill="' + color + '" />\n';
+
+                // Update bounding box
+                minX = Math.min(minX, x1, x2, x3, x4, x5, x6);
+                maxX = Math.max(maxX, x1, x2, x3, x4, x5, x6);
+                minY = Math.min(minY, y1, y2, y3, y4, y5, y6);
+                maxY = Math.max(maxY, y1, y2, y3, y4, y5, y6);
+            }
         }
 
         // create a circle for each node
