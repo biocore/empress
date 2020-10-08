@@ -43,13 +43,20 @@ githook:
 docs:
 	@# For now, this just regenerates the moving pictures QZV
 	@# Assumes you're in a QIIME 2 conda environment
-	qiime empress plot \
+	qiime empress tree-plot \
+		--i-tree docs/moving-pictures/rooted-tree.qza \
+		--o-visualization docs/moving-pictures/plain.qzv
+	qiime empress tree-plot \
+		--i-tree docs/moving-pictures/rooted-tree.qza \
+		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
+		--o-visualization docs/moving-pictures/just-fm.qzv
+	qiime empress community-plot \
 		--i-tree docs/moving-pictures/rooted-tree.qza \
 		--i-feature-table docs/moving-pictures/table.qza \
 		--m-sample-metadata-file docs/moving-pictures/sample_metadata.tsv \
 		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
 		--o-visualization docs/moving-pictures/empress-tree.qzv
-	qiime empress plot \
+	qiime empress community-plot \
 		--i-tree docs/moving-pictures/rooted-tree.qza \
 		--i-feature-table docs/moving-pictures/table.qza \
 		--i-pcoa docs/moving-pictures/unweighted_unifrac_pcoa_results.qza \
@@ -57,7 +64,7 @@ docs:
 		--m-feature-metadata-file docs/moving-pictures/taxonomy.qza \
 		--o-visualization docs/moving-pictures/empire.qzv \
 		--p-filter-extra-samples
-	qiime empress plot \
+	qiime empress community-plot \
 		--i-tree docs/moving-pictures/rooted-tree.qza \
 		--i-pcoa docs/moving-pictures/biplot.qza \
 		--i-feature-table docs/moving-pictures/table.qza \

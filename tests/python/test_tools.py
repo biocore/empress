@@ -68,7 +68,7 @@ class TestTools(unittest.TestCase):
         self.tip_md = self.split_tax_fm.loc[["a", "e"]]
         self.int_md = self.split_tax_fm.loc[["h"]]
         # This is designed to match the shearing that's done in the core test
-        # for --p-filter_unobserved_features_from_phylogeny.
+        # for --p-shear-tree.
         self.shorn_tree = parse_newick(
             "(((a:1)EmpressNode0:1,b:2)g:1,(d:3)h:2)EmpressNode1:1;"
         )

@@ -8,7 +8,8 @@
 
 from empress.tree import validate_tree
 from empress.tools import (
-    match_inputs, shifting, filter_feature_metadata_to_tree
+    match_inputs, match_tree_and_feature_metadata,
+    shifting, filter_feature_metadata_to_tree
 )
 from empress.compression_utils import (
     remove_empty_samples_and_features, compress_table,
@@ -25,30 +26,35 @@ from jinja2 import Environment, FileSystemLoader
 
 SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
 TEMPLATES = os.path.join(SUPPORT_FILES, 'templates')
-SELECTION_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
-                                       'selection-callback.js')
-NODE_CLICK_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
-                                        'node-click-callback.js')
+EMPEROR_CALLBACK_PATH = os.path.join(SUPPORT_FILES, 'js',
+                                     'emperor-callbacks.js')
 
 
 class Empress():
-    def __init__(self, tree, table, sample_metadata,
+    def __init__(self, tree, table=None, sample_metadata=None,
                  feature_metadata=None, ordination=None,
                  ignore_missing_samples=False, filter_extra_samples=False,
                  filter_missing_features=False, resource_path=None,
-                 filter_unobserved_features_from_phylogeny=True):
+                 shear_tree=True):
         """Visualize a phylogenetic tree
 
         Use this object to interactively display a phylogenetic tree using the
         Empress GUI.
 
+        Note that the table and sample metadata must either both be specified
+        or both be None. If only one of them is None, this will raise a
+        ValueError. If both are None, then the values of the ordination,
+        ignore_missing_samples, filter_extra_samples, filter_missing_features,
+        and shear_tree arguments will be ignored since no sample
+        information is available.
+
         Parameters
         ----------
-        tree: bp.Tree
+        tree: bp.BP
             The phylogenetic tree to visualize.
-        table: biom.Table
+        table: biom.Table, optional
             The matrix to visualize paired with the phylogenetic tree.
-        sample_metadata: pd.DataFrame
+        sample_metadata: pd.DataFrame, optional
             DataFrame object with the metadata associated to the samples in the
             ``ordination`` object, should have an index set and it should match
             the identifiers in the ``ordination`` object.
@@ -80,10 +86,9 @@ class Empress():
         resource_path: str, optional
             Load the resources from a user-specified remote location. If set to
             None resources are loaded from the current directory.
-        filter_unobserved_features_from_phylogeny: bool, optional
-            If True, filters features from the phylogeny that aren't present as
-            features in feature table. features in feature table. Otherwise,
-            the phylogeny is not filtered.
+        shear_tree: bool, optional
+            If True, shears the tree to just the tips that are present as
+            features in the feature table. Otherwise, the tree is not shorn.
 
 
         Attributes
@@ -103,8 +108,28 @@ class Empress():
         """
 
         self.tree = tree
+        # Use XOR to verify that either both or neither of the table and
+        # sample metadata are None. Parens needed for precedence stuff.
+        if (table is None) ^ (sample_metadata is None):
+            # The caller messed something up, so raise an error.
+            # It should not be possible for the user to pass *just* one of
+            # these things (qiime empress community-plot requires both, and
+            # qiime empress tree-plot accepts neither).
+            raise ValueError(
+                "Both the table and sample metadata should be specified or "
+                "None. However, only one of them is None."
+            )
+        elif table is not None and sample_metadata is not None:
+            self.is_community_plot = True
+        else:
+            self.is_community_plot = False
+
         self.table = table
-        self.samples = sample_metadata.copy()
+
+        if sample_metadata is not None:
+            self.samples = sample_metadata.copy()
+        else:
+            self.samples = None
 
         if feature_metadata is not None:
             self.features = feature_metadata.copy()
@@ -121,7 +146,7 @@ class Empress():
             ignore_missing_samples,
             filter_extra_samples,
             filter_missing_features,
-            filter_unobserved_features_from_phylogeny
+            shear_tree
         )
 
         if self.ordination is not None:
@@ -153,37 +178,42 @@ class Empress():
     def _validate_and_match_data(self, ignore_missing_samples,
                                  filter_extra_samples,
                                  filter_missing_features,
-                                 filter_unobserved_features_from_phylogeny):
+                                 shear_tree):
 
-        self.table, self.samples, self.tip_md, self.int_md = match_inputs(
-            self.tree, self.table, self.samples, self.features,
-            self.ordination, ignore_missing_samples, filter_extra_samples,
-            filter_missing_features
-        )
-        # Remove empty samples and features from the table (and remove the
-        # removed samples from the sample metadata). We also pass in the
-        # ordination, if present, to this function -- so we can throw an error
-        # if the ordination actually contains these empty samples/features.
-        #
-        # We purposefully do this removal *after* matching (so we know the
-        # data inputs match up) and *before* shearing (so empty features
-        # in the table are no longer included as tips in the tree).
-        self.table, self.samples = remove_empty_samples_and_features(
-            self.table, self.samples, self.ordination
-        )
-        # remove unobserved features from the phylogeny
-        if filter_unobserved_features_from_phylogeny:
-            features = set(self.table.ids(axis='observation'))
-            self.tree = self.tree.shear(features)
-            # Remove features in the feature metadata that are no longer
-            # present in the tree, due to being shorn off
-            if self.tip_md is not None or self.int_md is not None:
-                # (Technically they should always both be None or both be
-                # DataFrames -- there's no in-between)
-                self.tip_md, self.int_md = filter_feature_metadata_to_tree(
-                    self.tip_md, self.int_md, self.tree
-                )
-
+        if self.is_community_plot:
+            self.table, self.samples, self.tip_md, self.int_md = match_inputs(
+                self.tree, self.table, self.samples, self.features,
+                self.ordination, ignore_missing_samples, filter_extra_samples,
+                filter_missing_features
+            )
+            # Remove empty samples and features from the table (and remove the
+            # removed samples from the sample metadata). We also pass in the
+            # ordination, if present, to this function -- so we can throw an
+            # error if the ordination actually contains these empty
+            # samples/features.
+            #
+            # We purposefully do this removal *after* matching (so we know the
+            # data inputs match up) and *before* shearing (so empty features
+            # in the table are no longer included as tips in the tree).
+            self.table, self.samples = remove_empty_samples_and_features(
+                self.table, self.samples, self.ordination
+            )
+            # remove unobserved features from the phylogeny (shear the tree)
+            if shear_tree:
+                features = set(self.table.ids(axis='observation'))
+                self.tree = self.tree.shear(features)
+                # Remove features in the feature metadata that are no longer
+                # present in the tree, due to being shorn off
+                if self.tip_md is not None or self.int_md is not None:
+                    # (Technically they should always both be None or both be
+                    # DataFrames -- there's no in-between)
+                    self.tip_md, self.int_md = filter_feature_metadata_to_tree(
+                        self.tip_md, self.int_md, self.tree
+                    )
+        else:
+            self.tip_md, self.int_md = match_tree_and_feature_metadata(
+                self.tree, self.features
+            )
         validate_tree(self.tree)
 
     def copy_support_files(self, target=None):
@@ -250,24 +280,27 @@ class Empress():
             object and the sample + feature metadata.
         """
 
-        # The fid2idxs dict we get from compress_table() is temporary -- later,
-        # we'll restructure it so that the keys (feature IDs) are nodes'
-        # postorder positions in the tree rather than arbitrary unique
-        # integers. (TODO: it should be possible to speed this up by passing
-        # the tree to compress_table() so postorder positions can immediately
-        # be used as keys / feature IDs without an intermediate step.)
-        s_ids, f_ids, sid2idxs, fid2idxs_t, compressed_table = compress_table(
-            self.table
-        )
-        sm_cols, compressed_sm = compress_sample_metadata(
-            sid2idxs, self.samples
-        )
+        s_ids = f_ids = cmp_table = sm_cols = compressed_sm = None
+        sid2idxs = fid2idxs = {}
+        if self.is_community_plot:
+            # The fid2idxs dict we get from compress_table() is temporary --
+            # later, we'll restructure it so that the keys (feature IDs) are
+            # nodes' postorder positions in the tree rather than arbitrary
+            # unique integers. (TODO: it should be possible to speed this up by
+            # passing the tree to compress_table() so postorder positions can
+            # immediately be used as keys / feature IDs without an intermediate
+            # step.)
+            s_ids, f_ids, sid2idxs, fid2idxs_t, cmp_table = compress_table(
+                self.table
+            )
+            sm_cols, compressed_sm = compress_sample_metadata(
+                sid2idxs, self.samples
+            )
         fm_cols, compressed_tm_tmp, compressed_im_tmp = \
             compress_feature_metadata(self.tip_md, self.int_md)
 
         # Use nodes' postorder positions as their "IDs" for the BIOM table and
         # feature metadata
-        fid2idxs = {}
         compressed_tm = {}
         compressed_im = {}
         # bptree indices start at one, hence we pad the arrays
@@ -280,7 +313,7 @@ class Empress():
             names.append(name)
             lengths.append(self.tree.length(node))
 
-            if name in fid2idxs_t:
+            if self.is_community_plot and name in fid2idxs_t:
                 fid2idxs[i] = fid2idxs_t[name]
                 f_ids[fid2idxs[i]] = i
 
@@ -299,12 +332,14 @@ class Empress():
             'tree': shifting(self.tree.B),
             'lengths': lengths,
             'names': names,
+            # Should we show sample metadata coloring / animation panels?
+            'is_community_plot': self.is_community_plot,
             # feature table
             's_ids': s_ids,
             'f_ids': f_ids,
             's_ids_to_indices': sid2idxs,
             'f_ids_to_indices': fid2idxs,
-            'compressed_table': compressed_table,
+            'compressed_table': cmp_table,
             # sample metadata
             'sample_metadata_columns': sm_cols,
             'compressed_sample_metadata': compressed_sm,
@@ -352,34 +387,19 @@ class Empress():
         self._emperor.set_background_color('white')
         self._emperor.set_axes(color='black')
 
-        html = self._emperor.make_emperor(standalone=True)
-        html = html.split('\n')
-
         # The following line references will be replace with API calls to the
         # Emperor object, however those are not implemented yet
-        emperor_base_dependencies = html[6]
+        emperor_base_dependencies = self._emperor.render_base_dependencies()
 
-        # line 14 is where the CSS includes start, but it is surrounded by
-        # unnecessary tags so we strip those out
-        style = '\n'.join([line.strip().replace("'", '').replace(',', '')
-                           for line in html[14:20]])
+        style = self._emperor.render_style()
 
         # main divs for emperor
-        emperor_div = '\n'.join(html[39:44])
+        emperor_div = self._emperor.render_html('emperor-in-empire')
 
-        # main js script for emperor
-        emperor_require_logic = '\n'.join(html[45:-3])
-
-        # once everything is loaded replace the callback tag for custom JS
-        with open(SELECTION_CALLBACK_PATH) as f:
-            selection_callback = f.read()
-        with open(NODE_CLICK_CALLBACK_PATH) as f:
-            node_click_callback = f.read()
-
-        emperor_require_logic = emperor_require_logic.replace(
-            '/*__select_callback__*/', selection_callback)
-        emperor_require_logic = emperor_require_logic.replace(
-            '/*__custom_on_ready_code__*/', node_click_callback)
+        # main js script for emperor, including additional callbacks
+        with open(EMPEROR_CALLBACK_PATH) as f:
+            self._emperor.js_on_ready = f.read()
+        emperor_require_logic = self._emperor.render_js('emperor-in-empire')
 
         emperor_data = {
             'emperor_div': emperor_div,

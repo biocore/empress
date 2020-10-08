@@ -136,7 +136,7 @@ class TestCore(unittest.TestCase):
 
     def test_init(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      filter_unobserved_features_from_phylogeny=False)
+                      shear_tree=False)
 
         self.assertEqual(viz.base_url, 'support_files')
         self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1,
@@ -157,11 +157,67 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.features)
         self.assertIsNone(viz.ordination)
+        self.assertTrue(viz.is_community_plot)
+
+    def test_init_tree_plot(self):
+        # Simplest case (no feature metadata)
+        viz = Empress(self.tree)
+        self.assertFalse(viz.is_community_plot)
+        self.assertIsNone(viz.tip_md)
+        self.assertIsNone(viz.int_md)
+
+        # Slightly less simple case (with feature metadata)
+        viz = Empress(self.tree, feature_metadata=self.feature_metadata)
+        self.assertFalse(viz.is_community_plot)
+        assert_frame_equal(viz.tip_md, self.feature_metadata.loc[["a"]])
+        assert_frame_equal(viz.int_md, self.feature_metadata.loc[["h"]])
+
+    def test_init_tree_plot_extra_fm(self):
+        # Checks that extra stuff in the feature metadata (which doesn't match
+        # any node in the tree) is filtered out of the visualization, even if
+        # tree-plot is used.
+        extra_fm = pd.DataFrame(
+            {
+                "fmdcol1": ["zxcv", "bnm,"],
+                "fmdcol2": ["zaq1", "xsw2"]
+            },
+            index=["weshould", "befiltered"]
+        )
+        smooshed_fm = self.feature_metadata.append(extra_fm)
+        viz = Empress(self.tree, feature_metadata=smooshed_fm)
+        self.assertFalse(viz.is_community_plot)
+        assert_frame_equal(viz.tip_md, self.feature_metadata.loc[["a"]])
+        assert_frame_equal(viz.int_md, self.feature_metadata.loc[["h"]])
+
+    def test_init_tree_plot_fm_not_matching(self):
+        # Mainly, this test validates that the matching done between the tree
+        # nodes and feature metadata is still performed even if tree-plot is
+        # used.
+        bad_fm = self.feature_metadata.copy()
+        bad_fm.index = ["idont", "match :O"]
+        with self.assertRaisesRegex(
+            tools.DataMatchingError,
+            (
+                "No features in the feature metadata are present in the tree, "
+                "either as tips or as internal nodes."
+            )
+        ):
+            Empress(self.tree, feature_metadata=bad_fm)
+
+    def test_init_only_one_of_table_and_sm_passed(self):
+        exp_errmsg = (
+            "Both the table and sample metadata should be specified or None. "
+            "However, only one of them is None."
+        )
+        with self.assertRaisesRegex(ValueError, exp_errmsg):
+            Empress(self.tree, self.table)
+        with self.assertRaisesRegex(ValueError, exp_errmsg):
+            Empress(self.tree, sample_metadata=self.sample_metadata)
 
     def test_init_with_ordination(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.pcoa,
-                      filter_unobserved_features_from_phylogeny=False)
+                      shear_tree=False)
 
         self.assertEqual(viz.base_url, 'support_files')
         self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1,
@@ -206,14 +262,14 @@ class TestCore(unittest.TestCase):
         ):
             Empress(self.tree, bad_table, self.sample_metadata,
                     ordination=self.pcoa,
-                    filter_unobserved_features_from_phylogeny=False)
+                    shear_tree=False)
 
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
 
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       resource_path=local_path,
-                      filter_unobserved_features_from_phylogeny=False)
+                      shear_tree=False)
         self.assertEqual(viz.base_url, local_path)
 
         viz.copy_support_files()
@@ -227,7 +283,7 @@ class TestCore(unittest.TestCase):
 
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       resource_path=local_path,
-                      filter_unobserved_features_from_phylogeny=False)
+                      shear_tree=False)
         self.assertEqual(viz.base_url, local_path)
 
         viz.copy_support_files(target='./something-else')
@@ -239,7 +295,7 @@ class TestCore(unittest.TestCase):
 
     def test_to_dict(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      filter_unobserved_features_from_phylogeny=False)
+                      shear_tree=False)
 
         obs = viz._to_dict()
         dict_a_cp = copy.deepcopy(DICT_A)
@@ -257,7 +313,7 @@ class TestCore(unittest.TestCase):
     def test_to_dict_with_feature_metadata(self):
         viz = Empress(
             self.tree, self.table, self.sample_metadata, self.feature_metadata,
-            filter_unobserved_features_from_phylogeny=False
+            shear_tree=False
         )
         obs = viz._to_dict()
         dict_a_with_fm = copy.deepcopy(DICT_A)
@@ -276,7 +332,7 @@ class TestCore(unittest.TestCase):
 
         viz = Empress(self.tree, self.table, nan_sample_metadata,
                       nan_feature_metadata,
-                      filter_unobserved_features_from_phylogeny=False)
+                      shear_tree=False)
         obs = viz._to_dict()
         dict_a_nan = copy.deepcopy(DICT_A)
 
@@ -297,7 +353,7 @@ class TestCore(unittest.TestCase):
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.pcoa,
-                      filter_unobserved_features_from_phylogeny=False,
+                      shear_tree=False,
                       filter_extra_samples=True)
         obs = viz._to_dict()
 
@@ -315,7 +371,7 @@ class TestCore(unittest.TestCase):
             if not key.startswith('emperor_'):
                 self.assertEqual(obs[key], DICT_A[key])
 
-        exp = "    <div id='emperor-notebook"
+        exp = "<div id='emperor-in-empire'"
         self.assertTrue(obs['emperor_div'].startswith(exp))
 
         exp = "// When running in the Jupyter"
@@ -324,19 +380,66 @@ class TestCore(unittest.TestCase):
         exp = "}); // END REQUIRE.JS block"
         self.assertTrue(obs['emperor_require_logic'].endswith(exp))
 
-        exp = '<link id="emperor-css" rel="stylesheet"'
-        self.assertTrue(obs['emperor_style'].startswith(exp))
+        self.assertTrue('"#emperor-css"' in obs['emperor_style'])
 
         exp = "vendor/js/jquery-"
         self.assertEqual(obs['emperor_base_dependencies'].count(exp), 1)
 
         self.assertTrue(obs['emperor_classes'], 'combined-plot-container')
 
-    def test_filter_unobserved_features_from_phylogeny(self):
+    def _clear_copied_dict_a(self, dict_a_cp):
+        """Clears a copy of DICT_A to look as we'd expect it to look if
+           qiime empress tree-plot was used (i.e. no table / sample metadata
+           were specified).
+        """
+        dict_a_cp["is_community_plot"] = False
+
+        # When no table / s. metadata is passed, many values in the dict
+        # representation should just be None
+        for nfield in [
+            "s_ids", "f_ids", "compressed_table", "sample_metadata_columns",
+            "compressed_sample_metadata"
+        ]:
+            dict_a_cp[nfield] = None
+
+        # These things are represented as empty dicts, though. (The main reason
+        # for this is that making f_ids_to_indices be None in this case would
+        # have required some gross special-casing to refactor things, so for
+        # the sake of consistency and clean code both default to {}.)
+        for efield in ["s_ids_to_indices", "f_ids_to_indices"]:
+            dict_a_cp[efield] = {}
+
+        # We don't need to reset the feature metadata stuff because that should
+        # already be empty, since the main to_dict test doesn't use f.m.
+
+    def test_to_dict_tree_plot(self):
+        viz = Empress(self.tree)
+
+        dict_a_cp = copy.deepcopy(DICT_A)
+        self._clear_copied_dict_a(dict_a_cp)
+
+        obs = viz._to_dict()
+        self.assertEqual(obs, dict_a_cp)
+
+    def test_to_dict_tree_plot_with_feature_metadata(self):
+        viz = Empress(self.tree, feature_metadata=self.feature_metadata)
+
+        # Set up expected dict
+        dict_a_cp = copy.deepcopy(DICT_A)
+        self._clear_copied_dict_a(dict_a_cp)
+        # Copied from test_to_dict_with_feature_metadata() above
+        dict_a_cp["compressed_tip_metadata"] = {1: ["asdf", "qwer"]}
+        dict_a_cp["compressed_int_metadata"] = {8: ["ghjk", "tyui"]}
+        dict_a_cp["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
+
+        obs = viz._to_dict()
+        self.assertEqual(obs, dict_a_cp)
+
+    def test_shear_tree(self):
 
         viz = Empress(self.tree, self.filtered_table,
                       self.filtered_sample_metadata,
-                      filter_unobserved_features_from_phylogeny=True)
+                      shear_tree=True)
         self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
                                             0, 0, 0])
 
@@ -362,7 +465,7 @@ class TestCore(unittest.TestCase):
         extra_fm.loc["e"] = "i'm going to be filtered :O"
         viz = Empress(self.tree, self.filtered_table,
                       self.filtered_sample_metadata, feature_metadata=extra_fm,
-                      filter_unobserved_features_from_phylogeny=True)
+                      shear_tree=True)
         # Same as with the shearing test above, check that the tree was handled
         # as expected
         self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
@@ -395,7 +498,7 @@ class TestCore(unittest.TestCase):
                       self.sample_metadata,
                       feature_metadata=self.feature_metadata,
                       ordination=self.biplot,
-                      filter_unobserved_features_from_phylogeny=True)
+                      shear_tree=True)
 
         obs = str(viz)
 
@@ -411,7 +514,7 @@ class TestCore(unittest.TestCase):
                       self.sample_metadata,
                       feature_metadata=self.feature_metadata,
                       ordination=self.biplot_no_matches,
-                      filter_unobserved_features_from_phylogeny=True)
+                      shear_tree=True)
 
         obs = str(viz)
         self.assertTrue('All elements' in obs)
@@ -429,7 +532,7 @@ class TestCore(unittest.TestCase):
                     self.sample_metadata,
                     feature_metadata=fm,
                     ordination=self.biplot,
-                    filter_unobserved_features_from_phylogeny=True)
+                    shear_tree=True)
 
     def test_biplot_partial_match_override(self):
         fm = self.feature_metadata.copy()
@@ -440,7 +543,7 @@ class TestCore(unittest.TestCase):
                       feature_metadata=fm,
                       ordination=self.biplot,
                       ignore_missing_samples=True,
-                      filter_unobserved_features_from_phylogeny=True)
+                      shear_tree=True)
 
         obs = str(viz)
         self.assertTrue('This element has no metadata' in obs)
@@ -467,7 +570,7 @@ class TestCore(unittest.TestCase):
         # Generate an Empress visualization using this data
         viz = Empress(bp_tree, tbl_df, smd_df, feature_metadata=fmd_df,
                       ordination=pcoa_skbio, filter_extra_samples=True,
-                      filter_unobserved_features_from_phylogeny=True)
+                      shear_tree=True)
         # Check that tip 8406abe6d9a72018bf32d189d1340472 *isn't* in the tip
         # metadata. All of the samples this tip is present in are filtered out
         # when --p-filter-extra-samples is used with this particular PCoA, so
@@ -480,16 +583,15 @@ class TestCore(unittest.TestCase):
             "No features in the feature table are present as tips in the tree."
         ):
             Empress(self.tree, self.unrelated_table, self.sample_metadata,
-                    filter_unobserved_features_from_phylogeny=False)
-        # Check that --p-filter-unobserved-features-from-phylogeny doesn't
-        # override this: the data mismatch should be identified before
-        # attempting shearing
+                    shear_tree=False)
+        # Check that --p-shear-to-table doesn't override this: the data
+        # mismatch should be identified before attempting shearing
         with self.assertRaisesRegex(
             tools.DataMatchingError,
             "No features in the feature table are present as tips in the tree."
         ):
             Empress(self.tree, self.unrelated_table, self.sample_metadata,
-                    filter_unobserved_features_from_phylogeny=True)
+                    shear_tree=True)
 
     def test_ordination_integration_callbacks(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
@@ -538,6 +640,7 @@ DICT_A = {
         None
     ],
     "lengths": [-1, 1.0, 2.0, 1.0, 2.0, 1.0, 1.0, 3.0, 2.0, 1.0],
+    "is_community_plot": True,
     "s_ids": ["Sample1", "Sample2", "Sample3", "Sample4"],
     "f_ids": [1, 4, 2, 7],
     "s_ids_to_indices": {

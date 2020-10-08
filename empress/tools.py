@@ -21,6 +21,66 @@ class DataMatchingWarning(Warning):
     pass
 
 
+def match_tree_and_feature_metadata(bp_tree, feature_metadata=None):
+    """Processes feature metadata and subsets it to nodes in the tree.
+
+    NOTE: This function calls bp_tree_tips() on bp_tree. If this winds up
+    being a bottleneck, we could add an extra optional parameter to this
+    function where match_inputs() could pass the already-computed tip names
+    here to avoid calling this function twice.
+
+    Parameters
+    ----------
+    bp_tree: bp.BP
+        The tree to be visualized.
+    feature_metadata: pd.DataFrame or None
+        Feature metadata. If this is passed, the index should describe node
+        names in the tree and the columns should describe different feature
+        metadata fields' names.
+
+    Returns
+    -------
+    (tip_metadata, int_metadata): (pd.DataFrame or None, pd.DataFrame or None)
+        If feature metadata was not passed, tip_metadata and int_metadata
+        will both be None. Otherwise, tip_metadata will contain the
+        entries of the feature metadata where the feature name was present
+        as a tip in the tree, and int_metadata will contain the entries
+        of the feature metadata where the feature name was present as
+        internal node(s) in the tree. Also, this will call
+        taxonomy_utils.split_taxonomy() on the feature metadata before
+        splitting it up between tip and internal node feature mtadata.
+
+    Raises
+    ------
+    DataMatchingError
+        If feature_metadata is not None, but none of the names in its index
+        correspond to any nodes in the tree.
+    """
+    tip_metadata = None
+    int_metadata = None
+    if feature_metadata is not None:
+        # Split up taxonomy column, if present in the feature metadata
+        ts_feature_metadata = taxonomy_utils.split_taxonomy(feature_metadata)
+        fm_ids = ts_feature_metadata.index
+
+        # Subset tip metadata
+        fm_and_tip_features = fm_ids.intersection(bp_tree_tips(bp_tree))
+        tip_metadata = ts_feature_metadata.loc[fm_and_tip_features]
+
+        # Subset internal node metadata
+        internal_node_names = set(bp_tree_non_tips(bp_tree))
+        fm_and_int_features = fm_ids.intersection(internal_node_names)
+        int_metadata = ts_feature_metadata.loc[fm_and_int_features]
+
+        if len(tip_metadata.index) == 0 and len(int_metadata.index) == 0:
+            # Error condition 5 in match_inputs_community_plot()
+            raise DataMatchingError(
+                "No features in the feature metadata are present in the tree, "
+                "either as tips or as internal nodes."
+            )
+    return tip_metadata, int_metadata
+
+
 def match_inputs(
     bp_tree,
     table,
@@ -33,10 +93,8 @@ def match_inputs(
 ):
     """Matches various input sources.
 
-    Also "splits up" the feature metadata, first by calling
-    taxonomy_utils.split_taxonomy() on it and then by splitting the resulting
-    DataFrame into two separate DataFrames (one for tips and one for internal
-    nodes).
+    Also "splits up" the feature metadata by calling
+    match_tree_and_feature_metadata().
 
     Parameters
     ----------
@@ -251,30 +309,10 @@ def match_inputs(
     # presence of such "dropped samples" is a common occurrence in 16S studies,
     # so we currently don't do that for the sake of avoiding alarm fatigue.
 
-    # If the feature metadata was passed, filter it so that it only contains
-    # features present as tips / internal nodes in the tree
-    tip_metadata = None
-    int_metadata = None
-    if feature_metadata is not None:
-        # Split up taxonomy column, if present in the feature metadata
-        ts_feature_metadata = taxonomy_utils.split_taxonomy(feature_metadata)
-        fm_ids = ts_feature_metadata.index
-
-        # Subset tip metadata
-        fm_and_tip_features = fm_ids.intersection(tip_names)
-        tip_metadata = ts_feature_metadata.loc[fm_and_tip_features]
-
-        # Subset internal node metadata
-        internal_node_names = set(bp_tree_non_tips(bp_tree))
-        fm_and_int_features = fm_ids.intersection(internal_node_names)
-        int_metadata = ts_feature_metadata.loc[fm_and_int_features]
-
-        if len(tip_metadata.index) == 0 and len(int_metadata.index) == 0:
-            # Error condition 5
-            raise DataMatchingError(
-                "No features in the feature metadata are present in the tree, "
-                "either as tips or as internal nodes."
-            )
+    tip_metadata, int_metadata = match_tree_and_feature_metadata(
+        bp_tree,
+        feature_metadata
+    )
 
     return ff_table, sf_sample_metadata, tip_metadata, int_metadata
 
@@ -349,6 +387,14 @@ def shifting(bitlist, size=51):
 
 def filter_feature_metadata_to_tree(tip_md, int_md, bp_tree):
     """Filters feature metadata DataFrames to describe the nodes in a tree.
+
+    This is sort of similar to match_tree_and_feature_metadata(), but it
+    doesn't call split_taxonomy(), assumes that feature metadata has already
+    been split into tip and internal node metadata, assumes that the
+    feature metadata's nodes are already a subset of the tree's nodes, and has
+    a different error message if no nodes are shared between the feature
+    metadata and tree. Basically, we could combine these two functions with
+    some effort, but it's probably not worth the headaches.
 
     Parameters
     ----------

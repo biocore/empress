@@ -1,11 +1,11 @@
 # Empress
- [![Build Status](https://travis-ci.org/biocore/empress.svg?branch=master)](https://travis-ci.org/biocore/empress)
+[![Build Status](https://travis-ci.org/biocore/empress.svg?branch=master)](https://travis-ci.org/biocore/empress)
 
 <!---Empress Logo--->
 
 # Introduction  
 
-Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki/Phylogenetic_tree) viewer that lets you interactively explore the hierarchical relationships between features in your dataset. While historically these features often represented evolutionary relationships of species in community surveys, and are characterized by their phylogeny or genetic similarity/differences, you can in fact view any type of information with hierarchical organization. For example, you can view trees of [amplicon sequence variants (ASVs)](https://en.wikipedia.org/wiki/Amplicon_sequence_variant), or metabolite trees of LC-MS data using [q2-qemistree](https://github.com/biocore/q2-qemistree) ([ref](https://www.biorxiv.org/content/10.1101/2020.05.04.077636v1)).
+Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki/Phylogenetic_tree) viewer that helps interactively explore the hierarchical relationships between features in a dataset. While historically these features often represented evolutionary relationships of species in community surveys, and are characterized by their phylogeny or genetic similarity/differences, you can in fact view any type of information with hierarchical organization. For example, you can view trees of [amplicon sequence variants (ASVs)](https://en.wikipedia.org/wiki/Amplicon_sequence_variant) for 16S rRNA marker gene sequencing data, or metabolite trees of LC-MS data using [q2-qemistree](https://github.com/biocore/q2-qemistree) ([ref](https://www.biorxiv.org/content/10.1101/2020.05.04.077636v1)).
 
 # Installation   
 
@@ -18,9 +18,13 @@ conda activate qiime2-2020.6
 
 You can replace `qiime2-2020.6` above with whichever version of QIIME 2 you have currently installed.  
 
-Now we are ready to install Empress. Run the following commands:
+Now we are ready to install Empress. Run the following commands to do so. (Note
+that Emperor will be _re-installed_ when the second command is run; the reason
+we uninstall it first is so that we can ensure the most up-to-date version of
+it is available.)
 
 ```
+pip uninstall --yes emperor
 pip install git+https://github.com/biocore/empress.git
 qiime dev refresh-cache
 qiime empress --help
@@ -30,11 +34,41 @@ If you see information about Empress' QIIME 2 plugin, the installation was succe
 
 # Example: Using Empress in QIIME 2   
 
-In this tutorial we will be using Empress within the QIIME 2 environment, and demonstrating its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/) dataset, a set of human microbiome samples from two individuals at four body sites across five timepoints.  
+In this tutorial we will be using Empress within the QIIME 2 environment, and demonstrating its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/) dataset, a set of human microbiome samples from two individuals at four body sites across five timepoints.
+
+## First, a note about Empress' commands
+
+Empress currently has two commands available through QIIME 2:
+
+```
+$ qiime empress --help
+Usage: qiime empress [OPTIONS] COMMAND [ARGS]...
+
+  Description: This QIIME 2 plugin wraps Empress and supports interactive
+  visualization of phylogenetic trees.
+
+  Plugin website: http://github.com/biocore/empress
+
+  Getting user support: Please post to the QIIME 2 forum for help with this
+  plugin: https://forum.qiime2.org
+
+Options:
+  --version    Show the version and exit.
+  --citations  Show citations and exit.
+  --help       Show this message and exit.
+
+Commands:
+  community-plot  Visualize phylogenies and community data with Empress (and,
+                  optionally, Emperor)
+
+  tree-plot       Visualize phylogenies with Empress
+```
+
+Both of these commands generate similar visualizations. The functionality available in a visualization created by `qiime empress community-plot` is a superset of the functionality available in a visualization created by `qiime empress tree-plot`: `tree-plot` is useful if you don't have a table and just want to visualize a tree (optionally with feature metadata). Here, we're going to be using `community-plot`, but much of this tutorial is also applicable to `tree-plot`.
 
 ## Downloading Input Artifacts and Metadata  
 
-Before we start, we’ll need to download the necessary input artifacts. The first four of these artifacts are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/), and the last artifact was produced afterwards using data from the tutorial. These artifacts are:
+Before we start, we’ll need to download the necessary input artifacts for running `qiime empress community-plot`. The first four of these artifacts are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/), and the last artifact was produced afterwards using data from the tutorial. These artifacts are:
 
 1. A feature table (a QIIME 2 artifact of type `FeatureTable[Frequency]`)
 2. A sample metadata file (a [tab-separated-value](https://en.wikipedia.org/wiki/Tab-separated_values) file)
@@ -76,7 +110,7 @@ We are now ready to create our interactive tree plot.
 We’ll start with a simple stand-alone tree visualization artifact and explore our tree using the various features in Empress.
 
 ```bash
-qiime empress plot \
+qiime empress community-plot \
     --i-tree rooted-tree.qza \
     --i-feature-table table.qza \
     --m-sample-metadata-file sample_metadata.tsv \
@@ -146,9 +180,15 @@ Similarly to other tree visualization tools like [iTOL](https://itol.embl.de/), 
 #### First: a small warning about barplots
 
 Although barplots are very useful for identifying patterns, be wary of
-reading too much into them! The ordering of tips / clades on the same level of
-the tree is [currently arbitrary](https://github.com/biocore/empress/issues/170),
-and this can impact the way barplots look in ways that might not be immediately
+reading too much into them! The way the rectangular and circular layouts work
+means that a tip that looks "next" to another tip may actually be somewhat far
+away from that tip (e.g. in the rectangular layout if one tip is at the top of
+its clade, and another tip just "above" it is at the bottom of its clade). An
+example of this is shown below with the mustard and lavender clades:
+
+![Example of this phenomenon on the moving pictures dataset](docs/moving-pictures/img/empress_funky_barplot_example.png)
+
+This can impact the way barplots look in ways that might not be immediately
 obvious. To quote "Inferring Phylogenies" (Felsenstein 2004), pages 573–574:
 
 > It is worth noting that by reordering tips, you can change the viewer's impression of the closeness of relationships. [...] A little judicious flipping may create a Great Chain of Being marching nicely along the sequence of names, even though the tree supports no such thing.
@@ -251,7 +291,7 @@ Currently, certain elements of the display (e.g. barplots, collapsed clades) are
 Now that you are familiar with basics, let’s try something a bit more advanced. One of the unique features of Empress is its ability to integrate a tree plot with an [Emperor](http://biocore.github.io/emperor) PCoA plot and visualize them side-by-side (these plots are internally referred to as Empire plots). To achieve this we provide a PCoA matrix (`PCoAResults` type artifact), which can be any beta diversity distance matrix, including biplots. Ordination biplots that are made using the [`qiime diversity pcoa-biplot`](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin, incorporate feature loadings represented by arrows that describe explanatory variables in the dataset. This functionality is also compatible with [`DEICODE` biplots](https://github.com/biocore/deicode). In this example we’ll use a PCoA biplot calculated using Unweighted UniFrac distances. To create this new plot, run the following:
 
 ```bash
-qiime empress plot \
+qiime empress community-plot \
     --i-tree rooted-tree.qza \
     --i-pcoa biplot.qza \
     --i-feature-table table.qza \
@@ -291,14 +331,53 @@ This is a good example of when your data can tell you something about your metad
 
 ## Additional Considerations
 
-**Note**: When your ordination was created from a subset of your original dataset (e.g. the feature table was rarefied, or certain low-frequency features or samples were otherwise filtered out), we recommend that you carefully consider *which* feature table you would like to visualize in Empress. You can use either:
+### Providing multiple metadata files
+
+QIIME 2 allows you to specify multiple metadata files at once by just
+repeating `--m-feature-metadata-file` (or `--m-sample-metadata-file`). For
+example, we may want to visualize feature importances on a tree
+in addition to taxonomic annotations:
+
+```bash
+qiime empress community-plot \
+    --i-tree rooted-tree.qza \
+    --i-feature-table table.qza \
+    --m-sample-metadata-file sample_metadata.tsv \
+    --m-feature-metadata-file taxonomy.qza \
+    --m-feature-metadata-file feature_importance.qza \
+    --o-visualization empress-tree.qzv
+```
+
+However, what QIIME 2 will do internally ([as of writing](https://forum.qiime2.org/t/support-other-metadata-merging-strategies/15907))
+is filter the metadata to
+_just_ the entries contained in _all_ of the input metadata files. So, in the
+example above, if the `feature_importance.qza` file only has entries for a
+couple of features (compared to the `taxonomy.qza` file), then the feature
+metadata Empress receives will be limited to just the features contained in
+both the feature importance and taxonomy metadata files -- which will mean that
+less taxonomy information will be available in the Empress interface!
+
+In the interim, the way to get around this (and to include multiple sources of
+feature or sample metadata in Empress) is to merge metadata yourself before
+creating an Empress visualization. Of course, you'll need to determine what
+value(s) to assign to indicate that a given entry is "missing"; for
+quantitative metadata, `NaN` or an empty value are both reasonable options.
+
+Merging metadata files should be doable in many different programming
+languages or spreadsheet tools; see
+[this GitHub issue](https://github.com/biocore/empress/issues/393) for some
+example Python code that does this.
+
+### Filtered vs. raw table?
+
+When your ordination was created from a subset of your original dataset (e.g. the feature table was rarefied, or certain low-frequency features or samples were otherwise filtered out), we recommend that you carefully consider *which* feature table you would like to visualize in Empress. You can use either:
 
 - A *filtered table* that matches the ordination (e.g. with rarefaction done, and/or with low-abundance features/samples removed), or
 - A *raw table* -- that is, the original table before performing rarefaction/filtering for the ordination.
 
-There are some pros and cons for either of these choices. If you use a *filtered table*, then the Empress visualization will include less data than in the *raw dataset*: this will impact sample presence information, sample metadata coloring, and other parts of the visualization. If you select the *raw table*, you might find that some nodes in the tree won't be represented by any of the samples in the ordination (if the ordination was made using a *filtered table*, and `--p-no-filter-unobserved-features-from-phylogeny` is used). If you'd like to read more about this, there's some informal discussion in [pull request 237](https://github.com/biocore/empress/pull/237).
+There are some pros and cons for either of these choices. If you use a *filtered table*, then the Empress visualization will include less data than in the *raw dataset*: this will impact sample presence information, sample metadata coloring, and other parts of the visualization. If you select the *raw table*, you might find that some nodes in the tree won't be represented by any of the samples in the ordination (if the ordination was made using a *filtered table*, and `--p-no-shear-tree` is used). If you'd like to read more about this, there's some informal discussion in [pull request 237](https://github.com/biocore/empress/pull/237).
 
-The command above uses the *raw dataset* and removes extra samples not represented in the ordination (using the `--p-filter-extra-samples` flag)
+The commands in this README use the *raw dataset*. The Empire plot command removes extra samples not represented in the ordination using the `--p-filter-extra-samples` flag.
 
 <!---# Animations   
 

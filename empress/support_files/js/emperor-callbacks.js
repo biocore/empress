@@ -1,16 +1,26 @@
+/*
+ * This file is intended to be used only with Emperor. For more information
+ * about these and other events see this document:
+ * https://github.com/biocore/emperor/blob/master/doc/source/js_integration.rst
+ */
+
 empress.setOnNodeMenuVisibleCallback(function (samples) {
-    // reset emissive settings for all markers
-    ec.decViews.scatter.setEmissive(0x000000);
+    // reset scale settings for all samples
+    ec.decViews.scatter.setScale(1);
 
     // retrieve the plotting objects
     samples = ec.decModels.models.scatter.getPlottableByIDs(samples);
-    ec.decViews.scatter.setEmissive(0x8c8c8f, samples);
+    if (ec.UIState["view.usesPointCloud"]) {
+        ec.decViews.scatter.setScale(10, samples);
+    } else {
+        ec.decViews.scatter.setScale(2, samples);
+    }
     ec.sceneViews[0].needsUpdate = true;
 });
 
 empress.setOnNodeMenuHiddenCallback(function (samples) {
     samples = ec.decModels.models.scatter.getPlottableByIDs(samples);
-    ec.decViews.scatter.setEmissive(0x000000, samples);
+    ec.decViews.scatter.setScale(1, samples);
     ec.sceneViews[0].needsUpdate = true;
 });
 
@@ -44,13 +54,48 @@ animationPanel.setOnAnimationStopped(function () {
         .trigger("chosen:updated");
 });
 
-ec.sceneViews[0].on("click", function (name, object) {
+plotView.on("click", function (name, object) {
     // this click callback should only handle arrow objects being clicked
     if (object.parent.type !== "ArrowHelper") {
         return;
     }
 
     empress.showNodeMenuForName(name);
+});
+
+plotView.on("select", function (samples, view) {
+    // cancel any ongoing timers
+    clearTimeout(empress.timer);
+
+    // if there's any coloring setup remove it, and re-enable the update button
+    sPanel.sUpdateBtn.classList.remove("hidden");
+    sPanel.fUpdateBtn.classList.remove("hidden");
+    empress.clearLegend();
+    empress.resetTree();
+
+    // fetch a mapping of colors to plottable objects
+    var groups = view.groupByColor(samples);
+    var namesOnly = {};
+
+    // convert the array of plottable objects to just names
+    for (var key in groups) {
+        namesOnly[key] = groups[key].map(function (item) {
+            return item.name;
+        });
+    }
+    empress.colorSampleGroups(namesOnly);
+
+    // 4 seconds before resetting
+    empress.timer = setTimeout(function () {
+        empress.resetTree();
+        empress.drawTree();
+
+        for (var key in groups) {
+            view.setEmissive(0x000000, groups[key]);
+        }
+
+        plotView.needsUpdate = true;
+    }, 4000);
 });
 
 /*

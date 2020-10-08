@@ -1,5 +1,38 @@
 define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     /**
+     * Given a tree and leaf sorting method, returns an Array of the tree's
+     * nodes in postorder (using the given leaf sorting method).
+     *
+     * @param {BPTree} tree The tree to be traversed
+     * @param {String} leafSorting One of the following three options:
+     *                             -"none": Lay out the tree's clades in the
+     *                              same order as specified in the input tree.
+     *                             -"ascending": Use leaf sorting with
+     *                              "ascending" order. See
+     *                              BPTree.postorderLeafSortedNodes() for
+     *                              details.
+     *                             -"descending": Use leaf sorting with
+     *                              "descending" order. Again, see BPTree.
+     *                             If any other value is passed in for this
+     *                             parameter, this will throw an error.
+     * @return {Array} postOrderNodes
+     * @throws {Error} If the leafSorting parameter is invalid
+     */
+    function getPostOrderNodes(tree, leafSorting) {
+        var postOrderNodes = [];
+        if (leafSorting === "ascending" || leafSorting === "descending") {
+            postOrderNodes = tree.postorderLeafSortedNodes(leafSorting);
+        } else if (leafSorting === "none") {
+            // Nodes are already stored as their postorder position, so we can
+            // just return an array in the range [1, tree.size]
+            postOrderNodes = _.range(1, tree.size + 1);
+        } else {
+            throw new Error("Unrecognized leaf sorting method " + leafSorting);
+        }
+        return postOrderNodes;
+    }
+
+    /**
      * Rectangular layout.
      *
      * In this sort of layout, each tip has a distinct y-position, and parent
@@ -14,6 +47,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * |    ___
      * |___|
      *     |___
+     *
+     * NOTE: This doesn't draw a horizontal line leading to the root "node"
+     * of the graph (as with the other layout methods). See
+     * https://github.com/biocore/empress/issues/141 for context.
      *
      * For other resources see:
      *
@@ -30,6 +67,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
      *                                layout; otherwise, a uniform length of 1
      *                                is used.
+     * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @return {Object} Object with the following properties:
@@ -47,12 +85,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         width,
         height,
         ignoreLengths,
+        leafSorting,
         normalize = true
     ) {
-        // NOTE: This doesn't draw a horizontal line leading to the root "node"
-        // of the graph. See https://github.com/biocore/empress/issues/141 for
-        // context.
-
         var maxWidth = 0;
         var maxHeight = 0;
         var prevY = 0;
@@ -61,8 +96,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var highestChildYr = new Array(tree.size + 1);
         var lowestChildYr = new Array(tree.size + 1);
 
-        // postorder
-        for (var i = 1; i <= tree.size; i++) {
+        var postOrderNodes = getPostOrderNodes(tree, leafSorting);
+        var i;
+        for (var p = 0; p < postOrderNodes.length; p++) {
+            i = postOrderNodes[p];
             if (tree.isleaf(tree.postorderselect(i))) {
                 yCoord[i] = prevY;
                 prevY += 1;
@@ -233,6 +270,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
      *                                layout; otherwise, a uniform length of 1
      *                                is used.
+     * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
      * @param {Float} startAngle The first tip in the tree visited is assigned
@@ -261,6 +299,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         width,
         height,
         ignoreLengths,
+        leafSorting,
         normalize = true,
         startAngle = 0
     ) {
@@ -288,9 +327,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minY = Number.POSITIVE_INFINITY;
 
         // Iterate over the tree in postorder, assigning angles
-        // Note that we skip the root (using "i < tree.size" and not "<="),
-        // since the root's angle is irrelevant
-        for (var i = 1; i < tree.size; i++) {
+        // Note that we skip the root (using "p < postOrderNodes.length - 1"),
+        // since the root's angle is irrelevant.
+        var postOrderNodes = getPostOrderNodes(tree, leafSorting);
+        var i;
+        for (var p = 0; p < postOrderNodes.length - 1; p++) {
+            i = postOrderNodes[p];
             if (tree.isleaf(tree.postorderselect(i))) {
                 angle[i] = prevAngle;
                 prevAngle += anglePerTip;
@@ -460,7 +502,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         ignoreLengths,
         normalize = true
     ) {
-        var angle = (2 * Math.PI) / tree.numleaves();
+        var da = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
         var x2Arr = new Array(tree.size + 1).fill(0);
         var y1Arr = new Array(tree.size + 1);
@@ -468,19 +510,15 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var aArr = new Array(tree.size + 1);
 
         var n = tree.postorderselect(tree.size);
-        var x1 = 0,
-            y1 = 0,
-            a = 0,
-            da = angle;
-        // NOTE: x2 will always be 0, since sin(0) = 0.
-        var rootLen = ignoreLengths ? 1 : tree.length(n);
-        var x2 = x1 + rootLen * Math.sin(a);
-        var y2 = y1 + rootLen * Math.cos(a);
-        x1Arr[tree.size] = x1;
-        x2Arr[tree.size] = x2;
-        y1Arr[tree.size] = y1;
-        y2Arr[tree.size] = y2;
-        aArr[tree.size] = a;
+        var x1, y1, a;
+        // Position the root at (0, 0) and ignore any length it might
+        // ostensibly have in the tree:
+        // https://github.com/biocore/empress/issues/374
+        x1Arr[tree.size] = 0;
+        x2Arr[tree.size] = 0;
+        y1Arr[tree.size] = 0;
+        y2Arr[tree.size] = 0;
+        aArr[tree.size] = 0;
         var maxX = x2Arr[tree.size],
             minX = x2Arr[tree.size];
         var maxY = y2Arr[tree.size],
@@ -516,8 +554,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
         }
-        var rX = x2Arr[tree.size];
-        var rY = y2Arr[tree.size];
         var scale;
         if (normalize) {
             var widthScale = width / (maxX - minX);
@@ -528,16 +564,17 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         }
         // skip the first element since the tree is zero-indexed
         for (var i = 1; i <= tree.size - 1; i++) {
-            x2Arr[i] -= rX;
-            y2Arr[i] -= rY;
             x2Arr[i] *= scale;
             y2Arr[i] *= scale;
         }
+        // Don't need to reposition coordinates relative to the root because
+        // the root is already at (0, 0)
 
         return { xCoord: x2Arr, yCoord: y2Arr };
     }
 
     return {
+        getPostOrderNodes: getPostOrderNodes,
         rectangularLayout: rectangularLayout,
         circularLayout: circularLayout,
         unrootedLayout: unrootedLayout,

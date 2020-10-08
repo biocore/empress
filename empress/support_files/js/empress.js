@@ -28,8 +28,11 @@ define([
     /**
      * @class EmpressTree
      *
-     * @param {BPTree} tree The phylogenetic tree
-     * @param {BIOMTable} biom The BIOM table used to color the tree
+     * @param {BPTree} tree The phylogenetic tree.
+     * @param {BIOMTable or null} biom The BIOM table used to color the tree.
+     *                                 If no table / sample metadata was passed
+     *                                 to Empress (i.e. using qiime empress
+     *                                 tree-plot), this should be null.
      * @param {Array} featureMetadataColumns Columns of the feature metadata.
      *                Note: The order of this array should match the order of
      *                      the arrays which are the values of tipMetadata and
@@ -37,11 +40,11 @@ define([
      *                      when generating an Empress visualization, this
      *                      parameter should be [] (and tipMetadata and
      *                      intMetadata should be {}s).
-     * @param {Object} tipMetadata Feature metadata for tips in the tree
+     * @param {Object} tipMetadata Feature metadata for tips in the tree.
      *                 Note: This should map tip names to an array of feature
      *                       metadata values. Each array should have the same
      *                       length as featureMetadataColumns.
-     * @param {Object} intMetadata Feature metadata for internal nodes in tree
+     * @param {Object} intMetadata Feature metadata for internal nodes in tree.
      *                 Note: Should be formatted analogously to tipMetadata.
      *                       Note that internal node names can be non-unique.
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
@@ -155,10 +158,13 @@ define([
         /**
          * @type {BiomTable}
          * BIOM table: includes feature presence information and sample-level
-         * metadata.
+         * metadata. Can be null if no table / sample metadata was passed to
+         * Empress.
          * @private
          */
         this._biom = biom;
+
+        this.isCommunityPlot = !_.isNull(this._biom);
 
         /**
          * @type{Array}
@@ -202,10 +208,14 @@ define([
          * @type {BarplotPanel}
          * Manages a collection of BarplotLayers, as well as the state of the
          * barplot panel. Also can call Empress.drawBarplots() /
-         * Empress.undrawBarplots() when needed.
+         * Empress.undrawBarplots() when needed. Can be null if no feature or
+         * sample metadata was passed to Empress.
          * @private
          */
-        this._barplotPanel = new BarplotPanel(this, this._defaultLayout);
+        this._barplotPanel = null;
+        if (this.isCommunityPlot || this._featureMetadataColumns.length > 0) {
+            this._barplotPanel = new BarplotPanel(this, this._defaultLayout);
+        }
 
         /**
          * @type {Number}
@@ -233,12 +243,6 @@ define([
          * @private
          */
         this._barplotsDrawn = false;
-
-        /**
-         * type {Object}
-         * Maps tree layouts to the average point of each layout
-         */
-        this.layoutAvgPoint = {};
 
         /**
          * @type{Number}
@@ -272,6 +276,12 @@ define([
         this.ignoreLengths = false;
 
         /**
+         * @type{String}
+         * Leaf sorting method: one of "none", "ascending", or "descending"
+         */
+        this.leafSorting = "descending";
+
+        /**
          * @type{CanvasEvents}
          * Handles user events
          */
@@ -302,6 +312,14 @@ define([
          *  }
          */
         this._collapsedClades = {};
+
+        /**
+         * @type(Set)
+         * @private
+         * Clades that should will not be collapse. Currently, clades are only
+         * cleared from this set when resetTree() is called.
+         */
+        this._dontCollapse = new Set();
 
         /**
          * @type{Array}
@@ -345,7 +363,8 @@ define([
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths
+                this.ignoreLengths,
+                this.leafSorting
             );
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
@@ -365,7 +384,8 @@ define([
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths
+                this.ignoreLengths,
+                this.leafSorting
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
@@ -2220,6 +2240,7 @@ define([
             this.setNodeInfo(node, "visible", true);
         }
         this._collapsedClades = {};
+        this._dontCollapse = new Set();
         this._collapsedCladeBuffer = [];
         this._drawer.loadThickNodeBuff([]);
         this._drawer.loadCladeBuff([]);
@@ -2250,12 +2271,19 @@ define([
     };
 
     /**
-     * Returns a list of sample categories
+     * Returns a list of sample categories.
+     *
+     * If this.isCommunityPlot is false (no table / sample metadata were
+     * provided), this just returns [].
      *
      * @return {Array}
      */
     Empress.prototype.getSampleCategories = function () {
-        return this._biom.getSampleCategories();
+        if (this.isCommunityPlot) {
+            return this._biom.getSampleCategories();
+        } else {
+            return [];
+        }
     };
 
     /**
@@ -2287,20 +2315,30 @@ define([
         // stuff to only change whenever the tree is redrawn.
         this.thickenColoredNodes(this._currentLineWidth);
 
-        // Undraw or redraw barplots as needed
-        var supported = this._barplotPanel.updateLayoutAvailability(
-            this._currentLayout
-        );
-        if (!supported && this._barplotsDrawn) {
-            this.undrawBarplots();
-        } else if (supported && this._barplotPanel.enabled) {
-            this.drawBarplots(this._barplotPanel.layers);
+        // Undraw or redraw barplots as needed (assuming barplots are supported
+        // in the first place, of course; if no feature or sample metadata at
+        // all was passed then barplots are not available :()
+        if (!_.isNull(this._barplotPanel)) {
+            var supported = this._barplotPanel.updateLayoutAvailability(
+                this._currentLayout
+            );
+            if (!supported && this._barplotsDrawn) {
+                this.undrawBarplots();
+            } else if (supported && this._barplotPanel.enabled) {
+                this.drawBarplots(this._barplotPanel.layers);
+            }
         }
         this.centerLayoutAvgPoint();
     };
 
     /**
      * Redraws the tree with a new layout (if different from current layout).
+     *
+     * Note that this not always called when the tree is redrawn in a different
+     * way; it's possible to change certain layout parameters (e.g. to ignore
+     * branch lengths) and then call reLayout() without touching this method.
+     * This is by design, since whether or not to ignore branch lengths is a
+     * separate decision from what layout the tree is currently using.
      */
     Empress.prototype.updateLayout = function (newLayout) {
         var d = new Date();
@@ -2386,52 +2424,67 @@ define([
 
     /**
      * Centers the viewing window at the average of the current layout.
+     *
+     * The layout's average point is defined as [x, y, zoomAmount], where:
+     *
+     * -x is the average of all x coordinates
+     * -y is the average of all y coordinates
+     * -zoomAmount takes the largest x or y coordinate and normalizes it by
+     *  dim / 2 (where dim is the dimension of the canvas).
+     *
+     * zoomAmount is defined be a simple heuristic that should allow the
+     * majority of the tree to be visible in the viewing window.
+     *
+     * NOTE: Previously, layoutAvgPoint was cached for each layout. This
+     * behavior has been removed, because (with the advent of leaf sorting and
+     * "ignore lengths") a given "layout" (e.g. Rectangular) can now have
+     * pretty drastically different locations across all the options available.
+     *
+     * @return {Array} Contains three elements, in the following order:
+     *                 1. Average x-coordinate
+     *                 2. Average y-coordinate
+     *                 3. zoomAmount
+     *                 As of writing, nothing in Empress that I'm aware of
+     *                 consumes the output of this function. The main reason we
+     *                 return this is to make testing this easier.
      */
     Empress.prototype.centerLayoutAvgPoint = function () {
-        if (!(this._currentLayout in this.layoutAvgPoint)) {
-            // Add up x and y coordinates of all nodes in the tree (using
-            // current layout).
-            var x = 0,
-                y = 0,
-                zoomAmount = 0;
-            for (var node = 1; node <= this._tree.size; node++) {
-                // node = this._treeData[node];
-                x += this.getX(node);
-                y += this.getY(node);
-                zoomAmount = Math.max(
-                    zoomAmount,
-                    Math.abs(this.getX(node)),
-                    Math.abs(this.getY(node))
-                );
-            }
-
-            // each layout's avegerage point is define as followed:
-            // [x, y, zoomAmount] where x is the average of all x coordinates,
-            // y is the average of all y coordinates, and zoomAmount takes the
-            // largest x or y coordinate and normaizes it by dim / 2 (where
-            // dim is the dimension of the canvas).
-            // Note: zoomAmount is defined be a simple heuristic that should
-            // allow the majority of the tree to be visible in the viewing
-            // window.
-            this.layoutAvgPoint[this._currentLayout] = [
-                x / this._tree.size,
-                y / this._tree.size,
-                (2 * zoomAmount) / this._drawer.dim,
-            ];
+        var layoutAvgPoint = [];
+        // Add up x and y coordinates of all nodes in the tree (using
+        // current layout).
+        var x = 0,
+            y = 0,
+            zoomAmount = 0;
+        for (var node = 1; node <= this._tree.size; node++) {
+            // node = this._treeData[node];
+            x += this.getX(node);
+            y += this.getY(node);
+            zoomAmount = Math.max(
+                zoomAmount,
+                Math.abs(this.getX(node)),
+                Math.abs(this.getY(node))
+            );
         }
+
+        layoutAvgPoint = [
+            x / this._tree.size,
+            y / this._tree.size,
+            (2 * zoomAmount) / this._drawer.dim,
+        ];
 
         // center the viewing window on the average point of the current layout
         // and zoom out so the majority of the tree is visible.
-        var cX = this.layoutAvgPoint[this._currentLayout][0],
-            cY = this.layoutAvgPoint[this._currentLayout][1];
+        var cX = layoutAvgPoint[0],
+            cY = layoutAvgPoint[1];
         this._drawer.centerCameraOn(cX, cY);
         this._drawer.zoom(
             this._drawer.treeSpaceCenterX,
             this._drawer.treeSpaceCenterY,
             false,
-            this.layoutAvgPoint[this._currentLayout][2]
+            layoutAvgPoint[2]
         );
         this.drawTree();
+        return layoutAvgPoint;
     };
 
     /**
@@ -2478,6 +2531,29 @@ define([
         }
     };
 
+    /**
+     * Adds clade to the "do not collapse list"
+     *
+     * @param{Number/String} clade The postorder position of a node (clade).
+     *                             This can either be an integer or a string.
+     */
+    Empress.prototype.dontCollapseClade = function (clade) {
+        var scope = this;
+        var nodes = this.getCladeNodes(parseInt(clade));
+        nodes.forEach(function (node) {
+            scope._dontCollapse.add(node);
+        });
+        this._collapsedClades = {};
+        // Note: currently collapseClades is the only method that set
+        // the node visibility property.
+        for (var i = 1; i <= this._tree.size; i++) {
+            this.setNodeInfo(i, "visible", true);
+        }
+
+        this._collapsedCladeBuffer = [];
+        this.collapseClades();
+        this.drawTree();
+    };
     /**
      * Collapses all clades that share the same color into a quadrilateral.
      *
@@ -2529,11 +2605,20 @@ define([
         var inorder = this._tree.inOrderNodes();
         for (var node in inorder) {
             node = inorder[node];
+
+            // dont collapse clade
+            if (this._dontCollapse.has(node)) {
+                continue;
+            }
             var visible = this.getNodeInfo(node, "visible");
             var isTip = this._tree.isleaf(this._tree.postorderselect(node));
 
             if (visible && !isTip && this._group[node] !== -1) {
-                this._collapseClade(node);
+                if (this._tree.getNumTips(node) > 1) {
+                    this._collapseClade(node);
+                } else {
+                    this._dontCollapse.add(node);
+                }
             }
         }
         this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
@@ -3153,7 +3238,8 @@ define([
         return samplePresence;
     };
 
-    /** Show the node menu for a node name
+    /**
+     * Show the node menu for a node name
      *
      * @param {String} nodeName The name of the node to show.
      */
@@ -3167,6 +3253,57 @@ define([
 
         this._events.selectedNodeMenu.clearSelectedNode();
         this._events.placeNodeSelectionMenu(nodeName, this.focusOnSelectedNode);
+    };
+
+    /**
+     * Returns an Object describing various tree-level statistics.
+     *
+     * @return {Object} Contains six keys:
+     *                  -min: Minimum non-root node length
+     *                  -max: Maximum non-root node length
+     *                  -avg: Average non-root node length
+     *                  -tipCt: Number of tips in the tree
+     *                  -intCt: Number of internal nodes in the tree (incl.
+     *                          root)
+     *                  -allCt: Number of all nodes in the tree (incl. root)
+     * @throws {Error} If the tree does not have length information, this will
+     *                 be unable to call BPTree.getLengthStats() and will thus
+     *                 fail.
+     */
+    Empress.prototype.getTreeStats = function () {
+        // Compute node counts
+        var allCt = this._tree.size;
+        var tipCt = this._tree.getNumTips(this._tree.size);
+        var intCt = allCt - tipCt;
+        // Get length statistics
+        var lenStats = this._tree.getLengthStats();
+        return {
+            min: lenStats.min,
+            max: lenStats.max,
+            avg: lenStats.avg,
+            tipCt: tipCt,
+            intCt: intCt,
+            allCt: allCt,
+        };
+    };
+
+    /**
+     * Returns the length corresponding to a node key, or null if the node key
+     * corresponds to the root of the tree.
+     *
+     * (The reason for the null thing is that the root node's length is not
+     * currently validated, so we don't want to show whatever the value
+     * there is stored as internally to the user.)
+     *
+     * @param {Number} nodeKey Postorder position of a node in the tree.
+     * @return {Number} The length of the node.
+     */
+    Empress.prototype.getNodeLength = function (nodeKey) {
+        if (nodeKey === this._tree.size) {
+            return null;
+        } else {
+            return this._tree.length(this._tree.postorderselect(nodeKey));
+        }
     };
 
     return Empress;
