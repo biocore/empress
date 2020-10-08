@@ -48,6 +48,10 @@
     <div class="hidden" id="menu-box">
       <h1 id="menu-box-node-id"></h1>
       <p id="menu-box-warning"></p>
+      <div id="menu-box-node-length-container" class="hidden">
+        <strong>Node length:</strong>
+        <span id="menu-box-node-length"></span>
+      </div>
       <h3 class="hidden" id="menu-fm-header">Feature Metadata</h3>
       <table class="menu-table hidden" id="menu-fm-table"></table>
       <div id="menu-sm-section">
@@ -157,7 +161,7 @@
         // The side menu
         var sPanel = new SidePanel(document.getElementById('side-panel'),
                                    empress);
-        sPanel.addTreePropertiesTab();
+        sPanel.addSettingsTab();
         sPanel.addLayoutTab();
         sPanel.addExportTab();
 
@@ -195,10 +199,22 @@
         // make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {
             btn.addEventListener("click", function() {
-            this.classList.toggle("active");
-            this.nextElementSibling.classList.toggle("hidden");
-            document.getElementById("side-panel").classList.toggle("panel-active",
-              document.querySelector(".side-content:not(.hidden)"));
+                // Only compute tree stats the first time the user opens up
+                // the tree statistics tab
+                if (
+                    this.id === "stats-btn" &&
+                    this.classList.contains("unpopulated")
+                ) {
+                    sPanel.populateTreeStats();
+                    this.classList.remove("unpopulated");
+                }
+
+                this.classList.toggle("active");
+                this.nextElementSibling.classList.toggle("hidden");
+                document.getElementById("side-panel").classList.toggle(
+                    "panel-active",
+                    document.querySelector(".side-content:not(.hidden)")
+                );
           });
         });
 

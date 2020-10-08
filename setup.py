@@ -37,7 +37,7 @@ with open('README.md') as f:
 base = ["numpy", "scipy", "pandas", "click",
         "jinja2", "scikit-bio", "biom-format", "iow",
         "emperor @ https://www.github.com/biocore/emperor/archive/master.zip"]
-test = ["pep8", "flake8", "nose"]
+test = ["flake8", "nose"]
 all_deps = base + test
 
 setup(
@@ -56,6 +56,7 @@ setup(
     packages=find_packages(),
     package_data={
         'empress': ['support_files/vendor/*.js',
+                    'support_files/vendor/*.css',
                     'support_files/css/*.css',
                     'support_files/js/*.js',
                     'support_files/templates/*.html',

@@ -70,6 +70,44 @@
     </p>
   </div>
 
+  <!-- Table with tree stats; copy-pasted to here for same reasons as barplot
+       UI elements above
+  -->
+  <table style="margin: 0 auto; display: none;">
+    <tbody>
+      <tr>
+        <td class="header-cell" style="text-align: center;" colspan="2">Node counts</td>
+        <!-- Add padding between the two horizontally separated "halves" of the
+             table. Based on alternate option listed at
+             https://stackoverflow.com/a/11801090/10730311.
+        -->
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td class="header-cell" style="text-align: center;" colspan="2">Node lengths</td>
+      </tr>
+      <tr>
+        <td class="header-cell">Tips</td>
+        <td id="stats-tip-count"></td>
+        <td></td>
+        <td class="header-cell">Minimum</td>
+        <td id="stats-min-length"></td>
+      </tr>
+      <tr>
+        <td class="header-cell">Internal nodes</td>
+        <td id="stats-int-count"></td>
+        <td></td>
+        <td class="header-cell">Maximum</td>
+        <td id="stats-max-length"></td>
+      </tr>
+      <tr>
+        <td class="header-cell">Total</td>
+        <td id="stats-total-count"></td>
+        <td></td>
+        <td class="header-cell">Average</td>
+        <td id="stats-avg-length"></td>
+      </tr>
+    </tbody>
+  </table>
+
   <!-- The main legend; Empress gets a reference to this on initialization -->
   <div id="legend-main" class="legend">
   </div>

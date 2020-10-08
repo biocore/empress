@@ -11,6 +11,10 @@ define(["underscore", "util"], function (_, util) {
         this.nodeNameLabel = document.getElementById("menu-box-node-id");
         this.notes = document.getElementById("menu-box-notes");
         this.warning = document.getElementById("menu-box-warning");
+        this.nodeLengthContainer = document.getElementById(
+            "menu-box-node-length-container"
+        );
+        this.nodeLengthLabel = document.getElementById("menu-box-node-length");
         this.fmTable = document.getElementById("menu-fm-table");
         this.fmHeader = document.getElementById("menu-fm-header");
         this.smHeader = document.getElementById("menu-sm-header");
@@ -247,6 +251,8 @@ define(["underscore", "util"], function (_, util) {
             this.fmTable
         );
 
+        this.setNodeLengthLabel(node);
+
         if (this.empress.isCommunityPlot) {
             // 2. Add sample presence information for this tip
             // TODO: handle case where tip isn't in table, which happens if
@@ -348,6 +354,7 @@ define(["underscore", "util"], function (_, util) {
         if (isUnambiguous) {
             // this.nodeKeys has a length of 1
             var nodeKey = this.nodeKeys[0];
+            this.setNodeLengthLabel(nodeKey);
             if (this.empress.isCommunityPlot) {
                 var tips = this.empress._tree.findTips(nodeKey);
 
@@ -374,6 +381,7 @@ define(["underscore", "util"], function (_, util) {
         } else {
             this.smSection.classList.add("hidden");
             this.smTable.classList.add("hidden");
+            this.nodeLengthContainer.classList.add("hidden");
         }
 
         // If isUnambiguous is false, no notes will be shown and the sample
@@ -400,6 +408,25 @@ define(["underscore", "util"], function (_, util) {
                     "feature table and ordination: " +
                     diff.join(", ")
             );
+        }
+    };
+
+    /**
+     * Updates and shows the node length UI elements for a given node.
+     *
+     * (If the node is the root of the tree, this will actually hide the UI
+     * elements. See Empress.getNodeLength() for details.)
+     *
+     * @param {Number} nodeKey Postorder position of a node in the tree.
+     */
+    SelectedNodeMenu.prototype.setNodeLengthLabel = function (nodeKey) {
+        var nodeLength = this.empress.getNodeLength(nodeKey);
+        if (nodeLength !== null) {
+            this.nodeLengthLabel.textContent = nodeLength;
+            this.nodeLengthContainer.classList.remove("hidden");
+        } else {
+            // Don't show the length for the root node
+            this.nodeLengthContainer.classList.add("hidden");
         }
     };
 

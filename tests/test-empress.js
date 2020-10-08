@@ -533,46 +533,31 @@ require([
         });
 
         test("Test centerLayoutAvgPoint", function () {
-            // cache average point for all layouts
+            // Epsilon for approximate equality tests
+            var e = 1.0e-15;
             this.empress._currentLayout = "Rectangular";
-            this.empress.centerLayoutAvgPoint();
-            this.empress._currentLayout = "Circular";
-            this.empress.centerLayoutAvgPoint();
-            this.empress._currentLayout = "Unrooted";
-            this.empress.centerLayoutAvgPoint();
+            var avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for rectangular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Rectangular[0] - 7) <=
-                    1.0e-15
-            );
-            // y coor for rectangular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Rectangular[1] - 8) <=
-                    1.0e-15
-            );
+            UtilitiesForTesting.approxDeepEqual(avgPt[0], 7, e);
+            // y coord for rectangular layout
+            UtilitiesForTesting.approxDeepEqual(avgPt[1], 8, e);
+
+            this.empress._currentLayout = "Circular";
+            avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for circular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Circular[0] - 21) <=
-                    1.0e-15
-            );
-            // y coor for circular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Circular[1] - 22) <=
-                    1.0e-15
-            );
+            UtilitiesForTesting.approxDeepEqual(avgPt[0], 21, e);
+            // y coord for circular layout
+            UtilitiesForTesting.approxDeepEqual(avgPt[1], 22, e);
+
+            this.empress._currentLayout = "Unrooted";
+            avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for Unrooted layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Unrooted[0] - 35) <=
-                    1.0e-15
-            );
-            // y coor for Unrooted layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Unrooted[1] - 36) <=
-                    1.0e-15
-            );
+            UtilitiesForTesting.approxDeepEqual(avgPt[0], 35, e);
+            // y coord for Unrooted layout
+            UtilitiesForTesting.approxDeepEqual(avgPt[1], 36, e);
         });
 
         test("Test assignGroups", function () {
@@ -1352,6 +1337,31 @@ require([
                         );
                 }
             });
+        });
+        test("Test getNodeLength", function () {
+            // The test tree's lengths are the same as the postorder position
+            // of each node, so this is very simple to test
+            for (var i = 1; i < 7; i++) {
+                deepEqual(this.empress.getNodeLength(i), i);
+            }
+            deepEqual(
+                this.empress.getNodeLength(7),
+                null,
+                "Root length always returned as null"
+            );
+            // We don't check it here, but if you pass in 0 then you get back
+            // undefined (at least as of writing). This should probably throw
+            // an error -- I think delegating that to BPTree.length() would
+            // make more sense.
+        });
+        test("Test getTreeStats", function () {
+            var stats = this.empress.getTreeStats();
+            deepEqual(stats.min, 1, "Minimum length");
+            deepEqual(stats.max, 6, "Maximum length");
+            deepEqual(stats.avg, 3.5, "Average length");
+            deepEqual(stats.tipCt, 4, "Tip count");
+            deepEqual(stats.intCt, 3, "Internal node count");
+            deepEqual(stats.allCt, 7, "Total node count");
         });
     });
 });

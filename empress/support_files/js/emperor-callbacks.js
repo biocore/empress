@@ -5,18 +5,22 @@
  */
 
 empress.setOnNodeMenuVisibleCallback(function (samples) {
-    // reset emissive settings for all markers
-    ec.decViews.scatter.setEmissive(0x000000);
+    // reset scale settings for all samples
+    ec.decViews.scatter.setScale(1);
 
     // retrieve the plotting objects
     samples = ec.decModels.models.scatter.getPlottableByIDs(samples);
-    ec.decViews.scatter.setEmissive(0x8c8c8f, samples);
+    if (ec.UIState["view.usesPointCloud"]) {
+        ec.decViews.scatter.setScale(10, samples);
+    } else {
+        ec.decViews.scatter.setScale(2, samples);
+    }
     ec.sceneViews[0].needsUpdate = true;
 });
 
 empress.setOnNodeMenuHiddenCallback(function (samples) {
     samples = ec.decModels.models.scatter.getPlottableByIDs(samples);
-    ec.decViews.scatter.setEmissive(0x000000, samples);
+    ec.decViews.scatter.setScale(1, samples);
     ec.sceneViews[0].needsUpdate = true;
 });
 
