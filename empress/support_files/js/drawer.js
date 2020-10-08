@@ -125,7 +125,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.treeCoordSize = 0;
 
         // buffer object to store tree color
-        s.treeColorBuff = c.createBuffer()
+        s.treeColorBuff = c.createBuffer();
         this.treeColorSize = 0;
 
         // the index buffer for treeCoorBuff and treeColor buffer
@@ -237,10 +237,14 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         c.bufferData(c.ARRAY_BUFFER, data, c.DYNAMIC_DRAW);
     };
 
-    Drawer.prototype.fillElemData_ = function(buff, data) {
+    Drawer.prototype.fillElemData_ = function (buff, data) {
         var c = this.contex_;
         c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, buff);
-        c.bufferData(c.ELEMENT_ARRAY_BUFFER, new Uint32Array(data), c.STATIC_DRAW);
+        c.bufferData(
+            c.ELEMENT_ARRAY_BUFFER,
+            new Uint32Array(data),
+            c.STATIC_DRAW
+        );
     };
 
     /**

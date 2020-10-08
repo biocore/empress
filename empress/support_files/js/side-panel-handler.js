@@ -243,7 +243,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         }
         var lw = util.parseAndValidateNum(lwInput);
         this.empress.thickenColoredNodes(lw);
-        
+
         this.empress.drawTree();
         var dt = new Date();
         console.log("coloring", dt.getTime() - d.getTime());

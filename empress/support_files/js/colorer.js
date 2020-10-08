@@ -313,8 +313,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         return _.mapObject(this.__valueToColor, Colorer.rbgToFloat);
     };
 
-    Colorer.rbgToFloat = function(rgb) {
-        rgb = Colorer.hex2RGB(rgb)
+    Colorer.rbgToFloat = function (rgb) {
+        rgb = Colorer.hex2RGB(rgb);
         return rgb[0] + rgb[1] * 256 + rgb[2] * 256 * 256;
     };
     /**
