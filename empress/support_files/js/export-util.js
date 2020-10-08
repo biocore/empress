@@ -122,6 +122,9 @@ define(["underscore", "chroma"], function (_, chroma) {
         // line coordinates to draw, we just use the collapsed clade buffer
         // (which defines the triangles to draw that define the clade shapes).
         //
+        // TODO: if cladeCoords' length is 0, don't do anything here.
+        // TODO: Add util functions to peel off x1, y1, x2, y2, ... from
+        // coords, and to assemble them into a string of points.
         // TODO add a func to empress that returns this
         var cladeCoords = empress._collapsedCladeBuffer;
         var currLayout = empress._currentLayout;
