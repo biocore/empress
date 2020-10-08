@@ -120,12 +120,16 @@ define(["underscore", "chroma"], function (_, chroma) {
         // Draw collapsed clades
         // Similarly to how we just hijack Empress.getCoords() to get the node
         // line coordinates to draw, we just use the collapsed clade buffer
-        // (which defines the triangles to draw that approximate the clade
-        // shapes). Ideally we would *not* approximate things like wedges, but
-        // for now this should be a reasonable solution.
+        // (which defines the triangles to draw that define the clade shapes).
+        //
         // TODO add a func to empress that returns this
         var cladeCoords = empress._collapsedCladeBuffer;
         var currLayout = empress._currentLayout;
+        // TODO: Instead of approximating the circular wedges using triangles,
+        // figure out the dimensions of this circle in Empress (likely by
+        // saving data when createCollapsedCladeShape() is called) and then
+        // create an SVG path that actually draws this using Bezier curves or
+        // something.
         if (currLayout === "Rectangular" || currLayout === "Circular") {
             // Draw triangles
             for (
@@ -143,13 +147,15 @@ define(["underscore", "chroma"], function (_, chroma) {
 
                 // Draw this triangle as a polygon in the SVG
                 var points =
-                    x1 + "," +
-                    y1 + " " +
-                    x2 + "," +
-                    y2 + " " +
-                    x3 + "," +
-                    y3;
-                svg += '<polygon points="' + points + '" fill="' + color + '" />\n';
+                    x1 + "," + y1 + " " + x2 + "," + y2 + " " + x3 + "," + y3;
+                svg +=
+                    '<polygon points="' +
+                    points +
+                    '" fill="' +
+                    color +
+                    '" stroke="' +
+                    color +
+                    '" />\n';
 
                 // Update bounding box
                 minX = Math.min(minX, x1, x2, x3);
@@ -180,19 +186,35 @@ define(["underscore", "chroma"], function (_, chroma) {
 
                 // Draw this triangle as a polygon in the SVG
                 var points =
-                    x1 + "," +
-                    y1 + " " +
-                    x2 + "," +
-                    y2 + " " +
-                    x3 + "," +
-                    y3 + " " +
-                    x4 + "," +
-                    y4 + " " +
-                    x5 + "," +
-                    y5 + " " +
-                    x6 + "," +
+                    x1 +
+                    "," +
+                    y1 +
+                    " " +
+                    x2 +
+                    "," +
+                    y2 +
+                    " " +
+                    x3 +
+                    "," +
+                    y3 +
+                    " " +
+                    x4 +
+                    "," +
+                    y4 +
+                    " " +
+                    x5 +
+                    "," +
+                    y5 +
+                    " " +
+                    x6 +
+                    "," +
                     y6;
-                svg += '<polygon points="' + points + '" fill="' + color + '" />\n';
+                svg +=
+                    '<polygon points="' +
+                    points +
+                    '" fill="' +
+                    color +
+                    '" />\n';
 
                 // Update bounding box
                 minX = Math.min(minX, x1, x2, x3, x4, x5, x6);
