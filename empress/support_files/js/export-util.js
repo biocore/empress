@@ -117,6 +117,44 @@ define(["underscore", "chroma"], function (_, chroma) {
             maxY = Math.max(maxY, y1, y2);
         }
 
+        // Draw collapsed clades
+        // Similarly to how we just hijack Empress.getCoords() to get the node
+        // line coordinates to draw, we just use the collapsed clade buffer
+        // (which defines the triangles to draw that approximate the clade
+        // shapes). Ideally we would *not* approximate things like wedges, but
+        // for now this should be a reasonable solution.
+        // TODO add a func to empress that returns this
+        var cladeCoords = empress._collapsedCladeBuffer;
+        for (
+            i = 0;
+            i + 3 * drawer.VERTEX_SIZE <= cladeCoords.length;
+            i += 3 * drawer.VERTEX_SIZE
+        ) {
+            var x1 = cladeCoords[i];
+            var y1 = -cladeCoords[i + 1];
+            var x2 = cladeCoords[i + drawer.VERTEX_SIZE];
+            var y2 = -cladeCoords[i + 1 + drawer.VERTEX_SIZE];
+            var x3 = cladeCoords[i + 2 * drawer.VERTEX_SIZE];
+            var y3 = -cladeCoords[i + 1 + 2 * drawer.VERTEX_SIZE];
+            var color = getRGB(cladeCoords, i);
+
+            // Draw this triangle as a polygon in the SVG
+            var points =
+                x1 + "," +
+                y1 + " " +
+                x2 + "," +
+                y2 + " " +
+                x3 + "," +
+                y3;
+            svg += '<polygon points="' + points + '" fill="' + color + '" />\n';
+
+            // Update bounding box
+            minX = Math.min(minX, x1, x2, x3);
+            maxX = Math.max(maxX, x1, x2, x3);
+            minY = Math.min(minY, y1, y2, y3);
+            maxY = Math.max(maxY, y1, y2, y3);
+        }
+
         // create a circle for each node
         if (drawer.showTreeNodes) {
             radius = drawer.NODE_CIRCLE_DIAMETER / 2;
