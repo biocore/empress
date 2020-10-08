@@ -164,7 +164,12 @@ define(["underscore", "chroma"], function (_, chroma) {
                 maxY = Math.max(maxY, y1, y2, y3);
             }
         } else if (empress._currentLayout === "Unrooted") {
-            // Draw rectangles
+            // Draw quadrilaterals. Collapsed clades in the unrooted
+            // layout are represented as quadrilaterals (defined by two
+            // triangles), so we work in chunks of 6 points (first 3 points
+            // define triangle #1, next 3 points define triangle #2). This does
+            // assume that both triangles for a clade's shape are specified
+            // one after another; if the order is messed up, this'll look weird
             for (
                 i = 0;
                 i + 6 * drawer.VERTEX_SIZE <= cladeCoords.length;
@@ -213,6 +218,8 @@ define(["underscore", "chroma"], function (_, chroma) {
                     '<polygon points="' +
                     points +
                     '" fill="' +
+                    color +
+                    '" stroke="' +
                     color +
                     '" />\n';
 
