@@ -18,7 +18,7 @@ and barplots).
 
 ![Fancy Empire plot](docs/moving-pictures/img/empire_fancy.png)
 <div align="center">
-<i>"Empire plot" visualizing a phylogenetic tree of amplicon sequence variants (ASVs) in Empress alongside a PCoA biplot in Emperor. As one of the ways in which these displays are integrated, selecting a tip in the tree (representing an ASV) enlarges the samples containing this ASV in Emperor -- thereby providing more information than would be available from either display alone.</i>
+<i>"Empire plot" visualizing a phylogenetic tree of amplicon sequence variants (ASVs) in Empress, left, alongside a PCoA biplot in Emperor, right. As one of the ways in which these displays are integrated, selecting a tip in the tree (representing an ASV) enlarges the samples containing this ASV in Emperor -- thereby providing more information than would be available from either display alone.</i>
 </div>
 
 # Installation   
