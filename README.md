@@ -355,9 +355,9 @@ Looking at our Emperor ordination plot (on the right), we see a single feature f
 Click on this arrow (you may have to zoom in a bit in Emperor to do so). Two changes will automatically occur:
 
 1. In Empress, the plot will zoom in on the node corresponding to this feature
-   and open a menu. From here, you can explore the feature’s details further
-   just like we did before. (It turns out that the arrow we just selected is
-   classified as _Corynebacterium_ sp.!)
+   and open a menu. From here, you can explore the details for this feature
+   (which it turns out was classified as _Corynebacterium_ sp.) further,
+   just like we did before.
 2. On the Emperor plot, the samples that contain this feature will be enlarged,
    clearly highlighting them in contrast to the other samples that do not
    contain this feature.
