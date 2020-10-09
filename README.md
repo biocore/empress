@@ -455,15 +455,15 @@ Empress in your work, please cite it! The BibTeX for this preprint is:
 
 ```
 @article {Cantrell2020.10.06.327080,
-	author = {Cantrell, Kalen and Fedarko, Marcus W and Rahman, Gibraan and McDonald, Daniel and Yang, Yimeng and Zaw, Thant and Gonzalez, Antonio and Janssen, Stefan and Estaki, Mehrbod and Haiminen, Niina and Beck, Kristen L. and Zhu, Qiyun and Sayyari, Erfan and Morton, Jamie and Tripathi, Anupriya and Gauglitz, Julia M and Marotz, Clarisse and Matteson, Nathaniel L and martino, cameron and Sanders, Jon G and Carrieri, Anna Paola and Song, Se Jin and Swafford, Austin D and Dorrestein, Pieter and Andersen, Kristian G and PARIDA, LAXMI and Kim, Ho-Cheol and V{\'a}zquez-Baeza, Yoshiki and Knight, Rob},
-	title = {EMPress enables tree-guided, interactive, and exploratory analyses of multi-omic datasets},
-	elocation-id = {2020.10.06.327080},
-	year = {2020},
-	doi = {10.1101/2020.10.06.327080},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://www.biorxiv.org/content/early/2020/10/08/2020.10.06.327080},
-	eprint = {https://www.biorxiv.org/content/early/2020/10/08/2020.10.06.327080.full.pdf},
-	journal = {bioRxiv}
+    author = {Cantrell, Kalen and Fedarko, Marcus W and Rahman, Gibraan and McDonald, Daniel and Yang, Yimeng and Zaw, Thant and Gonzalez, Antonio and Janssen, Stefan and Estaki, Mehrbod and Haiminen, Niina and Beck, Kristen L. and Zhu, Qiyun and Sayyari, Erfan and Morton, Jamie and Tripathi, Anupriya and Gauglitz, Julia M and Marotz, Clarisse and Matteson, Nathaniel L and martino, cameron and Sanders, Jon G and Carrieri, Anna Paola and Song, Se Jin and Swafford, Austin D and Dorrestein, Pieter and Andersen, Kristian G and PARIDA, LAXMI and Kim, Ho-Cheol and V{\'a}zquez-Baeza, Yoshiki and Knight, Rob},
+    title = {EMPress enables tree-guided, interactive, and exploratory analyses of multi-omic datasets},
+    elocation-id = {2020.10.06.327080},
+    year = {2020},
+    doi = {10.1101/2020.10.06.327080},
+    publisher = {Cold Spring Harbor Laboratory},
+    URL = {https://www.biorxiv.org/content/early/2020/10/08/2020.10.06.327080},
+    eprint = {https://www.biorxiv.org/content/early/2020/10/08/2020.10.06.327080.full.pdf},
+    journal = {bioRxiv}
 }
 ```
 
