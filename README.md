@@ -386,7 +386,7 @@ all samples in a certain group (e.g. for this dataset, all gut samples at
 once), to show which features are present in these samples. This can be done by
 double-clicking on a sample coloring category in Emperor, as shown below:
 
-![empire_doubleclick](docs/moving-pictures/img/empire_doubleclick.gif)
+![empire_groupselection](docs/moving-pictures/img/empire_groupselection.gif)
 
 This makes it easy to get a quick glance at which parts of the tree are "used"
 within a certain group of samples.
