@@ -324,11 +324,12 @@ define([
          * @type{Array}
          * @private
          *
-         * Stores the vertex information that is passed to WebGl
+         * Stores the vertex information that is passed to WebGL
          *
          * Format: [x, y, r, g, b, ...]
          */
         this._collapsedCladeBuffer = [];
+        this._barplotBuffer = [];
 
         /**
          * @type{String}
@@ -1286,7 +1287,7 @@ define([
      */
     Empress.prototype.drawBarplots = function (layers) {
         var scope = this;
-        var coords = [];
+        this._barplotBuffer = [];
 
         // Add on a gap between the closest-to-the-root point at which we can
         // start drawing barplots, and the first barplot layer. This could be
@@ -1312,7 +1313,7 @@ define([
         _.each(layers, function (layer) {
             if (scope._barplotPanel.useBorders) {
                 prevLayerMaxD = scope.addBorderBarplotLayerCoords(
-                    coords,
+                    scope._barplotBuffer,
                     prevLayerMaxD
                 );
             }
@@ -1326,14 +1327,21 @@ define([
             } else {
                 addLayerFunc = "addFMBarplotLayerCoords";
             }
-            layerInfo = scope[addLayerFunc](layer, coords, prevLayerMaxD);
+            layerInfo = scope[addLayerFunc](
+                layer,
+                scope._barplotBuffer,
+                prevLayerMaxD
+            );
             prevLayerMaxD = layerInfo[0];
             colorLegendsToPopulate.push(layerInfo[1]);
             lengthLegendsToPopulate.push(layerInfo[2]);
         });
         // Add a border on the outside of the outermost layer
-        if (scope._barplotPanel.useBorders) {
-            scope.addBorderBarplotLayerCoords(coords, prevLayerMaxD);
+        if (this._barplotPanel.useBorders) {
+            this.addBorderBarplotLayerCoords(
+                this._barplotBuffer,
+                prevLayerMaxD
+            );
         }
         // NOTE that we purposefuly don't clear the barplot buffer until we
         // know all of the barplots are valid. If we were to call
@@ -1344,7 +1352,7 @@ define([
         // redrawing of the tree (e.g. zooming or panning), which would be
         // confusing.
         this._drawer.loadBarplotBuff([]);
-        this._drawer.loadBarplotBuff(coords);
+        this._drawer.loadBarplotBuff(this._barplotBuffer);
         this.drawTree();
 
         // By the same logic, now we can safely update the barplot legends to

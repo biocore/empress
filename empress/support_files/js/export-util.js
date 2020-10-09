@@ -234,6 +234,96 @@ define(["underscore", "chroma"], function (_, chroma) {
             }
         }
 
+        // Draw barplots
+        if (empress._barplotsDrawn) {
+            var bpCoords = empress._barplotBuffer;
+            if (currLayout === "Rectangular") {
+                // Draw rectangles: assume that every two triangles in the
+                // barplot buffer describe a rectangle
+                for (
+                    i = 0;
+                    i + 6 * drawer.VERTEX_SIZE <= bpCoords.length;
+                    i += 6 * drawer.VERTEX_SIZE
+                ) {
+                    var x1 = bpCoords[i];
+                    var y1 = -bpCoords[i + 1];
+                    var x2 = bpCoords[i + drawer.VERTEX_SIZE];
+                    var y2 = -bpCoords[i + 1 + drawer.VERTEX_SIZE];
+                    var x3 = bpCoords[i + 2 * drawer.VERTEX_SIZE];
+                    var y3 = -bpCoords[i + 1 + 2 * drawer.VERTEX_SIZE];
+                    // Assume "new" point is at final position of triplet
+                    var x4 = bpCoords[i + 5 * drawer.VERTEX_SIZE];
+                    var y4 = -bpCoords[i + 1 + 5 * drawer.VERTEX_SIZE];
+                    var color = getRGB(bpCoords, i);
+
+                    // Draw this rectangle in the SVG
+                    svg +=
+                        '<rect x="' +
+                        x1 +
+                        '" y="' +
+                        y1 +
+                        '" width="' +
+                        (x3 - x1) +
+                        '" height="' +
+                        (y3 - y1) +
+                        '" fill="' +
+                        color +
+                        '" stroke="' +
+                        color +
+                        '" />\n';
+
+                    // Update bounding box
+                    minX = Math.min(minX, x1, x2, x3, x4);
+                    maxX = Math.max(maxX, x1, x2, x3, x4);
+                    minY = Math.min(minY, y1, y2, y3, y4);
+                    maxY = Math.max(maxY, y1, y2, y3, y4);
+                }
+            } else {
+                // It's the circular layout. Draw triangles for now.
+                for (
+                    i = 0;
+                    i + 3 * drawer.VERTEX_SIZE <= bpCoords.length;
+                    i += 3 * drawer.VERTEX_SIZE
+                ) {
+                    var x1 = bpCoords[i];
+                    var y1 = -bpCoords[i + 1];
+                    var x2 = bpCoords[i + drawer.VERTEX_SIZE];
+                    var y2 = -bpCoords[i + 1 + drawer.VERTEX_SIZE];
+                    var x3 = bpCoords[i + 2 * drawer.VERTEX_SIZE];
+                    var y3 = -bpCoords[i + 1 + 2 * drawer.VERTEX_SIZE];
+                    var color = getRGB(bpCoords, i);
+
+                    // Draw this triangle as a polygon in the SVG
+                    var points =
+                        x1 +
+                        "," +
+                        y1 +
+                        " " +
+                        x2 +
+                        "," +
+                        y2 +
+                        " " +
+                        x3 +
+                        "," +
+                        y3;
+                    svg +=
+                        '<polygon points="' +
+                        points +
+                        '" fill="' +
+                        color +
+                        '" stroke="' +
+                        color +
+                        '" />\n';
+
+                    // Update bounding box
+                    minX = Math.min(minX, x1, x2, x3);
+                    maxX = Math.max(maxX, x1, x2, x3);
+                    minY = Math.min(minY, y1, y2, y3);
+                    maxY = Math.max(maxY, y1, y2, y3);
+                }
+            }
+        }
+
         // create a circle for each node
         if (drawer.showTreeNodes) {
             radius = drawer.NODE_CIRCLE_DIAMETER / 2;
