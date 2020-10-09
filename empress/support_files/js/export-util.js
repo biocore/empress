@@ -5,6 +5,15 @@ define(["underscore", "chroma"], function (_, chroma) {
      * Mostly this just creates a viewBox attribute and wraps everything in an
      * <svg></svg>.
      *
+     * This also adds on a shape-rendering="crispEdges" attribute to the SVG,
+     * which gets rid of "white lines" between adjacent rectangles or polygons:
+     * this was mostly a problem for circular layout collapsed clade wedges
+     * and barplots. See https://stackoverflow.com/a/53309814/10730311 and
+     * developer.mozilla.org/en-US/docs/Web/SVG/Attribute/shape-rendering
+     * for details on why this is useful. (From some very cursory testing, it
+     * looks like shape-rendering="optimizeSpeed" also gets rid of the white
+     * lines, so if this ends up not scaling well that might be useful.)
+     *
      * @param {String} svg An SVG string to wrap within a <svg></svg>.
      * @param {Number} minX
      * @param {Number} minY
@@ -21,7 +30,7 @@ define(["underscore", "chroma"], function (_, chroma) {
         return (
             '<svg xmlns="http://www.w3.org/2000/svg" ' +
             viewBox +
-            ">\n" +
+            ' shape-rendering="crispEdges">\n' +
             svg +
             "</svg>\n"
         );
