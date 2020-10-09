@@ -374,11 +374,13 @@ You may have noticed that in the Emperor plot one of the *Right Palm* samples is
 
 ![empire_sample_selection_gut_and_palm](docs/moving-pictures/img/empire_sample_selection_gut_and_palm.gif)
 
-Once the samples have been deselected (within a couple of seconds), select the outlier palm sample + one of the gut samples. What do you notice? You’ll see that comparatively few unique red or orange branches light up, suggesting that this sample shares many more features with the gut samples than the other palm samples.
+Once the samples have been deselected (within a couple of seconds), select the outlier palm sample + one of the gut samples. What do you notice? You’ll see that comparatively few unique red or orange branches light up, suggesting that this sample shares many more features with the gut samples than the other palm samples.\*
 
 ![empire_sample_selection_outlierpalm_plus_gut](docs/moving-pictures/img/empire_sample_selection_outlierpalm_plus_gut.gif)
 
 This is a good example of when your data can tell you something about your metadata that you may have missed. In reality, in this experiment, this palm sample was in fact mislabelled by accident.  
+
+\* _Note that this intuition relies partly on the `Ignore absent tips?` setting in Empress, which impacts how tips present in __none__ of the selected samples impact the tree coloring. By default, the parent nodes of these tips are allowed to be colored if another one of their descendant tips actually is present within the selected samples; but if `Ignore absent tips?` is disabled, then these "absent" tips will force their parents to remain uncolored._
 
 The integration between Empress and Emperor can go even further than this.
 Rather than selecting a group of samples manually, we may want to just select
