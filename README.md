@@ -321,7 +321,7 @@ Currently, certain elements of the display (e.g. barplots, collapsed clades) are
 
 Now that you are familiar with basics, let’s try something a bit more advanced. One of the unique features of Empress is its ability to integrate a tree plot with an [Emperor](http://biocore.github.io/emperor) ordination plot and visualize them side-by-side (we've taken to calling these Empire plots).
 
-To achieve this, we can provide a QIIME 2 artifact of the type `PCoAResults` to `qiime empress community-plot`. (Note that although the type is `PCoAResults` this can be any beta diversity distance matrix; it's totally possible to visualize the results of PCA, or even a biplot, here instead.)
+To achieve this, we can provide a QIIME 2 artifact of the type `PCoAResults` to `qiime empress community-plot`. (Note that although the type is `PCoAResults` this can be any ordination matrix; it's totally possible to visualize the results of PCA, or even a biplot, here instead.)
 
 Biplots include feature loadings represented by arrows that describe explanatory variables (in this case, ASVs) in the dataset.  Here, we'll visualize a PCoA biplot made using the [`qiime diversity pcoa-biplot`](https://docs.qiime2.org/2020.8/plugins/available/diversity/pcoa-biplot/) plugin. This biplot was computed using Unweighted [UniFrac](https://en.wikipedia.org/wiki/UniFrac) distances. (This functionality is also compatible with [`DEICODE` biplots](https://github.com/biocore/deicode), of course.)
 
