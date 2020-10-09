@@ -378,6 +378,17 @@ Once the samples have been deselected (within a couple of seconds), select the o
 
 This is a good example of when your data can tell you something about your metadata that you may have missed. In reality, in this experiment, this palm sample was in fact mislabelled by accident.  
 
+The integration between Empress and Emperor can go even further than this.
+Rather than selecting a group of samples manually, we may want to just select
+all samples in a certain group (e.g. for this dataset, all gut samples at
+once), to show which features are present in these samples. This can be done by
+double-clicking on a sample coloring category in Emperor, as shown below:
+
+![empire_doubleclick](docs/moving-pictures/img/empire_doubleclick.gif)
+
+This makes it easy to get a quick glance at which parts of the tree are "used"
+within a certain group of samples.
+
 ## Additional Considerations
 
 ### Providing multiple metadata files
