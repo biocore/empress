@@ -348,7 +348,7 @@ At first, the plot may look a bit messy. For clarity, let’s remove the long fe
 
 ![empire_plain](docs/moving-pictures/img/empire_plain.png)
 
-(Note that the tree and arrow colorings don't necessarily match up. Fixing this is [on our radar](https://github.com/biocore/empress/issues/369).)
+(Note that the tree and arrow colorings don't necessarily match up between Empress and Emperor—for example, Actinobacteria arrows are colored red in Emperor but Actinobacteria nodes are colored orange in Empress. If you'd like, you can change the arrow colors in Emperor to match the colors Empress assigned. Fixing this is [on our radar](https://github.com/biocore/empress/issues/369).)
 
 ### Interacting with Empire plots  
 
