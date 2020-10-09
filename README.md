@@ -242,7 +242,7 @@ Since both the node colorings and the barplot layer are now showing the same inf
 
 ![empress barplots: class coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_4.png)
 
-Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at roughly five separate "clusters" throughout the tree: are all of these the same class? We can tell from the legend for this layer (under the heading `Level 3`) that there is only one class colored lavender here, `c__Clostridia`.
+Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at multiple "clusters" throughout the tree: are all of these the same class? We can tell from the legend for this layer (under the heading `Level 3`) that there is only one class colored lavender here, `c__Clostridia`.
 
 So, these lavender classes are all *Clostridia*. Does it make sense that representatives of this class are spread out throughout the tree so much? Unfortunately, yes, since *Clostridia* are -- to quote [Wikipedia](https://en.wikipedia.org/wiki/Clostridia) -- "a highly [polyphyletic](https://en.wikipedia.org/wiki/Polyphyly) class." (As an exercise, we recommend trying out adding on extra barplot layers for lower levels of taxonomy -- order, family, genus, etc. -- and seeing how things change.)
 
