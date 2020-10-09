@@ -174,11 +174,11 @@ only present in one tongue sample).
 
 ### Exploring groups of features
 
-Another way of exploring the classification of our features is to color the branches based on their taxonomic designation. From the main menu, click *Feature Metadata Coloring*, check the *Color by…* box, select *Level 2* (which here corresponds to the Phylum level), and click *Update*.
+Another way of exploring the classification of our features is to color the branches based on their taxonomic designation. From the main menu, click *Feature Metadata Coloring*, check the *Color by…* box, select *Level 2* (which here corresponds to the phylum level), and click *Update*.
 
 ![empress_unrooted_feature_coloring](docs/moving-pictures/img/empress_unrooted_feature_coloring.png)
 
-The plot is now updated so each branch is now colored by its Phylum level classification. We can see that the extra long branches are now mostly the same magenta color. Check out the legend on the left side of the screen -- it turns out that the magenta color corresponds to an *Unspecified* Phylum. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
+The plot is now updated so each branch is now colored by its phylum-level classification. We can see that the extra long branches are now mostly the same magenta color. Check out the legend on the left side of the screen -- it turns out that the magenta color corresponds to an *Unspecified* phylum. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
 
 ### Exploring a feature’s closest common ancestors  
 
@@ -186,7 +186,7 @@ So far, we’ve looked at our data using the default unrooted tree view. To visu
 
 ![empress_circular_feature_coloring](docs/moving-pictures/img/empress_circular_feature_coloring.png)
 
-Now, let's zoom into the longest branch of the bottom cluster of *Unspecified* nodes and click on one of the close tips that has a different Phylum classification (light blue).   
+Now, let's zoom into the longest branch of the bottom cluster of *Unspecified* nodes and click on one of the close tips that has a different phylum classification (light blue).   
 
 ![empress_circular_common_ancestor](docs/moving-pictures/img/empress_circular_common_ancestor.png)
 
@@ -344,15 +344,15 @@ qiime empress community-plot \
 
 Load the new Empire plot. Here we see the Empress plot as before on the left, and on the right is an Emperor PCoA biplot. If you are unfamiliar with Emperor plots, you can learn more about them [here](http://biocore.github.io/emperor). Briefly, each individual circle represents a single sample’s microbial community and the distances between these circles corresponds to the Unweighted UniFrac distance between them in a reduced dimensional space. The top 10 explanatory features are shown as arrows alongside their feature IDs. The number of features that is shown on the biplot is determined by the `--p-number-of-features` parameter.
 
-At first, the plot may look a bit messy. For clarity, let’s remove the long feature ID labels. Right click anywhere on the Emperor plot and select *Toggle label visibility*. Next, in Emperor, from the main menu click on *Select a color category* and select `body-site` under the *scatter* subheading. Now our samples are color-coded based on their body site origin. Notice the clear clustering of these sample-types. Next, click on the same drop-down menu and this time under the *biplot* subheading select `Level 2`. Now we can see the top explanatory features (arrows) colored by their Phylum-level classification. Switch over to Empress, change the plot layout to *Circular*, and set the *Feature Metadata Coloring* to `Level 2` also. Minimize the menu bar to fully appreciate the plots!   
+At first, the plot may look a bit messy. For clarity, let’s remove the long feature ID labels. Right click anywhere on the Emperor plot and select *Toggle label visibility*. Next, in Emperor, from the main menu click on *Select a color category* and select `body-site` under the *scatter* subheading. Now our samples are color-coded based on their body site origin. Notice the clear clustering of these sample-types. Next, click on the same drop-down menu and this time under the *biplot* subheading select `Level 2`. Now we can see the top explanatory features (arrows) colored by their phylum-level classification. Switch over to Empress, change the plot layout to *Circular*, and set the *Feature Metadata Coloring* to `Level 2` also. Minimize the menu bar to fully appreciate the plots!   
 
 ![empire_plain](docs/moving-pictures/img/empire_plain.png)
 
-(Note that the tree and arrow colorings don't necessarily match up between Empress and Emperor—for example, in the screenshot above Actinobacteria arrows are colored red in Emperor but Actinobacteria nodes are colored orange in Empress. If you'd like, you can change the arrow colors in Emperor to match the colors Empress assigned. Fixing this is [on our radar](https://github.com/biocore/empress/issues/369).)
+(Note that the tree and arrow colorings don't necessarily match up between Empress and Emperor—for example, in the screenshot above Actinobacteria-phylum arrows are colored red in Emperor but Actinobacteria-phylum nodes are colored orange in Empress. If you'd like, you can change the arrow colors in Emperor to match the colors Empress assigned. Fixing this is [on our radar](https://github.com/biocore/empress/issues/369).)
 
 ### Interacting with Empire plots  
 
-Looking at our Emperor ordination plot (on the right), we see a single feature from the Actinobacteria Phylum (a small red arrow) that is associated with the palm samples. It's pointing towards the bottom-right of the ordination, when looking at it in the default camera position.
+Looking at our Emperor ordination plot (on the right), we see a single feature classified in the phylum Actinobacteria (a small red arrow) that is associated with the palm samples. It's pointing towards the bottom-right of the ordination, when looking at it in the default camera position.
 
 Click on this arrow (you may have to zoom in a bit in Emperor to do so). Two changes will automatically occur:
 
