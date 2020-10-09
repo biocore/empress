@@ -48,7 +48,8 @@ If you see information about Empress' QIIME 2 plugin, the installation was succe
 
 # Tutorial: Using Empress in QIIME 2   
 
-In this tutorial we will be using Empress within the QIIME 2 environment, and demonstrating its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/) dataset, a set of human microbiome samples from two individuals at four body sites across five timepoints.
+In this tutorial, we'll use Empress through QIIME 2 and demonstrate its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/) dataset. This dataset contains human microbiome samples from
+two individuals at four body sites across five timepoints.
 
 ## First, a note about Empress' commands
 
