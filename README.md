@@ -143,13 +143,13 @@ qiime tools view empress-tree.qzv
 ```
 ![empress_plain](docs/moving-pictures/img/empress_plain.png)
 
-The starting plot is a simple unrooted tree which has all the normal properties of a phylogenetic tree. The outermost “tips” of the tree are referred to as “leaves”, “terminal nodes”, or “external nodes” and here represent a unique ASV. The line connected to this external node is referred to as a “branch”. A branch connects two or more nodes, in this case an external node to an internal node. These internal nodes represent a divergent point between nodes and the branch length represents the evolutionary distance between divergence points.
+The starting plot is a simple unrooted tree which has all the normal properties of a phylogenetic tree. The outermost “tips” of the tree are referred to as “leaves”, “terminal nodes”, or “external nodes” and here represent a unique ASV. The line connected to a tip is referred to as a “branch”. A branch connects two or more nodes, or in this case a tip to an internal node. These internal nodes represent a divergent point between nodes and the branch length represents the evolutionary distance between divergence points.
 You can use your mouse’s scroll wheel to zoom in and out, and click and drag anywhere on the plot to move the display to take a closer look at the various tree components. On the top-right we see a display menu with several subcategories that allow us to customize the plot. We will explore these options in more detail below.  
 
 
 ### Exploring individual features  
 
-The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Zoom in on the external node of the longest branch and click on the node.   
+The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Zoom in on the tip of the longest branch and click on the node.   
 
 ![empress_plain_first_outlier](docs/moving-pictures/img/empress_plain_first_outlier.png)
 
@@ -161,7 +161,7 @@ In this window we can also view details about sample metadata related to this fe
 
 ![empress_plain_first_outlier_2](docs/moving-pictures/img/empress_plain_first_outlier_2.png)
 
-We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.6%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in the QIIME 2 Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the external nodes in a few other outlier branches. Do you see a similar pattern? Now try clicking on an external node of one of the shorter branches. Notice the much improved classification!
+We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.6%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in the QIIME 2 Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the tips in a few other outlier branches. Do you see a similar pattern? Now try clicking on a tip of one of the shorter branches. Notice the much improved classification!
 
 We can also locate specific features of interest using the search bar at the top of the main menu. For example, in our feature-table the most abundant ASV is `4b5eeb300368260019c1fbc7a3c718fc`. Paste this name in to the search bar and click *Search*.  
 This feature’s tip in the tree is now highlighted with a bright green circle.
@@ -186,7 +186,7 @@ So far, we’ve looked at our data using the default unrooted tree view. To visu
 
 ![empress_circular_feature_coloring](docs/moving-pictures/img/empress_circular_feature_coloring.png)
 
-Now, let's zoom into the longest branch of the bottom cluster of *Unspecified* nodes and click on one of the close external nodes that has a different Phylum classification (light blue).   
+Now, let's zoom into the longest branch of the bottom cluster of *Unspecified* nodes and click on one of the close tips that has a different Phylum classification (light blue).   
 
 ![empress_circular_common_ancestor](docs/moving-pictures/img/empress_circular_common_ancestor.png)
 
