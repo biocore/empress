@@ -11,7 +11,7 @@ While historically these features have often represented evolutionary relationsh
 
 Empress supports categorically new functionality, such as animations and
 integration with ordination plots, as well as functionality common to
-established tree viewers (for example, metadata coloring, clade collapsing,
+established tree viewers (e.g. metadata coloring, clade collapsing,
 and barplots).
 
 ## Screenshot
