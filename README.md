@@ -13,11 +13,16 @@ Empress supports both categorically new functionality, such as dynamic
 integration with ordination plots and animations, and functionality common to
 established tree viewers (for example, metadata coloring, clade collapsing, and barplots).
 
-![Fancy "Empire plot" showing a phylogenetic tree alongside a PCoA biplot from the same dataset](docs/moving-pictures/img/empire_fancy.png)
+## Screenshot
+
+![Fancy Empire plot](docs/moving-pictures/img/empire_fancy.png)
+<div align="center">
+<i>"Empire plot" visualizing a phylogenetic tree in Empress alongside a PCoA biplot in Emperor. As one of the ways in which these displays are integrated, selecting a node in the tree enlarges the samples containing this node in Emperor -- thereby providing more information than would be available from either display alone.</i>
+</div>
 
 # Installation   
 
-Currently, Empress is only accessible as a QIIME 2 plugin. To follow this tutorial you will need to have a QIIME 2 (version 2019.10 or newer) conda environment installed and activated. See the [QIIME 2 installation](https://docs.qiime2.org/2020.6/install/) page for installation instructions.  
+Currently, Empress is only accessible as a QIIME 2 plugin. To follow the tutorial below you'll need to have a QIIME 2 (version 2019.10 or newer) conda environment installed and activated. See the [QIIME 2 installation](https://docs.qiime2.org/2020.6/install/) page for installation instructions.  
 Once you have QIIME 2 installed, make sure the conda environment is activated by running:
 
 ```
@@ -40,7 +45,7 @@ qiime empress --help
 
 If you see information about Empress' QIIME 2 plugin, the installation was successful!
 
-# Example: Using Empress in QIIME 2   
+# Tutorial: Using Empress in QIIME 2   
 
 In this tutorial we will be using Empress within the QIIME 2 environment, and demonstrating its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/) dataset, a set of human microbiome samples from two individuals at four body sites across five timepoints.
 
