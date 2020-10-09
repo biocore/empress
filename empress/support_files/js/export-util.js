@@ -95,7 +95,7 @@ define(["underscore", "chroma"], function (_, chroma) {
             var color = getRGB(coords, i);
 
             // Add the branch to the SVG
-            svg +=
+            var lineSVG =
                 '<line x1="' +
                 x1 +
                 '" y1="' +
@@ -106,9 +106,17 @@ define(["underscore", "chroma"], function (_, chroma) {
                 y2 +
                 '" stroke="' +
                 color +
-                '" style="stroke-width:' +
-                linewidth +
-                '" />\n';
+                '" ';
+            // Specify a stroke width only if it's greater than 1. The default
+            // stroke width is 1, so there's no need to specify it (thus saving
+            // us some space in the SVG).
+            if (linewidth > 1) {
+                lineSVG +=
+                    'style="stroke-width:' +
+                    linewidth +
+                    '" ';
+            }
+            svg += lineSVG + ' />\n';
 
             // Update bounding box based on tree coordinates
             minX = Math.min(minX, x1, x2);
