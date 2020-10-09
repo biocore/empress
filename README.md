@@ -389,7 +389,9 @@ double-clicking on a sample coloring category in Emperor, as shown below:
 ![empire_groupselection](docs/moving-pictures/img/empire_groupselection.gif)
 
 This makes it easy to get a quick glance at which parts of the tree are "used"
-within a certain group of samples.
+within a certain group of samples. (If you have a hard time viewing certain colors
+on the tree—for example, distinguishing the blue color for left palm samples from the
+default dark-gray node color—you may want to adjust the sample group colors in Emperor.)
 
 ## Additional Considerations
 
