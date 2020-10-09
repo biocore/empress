@@ -298,9 +298,16 @@ select:-moz-focusring {
     float: left;
     border-right: 2px solid black;
     /* Having this z-index puts this above the Emperor div, which is useful
-   * because it lets us draw the border-line above over Emperor
-   */
+     * because it lets us draw the border-line over Emperor.
+     */
     z-index: 1;
+}
+
+/* Hide scrollbars being created that mess up the page layout: see
+ * https://github.com/biocore/empress/issues/356 for morbid details.
+ */
+#emperor-in-empire {
+    overflow: hidden;
 }
 
 /* Convenience class for preventing user selection
