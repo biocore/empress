@@ -23,7 +23,7 @@ and barplots).
 
 # Installation   
 
-Currently, Empress is only accessible as a QIIME 2 plugin. To follow the tutorial below you'll need to have a QIIME 2 (version 2019.10 or newer) conda environment installed and activated. See the [QIIME 2 installation](https://docs.qiime2.org/2020.6/install/) page for installation instructions.  
+Currently, Empress is only accessible as a QIIME 2 plugin. To follow the tutorial below you'll need to have a QIIME 2 (version 2019.10 or newer) conda environment installed and activated. See the [QIIME 2 installation](https://docs.qiime2.org/2020.8/install/) page for installation instructions.  
 Once you have QIIME 2 installed, make sure the conda environment is activated by running:
 
 ```
@@ -48,7 +48,7 @@ If you see information about Empress' QIIME 2 plugin, the installation was succe
 
 # Tutorial: Using Empress in QIIME 2   
 
-In this tutorial, we'll use Empress through QIIME 2 and demonstrate its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/) dataset. This dataset contains human microbiome samples from
+In this tutorial, we'll use Empress through QIIME 2 and demonstrate its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.8/tutorials/moving-pictures/) dataset. This dataset contains human microbiome samples from
 two individuals at four body sites across five timepoints.
 
 ## First, a note about Empress' commands
@@ -83,14 +83,14 @@ Both of these commands generate similar visualizations. The functionality availa
 
 ## Downloading Input Artifacts and Metadata  
 
-Before we start, we’ll need to download the necessary input artifacts for running `qiime empress community-plot`. The first four of these artifacts are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.6/tutorials/moving-pictures/), and the last artifact was produced afterwards using data from the tutorial. These artifacts are:
+Before we start, we’ll need to download the necessary input artifacts for running `qiime empress community-plot`. The first four of these artifacts are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.8/tutorials/moving-pictures/), and the last artifact was produced afterwards using data from the tutorial. These artifacts are:
 
 1. A feature table (a QIIME 2 artifact of type `FeatureTable[Frequency]`)
 2. A sample metadata file (a [tab-separated-value](https://en.wikipedia.org/wiki/Tab-separated_values) file)
 3. A rooted tree (a QIIME 2 artifact of type `Phylogeny[Rooted]`)
 4. Taxonomic assignments of our features (a QIIME 2 artifact of type `FeatureData[Taxonomy]`)
 5. A PCoA biplot results file (a QIIME 2 artifact of type `PCoAResults % Properties('biplot')`)
-    - This artifact in particular was produced by the [`qiime diversity pcoa`](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin, but ordinations / biplots created by other tools (e.g. [DEICODE](https://github.com/biocore/DEICODE/)) also work well with Empress.
+    - This artifact in particular was produced by the [`qiime diversity pcoa`](https://docs.qiime2.org/2020.8/plugins/available/diversity/pcoa-biplot/) plugin, but ordinations / biplots created by other tools (e.g. [DEICODE](https://github.com/biocore/DEICODE/)) also work well with Empress.
 
 The last item is required only when displaying an Empress tree plot in tandem with an Emperor PCoA plot/biplot (a.k.a. an Empire plot!)
 
@@ -161,7 +161,7 @@ In this window we can also view details about sample metadata related to this fe
 
 ![empress_plain_first_outlier_2](docs/moving-pictures/img/empress_plain_first_outlier_2.png)
 
-We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.6%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in the QIIME 2 Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the tips in a few other outlier branches. Do you see a similar pattern? Now try clicking on a tip of one of the shorter branches. Notice the much improved classification!
+We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.8%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in the QIIME 2 Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the tips in a few other outlier branches. Do you see a similar pattern? Now try clicking on a tip of one of the shorter branches. Notice the much improved classification!
 
 We can also locate specific features of interest using the search bar at the top of the main menu. For example, in our feature-table the most abundant ASV is `4b5eeb300368260019c1fbc7a3c718fc`. Paste this name in to the search bar and click *Search*.  
 This feature’s tip in the tree is now highlighted with a bright green circle.
@@ -323,7 +323,7 @@ Now that you are familiar with basics, let’s try something a bit more advanced
 
 To achieve this, we can provide a QIIME 2 artifact of the type `PCoAResults` to `qiime empress community-plot`. (Note that although the type is `PCoAResults` this can be any beta diversity distance matrix; it's totally possible to visualize the results of PCA, or even a biplot, here instead.)
 
-Biplots include feature loadings represented by arrows that describe explanatory variables (in this case, ASVs) in the dataset.  Here, we'll visualize a PCoA biplot made using the [`qiime diversity pcoa-biplot`](https://docs.qiime2.org/2020.6/plugins/available/diversity/pcoa-biplot/) plugin. This biplot was computed using Unweighted [UniFrac](https://en.wikipedia.org/wiki/UniFrac) distances. (This functionality is also compatible with [`DEICODE` biplots](https://github.com/biocore/deicode), of course.)
+Biplots include feature loadings represented by arrows that describe explanatory variables (in this case, ASVs) in the dataset.  Here, we'll visualize a PCoA biplot made using the [`qiime diversity pcoa-biplot`](https://docs.qiime2.org/2020.8/plugins/available/diversity/pcoa-biplot/) plugin. This biplot was computed using Unweighted [UniFrac](https://en.wikipedia.org/wiki/UniFrac) distances. (This functionality is also compatible with [`DEICODE` biplots](https://github.com/biocore/deicode), of course.)
 
 To visualize an Empire plot (both the tree and this PCoA biplot together), run
 the following command:
