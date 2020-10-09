@@ -344,9 +344,11 @@ qiime empress community-plot \
 
 Load the new Empire plot. Here we see the Empress plot as before on the left, and on the right is an Emperor PCoA biplot. If you are unfamiliar with Emperor plots, you can learn more about them [here](http://biocore.github.io/emperor). Briefly, each individual circle represents a single sample’s microbial community and the distances between these circles corresponds to the Unweighted UniFrac distance between them in a reduced dimensional space. The top 10 explanatory features are shown as arrows alongside their feature IDs. The number of features that is shown on the biplot is determined by the `--p-number-of-features` parameter.
 
-For clarity, let’s remove the long feature ID labels. Right click anywhere on the Emperor plot and select *Toggle label visibility*. Next, in Emperor, from the main menu click on *Select a color category* and select `body-site` under the *scatter* subheading. Now our samples are color coded based on their body site origin. Notice the clear clustering of these sample-types. Next, click on the same drop-down menu and this time under the *biplot* subheading select `Level 2`. Now we can see the top explanatory features (arrows) colored by their Phyla designation. Switch over to Empress, change the plot layout to *Circular*, and set the *Feature Metadata Coloring* to `Level 2` also. Minimize the menu bar to fully appreciate the plots!   
+At first, the plot may look a bit messy. For clarity, let’s remove the long feature ID labels. Right click anywhere on the Emperor plot and select *Toggle label visibility*. Next, in Emperor, from the main menu click on *Select a color category* and select `body-site` under the *scatter* subheading. Now our samples are color-coded based on their body site origin. Notice the clear clustering of these sample-types. Next, click on the same drop-down menu and this time under the *biplot* subheading select `Level 2`. Now we can see the top explanatory features (arrows) colored by their Phylum-level classification. Switch over to Empress, change the plot layout to *Circular*, and set the *Feature Metadata Coloring* to `Level 2` also. Minimize the menu bar to fully appreciate the plots!   
 
 ![empire_plain](docs/moving-pictures/img/empire_plain.png)
+
+(Note that the tree and arrow colorings don't necessarily match up. Fixing this is [on our radar](https://github.com/biocore/empress/issues/369).)
 
 ### Interacting with Empire plots  
 
