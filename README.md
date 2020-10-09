@@ -356,14 +356,15 @@ Click on this arrow (you may have to zoom in a bit in Emperor to do so). Two cha
 
 1. In Empress, the plot will zoom in on the node corresponding to this feature
    and open a menu. From here, you can explore the feature’s details further
-   just like we did before.  
+   just like we did before. (It turns out that the arrow we just selected is
+   classified as _Corynebacterium_ sp.!)
 2. On the Emperor plot, the samples that contain this feature will be enlarged,
    clearly highlighting them in contrast to the other samples that do not
    contain this feature.
 
 ![empire_feature_arrow_selection](docs/moving-pictures/img/empire_feature_arrow_selection.png)
 
-This interaction between Empress and Emperor can go the other direction. Selecting a node on the Empress plot will enlarge the samples in Emperor in which that feature is present in.
+This interaction between Empress and Emperor can go the other direction. Selecting a node on the Empress plot will enlarge the samples in Emperor in which that feature is present.
 
 Another way to explore our data is to select samples on Emperor and look for the corresponding features present in these samples in Empress. In Emperor, hold the shift button and draw a box around a sample. The Empress plot will now temporarily highlight the branches corresponding to that sample. If you select multiple samples from different body-sites, Empress will only highlight the branches/nodes that are unique to those sample types. The shared branches remain uncolored. Let’s see how we can utilize this function in our dataset.
 
