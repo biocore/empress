@@ -9,9 +9,10 @@ Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki
 
 While historically these features have often represented evolutionary relationships of species in community surveys, and are characterized by their phylogeny or genetic similarity/differences, you can in fact view any type of information with hierarchical organization. For example, you can view trees of [amplicon sequence variants (ASVs)](https://en.wikipedia.org/wiki/Amplicon_sequence_variant) generated from 16S rRNA marker gene sequencing data, or metabolite trees of LC-MS data using [q2-qemistree](https://github.com/biocore/q2-qemistree) ([ref](https://www.biorxiv.org/content/10.1101/2020.05.04.077636v1)).
 
-Empress supports both categorically new functionality, such as dynamic
-integration with ordination plots and animations, and functionality common to
-established tree viewers (for example, metadata coloring, clade collapsing, and barplots).
+Empress supports categorically new functionality, such as animations and
+integration with ordination plots, as well as functionality common to
+established tree viewers (for example, metadata coloring, clade collapsing,
+and barplots).
 
 ## Screenshot
 
