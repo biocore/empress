@@ -37,6 +37,135 @@ define(["underscore", "chroma"], function (_, chroma) {
     }
 
     /**
+     * Given coords and a start position in it (the start of a series of 5
+     * elements), return an RGB triplet representation of the color at
+     * this position.
+     *
+     * @param {Array} coords
+     * @param {Number} i
+     * @return {String}
+     */
+    function _getRGB(coords, i) {
+        return chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css();
+    };
+
+    /**
+     * Attempts to update a bounding box based on a new (x, y) point.
+     *
+     * @param {Object} bb Contains minX, maxX, minY, maxY entries.
+     * @param {Array} xCoords Arbitrarily large array of x coordinates to test
+     *                        expanding the bounding box with.
+     * @param {Array} yCoords Arbitrarily large array of y coordinates to test
+     *                        expanding the bounding box with.
+     *
+     * @return {Object} Potentially-modified version of the input bounding box.
+     */
+    function _updateBoundingBox(bb, xCoords, yCoords) {
+        return {
+            minX: Math.min(bb.minX, ...xCoords),
+            maxX: Math.max(bb.maxX, ...xCoords),
+            minY: Math.min(bb.minY, ...yCoords),
+            maxY: Math.max(bb.maxY, ...yCoords)
+        };
+    }
+
+    /**
+     * Adds polygon definitions to a SVG string.
+     *
+     * @param {String} svg
+     * @param {Number} pointsPerPolygon The number of points to use for each
+     *                                  polygon. Since most of the buffers used
+     *                                  for EMPress are rendered in WebGL as
+     *                                  triangles (i.e. every three points
+     *                                  defines a triangle), this will probably
+     *                                  be a multiple of 3 (if it's 3, then
+     *                                  this will just draw each triangle like
+     *                                  normal; if it's 6, then this will merge
+     *                                  every two triangles in coords into a
+     *                                  single polygon).
+     * @param {Object} boundingBox Contains four entries: minX, maxX, minY,
+     *                             maxY. These define the current bounding box
+     *                             of the SVG. If any of the points in the
+     *                             polygons to be drawn extend outside of this
+     *                             box, the box will be updated -- in any case,
+     *                             the "new" (potentially unchanged) bounding
+     *                             box will be returned by this function.
+     * @param {Array} coords Array of coordinates to represent as polygons.
+     *                       This will probably be formatted like
+     *                       [x, y, r, g, b, x, y, r, g, b, ...].
+     * @param {Number} vertexSize The number of elements in coords for each
+     *                            point. This defaults to 5, i.e. x,y,r,g,b.
+     *                            It's configurable here just in case this is
+     *                            changed in the future.
+     *                          
+     * @return {Object} Contains two entries:
+     *                  -boundingBox: Object with minX, maxX, minY, and maxY
+     *                   entries. The space covered by this bounding box should
+     *                   be a superset of the input bounding box (if all of the
+     *                   polygons to be drawn are within the input bounding
+     *                   box, this should be equal to the input bounding box).
+     *                  -svg: the input SVG string, with <polygon> definitions
+     *                   added.
+     * @throws {Error} If the total number of points in coords (coords.length
+     *                 divided by vertexSize) is not evenly divisible by
+     *                 pointsPerPolygon.
+     */
+    function _addPolygonsToSVG(
+        svg, pointsPerPolygon, boundingBox, coords, vertexSize = 5
+    ) {
+        var totalNumPoints = coords.length / vertexSize;
+        if (totalNumPoints % pointsPerPolygon !== 0) {
+            throw new Error(
+                "Number of points in coords, " +
+                totalNumPoints +
+                ", is not divisible by the points per polygon parameter of " +
+                pointsPerPolygon
+            );
+        }
+
+        var newBoundingBox = boundingBox;
+        for (
+            var i = 0;
+            i + (pointsPerPolygon * vertexSize) <= coords.length;
+            i += (pointsPerPolygon * vertexSize)
+        ) {
+            var pointsString = "";
+            for (var j = 0; j < pointsPerPolygon; j++) {
+                // As of writing, coords is stored as
+                // [x, y, r, g, b, x, y, r, g, b, ...] (i.e. vertexSize = 5).
+                // We want to extract the (x, y) values from this array, so
+                // we first get the 0th and 1th items (x, y), then the
+                // 5th and and 6th items (x1, y1), and so on.
+                var xPos = i + (j * vertexSize);
+                var x = coords[xPos];
+                // We negate the y-coordinate so the exported image
+                // matches Empress' interface.
+                var y = coords[xPos + 1];
+
+                // Now that we've got x and y, update the bounding box if
+                // needed and update the points attribute of the SVG <polygon>
+                // we're about to add to the SVG.
+                newBoundingBox = _updateBoundingBox(newBoundingBox, [x], [y]);
+                pointsString += x + "," + y;
+            }
+            // We assume that each polygon has a single color, defined by the
+            // first point in a group of points.
+            var color = _getRGB(coords, i);
+
+            // Add polygon to the SVG
+            svg +=
+                '<polygon points="' +
+                pointsString +
+                '" fill="' +
+                color +
+                '" stroke="' +
+                color +
+                '" />\n';
+        }
+        return { boundingBox: newBoundingBox, svg: svg };
+    }
+
+    /**
      * Creates an SVG string to export the current stuff on the canvas.
      *
      * NOTE that this currently does not include collapsed clades or barplots.
@@ -48,23 +177,11 @@ define(["underscore", "chroma"], function (_, chroma) {
      * @return {String}
      */
     function exportTreeSVG(empress, drawer) {
-        /**
-         * Given coords and a start position in it (the start of a series of 5
-         * elements), return an RGB triplet representation of the color at
-         * this position.
-         *
-         * @param {Array} coords
-         * @param {Number} i
-         * @return {String}
-         */
-        var getRGB = function (coords, i) {
-            return chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css();
-        };
-
-        var minX = Number.POSITIVE_INFINITY;
-        var maxX = Number.NEGATIVE_INFINITY;
-        var minY = Number.POSITIVE_INFINITY;
-        var maxY = Number.NEGATIVE_INFINITY;
+        // bounding box; will be updated
+        var bb = { minX : Number.POSITIVE_INFINITY, 
+                   maxX : Number.NEGATIVE_INFINITY,
+                   minY : Number.POSITIVE_INFINITY, 
+                   maxX : Number.NEGATIVE_INFINITY };
         var svg = "<!-- tree branches -->\n";
 
         // create a line from x1,y1 to x2,y2 for every two consecutive
@@ -101,7 +218,7 @@ define(["underscore", "chroma"], function (_, chroma) {
             var y1 = -coords[i + 1];
             var x2 = coords[i + drawer.VERTEX_SIZE];
             var y2 = -coords[i + 1 + drawer.VERTEX_SIZE];
-            var color = getRGB(coords, i);
+            var color = _getRGB(coords, i);
 
             // Add the branch to the SVG
             var lineSVG =
@@ -128,217 +245,46 @@ define(["underscore", "chroma"], function (_, chroma) {
             svg += lineSVG + ' />\n';
 
             // Update bounding box based on tree coordinates
-            minX = Math.min(minX, x1, x2);
-            maxX = Math.max(maxX, x1, x2);
-            minY = Math.min(minY, y1, y2);
-            maxY = Math.max(maxY, y1, y2);
+            bb = _updateBoundingBox(bb, [x1, x2], [y1, y2]);
         }
 
-        // Draw collapsed clades
+        var currLayout = empress._currentLayout;
+
+        // Draw collapsed clades.
         // Similarly to how we just hijack Empress.getCoords() to get the node
         // line coordinates to draw, we just use the collapsed clade buffer
         // (which defines the triangles to draw that define the clade shapes).
-        //
-        // TODO: if cladeCoords' length is 0, don't do anything here.
-        // TODO: Add util functions to peel off x1, y1, x2, y2, ... from
-        // coords, and to assemble them into a string of points.
         // TODO add a func to empress that returns this
         var cladeCoords = empress._collapsedCladeBuffer;
-        var currLayout = empress._currentLayout;
-        // TODO: Instead of approximating the circular wedges using triangles,
-        // figure out the dimensions of this circle in Empress (likely by
-        // saving data when createCollapsedCladeShape() is called) and then
-        // create an SVG path that actually draws this using Bezier curves or
-        // something.
-        if (currLayout === "Rectangular" || currLayout === "Circular") {
-            // Draw triangles
-            for (
-                i = 0;
-                i + 3 * drawer.VERTEX_SIZE <= cladeCoords.length;
-                i += 3 * drawer.VERTEX_SIZE
-            ) {
-                var x1 = cladeCoords[i];
-                var y1 = -cladeCoords[i + 1];
-                var x2 = cladeCoords[i + drawer.VERTEX_SIZE];
-                var y2 = -cladeCoords[i + 1 + drawer.VERTEX_SIZE];
-                var x3 = cladeCoords[i + 2 * drawer.VERTEX_SIZE];
-                var y3 = -cladeCoords[i + 1 + 2 * drawer.VERTEX_SIZE];
-                var color = getRGB(cladeCoords, i);
-
-                // Draw this triangle as a polygon in the SVG
-                var points =
-                    x1 + "," + y1 + " " + x2 + "," + y2 + " " + x3 + "," + y3;
-                svg +=
-                    '<polygon points="' +
-                    points +
-                    '" fill="' +
-                    color +
-                    '" stroke="' +
-                    color +
-                    '" />\n';
-
-                // Update bounding box
-                minX = Math.min(minX, x1, x2, x3);
-                maxX = Math.max(maxX, x1, x2, x3);
-                minY = Math.min(minY, y1, y2, y3);
-                maxY = Math.max(maxY, y1, y2, y3);
+        if (cladeCoords.length > 0) {
+            var cladeResults;
+            if (currLayout === "Rectangular") {
+                // Draw triangles.
+                cladeResults = _addPolygonsToSVG(svg, 3, bb, cladeCoords);
+            } else if (currLayout === "Circular") {
+                // Draw triangles for now, but TODO should be more accurate.
+                // Will likely need to figure out the dimensions of this circle
+                // in Empress (likely by saving data when
+                // createCollapsedCladeShape() is called) and then create an
+                // SVG path that actually draws this using Bezier curves/etc.
+                cladeResults = _addPolygonsToSVG(svg, 3, bb, cladeCoords);
+            } else if (empress._currentLayout === "Unrooted") {
+                // Draw polygons comprised of two triangles.
+                // Assumes that both triangles for a clade's shape are
+                // specified one after another; if the order is messed up,
+                // this'll look weird.
+                cladeResults = _addPolygonsToSVG(svg, 6, bb, cladeCoords);
             }
-        } else if (empress._currentLayout === "Unrooted") {
-            // Draw quadrilaterals. Collapsed clades in the unrooted
-            // layout are represented as quadrilaterals (defined by two
-            // triangles), so we work in chunks of 6 points (first 3 points
-            // define triangle #1, next 3 points define triangle #2). This does
-            // assume that both triangles for a clade's shape are specified
-            // one after another; if the order is messed up, this'll look weird
-            for (
-                i = 0;
-                i + 6 * drawer.VERTEX_SIZE <= cladeCoords.length;
-                i += 6 * drawer.VERTEX_SIZE
-            ) {
-                var x1 = cladeCoords[i];
-                var y1 = -cladeCoords[i + 1];
-                var x2 = cladeCoords[i + drawer.VERTEX_SIZE];
-                var y2 = -cladeCoords[i + 1 + drawer.VERTEX_SIZE];
-                var x3 = cladeCoords[i + 2 * drawer.VERTEX_SIZE];
-                var y3 = -cladeCoords[i + 1 + 2 * drawer.VERTEX_SIZE];
-                var x4 = cladeCoords[i + 3 * drawer.VERTEX_SIZE];
-                var y4 = -cladeCoords[i + 1 + 3 * drawer.VERTEX_SIZE];
-                var x5 = cladeCoords[i + 4 * drawer.VERTEX_SIZE];
-                var y5 = -cladeCoords[i + 1 + 4 * drawer.VERTEX_SIZE];
-                var x6 = cladeCoords[i + 5 * drawer.VERTEX_SIZE];
-                var y6 = -cladeCoords[i + 1 + 5 * drawer.VERTEX_SIZE];
-                var color = getRGB(cladeCoords, i);
-
-                // Draw this triangle as a polygon in the SVG
-                var points =
-                    x1 +
-                    "," +
-                    y1 +
-                    " " +
-                    x2 +
-                    "," +
-                    y2 +
-                    " " +
-                    x3 +
-                    "," +
-                    y3 +
-                    " " +
-                    x4 +
-                    "," +
-                    y4 +
-                    " " +
-                    x5 +
-                    "," +
-                    y5 +
-                    " " +
-                    x6 +
-                    "," +
-                    y6;
-                svg +=
-                    '<polygon points="' +
-                    points +
-                    '" fill="' +
-                    color +
-                    '" stroke="' +
-                    color +
-                    '" />\n';
-
-                // Update bounding box
-                minX = Math.min(minX, x1, x2, x3, x4, x5, x6);
-                maxX = Math.max(maxX, x1, x2, x3, x4, x5, x6);
-                minY = Math.min(minY, y1, y2, y3, y4, y5, y6);
-                maxY = Math.max(maxY, y1, y2, y3, y4, y5, y6);
-            }
+            svg = cladeResults.svg;
+            bb = cladeResults.boundingBox;
         }
 
-        // Draw barplots
+        // Draw barplots.
         if (empress._barplotsDrawn) {
             var bpCoords = empress._barplotBuffer;
-            if (currLayout === "Rectangular") {
-                // Draw rectangles: assume that every two triangles in the
-                // barplot buffer describe a rectangle
-                for (
-                    i = 0;
-                    i + 6 * drawer.VERTEX_SIZE <= bpCoords.length;
-                    i += 6 * drawer.VERTEX_SIZE
-                ) {
-                    var x1 = bpCoords[i];
-                    var y1 = -bpCoords[i + 1];
-                    var x2 = bpCoords[i + drawer.VERTEX_SIZE];
-                    var y2 = -bpCoords[i + 1 + drawer.VERTEX_SIZE];
-                    var x3 = bpCoords[i + 2 * drawer.VERTEX_SIZE];
-                    var y3 = -bpCoords[i + 1 + 2 * drawer.VERTEX_SIZE];
-                    // Assume "new" point is at final position of triplet
-                    var x4 = bpCoords[i + 5 * drawer.VERTEX_SIZE];
-                    var y4 = -bpCoords[i + 1 + 5 * drawer.VERTEX_SIZE];
-                    var color = getRGB(bpCoords, i);
-
-                    // Draw this rectangle in the SVG
-                    svg +=
-                        '<rect x="' +
-                        x1 +
-                        '" y="' +
-                        y1 +
-                        '" width="' +
-                        (x3 - x1) +
-                        '" height="' +
-                        (y3 - y1) +
-                        '" fill="' +
-                        color +
-                        '" stroke="' +
-                        color +
-                        '" />\n';
-
-                    // Update bounding box
-                    minX = Math.min(minX, x1, x2, x3, x4);
-                    maxX = Math.max(maxX, x1, x2, x3, x4);
-                    minY = Math.min(minY, y1, y2, y3, y4);
-                    maxY = Math.max(maxY, y1, y2, y3, y4);
-                }
-            } else {
-                // It's the circular layout. Draw triangles for now.
-                for (
-                    i = 0;
-                    i + 3 * drawer.VERTEX_SIZE <= bpCoords.length;
-                    i += 3 * drawer.VERTEX_SIZE
-                ) {
-                    var x1 = bpCoords[i];
-                    var y1 = -bpCoords[i + 1];
-                    var x2 = bpCoords[i + drawer.VERTEX_SIZE];
-                    var y2 = -bpCoords[i + 1 + drawer.VERTEX_SIZE];
-                    var x3 = bpCoords[i + 2 * drawer.VERTEX_SIZE];
-                    var y3 = -bpCoords[i + 1 + 2 * drawer.VERTEX_SIZE];
-                    var color = getRGB(bpCoords, i);
-
-                    // Draw this triangle as a polygon in the SVG
-                    var points =
-                        x1 +
-                        "," +
-                        y1 +
-                        " " +
-                        x2 +
-                        "," +
-                        y2 +
-                        " " +
-                        x3 +
-                        "," +
-                        y3;
-                    svg +=
-                        '<polygon points="' +
-                        points +
-                        '" fill="' +
-                        color +
-                        '" stroke="' +
-                        color +
-                        '" />\n';
-
-                    // Update bounding box
-                    minX = Math.min(minX, x1, x2, x3);
-                    maxX = Math.max(maxX, x1, x2, x3);
-                    minY = Math.min(minY, y1, y2, y3);
-                    maxY = Math.max(maxY, y1, y2, y3);
-                }
-            }
+            var bpResults = _addPolygonsToSVG(svg, 6, bb, bpCoords);
+            svg = bpResults.svg;
+            bb = bpResults.boundingBox;
         }
 
         // create a circle for each node
@@ -359,7 +305,7 @@ define(["underscore", "chroma"], function (_, chroma) {
                     '" r="' +
                     radius +
                     '" style="fill:' +
-                    getRGB(coords, i) +
+                    _getRGB(coords, i) +
                     '"/>\n';
             }
             // The edge of the bounding box should coincide with the "end" of a
