@@ -15,18 +15,15 @@ define(["underscore", "chroma"], function (_, chroma) {
      * lines, so if this ends up not scaling well that might be useful.)
      *
      * @param {String} svg An SVG string to wrap within a <svg></svg>.
-     * @param {Number} minX
-     * @param {Number} minY
-     * @param {Number} maxX
-     * @param {Number} maxY
+     * @param {Object} bb Bounding box with minX, maxX, minY, maxY entries.
      *
      * @return {String} A "finished" SVG string that can be saved to a file.
      */
-    function _finalizeSVG(svg, minX, minY, maxX, maxY) {
-        var width = maxX - minX;
-        var height = maxY - minY;
+    function _finalizeSVG(svg, bb) {
+        var width = bb.maxX - bb.minX;
+        var height = bb.maxY - bb.minY;
         var viewBox =
-            'viewBox="' + minX + " " + minY + " " + width + " " + height + '"';
+            'viewBox="' + bb.minX + " " + bb.minY + " " + width + " " + height + '"';
         return (
             '<svg xmlns="http://www.w3.org/2000/svg" ' +
             viewBox +
@@ -257,6 +254,7 @@ define(["underscore", "chroma"], function (_, chroma) {
         // TODO add a func to empress that returns this
         var cladeCoords = empress._collapsedCladeBuffer;
         if (cladeCoords.length > 0) {
+            svg += "<!-- collapsed clade shapes -->\n";
             var cladeResults;
             if (currLayout === "Rectangular") {
                 // Draw triangles.
@@ -281,6 +279,7 @@ define(["underscore", "chroma"], function (_, chroma) {
 
         // Draw barplots.
         if (empress._barplotsDrawn) {
+            svg += "<!-- barplots -->\n";
             var bpCoords = empress._barplotBuffer;
             var bpResults = _addPolygonsToSVG(svg, 6, bb, bpCoords);
             svg = bpResults.svg;
@@ -316,12 +315,12 @@ define(["underscore", "chroma"], function (_, chroma) {
             // barplots. However, even if this isn't the case, it'll just make
             // the exported image very slightly larger -- not a huge deal. Best
             // to be safe.)
-            minX -= radius;
-            minY -= radius;
-            maxX += radius;
-            maxY += radius;
+            bb.minX -= radius;
+            bb.minY -= radius;
+            bb.maxX += radius;
+            bb.maxY += radius;
         }
-        return _finalizeSVG(svg, minX, minY, maxX, maxY);
+        return _finalizeSVG(svg, bb);
     }
 
     /**
@@ -385,7 +384,7 @@ define(["underscore", "chroma"], function (_, chroma) {
         // minX and minY are always going to be 0. (In the tree export, the
         // root node is (0, 0) so there are usually negative coordinates; here,
         // we have the luxury of being able to keep everything positive.)
-        return _finalizeSVG(svg, 0, 0, maxX, maxY);
+        return _finalizeSVG(svg, {minX: 0, minY: 0, maxX: maxX, maxY: maxY});
     }
 
     /**
