@@ -139,7 +139,14 @@ define(["underscore", "chroma"], function (_, chroma) {
             i += pointsPerPolygon * vertexSize
         ) {
             var pointsString = "";
+            var xCoords = [];
+            var yCoords = [];
             for (var j = 0; j < pointsPerPolygon; j++) {
+                if (j > 0) {
+                    // Add spaces between adjacent points: so the points string
+                    // is formatted as "x1,y1 x2,y2 x3,y3", etc.
+                    pointsString += " ";
+                }
                 // As of writing, coords is stored as
                 // [x, y, r, g, b, x, y, r, g, b, ...] (i.e. vertexSize = 5).
                 // We want to extract the (x, y) values from this array, so
@@ -151,12 +158,13 @@ define(["underscore", "chroma"], function (_, chroma) {
                 // matches Empress' interface.
                 var y = -coords[xPos + 1];
 
-                // Now that we've got x and y, update the bounding box if
-                // needed and update the points attribute of the SVG <polygon>
-                // we're about to add to the SVG.
-                newBoundingBox = _updateBoundingBox(newBoundingBox, [x], [y]);
+                xCoords.push(x);
+                yCoords.push(y);
                 pointsString += x + "," + y;
             }
+            newBoundingBox = _updateBoundingBox(
+                newBoundingBox, xCoords, yCoords
+            );
             // We assume that each polygon has a single color, defined by the
             // first point in a group of points.
             var color = _getRGB(coords, i);
