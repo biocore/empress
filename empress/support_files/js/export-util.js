@@ -149,7 +149,7 @@ define(["underscore", "chroma"], function (_, chroma) {
                 var x = coords[xPos];
                 // We negate the y-coordinate so the exported image
                 // matches Empress' interface.
-                var y = coords[xPos + 1];
+                var y = -coords[xPos + 1];
 
                 // Now that we've got x and y, update the bounding box if
                 // needed and update the points attribute of the SVG <polygon>
@@ -191,7 +191,7 @@ define(["underscore", "chroma"], function (_, chroma) {
             minX: Number.POSITIVE_INFINITY,
             maxX: Number.NEGATIVE_INFINITY,
             minY: Number.POSITIVE_INFINITY,
-            maxX: Number.NEGATIVE_INFINITY,
+            maxY: Number.NEGATIVE_INFINITY,
         };
         var svg = "<!-- tree branches -->\n";
 
