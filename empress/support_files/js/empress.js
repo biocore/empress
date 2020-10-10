@@ -1709,6 +1709,12 @@ define([
                     length = layer.defaultLength;
                 }
 
+                if (length === 0) {
+                    // This tip maps to a length of 0, so don't waste
+                    // resources trying to draw it.
+                    continue;
+                }
+
                 // Update maxD if needed
                 var thisLayerMaxD = prevLayerMaxD + length;
                 if (thisLayerMaxD > maxD) {
