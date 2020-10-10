@@ -23,7 +23,15 @@ define(["underscore", "chroma"], function (_, chroma) {
         var width = bb.maxX - bb.minX;
         var height = bb.maxY - bb.minY;
         var viewBox =
-            'viewBox="' + bb.minX + " " + bb.minY + " " + width + " " + height + '"';
+            'viewBox="' +
+            bb.minX +
+            " " +
+            bb.minY +
+            " " +
+            width +
+            " " +
+            height +
+            '"';
         return (
             '<svg xmlns="http://www.w3.org/2000/svg" ' +
             viewBox +
@@ -44,7 +52,7 @@ define(["underscore", "chroma"], function (_, chroma) {
      */
     function _getRGB(coords, i) {
         return chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css();
-    };
+    }
 
     /**
      * Attempts to update a bounding box based on a new (x, y) point.
@@ -62,7 +70,7 @@ define(["underscore", "chroma"], function (_, chroma) {
             minX: Math.min(bb.minX, ...xCoords),
             maxX: Math.max(bb.maxX, ...xCoords),
             minY: Math.min(bb.minY, ...yCoords),
-            maxY: Math.max(bb.maxY, ...yCoords)
+            maxY: Math.max(bb.maxY, ...yCoords),
         };
     }
 
@@ -94,7 +102,7 @@ define(["underscore", "chroma"], function (_, chroma) {
      *                            point. This defaults to 5, i.e. x,y,r,g,b.
      *                            It's configurable here just in case this is
      *                            changed in the future.
-     *                          
+     *
      * @return {Object} Contains two entries:
      *                  -boundingBox: Object with minX, maxX, minY, and maxY
      *                   entries. The space covered by this bounding box should
@@ -108,23 +116,27 @@ define(["underscore", "chroma"], function (_, chroma) {
      *                 pointsPerPolygon.
      */
     function _addPolygonsToSVG(
-        svg, pointsPerPolygon, boundingBox, coords, vertexSize = 5
+        svg,
+        pointsPerPolygon,
+        boundingBox,
+        coords,
+        vertexSize = 5
     ) {
         var totalNumPoints = coords.length / vertexSize;
         if (totalNumPoints % pointsPerPolygon !== 0) {
             throw new Error(
                 "Number of points in coords, " +
-                totalNumPoints +
-                ", is not divisible by the points per polygon parameter of " +
-                pointsPerPolygon
+                    totalNumPoints +
+                    ", is not divisible by the points per polygon parameter of " +
+                    pointsPerPolygon
             );
         }
 
         var newBoundingBox = boundingBox;
         for (
             var i = 0;
-            i + (pointsPerPolygon * vertexSize) <= coords.length;
-            i += (pointsPerPolygon * vertexSize)
+            i + pointsPerPolygon * vertexSize <= coords.length;
+            i += pointsPerPolygon * vertexSize
         ) {
             var pointsString = "";
             for (var j = 0; j < pointsPerPolygon; j++) {
@@ -133,7 +145,7 @@ define(["underscore", "chroma"], function (_, chroma) {
                 // We want to extract the (x, y) values from this array, so
                 // we first get the 0th and 1th items (x, y), then the
                 // 5th and and 6th items (x1, y1), and so on.
-                var xPos = i + (j * vertexSize);
+                var xPos = i + j * vertexSize;
                 var x = coords[xPos];
                 // We negate the y-coordinate so the exported image
                 // matches Empress' interface.
@@ -175,10 +187,12 @@ define(["underscore", "chroma"], function (_, chroma) {
      */
     function exportTreeSVG(empress, drawer) {
         // bounding box; will be updated
-        var bb = { minX : Number.POSITIVE_INFINITY, 
-                   maxX : Number.NEGATIVE_INFINITY,
-                   minY : Number.POSITIVE_INFINITY, 
-                   maxX : Number.NEGATIVE_INFINITY };
+        var bb = {
+            minX: Number.POSITIVE_INFINITY,
+            maxX: Number.NEGATIVE_INFINITY,
+            minY: Number.POSITIVE_INFINITY,
+            maxX: Number.NEGATIVE_INFINITY,
+        };
         var svg = "<!-- tree branches -->\n";
 
         // create a line from x1,y1 to x2,y2 for every two consecutive
@@ -234,12 +248,9 @@ define(["underscore", "chroma"], function (_, chroma) {
             // stroke width is 1, so there's no need to specify it (thus saving
             // us some space in the SVG).
             if (linewidth > 1) {
-                lineSVG +=
-                    'style="stroke-width:' +
-                    linewidth +
-                    '" ';
+                lineSVG += 'style="stroke-width:' + linewidth + '" ';
             }
-            svg += lineSVG + ' />\n';
+            svg += lineSVG + " />\n";
 
             // Update bounding box based on tree coordinates
             bb = _updateBoundingBox(bb, [x1, x2], [y1, y2]);
@@ -384,7 +395,7 @@ define(["underscore", "chroma"], function (_, chroma) {
         // minX and minY are always going to be 0. (In the tree export, the
         // root node is (0, 0) so there are usually negative coordinates; here,
         // we have the luxury of being able to keep everything positive.)
-        return _finalizeSVG(svg, {minX: 0, minY: 0, maxX: maxX, maxY: maxY});
+        return _finalizeSVG(svg, { minX: 0, minY: 0, maxX: maxX, maxY: maxY });
     }
 
     /**
