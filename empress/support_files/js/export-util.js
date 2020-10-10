@@ -163,7 +163,9 @@ define(["underscore", "chroma"], function (_, chroma) {
                 pointsString += x + "," + y;
             }
             newBoundingBox = _updateBoundingBox(
-                newBoundingBox, xCoords, yCoords
+                newBoundingBox,
+                xCoords,
+                yCoords
             );
             // We assume that each polygon has a single color, defined by the
             // first point in a group of points.
