@@ -1983,10 +1983,18 @@ define([
      *                        internal node feature metadata without doing any
      *                        propagation. If this is anything else, this will
      *                        throw an error.
+     * @param{Boolean} reverse Defaults to false. If true, the color scale
+     *                         will be reversed, with respect to its default
+     *                         orientation.
      *
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
-    Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+    Empress.prototype.colorByFeatureMetadata = function (
+        cat,
+        color,
+        method,
+        reverse = false
+    ) {
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -2000,7 +2008,13 @@ define([
         });
 
         // assign colors to unique values
-        var colorer = new Colorer(color, sortedUniqueValues);
+        var colorer = new Colorer(
+            color,
+            sortedUniqueValues,
+            undefined,
+            undefined,
+            reverse
+        );
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
