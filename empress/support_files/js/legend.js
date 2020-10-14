@@ -192,7 +192,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         containerSVG.setAttribute("width", "100%");
         containerSVG.setAttribute("height", "100%");
         containerSVG.setAttribute("style", "display: block; margin: auto;");
-        // just kinda plop the SVG code into containerSVG's HTML
+        // just kinda plop the combined SVG code into containerSVG's HTML
         containerSVG.innerHTML = totalHTMLSVG;
         this._container.appendChild(containerSVG);
         if (this._nonNumericWarningShown) {
