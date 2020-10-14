@@ -290,7 +290,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @param {WebGLBuffer} buffer The Buffer to bind
      */
     Drawer.prototype.bindCoordBuffer = function (buffer) {
-        // defines constants for a vertex. A vertex is the form [x, y, r, g, b]
+        // defines constants for a vertex. A vertex is the form [x, y]
         const COORD_SIZE = 2;
         const COORD_OFFSET = 0;
 
@@ -316,7 +316,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @param {WebGLBuffer} buffer The Buffer to bind
      */
     Drawer.prototype.bindColorBuffer = function (buffer) {
-        // defines constants for a vertex. A vertex is the form [x, y, r, g, b]
+        // defines constants for a vertex. A vertex is the form [rgb]
         const COLOR_SIZE = 1;
         const COLOR_OFFSET = 0;
 
@@ -334,19 +334,6 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
             COLOR_SIZE * Float32Array.BYTES_PER_ELEMENT,
             COLOR_OFFSET * Float32Array.BYTES_PER_ELEMENT
         );
-    };
-
-    /**
-     * Binds the buffer so WebGL can use it.
-     *
-     * @param {WebGLBuffer} buffer The Buffer to bind
-     */
-    Drawer.prototype.bindElemBuffer = function (buffer) {
-        var c = this.contex_;
-        var s = this.sProg_;
-
-        // tell webGL which buffer to use
-        c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, buffer);
     };
 
     /**
@@ -480,12 +467,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 
         c.uniform1i(s.isSingle, 0);
-        // this.bindBuffer(s.treeCoordBuff);
-        // c.drawArrays(c.LINES, 0, this.treeCoordSize);
-        // this.bindElemBuffer(s.treeIndexBuff);
         this.bindCoordBuffer(s.treeCoordBuff);
         this.bindColorBuffer(s.treeColorBuff);
-        // c.drawElements(c.LINES, this.treeIndexSize, c.UNSIGNED_INT, 0);
         c.drawArrays(c.LINES, 0, this.treeCoordSize);
 
         this.bindBuffer(s.thickNodeBuff);

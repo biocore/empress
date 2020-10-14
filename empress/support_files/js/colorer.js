@@ -310,11 +310,10 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *                 G, B are all floats scaled to within the range [0, 1].
      */
     Colorer.prototype.getMapRGB = function () {
-        return _.mapObject(this.__valueToColor, Colorer.rbgToFloat);
+        return _.mapObject(this.__valueToColor, Colorer.hex2RGB);
     };
 
-    Colorer.rbgToFloat = function (rgb) {
-        rgb = Colorer.hex2RGB(rgb);
+    Colorer.rgbToFloat = function (rgb) {
         return rgb[0] + rgb[1] * 256 + rgb[2] * 256 * 256;
     };
     /**
@@ -358,17 +357,18 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     };
 
     /**
-     * Converts a hex color to an RGB array suitable for use with WebGL.
+     * Converts a hex color to an RGB float suitable for use with WebGL.
      *
      * @param {String} hexString
-     * @return {Array} rgbArray
+     * @return {Float} rgb
      * @classmethod
      */
     Colorer.hex2RGB = function (hexString) {
         // chroma(hexString).gl() returns an array with four components (RGBA
         // instead of RGB). The slice() here strips off the final (alpha)
         // element, which causes problems with Empress' drawing code.
-        return chroma(hexString).rgb().slice(0, 3);
+        var rgb = chroma(hexString).rgb().slice(0, 3);
+        return Colorer.rgbToFloat(rgb);
     };
 
     /**

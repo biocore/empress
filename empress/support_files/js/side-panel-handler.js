@@ -229,7 +229,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         lwInput,
         updateBtn
     ) {
-        var d = new Date();
         this.empress.resetTree();
 
         // hide update button
@@ -245,8 +244,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.empress.thickenColoredNodes(lw);
 
         this.empress.drawTree();
-        var dt = new Date();
-        console.log("coloring", dt.getTime() - d.getTime());
     };
 
     /**
