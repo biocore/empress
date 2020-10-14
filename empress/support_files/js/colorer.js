@@ -224,7 +224,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         } else {
             domain = [min, max];
         }
-        console.log("domain: ", domain);
         var interpolator = chroma.scale(this.color).domain(domain);
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));

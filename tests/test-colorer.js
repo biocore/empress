@@ -127,14 +127,26 @@ require([
             equal(colorer.__valueToColor["3"], "#e6f5d0");
             equal(colorer.__valueToColor["4"], "#7fbc41");
         });
+        test("Test construction with a div. color map, all numeric values, and reverse", function () {
+            // Mostly same as the sequential + all numeric values test above,
+            // but just with a Colorer.DIVERGING color map that is reversed.
+            var eles = ["5", "2", "3", "1", "4", "-5"];
+            var colorer = new Colorer("PiYG", eles, false, undefined, true);
+            // Test extreme numeric values
+            equal(colorer.__valueToColor["5"], "#8e0152");
+            equal(colorer.__valueToColor["-5"], "#276419");
+            // Test intermediate numeric values
+            equal(colorer.__valueToColor["4"], "#de77ae");
+            equal(colorer.__valueToColor["3"], "#fde0ef");
+            equal(colorer.__valueToColor["2"], "#e6f5d0");
+            equal(colorer.__valueToColor["1"], "#7fbc41");
+        });
         test("Test construction with a div. color map, all numeric values, and useQuantScale = true", function () {
             var eles = ["5", "2", "3", "1", "4", "0", "-5"];
             var colorer = new Colorer("PiYG", eles, true);
 
-            // Expected colors determined by trying
-            // chroma.scale("PiYG").domain([-5,5])(n); where n = 0, 1, 2, etc.
-            // (see the interactive docs at https://gka.github.io/chroma.js/ --
-            // super useful for testing this)
+            // Expected colors determined by reversing
+            // the colors in the previous test
 
             // Test extreme numeric values
             equal(colorer.__valueToColor["-5"], "#8e0152");
@@ -167,6 +179,24 @@ require([
             equal(hexmap["2"], "#45075a");
             equal(hexmap["3"], "#450a5c");
             equal(hexmap["100"], "#fee825");
+        });
+        test("Test construction with a seq. color map, all numeric values, useQuantScale = true, and reverse = true", function () {
+            var colorer = new Colorer(
+                "Viridis",
+                ["1", "0", "100", "3", "2"],
+                true,
+                undefined,
+                true
+            );
+            hexmap = colorer.getMapHex();
+            equal(_.keys(hexmap).length, 5);
+            // As with above, (reversed here) expected colors determined by
+            // trying chroma.scale(chroma.brewer.Viridis).domain([100, 0])(n);
+            equal(hexmap["0"], "#fee825");
+            equal(hexmap["1"], "#f8e725");
+            equal(hexmap["2"], "#f2e626");
+            equal(hexmap["3"], "#ede626");
+            equal(hexmap["100"], "#440154");
         });
         test("Test construction with a seq. color map, numeric + non-numeric values, and useQuantScale = true", function () {
             // Same as the above test but with an extra non-numeric thing
@@ -296,6 +326,24 @@ require([
             equal(hexmap["1"], "#1f78b4");
             equal(hexmap["2"], "#b2df8a");
             equal(hexmap["100"], "#33a02c");
+        });
+        test("Test discrete color map with reverse = true", function () {
+            // CVALDISCRETETEST
+            var colorer = new Colorer(
+                "Paired",
+                ["1", "2", "100", "abc"],
+                false,
+                undefined,
+                true
+            );
+            hexmap = colorer.getMapHex();
+            equal(_.keys(hexmap).length, 4);
+            // Note that although "abc" is non-numeric it still gets assigned a
+            // (normal) color
+            equal(hexmap["100"], "#a6cee3");
+            equal(hexmap["2"], "#1f78b4");
+            equal(hexmap["1"], "#b2df8a");
+            equal(hexmap.abc, "#33a02c");
         });
         test("Test that useQuantScale = true works if only 2 numeric values", function () {
             var colorer = new Colorer(
