@@ -166,7 +166,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
      * Returns a reference SVG for the unique values [0, 1, 2, 3, 4] and the
      * color map "Viridis".
      *
-     * This was taken directly from Emperor's tests:
+     * This was (at least initially) taken directly from Emperor's tests:
      * https://github.com/biocore/emperor/blob/00c73f80c9d504826e61ddcc8b2c0b93f344819f/tests/javascript_tests/test_color_view_controller.js#L212
      *
      * The only differences between this string and Emperor's are that:
@@ -174,6 +174,8 @@ define(["Empress", "BPTree", "BiomTable"], function (
      *     default gradientIDSuffix value in the Colorer constructor.
      *  2. the <rect> ID has been omitted, since it wasn't used anywhere
      *     as far as I can tell.
+     *  3. Newlines have been inserted in a few places throughout the SVG,
+     *     to make reading it slightly more pleasant.
      *
      * @return {String} referenceSVG
      */
@@ -279,13 +281,16 @@ define(["Empress", "BPTree", "BiomTable"], function (
             '<stop offset="96%" stop-color="#e7e527"/>' +
             '<stop offset="97%" stop-color="#ede626"/>' +
             '<stop offset="98%" stop-color="#f2e626"/>' +
-            '<stop offset="99%" stop-color="#f8e725"/></linearGradient></defs>' +
-            '<rect width="20" height="95%" ' +
-            'fill="url(#Gradient0)"/><text x="25" y="12px" ' +
-            'font-family="sans-serif" font-size="12px" text-anchor="start">4' +
-            '</text><text x="25" y="50%" font-family="sans-serif" ' +
-            'font-size="12px" text-anchor="start">2</text><text x="25" y="95%" ' +
-            'font-family="sans-serif" font-size="12px" text-anchor="start">0</text>'
+            '<stop offset="99%" stop-color="#f8e725"/>' +
+            '<stop offset="100%" stop-color="#fee825"/>' +
+            '</linearGradient></defs>\n' +
+            '<rect width="20" height="95%" fill="url(#Gradient0)"/>\n' +
+            '<text x="25" y="12px" font-family="sans-serif" ' +
+            'font-size="12px" text-anchor="start">4</text>\n' +
+            '<text x="25" y="50%" font-family="sans-serif" font-size="12px" ' +
+            'text-anchor="start">2</text>\n' +
+            '<text x="25" y="95%" font-family="sans-serif" ' +
+            'font-size="12px" text-anchor="start">0</text>\n'
         );
     }
 

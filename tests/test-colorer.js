@@ -435,15 +435,18 @@ require([
                 0.552941,
             ]);
         });
-        test("Test Colorer.getGradientSVG (all numeric values)", function () {
+        test("Test continuous-scaling-specific data properly set", function () {
             var eles = ["0", "1", "2", "3", "4"];
             var colorer = new Colorer("Viridis", eles, true);
-            var gradInfo = colorer.getGradientSVG();
 
-            equal(gradInfo[0], UtilitiesForTesting.getReferenceSVG());
+            var totalSVG = colorer.gradientSoloSVG + colorer.gradientHTMLSVG;
+            equal(totalSVG, UtilitiesForTesting.getReferenceSVG());
+            equal(colorer.minValStr, "0");
+            equal(colorer.midValStr, "2");
+            equal(colorer.maxValStr, "4");
             // The missingNonNumerics value should be false, since all of the
             // values we passed to Colorer are numeric
-            notOk(gradInfo[1]);
+            notOk(colorer.missingNonNumerics);
         });
         test("Test Colorer.getGradientSVG (numeric + non-numeric values)", function () {
             var eles = ["0", "1", "2", "3", "asdf", "4"];
