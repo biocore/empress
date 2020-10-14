@@ -224,17 +224,16 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
         });
-        // Figure out if we should show a warning message about missing values
-        // to the user
+        // Figure out if we should show a warning message about missing
+        // non-numeric values to the user
         this.missingNonNumerics = split.nonNumeric.length > 0;
 
-        // Create SVG describing the gradient
+        // Create SVG describing the gradient: basically, we sample the color
+        // map along the domain 101 times, and use these 101 colors to define
+        // the <linearGradient /> for each percentage in the range [0%, 100%].
+        // (See https://github.com/biocore/emperor/issues/788 for context.)
         var mid = (min + max) / 2;
-        var step = (max - min) / 100;
-        var stopColors = [];
-        for (var s = min; s <= max; s += step) {
-            stopColors.push(interpolator(s).hex());
-        }
+        var stopColors = interpolator.colors(101);
         var gradientSoloSVG = "<defs>";
         // We append a number to the gradient ID so that multiple gradients can
         // be present on the same page without overriding each other
