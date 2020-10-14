@@ -449,31 +449,39 @@ require([
             // values we passed to Colorer are numeric
             notOk(colorer.missingNonNumerics);
         });
-        test("Test Colorer.getGradientSVG (numeric + non-numeric values)", function () {
+        test("Test continuous data set (numeric + non-numeric values)", function () {
             var eles = ["0", "1", "2", "3", "asdf", "4"];
             var colorer = new Colorer("Viridis", eles, true);
-            var gradInfo = colorer.getGradientSVG();
-            equal(gradInfo[0], UtilitiesForTesting.getReferenceSVG());
-            // Should be true -- since the values we passed are not all numeric
-            ok(gradInfo[1]);
+            var ref = UtilitiesForTesting.getReferenceSVGs();
+            equal(colorer.gradientSoloSVG, ref[0]);
+            equal(colorer.gradientHTMLSVG, ref[1]);
+            equal(colorer.minValStr, "0");
+            equal(colorer.midValStr, "2");
+            equal(colorer.maxValStr, "4");
+            // Main difference with previous test: non-numeric warning should
+            // be used
+            ok(colorer.missingNonNumerics);
         });
         test("Test Colorer.getGradientSVG (custom gradientIDSuffix)", function () {
             var eles = ["0", "1", "2", "3", "4"];
             var colorer = new Colorer("Viridis", eles, true, 5);
-            var gradInfo = colorer.getGradientSVG();
 
-            // The "Gradient0" IDs in the reference SVG should be replaced with
-            // "Gradient5". The split/join thing is a way of replacing one
+            // The "Gradient0" IDs in the reference SVGs should be replaced
+            // with "Gradient5". The split/join thing is a way of replacing one
             // sequence with another, since JS' standard library doesn't seem
             // to have an easy cross-browser-supported way to do this as of
             // writing: see https://stackoverflow.com/a/1145525/10730311.
-            equal(
-                gradInfo[0],
-                UtilitiesForTesting.getReferenceSVG()
-                    .split("Gradient0")
-                    .join("Gradient5")
-            );
-            notOk(gradInfo[1]);
+            var repl = function (svgtext) {
+                return svgtext.split("Gradient0").join("Gradient5");
+            };
+
+            var ref = UtilitiesForTesting.getReferenceSVGs();
+            equal(colorer.gradientSoloSVG, repl(ref[0]));
+            equal(colorer.gradientHTMLSVG, repl(ref[1]));
+            equal(colorer.minValStr, "0");
+            equal(colorer.midValStr, "2");
+            equal(colorer.maxValStr, "4");
+            notOk(colorer.missingNonNumerics);
         });
         test("Test Colorer.getGradientSVG (error: no gradient defined)", function () {
             var expectedErrorRegex = /No gradient defined for this Colorer; check that useQuantScale is true and that the selected color map is not discrete./;
