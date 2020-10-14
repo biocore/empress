@@ -41,8 +41,6 @@ require([
             for (var i = 0; i < exp_qiime_colors.length; i++) {
                 equal(Colorer.__qiimeDiscrete[i], exp_qiime_colors[i]);
             }
-
-            console.log(Colorer.rgbToFloat([50, 50, 50]));
         });
         test("Test construction with all discrete color maps", function () {
             // Generate an array with 100 unique elements

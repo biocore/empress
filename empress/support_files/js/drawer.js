@@ -88,7 +88,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     Drawer.prototype.initialize = function () {
         // shorten name, will be using this frequently
         var c = this.contex_;
-        var ext = c.getExtension("OES_element_index_uint");
+
         //Sets the size of canvas to be equal to the width of the window.
         this.setCanvasSize();
 
@@ -127,10 +127,6 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // buffer object to store tree color
         s.treeColorBuff = c.createBuffer();
         this.treeColorSize = 0;
-
-        // the index buffer for treeCoorBuff and treeColor buffer
-        s.treeIndexBuff = c.createBuffer();
-        this.treeIndexSize = 0;
 
         // buffer object used to thicken node lines
         s.thickNodeBuff = c.createBuffer();
@@ -235,16 +231,6 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         var c = this.contex_;
         c.bindBuffer(c.ARRAY_BUFFER, buff);
         c.bufferData(c.ARRAY_BUFFER, data, c.DYNAMIC_DRAW);
-    };
-
-    Drawer.prototype.fillElemData_ = function (buff, data) {
-        var c = this.contex_;
-        c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, buff);
-        c.bufferData(
-            c.ELEMENT_ARRAY_BUFFER,
-            new Uint32Array(data),
-            c.STATIC_DRAW
-        );
     };
 
     /**
