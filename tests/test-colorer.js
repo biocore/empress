@@ -439,8 +439,9 @@ require([
             var eles = ["0", "1", "2", "3", "4"];
             var colorer = new Colorer("Viridis", eles, true);
 
-            var totalSVG = colorer.gradientSoloSVG + colorer.gradientHTMLSVG;
-            equal(totalSVG, UtilitiesForTesting.getReferenceSVG());
+            var ref = UtilitiesForTesting.getReferenceSVGs();
+            equal(colorer.gradientSoloSVG, ref[0]);
+            equal(colorer.gradientHTMLSVG, ref[1]);
             equal(colorer.minValStr, "0");
             equal(colorer.midValStr, "2");
             equal(colorer.maxValStr, "4");
