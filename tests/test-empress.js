@@ -204,6 +204,7 @@ require([
                 "discrete-coloring-qiime",
                 "tip"
             );
+            let cm_copy = cm;
             var groups = ["1", "2"];
 
             // make sure '1' and '2' are the only gropus
@@ -236,27 +237,24 @@ require([
                 }
             }
 
-            // var old_cm1 = cm["1"];
-            // var old_cm2 = cm["2"];
-            // // test "tip" method with reverse = true
-            // cm = this.empress.colorByFeatureMetadata(
-            //     "f2",
-            //     "discrete-coloring-qiime",
-            //     "tip",
-            //     true
-            // );
-            // // check that current (reversed) cm1 is the same as old cm2
-            // deepEqual(
-            //     chroma(cm["1"]).gl().slice(0, 3),
-            //     chroma(old_cm2).gl().slice(0, 3),
-            //     "cm1 vs. old_cm2"
-            // );
-            // // same for other color
-            // deepEqual(
-            //     chroma(cm["2"]).gl().slice(0, 3),
-            //     chroma(old_cm1).gl().slice(0, 3),
-            //     "cm2 vs. old_cm1"
-            // );
+            // get color map with reverse = true
+            cm = this.empress.colorByFeatureMetadata(
+                "f1",
+                "discrete-coloring-qiime",
+                "tip",
+                true
+            );
+            // check that the color scales are flipped
+            deepEqual(
+                chroma(cm_copy["1"]).gl().slice(0, 3),
+                chroma(cm["2"]).gl().slice(0, 3),
+                "cm_copy['1'] vs. cm['2']"
+            );
+            deepEqual(
+                chroma(cm_copy["2"]).gl().slice(0, 3),
+                chroma(cm["1"]).gl().slice(0, 3),
+                "cm_copy['2'] vs. cm['1']"
+            );
 
             // test 'all' method
 
