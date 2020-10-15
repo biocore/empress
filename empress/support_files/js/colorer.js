@@ -123,17 +123,13 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         } else {
             palette = chroma.brewer[this.color];
         }
-        const n_unique = this.sortedUniqueValues.length;
-        var colorIndex;
-        for (var i = 0; i < n_unique; i++) {
-            if (this.reverse) {
-                colorIndex = n_unique - i - 1;
-            } else {
-                colorIndex = i;
-            }
+        if (this.reverse) {
+            palette = [...palette];
+            palette.reverse();
+        }
+        for (var i = 0; i < this.sortedUniqueValues.length; i++) {
             var modIndex = i % palette.length;
-            this.__valueToColor[this.sortedUniqueValues[colorIndex]] =
-                palette[modIndex];
+            this.__valueToColor[this.sortedUniqueValues[i]] = palette[modIndex];
         }
     };
 

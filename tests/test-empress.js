@@ -245,15 +245,15 @@ require([
                 true
             );
             // check that the color scales are flipped
-            deepEqual(
-                chroma(cm_copy["1"]).gl().slice(0, 3),
-                chroma(cm["2"]).gl().slice(0, 3),
-                "cm_copy['1'] vs. cm['2']"
+            equal(
+                chroma(cm["1"]).hex(),
+                "#008080",
+                "color 1 is last qiime color"
             );
-            deepEqual(
-                chroma(cm_copy["2"]).gl().slice(0, 3),
-                chroma(cm["1"]).gl().slice(0, 3),
-                "cm_copy['2'] vs. cm['1']"
+            equal(
+                chroma(cm["2"]).hex(),
+                "#808000",
+                "color 1 is second last qiime color"
             );
 
             // test 'all' method

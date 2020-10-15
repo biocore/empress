@@ -330,7 +330,7 @@ require([
         test("Test discrete color map with reverse = true", function () {
             // CVALDISCRETETEST
             var colorer = new Colorer(
-                "Paired",
+                "discrete-coloring-qiime",
                 ["1", "2", "100", "abc"],
                 false,
                 undefined,
@@ -340,10 +340,10 @@ require([
             equal(_.keys(hexmap).length, 4);
             // Note that although "abc" is non-numeric it still gets assigned a
             // (normal) color
-            equal(hexmap["100"], "#a6cee3");
-            equal(hexmap["2"], "#1f78b4");
-            equal(hexmap["1"], "#b2df8a");
-            equal(hexmap.abc, "#33a02c");
+            equal(hexmap.abc, "#008080");
+            equal(hexmap["1"], "#808000");
+            equal(hexmap["2"], "#a54700");
+            equal(hexmap["100"], "#00b6ff");
         });
         test("Test that useQuantScale = true works if only 2 numeric values", function () {
             var colorer = new Colorer(
