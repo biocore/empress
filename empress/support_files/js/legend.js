@@ -535,28 +535,51 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             this._minValStr +
             "</text>\n";
 
-        // Try to increase the maximum line width based on the values. (We
-        // will account for the extra horizontal space of the gradient
-        // rect's width later.)
-        var valStrs = [this._maxValStr, this._midValStr, this._minValStr];
-        _.each(valStrs, function (valStr) {
+        // Try to increase the maximum text line width -- any of these strings
+        // could be the longest within this legend.
+        var texts = [this._maxValStr, this._midValStr, this._minValStr];
+
+        // But first, let's add a warning about missing / non-numeric values if
+        // needed.
+        if (this._missingNonNumericWarningShown) {
+            // We use a hanging baseline to add some extra vertical space
+            // between the gradient minimum value and the warning text. This
+            // seems to look nice.
+            innerSVG +=
+                '<text x="' +
+                Legend.TEXT_PADDING +
+                '" y="' +
+                (gradientTopY + gradientHeight + Legend.HALF_LINE_HEIGHT) +
+                '" dominant-baseline="hanging">' +
+                Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING_SHORT +
+                "</text>\n";
+            texts.push(Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING_SHORT);
+        }
+        _.each(texts, function (text) {
             maxLineWidth = Math.max(
                 maxLineWidth,
-                Legend.SVG_CONTEXT.measureText(valStr).width
+                Legend.SVG_CONTEXT.measureText(text).width
             );
         });
 
         // Similar to categorical legends: max line width is the max text
         // width plus (in event that max text width is from the min / mid /
-        // max value, not from the title line) the width of the gradient rect
-        // plus padding on both the left and right sides.
-        width = maxLineWidth + textLeftX + Legend.TEXT_PADDING;
+        // max value, not from the title or warning line) the width of the
+        // gradient rect plus padding on both the left and right sides.
+        // (Legend.TEXT_PADDING is already included in textLeftX, so we only
+        // need to add it once here.)
+        var width = maxLineWidth + textLeftX + Legend.TEXT_PADDING;
 
         // And the height is just the height of the gradient plus the
         // height of the title line. Let's also add half a line of padding at
         // the bottom of the legend, just to give the gradient and text some
         // breathing room.
-        height = gradientHeight + Legend.LINE_HEIGHT + Legend.HALF_LINE_HEIGHT;
+        var height = gradientHeight + 1.5 * Legend.LINE_HEIGHT;
+        // ...And let's also account for the warning line, if added.
+        if (this._missingNonNumericWarningShown) {
+            height += Legend.LINE_HEIGHT;
+        }
+
         return {
             width: width,
             height: height,
@@ -640,9 +663,9 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             "</text>\n";
 
         // Max header width, max value width, and left and right padding
-        width = maxHeaderWidth + maxValWidth + 2 * Legend.TEXT_PADDING;
+        var width = maxHeaderWidth + maxValWidth + 2 * Legend.TEXT_PADDING;
         // Three lines (title, min row, max row)
-        height = 3 * Legend.LINE_HEIGHT;
+        var height = 3 * Legend.LINE_HEIGHT;
         return {
             width: width,
             height: height,
@@ -723,6 +746,9 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         "Some value(s) in this field were missing and/or not numeric. " +
         "These value(s) have been left out of the gradient, and no bar(s) " +
         "have been drawn for them.";
+
+    Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING_SHORT =
+        "Missing / non-numeric value(s) omitted.";
 
     // Various SVG attributes stored here since they're used every time the
     // export function is called
