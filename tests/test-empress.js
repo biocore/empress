@@ -188,6 +188,19 @@ require([
                     ]);
                 }
             }
+
+            cm = this.empress.colorBySampleCat(
+                "f1",
+                "discrete-coloring-qiime",
+                true
+            );
+            // check that the color scales are flipped
+            equal(chroma(cm.a).hex(), "#008080", "color 1 is last qiime color");
+            equal(
+                chroma(cm.b).hex(),
+                "#808000",
+                "color 2 is second last qiime color"
+            );
         });
 
         test("Test colorByFeatureMetadata, tip only", function () {

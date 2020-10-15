@@ -1848,19 +1848,28 @@ define([
      *
      * @param {String} cat Sample metadata category to use
      * @param {String} color Color map to use
+     * @param{Boolean} reverse Defaults to false. If true, the color scale
+     *                         will be reversed, with respect to its default
+     *                         orientation.
      *
      * @return {Object} If there exists at least one group with unique features
      *                  then an object will be returned that maps groups with
      *                  unique features to a color. If there doesn't exist a
      *                  group with unique features then null will be returned.
      */
-    Empress.prototype.colorBySampleCat = function (cat, color) {
+    Empress.prototype.colorBySampleCat = function (cat, color, reverse = true) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
 
         // Assign colors to categories
-        var colorer = new Colorer(color, categories);
+        var colorer = new Colorer(
+            color,
+            categories,
+            undefined,
+            undefined,
+            reverse
+        );
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
