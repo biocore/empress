@@ -398,6 +398,9 @@ define([
                 scope.colorByFMColorMapDiscrete = false;
             }
         });
+        $(reverseColormapCheckbox).change(function () {
+            scope.colorByFMColorReverse = reverseColormapCheckbox.checked;
+        });
         $(continuousValCheckbox).change(function () {
             scope.colorByFMContinuous = continuousValCheckbox.checked;
         });
