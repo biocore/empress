@@ -298,6 +298,7 @@ require([
         notOk(layer1.colorByFM);
         equal(layer1.colorByFMField, empress._barplotPanel.fmCols[0]);
         equal(layer1.colorByFMColorMap, "discrete-coloring-qiime");
+        equal(layer1.colorByFMColorReverse, false);
         notOk(layer1.colorByFMContinuous);
         ok(layer1.colorByFMColorMapDiscrete);
 
