@@ -474,13 +474,11 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         // Add linear gradient to SVG
         innerSVG += this._gradientSVG;
 
-        // Define the height of the gradient -- let's say it takes up 10
-        // rows (so this would look identically to drawing a categorical
-        // legend for a field with 10 unique values).
-        var gradientHeight = 10 * lineHeight;
+        // Define the height of the gradient -- let's say it takes up 10 lines.
+        var gradientHeight = 10 * Legend.LINE_HEIGHT;
 
-        // Set analogously to rowTopY in the above branch
-        var gradientTopY = (rowsUsed - 1) * lineHeight + unit;
+        // Account for the title
+        var gradientTopY = topY + Legend.LINE_HEIGHT;
 
         // Add a <rect> containing said gradient, which we have the luxury
         // of defining the dimensions of :D
@@ -488,17 +486,15 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             '<rect x="0" y="' +
             gradientTopY +
             '" width="' +
-            lineHeight +
+            Legend.LINE_HEIGHT +
             '" height="' +
             gradientHeight +
             '" fill="url(#' +
             this._gradientID +
             ')" />\n';
 
-        rowsUsed += 10;
-
         // Add min/mid/max value text along the gradient
-        var textLeftX = lineHeight + unit;
+        var textLeftX = Legend.LINE_HEIGHT + Legend.TEXT_PADDING;
 
         // Max value text goes at the top of the gradient
         // (... For now, at least -- see
@@ -552,16 +548,15 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
 
         // Similar to categorical legends: max line width is the max text
         // width plus (in event that max text width is from the min / mid /
-        // max value, not from the title line) the text left x coordinate.
-        // (We add on an extra unit so that there is some extra padding on
-        // the right-hand side between the rightmost character and the
-        // rect border.)
-        width = maxLineWidth + textLeftX + unit;
+        // max value, not from the title line) the width of the gradient rect
+        // plus padding on both the left and right sides.
+        width = maxLineWidth + textLeftX + Legend.TEXT_PADDING;
 
         // And the height is just the height of the gradient plus the
-        // height of the title row plus the unit padding contained in
-        // gradientTopY.
-        height = gradientHeight + lineHeight + unit;
+        // height of the title line. Let's also add half a line of padding at
+        // the bottom of the legend, just to give the gradient and text some
+        // breathing room.
+        height = gradientHeight + Legend.LINE_HEIGHT + Legend.HALF_LINE_HEIGHT;
         return {
             width: width,
             height: height,
@@ -685,7 +680,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             // could also happen if we add new legend types in the future and
             // forget to support them here
             throw new Error(
-                "Only categorical legends can be exported right now."
+                "Cannot export SVG for a legend of type " + this.legendType
             );
         }
         var exportData = this[exportFunc](topY);
