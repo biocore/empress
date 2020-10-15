@@ -355,7 +355,7 @@ define([
         // feature metadata field for coloring is the first in the selector)
         this.colorByFMField = chgColorFMFieldSelector.value;
         this.colorByFMColorMap = colormapSelector.value;
-        this.reverseFMColorMap = reverseColormapCheckbox.checked;
+        this.colorByFMColorReverse = reverseColormapCheckbox.checked;
         // Alter visibility of the color-changing details when the "Color
         // by..." checkbox is clicked
         $(chgColorCheckbox).change(function () {
@@ -365,7 +365,7 @@ define([
                 scope.colorByFM = true;
                 scope.colorByFMField = chgColorFMFieldSelector.value;
                 scope.colorByFMColorMap = colormapSelector.value;
-                scope.reverseFMColorMap = reverseColormapCheckbox.checked;
+                scope.colorByFMColorReverse = reverseColormapCheckbox.checked;
                 scope.colorByFMContinuous = continuousValCheckbox.checked;
                 // Hide the default color row (since default colors
                 // aren't used when f.m. coloring is enabled)
