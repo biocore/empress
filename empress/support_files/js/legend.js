@@ -577,11 +577,16 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
      *                  -height: Number Height of the SVG
      */
     Legend.prototype._exportSVGLength = function (topY) {
+        var title = this._getSVGLegendTitle(topY);
+        var innerSVG = title.text;
+        var maxLineWidth = title.length;
+
         // We're basically simulating a table here, so just adding two
         // rows of text won't cut it.
-        // First, figure out which header is bigger (it's probably gonna
-        // be "Maximum " but may as well be safe for weird fonts), and set
-        // this to be the left x-coordinate of the value text.
+        // First, figure out which header ("Maximum " or "Minimum ") is
+        // longer (it's probably gonna be "Maximum " but may as well be
+        // safe for weird fonts), and set this to be the left
+        // x-coordinate of the value <text>s.
         var maxHeaderWidth = 0;
         _.each(["Minimum ", "Maximum "], function (headerText) {
             maxHeaderWidth = Math.max(
@@ -590,7 +595,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             );
         });
 
-        // Now, figure out which value is bigger. Used for updating the
+        // Now, figure out which value is longer. Used for updating the
         // max line width.
         var maxValWidth = 0;
         _.each([this._minLengthVal, this._maxLengthVal], function (text) {
@@ -602,45 +607,42 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
 
         // Finally, add the rows in. It's four separate <text> tags to
         // accommodate funky positioning stuff.
-        var minRowY = rowsUsed * lineHeight + unit;
+        var minimumRowY = topY + Legend.LINE_HEIGHT + Legend.HALF_LINE_HEIGHT;
         innerSVG +=
             '<text class="btext" x="' +
-            unit +
+            Legend.TEXT_PADDING +
             '" y="' +
-            minRowY +
-            '">Minimum</text>\n"';
+            minimumRowY +
+            '" dominant-baseline="middle">Minimum</text>\n"';
         innerSVG +=
             '<text x="' +
-            (unit + maxHeaderWidth) +
+            (Legend.TEXT_PADDING + maxHeaderWidth) +
             '" y="' +
-            minRowY +
-            '">' +
+            minimumRowY +
+            '" dominant-baseline="middle">' +
             this._minLengthVal +
             "</text>\n";
-        rowsUsed++;
 
-        var maxRowY = rowsUsed * lineHeight + unit;
+        var maximumRowY = minimumRowY + Legend.LINE_HEIGHT;
         innerSVG +=
             '<text class="btext" x="' +
-            unit +
+            Legend.TEXT_PADDING +
             '" y="' +
-            maxRowY +
-            '">Maximum</text>\n"';
+            maximumRowY +
+            '" dominant-baseline="middle">Maximum</text>\n"';
         innerSVG +=
             '<text x="' +
-            (unit + maxHeaderWidth) +
+            (Legend.TEXT_PADDING + maxHeaderWidth) +
             '" y="' +
-            maxRowY +
-            '">' +
+            maximumRowY +
+            '" dominant-baseline="middle">' +
             this._maxLengthVal +
             "</text>\n";
-        rowsUsed++;
 
         // Max header width, max value width, and left and right padding
-        width = maxHeaderWidth + maxValWidth + 2 * unit;
-        // Three lines (title, min row, max row) plus unit padding between
-        // title and min row
-        height = 3 * lineHeight + unit;
+        width = maxHeaderWidth + maxValWidth + 2 * Legend.TEXT_PADDING;
+        // Three lines (title, min row, max row)
+        height = 3 * Legend.LINE_HEIGHT;
         return {
             width: width,
             height: height,
