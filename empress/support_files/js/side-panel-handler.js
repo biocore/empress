@@ -53,6 +53,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.sSel = document.getElementById("sample-options");
         this.sAddOpts = document.getElementById("sample-add");
         this.sColor = document.getElementById("sample-color");
+        this.sReverseColor = document.getElementById(
+            "sample-reverse-color-chk"
+        );
         this.sCollapseCladesChk = document.getElementById(
             "sample-collapse-chk"
         );
@@ -172,6 +175,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 sChk: { checked: false },
                 sSel: { disabled: true },
                 sColor: { value: "discrete-coloring-qiime" },
+                sReverseColor: { checked: false },
                 sLineWidth: { value: 0 },
                 sCollapseCladesChk: { checked: false },
             },
@@ -460,6 +464,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         };
         this.sSel.onchange = showUpdateBtn;
         this.sColor.onchange = showUpdateBtn;
+        this.sReverseColor.onchange = showUpdateBtn;
         this.sLineWidth.onchange = showUpdateBtn;
 
         this.sUpdateBtn.onclick = function () {
