@@ -709,9 +709,9 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
     };
 
     Legend.CONTINUOUS_NON_NUMERIC_WARNING =
-        "Some value(s) in this field were not numeric. These value(s) have " +
-        "been left out of the gradient, and no bar(s) have been drawn for " +
-        "them.";
+        "Some value(s) in this field were missing and/or not numeric. " +
+        "These value(s) have been left out of the gradient, and no bar(s) " +
+        "have been drawn for them.";
 
     return Legend;
 });

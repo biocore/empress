@@ -224,7 +224,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
         });
-        // Figure out if we should show a warning message about missing
+        // Figure out if we should show a warning message about missing /
         // non-numeric values to the user
         this._missingNonNumerics = split.nonNumeric.length > 0;
 
