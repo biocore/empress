@@ -573,17 +573,18 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // with commas as thousands separators (e.g. 12,345).
         var populateNum = function (htmlID, val, localeOptions) {
             document.getElementById(htmlID).textContent = val.toLocaleString(
-                undefined, localeOptions
+                undefined,
+                localeOptions
             );
         };
 
         // Formats a number with toLocaleString(), and also limits
         // the number to 4 digits after the decimal point.
         var populateFloat = function (htmlID, val) {
-            populateNum(
-                htmlID, val,
-                {minimumFractionDigits: 0, maximumFractionDigits: 4}
-            );
+            populateNum(htmlID, val, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 4,
+            });
         };
         var stats = this.empress.getTreeStats();
         populateNum("stats-tip-count", stats.tipCt);
