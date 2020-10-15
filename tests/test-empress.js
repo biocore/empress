@@ -253,7 +253,7 @@ require([
             equal(
                 chroma(cm["2"]).hex(),
                 "#808000",
-                "color 1 is second last qiime color"
+                "color 2 is second last qiime color"
             );
 
             // test 'all' method
