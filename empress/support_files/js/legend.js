@@ -7,10 +7,6 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
      * addCategoricalKey(), addContinuousKey(), or addLengthKey() to populate
      * the legend with data.)
      *
-     * Currently, this legend is only designed to show color variation.
-     * However, extending it to show other sorts of encodings -- for example,
-     * length data in barplots -- would be doable.
-     *
      * @param {HTMLElement} container DOM element to which this legend's HTML
      *                                will be added.
      *
@@ -82,11 +78,11 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
 
         /**
          * @type {Boolean}
-         * Whether or not a warning about non-numeric values missing from a
+         * Whether or not a warning about missing / non-numeric values in a
          * continuous legend is shown. Used for exporting.
          * @private
          */
-        this._nonNumericWarningShown = false;
+        this._missingNonNumericWarningShown = false;
 
         /**
          * @type {String}
@@ -135,9 +131,10 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
     /**
      * Displays a continuous color key.
      *
-     * This function takes as input the gradient SVG to display, so it doesn't
-     * do much actual work. (Colorer.assignContinuousScaledColors() does most
-     * of the work here.)
+     * This function takes as input the info defining the gradient SVG
+     * to display, so it doesn't do much actual work.
+     * (Colorer.assignContinuousScaledColors() does most of the work in
+     * computing this information.)
      *
      * The creation of the SVG container was based on Emperor's code:
      * https://github.com/biocore/emperor/blob/00c73f80c9d504826e61ddcc8b2c0b93f344819f/emperor/support_files/js/color-view-controller.js#L54-L56
@@ -155,14 +152,14 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         this.clear();
         this.addTitle(name);
 
-        // Save relevant data from the specified Colorer. We store these to
-        // make life easier when exporting SVG for this legend.
+        // Save the gradient info to make life easier when exporting SVG for
+        // this legend later on.
         this._gradientSVG = gradInfo.gradientSVG;
         this._gradientID = gradInfo.gradientID;
         this._minValStr = gradInfo.minValStr;
         this._midValStr = gradInfo.midValStr;
         this._maxValStr = gradInfo.maxValStr;
-        this._nonNumericWarningShown = gradInfo.missingNonNumerics;
+        this._missingNonNumericWarningShown = gradInfo.missingNonNumerics;
 
         // We only save this to a local variable (not an attribute of the
         // class) since we only use it for the HTML representation of the
@@ -187,9 +184,9 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         // just kinda plop the combined SVG code into containerSVG's HTML
         containerSVG.innerHTML = totalHTMLSVG;
         this._container.appendChild(containerSVG);
-        if (this._nonNumericWarningShown) {
+        if (this._missingNonNumericWarningShown) {
             var warningP = document.createElement("p");
-            warningP.innerText = Legend.CONTINUOUS_NON_NUMERIC_WARNING;
+            warningP.innerText = Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING;
             warningP.classList.add("side-panel-notes");
             // All legends have white-space: nowrap; set to prevent color
             // labels from breaking onto the next line (which would look
@@ -324,13 +321,21 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         $(this._container).empty();
         this.legendType = null;
         this.title = "";
-        // We don't *need* to, but we clear a few potentially-large temporary
-        // attributes to avoid keeping them in memory.
+        // We don't *need* to, but we clear a few temporary attributes to
+        // avoid keeping them in memory.
         // (All of these are only guaranteed to be meaningful if the legend
         // type is set -- since it is now null, we can clear them freely.)
+        //
+        // Stuff set for categorical legends
         this._sortedCategories = [];
         this._category2color = {};
+        // Stuff set for continuous legends
         this._gradientSVG = "";
+        this._gradientID = "";
+        this._minValStr = "";
+        this._midValStr = "";
+        this._maxValStr = "";
+        this._missingNonNumericWarningShown = false;
     };
 
     /**
@@ -708,7 +713,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         };
     };
 
-    Legend.CONTINUOUS_NON_NUMERIC_WARNING =
+    Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING =
         "Some value(s) in this field were missing and/or not numeric. " +
         "These value(s) have been left out of the gradient, and no bar(s) " +
         "have been drawn for them.";

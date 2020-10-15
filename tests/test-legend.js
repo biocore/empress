@@ -1,8 +1,9 @@
-require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
+require(["jquery", "chroma", "UtilitiesForTesting", "Legend", "Colorer"], function (
     $,
     chroma,
     UtilitiesForTesting,
-    Legend
+    Legend,
+    Colorer
 ) {
     $(document).ready(function () {
         module("Legend", {
@@ -159,11 +160,11 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
         });
         test("addContinuousKey", function () {
             var legend = new Legend(this.containerEle);
-            var refSVG = UtilitiesForTesting.getReferenceSVG();
+            var colorer = new Colorer("Viridis", ["0", "4"], true);
+            var refSVGs = UtilitiesForTesting.getReferenceSVGs();
             legend.addContinuousKey(
                 "OMG this is a continuous legend!",
-                refSVG,
-                false
+                colorer.getGradientInfo()
             );
 
             equal(legend.legendType, "continuous");
@@ -179,21 +180,30 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             );
             equal(legend.title, "OMG this is a continuous legend!");
 
-            // 2. A "container SVG" element containing the gradient SVG
+            // 2. A "container SVG" element containing the gradient SVG and
+            // <rect>/<text> stuff positioning this gradient
+            // (these are split into separate SVGs in the test data, but we can
+            // just concatenate these strings together to get the expected SVG
+            // here)
             var cSVG = this.containerEle.children[1];
-            this.validateRefSVG(cSVG, refSVG);
+            this.validateRefSVG(cSVG, refSVGs[0] + refSVGs[1]);
 
             // Legend should be visible
             notOk(this.containerEle.classList.contains("hidden"));
 
             // Check SVG exporting attributes are set ok
             ok(legend._gradientSVG.includes("<linearGradient"));
-            notOk(legend._nonNumericWarningShown);
+            equal(legend._gradientID, "Gradient0");
+            equal(legend._minValStr, "0");
+            equal(legend._midValStr, "2");
+            equal(legend._maxValStr, "4");
+            notOk(legend._missingNonNumericWarningShown);
         });
         test("addContinuousKey (with non-numeric warning)", function () {
             var legend = new Legend(this.containerEle);
-            var refSVG = UtilitiesForTesting.getReferenceSVG();
-            legend.addContinuousKey("howdy", refSVG, true);
+            var colorer = new Colorer("Viridis", ["0", ">:D", "4"], true);
+            var refSVGs = UtilitiesForTesting.getReferenceSVGs();
+            legend.addContinuousKey("howdy", colorer.getGradientInfo());
 
             equal(legend.legendType, "continuous");
 
@@ -207,12 +217,12 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
 
             // 2. Check SVG
             var cSVG = this.containerEle.children[1];
-            this.validateRefSVG(cSVG, refSVG);
+            this.validateRefSVG(cSVG, refSVGs[0] + refSVGs[1]);
 
             // 3. Check non-numeric warning
             var warning = this.containerEle.children[2];
             equal(warning.tagName, "P");
-            equal(warning.innerText, Legend.CONTINUOUS_NON_NUMERIC_WARNING);
+            equal(warning.innerText, Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING);
             // Verify that the warning <p> has white-space: normal; set so it
             // has line breaks, like normal text
             equal($(warning).css("white-space"), "normal");
@@ -226,7 +236,11 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
             // verifies that it kinda looks like a gradient. The actual
             // gradient SVG being correct is tested in test-colorer.js.)
             ok(legend._gradientSVG.includes("<linearGradient"));
-            ok(legend._nonNumericWarningShown);
+            equal(legend._gradientID, "Gradient0");
+            equal(legend._minValStr, "0");
+            equal(legend._midValStr, "2");
+            equal(legend._maxValStr, "4");
+            ok(legend._missingNonNumericWarningShown);
         });
         test("addLengthKey", function () {
             var legend = new Legend(this.containerEle);
