@@ -94,6 +94,7 @@ define([
         this.colorByFM = false;
         this.colorByFMField = null;
         this.colorByFMColorMap = null;
+        this.colorByFMColorReverse = false;
         this.colorByFMContinuous = false;
         this.colorByFMColorMapDiscrete = true;
         this.defaultLength = BarplotLayer.DEFAULT_LENGTH;
@@ -310,6 +311,24 @@ define([
             "barplot-layer-" + this.uniqueNum + "-fm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
+        // Add a row for choosing whether the color scale should
+        // be reversed
+        var reverseColormapP = colorDetailsDiv.appendChild(
+            document.createElement("p")
+        );
+        var reverseColormapLbl = reverseColormapP.appendChild(
+            document.createElement("label")
+        );
+        reverseColormapLbl.innerText = "Reverse Color Map";
+        var reverseColormapCheckbox = reverseColormapP.appendChild(
+            document.createElement("input")
+        );
+        reverseColormapCheckbox.id =
+            "barplot-layer-" + this.uniqueNum + "-fmcolor-reverse-chk";
+        reverseColormapCheckbox.setAttribute("type", "checkbox");
+        reverseColormapCheckbox.classList.add("empress-input");
+        reverseColormapLbl.setAttribute("for", reverseColormapCheckbox.id);
+
         // Add a row for choosing the scale type (i.e. whether to use
         // continuous coloring or not)
         // This mimics Emperor's "Continuous values" checkbox
@@ -336,6 +355,7 @@ define([
         // feature metadata field for coloring is the first in the selector)
         this.colorByFMField = chgColorFMFieldSelector.value;
         this.colorByFMColorMap = colormapSelector.value;
+        this.reverseFMColorMap = reverseColormapCheckbox.checked;
         // Alter visibility of the color-changing details when the "Color
         // by..." checkbox is clicked
         $(chgColorCheckbox).change(function () {
@@ -345,6 +365,7 @@ define([
                 scope.colorByFM = true;
                 scope.colorByFMField = chgColorFMFieldSelector.value;
                 scope.colorByFMColorMap = colormapSelector.value;
+                scope.reverseFMColorMap = reverseColormapCheckbox.checked;
                 scope.colorByFMContinuous = continuousValCheckbox.checked;
                 // Hide the default color row (since default colors
                 // aren't used when f.m. coloring is enabled)
