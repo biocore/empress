@@ -47,36 +47,37 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
 
-        // Only used for continuous scaling, but we set it here for simplicity
-        this.gradientID = "Gradient" + gradientIDSuffix;
+        /*** Continuous-scaling-specific things ***/
 
-        /* The following public values will be set only if continuous      *
-         * scaling is done (i.e. useQuantScale is true and the input color *
-         * map is sequential / diverging)                                  */
+        // We append a number to the gradient ID so that multiple gradients can
+        // be present on the same page without overriding each other. (It's the
+        // caller's responsibility to ensure that gradient ID suffixes are
+        // unique, at least across Colorers created for continuous scaling.)
+        this._gradientIDSuffix = gradientIDSuffix;
+        this._gradientID = null;
 
         // Will be set to a string containing just the SVG defining the
         // gradient (i.e. just the <defs>...</defs> stuff).
-        this.gradientSoloSVG = null;
+        this._gradientSVG = null;
 
         // Will be set to a string describing the <rect> containing the
         // gradient and the <text> representations of the min/mid/max values
         // alongside it. Used to display the gradient in the page HTML.
-        this.gradientHTMLSVG = null;
+        this._pageSVG = null;
 
         // Will be set to strings describing the minimum, middle, and maximum
-        // values along the gradient. Designed for use with
-        // this.gradientSoloSVG (so they can be scaled as needed for SVG
-        // exporting).
-        this.minValStr = null;
-        this.midValStr = null;
-        this.maxValStr = null;
+        // values along the gradient. Designed for use with this._gradientSVG
+        // (so they can be scaled as needed for SVG exporting).
+        this._minValStr = null;
+        this._midValStr = null;
+        this._maxValStr = null;
 
         // Will be set to true if there were any non-numeric elements included
         // in the input values that couldn't be assigned colors (controls
         // whether or not to show a warning)
-        this.missingNonNumerics = false;
+        this._missingNonNumerics = false;
 
-        /* End continuous-scaling-specific things */
+        /*** End continuous-scaling-specific things ***/
 
         // Based on the color map, container, type and the value of
         // useQuantScale, assign colors accordingly
@@ -192,9 +193,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * by this.color) for every value in this.sortedUniqueValues, taking into
      * account the magnitudes/etc. of the numeric values in
      * this.sortedUniqueValues. This will populate this.__valueToColor with
-     * this information. This will also populate this.gradientSoloSVG,
-     * this.gradientHTMLSVG, this.missingNonNumerics, this.minValStr,
-     * this.midValStr, and this.maxValStr.
+     * this information. This will also populate this._gradientSVG,
+     * this._pageSVG, this._gradientID, this._missingNonNumerics,
+     * this._minValStr, this._midValStr, and this._maxValStr.
      *
      * Non-numeric values will not be assigned a color.
      *
@@ -212,7 +213,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
                     " custom colormap"
             );
         }
-
         var split = util.splitNumericValues(this.sortedUniqueValues);
         if (split.numeric.length < 2) {
             throw new Error("Category has less than 2 unique numeric values.");
@@ -226,20 +226,19 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         });
         // Figure out if we should show a warning message about missing
         // non-numeric values to the user
-        this.missingNonNumerics = split.nonNumeric.length > 0;
+        this._missingNonNumerics = split.nonNumeric.length > 0;
 
         // Create SVG describing the gradient: basically, we sample the color
         // map along the domain 101 times, and use these 101 colors to define
         // the <linearGradient /> for each percentage in the range [0%, 100%].
         // (See https://github.com/biocore/emperor/issues/788 for context.)
+        this._gradientID = "Gradient" + this._gradientIDSuffix;
         var mid = (min + max) / 2;
         var stopColors = interpolator.colors(101);
-        var gradientSoloSVG = "<defs>";
-        // We append a number to the gradient ID so that multiple gradients can
-        // be present on the same page without overriding each other
-        gradientSoloSVG +=
+        this._gradientSVG = "<defs>";
+        this._gradientSVG +=
             '<linearGradient id="' +
-            this.gradientID +
+            this._gradientID +
             '" x1="0" x2="0" y1="1" y2="0">';
         for (var pos = 0; pos < stopColors.length; pos++) {
             // "stop" tags are written here as <stop .../>. This matches what
@@ -251,43 +250,95 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             // document.createElementNS(). Anyway, we keep things shorter for
             // now for consistency, but replacing '"/>' with '"></stop>' works
             // fine also.
-            gradientSoloSVG +=
+            this._gradientSVG +=
                 '<stop offset="' +
                 pos +
                 '%" stop-color="' +
                 stopColors[pos] +
                 '"/>';
         }
-        gradientSoloSVG += "</linearGradient></defs>\n";
-        this.gradientSoloSVG = gradientSoloSVG;
+        this._gradientSVG += "</linearGradient></defs>\n";
 
         // Add a rect containing the gradient. This'll only be used in the
         // in-app representation of the gradient (not in the SVG export!)
-        var gradientHTMLSVG =
+        this._pageSVG =
             '<rect width="20" height="95%" fill="url(#' +
-            this.gradientID +
+            this._gradientID +
             ')"/>\n';
 
-        this.minValStr = min.toString();
-        this.midValStr = mid.toString();
-        this.maxValStr = max.toString();
-        gradientHTMLSVG +=
+        this._minValStr = min.toString();
+        this._midValStr = mid.toString();
+        this._maxValStr = max.toString();
+        this._pageSVG +=
             '<text x="25" y="12px" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
-            this.maxValStr +
+            this._maxValStr +
             "</text>\n";
-        gradientHTMLSVG +=
+        this._pageSVG +=
             '<text x="25" y="50%" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
-            this.midValStr +
+            this._midValStr +
             "</text>\n";
-        gradientHTMLSVG +=
+        this._pageSVG +=
             '<text x="25" y="95%" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
-            this.minValStr +
+            this._minValStr +
             "</text>\n";
+    };
 
-        this.gradientHTMLSVG = gradientHTMLSVG;
+    /**
+     * Returns an Object containing gradient information for a Legend.
+     *
+     * The intent with this method is to make sure that the Legend holding a
+     * gradient has all of the information needed to export a SVG of this
+     * gradient (since this may involve rescaling or otherwise altering the
+     * way the legend is displayed, we pass things besides the SVG).
+     *
+     * @return {Object} gradientInfo An Object with the following entries:
+     *                               -gradientSVG: SVG String containing the
+     *                                <defs> and <linearGradient> that define
+     *                                the gradient.
+     *                               -pageSVG: SVG String containing the <rect>
+     *                                and <text>s that position the gradient
+     *                                within a rectangle and place min / mid
+     *                                / max value text along it. (This is used
+     *                                for displaying the gradient in the
+     *                                application interface, but not used for
+     *                                exporting.)
+     *                               -gradientID: String ID of the gradient
+     *                                defined in gradientSVG.
+     *                               -minValStr: String representation of the
+     *                                minimum numeric value.
+     *                               -midValStr: String representation of the
+     *                                middle numeric value (halfway between the
+     *                                min and max; not necessarily present
+     *                                within the input data).
+     *                               -midValStr: String representation of the
+     *                                maximum numeric value.
+     *                               -missingNonNumerics: Boolean describing
+     *                                whether or not missing / non-numeric
+     *                                values were provided to the Colorer.
+     *                                (If true, a warning about this should
+     *                                be shown in the legend about this.)
+     */
+    Colorer.prototype.getGradientInfo = function () {
+        if (_.isNull(this._gradientSVG)) {
+            throw new Error(
+                "No gradient data defined for this Colorer; check that " +
+                    "useQuantScale is true and that the selected color map " +
+                    "is not discrete."
+            );
+        } else {
+            return {
+                gradientSVG: this._gradientSVG,
+                pageSVG: this._pageSVG,
+                gradientID: this._gradientID,
+                minValStr: this._minValStr,
+                midValStr: this._midValStr,
+                maxValStr: this._maxValStr,
+                missingNonNumerics: this._missingNonNumerics,
+            };
+        }
     };
 
     /**

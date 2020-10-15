@@ -631,9 +631,7 @@ define([
             this.colorByFMContinuous &&
             !this.colorByFMColorMapDiscrete
         ) {
-            // We just pass the colorer directly to addContinuousKey, rather
-            // than having that return an array/object with like six entries
-            this.colorLegend.addContinuousKey(title, colorer);
+            this.colorLegend.addContinuousKey(title, colorer.getGradientInfo());
         } else {
             this.colorLegend.addCategoricalKey(title, colorer.getMapHex());
         }

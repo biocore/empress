@@ -69,7 +69,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
          * object for details.) Used for exporting.
          * @private
          */
-        this._gradientSoloSVG = "";
+        this._gradientSVG = "";
 
         /**
          * @type {String}
@@ -143,39 +143,31 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
      * https://github.com/biocore/emperor/blob/00c73f80c9d504826e61ddcc8b2c0b93f344819f/emperor/support_files/js/color-view-controller.js#L54-L56
      *
      * @param {String} name Text to show in the legend title.
-     * @param {Colorer} colorer Reference to the colorer used for mapping
-     *                          values to colors.
+     * @param {Object} gradInfo Output of Colorer.getGradientInfo(). Please
+     *                          see the docs of that function for details.
      * @param {Boolean} showNonNumericWarning If true, a warning will be shown
      *                                        below the gradient about some
      *                                        values being omitted from the
      *                                        gradient due to being
      *                                        non-numeric.
      */
-    Legend.prototype.addContinuousKey = function (name, colorer) {
-        // We just check if this one property of the colorer is specified, and
-        // assume if it's ok then the other properties needed are also ok.
-        if (_.isNull(colorer.gradientSoloSVG)) {
-            throw new Error(
-                "Can't create a continuous legend when the colorer does not " +
-                    "have SVG defined."
-            );
-        }
+    Legend.prototype.addContinuousKey = function (name, gradInfo) {
         this.clear();
         this.addTitle(name);
 
         // Save relevant data from the specified Colorer. We store these to
         // make life easier when exporting SVG for this legend.
-        this._gradientSoloSVG = colorer.gradientSoloSVG;
-        this._gradientID = colorer.gradientID;
-        this._minValStr = colorer.minValStr;
-        this._midValStr = colorer.midValStr;
-        this._maxValStr = colorer.maxValStr;
-        this._nonNumericWarningShown = colorer.missingNonNumerics;
+        this._gradientSVG = gradInfo.gradientSVG;
+        this._gradientID = gradInfo.gradientID;
+        this._minValStr = gradInfo.minValStr;
+        this._midValStr = gradInfo.midValStr;
+        this._maxValStr = gradInfo.maxValStr;
+        this._nonNumericWarningShown = gradInfo.missingNonNumerics;
 
         // We only save this to a local variable (not an attribute of the
         // class) since we only use it for the HTML representation of the
         // gradient, not for the SVG-exported representation of the gradient.
-        var totalHTMLSVG = this._gradientSoloSVG + colorer.gradientHTMLSVG;
+        var totalHTMLSVG = this._gradientSVG + gradInfo.pageSVG;
 
         // Apparently we need to use createElementNS() (not just
         // createElement()) for SVGs. I am not sure why this is the case, but
@@ -338,7 +330,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         // type is set -- since it is now null, we can clear them freely.)
         this._sortedCategories = [];
         this._category2color = {};
-        this._gradientSoloSVG = "";
+        this._gradientSVG = "";
     };
 
     /**
@@ -520,7 +512,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             height = (numCats + 1) * lineHeight + unit;
         } else if (this.legendType === "continuous") {
             // Add linear gradient to SVG
-            innerSVG += this._gradientSoloSVG;
+            innerSVG += this._gradientSVG;
 
             // Define the height of the gradient -- let's say it takes up 10
             // rows (so this would look identically to drawing a categorical
