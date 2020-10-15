@@ -568,26 +568,27 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      */
     SidePanel.prototype.populateTreeStats = function () {
         // Formats a number with just toLocaleString() (leaving the locale
-        // unspecified should mean the user's settings are respected)
+        // unspecified should mean the user's settings are respected).
         // For English, at least, this should mean that numbers are formatted
-        // with commas as thousands separators (e.g. 12,345)
-        var populateInt = function (htmlID, val) {
-            document.getElementById(htmlID).textContent = val.toLocaleString();
+        // with commas as thousands separators (e.g. 12,345).
+        var populateNum = function (htmlID, val, localeOptions) {
+            document.getElementById(htmlID).textContent = val.toLocaleString(
+                undefined, localeOptions
+            );
         };
-        // Formats a number with toLocaleString() (meaning that in the weird
-        // case that the lengths get above 1,000 then they'll be shown with
-        // commas or whatever is done in the user's locale), and also limits
+
+        // Formats a number with toLocaleString(), and also limits
         // the number to 4 digits after the decimal point.
         var populateFloat = function (htmlID, val) {
-            document.getElementById(htmlID).textContent = val.toLocaleString(
-                undefined,
+            populateNum(
+                htmlID, val,
                 {minimumFractionDigits: 0, maximumFractionDigits: 4}
             );
         };
         var stats = this.empress.getTreeStats();
-        populateInt("stats-tip-count", stats.tipCt);
-        populateInt("stats-int-count", stats.intCt);
-        populateInt("stats-total-count", stats.allCt);
+        populateNum("stats-tip-count", stats.tipCt);
+        populateNum("stats-int-count", stats.intCt);
+        populateNum("stats-total-count", stats.allCt);
         populateFloat("stats-min-length", stats.min);
         populateFloat("stats-max-length", stats.max);
         populateFloat("stats-avg-length", stats.avg);
