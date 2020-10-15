@@ -1855,7 +1855,7 @@ define([
      *
      * @param {String} cat Sample metadata category to use
      * @param {String} color Color map to use
-     * @param{Boolean} reverse Defaults to false. If true, the color scale
+     * @param {Boolean} reverse Defaults to false. If true, the color scale
      *                         will be reversed, with respect to its default
      *                         orientation.
      *
