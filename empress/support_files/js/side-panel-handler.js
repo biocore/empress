@@ -259,7 +259,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     SidePanel.prototype._colorSampleTree = function () {
         var colBy = this.sSel.value;
         var col = this.sColor.value;
-        var keyInfo = this.empress.colorBySampleCat(colBy, col);
+        var reverse = this.sReverseColor.checked;
+        var keyInfo = this.empress.colorBySampleCat(colBy, col, reverse);
         if (keyInfo === null) {
             util.toastMsg(
                 "No unique branches found for this metadata category"
