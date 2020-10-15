@@ -35,7 +35,7 @@ class Empress():
                  feature_metadata=None, ordination=None,
                  ignore_missing_samples=False, filter_extra_samples=False,
                  filter_missing_features=False, resource_path=None,
-                 shear_tree=True):
+                 shear_tree=True, shear_to_feature_metadata=False):
         """Visualize a phylogenetic tree
 
         Use this object to interactively display a phylogenetic tree using the
@@ -146,7 +146,8 @@ class Empress():
             ignore_missing_samples,
             filter_extra_samples,
             filter_missing_features,
-            shear_tree
+            shear_tree,
+            shear_to_feature_metadata,
         )
 
         if self.ordination is not None:
@@ -178,7 +179,8 @@ class Empress():
     def _validate_and_match_data(self, ignore_missing_samples,
                                  filter_extra_samples,
                                  filter_missing_features,
-                                 shear_tree):
+                                 shear_tree,
+                                 shear_to_feature_metadata):
 
         if self.is_community_plot:
             self.table, self.samples, self.tip_md, self.int_md = match_inputs(
@@ -210,6 +212,11 @@ class Empress():
                     self.tip_md, self.int_md = filter_feature_metadata_to_tree(
                         self.tip_md, self.int_md, self.tree
                     )
+
+            # remove features not present in feature metadata
+            if shear_to_feature_metadata:
+                features = set(self.features.index)
+                self.tree = self.tree.shear(features)
         else:
             self.tip_md, self.int_md = match_tree_and_feature_metadata(
                 self.tree, self.features

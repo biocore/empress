@@ -143,7 +143,8 @@ plugin.visualizers.register_function(
         'tree': TREE_DESC
     },
     parameter_descriptions={
-        'feature_metadata': FM_DESC
+        'feature_metadata': FM_DESC,
+        'shear_to_feature_metadata': 'test'
     },
     name='Visualize phylogenies with Empress',
     description=(

@@ -492,6 +492,17 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.ordination)
 
+    def test_shear_tree_to_fm_simple(self):
+        # remove unnamed tip, e, and internal node g
+        mini_fm = self.feature_metadata.copy()
+        mini_fm.loc["b"] = ["pikachu", "raichu"]
+        mini_fm.loc["d"] = ["mew", "mewtwo"]
+        viz = Empress(self.tree, self.table, self.sample_metadata,
+                      feature_metadata=mini_fm, shear_tree=False,
+                      shear_to_feature_metadata=True)
+        assert_frame_equal(viz.tip_md, mini_fm.loc[["a", "b", "d"]])
+        assert_frame_equal(viz.int_md, mini_fm.loc[["h"]])
+
     def test_biplot(self):
         exp = self.feature_metadata.copy()
         viz = Empress(self.tree, self.table,
