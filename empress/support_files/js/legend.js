@@ -351,263 +351,237 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
     };
 
     /**
-     * Gets an SVG representation of the legend, along with some other details.
+     * Returns a String describing the <text /> for a legend title, and the
+     * estimated length of this text.
      *
-     * Please see ExportUtil.exportLegendSVG() for details on the parameters to
-     * this function.
+     * @param {Number} topY y-position at which to align the top of this text
      *
-     * @param {Number} row Current row this legend will be created on. (Long
-     *                     story short, if only one legend is getting exported
-     *                     this should just be 1. This is used to determine the
-     *                     vertical position of this legend and its elements in
-     *                     a SVG image.)
-     * @param {Number} unit Number used to scale all distances in the SVG.
-     * @param {Number} lineHeight Result of multiplying unit by some factor.
-     *                            Has to do with the distance between two text
-     *                            lines.
-     *
-     * @return {Object} Contains four keys:
-     *                  -svg: String containing the legend SVG
-     *                  -rowsUsed: Number describing the number of rows used in
-     *                             this legend (plus row)
-     *                  -width: The width of the legend SVG
-     *                  -height: The height of the legend SVG. Honestly, I
-     *                   think this is slightly too large -- not sure what's
-     *                   going on. At least things work right now!
-     *
-     * @throws {Error} If the current legend type does not have SVG export
-     *                 supported. Currently only categorical legends can be
-     *                 exported, but this will change soon.
+     * @return {Object} Contains two entries:
+     *                  -text: String centering the title in a legend
+     *                  -length: Number describing the estimated length (using
+     *                   Legend.SVG_CONTEXT) of the title text
      */
-    Legend.prototype.exportSVG = function (row, unit, lineHeight) {
-        var scope = this;
-
-        // Style of the rect containing the legend SVG (in addition to the
-        // global rect style applied below)
-        var BGSTYLE = 'style="fill:#ffffff;"';
-
-        // Font style for the legend title and entries. Should match what
-        // Empress uses in its body CSS.
-        // The context font apparently needs to be set as just "font", but
-        // setting the actual text styles in the SVG that way seems to cause
-        // some problems for Inkscape and GIMP's SVG importers (e.g. in
-        // Inkscape it overrides the title font-weight, and in GIMP the entire
-        // thing is ignored -- the font shows up as some small serif font). So
-        // we set the context font and <style> font stuff different ways.
-        var FONTSIZE = unit + "pt";
-        var FONTFAM = "Arial,Helvetica,sans-serif";
-
-        var FONT = FONTSIZE + " " + FONTFAM;
-
-        // Used as a rough estimate about the consumed width by text strings.
-        var tmpCanvas = document.createElement("canvas");
-        var context = tmpCanvas.getContext("2d");
-        // Fun fact: if you accidentally include a semicolon at the end of the
-        // font then this will break context.measureText()! No idea why, but
-        // that was a fun ten minutes.
-        context.font = "bold " + FONT;
-
-        // Figure out the rect's top Y position
-        var topY = (row - 1) * lineHeight;
-
-        // Set global styling for the SVG, cutting down a bit on redundant text
-        // in the output SVG. (This is based on how the vertex/fragment shader
-        // code in drawer.js is constructed as an array of strings.)
-        var styleSVG = [
-            "<style>",
-            "text {",
-            "font-family: " + FONTFAM + ";",
-            "font-size: " + FONTSIZE + ";",
-            "}",
-            ".btext { font-weight: bold; }",
-            ".blackborder { stroke: #000000; stroke-width: 1; }",
-            "</style>",
-        ].join("\n");
-
-        // Add trailing newline to style SVG, since .join() doesn't add it
-        styleSVG += "\n";
-
-        // First, add the title to the inner legend SVG.
+    Legend.prototype._getSVGLegendTitle = function (topY) {
+        var titleTextLength = Legend.SVG_CONTEXT.measureText(this.title).width;
         // The x="50%" and text-anchor="middle" center the title over the
         // legend: solution from
         // https://stackoverflow.com/a/31522006/10730311.
-        var innerSVG =
+        //
+        // The thing where we set the y-position to topY plus half the line
+        // height is a hack that lets us vertically center this text in the
+        // middle of its line.
+        var titleText =
             '<text x="50%" y="' +
-            row * lineHeight +
-            '" text-anchor="middle" class="btext">' +
+            (topY + Legend.HALF_LINE_HEIGHT) +
+            '" text-anchor="middle" dominant-baseline="middle" class="btext">' +
             this.title +
             "</text>\n";
+        return {
+            text: titleText,
+            length: titleTextLength
+        };
+    };
 
-        // Keep track of the number of rows used (including those already
-        // represented in the input row parameter). Each branch of the if
-        // statement below is responsible for updating this.
-        var rowsUsed = row;
-        // To start off: count the title line as a row used.
-        rowsUsed++;
-
-        // Keep track of the max-length line -- start off with the title as the
-        // max, but this may change if a line below is longer
-        var maxLineWidth = context.measureText(this.title).width;
-
-        // Each branch of the if statement below is responsible for setting
-        // the width and height.
-        var width, height;
-
-        if (this.legendType === "categorical") {
-            // Go through each of the categories and add a row to the legend
-            // SVG. (Since the legend type is categorical,
-            // this._sortedCategories and this._category2color must be
-            // defined.)
-            _.each(this._sortedCategories, function (cat) {
-                var color = scope._category2color[cat];
-                maxLineWidth = Math.max(
-                    maxLineWidth,
-                    context.measureText(cat).width
-                );
-                var rowTopY = (rowsUsed - 1) * lineHeight + unit;
-                // Add a square to the left of the label showing the color
-                innerSVG +=
-                    '<rect class="blackborder" x="0" y="' +
-                    rowTopY +
-                    '" width="' +
-                    lineHeight +
-                    '" height="' +
-                    lineHeight +
-                    '" style="fill:' +
-                    color +
-                    ';"/>\n';
-                // Add text labelling the category. We set dominant-baseline
-                // to "hanging" so that we can reference the top position of
-                // the text, not the bottom position of the text. (The default
-                // for <rect> is that y points to top, the default for <text>
-                // is that y points to baseline. I don't know why...) Soln c/o
-                // https://stackoverflow.com/a/45914139/10730311.
-                // (GIMP's SVG importer doesn't seem to interpret this
-                // correctly, but Inkscape can handle it ok. So this seems like
-                // Not Our Problem.)
-                innerSVG +=
-                    '<text dominant-baseline="hanging" x="' +
-                    (lineHeight + unit) +
-                    '" y="' +
-                    // The + unit / 2 is a crude way of vertically aligning
-                    // this text with the color square in its row. (We know the
-                    // font size is "unit", so we should be able to safely push
-                    // the text down by unit / 2.)
-                    (rowTopY + unit / 2) +
-                    '">' +
-                    cat +
-                    "</text>\n";
-                rowsUsed++;
-            });
-
-            // draw a rect behind, i.e. lower z-order, the legend title and
-            // colored keys to visually group the legend. Also actually put
-            // these elements into a group for easier manual editing.
-            // rect shall have a certain padding, its height must exceed
-            // the number of used text rows and width must be larger than
-            // longest key text and/or legend title
-            var numCats = this._sortedCategories.length;
-
-            // The maximum line width is the max text width plus (in the likely
-            // event that the max text width is from a category line, not from
-            // the title line) the width of a color square (lineHeight) plus
-            // the padding btwn. the color square and start of the text (unit)
-            // plus some extra padding at the right-hand side (the other unit)
-            width = maxLineWidth + lineHeight + 2 * unit;
-            height = (numCats + 1) * lineHeight + unit;
-        } else if (this.legendType === "continuous") {
-            // Add linear gradient to SVG
-            innerSVG += this._gradientSVG;
-
-            // Define the height of the gradient -- let's say it takes up 10
-            // rows (so this would look identically to drawing a categorical
-            // legend for a field with 10 unique values).
-            var gradientHeight = 10 * lineHeight;
-
-            // Set analogously to rowTopY in the above branch
-            var gradientTopY = (rowsUsed - 1) * lineHeight + unit;
-
-            // Add a <rect> containing said gradient, which we have the luxury
-            // of defining the dimensions of :D
+    /**
+     * Produces an SVG representation of the current legend.
+     *
+     * Assumes that the legend type is set to categorical.
+     *
+     * @param {Number} topY y-position of the top edge of the legend SVG
+     *
+     * @return {Object} Contains three entries:
+     *                  -innerSVG: String describing the legend SVG
+     *                  -width: Number Width of the SVG
+     *                  -height: Number Height of the SVG
+     */
+    Legend.prototype._exportSVGCategorical = function (topY) {
+        var scope = this;
+        var title = this._getSVGLegendTitle(topY);
+        var innerSVG = title.text;
+        var maxLineWidth = title.length;
+        // Go through each of the categories and add a row to the legend
+        // SVG. (Since the legend type is categorical,
+        // this._sortedCategories and this._category2color must be
+        // defined.)
+        var currRowTopY = topY + Legend.LINE_HEIGHT;
+        _.each(this._sortedCategories, function (cat) {
+            var color = scope._category2color[cat];
+            maxLineWidth = Math.max(
+                maxLineWidth,
+                Legend.SVG_CONTEXT.measureText(cat).width
+            );
+            // Add a square to the left of the label showing the color
             innerSVG +=
-                '<rect x="0" y="' +
-                gradientTopY +
+                '<rect class="blackborder" x="0" y="' +
+                currRowTopY +
                 '" width="' +
-                lineHeight +
+                Legend.LINE_HEIGHT +
                 '" height="' +
-                gradientHeight +
-                '" fill="url(#' +
-                this._gradientID +
-                ')" />\n';
-
-            rowsUsed += 10;
-
-            // Add min/mid/max value text along the gradient
-            var textLeftX = lineHeight + unit;
-
-            // Max value text goes at the top of the gradient
-            // (... For now, at least -- see
-            // https://github.com/biocore/emperor/issues/782.)
+                Legend.LINE_HEIGHT +
+                '" style="fill:' +
+                color +
+                ';"/>\n';
+            // Add text labelling the category
             innerSVG +=
-                '<text x="' +
-                textLeftX +
+                '<text dominant-baseline="middle" x="' +
+                (Legend.LINE_HEIGHT + Legend.TEXT_PADDING) +
                 '" y="' +
-                gradientTopY +
-                '" dominant-baseline="hanging">' +
-                this._maxValStr +
+                (currRowTopY + Legend.HALF_LINE_HEIGHT) +
+                '">' +
+                cat +
                 "</text>\n";
+            currRowTopY += Legend.LINE_HEIGHT;
+        });
 
-            // Mid value text goes halfway through the gradient
-            // The way to think about this is that this y-coordinate is the
-            // average of two y-coords: the topmost y-coord on the gradient
-            // (gradientTopY) and the bottommost y-coord on the gradient
-            // (gradientTopY + gradientHeight). Once we average these, we can
-            // just set the mid value to this y-coordinate (using
-            // dominant-baseline="middle" to vertically align it here).
-            var midY = (2 * gradientTopY + gradientHeight) / 2;
-            innerSVG +=
-                '<text x="' +
-                textLeftX +
-                '" y="' +
-                midY +
-                '" dominant-baseline="middle">' +
-                this._midValStr +
-                "</text>\n";
+        // The width of this SVG is the max text width plus (in the likely
+        // event that the max text width is from a category line, not from
+        // the title line) the width of a color square (line height) plus the
+        // padding between a color square's right side and the left side
+        // of the text plus the same padding on the right side of the text.
+        //
+        // NOTE that this will be an overestimate if the max text width comes
+        // from the title, and not a category line -- that's fine. It is much
+        // better to have the legend be slightly larger than needed, rather
+        // than not large enough.
+        var width = maxLineWidth + Legend.LINE_HEIGHT + (2 * Legend.TEXT_PADDING);
+        // Computing the height taken up is even simpler -- it's just the
+        // number of categories in the legend (plus one, for the title)
+        // multiplied by the line height.
+        var height = (this._sortedCategories.length + 1) * Legend.LINE_HEIGHT;
+        return {
+            width: width,
+            height: height,
+            innerSVG: innerSVG
+        };
+    };
 
-            // Min value text goes at the bottom of the gradient
-            innerSVG +=
-                '<text x="' +
-                textLeftX +
-                '" y="' +
-                (gradientTopY + gradientHeight) +
-                '" dominant-baseline="baseline">' +
-                this._minValStr +
-                "</text>\n";
+    /**
+     * Produces an SVG representation of the current legend.
+     *
+     * Assumes that the legend type is set to continuous.
+     *
+     * @param {Number} topY y-position of the top edge of the legend SVG
+     *
+     * @return {Object} Contains three entries:
+     *                  -innerSVG: String describing the legend SVG
+     *                  -width: Number Width of the SVG
+     *                  -height: Number Height of the SVG
+     */
+    Legend.prototype._exportSVGContinuous = function (topY) {
+        var title = this._getSVGLegendTitle(topY);
+        var innerSVG = title.text;
+        var maxLineWidth = title.length;
+        // Add linear gradient to SVG
+        innerSVG += this._gradientSVG;
 
-            // Try to increase the maximum line width based on the values. (We
-            // will account for the extra horizontal space of the gradient
-            // rect's width later.)
-            var valStrs = [this._maxValStr, this._midValStr, this._minValStr];
-            _.each(valStrs, function (valStr) {
-                maxLineWidth = Math.max(
-                    maxLineWidth,
-                    context.measureText(valStr).width
-                );
-            });
+        // Define the height of the gradient -- let's say it takes up 10
+        // rows (so this would look identically to drawing a categorical
+        // legend for a field with 10 unique values).
+        var gradientHeight = 10 * lineHeight;
 
-            // Similar to categorical legends: max line width is the max text
-            // width plus (in event that max text width is from the min / mid /
-            // max value, not from the title line) the text left x coordinate.
-            // (We add on an extra unit so that there is some extra padding on
-            // the right-hand side between the rightmost character and the
-            // rect border.)
-            width = maxLineWidth + textLeftX + unit;
+        // Set analogously to rowTopY in the above branch
+        var gradientTopY = (rowsUsed - 1) * lineHeight + unit;
 
-            // And the height is just the height of the gradient plus the
-            // height of the title row plus the unit padding contained in
-            // gradientTopY.
-            height = gradientHeight + lineHeight + unit;
-        } else if (this.legendType === "length") {
+        // Add a <rect> containing said gradient, which we have the luxury
+        // of defining the dimensions of :D
+        innerSVG +=
+            '<rect x="0" y="' +
+            gradientTopY +
+            '" width="' +
+            lineHeight +
+            '" height="' +
+            gradientHeight +
+            '" fill="url(#' +
+            this._gradientID +
+            ')" />\n';
+
+        rowsUsed += 10;
+
+        // Add min/mid/max value text along the gradient
+        var textLeftX = lineHeight + unit;
+
+        // Max value text goes at the top of the gradient
+        // (... For now, at least -- see
+        // https://github.com/biocore/emperor/issues/782.)
+        innerSVG +=
+            '<text x="' +
+            textLeftX +
+            '" y="' +
+            gradientTopY +
+            '" dominant-baseline="hanging">' +
+            this._maxValStr +
+            "</text>\n";
+
+        // Mid value text goes halfway through the gradient
+        // The way to think about this is that this y-coordinate is the
+        // average of two y-coords: the topmost y-coord on the gradient
+        // (gradientTopY) and the bottommost y-coord on the gradient
+        // (gradientTopY + gradientHeight). Once we average these, we can
+        // just set the mid value to this y-coordinate (using
+        // dominant-baseline="middle" to vertically align it here).
+        var midY = (2 * gradientTopY + gradientHeight) / 2;
+        innerSVG +=
+            '<text x="' +
+            textLeftX +
+            '" y="' +
+            midY +
+            '" dominant-baseline="middle">' +
+            this._midValStr +
+            "</text>\n";
+
+        // Min value text goes at the bottom of the gradient
+        innerSVG +=
+            '<text x="' +
+            textLeftX +
+            '" y="' +
+            (gradientTopY + gradientHeight) +
+            '" dominant-baseline="baseline">' +
+            this._minValStr +
+            "</text>\n";
+
+        // Try to increase the maximum line width based on the values. (We
+        // will account for the extra horizontal space of the gradient
+        // rect's width later.)
+        var valStrs = [this._maxValStr, this._midValStr, this._minValStr];
+        _.each(valStrs, function (valStr) {
+            maxLineWidth = Math.max(
+                maxLineWidth,
+                Legend.SVG_CONTEXT.measureText(valStr).width
+            );
+        });
+
+        // Similar to categorical legends: max line width is the max text
+        // width plus (in event that max text width is from the min / mid /
+        // max value, not from the title line) the text left x coordinate.
+        // (We add on an extra unit so that there is some extra padding on
+        // the right-hand side between the rightmost character and the
+        // rect border.)
+        width = maxLineWidth + textLeftX + unit;
+
+        // And the height is just the height of the gradient plus the
+        // height of the title row plus the unit padding contained in
+        // gradientTopY.
+        height = gradientHeight + lineHeight + unit;
+        return {
+            width: width,
+            height: height,
+            innerSVG: innerSVG
+        };
+    };
+
+    /**
+     * Produces an SVG representation of the current legend.
+     *
+     * Assumes that the legend type is set to length.
+     *
+     * @param {Number} topY y-position of the top edge of the legend SVG
+     *
+     * @return {Object} Contains three entries:
+     *                  -innerSVG: String describing the legend SVG
+     *                  -width: Number Width of the SVG
+     *                  -height: Number Height of the SVG
+     */
+    Legend.prototype._exportSVGLength = function (topY) {
             // We're basically simulating a table here, so just adding two
             // rows of text won't cut it.
             // First, figure out which header is bigger (it's probably gonna
@@ -617,7 +591,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             _.each(["Minimum ", "Maximum "], function (headerText) {
                 maxHeaderWidth = Math.max(
                     maxHeaderWidth,
-                    context.measureText(headerText).width
+                    Legend.SVG_CONTEXT.measureText(headerText).width
                 );
             });
 
@@ -627,7 +601,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             _.each([this._minLengthVal, this._maxLengthVal], function (text) {
                 maxValWidth = Math.max(
                     maxValWidth,
-                    context.measureText(text).width
+                    Legend.SVG_CONTEXT.measureText(text).width
                 );
             });
 
@@ -672,14 +646,52 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             // Three lines (title, min row, max row) plus unit padding between
             // title and min row
             height = 3 * lineHeight + unit;
+        return {
+            width: width,
+            height: height,
+            innerSVG: innerSVG
+        };
+    };
+
+    /**
+     * Gets an SVG representation of the legend, along with some other details.
+     *
+     * @param {Number} topY The y-position at which the top of the legend
+     *                      should be placed. (Legend exporting currently works
+     *                      by stacking legends vertically, so the first legend
+     *                      to be exported should have topY = 0, the next will
+     *                      have topY = (first legend's height + some spacing),
+     *                      and so on.)
+     *
+     * @return {Object} Contains three keys:
+     *                  -svg: String containing the legend SVG
+     *                  -width: Number describing the width of the legend SVG
+     *                  -height: Number describing the height of the legend SVG
+     *
+     * @throws {Error} If the current legend type does not have SVG export
+     *                 supported.
+     */
+    Legend.prototype.exportSVG = function (topY) {
+        var exportFunc;
+        if (this.legendType === "categorical") {
+            exportFunc = "_exportSVGCategorical";
+        } else if (this.legendType === "continuous") {
+            exportFunc = "_exportSVGContinuous";
+        } else if (this.legendType === "length") {
+            exportFunc = "_exportSVGLength";
         } else {
-            // Eventually, when we add support for exporting continuous /
-            // length legends, this will only really happen if someone tries to
-            // export a legend with an invalid legendType (e.g. null)
+            // As of writing this will only really happen if someone tries to
+            // export a legend with an invalid legendType (e.g. null), but it
+            // could also happen if we add new legend types in the future and
+            // forget to support them here
             throw new Error(
                 "Only categorical legends can be exported right now."
             );
         }
+        var exportData = this[exportFunc](topY);
+        var width = exportData.width;
+        var height = exportData.height;
+        var innerSVG = exportData.innerSVG;
 
         // Build up the output SVG based on everything we have.
         // We need to apply width to this SVG in order to be able to
@@ -688,7 +700,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         // relative to the parent SVG (containing *all* legends), which looks
         // bad if multiple legends have different lengths (the smaller legend
         // titles will stick out of the border <rect>).
-        var outputSVG = '<svg width="' + width + '">\n' + styleSVG;
+        var outputSVG = '<svg width="' + width + '">\n' + Legend.SVG_STYLE;
 
         // Add a white rectangle behind the legend with a black border.
         outputSVG +=
@@ -698,16 +710,13 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             width +
             '" height="' +
             height +
-            '" ' +
-            BGSTYLE +
-            " />\n";
+            '" style="fill:#ffffff;" />\n"';
 
         // Finally, add the interior of the legend SVG and close out the tag.
         outputSVG += innerSVG + "</svg>\n";
 
         return {
             svg: outputSVG,
-            rowsUsed: rowsUsed,
             width: width,
             height: height,
         };
@@ -717,6 +726,44 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         "Some value(s) in this field were missing and/or not numeric. " +
         "These value(s) have been left out of the gradient, and no bar(s) " +
         "have been drawn for them.";
+
+    // Various SVG attributes stored here since they're used every time the
+    // export function is called
+    Legend.LINE_HEIGHT = 54;
+    Legend.HALF_LINE_HEIGHT = 27;
+    Legend.TEXT_PADDING = 10;
+
+    // Font style for the legend title and entries. Should match what
+    // Empress uses in its body CSS.
+    // The context font apparently needs to be set as just "font", but
+    // setting the actual text styles in the SVG that way seems to cause
+    // some problems for Inkscape and GIMP's SVG importers (e.g. in
+    // Inkscape it overrides the title font-weight, and in GIMP the entire
+    // thing is ignored -- the font shows up as some small serif font). So
+    // we set the context font and <style> font stuff different ways.
+    Legend.SVG_FONTSIZE = "30pt";
+    Legend.SVG_FONTFAM = "Arial,Helvetica,sans-serif";
+    Legend.SVG_FONT = Legend.SVG_FONTSIZE + " " + Legend.SVG_FONTFAM;
+
+    // Used as a rough estimate about the consumed width by text strings.
+    Legend.SVG_CONTEXT = document.createElement("canvas").getContext("2d");
+    // Fun fact: if you accidentally include a semicolon at the end of the
+    // font then this will break Legend.SVG_CONTEXT.measureText()...
+    Legend.SVG_CONTEXT.font = "bold " + Legend.SVG_FONT;
+
+    // Set global styling for the SVG, cutting down a bit on redundant text
+    // in the output SVG. (This is based on how the vertex/fragment shader
+    // code in drawer.js is constructed as an array of strings.)
+    Legend.SVG_STYLE = [
+        "<style>",
+        "text {",
+        "font-family: " + Legend.SVG_FONTFAM + ";",
+        "font-size: " + Legend.SVG_FONTSIZE + ";",
+        "}",
+        ".btext { font-weight: bold; }",
+        ".blackborder { stroke: #000000; stroke-width: 1; }",
+        "</style>",
+    ].join("\n") + "\n";
 
     return Legend;
 });

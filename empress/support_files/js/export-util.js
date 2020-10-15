@@ -347,6 +347,10 @@ define(["underscore", "chroma"], function (_, chroma) {
     /**
      * Creates an SVG string to export legends.
      *
+     * This delegates most of the work to the individual Legend objects -- see
+     * Legend.exportSVG() (and the other more specific exporting functions for
+     * the different legend types) for details.
+     *
      * @param {Array} Array of Legend objects, which will be included in the
      *                exported SVG. These will be ordered in the same way that
      *                they are ordered in the Array (so the first legend will
@@ -356,36 +360,19 @@ define(["underscore", "chroma"], function (_, chroma) {
      * @return {String} svg SVG code representing all the specified legends.
      */
     function exportLegendSVG(legends) {
-        // the SVG string to be generated
+        // The SVG string to be generated
         var svg = "";
 
-        // All distances are based on this variable. The scale of the resulting
-        // SVG can therefore be altered by changing this value.
-        var unit = 30;
-
-        // distance between two text lines as a multiplication factor of UNIT
-        var lineHeightScaleFactor = 1.8;
-
-        var lineHeight = unit * lineHeightScaleFactor;
-
-        // Count the number of used rows
-        var row = 1;
-
-        // Also keep track of the maximum-width legend SVG, so that (when
-        // merging this SVG with the tree SVG) we can resize the viewbox
-        // accordingly
+        // Keep track of the bounding box needed to hold all of the legends
+        // exported. Legends are stacked vertically, so we only pass the maxY
+        // to Legend.exportSVG(). However, we do need to keep track of the maxX
+        // so that we know the width taken up by this SVG.
         var maxX = 0;
         var maxY = 0;
 
         _.each(legends, function (legend, legendIndex) {
-            if (legendIndex > 0) {
-                // Add space between adjacent legends
-                row++;
-                maxY += lineHeight;
-            }
-            var legendSVGData = legend.exportSVG(row, unit, lineHeight);
+            var legendSVGData = legend.exportSVG(maxY);
             svg += legendSVGData.svg;
-            row = legendSVGData.rowsUsed;
             // Based on the width of this legend's bounding box, try to update
             // maxX. (Different legends may have different widths, so this
             // isn't always going to be updated; however, we just place legends
@@ -393,14 +380,6 @@ define(["underscore", "chroma"], function (_, chroma) {
             maxX = Math.max(maxX, legendSVGData.width);
             maxY += legendSVGData.height;
         });
-
-        // Slice off extra vertical space below the bottom legend. The height
-        // of this space seems to always be equal to exactly
-        // (# legends - 1) * unit. I think this may come from topY (in
-        // Legend.exportSVG()) starting at row - 1, but I haven't been able to
-        // get things exactly right yet. It would be good to adjust things so
-        // that this ugly step isn't required.
-        maxY -= (legends.length - 1) * unit;
 
         // minX and minY are always going to be 0. (In the tree export, the
         // root node is (0, 0) so there are usually negative coordinates; here,
