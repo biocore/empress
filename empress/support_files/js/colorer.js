@@ -230,8 +230,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
         // Create SVG describing the gradient: basically, we sample the color
         // map along the domain 101 times, and use these 101 colors to define
-        // the <linearGradient /> for each percentage in the range [0%, 100%].
-        // (See https://github.com/biocore/emperor/issues/788 for context.)
+        // the <linearGradient /> for each integer percentage in the inclusve
+        // range [0%, 100%]. See https://github.com/biocore/emperor/issues/788.
         this._gradientID = "Gradient" + this._gradientIDSuffix;
         var mid = (min + max) / 2;
         var stopColors = interpolator.colors(101);

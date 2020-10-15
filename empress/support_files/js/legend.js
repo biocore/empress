@@ -680,8 +680,8 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
      *                      should be placed. (Legend exporting currently works
      *                      by stacking legends vertically, so the first legend
      *                      to be exported should have topY = 0, the next will
-     *                      have topY = (first legend's height + some spacing),
-     *                      and so on.)
+     *                      have topY = (first legend's height + maybe some
+     *                      spacing), and so on.)
      *
      * @return {Object} Contains three keys:
      *                  -svg: String containing the legend SVG
@@ -742,11 +742,15 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         };
     };
 
+    // Shown at the bottom of continuous legends in the page when some values
+    // in a continuous field can't be represented on a gradient
     Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING =
         "Some value(s) in this field were missing and/or not numeric. " +
         "These value(s) have been left out of the gradient, and no bar(s) " +
         "have been drawn for them.";
 
+    // Short version of the above warning, shown for the same legends when
+    // exported to SVG
     Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING_SHORT =
         "Missing / non-numeric value(s) omitted.";
 
