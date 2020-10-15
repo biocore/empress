@@ -1,10 +1,10 @@
-require(["jquery", "chroma", "UtilitiesForTesting", "Legend", "Colorer"], function (
-    $,
-    chroma,
-    UtilitiesForTesting,
-    Legend,
-    Colorer
-) {
+require([
+    "jquery",
+    "chroma",
+    "UtilitiesForTesting",
+    "Legend",
+    "Colorer",
+], function ($, chroma, UtilitiesForTesting, Legend, Colorer) {
     $(document).ready(function () {
         module("Legend", {
             // Create and destroy the container HTML element within the test,
@@ -222,7 +222,10 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend", "Colorer"], functi
             // 3. Check non-numeric warning
             var warning = this.containerEle.children[2];
             equal(warning.tagName, "P");
-            equal(warning.innerText, Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING);
+            equal(
+                warning.innerText,
+                Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING
+            );
             // Verify that the warning <p> has white-space: normal; set so it
             // has line breaks, like normal text
             equal($(warning).css("white-space"), "normal");
