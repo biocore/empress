@@ -167,13 +167,18 @@ define(["Empress", "BPTree", "BiomTable"], function (
      * color map "Viridis".
      *
      * Note that EMPress splits up the gradient SVG into two separate
-     * attributes of the Colorer object: gradientSoloSVG and gradientHTMLSVG.
-     * The "solo" SVG contains the <defs> and <linearGradient> that define the
-     * gradient, and the the "HTML" SVG contains the <rect> and <text>s that
-     * position the gradient and place min / mid / max value text along it.
-     * The reason for this split is to make exporting gradient SVGs easier.
+     * attributes of the Colorer object: _gradientSVG and _pageSVG.
+     * The gradient SVG contains the <defs> and <linearGradient> that define
+     * the gradient, and the the page SVG contains the <rect> and <text>s that
+     * position the gradient in a HTML element within the application and
+     * place min / mid / max value text along it.
      *
-     * Here, we return both SVGs as separate strings in an Array.
+     * The reason for this split is to make exporting continuous legends
+     * easier, since if we want to alter the height of the gradient we'll need
+     * to replace the page SVG with custom code.
+     *
+     * Here, we return both SVGs -- gradient and page -- as separate strings
+     * in an Array.
      *
      * This data was (at least initially) taken directly from Emperor's tests:
      * https://github.com/biocore/emperor/blob/00c73f80c9d504826e61ddcc8b2c0b93f344819f/tests/javascript_tests/test_color_view_controller.js#L212
@@ -187,7 +192,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
      *  3. Newlines have been inserted in a few places throughout the SVG,
      *     to make reading it slightly more pleasant.
      *
-     * @return {Array} [soloSVG, htmlSVG]
+     * @return {Array} [gradientSVG, pageSVG]
      */
     function getReferenceSVGs() {
         return [

@@ -435,36 +435,40 @@ require([
                 0.552941,
             ]);
         });
-        test("Test continuous-scaling-specific data properly set", function () {
+        test("Test Colorer.getGradientInfo (just numeric values)", function () {
             var eles = ["0", "1", "2", "3", "4"];
             var colorer = new Colorer("Viridis", eles, true);
+            var gradInfo = colorer.getGradientInfo();
 
             var ref = UtilitiesForTesting.getReferenceSVGs();
-            equal(colorer.gradientSoloSVG, ref[0]);
-            equal(colorer.gradientHTMLSVG, ref[1]);
-            equal(colorer.minValStr, "0");
-            equal(colorer.midValStr, "2");
-            equal(colorer.maxValStr, "4");
+            equal(gradInfo.gradientSVG, ref[0]);
+            equal(gradInfo.pageSVG, ref[1]);
+            equal(gradInfo.minValStr, "0");
+            equal(gradInfo.midValStr, "2");
+            equal(gradInfo.maxValStr, "4");
             // The missingNonNumerics value should be false, since all of the
             // values we passed to Colorer are numeric
-            notOk(colorer.missingNonNumerics);
+            notOk(gradInfo.missingNonNumerics);
         });
-        test("Test continuous data set (numeric + non-numeric values)", function () {
+        test("Test Colorer.getGradientInfo (numeric + non-numeric values)", function () {
             var eles = ["0", "1", "2", "3", "asdf", "4"];
             var colorer = new Colorer("Viridis", eles, true);
+            var gradInfo = colorer.getGradientInfo();
+
             var ref = UtilitiesForTesting.getReferenceSVGs();
-            equal(colorer.gradientSoloSVG, ref[0]);
-            equal(colorer.gradientHTMLSVG, ref[1]);
-            equal(colorer.minValStr, "0");
-            equal(colorer.midValStr, "2");
-            equal(colorer.maxValStr, "4");
+            equal(gradInfo.gradientSVG, ref[0]);
+            equal(gradInfo.pageSVG, ref[1]);
+            equal(gradInfo.minValStr, "0");
+            equal(gradInfo.midValStr, "2");
+            equal(gradInfo.maxValStr, "4");
             // Main difference with previous test: non-numeric warning should
             // be used
-            ok(colorer.missingNonNumerics);
+            ok(gradInfo.missingNonNumerics);
         });
-        test("Test Colorer.getGradientSVG (custom gradientIDSuffix)", function () {
+        test("Test Colorer.getGradientInfo (custom gradientIDSuffix)", function () {
             var eles = ["0", "1", "2", "3", "4"];
             var colorer = new Colorer("Viridis", eles, true, 5);
+            var gradInfo = colorer.getGradientInfo();
 
             // The "Gradient0" IDs in the reference SVGs should be replaced
             // with "Gradient5". The split/join thing is a way of replacing one
@@ -476,35 +480,35 @@ require([
             };
 
             var ref = UtilitiesForTesting.getReferenceSVGs();
-            equal(colorer.gradientSoloSVG, repl(ref[0]));
-            equal(colorer.gradientHTMLSVG, repl(ref[1]));
-            equal(colorer.minValStr, "0");
-            equal(colorer.midValStr, "2");
-            equal(colorer.maxValStr, "4");
-            notOk(colorer.missingNonNumerics);
+            equal(gradInfo.gradientSVG, repl(ref[0]));
+            equal(gradInfo.pageSVG, repl(ref[1]));
+            equal(gradInfo.minValStr, "0");
+            equal(gradInfo.midValStr, "2");
+            equal(gradInfo.maxValStr, "4");
+            notOk(gradInfo.missingNonNumerics);
         });
-        test("Test Colorer.getGradientSVG (error: no gradient defined)", function () {
-            var expectedErrorRegex = /No gradient defined for this Colorer; check that useQuantScale is true and that the selected color map is not discrete./;
+        test("Test Colorer.getGradientInfo (error: no gradient data)", function () {
+            var expectedErrorRegex = /No gradient data defined for this Colorer; check that useQuantScale is true and that the selected color map is not discrete./;
 
             // Error case 1: useQuantScale is false
             var eles = ["0", "1", "2", "3", "4"];
             var colorer = new Colorer("Viridis", eles);
             throws(function () {
-                colorer.getGradientSVG();
+                colorer.getGradientInfo();
             }, expectedErrorRegex);
 
             // Error case 2: useQuantScale is true, but the color map is
             // discrete
             colorer = new Colorer("Paired", eles, true);
             throws(function () {
-                colorer.getGradientSVG();
+                colorer.getGradientInfo();
             }, expectedErrorRegex);
 
             // Error case 3: useQuantScale is false and the color map is
             // discrete
             colorer = new Colorer("Pastel2", eles);
             throws(function () {
-                colorer.getGradientSVG();
+                colorer.getGradientInfo();
             }, expectedErrorRegex);
         });
         test("Test Colorer with custom colormaps", function () {
