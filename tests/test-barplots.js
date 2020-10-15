@@ -311,6 +311,7 @@ require([
         // Check sample metadata barplot defaults
         equal(layer1.colorBySMField, empress._barplotPanel.smCols[0]);
         equal(layer1.colorBySMColorMap, "discrete-coloring-qiime");
+        equal(layer1.colorBySMColorReverse, false);
         equal(layer1.lengthSM, BarplotLayer.DEFAULT_LENGTH);
     });
     // TODO: Test that interacting with various elements of the BarplotLayer UI

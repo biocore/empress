@@ -1394,7 +1394,13 @@ define([
         var sortedUniqueValues = this.getUniqueSampleValues(
             layer.colorBySMField
         );
-        var colorer = new Colorer(layer.colorBySMColorMap, sortedUniqueValues);
+        var colorer = new Colorer(
+            layer.colorBySMColorMap,
+            sortedUniqueValues,
+            undefined,
+            undefined,
+            layer.colorBySMColorReverse
+        );
         var sm2color = colorer.getMapRGB();
         // Do most of the hard work: compute the frequencies for each tip (only
         // the tips present in the BIOM table, that is)
