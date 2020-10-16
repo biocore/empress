@@ -273,14 +273,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
-     * @param {Float} startAngle The first tip in the tree visited is assigned
-     *                           this angle (in radians). Can be used to rotate
-     *                           the tree: 0 is the eastmost point of the
-     *                           theoretical "circle" surrounding the root
-     *                           node, Math.PI / 2 is the northmost point of
-     *                           that circle, etc.). I believe this is
-     *                           analogous to how the "rotation" parameter of
-     *                           iTOL works.
      * @return {Object} Object with the following properties:
      *                   -x0, y0 ("starting point" x and y)
      *                   -x1, y1 ("ending point" x and y)
@@ -300,8 +292,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         height,
         ignoreLengths,
         leafSorting,
-        normalize = true,
-        startAngle = 0
+        normalize = true
     ) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
@@ -319,7 +310,16 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var arcEndAngle = new Array(tree.size + 1).fill(0);
 
         var anglePerTip = (2 * Math.PI) / tree.numleaves();
-        var prevAngle = startAngle;
+
+        // Note: this means that the first tip visited in the tree is
+        // positioned on the rightmost point of the circle. This also means
+        // that trees with a single tip should look basically identical in the
+        // circular and rectangular layouts. This really should not be changed
+        // -- when we add support for rotating the tree, that should be done
+        // after computing layouts, as a WebGL matrix multiplication thing.
+        // See https://github.com/biocore/empress/issues/359.
+        var prevAngle = 0;
+
         var child, currRadius;
         var maxX = 0,
             minX = Number.POSITIVE_INFINITY;
@@ -409,13 +409,29 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minY = Math.min(minY, y1[i]);
         }
 
+        // Compute two ratios: width / dx, and height / dy (where "width" and
+        // "height" are the caller-specified values corresponding to something
+        // like canvas size). Set scaleFactor to the maximum of these ratios.
+        // This won't actually change the relative positions of nodes -- think
+        // of this as equivalent to rescaling an image in an image editor.
+        //
+        // NOTE that it's possible for maxY and minY to both be 0, if the tree
+        // has only one tip. In this case, we just use the width scale (since
+        // the tree is guaranteed to have at least one node with nonzero
+        // length, and since the "start angle" is 0 so 1-tip trees are
+        // positioned along the x-axis).
+        var scaleFactor;
         var widthScale = width / (maxX - minX);
-        var heightScale = height / (maxY - minY);
-        var scaleFactor = Math.max(widthScale, heightScale);
+        if (maxY > minY) {
+            var heightScale = height / (maxY - minY);
+            scaleFactor = Math.max(widthScale, heightScale);
+        } else {
+            scaleFactor = widthScale;
+        }
+
         // Go over the tree (in postorder, but order doesn't really matter
         // for this) to determine arc positions for non-root internal nodes.
-        // I think determining arc positions could be included in the above for
-        // loop...
+        // Also scale nodes' coordinates, while we're at it.
         for (i = 1; i < tree.size; i++) {
             if (normalize) {
                 x0[i] *= scaleFactor;
