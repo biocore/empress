@@ -422,15 +422,24 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         // This won't actually change the relative positions of nodes -- think
         // of this as equivalent to rescaling an image in an image editor.
         //
-        // NOTE that it's possible for maxY and minY to both be 0, if the tree
-        // has only one tip. In this case, we just use the width scale (since
-        // the tree is guaranteed to have at least one node with nonzero
-        // length, and since the "start angle" is 0 so 1-tip trees are
-        // positioned along the x-axis).
+        // NOTE that it's possible for maxY and minY to both be 0 (or both
+        // almost 0), if the tree has only one tip. In this case, we just
+        // use the width scale (since the tree is guaranteed to have at
+        // least one node with nonzero length, and since the "start angle" is
+        // 0 so 1-tip trees are positioned along the x-axis).
         var scaleFactor;
-        var widthScale = width / (maxX - minX);
-        if (maxY > minY) {
-            var heightScale = height / (maxY - minY);
+
+        var dx = maxX - minX;
+        var dy = maxY - minY;
+        var widthScale = width / dx;
+        // In bizarre corner cases (e.g. trees with exactly two tips where both
+        // are children of the root), it's possible for the y coordinates of
+        // these nodes to be very slightly different (since they're computed as
+        // floats) albeit still essentially the same number. So, to make life
+        // easier, we use an epsilon of 1e-5 -- only if dy is at least this
+        // epsilon will we try height scaling.
+        if (dy >= 1e-5) {
+            var heightScale = height / dy;
             scaleFactor = Math.max(widthScale, heightScale);
         } else {
             scaleFactor = widthScale;

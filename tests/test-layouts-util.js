@@ -59,6 +59,14 @@ require([
                     ["", 4.0, 3.0, 2.0, 1.0, 1.0],
                     null
                 );
+
+                // In Newick format: "(a:1, b:2)root:3;"
+                this.twoTipTree = new BPTree(
+                    new Uint8Array([1, 1, 0, 1, 0, 0]),
+                    ["", "a", "b", "root"],
+                    ["", 1, 2, 3],
+                    null
+                );
             },
 
             teardown: function () {
@@ -497,18 +505,108 @@ require([
                 // We're normalizing the coordinates, so each coordinate will
                 // be multiplied by width / (maxX - minX), aka 100 / (3 - 0) =
                 // 100 / 3 = 33.3333...
-                deepEqual(obs.x0, [0, 100 / 3, 0, 0], "x0");
-                deepEqual(obs.y0, [0, 0, 0, 0], "y0");
-                deepEqual(obs.x1, [0, 100, 100 / 3, 0], "x1");
-                deepEqual(obs.y1, [0, 0, 0, 0], "y1");
+                UtilitiesForTesting.approxDeepEqualMulti(
+                    obs.x0,
+                    [0, 100 / 3, 0, 0],
+                    "x0"
+                );
+                UtilitiesForTesting.approxDeepEqualMulti(
+                    obs.y0,
+                    [0, 0, 0, 0],
+                    "y0"
+                );
+                UtilitiesForTesting.approxDeepEqualMulti(
+                    obs.x1,
+                    [0, 100, 100 / 3, 0],
+                    "x1"
+                );
+                UtilitiesForTesting.approxDeepEqualMulti(
+                    obs.y1,
+                    [0, 0, 0, 0],
+                    "y1"
+                );
 
-                // Check that angles remain ok
-                deepEqual(obs.angle, [0, 0, 0, 0], "angle");
-                deepEqual(obs.arcx0, [0, 0, 100 / 3, 0], "arcx0");
-                deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
-                deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
-                deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
+                // Check that angle / arc data remains ok
+                UtilitiesForTesting.approxDeepEqualMulti(
+                    obs.angle,
+                    [0, 0, 0, 0],
+                    "angle"
+                );
+                UtilitiesForTesting.approxDeepEqualMulti(
+                    obs.arcx0,
+                    [0, 0, 100 / 3, 0],
+                    "arcx0"
+                );
+                UtilitiesForTesting.approxDeepEqualMulti(
+                    obs.arcy0,
+                    [0, 0, 0, 0],
+                    "arcy0"
+                );
+                UtilitiesForTesting.approxDeepEqualMulti(
+                    obs.arcStartAngle,
+                    [0, 0, 0, 0],
+                    "arcStartAngle"
+                );
+                UtilitiesForTesting.approxDeepEqualMulti(
+                    obs.arcEndAngle,
+                    [0, 0, 0, 0],
+                    "arcEndAngle"
+                );
             });
+        });
+        test("Test two-tip tree circular layout: normalize = true", function () {
+            var obs = LayoutsUtil.circularLayout(
+                this.twoTipTree,
+                100,
+                500,
+                false,
+                "none",
+                true
+            );
+            // The tree looks like:
+            // b ---- root -- a
+            // We're normalizing the coordinates, so each coordinate will
+            // be multiplied by width / (maxX - minX), aka 100 / (1 - (-2)) =
+            // 100 / 3 = 33.3333...
+            //
+            // a and b both "start" at the root node, so their x0 and y0
+            // positions are (0, 0)
+            UtilitiesForTesting.approxDeepEqualMulti(
+                obs.x0,
+                [0, 0, 0, 0],
+                "x0"
+            );
+            UtilitiesForTesting.approxDeepEqualMulti(
+                obs.y0,
+                [0, 0, 0, 0],
+                "y0"
+            );
+            UtilitiesForTesting.approxDeepEqualMulti(
+                obs.x1,
+                [0, 100 / 3, -200 / 3, 0],
+                "x1"
+            );
+            UtilitiesForTesting.approxDeepEqualMulti(
+                obs.y1,
+                [0, 0, 0, 0],
+                "y1"
+            );
+
+            // Check that angles remain ok. a should have been assigned an
+            // angle of 0, and b should have been assigned an angle of pi
+            // (since it's exactly half of the (2pi - 0) angle range, since we
+            // have just two tips)
+            UtilitiesForTesting.approxDeepEqualMulti(
+                obs.angle,
+                [0, 0, Math.PI, 0],
+                "angle"
+            );
+            // And there aren't any non-root internal nodes, so arc data should
+            // all be empty.
+            deepEqual(obs.arcx0, [0, 0, 0, 0], "arcx0");
+            deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
+            deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
+            deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
         });
         test("Test unrooted layout", function () {
             var obs = LayoutsUtil.unrootedLayout(this.tree, 1, 1, false);

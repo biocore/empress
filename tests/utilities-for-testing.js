@@ -322,7 +322,11 @@ define(["Empress", "BPTree", "BiomTable"], function (
      *                         than this value. Defaults to 1e-5.
      */
     function approxDeepEqualMulti(arr1, arr2, message, epsilon = 1e-5) {
-        deepEqual(arr1.length, arr2.length);
+        deepEqual(
+            arr1.length,
+            arr2.length,
+            message + ": array lengths match up"
+        );
         for (var i = 0; i < arr1.length; i++) {
             approxDeepEqual(arr1[i], arr2[i], message, epsilon);
         }
