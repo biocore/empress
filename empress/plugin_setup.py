@@ -137,14 +137,19 @@ plugin.visualizers.register_function(
         'tree': Phylogeny[Rooted]
     },
     parameters={
-        'feature_metadata': Metadata
+        'feature_metadata': Metadata,
+        'shear_to_feature_metadata': Bool
     },
     input_descriptions={
         'tree': TREE_DESC
     },
     parameter_descriptions={
         'feature_metadata': FM_DESC,
-        'shear_to_feature_metadata': 'test'
+        'shear_to_feature_metadata': (
+            'Determines whether or not to shear the tree to only the tips '
+            'that are present as features in the feature metadata. By '
+            'default does not shear the tree.'
+        )
     },
     name='Visualize phylogenies with Empress',
     description=(

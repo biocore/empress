@@ -213,7 +213,7 @@ class Empress():
                         self.tip_md, self.int_md, self.tree
                     )
 
-            # remove features not present in feature metadata
+        else:
             if shear_to_feature_metadata:
                 features = set(self.features.index)
                 all_tips = set(bp_tree_tips(self.tree))
@@ -223,7 +223,6 @@ class Empress():
                         "Cannot shear tree to feature metadata with 0 tips!"
                     )
                 self.tree = self.tree.shear(features)
-        else:
             self.tip_md, self.int_md = match_tree_and_feature_metadata(
                 self.tree, self.features
             )

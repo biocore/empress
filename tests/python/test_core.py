@@ -497,8 +497,7 @@ class TestCore(unittest.TestCase):
         mini_fm = self.feature_metadata.copy()
         mini_fm.loc["b"] = ["pikachu", "raichu"]
         mini_fm.loc["d"] = ["mew", "mewtwo"]
-        viz = Empress(self.tree, self.table, self.sample_metadata,
-                      feature_metadata=mini_fm, shear_tree=False,
+        viz = Empress(self.tree, feature_metadata=mini_fm, shear_tree=False,
                       shear_to_feature_metadata=True)
         self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
                                             0, 0, 0])
@@ -510,14 +509,6 @@ class TestCore(unittest.TestCase):
 
         assert_frame_equal(viz.tip_md, mini_fm.loc[["a", "b", "d"]])
         assert_frame_equal(viz.int_md, mini_fm.loc[["h"]])
-
-        # table should be unchanged and be a different id instance
-        self.assertEqual(self.table, viz.table)
-        self.assertNotEqual(id(self.table), id(viz.table))
-
-        # sample metadata should be unchanged and be a different id instance
-        assert_frame_equal(self.sample_metadata, viz.samples)
-        self.assertNotEqual(id(self.sample_metadata), id(viz.samples))
 
         # feature metadata should be unchanged and be a different id instance
         assert_frame_equal(mini_fm, viz.features)
@@ -535,8 +526,7 @@ class TestCore(unittest.TestCase):
         )
         exp_errmsg = "Cannot shear tree to feature metadata with 0 tips!"
         with self.assertRaisesRegex(ValueError, exp_errmsg):
-            Empress(self.tree, self.table, self.sample_metadata,
-                    feature_metadata=int_fm, shear_tree=False,
+            Empress(self.tree, feature_metadata=int_fm, shear_tree=False,
                     shear_to_feature_metadata=True)
 
     def test_biplot(self):
