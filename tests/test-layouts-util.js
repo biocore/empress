@@ -9,6 +9,9 @@ require([
     $(document).ready(function () {
         module("Layout Utilities", {
             setup: function () {
+                // Save a bunch of extra typing
+                this.eq = UtilitiesForTesting.approxDeepEqualMulti;
+
                 // In Newick format: "(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;"
                 this.tree = new BPTree(
                     new Uint8Array([
@@ -318,28 +321,15 @@ require([
             // e.g. tip "d"'s parent node is b, which has a total radius from
             // the root of 2. The angle d was assigned is 0, so d's x0 position
             // is 2*cos(0) = 2*1 = 2.
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.x0,
-                [0, 2, -1, 0, 0, 0],
-                "x0"
-            );
+            this.eq(obs.x0, [0, 2, -1, 0, 0, 0], "x0");
             // Should be equal to (total radius to parent node)*sin(node angle)
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.y0,
-                [0, 0, 1.7321, 0, 0, 0],
-                "y0",
-                1e-4
-            );
+            this.eq(obs.y0, [0, 0, 1.7321, 0, 0, 0], "y0", 1e-4);
 
             // Check ending positions.
             // Should be equal to (total radius to node)*cos(node angle).
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.x1,
-                [0, 6, -2.5, 1, -0.5, 0],
-                "x1"
-            );
+            this.eq(obs.x1, [0, 6, -2.5, 1, -0.5, 0], "x1");
             // Should be equal to (total radius to node)*sin(node angle).
-            UtilitiesForTesting.approxDeepEqualMulti(
+            this.eq(
                 obs.y1,
                 [0, 0, 4.3301, 1.7321, -0.866, 0],
                 "y1",
@@ -352,7 +342,7 @@ require([
             // child angles (i.e. 0 and 2pi/3, so just pi/3). And finally, the
             // root gets an angle of 0 (but the root's angle isn't used for
             // anything anyway).
-            UtilitiesForTesting.approxDeepEqualMulti(
+            this.eq(
                 obs.angle,
                 [0, 0, (2 * Math.PI) / 3, Math.PI / 3, (4 * Math.PI) / 3, 0],
                 "angle"
@@ -363,28 +353,19 @@ require([
             // Should be equal to
             // (total radius to b = 2) * op(largest child angle of b = 2pi/3),
             // where "op" is cos() for x and sin() for y.
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcx0,
-                [0, 0, 0, -1, 0, 0],
-                "arcx0"
-            );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcy0,
-                [0, 0, 0, 1.7321, 0, 0],
-                "arcy0",
-                1e-4
-            );
+            this.eq(obs.arcx0, [0, 0, 0, -1, 0, 0], "arcx0");
+            this.eq(obs.arcy0, [0, 0, 0, 1.7321, 0, 0], "arcy0", 1e-4);
             // Check arc start and end angles. We've defined the "start" angle
             // to be the largest angle of an internal node's children, and the
             // "end" angle to be the smallest angle of these children.
             // In the case of b, it just has two children (with angles 2pi/3
             // and 0), so determining this is pretty straightforward...
-            UtilitiesForTesting.approxDeepEqualMulti(
+            this.eq(
                 obs.arcStartAngle,
                 [0, 0, 0, (2 * Math.PI) / 3, 0, 0],
                 "arc start angle"
             );
-            UtilitiesForTesting.approxDeepEqualMulti(
+            this.eq(
                 obs.arcEndAngle,
                 [0, 0, 0, 0, 0, 0],
                 "arc end angle"
@@ -490,6 +471,7 @@ require([
             });
         });
         test("Test straightline tree circular layout: normalize = true", function () {
+            var scope = this;
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
                 var obs = LayoutsUtil.circularLayout(
@@ -505,53 +487,17 @@ require([
                 // We're normalizing the coordinates, so each coordinate will
                 // be multiplied by width / (maxX - minX), aka 100 / (3 - 0) =
                 // 100 / 3 = 33.3333...
-                UtilitiesForTesting.approxDeepEqualMulti(
-                    obs.x0,
-                    [0, 100 / 3, 0, 0],
-                    "x0"
-                );
-                UtilitiesForTesting.approxDeepEqualMulti(
-                    obs.y0,
-                    [0, 0, 0, 0],
-                    "y0"
-                );
-                UtilitiesForTesting.approxDeepEqualMulti(
-                    obs.x1,
-                    [0, 100, 100 / 3, 0],
-                    "x1"
-                );
-                UtilitiesForTesting.approxDeepEqualMulti(
-                    obs.y1,
-                    [0, 0, 0, 0],
-                    "y1"
-                );
+                scope.eq(obs.x0, [0, 100 / 3, 0, 0], "x0");
+                scope.eq(obs.y0, [0, 0, 0, 0], "y0");
+                scope.eq(obs.x1, [0, 100, 100 / 3, 0], "x1");
+                scope.eq(obs.y1, [0, 0, 0, 0], "y1");
 
                 // Check that angle / arc data remains ok
-                UtilitiesForTesting.approxDeepEqualMulti(
-                    obs.angle,
-                    [0, 0, 0, 0],
-                    "angle"
-                );
-                UtilitiesForTesting.approxDeepEqualMulti(
-                    obs.arcx0,
-                    [0, 0, 100 / 3, 0],
-                    "arcx0"
-                );
-                UtilitiesForTesting.approxDeepEqualMulti(
-                    obs.arcy0,
-                    [0, 0, 0, 0],
-                    "arcy0"
-                );
-                UtilitiesForTesting.approxDeepEqualMulti(
-                    obs.arcStartAngle,
-                    [0, 0, 0, 0],
-                    "arcStartAngle"
-                );
-                UtilitiesForTesting.approxDeepEqualMulti(
-                    obs.arcEndAngle,
-                    [0, 0, 0, 0],
-                    "arcEndAngle"
-                );
+                scope.eq(obs.angle, [0, 0, 0, 0], "angle");
+                scope.eq(obs.arcx0, [0, 0, 100 / 3, 0], "arcx0");
+                scope.eq(obs.arcy0, [0, 0, 0, 0], "arcy0");
+                scope.eq(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
+                scope.eq(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
             });
         });
         test("Test two-tip tree circular layout: normalize = true", function () {
@@ -571,36 +517,16 @@ require([
             //
             // a and b both "start" at the root node, so their x0 and y0
             // positions are (0, 0)
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.x0,
-                [0, 0, 0, 0],
-                "x0"
-            );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.y0,
-                [0, 0, 0, 0],
-                "y0"
-            );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.x1,
-                [0, 100 / 3, -200 / 3, 0],
-                "x1"
-            );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.y1,
-                [0, 0, 0, 0],
-                "y1"
-            );
+            this.eq(obs.x0, [0, 0, 0, 0], "x0");
+            this.eq(obs.y0, [0, 0, 0, 0], "y0");
+            this.eq(obs.x1, [0, 100 / 3, -200 / 3, 0], "x1");
+            this.eq(obs.y1, [0, 0, 0, 0], "y1");
 
             // Check that angles remain ok. a should have been assigned an
             // angle of 0, and b should have been assigned an angle of pi
             // (since it's exactly half of the (2pi - 0) angle range, since we
             // have just two tips)
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.angle,
-                [0, 0, Math.PI, 0],
-                "angle"
-            );
+            this.eq(obs.angle, [0, 0, Math.PI, 0], "angle");
             // And there aren't any non-root internal nodes, so arc data should
             // all be empty.
             deepEqual(obs.arcx0, [0, 0, 0, 0], "arcx0");
@@ -636,8 +562,8 @@ require([
                     0,
                 ],
             };
-            UtilitiesForTesting.approxDeepEqualMulti(obs.xCoord, exp.xCoord);
-            UtilitiesForTesting.approxDeepEqualMulti(obs.yCoord, exp.yCoord);
+            this.eq(obs.xCoord, exp.xCoord);
+            this.eq(obs.yCoord, exp.yCoord);
         });
 
         test("Test getPostOrderNodes (ascending)", function () {
