@@ -529,6 +529,30 @@ class TestCore(unittest.TestCase):
             Empress(self.tree, feature_metadata=int_fm, shear_tree=False,
                     shear_to_feature_metadata=True)
 
+    def test_shear_tree_to_fm_one_tip(self):
+        lonely_fm = pd.DataFrame(
+            {
+                "fmdcol1": ["mimikyu"],
+            },
+            index=["a"]
+        )
+        viz = Empress(self.tree, feature_metadata=lonely_fm, shear_tree=False,
+                      shear_to_feature_metadata=True)
+
+        names = ['a', None, 'g', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
+
+        assert_frame_equal(viz.tip_md, lonely_fm.loc[["a"]])
+        self.assertTrue(viz.int_md.empty)
+
+        # feature metadata should be unchanged and be a different id instance
+        assert_frame_equal(lonely_fm, viz.features)
+        self.assertNotEqual(id(lonely_fm), id(viz.features))
+
+        self.assertIsNone(viz.ordination)
+
     def test_biplot(self):
         exp = self.feature_metadata.copy()
         viz = Empress(self.tree, self.table,
