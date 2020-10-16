@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from empress.tree import validate_tree
+from empress.tree import validate_tree, bp_tree_tips
 from empress.tools import (
     match_inputs, match_tree_and_feature_metadata,
     shifting, filter_feature_metadata_to_tree
@@ -216,6 +216,12 @@ class Empress():
             # remove features not present in feature metadata
             if shear_to_feature_metadata:
                 features = set(self.features.index)
+                all_tips = set(bp_tree_tips(self.tree))
+                # check that feature metadata contains at least 1 tip
+                if not features.intersection(all_tips):
+                    raise ValueError(
+                        "Cannot shear tree to feature metadata with 0 tips!"
+                    )
                 self.tree = self.tree.shear(features)
         else:
             self.tip_md, self.int_md = match_tree_and_feature_metadata(

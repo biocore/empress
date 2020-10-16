@@ -525,6 +525,20 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.ordination)
 
+    def test_shear_tree_to_fm_only_int(self):
+        int_fm = pd.DataFrame(
+            {
+                "fmdcol1": ["vulpix", "ninetales"],
+                "fmdcol2": ["growlithe", "arcanine"]
+            },
+            index=["g", "h"]
+        )
+        exp_errmsg = "Cannot shear tree to feature metadata with 0 tips!"
+        with self.assertRaisesRegex(ValueError, exp_errmsg):
+            Empress(self.tree, self.table, self.sample_metadata,
+                    feature_metadata=int_fm, shear_tree=False,
+                    shear_to_feature_metadata=True)
+
     def test_biplot(self):
         exp = self.feature_metadata.copy()
         viz = Empress(self.tree, self.table,
