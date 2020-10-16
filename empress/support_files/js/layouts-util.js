@@ -403,10 +403,17 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             x1[i] = currRadius * angleCos;
             y1[i] = currRadius * angleSin;
 
-            maxX = Math.max(maxX, x1[i]);
-            minX = Math.min(minX, x1[i]);
-            maxY = Math.max(maxY, y1[i]);
-            minY = Math.min(minY, y1[i]);
+            // _Usually_ we won't need to take the x0/y0 coordinates into
+            // account when expanding the bounding box (since by nature nodes
+            // should radiate "outward" from the root node, positioned at the
+            // center the circle at (0, 0)), but this assumption can fail for
+            // 1-tip trees or if in the future we modify the circular layout to
+            // e.g. only go from 0 to 180 degrees or something. So for safety's
+            // sake we consider the x0/y0 coordinates as well.
+            maxX = Math.max(maxX, x1[i], x0[i]);
+            minX = Math.min(minX, x1[i], x0[i]);
+            maxY = Math.max(maxY, y1[i], y0[i]);
+            minY = Math.min(minY, y1[i], y0[i]);
         }
 
         // Compute two ratios: width / dx, and height / dy (where "width" and
