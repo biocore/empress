@@ -565,7 +565,33 @@ require([
             this.eq(obs.xCoord, exp.xCoord);
             this.eq(obs.yCoord, exp.yCoord);
         });
-
+        test("Test straightline tree unrooted layout: normalize = true", function () {
+            var scope = this;
+            var trees = [this.straightLineTree, this.noRootLength];
+            _.each(trees, function (tree) {
+                var obs = LayoutsUtil.unrootedLayout(
+                    tree,
+                    100,
+                    500,
+                    false,
+                    true
+                );
+                // The tree looks like a vertical line:
+                //
+                //  b
+                //  |
+                //  |
+                //  a
+                //  |
+                // root
+                //
+                // We're normalizing the coordinates, so each coordinate will
+                // be multiplied by height / (maxY - minY), aka 500 / (3 - 0) =
+                // 500 / 3 = 166.6666...
+                scope.eq(obs.xCoord, [0, 0, 0, 0], "x1");
+                scope.eq(obs.yCoord, [0, 500, 500 / 3, 0], "y1");
+            });
+        });
         test("Test getPostOrderNodes (ascending)", function () {
             var po = LayoutsUtil.getPostOrderNodes(this.tree, "ascending");
             // Two explicit "choices" (all other choices, I think, are between
