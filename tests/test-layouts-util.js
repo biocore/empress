@@ -329,12 +329,7 @@ require([
             // Should be equal to (total radius to node)*cos(node angle).
             this.eq(obs.x1, [0, 6, -2.5, 1, -0.5, 0], "x1");
             // Should be equal to (total radius to node)*sin(node angle).
-            this.eq(
-                obs.y1,
-                [0, 0, 4.3301, 1.7321, -0.866, 0],
-                "y1",
-                1e-4
-            );
+            this.eq(obs.y1, [0, 0, 4.3301, 1.7321, -0.866, 0], "y1", 1e-4);
 
             // Check angles. There are just 3 tips so they get assigned
             // multiples of (2pi / 3) (that is: 0, 2pi/3, and 4pi/3). The lone
@@ -365,11 +360,7 @@ require([
                 [0, 0, 0, (2 * Math.PI) / 3, 0, 0],
                 "arc start angle"
             );
-            this.eq(
-                obs.arcEndAngle,
-                [0, 0, 0, 0, 0, 0],
-                "arc end angle"
-            );
+            this.eq(obs.arcEndAngle, [0, 0, 0, 0, 0, 0], "arc end angle");
         });
         test("Test circular layout preserves branch lengths", function () {
             var obs = LayoutsUtil.circularLayout(
@@ -539,31 +530,31 @@ require([
             var exp = {
                 xCoord: [
                     0,
-                    -0.3333333333333333,
-                    -0.5092880150001401,
-                    -0.25464400750007005,
-                    -0.12732200375003502,
-                    -0.12732200375003502,
-                    0.3819660112501051,
-                    0.49071198499985974,
-                    0.25464400750007005,
+                    -0.4650449880443435,
+                    -0.7105255165406029,
+                    -0.35526275827030146,
+                    -0.1776313791351507,
+                    -0.1776313791351507,
+                    0.5328941374054522,
+                    0.6846094475924276,
+                    0.35526275827030146,
                     0,
                 ],
                 yCoord: [
                     0,
-                    -0.10830656541096874,
-                    0.0827388535644527,
+                    -0.1511022762500036,
+                    0.1154318675000508,
                     0,
-                    0.309117981297196,
-                    0.04136942678222635,
-                    -0.04136942678222631,
-                    -0.4076585497973588,
-                    -0.08273885356445265,
+                    0.4312613037499384,
+                    0.05771593375002539,
+                    -0.05771593375002535,
+                    -0.5687386962500616,
+                    -0.11543186750005074,
                     0,
                 ],
             };
-            this.eq(obs.xCoord, exp.xCoord);
-            this.eq(obs.yCoord, exp.yCoord);
+            this.eq(obs.xCoord, exp.xCoord, "x-coordinates");
+            this.eq(obs.yCoord, exp.yCoord, "y-coordinates");
         });
         test("Test straightline tree unrooted layout: normalize = true", function () {
             var scope = this;

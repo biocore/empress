@@ -33,6 +33,64 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     /**
+     * Computes the "scale factor" for the circular / unrooted layouts.
+     *
+     * @param {Number} width Width to which the coordinates should be scaled
+     * @param {Number} height Height to which the coordinates should be scaled
+     * @param {Number} minX Minimum x-coordinate
+     * @param {Number} maxX Maximum x-coordinate
+     * @param {Number} minY Minimum y-coordinate
+     * @param {Number} maxY Maximum y-coordinate
+     * @param {Number} epsilon Threshold to use when considering the min and
+     *                         max coordinates on a given axis "different".
+     *                         If dx (a.k.a. maxX - minX) is < epsilon, then
+     *                         this will only look at the y-axis for scaling,
+     *                         and vice versa. If both dx and dy are < epsilon,
+     *                         this will raise an error.
+     *
+     * @return {Number} scaleFactor Equal to max(width/dx, height/dy), assuming
+     *                              that dx and dy are both >= epsilon. If
+     *                              either dx or dy is < epsilon, this'll just
+     *                              return the other term.
+     *
+     * @throws {Error} If (maxX - minX) < epsilon AND (maxY - minY) < epsilon.
+     *                 (Only one of the epsilon
+     *                 conditions being satisifed implies that the tree is a
+     *                 straight line along either the y- or x-axis, which is
+     *                 fine; if BOTH epsilon conditions are satisified, then
+     *                 something is probably very wrong.)
+     */
+    function computeScaleFactor(
+        width,
+        height,
+        minX,
+        maxX,
+        minY,
+        maxY,
+        epsilon = 1e-5
+    ) {
+        var dx = maxX - minX;
+        var dy = maxY - minY;
+        var widthScale = width / dx;
+        var heightScale = height / dy;
+        if (dy >= epsilon) {
+            if (dx >= epsilon) {
+                return Math.max(widthScale, heightScale);
+            } else {
+                return heightScale;
+            }
+        } else {
+            if (dx >= epsilon) {
+                return widthScale;
+            } else {
+                throw new Error(
+                    "dx and dy are < epsilon; can't scale this layout."
+                );
+            }
+        }
+    }
+
+    /**
      * Rectangular layout.
      *
      * In this sort of layout, each tip has a distinct y-position, and parent
@@ -416,33 +474,16 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minY = Math.min(minY, y1[i], y0[i]);
         }
 
-        // Compute two ratios: width / dx, and height / dy (where "width" and
-        // "height" are the caller-specified values corresponding to something
-        // like canvas size). Set scaleFactor to the maximum of these ratios.
-        // This won't actually change the relative positions of nodes -- think
-        // of this as equivalent to rescaling an image in an image editor.
-        //
-        // NOTE that it's possible for maxY and minY to both be 0 (or both
-        // almost 0), if the tree has only one tip. In this case, we just
-        // use the width scale (since the tree is guaranteed to have at
-        // least one node with nonzero length, and since the "start angle" is
-        // 0 so 1-tip trees are positioned along the x-axis).
-        var scaleFactor;
-
-        var dx = maxX - minX;
-        var dy = maxY - minY;
-        var widthScale = width / dx;
-        // In bizarre corner cases (e.g. trees with exactly two tips where both
-        // are children of the root), it's possible for the y coordinates of
-        // these nodes to be very slightly different (since they're computed as
-        // floats) albeit still essentially the same number. So, to make life
-        // easier, we use an epsilon of 1e-5 -- only if dy is at least this
-        // epsilon will we try height scaling.
-        if (dy >= 1e-5) {
-            var heightScale = height / dy;
-            scaleFactor = Math.max(widthScale, heightScale);
-        } else {
-            scaleFactor = widthScale;
+        var scaleFactor = 1;
+        if (normalize) {
+            scaleFactor = computeScaleFactor(
+                width,
+                height,
+                minX,
+                maxX,
+                minY,
+                maxY
+            );
         }
 
         // Go over the tree (in postorder, but order doesn't really matter
@@ -586,18 +627,20 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
         }
-        var scale;
         if (normalize) {
-            var widthScale = width / (maxX - minX);
-            var heightScale = height / (maxY - minY);
-            scale = Math.min(widthScale, heightScale);
-        } else {
-            scale = 1;
-        }
-        // skip the first element since the tree is zero-indexed
-        for (var i = 1; i <= tree.size - 1; i++) {
-            x2Arr[i] *= scale;
-            y2Arr[i] *= scale;
+            var scaleFactor = computeScaleFactor(
+                width,
+                height,
+                minX,
+                maxX,
+                minY,
+                maxY
+            );
+            // skip the first element since the tree is zero-indexed
+            for (var i = 1; i <= tree.size - 1; i++) {
+                x2Arr[i] *= scaleFactor;
+                y2Arr[i] *= scaleFactor;
+            }
         }
         // Don't need to reposition coordinates relative to the root because
         // the root is already at (0, 0)
