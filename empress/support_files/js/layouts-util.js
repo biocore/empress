@@ -35,6 +35,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     /**
      * Computes the "scale factor" for the circular / unrooted layouts.
      *
+     * NOTE that we don't bother with this for the rectangular layout since --
+     * 1. we scale the x- and y- axes separately in the rectangular layout
+     * 2. the rectangular layout y-coordinates should increase in increments of
+     *    one, so we shouldn't need to worry too much about detecting
+     *    floating-point numbers (if the max y is > 0, it's at least 1, so
+     *    we're fine)
+     *
      * @param {Number} width Width to which the coordinates should be scaled
      * @param {Number} height Height to which the coordinates should be scaled
      * @param {Number} minX Minimum x-coordinate
