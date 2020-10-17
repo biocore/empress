@@ -617,37 +617,30 @@ require([
             }, /Unrecognized leaf sorting method bluhbluhbluh/);
         });
         test("Test computeScaleFactor (both axes >= epsilon)", function () {
-            var sf = LayoutsUtil.computeScaleFactor(
-                    100,
-                    200,
-                    1,
-                    2,
-                    3,
-                    4
-            );
+            var sf = LayoutsUtil.computeScaleFactor(100, 200, 1, 2, 3, 4);
             deepEqual(sf, 200);
         });
         test("Test computeScaleFactor (only 1 axis >= epsilon)", function () {
             // Since minY = ~maxY, we should just use x-axis scaling (even
             // though 200 / 1e-10 will be much larger than 100 / 9).
             var sf = LayoutsUtil.computeScaleFactor(
-                    100,
-                    200,
-                    1,
-                    10,
-                    3,
-                    3 + 1e-10
+                100,
+                200,
+                1,
+                10,
+                3,
+                3 + 1e-10
             );
             deepEqual(sf, 100 / 9);
 
             // Check the reverse case (minX and maxX are too close)
             var sf2 = LayoutsUtil.computeScaleFactor(
-                    200,
-                    5,
-                    10,
-                    10 + 1e-6,
-                    3,
-                    40
+                200,
+                5,
+                10,
+                10 + 1e-6,
+                3,
+                40
             );
             deepEqual(sf2, 5 / 37);
         });
