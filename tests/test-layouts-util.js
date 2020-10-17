@@ -616,5 +616,17 @@ require([
                 LayoutsUtil.getPostOrderNodes(scope.tree, "bluhbluhbluh");
             }, /Unrecognized leaf sorting method bluhbluhbluh/);
         });
+        test("Test computeScaleFactor (error on both epsilons)", function () {
+            throws(function () {
+                LayoutsUtil.computeScaleFactor(
+                    100,
+                    200,
+                    1e-10,
+                    2e-10,
+                    3e-6,
+                    4e-6
+                );
+            }, /dx and dy are < epsilon; can't scale this layout./);
+        });
     });
 });

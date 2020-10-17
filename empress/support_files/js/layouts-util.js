@@ -650,6 +650,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
 
     return {
         getPostOrderNodes: getPostOrderNodes,
+        computeScaleFactor: computeScaleFactor,
         rectangularLayout: rectangularLayout,
         circularLayout: circularLayout,
         unrootedLayout: unrootedLayout,
