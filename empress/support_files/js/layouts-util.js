@@ -46,7 +46,15 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                         If dx (a.k.a. maxX - minX) is < epsilon, then
      *                         this will only look at the y-axis for scaling,
      *                         and vice versa. If both dx and dy are < epsilon,
-     *                         this will raise an error.
+     *                         this will raise an error: this should never
+     *                         happen in practice since the Python code
+     *                         guarantees that input trees have at least one
+     *                         non-root node and that the non-root node(s) have
+     *                         a positive length, but we catch it here just in
+     *                         case. (If this *does* start happening to people
+     *                         with real trees, which it shouldn't, then we may
+     *                         want to decrease this epsilon. But I highly
+     *                         doubt that will ever happen.)
      *
      * @return {Number} scaleFactor Equal to max(width/dx, height/dy), assuming
      *                              that dx and dy are both >= epsilon. If
