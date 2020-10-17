@@ -616,6 +616,17 @@ require([
                 LayoutsUtil.getPostOrderNodes(scope.tree, "bluhbluhbluh");
             }, /Unrecognized leaf sorting method bluhbluhbluh/);
         });
+        test("Test computeScaleFactor (both axes >= epsilon)", function () {
+            var sf = LayoutsUtil.computeScaleFactor(
+                    100,
+                    200,
+                    1,
+                    2,
+                    3,
+                    4
+            );
+            deepEqual(sf, 200);
+        });
         test("Test computeScaleFactor (error on both epsilons)", function () {
             throws(function () {
                 LayoutsUtil.computeScaleFactor(
