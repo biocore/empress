@@ -28,6 +28,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *                                 color map is discrete and/or
      *                                 useQuantScale is false, then this will
      *                                 be ignored.)
+     * @param{Boolean} reverse Defaults to false. If true, the color scale
+     *                         will be reversed, with respect to its default
+     *                         orientation.
      * @return{Colorer}
      * constructs Colorer
      */
@@ -35,7 +38,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         color,
         values,
         useQuantScale = false,
-        gradientIDSuffix = 0
+        gradientIDSuffix = 0,
+        reverse = false
     ) {
         var scope = this;
 
@@ -43,6 +47,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         this.sortedUniqueValues = util.naturalSort(_.uniq(values));
 
         this.color = color;
+        this.reverse = reverse;
 
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
@@ -118,6 +123,10 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         } else {
             palette = chroma.brewer[this.color];
         }
+        if (this.reverse) {
+            palette = _.clone(palette);
+            palette.reverse();
+        }
         for (var i = 0; i < this.sortedUniqueValues.length; i++) {
             var modIndex = i % palette.length;
             this.__valueToColor[this.sortedUniqueValues[i]] = palette[modIndex];
@@ -151,15 +160,25 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             // If there's only 1 unique value, set its color as the first in
             // the color map. This matches the behavior of Emperor.
             var onlyVal = this.sortedUniqueValues[0];
-            this.__valueToColor[onlyVal] = chroma.brewer[this.color][0];
+            var brewer = chroma.brewer[this.color];
+            if (this.reverse) {
+                this.__valueToColor[onlyVal] = brewer[brewer.length - 1];
+            } else {
+                this.__valueToColor[onlyVal] = brewer[0];
+            }
         } else {
             // ... Otherwise, do normal interpolation -- the first value gets
             // the "first" color in the color map, the last value gets the
             // "last" color in the color map, and things in between are
             // interpolated. Chroma takes care of all of the hard work.
-            var interpolator = chroma
-                .scale(this.color)
-                .domain([0, this.sortedUniqueValues.length - 1]);
+            var domain;
+            var rangeMax = this.sortedUniqueValues.length - 1;
+            if (this.reverse) {
+                domain = [rangeMax, 0];
+            } else {
+                domain = [0, rangeMax];
+            }
+            var interpolator = chroma.scale(this.color).domain(domain);
 
             for (var i = 0; i < this.sortedUniqueValues.length; i++) {
                 var val = this.sortedUniqueValues[i];
@@ -200,7 +219,13 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         var nums = _.map(split.numeric, parseFloat);
         var min = _.min(nums);
         var max = _.max(nums);
-        var interpolator = chroma.scale(this.color).domain([min, max]);
+        var domain;
+        if (this.reverse) {
+            domain = [max, min];
+        } else {
+            domain = [min, max];
+        }
+        var interpolator = chroma.scale(this.color).domain(domain);
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
         });
