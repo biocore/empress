@@ -124,7 +124,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             palette = chroma.brewer[this.color];
         }
         if (this.reverse) {
-            palette = _.toArray(palette);
+            palette = _.clone(palette);
             palette.reverse();
         }
         for (var i = 0; i < this.sortedUniqueValues.length; i++) {
