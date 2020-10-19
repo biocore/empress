@@ -314,7 +314,7 @@ require([
                 undefined,
                 true
             );
-            // The last value in the color map (for viridis, dark purple)
+            // The last value in the color map (for viridis, yellow)
             // should be used.
             equal(colorer.__valueToColor.abc, "#fee825");
 
