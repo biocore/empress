@@ -34,7 +34,7 @@ ARG_TYPE = click.Path(exists=True, dir_okay=False, file_okay=True)
               show_default=True)
 def main(tree, table, sample_metadata, feature_metadata, ordination,
          ignore_missing_samples, filter_extra_samples, filter_missing_features,
-         shear_tree, number_of_features):
+         shear_to_table, number_of_features):
     """Generate a development plot
 
     If no arguments are provided the moving pictures dataset will be loaded,
@@ -100,7 +100,7 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
                   ignore_missing_samples=ignore_missing_samples,
                   filter_extra_samples=filter_extra_samples,
                   filter_missing_features=filter_missing_features,
-                  shear_tree=shear_tree)
+                  shear_to_table=shear_to_table)
 
     if ordination is not None:
         viz._emperor.base_url = emperor_resources
