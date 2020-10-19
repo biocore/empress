@@ -306,6 +306,26 @@ require([
             equal(_.keys(hexmap)[0], "abc");
             equal(hexmap.abc, "#440154");
         });
+        test("Test using a sequential color map and a single value and reverse = true", function () {
+            var colorer = new Colorer(
+                "Viridis",
+                ["abc"],
+                undefined,
+                undefined,
+                true
+            );
+            // The last value in the color map (for viridis, dark purple)
+            // should be used.
+            equal(colorer.__valueToColor.abc, "#fee825");
+
+            rgbmap = colorer.getMapRGB();
+            equal(_.keys(rgbmap).length, 1);
+            equal(_.keys(rgbmap)[0], "abc");
+            hexmap = colorer.getMapHex();
+            equal(_.keys(hexmap).length, 1);
+            equal(_.keys(hexmap)[0], "abc");
+            equal(hexmap.abc, "#fee825");
+        });
         test("Test that using a sequential / diverging color map with useQuantScale = true throws an error when there are < 2 unique numeric values", function () {
             throws(function () {
                 new Colorer("RdBu", ["abc"], true);
