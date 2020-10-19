@@ -1864,7 +1864,11 @@ define([
      *                  unique features to a color. If there doesn't exist a
      *                  group with unique features then null will be returned.
      */
-    Empress.prototype.colorBySampleCat = function (cat, color, reverse = false) {
+    Empress.prototype.colorBySampleCat = function (
+        cat,
+        color,
+        reverse = false
+    ) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
