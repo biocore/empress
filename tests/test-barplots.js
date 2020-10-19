@@ -298,7 +298,7 @@ require([
         notOk(layer1.colorByFM);
         equal(layer1.colorByFMField, empress._barplotPanel.fmCols[0]);
         equal(layer1.colorByFMColorMap, "discrete-coloring-qiime");
-        equal(layer1.colorByFMColorReverse, false);
+        notOk(layer1.colorByFMColorReverse);
         notOk(layer1.colorByFMContinuous);
         ok(layer1.colorByFMColorMapDiscrete);
 
@@ -311,7 +311,7 @@ require([
         // Check sample metadata barplot defaults
         equal(layer1.colorBySMField, empress._barplotPanel.smCols[0]);
         equal(layer1.colorBySMColorMap, "discrete-coloring-qiime");
-        equal(layer1.colorBySMColorReverse, false);
+        notOk(layer1.colorBySMColorReverse);
         equal(layer1.lengthSM, BarplotLayer.DEFAULT_LENGTH);
     });
     // TODO: Test that interacting with various elements of the BarplotLayer UI

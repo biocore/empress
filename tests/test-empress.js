@@ -217,7 +217,6 @@ require([
                 "discrete-coloring-qiime",
                 "tip"
             );
-            let cm_copy = cm;
             var groups = ["1", "2"];
 
             // make sure '1' and '2' are the only gropus

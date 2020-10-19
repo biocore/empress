@@ -145,8 +145,10 @@ require([
             var eles = ["5", "2", "3", "1", "4", "0", "-5"];
             var colorer = new Colorer("PiYG", eles, true);
 
-            // Expected colors determined by reversing
-            // the colors in the previous test
+            // Expected colors determined by trying
+            // chroma.scale("PiYG").domain([-5,5])(n); where n = 0, 1, 2, etc.
+            // (see the interactive docs at https://gka.github.io/chroma.js/ --
+            // super useful for testing this)
 
             // Test extreme numeric values
             equal(colorer.__valueToColor["-5"], "#8e0152");
@@ -328,7 +330,6 @@ require([
             equal(hexmap["100"], "#33a02c");
         });
         test("Test discrete color map with reverse = true", function () {
-            // CVALDISCRETETEST
             var colorer = new Colorer(
                 "discrete-coloring-qiime",
                 ["1", "2", "100", "abc"],
