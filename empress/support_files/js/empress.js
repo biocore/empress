@@ -3290,7 +3290,7 @@ define([
                 var closestYDist = Infinity;
                 // Omit this._tree.size since the root is not a tip
                 for (var node = 1; node < this._tree.size; node++) {
-                    if (this._tree.isleaf(this._tree.postorder(node))) {
+                    if (this._tree.isleaf(this._tree.postorderselect(node))) {
                         var newYDist = Math.abs(this.getY(node) - y);
                         if (newYDist < closestYDist) {
                             closestYDist = newYDist;
@@ -3311,7 +3311,7 @@ define([
                 var closestTip;
                 var closestAngleDist = Infinity;
                 for (var node = 1; node < this._tree.size; node++) {
-                    if (this._tree.isleaf(this._tree.postorder(node))) {
+                    if (this._tree.isleaf(this._tree.postorderselect(node))) {
                         var newAngleDist = Math.abs(
                             this.getNodeInfo(node, "angle") - ptAngle
                         );

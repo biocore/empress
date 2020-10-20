@@ -439,6 +439,8 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
 
     CanvasEvents.prototype.placeBarplotNodeSelectionMenu = function (tipKey, x, y) {
         this.selectedNodeMenu.setSelectedNodes([tipKey]);
+        // TODO: store customx and customy here, and use when calling
+        // updatemenuposition in this class...
         this.selectedNodeMenu.showNodeMenu(x, y);
         this.empress.drawTree();
     };
