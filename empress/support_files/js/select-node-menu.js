@@ -509,12 +509,15 @@ define(["underscore", "util"], function (_, util) {
      * placed at this node's position; if multiple nodes are selected, the menu
      * will be placed at the first node's position.
      */
-    SelectedNodeMenu.prototype.updateMenuPosition = function (customX, customY) {
+    SelectedNodeMenu.prototype.updateMenuPosition = function (
+        customX,
+        customY
+    ) {
         if (this.nodeKeys === null) {
             return;
         }
 
-        var x,y, tableLoc;
+        var x, y, tableLoc;
         if (_.isUndefined(customX) && _.isUndefined(customY)) {
             var nodeToPositionAt = this.nodeKeys[0];
             x = this.empress.getX(nodeToPositionAt);

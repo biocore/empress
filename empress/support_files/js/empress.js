@@ -1341,7 +1341,8 @@ define([
         // Add a border on the outside of the outermost layer
         if (scope._barplotPanel.useBorders) {
             prevLayerMaxD = scope.addBorderBarplotLayerCoords(
-                coords, prevLayerMaxD
+                coords,
+                prevLayerMaxD
             );
         }
         // Update data on the farthest barplot point
@@ -3320,7 +3321,7 @@ define([
                 // https://www.mathsisfun.com/polar-cartesian-coordinates.html.
                 var ptAngle = Math.atan2(y, x);
                 if (ptAngle < 0) {
-                    ptAngle += (Math.PI * 2);
+                    ptAngle += Math.PI * 2;
                 }
                 var closestAngleDist = Infinity;
                 for (var node = 1; node < this._tree.size; node++) {
