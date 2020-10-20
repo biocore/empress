@@ -132,6 +132,8 @@ class Empress():
             self.samples = None
 
         if feature_metadata is not None:
+            # this will be transformed into self.tip_md and self.int_md in
+            # self._validate_and_match_data()
             self.features = feature_metadata.copy()
         else:
             self.features = None
@@ -220,7 +222,8 @@ class Empress():
                 # check that feature metadata contains at least 1 tip
                 if not features.intersection(all_tips):
                     raise ValueError(
-                        "Cannot shear tree to feature metadata with 0 tips!"
+                        "Cannot shear tree to feature metadata: no tips in "
+                        "the tree are present in the feature metadata."
                     )
                 self.tree = self.tree.shear(features)
             self.tip_md, self.int_md = match_tree_and_feature_metadata(

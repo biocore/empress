@@ -147,8 +147,11 @@ plugin.visualizers.register_function(
         'feature_metadata': FM_DESC,
         'shear_to_feature_metadata': (
             'Determines whether or not to shear the tree to only the tips '
-            'that are present as features in the feature metadata. By '
-            'default does not shear the tree.'
+            'that are present as features in the feature metadata. Internal '
+            'nodes present in the feature metadata are ignored during '
+            'shearing, and can potentially be filtered out if none of their '
+            'child tips are present in the feature metadata. By default, '
+            'does not shear the tree.'
         )
     },
     name='Visualize phylogenies with Empress',

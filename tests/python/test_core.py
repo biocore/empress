@@ -524,7 +524,10 @@ class TestCore(unittest.TestCase):
             },
             index=["g", "h"]
         )
-        exp_errmsg = "Cannot shear tree to feature metadata with 0 tips!"
+        exp_errmsg = (
+            "Cannot shear tree to feature metadata: no tips in "
+            "the tree are present in the feature metadata."
+        )
         with self.assertRaisesRegex(ValueError, exp_errmsg):
             Empress(self.tree, feature_metadata=int_fm, shear_to_table=False,
                     shear_to_feature_metadata=True)
@@ -550,6 +553,29 @@ class TestCore(unittest.TestCase):
         # feature metadata should be unchanged and be a different id instance
         assert_frame_equal(lonely_fm, viz.features)
         self.assertNotEqual(id(lonely_fm), id(viz.features))
+
+        self.assertIsNone(viz.ordination)
+
+    def test_shear_tree_to_fm_rmv_int_md(self):
+        """
+        Shear tree to feature metadata but metadata has entry for an internal
+        node that gets filtered out from the shearing.
+        """
+        # default feature metadata works - internal node h filtered out
+        viz = Empress(self.tree, feature_metadata=self.feature_metadata,
+                      shear_to_table=False, shear_to_feature_metadata=True)
+
+        names = ['a', None, 'g', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
+
+        assert_frame_equal(viz.tip_md, self.feature_metadata.loc[["a"]])
+        self.assertTrue(viz.int_md.empty)
+
+        # feature metadata should be unchanged and be a different id instance
+        assert_frame_equal(self.feature_metadata, viz.features)
+        self.assertNotEqual(id(self.feature_metadata), id(viz.features))
 
         self.assertIsNone(viz.ordination)
 
