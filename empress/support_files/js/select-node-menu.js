@@ -514,17 +514,16 @@ define(["underscore", "util"], function (_, util) {
             return;
         }
 
-        var tableLoc;
+        var x,y, tableLoc;
         if (_.isUndefined(customX) && _.isUndefined(customY)) {
-            console.log("case1");
             var nodeToPositionAt = this.nodeKeys[0];
-            var x = this.empress.getX(nodeToPositionAt);
-            var y = this.empress.getY(nodeToPositionAt);
-            tableLoc = this.drawer.toScreenSpace(x, y);
+            x = this.empress.getX(nodeToPositionAt);
+            y = this.empress.getY(nodeToPositionAt);
         } else {
-            console.log("case2");
-            tableLoc = {x: customX, y: customY};
+            x = customX;
+            y = customY;
         }
+        tableLoc = this.drawer.toScreenSpace(x, y);
 
         // set table location. add slight offset to location so menu appears
         // next to the node instead of on top of it.
