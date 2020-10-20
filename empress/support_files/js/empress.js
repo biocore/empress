@@ -3284,9 +3284,9 @@ define([
 
     Empress.prototype.getTipByBarplotClickPoint = function (x, y) {
         if (this._barplotsDrawn) {
+            var closestTip;
             if (this._currentLayout === "Rectangular") {
                 // Find the tip with the closest y
-                var closestTip;
                 var closestYDist = Infinity;
                 // Omit this._tree.size since the root is not a tip
                 for (var node = 1; node < this._tree.size; node++) {
@@ -3298,17 +3298,30 @@ define([
                         }
                     }
                 }
-                return closestTip;
             } else if (this._currentLayout === "Circular") {
-                // Shoutouts to
-                // https://www.mathsisfun.com/polar-cartesian-coordinates.html
-                var ptAngle = Math.atan(y / x);
-                if (x < 0) {
-                    ptAngle += Math.PI;
-                } else if (x > 0 && y < 0) {
-                    ptAngle += Math.PI * 2;
+                // We use atan2() to convert from Cartesian coordinates to
+                // the angle used for Polar coordinates. However, atan2 treats
+                // angles greater than pi (180 degrees) as being negative,
+                // whereas angles in Empress are stored in the range [0, 2pi].
+                // Basically, there are two different unit circles:
+                //
+                //       Math.atan2()       Empress
+                //
+                //           pi/2             pi/2
+                //            |                |
+                //-pi or pi --+-- 0       pi --+-- 0 or 2pi
+                //            |                |
+                //          -pi/2            3pi/2
+                //
+                // To address this, we just call atan2() and then -- if the
+                // angle returned is negative -- add 2pi to it. References:
+                // https://en.wikipedia.org/wiki/Atan2#endnote_a,
+                // https://stackoverflow.com/a/16614914/10730311,
+                // https://www.mathsisfun.com/polar-cartesian-coordinates.html.
+                var ptAngle = Math.atan2(y, x);
+                if (ptAngle < 0) {
+                    ptAngle += (Math.PI * 2);
                 }
-                var closestTip;
                 var closestAngleDist = Infinity;
                 for (var node = 1; node < this._tree.size; node++) {
                     if (this._tree.isleaf(this._tree.postorderselect(node))) {
@@ -3321,10 +3334,10 @@ define([
                         }
                     }
                 }
-                return closestTip;
             } else {
                 throw new Error("Unclear layout for barplots?");
             }
+            return closestTip;
         } else {
             throw new Error("Barplots not drawn?");
         }
