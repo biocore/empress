@@ -237,6 +237,21 @@ define([
         this._maxDisplacement = null;
 
         /**
+         * @type {Number}
+         * Analogous to this._maxDisplacement, but for the farthest edge
+         * of barplots. Used for determining if a click event falls within
+         * a barplot range.
+         */
+        this._barplotMaxDisplacement = null;
+
+        /**
+         * type {Number}
+         * The gap (in displacement) between the farthest node's endpoint (at
+         * this._maxDisplacement) and the first barplot layer.
+         */
+        this._INITIAL_BARPLOT_GAP = 100;
+
+        /**
          * @type{Boolean}
          * Indicates whether or not barplots are currently drawn.
          * @private
@@ -1284,7 +1299,7 @@ define([
         // start drawing barplots, and the first barplot layer. This could be
         // made into a barplot-panel-level configurable thing if desired.
         // (Note that, as with barplot lengths, the units here are arbitrary.)
-        var maxD = this._maxDisplacement + 100;
+        var maxD = this._maxDisplacement + this._INITIAL_BARPLOT_GAP;
 
         // As we iterate through the layers, we'll store the "previous layer
         // max D" as a separate variable. This will help us easily work with
@@ -1325,8 +1340,13 @@ define([
         });
         // Add a border on the outside of the outermost layer
         if (scope._barplotPanel.useBorders) {
-            scope.addBorderBarplotLayerCoords(coords, prevLayerMaxD);
+            prevLayerMaxD = scope.addBorderBarplotLayerCoords(
+                coords, prevLayerMaxD
+            );
         }
+        // Update data on the farthest barplot point
+        this._barplotMaxDisplacement = prevLayerMaxD;
+
         // NOTE that we purposefuly don't clear the barplot buffer until we
         // know all of the barplots are valid. If we were to call
         // this.loadBarplotBuff([]) at the start of this function, then if we'd
@@ -3235,6 +3255,78 @@ define([
             return null;
         } else {
             return this._tree.length(this._tree.postorderselect(nodeKey));
+        }
+    };
+
+    Empress.prototype.isPointWithinBarplotRange = function (x, y) {
+        var scope = this;
+        if (this._barplotsDrawn) {
+            var inRange = function (d) {
+                return (
+                    d > scope._maxDisplacement + scope._INITIAL_BARPLOT_GAP &&
+                    d <= scope._barplotMaxDisplacement
+                );
+            };
+
+            if (this._currentLayout === "Circular") {
+                var r = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+                return inRange(r);
+            } else if (this._currentLayout === "Rectangular") {
+                return inRange(x);
+            } else {
+                // barplots unsupported for the Unrooted layout
+                return false;
+            }
+        } else {
+            return false;
+        }
+    };
+
+    Empress.prototype.getTipByBarplotClickPoint = function (x, y) {
+        if (this._barplotsDrawn) {
+            if (this._currentLayout === "Rectangular") {
+                // Find the tip with the closest y
+                var closestTip;
+                var closestYDist = Infinity;
+                // Omit this._tree.size since the root is not a tip
+                for (var node = 1; node < this._tree.size; node++) {
+                    if (this._tree.isleaf(this._tree.postorder(node))) {
+                        var newYDist = Math.abs(this.getY(node) - y);
+                        if (newYDist < closestYDist) {
+                            closestYDist = newYDist;
+                            closestTip = node;
+                        }
+                    }
+                }
+                return closestTip;
+            } else if (this._currentLayout === "Circular") {
+                // Shoutouts to
+                // https://www.mathsisfun.com/polar-cartesian-coordinates.html
+                var ptAngle = Math.atan(y / x);
+                if (x < 0) {
+                    ptAngle += Math.PI;
+                } else if (x > 0 && y < 0) {
+                    ptAngle += Math.PI * 2;
+                }
+                var closestTip;
+                var closestAngleDist = Infinity;
+                for (var node = 1; node < this._tree.size; node++) {
+                    if (this._tree.isleaf(this._tree.postorder(node))) {
+                        var newAngleDist = Math.abs(
+                            this.getNodeInfo(node, "angle") - ptAngle
+                        );
+                        if (newAngleDist < closestAngleDist) {
+                            closestAngleDist = newAngleDist;
+                            closestTip = node;
+                        }
+                    }
+                }
+                return closestTip;
+            } else {
+                throw new Error("Unclear layout for barplots?");
+            }
+        } else {
+            throw new Error("Barplots not drawn?");
         }
     };
 
