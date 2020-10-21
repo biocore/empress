@@ -651,15 +651,13 @@ p.side-header button:hover,
     max-height: 100%;
 }
 
-#menu-box-node-name-warning, #menu-box-node-not-in-table-warning {
-    font-size: small;
-    font-weight: bold;
+#menu-box p {
     max-width: 500px;
+    font-size: small;
 }
 
-#menu-box-notes {
-    max-width: 500px;
-    font-size: small;
+#menu-box-node-name-warning {
+    font-weight: bold;
 }
 
 #menu-box-node-id {
