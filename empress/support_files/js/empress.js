@@ -3085,30 +3085,39 @@ define([
         }
         return this.getNodeInfo(node, "name");
     };
+
     /*
-     * Show the node menu for a node name
+     * Given a tip name and a list of sample metadata fields, computes the
+     * sample presence information: the number of samples for each unique
+     * value within each field that contain this tip.
      *
-     * Calculate the number of samples in which a tip appears for the
-     * unique values of a metadata field across a list of metadata fields.
+     * If the specified tip name is not present within the BIOM table (i.e. the
+     * tree was not shorn just to tips in the table, and one of those
+     * not-in-the-table tips was clicked on) then this will return null.
      *
      * @param {String} nodeName Name of the (tip) node for which to calculate
      *                          sample presence.
      * @param {Array} fields Metadata fields for which to calculate tip
      *                       sample presence.
-     * @return {Object} ctData Maps metadata field names to another Object,
-     *                         which in turn maps unique metadata values to
-     *                         the number of samples with this metadata value
-     *                         in this field that contain the given tip.
+     * @return {Object or null} ctData Maps metadata field names to another
+     *                                 Object, which in turn maps unique
+     *                                 metadata values to the number of samples
+     *                                 with this metadata value in this field
+     *                                 that contain the given tip.
+     *                                 (Will just be null, instead, if the tip
+     *                                 isn't present in the table.)
      */
     Empress.prototype.computeTipSamplePresence = function (nodeName, fields) {
-        var ctData = {};
-
-        for (var f = 0; f < fields.length; f++) {
-            var field = fields[f];
-            ctData[field] = this._biom.getObsCountsBy(field, nodeName);
+        if (this._biom.hasFeatureID(nodeName)) {
+            var ctData = {};
+            for (var f = 0; f < fields.length; f++) {
+                var field = fields[f];
+                ctData[field] = this._biom.getObsCountsBy(field, nodeName);
+            }
+            return ctData;
+        } else {
+            return null;
         }
-
-        return ctData;
     };
 
     /**

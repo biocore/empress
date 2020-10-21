@@ -5,12 +5,17 @@ define(["underscore", "util"], function (_, util) {
         this.fields = [];
         this.smTable = document.getElementById("menu-sm-table");
         this.smSection = document.getElementById("menu-sm-section");
+        this.nodeNotInTableWarning = document.getElementById(
+            "menu-box-node-not-in-table-warning"
+        );
         this.box = document.getElementById("menu-box");
         this.sel = document.getElementById("menu-select");
         this.addBtn = document.getElementById("menu-add-btn");
         this.nodeNameLabel = document.getElementById("menu-box-node-id");
         this.notes = document.getElementById("menu-box-notes");
-        this.warning = document.getElementById("menu-box-warning");
+        this.nodeNameWarning = document.getElementById(
+            "menu-box-node-name-warning"
+        );
         this.nodeLengthContainer = document.getElementById(
             "menu-box-node-length-container"
         );
@@ -198,7 +203,8 @@ define(["underscore", "util"], function (_, util) {
         }
 
         this.notes.textContent = "";
-        this.warning.textContent = "";
+        SelectedNodeMenu.hideWarning(this.nodeNameWarning);
+        SelectedNodeMenu.hideWarning(this.nodeNotInTableWarning);
 
         // show either leaf or internal node
         var t = emp._tree;
@@ -253,40 +259,53 @@ define(["underscore", "util"], function (_, util) {
 
         this.setNodeLengthLabel(node);
 
-        if (this.empress.isCommunityPlot) {
-            // 2. Add sample presence information for this tip
-            // TODO: handle case where tip isn't in table, which happens if
-            // --p-no-shear-to-table is passed
-            // (https://github.com/biocore/empress/issues/314)
+        // 2. Add sample presence information for this tip (only if this data
+        // is available in the first place, and if the user has selected at
+        // least one field to show sample presence information for)
+        if (this.empress.isCommunityPlot && this.fields.length > 0) {
             var ctData = this.empress.computeTipSamplePresence(
                 node,
                 this.fields
             );
-
-            // 2.1 The samples represented by this tip are sent to Emperor
-
-            // check if this tip is present in the BIOM table. The array returned
-            // by BIOMTable.getObsIDsDifference() contains the feature IDs present
-            // in the input array but not in the BIOM table -- so if the length of
-            // this array is zero, this feature is present in the table.
-            var diff = this.empress._biom.getObsIDsDifference([node]);
-            if (diff.length == 0) {
-                this._samplesInSelection = this.empress._biom.getSamplesByObservations(
-                    [node]
+            if (_.isNull(ctData)) {
+                // This tip isn't present in the table, so we don't have sample
+                // presence information for it.
+                SelectedNodeMenu.showWarning(
+                    this.nodeNotInTableWarning,
+                    "This node is a tip in the tree. It is not present " +
+                        "in the input feature table, so we do cannot show " +
+                        "sample presence information for it."
                 );
+                this.smSection.classList.add("hidden");
             } else {
-                this._samplesInSelection = [];
-            }
-            this._checkTips(diff);
+                // 2.1 The samples represented by this tip are sent to Emperor.
 
-            SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
-            if (this.fields.length > 0) {
-                this.notes.textContent =
-                    "This node is a tip in the tree. These values represent the " +
-                    "number of unique samples that contain this node.";
+                // Check if this tip is present in the BIOM table. The array
+                // returned by BIOMTable.getObsIDsDifference() contains the
+                // feature IDs present in the input array but not in the BIOM
+                // table -- so if the length of this array is zero, this
+                // feature is present in the table.
+                var diff = this.empress._biom.getObsIDsDifference([node]);
+                if (diff.length == 0) {
+                    this._samplesInSelection = this
+                        .empress
+                        ._biom
+                        .getSamplesByObservations([node]);
+                } else {
+                    this._samplesInSelection = [];
+                }
+                this._checkTips(diff);
+
+                SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
+                if (this.fields.length > 0) {
+                    this.notes.textContent =
+                        "This node is a tip in the tree. These values " +
+                            "represent the number of unique samples that " +
+                            "contain this node.";
+                }
+                this.smTable.classList.remove("hidden");
+                this.smSection.classList.remove("hidden");
             }
-            this.smSection.classList.remove("hidden");
-            this.smTable.classList.remove("hidden");
         }
     };
 
@@ -322,15 +341,18 @@ define(["underscore", "util"], function (_, util) {
                 name
             );
             if (keysOfNodesWithThisName.length > 1) {
-                this.warning.textContent =
+                SelectedNodeMenu.showWarning(
+                    this.nodeNameWarning, 
                     "Warning: " +
                     keysOfNodesWithThisName.length +
-                    " nodes exist with the " +
-                    "above name.";
+                    " nodes exist with the above name."
+                );
             }
         } else {
-            this.warning.textContent =
-                "No name was provided for this node in the input tree file.";
+            SelectedNodeMenu.showWarning(
+                this.nodeNameWarning,
+                "No name was provided for this node in the input tree file."
+            );
         }
 
         // 1. Add feature metadata information (if present) for this node
@@ -522,6 +544,15 @@ define(["underscore", "util"], function (_, util) {
         // next to the node instead of on top of it.
         this.box.style.left = Math.floor(tableLoc.x + 23) + "px";
         this.box.style.top = Math.floor(tableLoc.y - 43) + "px";
+    };
+
+    SelectedNodeMenu.showWarning = function (warningEle, msg) {
+        warningEle.textContent = msg;
+        warningEle.classList.remove("hidden");
+    };
+
+    SelectedNodeMenu.hideWarning = function (warningEle) {
+        warningEle.classList.add("hidden");
     };
 
     return SelectedNodeMenu;

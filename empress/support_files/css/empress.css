@@ -651,7 +651,7 @@ p.side-header button:hover,
     max-height: 100%;
 }
 
-#menu-box-warning {
+#menu-box-node-name-warning, #menu-box-node-not-in-table-warning {
     font-size: small;
     font-weight: bold;
     max-width: 500px;
