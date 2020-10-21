@@ -272,9 +272,9 @@ define(["underscore", "util"], function (_, util) {
                 // presence information for it.
                 SelectedNodeMenu.showWarning(
                     this.nodeNotInTableWarning,
-                    "This node is a tip in the tree. It is not present " +
-                        "in the input feature table, so we do cannot show " +
-                        "sample presence information for it."
+                    "This node is a tip in the tree. However, it is not " +
+                        "present in the input feature table, so we cannot " +
+                        "show sample presence information for it."
                 );
                 this.smSection.classList.add("hidden");
             } else {
