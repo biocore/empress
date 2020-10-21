@@ -776,5 +776,23 @@ require(["jquery", "underscore", "BiomTable"], function ($, _, BiomTable) {
                 "Test error thrown if unrecognized metadata col passed"
             );
         });
+        test("Test hasFeatureID", function () {
+            ok(this.biomTable.hasFeatureID("o1"));
+            ok(this.biomTable.hasFeatureID("o2"));
+            ok(this.biomTable.hasFeatureID("o3"));
+            ok(this.biomTable.hasFeatureID("o4"));
+            ok(this.biomTable.hasFeatureID("o5"));
+            notOk(this.biomTable.hasFeatureID("o100"));
+            notOk(this.biomTable.hasFeatureID(1));
+            notOk(this.biomTable.hasFeatureID(100));
+            notOk(this.biomTable.hasFeatureID([1, 2, 3]));
+            notOk(this.biomTable.hasFeatureID(["o1", "o2"]));
+            notOk(
+                this.biomTable.hasFeatureID({
+                    o1: "If you're storing feature IDs as objects",
+                    o2: "...please don't.",
+                })
+            );
+        });
     });
 });

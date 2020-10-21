@@ -200,6 +200,17 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
+     * Returns true if the table contains a feature name, false otherwise.
+     *
+     * @param {String} fID
+     *
+     * @return {Boolean}
+     */
+    BIOMTable.prototype.hasFeatureID = function (fID) {
+        return _.has(this._fID2Idx, fID);
+    };
+
+    /**
      * Return the feature IDs shared by the BIOM table and input array
      *
      * @param {Array[String]} other Array of strings to compute the
