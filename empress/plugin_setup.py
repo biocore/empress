@@ -60,7 +60,7 @@ plugin.visualizers.register_function(
         'filter_extra_samples': Bool,
         'filter_missing_features': Bool,
         'number_of_features': Int % Range(1, None),
-        'shear_tree': Bool
+        'shear_to_table': Bool
     },
     input_descriptions={
         'tree': TREE_DESC,
@@ -114,7 +114,7 @@ plugin.visualizers.register_function(
                               '(euclidean distance from origin). Note, this '
                               'parameter is only honored when a biplot is '
                               'inputed.',
-        'shear_tree': (
+        'shear_to_table': (
             'Determines whether or not to shear the tree to only the tips '
             'that are present as features in the feature table. By default, '
             'shears the tree.'
@@ -137,13 +137,22 @@ plugin.visualizers.register_function(
         'tree': Phylogeny[Rooted]
     },
     parameters={
-        'feature_metadata': Metadata
+        'feature_metadata': Metadata,
+        'shear_to_feature_metadata': Bool
     },
     input_descriptions={
         'tree': TREE_DESC
     },
     parameter_descriptions={
-        'feature_metadata': FM_DESC
+        'feature_metadata': FM_DESC,
+        'shear_to_feature_metadata': (
+            'Determines whether or not to shear the tree to only the tips '
+            'that are present as features in the feature metadata. Internal '
+            'nodes present in the feature metadata are ignored during '
+            'shearing, and can potentially be filtered out if none of their '
+            'child tips are present in the feature metadata. By default, '
+            'does not shear the tree.'
+        )
     },
     name='Visualize phylogenies with Empress',
     description=(
