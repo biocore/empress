@@ -188,7 +188,7 @@ define(["underscore", "util"], function (_, util) {
     SelectedNodeMenu.prototype.showNodeMenu = function () {
         // make sure the state machine is set
         if (this.nodeKeys === null) {
-            throw "showNodeMenu(): Nodes have not be set in the state machine!";
+            throw "showNodeMenu(): Nodes have not been selected.";
         }
 
         // grab the name of the node

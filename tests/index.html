@@ -122,25 +122,36 @@
   </div>
 
   <!-- Various side panel / selected-node-menu tags that are needed in order to
-       create an instance of CanvasEvents in Empress without crashing things.
-       Ideally, these should be loaded dynamically from what's in the empress
-       template HTML files, rather than inserted here willy-nilly.
+       create an instance of CanvasEvents / SelectedNodeMenu without crashing
+       things. Ideally, these should be loaded dynamically from what's in the
+       Empress template HTML files, rather than inserted here willy-nilly.
   -->
-  <div style="display: none;">
+  <div style="display: none;" id="element-graveyard">
     <input type="text" id="quick-search" placeholder="Search by node name..."
       style="flex-grow: 1;" class="empress-input">
     <button id="side-header-search-btn" style="flex-grow: 1;">Search</button>
-    <div id="menu-sm-table"></div>
-    <div id="menu-sm-section"></div>
-    <div id="menu-box"></div>
-    <div id="menu-select"></div>
-    <div id="menu-add-btn"></div>
-    <div id="menu-box-node-id"></div>
-    <div id="menu-box-notes"></div>
-    <div id="menu-box-warning"></div>
-    <div id="menu-fm-table"></div>
-    <div id="menu-fm-header"></div>
-    <div id="menu-sm-header"></div>
+    <div class="hidden" id="menu-box">
+      <h1 id="menu-box-node-id"></h1>
+      <p class="hidden" id="menu-box-node-name-warning"></p>
+      <div id="menu-box-node-length-container" class="hidden">
+        <strong>Node length:</strong>
+        <span id="menu-box-node-length"></span>
+      </div>
+      <h3 class="hidden" id="menu-fm-header">Feature Metadata</h3>
+      <table class="menu-table hidden" id="menu-fm-table"></table>
+      <p class="hidden" id="menu-box-node-not-in-table-warning"></p>
+      <div id="menu-sm-section">
+        <h3 class="hidden" id="menu-sm-header">Sample Presence Information</h3>
+        <p id="menu-box-notes"></p>
+        <table class="menu-table" id="menu-sm-table"></table>
+        <br>
+        <strong>Select a metadata column to summarize</strong>
+        <label class="menu-select-container">
+          <select id="menu-select"></select>
+        </label>
+        <button id="menu-add-btn">Add</button>
+      </div>
+    </div>
   </div>
 
   <script>
