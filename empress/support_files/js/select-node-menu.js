@@ -287,10 +287,9 @@ define(["underscore", "util"], function (_, util) {
                 // feature is present in the table.
                 var diff = this.empress._biom.getObsIDsDifference([node]);
                 if (diff.length == 0) {
-                    this._samplesInSelection = this
-                        .empress
-                        ._biom
-                        .getSamplesByObservations([node]);
+                    this._samplesInSelection = this.empress._biom.getSamplesByObservations(
+                        [node]
+                    );
                 } else {
                     this._samplesInSelection = [];
                 }
@@ -300,8 +299,8 @@ define(["underscore", "util"], function (_, util) {
                 if (this.fields.length > 0) {
                     this.notes.textContent =
                         "This node is a tip in the tree. These values " +
-                            "represent the number of unique samples that " +
-                            "contain this node.";
+                        "represent the number of unique samples that " +
+                        "contain this node.";
                 }
                 this.smTable.classList.remove("hidden");
                 this.smSection.classList.remove("hidden");
@@ -342,10 +341,10 @@ define(["underscore", "util"], function (_, util) {
             );
             if (keysOfNodesWithThisName.length > 1) {
                 SelectedNodeMenu.showWarning(
-                    this.nodeNameWarning, 
+                    this.nodeNameWarning,
                     "Warning: " +
-                    keysOfNodesWithThisName.length +
-                    " nodes exist with the above name."
+                        keysOfNodesWithThisName.length +
+                        " nodes exist with the above name."
                 );
             }
         } else {

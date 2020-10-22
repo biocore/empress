@@ -1042,9 +1042,15 @@ require([
             // However, the root should always correspond to all samples, since
             // all of the features in the table should be tips in the tree, and
             // since the root by definition is an ancestor of all those tips.
-            deepEqual(
-                rootValues.samples, ["s1", "s2", "s3", "s4", "s5", "s6", "s7"]
-            );
+            deepEqual(rootValues.samples, [
+                "s1",
+                "s2",
+                "s3",
+                "s4",
+                "s5",
+                "s6",
+                "s7",
+            ]);
         });
 
         test("Test computeIntSamplePresence when no child tips in table", function () {
@@ -1053,8 +1059,8 @@ require([
             var tinyBiom = new BiomTable(
                 ["s1", "s2"],
                 [6],
-                {"s1": 0, "s2": 1},
-                {6: 0},
+                { s1: 0, s2: 1 },
+                { 6: 0 },
                 [[0], [0]],
                 ["sm1"],
                 [["a"], ["b"]]
