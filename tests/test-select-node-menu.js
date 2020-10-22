@@ -16,21 +16,24 @@ require([
                 // needs the Drawer to have been initialized first).
                 this.testData.empress.initialize();
 
-                this.selectedNodeMenu = new SelectedNodeMenu(
-                    this.testData.empress,
-                    this.testData.empress._drawer
-                );
+                this.selectedNodeMenu = this.testData.empress._events.selectedNodeMenu;
+
+                var _isHidden = function (attrEle) {
+                    return scope.selectedNodeMenu[attrEle].classList.contains(
+                        "hidden"
+                    );
+                };
 
                 this.isShown = function (attrEle) {
-                    var cl = scope.selectedNodeMenu[attrEle].classList;
-                    notOk(cl.contains("hidden"), attrEle + " is shown");
+                    notOk(_isHidden(attrEle), attrEle + " is shown");
                 };
                 this.isHidden = function (attrEle) {
-                    var cl = scope.selectedNodeMenu[attrEle].classList;
-                    ok(cl.contains("hidden"), attrEle + " is hidden");
+                    ok(_isHidden(attrEle), attrEle + " is hidden");
                 };
             },
-            tearDown: function () {},
+            teardown: function () {
+                $(this.selectedNodeMenu.sel).empty();
+            },
         });
         test("setSelectedNodes: throws error if multiple nodes that don't share the same name selected", function () {
             var scope = this;
@@ -190,6 +193,19 @@ require([
 
             // Menu is visible
             this.isShown("box");
+        });
+        test("showNodeMenu: Adding all sm fields to the table removes the 'Add' controls", function () {
+            this.selectedNodeMenu.setSelectedNodes([2]);
+            this.selectedNodeMenu.showNodeMenu();
+            // There are three sample metadata fields in the test dataset, so
+            // let's try "clicking" on the add button three times.
+            this.isShown("smAddSection");
+            this.selectedNodeMenu.addBtn.click();
+            this.isShown("smAddSection");
+            this.selectedNodeMenu.addBtn.click();
+            this.isShown("smAddSection");
+            this.selectedNodeMenu.addBtn.click();
+            this.isHidden("smAddSection");
         });
     });
 });
