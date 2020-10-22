@@ -36,7 +36,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                     equal(ele.innerText, expText);
                 };
             },
-            tearDown: function () {
+            teardown: function () {
                 this.containerEle.remove();
             },
         });
