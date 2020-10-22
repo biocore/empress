@@ -178,48 +178,44 @@ define(["underscore", "util"], function (_, util) {
      *
      * @param{String} nodeName Name of the node to create this table for.
      *                         Duplicate names (for internal nodes) are ok.
-     * @param{Array} mdCols Array of metadata columns present in each entry in
-     *                      mdObj. If this is an empty array, this function
-     *                      won't create anything, and will hide the fmHeader
-     *                      and fmTable elements -- see above for details.
-     * @param{Object} mdObj Object describing feature metadata. The keys should
-     *                      be node names, and the value for a node name N
-     *                      should be another Object mapping the metadata
-     *                      columns (in mdCols) to the metadata values for
-     *                      the node name N.
-     * @param{HTMLElement} fmHeader A reference to a header HTML element to
-     *                              hide / unhide depending on whether or not
-     *                              feature metadata will be shown for this
-     *                              node name.
-     * @param{HTMLElement} fmTable A reference to the <table> element to
-     *                             which this method will insert HTML.
-     *                             This element's innerHTML will be cleared at
-     *                             the start of this method.
+     * @param{String} tipOrInt "tip" to query tip metadata, "int" to query
+     *                         internal node metadata. Other values will cause
+     *                         an error.
      */
     SelectedNodeMenu.prototype.makeFeatureMetadataTable = function (
         nodeName,
-        mdCols,
-        mdObj,
-        fmHeader,
-        fmTable
+        tipOrInt
     ) {
-        fmTable.innerHTML = "";
-        // If there is feature metadata, and if this node name is present as a
-        // key in the feature metadata, then show this information.
-        // (This uses boolean short-circuiting, so the _.has() should only be
-        // evaluated if mdCols has a length of > 0.)
-        if (mdCols.length > 0 && _.has(mdObj, nodeName)) {
-            var headerRow = fmTable.insertRow(-1);
-            var featureRow = fmTable.insertRow(-1);
-            for (var x = 0; x < mdCols.length; x++) {
-                var colName = mdCols[x];
-                var colCell = headerRow.insertCell(-1);
-                colCell.innerHTML = "<strong>" + colName + "</strong>";
-                var dataCell = featureRow.insertCell(-1);
-                dataCell.innerHTML = mdObj[nodeName][x];
+        var fmShown = false;
+        var fmCols = this.empress.getFeatureMetadataCategories();
+        if (fmCols.length > 0) {
+            var mdObj;
+            // TODO: it'd be nice to add methods to Empress that return the
+            // feature metadata, so we can avoid having to access "private"
+            // attributes here. This is planned as part of the
+            // https://github.com/biocore/empress/issues/337 refactoring.
+            if (tipOrInt === "tip") {
+                mdObj = this.empress._tipMetadata;
+            } else if (tipOrInt === "int") {
+                mdObj = this.empress._intMetadata;
+            } else {
+                throw new Error("Invalid tipOrInt value: " + tipOrInt);
             }
-            show(this.fmSection);
-        } else {
+            if (_.has(mdObj, nodeName)) {
+                var headerRow = this.fmTable.insertRow(-1);
+                var featureRow = this.fmTable.insertRow(-1);
+                for (var x = 0; x < fmCols.length; x++) {
+                    var colName = fmCols[x];
+                    var colCell = headerRow.insertCell(-1);
+                    colCell.innerHTML = "<strong>" + colName + "</strong>";
+                    var dataCell = featureRow.insertCell(-1);
+                    dataCell.innerHTML = mdObj[nodeName][x];
+                }
+                show(this.fmSection);
+                fmShown = true;
+            }
+        }
+        if (!fmShown) {
             hide(this.fmSection);
         }
     };
@@ -293,13 +289,7 @@ define(["underscore", "util"], function (_, util) {
         // 1. Add feature metadata information (if present for this tip; if
         // there isn't feature metadata for this tip, the f.m. UI elements in
         // the selected node menu will be hidden)
-        this.makeFeatureMetadataTable(
-            node,
-            this.empress._featureMetadataColumns,
-            this.empress._tipMetadata,
-            this.fmHeader,
-            this.fmTable
-        );
+        this.makeFeatureMetadataTable(node, "tip");
 
         this.setNodeLengthLabel(node);
 
@@ -400,13 +390,7 @@ define(["underscore", "util"], function (_, util) {
         // 1. Add feature metadata information (if present) for this node
         // (Note that we allow duplicate-name internal nodes to have
         // feature metadata; this isn't a problem)
-        this.makeFeatureMetadataTable(
-            this.nodeKeys[0],
-            this.empress._featureMetadataColumns,
-            this.empress._intMetadata,
-            this.fmHeader,
-            this.fmTable
-        );
+        this.makeFeatureMetadataTable(this.nodeKeys[0], "int");
 
         // 2. Compute sample presence information for this node.
         // (NOTE: this does not prevent "double-counting" samples, so the
