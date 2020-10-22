@@ -34,6 +34,10 @@ define(["underscore", "util"], function (_, util) {
 
         this.nodeKeys = null;
         this.fields = [];
+        // Will be set to true when the user adds ALL sample metadata fields to
+        // the table. Signifies to the class that we should never show the add
+        // section again. See #272 on GitHub.
+        this.smFieldsExhausted = false;
         this.fmCols = this.empress.getFeatureMetadataCategories();
         this.hasSampleMetadata = false;
         this.hasFeatureMetadata = false;
@@ -97,6 +101,7 @@ define(["underscore", "util"], function (_, util) {
                 // are added: https://github.com/biocore/empress/issues/272
                 if (scope.sel.options.length === 0) {
                     hide(scope.smAddSection);
+                    scope.smFieldsExhausted = true;
                 }
                 scope.fields.push(val);
                 show(scope.smHeader);
@@ -203,7 +208,9 @@ define(["underscore", "util"], function (_, util) {
                     }
                     updateAndShow(this.smNotes, ntext);
                     show(this.smTable);
-                    show(this.smAddSection);
+                    if (!this.smFieldsExhausted) {
+                        show(this.smAddSection);
+                    }
                     hide(this.smNotInTableWarning);
                 } else {
                     hide(this.smTable);
