@@ -145,11 +145,13 @@ define(["underscore", "util"], function (_, util) {
                 // table.
                 var wtext;
                 if (tipOrInt === "tip") {
-                    wtext = "This is a tip in the tree. However, it is not " +
+                    wtext =
+                        "This is a tip in the tree. However, it is not " +
                         "present in the input feature table, so we " +
                         "can't show sample presence information for it.";
                 } else {
-                    wtext = "This is an internal node in the tree. None of " +
+                    wtext =
+                        "This is an internal node in the tree. None of " +
                         "its descendant tips are present in the input " +
                         "feature table, so we can't show sample presence " +
                         "information for it.";
@@ -178,7 +180,8 @@ define(["underscore", "util"], function (_, util) {
                         // in place as the user scrolls the table horizontally.
                         var fieldHeaderRow = this.smTable.insertRow(-1);
                         var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
-                        fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
+                        fieldHeaderCell.innerHTML =
+                            "<strong>" + field + "</strong>";
                         fieldHeaderCell.rowSpan = 2;
                         fieldHeaderCell.classList.add("menu-box-header-cell");
                         fieldHeaderCell.classList.add("frozen-cell");
@@ -186,22 +189,29 @@ define(["underscore", "util"], function (_, util) {
                         var fieldDataRow = this.smTable.insertRow(-1);
 
                         // add row values for this metadata field, one column at a time
-                        var categories = util.naturalSort(_.keys(ctData[field]));
+                        var categories = util.naturalSort(
+                            _.keys(ctData[field])
+                        );
                         for (var j = 0; j < categories.length; j++) {
-                            var categoryHeaderCell = fieldHeaderRow.insertCell(-1);
+                            var categoryHeaderCell = fieldHeaderRow.insertCell(
+                                -1
+                            );
                             categoryHeaderCell.innerHTML =
                                 "<strong>" + categories[j] + "</strong>";
                             var categoryDataCell = fieldDataRow.insertCell(-1);
-                            categoryDataCell.innerHTML = ctData[field][categories[j]];
+                            categoryDataCell.innerHTML =
+                                ctData[field][categories[j]];
                         }
                     }
                     var ntext;
                     if (tipOrInt === "tip") {
-                        ntext = "This is a tip in the tree. These values " +
+                        ntext =
+                            "This is a tip in the tree. These values " +
                             "represent the number of unique samples that " +
                             "contain this node.";
                     } else {
-                        ntext = "This is an internal node in the tree. " +
+                        ntext =
+                            "This is an internal node in the tree. " +
                             "These values represent the number of unique " +
                             "samples that contain any of this node's " +
                             "descendant tips.";
