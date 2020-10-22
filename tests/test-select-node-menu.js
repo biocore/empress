@@ -35,6 +35,31 @@ require([
                     var obsText = scope.selectedNodeMenu[attrEle].textContent;
                     deepEqual(obsText, expText, attrEle + " has expected text");
                 };
+                this.fmTableOk = function (expf1val, expf2val) {
+                    var fmt = $(scope.selectedNodeMenu.fmTable);
+
+                    deepEqual(fmt.children().length, 1);
+                    var tbody = fmt.children()[0];
+                    deepEqual(tbody.tagName, "TBODY");
+                    deepEqual($(tbody).children().length, 2);
+
+                    var rows = $(tbody).children();
+                    deepEqual(rows.length, 2);
+                    var tr1 = rows[0];
+                    var tr2 = rows[1];
+                    deepEqual(tr1.tagName, "TR");
+                    deepEqual(tr2.tagName, "TR");
+
+                    var headerCells = $(tr1).children();
+                    deepEqual(headerCells.length, 2);
+                    deepEqual(headerCells[0].textContent, "f1");
+                    deepEqual(headerCells[1].textContent, "f2");
+
+                    var dataCells = $(tr2).children();
+                    deepEqual(dataCells.length, 2);
+                    deepEqual(dataCells[0].textContent, expf1val);
+                    deepEqual(dataCells[1].textContent, expf2val);
+                };
             },
             teardown: function () {
                 $(this.selectedNodeMenu.sel).empty();
@@ -95,29 +120,7 @@ require([
             this.isHidden("nodeNameWarning");
 
             // Check that the feature metadata table was constructed properly
-            var fmt = $(this.selectedNodeMenu.fmTable);
-
-            equal(fmt.children().length, 1);
-            var tbody = fmt.children()[0];
-            equal(tbody.tagName, "TBODY");
-            equal($(tbody).children().length, 2);
-
-            var rows = $(tbody).children();
-            equal(rows.length, 2);
-            var tr1 = rows[0];
-            var tr2 = rows[1];
-            equal(tr1.tagName, "TR");
-            equal(tr2.tagName, "TR");
-
-            var headerCells = $(tr1).children();
-            equal(headerCells.length, 2);
-            equal(headerCells[0].textContent, "f1");
-            equal(headerCells[1].textContent, "f2");
-
-            var dataCells = $(tr2).children();
-            equal(dataCells.length, 2);
-            equal(dataCells[0].textContent, "1");
-            equal(dataCells[1].textContent, "2");
+            this.fmTableOk("1", "2");
 
             // Check that the feature metadata header and table are visible,
             // but that the "no feature metadata" text isn't visible
@@ -151,29 +154,7 @@ require([
             this.isShown("nodeNameWarning");
 
             // Check that the feature metadata table was constructed properly
-            var fmt = $(this.selectedNodeMenu.fmTable);
-
-            equal(fmt.children().length, 1);
-            var tbody = fmt.children()[0];
-            equal(tbody.tagName, "TBODY");
-            equal($(tbody).children().length, 2);
-
-            var rows = $(tbody).children();
-            equal(rows.length, 2);
-            var tr1 = rows[0];
-            var tr2 = rows[1];
-            equal(tr1.tagName, "TR");
-            equal(tr2.tagName, "TR");
-
-            var headerCells = $(tr1).children();
-            equal(headerCells.length, 2);
-            equal(headerCells[0].textContent, "f1");
-            equal(headerCells[1].textContent, "f2");
-
-            var dataCells = $(tr2).children();
-            equal(dataCells.length, 2);
-            equal(dataCells[0].textContent, "1");
-            equal(dataCells[1].textContent, "1");
+            this.fmTableOk("1", "1");
 
             // Check that the feature metadata header and table are visible,
             // but that the "no feature metadata" text isn't visible
@@ -209,29 +190,7 @@ require([
             // Check that the feature metadata table was constructed properly
             // (even though multiple nodes are selected, internal nodes with
             // the same name share feature metadata)
-            var fmt = $(this.selectedNodeMenu.fmTable);
-
-            equal(fmt.children().length, 1);
-            var tbody = fmt.children()[0];
-            equal(tbody.tagName, "TBODY");
-            equal($(tbody).children().length, 2);
-
-            var rows = $(tbody).children();
-            equal(rows.length, 2);
-            var tr1 = rows[0];
-            var tr2 = rows[1];
-            equal(tr1.tagName, "TR");
-            equal(tr2.tagName, "TR");
-
-            var headerCells = $(tr1).children();
-            equal(headerCells.length, 2);
-            equal(headerCells[0].textContent, "f1");
-            equal(headerCells[1].textContent, "f2");
-
-            var dataCells = $(tr2).children();
-            equal(dataCells.length, 2);
-            equal(dataCells[0].textContent, "1");
-            equal(dataCells[1].textContent, "1");
+            this.fmTableOk("1", "1");
 
             // Check that the feature metadata header and table are visible,
             // but that the "no feature metadata" text isn't visible
