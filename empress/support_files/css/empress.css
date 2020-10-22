@@ -660,6 +660,14 @@ p.side-header button:hover,
     font-weight: bold;
 }
 
+#menu-fm-section, #menu-sm-section {
+    border: 2px solid #777;
+}
+
+#menu-box h3 {
+    text-align: center;
+}
+
 #menu-box-node-id {
     max-width: 500px;
     overflow-x: auto;

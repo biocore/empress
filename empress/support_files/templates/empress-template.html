@@ -52,15 +52,16 @@
         <strong>Node length:</strong>
         <span id="menu-box-node-length"></span>
       </div>
-      <h3 class="hidden" id="menu-fm-header">Feature Metadata</h3>
-      <table class="menu-table hidden" id="menu-fm-table"></table>
-      <p class="hidden" id="menu-box-node-not-in-table-warning"></p>
+      <div id="menu-fm-section">
+        <h3 id="menu-fm-header">Feature Metadata</h3>
+        <table class="menu-table" id="menu-fm-table"></table>
+      </div>
       <div id="menu-sm-section">
         <h3 class="hidden" id="menu-sm-header">Sample Presence Information</h3>
         <p id="menu-box-notes"></p>
         <table class="menu-table" id="menu-sm-table"></table>
-        <br>
         <div id="menu-sm-add-section">
+          <br>
           <strong>Select a metadata column to summarize</strong>
           <label class="menu-select-container">
             <select id="menu-select"></select>
@@ -68,6 +69,7 @@
           <button id="menu-add-btn">Add</button>
         </div>
       </div>
+      <p class="hidden" id="menu-box-node-not-in-table-warning"></p>
     </div>
 
     <!-- Tree coloring legend -->

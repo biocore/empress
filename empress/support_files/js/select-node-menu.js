@@ -2,30 +2,37 @@ define(["underscore", "util"], function (_, util) {
     function SelectedNodeMenu(empress, drawer) {
         this.empress = empress;
         this.drawer = drawer;
-        this.fields = [];
-        this.smTable = document.getElementById("menu-sm-table");
-        this.smSection = document.getElementById("menu-sm-section");
-        this.nodeNotInTableWarning = document.getElementById(
-            "menu-box-node-not-in-table-warning"
-        );
+
+        // General elements
         this.box = document.getElementById("menu-box");
-        this.sel = document.getElementById("menu-select");
-        this.addBtn = document.getElementById("menu-add-btn");
-        this.smAddSection = document.getElementById("menu-sm-add-section");
         this.nodeNameLabel = document.getElementById("menu-box-node-id");
-        this.smNotes = document.getElementById("menu-box-notes");
         this.nodeNameWarning = document.getElementById(
             "menu-box-node-name-warning"
+        );
+        this.nodeNotInTableWarning = document.getElementById(
+            "menu-box-node-not-in-table-warning"
         );
         this.nodeLengthContainer = document.getElementById(
             "menu-box-node-length-container"
         );
         this.nodeLengthLabel = document.getElementById("menu-box-node-length");
+
+        // Sample metadata elements
+        this.smSection = document.getElementById("menu-sm-section");
+        this.smTable = document.getElementById("menu-sm-table");
+        this.smHeader = document.getElementById("menu-sm-header");
+        this.sel = document.getElementById("menu-select");
+        this.addBtn = document.getElementById("menu-add-btn");
+        this.smAddSection = document.getElementById("menu-sm-add-section");
+        this.smNotes = document.getElementById("menu-box-notes");
+
+        // Feature metadata elements
         this.fmTable = document.getElementById("menu-fm-table");
         this.fmHeader = document.getElementById("menu-fm-header");
-        this.smHeader = document.getElementById("menu-sm-header");
-        this.nodeKeys = null;
+        this.fmSection = document.getElementById("menu-fm-section");
 
+        this.nodeKeys = null;
+        this.fields = [];
         this.hiddenCallback = null;
         this.visibleCallback = null;
         this._samplesInSelection = [];
@@ -117,7 +124,7 @@ define(["underscore", "util"], function (_, util) {
      *                              innerHTML will be cleared at the start of
      *                              this method.
      */
-    SelectedNodeMenu.makeSampleMetadataTable = function (ctData, tableEle) {
+    SelectedNodeMenu.prototype.makeSampleMetadataTable = function (ctData, tableEle) {
         tableEle.innerHTML = "";
         // loop over all metadata fields the user has decided to show
         var sortedFields = util.naturalSort(_.keys(ctData));
@@ -186,7 +193,7 @@ define(["underscore", "util"], function (_, util) {
      *                             This element's innerHTML will be cleared at
      *                             the start of this method.
      */
-    SelectedNodeMenu.makeFeatureMetadataTable = function (
+    SelectedNodeMenu.prototype.makeFeatureMetadataTable = function (
         nodeName,
         mdCols,
         mdObj,
@@ -208,11 +215,9 @@ define(["underscore", "util"], function (_, util) {
                 var dataCell = featureRow.insertCell(-1);
                 dataCell.innerHTML = mdObj[nodeName][x];
             }
-            show(fmHeader);
-            show(fmTable);
+            show(this.fmSection);
         } else {
-            hide(fmHeader);
-            hide(fmTable);
+            hide(this.fmSection);
         }
     };
 
@@ -285,7 +290,7 @@ define(["underscore", "util"], function (_, util) {
         // 1. Add feature metadata information (if present for this tip; if
         // there isn't feature metadata for this tip, the f.m. UI elements in
         // the selected node menu will be hidden)
-        SelectedNodeMenu.makeFeatureMetadataTable(
+        this.makeFeatureMetadataTable(
             node,
             this.empress._featureMetadataColumns,
             this.empress._tipMetadata,
@@ -331,7 +336,7 @@ define(["underscore", "util"], function (_, util) {
                 }
                 this._checkTips(diff);
 
-                SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
+                this.makeSampleMetadataTable(ctData, this.smTable);
                 if (this.fields.length > 0) {
                     this.smNotes.textContent =
                         "This is a tip in the tree. These values " +
@@ -392,7 +397,7 @@ define(["underscore", "util"], function (_, util) {
         // 1. Add feature metadata information (if present) for this node
         // (Note that we allow duplicate-name internal nodes to have
         // feature metadata; this isn't a problem)
-        SelectedNodeMenu.makeFeatureMetadataTable(
+        this.makeFeatureMetadataTable(
             this.nodeKeys[0],
             this.empress._featureMetadataColumns,
             this.empress._intMetadata,
@@ -435,7 +440,7 @@ define(["underscore", "util"], function (_, util) {
                         samplePresence.samples
                     );
                     if (this.fields.length > 0) {
-                        SelectedNodeMenu.makeSampleMetadataTable(
+                        this.makeSampleMetadataTable(
                             samplePresence.fieldsMap,
                             this.smTable
                         );
@@ -499,8 +504,7 @@ define(["underscore", "util"], function (_, util) {
         this.smTable.innerHTML = "";
         this.nodeKeys = null;
         hide(this.box);
-        hide(this.fmHeader);
-        hide(this.fmTable);
+        hide(this.fmSection);
         this.fmTable.innerHTML = "";
         this.drawer.loadSelectedNodeBuff([]);
         this.empress.drawTree();
