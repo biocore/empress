@@ -4,7 +4,8 @@ require([
     "util",
     "chroma",
     "Empress",
-], function ($, UtilitiesForTesting, util, chroma, Empress) {
+    "BiomTable",
+], function ($, UtilitiesForTesting, util, chroma, Empress, BiomTable) {
     $(document).ready(function () {
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray
@@ -998,6 +999,16 @@ require([
             deepEqual(ctData, lf2presence);
         });
 
+        test("Test computeTipSamplePresence when tip not in table", function () {
+            var e = this.empress;
+            var fields = e._biom._smCols;
+            var ctData = e.computeTipSamplePresence(
+                "like a billion lol",
+                fields
+            );
+            deepEqual(ctData, null);
+        });
+
         test("Test computeIntSamplePresence", function () {
             var e = this.empress;
             var fields = e._biom._smCols;
@@ -1009,8 +1020,9 @@ require([
                 traj: { t1: 2, t2: 2, t3: 2, t4: 0 },
             };
             deepEqual(values.fieldsMap, int4presence);
+            // TODO test diff and samples output
 
-            //also testing root which should have all tips -> all samples
+            // also testing root which should have all tips -> all samples
             var rootPresence = {
                 f1: { a: 5, b: 2 },
                 grad: { 1: 2, 2: 2, 3: 2, 4: 1 },
@@ -1018,6 +1030,39 @@ require([
             };
             var rootValues = e.computeIntSamplePresence(7, fields);
             deepEqual(rootValues.fieldsMap, rootPresence);
+        });
+
+        test("Test computeIntSamplePresence when no child tips in table", function () {
+            // Two samples (s1 and s2), both of which contain exactly one
+            // feature (6)
+            var tinyBiom = new BiomTable(
+                ["s1", "s2"],
+                [6],
+                {"s1": 0, "s2": 1},
+                {6: 0},
+                [[0], [0]],
+                ["sm1"],
+                [["a"], ["b"]]
+            );
+            // NOTE: Ideally we would create another instance of Empress and
+            // just use that, but that is causing problems with canvas stuff so
+            // for now we're replacing the biom with a silly hack.
+            this.empress._biom = tinyBiom;
+            //var testData = UtilitiesForTesting.getTestData(false);
+            //var e = new Empress(
+            //    testData.tree,
+            //    tinyBiom,
+            //    testData.treeData,
+            //    testData.fmCols,
+            //    testData.tm,
+            //    testData.im,
+            //    testData.canvas
+            //);
+            var values = this.empress.computeIntSamplePresence(4, ["sm1"]);
+
+            deepEqual(values.fieldsMap, null);
+            deepEqual(values.diff, [2, 3]);
+            deepEqual(values.samples, []);
         });
 
         test("Test getUniqueFeatureMetadataInfo (method = tip)", function () {
