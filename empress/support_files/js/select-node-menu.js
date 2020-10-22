@@ -262,7 +262,7 @@ define(["underscore", "util"], function (_, util) {
         // 2. Add sample presence information for this tip (only if this data
         // is available in the first place, and if the user has selected at
         // least one field to show sample presence information for)
-        if (this.empress.isCommunityPlot && this.fields.length > 0) {
+        if (this.empress.isCommunityPlot) {
             var ctData = this.empress.computeTipSamplePresence(
                 node,
                 this.fields
@@ -302,7 +302,6 @@ define(["underscore", "util"], function (_, util) {
                         "represent the number of unique samples that " +
                         "contain this node.";
                 }
-                this.smTable.classList.remove("hidden");
                 this.smSection.classList.remove("hidden");
             }
         }
@@ -399,28 +398,25 @@ define(["underscore", "util"], function (_, util) {
                     this._samplesInSelection = this._samplesInSelection.concat(
                         samplePresence.samples
                     );
-                    SelectedNodeMenu.makeSampleMetadataTable(
-                        samplePresence.fieldsMap,
-                        this.smTable
-                    );
-                    this.smSection.classList.remove("hidden");
-                    this.smTable.classList.remove("hidden");
+                    if (this.fields.length > 0) {
+                        SelectedNodeMenu.makeSampleMetadataTable(
+                            samplePresence.fieldsMap,
+                            this.smTable
+                        );
+                        this.notes.textContent =
+                            "This is an internal node in the tree. These " +
+                            "values represent the number of unique samples that " +
+                            "contain any of this node's descendant tips.";
+                        this.smSection.classList.remove("hidden");
+                    }
                 }
                 this._checkTips(samplePresence.diff);
             }
         } else {
+            // If isUnambiguous is false, no notes will be shown and the sample
+            // presence info (including the table and notes) will be hidden
             this.smSection.classList.add("hidden");
-            this.smTable.classList.add("hidden");
             this.nodeLengthContainer.classList.add("hidden");
-        }
-
-        // If isUnambiguous is false, no notes will be shown and the sample
-        // presence info (including the table and notes) will be hidden
-        if (this.fields.length > 0 && isUnambiguous) {
-            this.notes.textContent =
-                "This is an internal node in the tree. These " +
-                "values represent the number of unique samples that " +
-                "contain any of this node's descendant tips.";
         }
     };
 
