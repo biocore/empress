@@ -124,7 +124,10 @@ define(["underscore", "util"], function (_, util) {
      *                              innerHTML will be cleared at the start of
      *                              this method.
      */
-    SelectedNodeMenu.prototype.makeSampleMetadataTable = function (ctData, tableEle) {
+    SelectedNodeMenu.prototype.makeSampleMetadataTable = function (
+        ctData,
+        tableEle
+    ) {
         tableEle.innerHTML = "";
         // loop over all metadata fields the user has decided to show
         var sortedFields = util.naturalSort(_.keys(ctData));

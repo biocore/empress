@@ -660,7 +660,8 @@ p.side-header button:hover,
     font-weight: bold;
 }
 
-#menu-fm-section, #menu-sm-section {
+#menu-fm-section,
+#menu-sm-section {
     border: 2px solid #777;
 }
 
