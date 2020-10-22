@@ -30,6 +30,11 @@ require([
                 this.isHidden = function (attrEle) {
                     ok(_isHidden(attrEle), attrEle + " is hidden");
                 };
+
+                this.textEquals = function (attrEle, expText) {
+                    var obsText = scope.selectedNodeMenu[attrEle].textContent;
+                    deepEqual(obsText, expText, attrEle + " has expected text");
+                };
             },
             teardown: function () {
                 $(this.selectedNodeMenu.sel).empty();
@@ -82,13 +87,10 @@ require([
             this.selectedNodeMenu.showNodeMenu();
             // Test that a few things are set up in the menu as expected.
             // Node name
-            deepEqual(
-                this.selectedNodeMenu.nodeNameLabel.textContent,
-                "Name: 2"
-            );
+            this.textEquals("nodeNameLabel", "Name: 2");
             // Node length
             this.isShown("nodeLengthContainer");
-            deepEqual(this.selectedNodeMenu.nodeLengthLabel.textContent, "2");
+            this.textEquals("nodeLengthLabel", "2");
             // Duplicate node name warning isn't shown
             this.isHidden("nodeNameWarning");
 
@@ -140,13 +142,10 @@ require([
             this.selectedNodeMenu.setSelectedNodes([4]);
             this.selectedNodeMenu.showNodeMenu();
             // Node name
-            deepEqual(
-                this.selectedNodeMenu.nodeNameLabel.textContent,
-                "Name: internal"
-            );
+            this.textEquals("nodeNameLabel", "Name: internal");
             // Node length
             this.isShown("nodeLengthContainer");
-            deepEqual(this.selectedNodeMenu.nodeLengthLabel.textContent, "4");
+            this.textEquals("nodeLengthLabel", "4");
             // Duplicate node name warning is shown, since multiple nodes in
             // the test dataset have the name "internal"
             this.isShown("nodeNameWarning");
@@ -199,10 +198,7 @@ require([
             this.selectedNodeMenu.setSelectedNodes([4, 5]);
             this.selectedNodeMenu.showNodeMenu();
             // Node name
-            deepEqual(
-                this.selectedNodeMenu.nodeNameLabel.textContent,
-                "Name: internal"
-            );
+            this.textEquals("nodeNameLabel", "Name: internal");
             // Node length should be hidden, since multiple nodes are selected
             // (so the length is ambiguous)
             this.isHidden("nodeLengthContainer");
@@ -252,12 +248,11 @@ require([
             this.isShown("smNotes");
             this.isHidden("smAddSection");
             this.isHidden("smNotInTableWarning");
-            deepEqual(
-                this.selectedNodeMenu.smNotes.textContent,
-                    "Multiple internal nodes are selected. We can't " +
+            this.textEquals(
+                "smNotes",
+                "Multiple internal nodes are selected. We can't " +
                     "identify the samples containing these nodes' " +
-                    "descendant tips, if present, due to the ambiguity.",
-                "Note about ambiguity is shown"
+                    "descendant tips, if present, due to the ambiguity."
             );
 
             // Menu is visible
