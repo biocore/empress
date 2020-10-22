@@ -87,6 +87,7 @@ require([
                 "Name: 2"
             );
             // Node length
+            this.isShown("nodeLengthContainer");
             deepEqual(this.selectedNodeMenu.nodeLengthLabel.textContent, "2");
             // Duplicate node name warning isn't shown
             this.isHidden("nodeNameWarning");
@@ -135,16 +136,16 @@ require([
             // Menu is visible
             this.isShown("box");
         });
-        test("showNodeMenu: internal node (tips in table, sm table unpopulated, duplicate node name warning)", function () {
+        test("showNodeMenu: internal node (unambiguous, tips in table, sm table unpopulated, duplicate node name warning)", function () {
             this.selectedNodeMenu.setSelectedNodes([4]);
             this.selectedNodeMenu.showNodeMenu();
-            // Test that a few things are set up in the menu as expected.
             // Node name
             deepEqual(
                 this.selectedNodeMenu.nodeNameLabel.textContent,
                 "Name: internal"
             );
             // Node length
+            this.isShown("nodeLengthContainer");
             deepEqual(this.selectedNodeMenu.nodeLengthLabel.textContent, "4");
             // Duplicate node name warning is shown, since multiple nodes in
             // the test dataset have the name "internal"
@@ -194,7 +195,75 @@ require([
             // Menu is visible
             this.isShown("box");
         });
-        test("showNodeMenu: Adding all sm fields to the table removes the 'Add' controls", function () {
+        test("showNodeMenu: internal node (ambiguous, sm table unpopulated)", function () {
+            this.selectedNodeMenu.setSelectedNodes([4, 5]);
+            this.selectedNodeMenu.showNodeMenu();
+            // Node name
+            deepEqual(
+                this.selectedNodeMenu.nodeNameLabel.textContent,
+                "Name: internal"
+            );
+            // Node length should be hidden, since multiple nodes are selected
+            // (so the length is ambiguous)
+            this.isHidden("nodeLengthContainer");
+            // Duplicate node name warning is shown, since multiple nodes in
+            // the test dataset have the name "internal"
+            this.isShown("nodeNameWarning");
+
+            // Check that the feature metadata table was constructed properly
+            // (even though multiple nodes are selected, internal nodes with
+            // the same name share feature metadata)
+            var fmt = $(this.selectedNodeMenu.fmTable);
+
+            equal(fmt.children().length, 1);
+            var tbody = fmt.children()[0];
+            equal(tbody.tagName, "TBODY");
+            equal($(tbody).children().length, 2);
+
+            var rows = $(tbody).children();
+            equal(rows.length, 2);
+            var tr1 = rows[0];
+            var tr2 = rows[1];
+            equal(tr1.tagName, "TR");
+            equal(tr2.tagName, "TR");
+
+            var headerCells = $(tr1).children();
+            equal(headerCells.length, 2);
+            equal(headerCells[0].textContent, "f1");
+            equal(headerCells[1].textContent, "f2");
+
+            var dataCells = $(tr2).children();
+            equal(dataCells.length, 2);
+            equal(dataCells[0].textContent, "1");
+            equal(dataCells[1].textContent, "1");
+
+            // Check that the feature metadata header and table are visible,
+            // but that the "no feature metadata" text isn't visible
+            this.isShown("fmSection");
+            this.isShown("fmHeader");
+            this.isHidden("fmNoDataNote");
+            this.isShown("fmTable");
+
+            // Check that the sample metadata stuff is mostly hidden, with some
+            // text explaining that there's ambiguity.
+            this.isShown("smSection");
+            this.isShown("smHeader");
+            this.isHidden("smTable");
+            this.isShown("smNotes");
+            this.isHidden("smAddSection");
+            this.isHidden("smNotInTableWarning");
+            deepEqual(
+                this.selectedNodeMenu.smNotes.textContent,
+                    "Multiple internal nodes are selected. We can't " +
+                    "identify the samples containing these nodes' " +
+                    "descendant tips, if present, due to the ambiguity.",
+                "Note about ambiguity is shown"
+            );
+
+            // Menu is visible
+            this.isShown("box");
+        });
+        test("showNodeMenu: Adding all sm fields to the table causes the 'Add' controls to be hidden", function () {
             this.selectedNodeMenu.setSelectedNodes([2]);
             this.selectedNodeMenu.showNodeMenu();
             // There are three sample metadata fields in the test dataset, so
