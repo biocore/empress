@@ -12,7 +12,7 @@ define(["underscore", "util"], function (_, util) {
         this.sel = document.getElementById("menu-select");
         this.addBtn = document.getElementById("menu-add-btn");
         this.nodeNameLabel = document.getElementById("menu-box-node-id");
-        this.notes = document.getElementById("menu-box-notes");
+        this.smNotes = document.getElementById("menu-box-notes");
         this.nodeNameWarning = document.getElementById(
             "menu-box-node-name-warning"
         );
@@ -203,7 +203,7 @@ define(["underscore", "util"], function (_, util) {
             this.nodeNameLabel.textContent = "Name: " + name;
         }
 
-        this.notes.textContent = "";
+        this.smNotes.textContent = "";
         SelectedNodeMenu.hideWarning(this.nodeNameWarning);
         SelectedNodeMenu.hideWarning(this.nodeNotInTableWarning);
 
@@ -298,7 +298,7 @@ define(["underscore", "util"], function (_, util) {
 
                 SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
                 if (this.fields.length > 0) {
-                    this.notes.textContent =
+                    this.smNotes.textContent =
                         "This is a tip in the tree. These values " +
                         "represent the number of unique samples that " +
                         "contain this node.";
@@ -404,7 +404,7 @@ define(["underscore", "util"], function (_, util) {
                             samplePresence.fieldsMap,
                             this.smTable
                         );
-                        this.notes.textContent =
+                        this.smNotes.textContent =
                             "This is an internal node in the tree. These " +
                             "values represent the number of unique samples that " +
                             "contain any of this node's descendant tips.";
