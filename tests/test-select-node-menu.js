@@ -61,17 +61,35 @@ require([
             deepEqual(this.selectedNodeMenu.nodeKeys, [4, 5]);
         });
         test("showNodeMenu: throws error if no nodes selected", function () {
-            throws(function() {
+            throws(function () {
                 this.selectedNodeMenu.showNodeMenu();
             }, /showNodeMenu\(\): Nodes have not been selected./);
         });
-        test("showNodeMenu: tip node", function () {
+        test("showNodeMenu: tip node (in table)", function () {
             this.selectedNodeMenu.setSelectedNodes([2]);
             this.selectedNodeMenu.showNodeMenu();
+            // Test that a few things are set up in the menu as expected.
+            // Node name
             deepEqual(
                 this.selectedNodeMenu.nodeNameLabel.textContent,
                 "Name: 2"
             );
+            // Node length
+            deepEqual(this.selectedNodeMenu.nodeLengthLabel.textContent, "2");
+            // Duplicate node name warning, and node-not-in-table warning, are
+            // not shown
+            ok(
+                this.selectedNodeMenu.nodeNameWarning.classList.contains(
+                    "hidden"
+                )
+            );
+            ok(
+                this.selectedNodeMenu.nodeNotInTableWarning.classList.contains(
+                    "hidden"
+                )
+            );
+            // Menu is visible
+            notOk(this.selectedNodeMenu.box.classList.contains("hidden"));
         });
     });
 });
