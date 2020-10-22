@@ -32,6 +32,35 @@ define(["underscore", "util"], function (_, util) {
     }
 
     /**
+     * Un-hides a HTMLElement.
+     *
+     * @param {HTMLElement} ele
+     */
+    function show (ele) {
+        ele.classList.remove("hidden");
+    };
+
+    /**
+     * Sets the textContent of a HTMLElement and un-hides it.
+     *
+     * @param {HTMLElement} warningEle
+     * @param {String} msg
+     */
+    function updateAndShow (ele, msg) {
+        ele.textContent = msg;
+        show(ele);
+    };
+
+    /**
+     * Hides a HTMLElement.
+     *
+     * @param {HTMLElement} ele
+     */
+    function hide (ele) {
+        ele.classList.add("hidden");
+    };
+
+    /**
      * Initializes the state machine. Adds metadata field options to drop down
      * menu, and creates the add button click event.
      */
@@ -52,12 +81,12 @@ define(["underscore", "util"], function (_, util) {
                 var val = scope.sel.value;
                 scope.sel.options[scope.sel.selectedIndex].remove();
                 scope.fields.push(val);
-                scope.smHeader.classList.remove("hidden");
+                show(scope.smHeader);
                 scope.showNodeMenu();
             };
             this.addBtn.onclick = click;
         } else {
-            this.smSection.classList.add("hidden");
+            hide(this.smSection);
         }
     };
 
@@ -173,11 +202,11 @@ define(["underscore", "util"], function (_, util) {
                 var dataCell = featureRow.insertCell(-1);
                 dataCell.innerHTML = mdObj[nodeName][x];
             }
-            fmHeader.classList.remove("hidden");
-            fmTable.classList.remove("hidden");
+            show(fmHeader);
+            show(fmTable);
         } else {
-            fmHeader.classList.add("hidden");
-            fmTable.classList.add("hidden");
+            hide(fmHeader);
+            hide(fmTable);
         }
     };
 
@@ -204,8 +233,8 @@ define(["underscore", "util"], function (_, util) {
         }
 
         this.smNotes.textContent = "";
-        SelectedNodeMenu.hideWarning(this.nodeNameWarning);
-        SelectedNodeMenu.hideWarning(this.nodeNotInTableWarning);
+        hide(this.nodeNameWarning);
+        hide(this.nodeNotInTableWarning);
 
         // show either leaf or internal node
         var t = emp._tree;
@@ -220,7 +249,7 @@ define(["underscore", "util"], function (_, util) {
         this.updateMenuPosition();
 
         // show table
-        this.box.classList.remove("hidden");
+        show(this.box);
 
         if (this.visibleCallback !== null) {
             this.visibleCallback(this._samplesInSelection);
@@ -271,13 +300,13 @@ define(["underscore", "util"], function (_, util) {
             if (_.isNull(ctData)) {
                 // This tip isn't present in the table, so we don't have sample
                 // presence information for it.
-                SelectedNodeMenu.showWarning(
+                updateAndShow(
                     this.nodeNotInTableWarning,
                     "This is a tip in the tree. However, it is not " +
                         "present in the input feature table, so we cannot " +
                         "show sample presence information for it."
                 );
-                this.smSection.classList.add("hidden");
+                hide(this.smSection);
             } else {
                 // 2.1 The samples represented by this tip are sent to Emperor.
 
@@ -303,7 +332,7 @@ define(["underscore", "util"], function (_, util) {
                         "represent the number of unique samples that " +
                         "contain this node.";
                 }
-                this.smSection.classList.remove("hidden");
+                show(this.smSection);
             }
         }
     };
@@ -340,7 +369,7 @@ define(["underscore", "util"], function (_, util) {
                 name
             );
             if (keysOfNodesWithThisName.length > 1) {
-                SelectedNodeMenu.showWarning(
+                updateAndShow(
                     this.nodeNameWarning,
                     "Warning: " +
                         keysOfNodesWithThisName.length +
@@ -348,7 +377,7 @@ define(["underscore", "util"], function (_, util) {
                 );
             }
         } else {
-            SelectedNodeMenu.showWarning(
+            updateAndShow(
                 this.nodeNameWarning,
                 "No name was provided for this node in the input tree file."
             );
@@ -386,14 +415,14 @@ define(["underscore", "util"], function (_, util) {
                 );
 
                 if (_.isNull(samplePresence.fieldsMap)) {
-                    SelectedNodeMenu.showWarning(
+                    updateAndShow(
                         this.nodeNotInTableWarning,
                         "This is an internal node in the tree. None of " +
                             "this node's descendant tips are present in the " +
                             "input feature table, so we cannot show sample " +
                             "presence information for it."
                     );
-                    this.smSection.classList.add("hidden");
+                    hide(this.smSection);
                 } else {
                     // used for the emperor callback
                     this._samplesInSelection = this._samplesInSelection.concat(
@@ -408,7 +437,7 @@ define(["underscore", "util"], function (_, util) {
                             "This is an internal node in the tree. These " +
                             "values represent the number of unique samples that " +
                             "contain any of this node's descendant tips.";
-                        this.smSection.classList.remove("hidden");
+                        show(this.smSection);
                     }
                 }
                 this._checkTips(samplePresence.diff);
@@ -416,8 +445,8 @@ define(["underscore", "util"], function (_, util) {
         } else {
             // If isUnambiguous is false, no notes will be shown and the sample
             // presence info (including the table and notes) will be hidden
-            this.smSection.classList.add("hidden");
-            this.nodeLengthContainer.classList.add("hidden");
+            hide(this.smSection);
+            hide(this.nodeLengthContainer);
         }
     };
 
@@ -450,10 +479,10 @@ define(["underscore", "util"], function (_, util) {
         var nodeLength = this.empress.getNodeLength(nodeKey);
         if (nodeLength !== null) {
             this.nodeLengthLabel.textContent = nodeLength;
-            this.nodeLengthContainer.classList.remove("hidden");
+            show(this.nodeLengthContainer);
         } else {
             // Don't show the length for the root node
-            this.nodeLengthContainer.classList.add("hidden");
+            hide(this.nodeLengthContainer);
         }
     };
 
@@ -463,9 +492,9 @@ define(["underscore", "util"], function (_, util) {
     SelectedNodeMenu.prototype.clearSelectedNode = function () {
         this.smTable.innerHTML = "";
         this.nodeKeys = null;
-        this.box.classList.add("hidden");
-        this.fmHeader.classList.add("hidden");
-        this.fmTable.classList.add("hidden");
+        hide(this.box);
+        hide(this.fmHeader);
+        hide(this.fmTable);
         this.fmTable.innerHTML = "";
         this.drawer.loadSelectedNodeBuff([]);
         this.empress.drawTree();
@@ -541,15 +570,6 @@ define(["underscore", "util"], function (_, util) {
         // next to the node instead of on top of it.
         this.box.style.left = Math.floor(tableLoc.x + 23) + "px";
         this.box.style.top = Math.floor(tableLoc.y - 43) + "px";
-    };
-
-    SelectedNodeMenu.showWarning = function (warningEle, msg) {
-        warningEle.textContent = msg;
-        warningEle.classList.remove("hidden");
-    };
-
-    SelectedNodeMenu.hideWarning = function (warningEle) {
-        warningEle.classList.add("hidden");
     };
 
     return SelectedNodeMenu;
