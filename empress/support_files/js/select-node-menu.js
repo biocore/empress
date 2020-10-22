@@ -272,7 +272,7 @@ define(["underscore", "util"], function (_, util) {
                 // presence information for it.
                 SelectedNodeMenu.showWarning(
                     this.nodeNotInTableWarning,
-                    "This node is a tip in the tree. However, it is not " +
+                    "This is a tip in the tree. However, it is not " +
                         "present in the input feature table, so we cannot " +
                         "show sample presence information for it."
                 );
@@ -298,7 +298,7 @@ define(["underscore", "util"], function (_, util) {
                 SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
                 if (this.fields.length > 0) {
                     this.notes.textContent =
-                        "This node is a tip in the tree. These values " +
+                        "This is a tip in the tree. These values " +
                         "represent the number of unique samples that " +
                         "contain this node.";
                 }
@@ -385,19 +385,28 @@ define(["underscore", "util"], function (_, util) {
                     this.fields
                 );
 
-                // used for the emperor callback
-                this._samplesInSelection = this._samplesInSelection.concat(
-                    samplePresence.samples
-                );
-
+                if (_.isNull(samplePresence.fieldsMap)) {
+                    SelectedNodeMenu.showWarning(
+                        this.nodeNotInTableWarning,
+                        "This is an internal node in the tree. None of " +
+                            "this node's descendant tips are present in the " +
+                            "input feature table, so we cannot show sample " +
+                            "presence information for it."
+                    );
+                    this.smSection.classList.add("hidden");
+                } else {
+                    // used for the emperor callback
+                    this._samplesInSelection = this._samplesInSelection.concat(
+                        samplePresence.samples
+                    );
+                    SelectedNodeMenu.makeSampleMetadataTable(
+                        samplePresence.fieldsMap,
+                        this.smTable
+                    );
+                    this.smSection.classList.remove("hidden");
+                    this.smTable.classList.remove("hidden");
+                }
                 this._checkTips(samplePresence.diff);
-
-                SelectedNodeMenu.makeSampleMetadataTable(
-                    samplePresence.fieldsMap,
-                    this.smTable
-                );
-                this.smSection.classList.remove("hidden");
-                this.smTable.classList.remove("hidden");
             }
         } else {
             this.smSection.classList.add("hidden");
@@ -409,7 +418,7 @@ define(["underscore", "util"], function (_, util) {
         // presence info (including the table and notes) will be hidden
         if (this.fields.length > 0 && isUnambiguous) {
             this.notes.textContent =
-                "This node is an internal node in the tree. These " +
+                "This is an internal node in the tree. These " +
                 "values represent the number of unique samples that " +
                 "contain any of this node's descendant tips.";
         }
