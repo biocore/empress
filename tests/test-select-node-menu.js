@@ -88,6 +88,37 @@ require([
                     "hidden"
                 )
             );
+            equal(this.selectedNodeMenu.smTable.innerHTML, "");
+
+            // Check that the feature metadata table was constructed properly
+            var fmt = $(this.selectedNodeMenu.fmTable);
+
+            equal(fmt.children().length, 1);
+            var tbody = fmt.children()[0];
+            equal(tbody.tagName, "TBODY");
+            equal($(tbody).children().length, 2);
+
+            var rows = $(tbody).children();
+            equal(rows.length, 2);
+            var tr1 = rows[0];
+            var tr2 = rows[1];
+            equal(tr1.tagName, "TR");
+            equal(tr2.tagName, "TR");
+
+            var headerCells = $(tr1).children();
+            equal(headerCells.length, 2);
+            equal(headerCells[0].textContent, "f1");
+            equal(headerCells[1].textContent, "f2");
+
+            var dataCells = $(tr2).children();
+            equal(dataCells.length, 2);
+            equal(dataCells[0].textContent, "1");
+            equal(dataCells[1].textContent, "2");
+
+            // Check that the feature metadata header and table are visible
+            notOk(this.selectedNodeMenu.fmTable.classList.contains("hidden"));
+            notOk(this.selectedNodeMenu.fmHeader.classList.contains("hidden"));
+
             // Menu is visible
             notOk(this.selectedNodeMenu.box.classList.contains("hidden"));
         });
