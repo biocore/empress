@@ -3135,23 +3135,22 @@ define([
      *                                 to the number of samples with this
      *                                 metadata value in this field containing
      *                                 at least one tip in the subtree of the
-     *                                 given nodeKey. If none of the child tips
-     *                                 of this internal node are present in the
-     *                                 table, this will just be null instead.
-     *                                 (2) diff Array of child tip names not
-     *                                 present as features in the table.
-     *                                 (3) samples Array of samples
-     *                                 represented by child tips present in
-     *                                 the table.
+     *                                 given nodeKey. If none of the descendant
+     *                                 tips of this internal node are present
+     *                                 in the table, this will just be null.
+     *                                 (2) diff Array of descendant tip names
+     *                                 not present as features in the table.
+     *                                 (3) samples Array of samples represented
+     *                                 by descendant tips present in the table.
      */
     Empress.prototype.computeIntSamplePresence = function (nodeKey, fields) {
-        // Find the child tips of this internal node
+        // Find the descendant tips of this internal node
         var tips = this._tree.findTips(nodeKey);
 
-        // child tips that aren't features in the table
+        // descendant tips that aren't features in the table
         var diff = this._biom.getObsIDsDifference(tips);
 
-        // Handle the case where none of the child tips are present in the
+        // Handle the case where none of the descendant tips are present in the
         // table specially -- the main distinguishing thing here is we return
         // null for fieldsMap, which lets the caller know that they should just
         // show a warning instead of a table.
@@ -3163,7 +3162,7 @@ define([
             };
         }
 
-        // child tips that _are_ features in the table
+        // descendant tips that _are_ features in the table
         var intersection = this._biom.getObsIDsIntersection(tips);
         // samples represented by the "intersection" tips above
         var samples = this._biom.getSamplesByObservations(intersection);
