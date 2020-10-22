@@ -130,6 +130,8 @@
     <input type="text" id="quick-search" placeholder="Search by node name..."
       style="flex-grow: 1;" class="empress-input">
     <button id="side-header-search-btn" style="flex-grow: 1;">Search</button>
+
+    <!-- node selection menu box -->
     <div class="hidden" id="menu-box">
       <h1 id="menu-box-node-id"></h1>
       <p class="hidden" id="menu-box-node-name-warning"></p>
@@ -137,13 +139,17 @@
         <strong>Node length:</strong>
         <span id="menu-box-node-length"></span>
       </div>
+      <!-- Feature metadata section -->
       <div id="menu-fm-section">
         <h3 id="menu-fm-header">Feature Metadata</h3>
+        <p id="menu-fm-no-fm-note"></p>
         <table class="menu-table" id="menu-fm-table"></table>
       </div>
+      <!-- Sample metadata section -->
       <div id="menu-sm-section">
-        <h3 class="hidden" id="menu-sm-header">Sample Presence Information</h3>
-        <p id="menu-box-notes"></p>
+        <h3 id="menu-sm-header">Sample Presence Information</h3>
+        <p id="menu-box-node-not-in-table-warning"></p>
+        <p id="menu-box-sm-notes"></p>
         <table class="menu-table" id="menu-sm-table"></table>
         <div id="menu-sm-add-section">
           <br>
@@ -154,7 +160,6 @@
           <button id="menu-add-btn">Add</button>
         </div>
       </div>
-      <p class="hidden" id="menu-box-node-not-in-table-warning"></p>
     </div>
   </div>
 

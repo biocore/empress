@@ -84,7 +84,7 @@ require([
                 )
             );
             ok(
-                this.selectedNodeMenu.nodeNotInTableWarning.classList.contains(
+                this.selectedNodeMenu.smNotInTableWarning.classList.contains(
                     "hidden"
                 )
             );
