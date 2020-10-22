@@ -36,9 +36,9 @@ define(["underscore", "util"], function (_, util) {
      *
      * @param {HTMLElement} ele
      */
-    function show (ele) {
+    function show(ele) {
         ele.classList.remove("hidden");
-    };
+    }
 
     /**
      * Sets the textContent of a HTMLElement and un-hides it.
@@ -46,19 +46,19 @@ define(["underscore", "util"], function (_, util) {
      * @param {HTMLElement} warningEle
      * @param {String} msg
      */
-    function updateAndShow (ele, msg) {
+    function updateAndShow(ele, msg) {
         ele.textContent = msg;
         show(ele);
-    };
+    }
 
     /**
      * Hides a HTMLElement.
      *
      * @param {HTMLElement} ele
      */
-    function hide (ele) {
+    function hide(ele) {
         ele.classList.add("hidden");
-    };
+    }
 
     /**
      * Initializes the state machine. Adds metadata field options to drop down
