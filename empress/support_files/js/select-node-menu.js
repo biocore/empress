@@ -488,32 +488,22 @@ define(["underscore", "util"], function (_, util) {
      *                         positioned at the first node in this array.
      */
     SelectedNodeMenu.prototype.setSelectedNodes = function (nodeKeys) {
-        // test to make sure nodeKeys represents nodes with the same name
-        var emp = this.empress;
-        var name = emp.getNodeInfo(nodeKeys[0], "name");
-        for (var i = 1; i < nodeKeys.length; i++) {
-            if (emp.getNodeInfo(nodeKeys[i], "name") !== name) {
-                throw new Error(
-                    "setSelectedNodes(): keys do not represent the same node name!"
-                );
+        // If nodeKeys includes multiple nodes, verify that all of these nodes
+        // share the same name. If this _isn't_ the case, something is wrong.
+        if (nodeKeys.length > 1) {
+            var name = this.empress.getNodeInfo(nodeKeys[0], "name");
+            for (var i = 1; i < nodeKeys.length; i++) {
+                if (this.empress.getNodeInfo(nodeKeys[i], "name") !== name) {
+                    throw new Error(
+                        "setSelectedNodes(): keys do not represent the same " +
+                            "node name."
+                    );
+                }
             }
         }
-
-        // test if nodeKeys represents tips then only one key should exist i.e.
-        // tips must be unique
-        var t = emp._tree;
-        if (t.isleaf(t.postorderselect(nodeKeys[0])) && nodeKeys.length > 1) {
-            throw new Error(
-                "setSelectedNodes(): " +
-                emp.getNodeInfo(nodeKeys[0], "name") +
-                " matches multiple nodes, one of which is a tip!"
-            );
-        }
-
-        /* the buffer that holds the information to highlight the tree nodes
-         * on the canvas.
-         * format [x,y,r,g,b,...] where x,y is the coorindates of the
-         * highlighted nodes
+        /* Highlight the nodes in nodeKeys on the canvas.
+         * The buffer that holds this information is formatted as
+         * [x,y,r,g,b,...] where x,y are the coords of the highlighted nodes.
          */
         var highlightedNodes = [];
         for (i = 0; i < nodeKeys.length; i++) {
