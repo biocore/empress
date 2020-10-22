@@ -24,7 +24,7 @@ define(["underscore", "util"], function (_, util) {
         this.sel = document.getElementById("menu-select");
         this.addBtn = document.getElementById("menu-add-btn");
         this.smAddSection = document.getElementById("menu-sm-add-section");
-        this.smNotes = document.getElementById("menu-box-notes");
+        this.smNotes = document.getElementById("menu-box-sm-notes");
 
         // Feature metadata elements
         this.fmTable = document.getElementById("menu-fm-table");
@@ -232,7 +232,12 @@ define(["underscore", "util"], function (_, util) {
             this.nodeNameLabel.textContent = "Name: " + name;
         }
 
-        this.smNotes.textContent = "";
+        if (this.fields.length === 0) {
+            this.smNotes.textContent =
+                "No sample metadata columns have been selected yet.";
+        } else {
+            this.smNotes.textContent = "";
+        }
         hide(this.nodeNameWarning);
         hide(this.nodeNotInTableWarning);
 
