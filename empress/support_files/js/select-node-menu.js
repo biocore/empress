@@ -28,6 +28,7 @@ define(["underscore", "util"], function (_, util) {
         this.hiddenCallback = null;
         this.visibleCallback = null;
         this._samplesInSelection = [];
+        this.initialize();
     }
 
     /**
@@ -492,7 +493,9 @@ define(["underscore", "util"], function (_, util) {
         var name = emp.getNodeInfo(nodeKeys[0], "name");
         for (var i = 1; i < nodeKeys.length; i++) {
             if (emp.getNodeInfo(nodeKeys[i], "name") !== name) {
-                throw "setSelectedNodes(): keys do not represent the same node!";
+                throw new Error(
+                    "setSelectedNodes(): keys do not represent the same node name!"
+                );
             }
         }
 
@@ -500,10 +503,10 @@ define(["underscore", "util"], function (_, util) {
         // tips must be unique
         var t = emp._tree;
         if (t.isleaf(t.postorderselect(nodeKeys[0])) && nodeKeys.length > 1) {
-            throw (
+            throw new Error(
                 "setSelectedNodes(): " +
                 emp.getNodeInfo(nodeKeys[0], "name") +
-                " matches multiple tips!"
+                " matches multiple nodes, one of which is a tip!"
             );
         }
 

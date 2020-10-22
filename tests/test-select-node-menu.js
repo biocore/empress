@@ -56,8 +56,11 @@ require([
                 });
             },
         });
-        test("Initialization", function () {
-            deepEqual(this.selectedNodeMenu.hiddenCallback, null);
+        test("setSelectedNodes: throws error if multiple nodes that don't share the same name selected", function () {
+            var scope = this;
+            throws(function () {
+                scope.selectedNodeMenu.setSelectedNodes([7, 4]);
+            }, /setSelectedNodes\(\): keys do not represent the same node name!/);
         });
     });
 });
