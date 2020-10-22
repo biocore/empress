@@ -20,6 +20,15 @@ require([
                     this.testData.empress,
                     this.testData.empress._drawer
                 );
+
+                this.isShown = function (attrEle) {
+                    var cl = scope.selectedNodeMenu[attrEle].classList;
+                    notOk(cl.contains("hidden"), attrEle + " is shown");
+                };
+                this.isHidden = function (attrEle) {
+                    var cl = scope.selectedNodeMenu[attrEle].classList;
+                    ok(cl.contains("hidden"), attrEle + " is hidden");
+                };
             },
             tearDown: function () {},
         });
@@ -76,19 +85,8 @@ require([
             );
             // Node length
             deepEqual(this.selectedNodeMenu.nodeLengthLabel.textContent, "2");
-            // Duplicate node name warning, and node-not-in-table warning, are
-            // not shown
-            ok(
-                this.selectedNodeMenu.nodeNameWarning.classList.contains(
-                    "hidden"
-                )
-            );
-            ok(
-                this.selectedNodeMenu.smNotInTableWarning.classList.contains(
-                    "hidden"
-                )
-            );
-            equal(this.selectedNodeMenu.smTable.innerHTML, "");
+            // Duplicate node name warning isn't shown
+            this.isHidden("nodeNameWarning");
 
             // Check that the feature metadata table was constructed properly
             var fmt = $(this.selectedNodeMenu.fmTable);
@@ -115,15 +113,24 @@ require([
             equal(dataCells[0].textContent, "1");
             equal(dataCells[1].textContent, "2");
 
-            // Check that the feature metadata header and table are visible
-            notOk(this.selectedNodeMenu.fmTable.classList.contains("hidden"));
-            notOk(this.selectedNodeMenu.fmHeader.classList.contains("hidden"));
+            // Check that the feature metadata header and table are visible,
+            // but that the "no feature metadata" text isn't visible
+            this.isShown("fmSection");
+            this.isShown("fmHeader");
+            this.isHidden("fmNoDataNote");
+            this.isShown("fmTable");
 
-            // Check that the sample metadata section is visible
-            // TODO, just the add button should be until it's clicked
+            // Check that the sample metadata section is visible. Just the
+            // header and add section stuff should be visible right now.
+            this.isShown("smSection");
+            this.isShown("smHeader");
+            this.isHidden("smTable");
+            this.isHidden("smNotes");
+            this.isShown("smAddSection");
+            this.isHidden("smNotInTableWarning");
 
             // Menu is visible
-            notOk(this.selectedNodeMenu.box.classList.contains("hidden"));
+            this.isShown("box");
         });
     });
 });

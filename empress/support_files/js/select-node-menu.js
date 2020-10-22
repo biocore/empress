@@ -16,8 +16,8 @@ define(["underscore", "util"], function (_, util) {
 
         // Sample metadata elements
         this.smSection = document.getElementById("menu-sm-section");
-        this.smTable = document.getElementById("menu-sm-table");
         this.smHeader = document.getElementById("menu-sm-header");
+        this.smTable = document.getElementById("menu-sm-table");
         this.sel = document.getElementById("menu-select");
         this.addBtn = document.getElementById("menu-add-btn");
         this.smAddSection = document.getElementById("menu-sm-add-section");
