@@ -1020,9 +1020,14 @@ require([
                 traj: { t1: 2, t2: 2, t3: 2, t4: 0 },
             };
             deepEqual(values.fieldsMap, int4presence);
-            // TODO test diff and samples output
+            // diff should be [] since all of node 4's descendant tips
+            // (2 and 3) are in the table
+            deepEqual(values.diff, []);
+            // All samples but s7 are represented by node 4: this is because
+            // tips 2 and 3 are present in all samples except s7.
+            deepEqual(values.samples, ["s1", "s2", "s3", "s4", "s5", "s6"]);
 
-            // also testing root which should have all tips -> all samples
+            // Also test root which should have all tips -> all samples
             var rootPresence = {
                 f1: { a: 5, b: 2 },
                 grad: { 1: 2, 2: 2, 3: 2, 4: 1 },
@@ -1030,6 +1035,16 @@ require([
             };
             var rootValues = e.computeIntSamplePresence(7, fields);
             deepEqual(rootValues.fieldsMap, rootPresence);
+            // Note that diff being [] is only a guarantee if the tree was
+            // shorn to the table. If shearing was not done, it is possible
+            // that tips in the tree could not be present in the table.
+            deepEqual(rootValues.diff, []);
+            // However, the root should always correspond to all samples, since
+            // all of the features in the table should be tips in the tree, and
+            // since the root by definition is an ancestor of all those tips.
+            deepEqual(
+                rootValues.samples, ["s1", "s2", "s3", "s4", "s5", "s6", "s7"]
+            );
         });
 
         test("Test computeIntSamplePresence when no child tips in table", function () {
