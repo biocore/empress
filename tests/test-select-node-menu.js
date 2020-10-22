@@ -74,7 +74,7 @@ require([
                 this.selectedNodeMenu.showNodeMenu();
             }, /showNodeMenu\(\): Nodes have not been selected./);
         });
-        test("showNodeMenu: tip node (in table, no sample metadata)", function () {
+        test("showNodeMenu: tip node (in table, sm table unpopulated)", function () {
             this.selectedNodeMenu.setSelectedNodes([2]);
             this.selectedNodeMenu.showNodeMenu();
             // Test that a few things are set up in the menu as expected.
@@ -112,6 +112,65 @@ require([
             equal(dataCells.length, 2);
             equal(dataCells[0].textContent, "1");
             equal(dataCells[1].textContent, "2");
+
+            // Check that the feature metadata header and table are visible,
+            // but that the "no feature metadata" text isn't visible
+            this.isShown("fmSection");
+            this.isShown("fmHeader");
+            this.isHidden("fmNoDataNote");
+            this.isShown("fmTable");
+
+            // Check that the sample metadata section is visible. Just the
+            // header and add section stuff should be visible right now.
+            this.isShown("smSection");
+            this.isShown("smHeader");
+            this.isHidden("smTable");
+            this.isHidden("smNotes");
+            this.isShown("smAddSection");
+            this.isHidden("smNotInTableWarning");
+
+            // Menu is visible
+            this.isShown("box");
+        });
+        test("showNodeMenu: internal node (tips in table, sm table unpopulated, duplicate node name warning)", function () {
+            this.selectedNodeMenu.setSelectedNodes([4]);
+            this.selectedNodeMenu.showNodeMenu();
+            // Test that a few things are set up in the menu as expected.
+            // Node name
+            deepEqual(
+                this.selectedNodeMenu.nodeNameLabel.textContent,
+                "Name: internal"
+            );
+            // Node length
+            deepEqual(this.selectedNodeMenu.nodeLengthLabel.textContent, "4");
+            // Duplicate node name warning is shown, since multiple nodes in
+            // the test dataset have the name "internal"
+            this.isShown("nodeNameWarning");
+
+            // Check that the feature metadata table was constructed properly
+            var fmt = $(this.selectedNodeMenu.fmTable);
+
+            equal(fmt.children().length, 1);
+            var tbody = fmt.children()[0];
+            equal(tbody.tagName, "TBODY");
+            equal($(tbody).children().length, 2);
+
+            var rows = $(tbody).children();
+            equal(rows.length, 2);
+            var tr1 = rows[0];
+            var tr2 = rows[1];
+            equal(tr1.tagName, "TR");
+            equal(tr2.tagName, "TR");
+
+            var headerCells = $(tr1).children();
+            equal(headerCells.length, 2);
+            equal(headerCells[0].textContent, "f1");
+            equal(headerCells[1].textContent, "f2");
+
+            var dataCells = $(tr2).children();
+            equal(dataCells.length, 2);
+            equal(dataCells[0].textContent, "1");
+            equal(dataCells[1].textContent, "1");
 
             // Check that the feature metadata header and table are visible,
             // but that the "no feature metadata" text isn't visible
