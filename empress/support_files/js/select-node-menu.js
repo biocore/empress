@@ -9,9 +9,6 @@ define(["underscore", "util"], function (_, util) {
         this.nodeNameWarning = document.getElementById(
             "menu-box-node-name-warning"
         );
-        this.nodeNotInTableWarning = document.getElementById(
-            "menu-box-node-not-in-table-warning"
-        );
         this.nodeLengthContainer = document.getElementById(
             "menu-box-node-length-container"
         );
@@ -25,6 +22,9 @@ define(["underscore", "util"], function (_, util) {
         this.addBtn = document.getElementById("menu-add-btn");
         this.smAddSection = document.getElementById("menu-sm-add-section");
         this.smNotes = document.getElementById("menu-box-sm-notes");
+        this.smNotInTableWarning = document.getElementById(
+            "menu-box-node-not-in-table-warning"
+        );
 
         // Feature metadata elements
         this.fmSection = document.getElementById("menu-fm-section");
@@ -34,6 +34,7 @@ define(["underscore", "util"], function (_, util) {
 
         this.nodeKeys = null;
         this.fields = [];
+        this.fmCols = this.empress.getFeatureMetadataCategories();
         this.hasSampleMetadata = false;
         this.hasFeatureMetadata = false;
         this.hiddenCallback = null;
@@ -107,7 +108,7 @@ define(["underscore", "util"], function (_, util) {
             hide(this.smSection);
         }
 
-        this.hasFeatureMetadata = this.empress.getFeatureMetadataCategories().length > 0;
+        this.hasFeatureMetadata = this.fmCols.length > 0;
         if (this.hasFeatureMetadata) {
             show(this.fmSection);
         } else {
@@ -118,53 +119,103 @@ define(["underscore", "util"], function (_, util) {
     /*
      * Creates a HTML table describing sample presence info for a feature.
      *
-     * This is set up as a static method
-     * (https://stackoverflow.com/a/1635143/10730311) to make testing easier
-     * (and also because it really doesn't need to depend on the state of this
-     * object).
-     *
      * @param{Object} ctData Two-dimensional mapping: The keys are the
      *                       sample metadata fields to include in the table,
      *                       and the values are Objects mapping unique values
      *                       in these fields to numbers describing this
      *                       feature's presence for these values.
      *                       e.g. {"body-site": {"gut": 5, "tongue": 2}}
+     * @param{String} tipOrInt "tip" If showing data for a tip, "int" if
+     *                         showing data for an internal node. The behavior
+     *                         for other values is undefined.
      */
-    SelectedNodeMenu.prototype.makeSampleMetadataTable = function (ctData) {
-        // loop over all metadata fields the user has decided to show
-        var sortedFields = util.naturalSort(_.keys(ctData));
-        for (var i = 0; i < sortedFields.length; i++) {
-            var field = sortedFields[i];
+    SelectedNodeMenu.prototype.makeSampleMetadataTable = function (
+        ctData,
+        tipOrInt
+    ) {
+        if (this.hasSampleMetadata) {
+            this.smTable.innerHTML = "";
+            if (_.isNull(ctData)) {
+                // This node (or its descendant tips) isn't present in the
+                // table.
+                var wtext;
+                if (tipOrInt === "tip") {
+                    wtext = "This is a tip in the tree. However, it is not " +
+                        "present in the input feature table, so we " +
+                        "can't show sample presence information for it.";
+                } else {
+                    wtext = "This is an internal node in the tree. None of " +
+                        "its descendant tips are present in the input " +
+                        "feature table, so we can't show sample presence " +
+                        "information for it.";
+                }
+                updateAndShow(this.smNotInTableWarning, wtext);
+                hide(this.smTable);
+                hide(this.smNotes);
+                hide(this.smAddSection);
+            } else {
+                if (this.fields.length > 0) {
+                    // loop over all metadata fields the user has decided to show
+                    var sortedFields = util.naturalSort(_.keys(ctData));
+                    for (var i = 0; i < sortedFields.length; i++) {
+                        var field = sortedFields[i];
 
-            // Create new rows in menu-table: the first row is for this
-            // metadata field's "headers" (the unique values in the field,
-            // e.g. "gut", "tongue", etc. for a field like body site), and
-            // the second row is for the sample presence data for
-            // the selected tree node within these unique values.
-            //
-            // Each group of two rows additionally has a header cell
-            // on its leftmost side which spans both the header and data
-            // rows; this header cell contains the name of the selected
-            // metadata field, and has some fancy CSS that keeps it frozen
-            // in place as the user scrolls the table horizontally.
-            var fieldHeaderRow = this.smTable.insertRow(-1);
-            var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
-            fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
-            fieldHeaderCell.rowSpan = 2;
-            fieldHeaderCell.classList.add("menu-box-header-cell");
-            fieldHeaderCell.classList.add("frozen-cell");
+                        // Create new rows in menu-table: the first row is for this
+                        // metadata field's "headers" (the unique values in the field,
+                        // e.g. "gut", "tongue", etc. for a field like body site), and
+                        // the second row is for the sample presence data for
+                        // the selected tree node within these unique values.
+                        //
+                        // Each group of two rows additionally has a header cell
+                        // on its leftmost side which spans both the header and data
+                        // rows; this header cell contains the name of the selected
+                        // metadata field, and has some fancy CSS that keeps it frozen
+                        // in place as the user scrolls the table horizontally.
+                        var fieldHeaderRow = this.smTable.insertRow(-1);
+                        var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
+                        fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
+                        fieldHeaderCell.rowSpan = 2;
+                        fieldHeaderCell.classList.add("menu-box-header-cell");
+                        fieldHeaderCell.classList.add("frozen-cell");
 
-            var fieldDataRow = this.smTable.insertRow(-1);
+                        var fieldDataRow = this.smTable.insertRow(-1);
 
-            // add row values for this metadata field, one column at a time
-            var categories = util.naturalSort(_.keys(ctData[field]));
-            for (var j = 0; j < categories.length; j++) {
-                var categoryHeaderCell = fieldHeaderRow.insertCell(-1);
-                categoryHeaderCell.innerHTML =
-                    "<strong>" + categories[j] + "</strong>";
-                var categoryDataCell = fieldDataRow.insertCell(-1);
-                categoryDataCell.innerHTML = ctData[field][categories[j]];
+                        // add row values for this metadata field, one column at a time
+                        var categories = util.naturalSort(_.keys(ctData[field]));
+                        for (var j = 0; j < categories.length; j++) {
+                            var categoryHeaderCell = fieldHeaderRow.insertCell(-1);
+                            categoryHeaderCell.innerHTML =
+                                "<strong>" + categories[j] + "</strong>";
+                            var categoryDataCell = fieldDataRow.insertCell(-1);
+                            categoryDataCell.innerHTML = ctData[field][categories[j]];
+                        }
+                    }
+                    var ntext;
+                    if (tipOrInt === "tip") {
+                        ntext = "This is a tip in the tree. These values " +
+                            "represent the number of unique samples that " +
+                            "contain this node.";
+                    } else {
+                        ntext = "This is an internal node in the tree. " +
+                            "These values represent the number of unique " +
+                            "samples that contain any of this node's " +
+                            "descendant tips.";
+                    }
+                    updateAndShow(this.smNotes, ntext);
+                    show(this.smTable);
+                    show(this.smAddSection);
+                    hide(this.smNotInTableWarning);
+                } else {
+                    hide(this.smTable);
+                    hide(this.smNotes);
+                    hide(this.smNotInTableWarning);
+                    show(this.smAddSection);
+                }
             }
+        } else {
+            throw new Error(
+                "Can't show a sample metadata table if no s.m. is available"
+            );
         }
     };
 
@@ -190,7 +241,6 @@ define(["underscore", "util"], function (_, util) {
     ) {
         if (this.hasFeatureMetadata) {
             this.fmTable.innerHTML = "";
-            var fmCols = this.empress.getFeatureMetadataCategories();
             var mdObj;
             // TODO: it'd be nice to add methods to Empress that return the
             // feature metadata, so we can avoid having to access "private"
@@ -206,8 +256,8 @@ define(["underscore", "util"], function (_, util) {
             if (_.has(mdObj, nodeName)) {
                 var headerRow = this.fmTable.insertRow(-1);
                 var featureRow = this.fmTable.insertRow(-1);
-                for (var x = 0; x < fmCols.length; x++) {
-                    var colName = fmCols[x];
+                for (var x = 0; x < this.fmCols.length; x++) {
+                    var colName = this.fmCols[x];
                     var colCell = headerRow.insertCell(-1);
                     colCell.innerHTML = "<strong>" + colName + "</strong>";
                     var dataCell = featureRow.insertCell(-1);
@@ -250,8 +300,6 @@ define(["underscore", "util"], function (_, util) {
             this.nodeNameLabel.textContent = "Name: " + name;
         }
         hide(this.nodeNameWarning);
-
-        //hide(this.nodeNotInTableWarning);
 
         // show either leaf or internal node
         var t = emp._tree;
@@ -310,47 +358,20 @@ define(["underscore", "util"], function (_, util) {
         // 2. Add sample presence information for this tip (only if this data
         // is available in the first place, and if the user has selected at
         // least one field to show sample presence information for)
-        if (this.empress.isCommunityPlot) {
+        if (this.hasSampleMetadata) {
             var ctData = this.empress.computeTipSamplePresence(
                 node,
                 this.fields
             );
-            if (_.isNull(ctData)) {
-                // This tip isn't present in the table, so we don't have sample
-                // presence information for it.
-                updateAndShow(
-                    this.nodeNotInTableWarning,
-                    "This is a tip in the tree. However, it is not " +
-                        "present in the input feature table, so we cannot " +
-                        "show sample presence information for it."
+            this.makeSampleMetadataTable(ctData, "tip");
+            // 2.1 The samples represented by this tip are sent to Emperor.
+            if (this.empress._biom.hasFeatureID(node)) {
+                this._samplesInSelection = this.empress._biom.getSamplesByObservations(
+                    [node]
                 );
-                hide(this.smSection);
             } else {
-                // 2.1 The samples represented by this tip are sent to Emperor.
-
-                // Check if this tip is present in the BIOM table. The array
-                // returned by BIOMTable.getObsIDsDifference() contains the
-                // feature IDs present in the input array but not in the BIOM
-                // table -- so if the length of this array is zero, this
-                // feature is present in the table.
-                var diff = this.empress._biom.getObsIDsDifference([node]);
-                if (diff.length == 0) {
-                    this._samplesInSelection = this.empress._biom.getSamplesByObservations(
-                        [node]
-                    );
-                } else {
-                    this._samplesInSelection = [];
-                }
-                this._checkTips(diff);
-
-                this.makeSampleMetadataTable(ctData);
-                if (this.fields.length > 0) {
-                    this.smNotes.textContent =
-                        "This is a tip in the tree. These values " +
-                        "represent the number of unique samples that " +
-                        "contain this node.";
-                }
-                show(this.smSection);
+                this._samplesInSelection = [];
+                this._checkTips([node]);
             }
         }
     };
@@ -421,45 +442,30 @@ define(["underscore", "util"], function (_, util) {
             // this.nodeKeys has a length of 1
             var nodeKey = this.nodeKeys[0];
             this.setNodeLengthLabel(nodeKey);
-            if (this.empress.isCommunityPlot) {
+            if (this.hasSampleMetadata) {
                 var tips = this.empress._tree.findTips(nodeKey);
-
-                var emp = this.empress;
-                var samplePresence = emp.computeIntSamplePresence(
+                var samplePresence = this.empress.computeIntSamplePresence(
                     nodeKey,
                     this.fields
                 );
-
-                if (_.isNull(samplePresence.fieldsMap)) {
-                    updateAndShow(
-                        this.nodeNotInTableWarning,
-                        "This is an internal node in the tree. None of " +
-                            "this node's descendant tips are present in the " +
-                            "input feature table, so we cannot show sample " +
-                            "presence information for it."
-                    );
-                    hide(this.smSection);
-                } else {
-                    // used for the emperor callback
-                    this._samplesInSelection = this._samplesInSelection.concat(
-                        samplePresence.samples
-                    );
-                    if (this.fields.length > 0) {
-                        this.makeSampleMetadataTable(samplePresence.fieldsMap);
-                        this.smNotes.textContent =
-                            "This is an internal node in the tree. These " +
-                            "values represent the number of unique samples that " +
-                            "contain any of this node's descendant tips.";
-                        show(this.smSection);
-                    }
-                }
+                this.makeSampleMetadataTable(samplePresence.fieldsMap, "int");
+                this._samplesInSelection = samplePresence.samples;
                 this._checkTips(samplePresence.diff);
             }
         } else {
-            // If isUnambiguous is false, no notes will be shown and the sample
-            // presence info (including the table and notes) will be hidden
-            hide(this.smSection);
+            // If isUnambiguous is false, we can't show information about
+            // single nodes (e.g. node lengths)
             hide(this.nodeLengthContainer);
+            if (this.hasSampleMetadata) {
+                hide(this.smTable);
+                hide(this.smAddSection);
+                hide(this.smNotInTableWarning);
+                this.smNotes.textContent =
+                    "Multiple internal nodes are selected. We can't " +
+                    "identify the samples containing these nodes' " +
+                    "descendant tips, if present, due to the ambiguity.";
+                show(this.smNotes);
+            }
         }
     };
 
