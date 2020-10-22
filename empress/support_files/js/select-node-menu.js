@@ -27,12 +27,15 @@ define(["underscore", "util"], function (_, util) {
         this.smNotes = document.getElementById("menu-box-sm-notes");
 
         // Feature metadata elements
-        this.fmTable = document.getElementById("menu-fm-table");
-        this.fmHeader = document.getElementById("menu-fm-header");
         this.fmSection = document.getElementById("menu-fm-section");
+        this.fmHeader = document.getElementById("menu-fm-header");
+        this.fmNoDataNote = document.getElementById("menu-fm-no-fm-note");
+        this.fmTable = document.getElementById("menu-fm-table");
 
         this.nodeKeys = null;
         this.fields = [];
+        this.hasSampleMetadata = false;
+        this.hasFeatureMetadata = false;
         this.hiddenCallback = null;
         this.visibleCallback = null;
         this._samplesInSelection = [];
@@ -75,7 +78,8 @@ define(["underscore", "util"], function (_, util) {
     SelectedNodeMenu.prototype.initialize = function () {
         var scope = this;
 
-        if (this.empress.isCommunityPlot) {
+        this.hasSampleMetadata = this.empress.isCommunityPlot;
+        if (this.hasSampleMetadata) {
             // add items to select
             var selOpts = this.empress.getSampleCategories();
             for (var i = 0; i < selOpts.length; i++) {
@@ -98,8 +102,16 @@ define(["underscore", "util"], function (_, util) {
                 scope.showNodeMenu();
             };
             this.addBtn.onclick = click;
+            show(this.smSection);
         } else {
             hide(this.smSection);
+        }
+
+        this.hasFeatureMetadata = this.empress.getFeatureMetadataCategories().length > 0;
+        if (this.hasFeatureMetadata) {
+            show(this.fmSection);
+        } else {
+            hide(this.fmSection);
         }
     };
 
@@ -176,9 +188,9 @@ define(["underscore", "util"], function (_, util) {
         nodeName,
         tipOrInt
     ) {
-        var fmShown = false;
-        var fmCols = this.empress.getFeatureMetadataCategories();
-        if (fmCols.length > 0) {
+        if (this.hasFeatureMetadata) {
+            this.fmTable.innerHTML = "";
+            var fmCols = this.empress.getFeatureMetadataCategories();
             var mdObj;
             // TODO: it'd be nice to add methods to Empress that return the
             // feature metadata, so we can avoid having to access "private"
@@ -201,12 +213,18 @@ define(["underscore", "util"], function (_, util) {
                     var dataCell = featureRow.insertCell(-1);
                     dataCell.innerHTML = mdObj[nodeName][x];
                 }
-                show(this.fmSection);
-                fmShown = true;
+                show(this.fmTable);
+                hide(this.fmNoDataNote);
+            } else {
+                this.fmNoDataNote.textContent =
+                    "This node does not have associated feature metadata.";
+                hide(this.fmTable);
+                show(this.fmNoDataNote);
             }
-        }
-        if (!fmShown) {
-            hide(this.fmSection);
+        } else {
+            throw new Error(
+                "Can't show a feature metadata table if no f.m. is available"
+            );
         }
     };
 
@@ -231,15 +249,9 @@ define(["underscore", "util"], function (_, util) {
         } else {
             this.nodeNameLabel.textContent = "Name: " + name;
         }
-
-        if (this.fields.length === 0) {
-            this.smNotes.textContent =
-                "No sample metadata columns have been selected yet.";
-        } else {
-            this.smNotes.textContent = "";
-        }
         hide(this.nodeNameWarning);
-        hide(this.nodeNotInTableWarning);
+
+        //hide(this.nodeNotInTableWarning);
 
         // show either leaf or internal node
         var t = emp._tree;
@@ -249,13 +261,18 @@ define(["underscore", "util"], function (_, util) {
             this.showInternalNode();
         }
 
-        // place menu-node menu next to node
-        // otherwise place the (aggregated) node-menu over the root of the tree
+        // place menu-node menu next to the selected node
+        // (if multiple nodes are selected, updateMenuPosition() positions the
+        // menu next to an arbitrary one)
         this.updateMenuPosition();
 
-        // show table
         show(this.box);
 
+        // Trigger Emperor callback if possible -- show the samples the
+        // selected node, or its children, are present within.
+        // (If multiple node keys are given, then this._samplesInSelection will
+        // be set to [] since it isn't clear how to map multiple internal nodes
+        // to samples.)
         if (this.visibleCallback !== null) {
             this.visibleCallback(this._samplesInSelection);
         }
@@ -282,9 +299,11 @@ define(["underscore", "util"], function (_, util) {
         var node = this.nodeKeys[0];
 
         // 1. Add feature metadata information (if present for this tip; if
-        // there isn't feature metadata for this tip, the f.m. UI elements in
-        // the selected node menu will be hidden)
-        this.makeFeatureMetadataTable(node, "tip");
+        // there isn't feature metadata for this tip, the f.m. table will be
+        // hidden)
+        if (this.hasFeatureMetadata) {
+            this.makeFeatureMetadataTable(node, "tip");
+        }
 
         this.setNodeLengthLabel(node);
 
@@ -382,10 +401,14 @@ define(["underscore", "util"], function (_, util) {
             );
         }
 
-        // 1. Add feature metadata information (if present) for this node
-        // (Note that we allow duplicate-name internal nodes to have
-        // feature metadata; this isn't a problem)
-        this.makeFeatureMetadataTable(this.nodeKeys[0], "int");
+        // 1. Add feature metadata information (if present) for this node.
+        // Note that we allow duplicate-name internal nodes to have
+        // feature metadata (which is indexed by node name), so even if there
+        // are multiple node keys they should all have the same name and
+        // therefore share feature metadata.
+        if (this.hasFeatureMetadata) {
+            this.makeFeatureMetadataTable(this.nodeKeys[0], "int");
+        }
 
         // 2. Compute sample presence information for this node.
         // (NOTE: this does not prevent "double-counting" samples, so the
@@ -481,10 +504,9 @@ define(["underscore", "util"], function (_, util) {
      */
     SelectedNodeMenu.prototype.clearSelectedNode = function () {
         this.smTable.innerHTML = "";
+        this.fmTable.innerHTML = "";
         this.nodeKeys = null;
         hide(this.box);
-        hide(this.fmSection);
-        this.fmTable.innerHTML = "";
         this.drawer.loadSelectedNodeBuff([]);
         this.empress.drawTree();
 
