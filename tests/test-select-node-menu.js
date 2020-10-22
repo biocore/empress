@@ -65,7 +65,7 @@ require([
                 this.selectedNodeMenu.showNodeMenu();
             }, /showNodeMenu\(\): Nodes have not been selected./);
         });
-        test("showNodeMenu: tip node (in table)", function () {
+        test("showNodeMenu: tip node (in table, no sample metadata)", function () {
             this.selectedNodeMenu.setSelectedNodes([2]);
             this.selectedNodeMenu.showNodeMenu();
             // Test that a few things are set up in the menu as expected.
@@ -118,6 +118,9 @@ require([
             // Check that the feature metadata header and table are visible
             notOk(this.selectedNodeMenu.fmTable.classList.contains("hidden"));
             notOk(this.selectedNodeMenu.fmHeader.classList.contains("hidden"));
+
+            // Check that the sample metadata section is visible
+            // TODO, just the add button should be until it's clicked
 
             // Menu is visible
             notOk(this.selectedNodeMenu.box.classList.contains("hidden"));
