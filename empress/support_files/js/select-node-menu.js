@@ -11,6 +11,7 @@ define(["underscore", "util"], function (_, util) {
         this.box = document.getElementById("menu-box");
         this.sel = document.getElementById("menu-select");
         this.addBtn = document.getElementById("menu-add-btn");
+        this.smAddSection = document.getElementById("menu-sm-add-section");
         this.nodeNameLabel = document.getElementById("menu-box-node-id");
         this.smNotes = document.getElementById("menu-box-notes");
         this.nodeNameWarning = document.getElementById(
@@ -80,6 +81,11 @@ define(["underscore", "util"], function (_, util) {
             var click = function () {
                 var val = scope.sel.value;
                 scope.sel.options[scope.sel.selectedIndex].remove();
+                // Hide the add button and related elements when all fields
+                // are added: https://github.com/biocore/empress/issues/272
+                if (scope.sel.options.length === 0) {
+                    hide(scope.smAddSection);
+                }
                 scope.fields.push(val);
                 show(scope.smHeader);
                 scope.showNodeMenu();
