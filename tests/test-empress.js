@@ -490,7 +490,7 @@ require([
 
             // Check getSampleCategories() if no sample metadata passed to
             // Empress -- an empty array should be returned
-            testData = UtilitiesForTesting.getTestData();
+            var testData = UtilitiesForTesting.getTestData();
             var empWithJustFM = new Empress(
                 testData.tree,
                 null,
@@ -1044,21 +1044,20 @@ require([
                 ["sm1"],
                 [["a"], ["b"]]
             );
-            // NOTE: Ideally we would create another instance of Empress and
-            // just use that, but that is causing problems with canvas stuff so
-            // for now we're replacing the biom with a silly hack.
-            this.empress._biom = tinyBiom;
-            //var testData = UtilitiesForTesting.getTestData(false);
-            //var e = new Empress(
-            //    testData.tree,
-            //    tinyBiom,
-            //    testData.treeData,
-            //    testData.fmCols,
-            //    testData.tm,
-            //    testData.im,
-            //    testData.canvas
-            //);
-            var values = this.empress.computeIntSamplePresence(4, ["sm1"]);
+            var testData = UtilitiesForTesting.getTestData();
+            var e = new Empress(
+                testData.tree,
+                tinyBiom,
+                testData.fmCols,
+                testData.tm,
+                testData.im,
+                testData.canvas
+            );
+            // The internal node 4 has two descendant tips, 2 and 3. Since this
+            // table only has one feature (6), this means that
+            // computeIntSamplePresence() for 4 should result in fieldsMap
+            // being null.
+            var values = e.computeIntSamplePresence(4, ["sm1"]);
 
             deepEqual(values.fieldsMap, null);
             deepEqual(values.diff, [2, 3]);
