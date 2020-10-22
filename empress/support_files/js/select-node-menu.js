@@ -117,18 +117,8 @@ define(["underscore", "util"], function (_, util) {
      *                       in these fields to numbers describing this
      *                       feature's presence for these values.
      *                       e.g. {"body-site": {"gut": 5, "tongue": 2}}
-     * @param{HTMLElement} tableEle A reference to the <table> element to
-     *                              which this method will insert HTML.
-     *                              This can just be the return value of
-     *                              document.getElementById(). This element's
-     *                              innerHTML will be cleared at the start of
-     *                              this method.
      */
-    SelectedNodeMenu.prototype.makeSampleMetadataTable = function (
-        ctData,
-        tableEle
-    ) {
-        tableEle.innerHTML = "";
+    SelectedNodeMenu.prototype.makeSampleMetadataTable = function (ctData) {
         // loop over all metadata fields the user has decided to show
         var sortedFields = util.naturalSort(_.keys(ctData));
         for (var i = 0; i < sortedFields.length; i++) {
@@ -145,14 +135,14 @@ define(["underscore", "util"], function (_, util) {
             // rows; this header cell contains the name of the selected
             // metadata field, and has some fancy CSS that keeps it frozen
             // in place as the user scrolls the table horizontally.
-            var fieldHeaderRow = tableEle.insertRow(-1);
+            var fieldHeaderRow = this.smTable.insertRow(-1);
             var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
             fieldHeaderCell.innerHTML = "<strong>" + field + "</strong>";
             fieldHeaderCell.rowSpan = 2;
             fieldHeaderCell.classList.add("menu-box-header-cell");
             fieldHeaderCell.classList.add("frozen-cell");
 
-            var fieldDataRow = tableEle.insertRow(-1);
+            var fieldDataRow = this.smTable.insertRow(-1);
 
             // add row values for this metadata field, one column at a time
             var categories = util.naturalSort(_.keys(ctData[field]));
@@ -329,7 +319,7 @@ define(["underscore", "util"], function (_, util) {
                 }
                 this._checkTips(diff);
 
-                this.makeSampleMetadataTable(ctData, this.smTable);
+                this.makeSampleMetadataTable(ctData);
                 if (this.fields.length > 0) {
                     this.smNotes.textContent =
                         "This is a tip in the tree. These values " +
@@ -427,10 +417,7 @@ define(["underscore", "util"], function (_, util) {
                         samplePresence.samples
                     );
                     if (this.fields.length > 0) {
-                        this.makeSampleMetadataTable(
-                            samplePresence.fieldsMap,
-                            this.smTable
-                        );
+                        this.makeSampleMetadataTable(samplePresence.fieldsMap);
                         this.smNotes.textContent =
                             "This is an internal node in the tree. These " +
                             "values represent the number of unique samples that " +
