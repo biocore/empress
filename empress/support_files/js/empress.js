@@ -490,7 +490,7 @@ define([
     /**
      * Retrives the coordinate info of the tree.
      *
-     * We used to interlace the coorinate information with the color information
+     * We used to interlace the coordinate information with the color information
      * i.e. [x1, y1, red1, green1, blue1, x2, y2, red2, green2, blue2,...]
      * This was inefficient because tree coordinates do not change during most
      * update operations (such as feature coloring). Thus, we split the
@@ -656,7 +656,6 @@ define([
         if (this._currentLayout === "Rectangular") {
             color = this.getNodeInfo(tree.size, "color");
             addPoint();
-            // addPoint();
         }
         // iterate through the tree in postorder, skip root
         for (var node = 1; node < tree.size; node++) {

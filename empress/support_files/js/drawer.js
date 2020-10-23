@@ -271,7 +271,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
-     * Binds the buffer so WebGL can use it.
+     * Binds the tree coordinate buffer so WebGL can use it.
      *
      * @param {WebGLBuffer} buffer The Buffer to bind
      */
@@ -297,7 +297,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
-     * Binds the buffer so WebGL can use it.
+     * Binds the tree color buffer so WebGL can use it.
      *
      * @param {WebGLBuffer} buffer The Buffer to bind
      */

@@ -204,7 +204,6 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
 
         test("Test Circular Layout Arc Computation", function () {
             var coords = this.empress.getTreeCoords();
-            console.log(coords);
 
             // NOTE: all node numbers are in reference to the postorder position
             //      starting at 1.
