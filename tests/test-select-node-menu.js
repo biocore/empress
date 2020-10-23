@@ -241,6 +241,20 @@ require([
 
             // Add a row for "f1" (the default s.m. field) to the s.m. table
             this.selectedNodeMenu.addBtn.click();
+
+            // First off, check that stuff is still shown
+            this.isShown("smNotes");
+            this.isShown("smTable");
+            this.isHidden("smNotInTableWarning");
+            this.isShown("smAddSection");
+
+            // Check that the notes were updated accordingly
+            this.textEquals(
+                "smNotes",
+                "This is a tip in the tree. These values represent the " +
+                    "number of unique samples that contain this node."
+            );
+
             var smt = $(this.selectedNodeMenu.smTable);
 
             deepEqual(smt.children().length, 1);
