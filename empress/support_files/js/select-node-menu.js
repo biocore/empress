@@ -133,10 +133,21 @@ define(["underscore", "util"], function (_, util) {
      * @param{String} tipOrInt "tip" If showing data for a tip, "int" if
      *                         showing data for an internal node. The behavior
      *                         for other values is undefined.
+     * @param {Number} diffLen If this is > 0, and if tipOrInt is "int",
+     *                         this will add an extra sentence to the text
+     *                         shown for the notes accompanying the sample
+     *                         metadata table about how this many tips
+     *                         descending from an internal node are missing
+     *                         from the feature table.
+     * @param {Number} descTipCt The total number of tips descending from an
+     *                           internal node. Will be used in the diffLen
+     *                           message described above.
      */
     SelectedNodeMenu.prototype.makeSampleMetadataTable = function (
         ctData,
-        tipOrInt
+        tipOrInt,
+        diffLen = 0,
+        descTipCt = 0
     ) {
         if (this.hasSampleMetadata) {
             this.smTable.innerHTML = "";
@@ -225,12 +236,24 @@ define(["underscore", "util"], function (_, util) {
                     if (!this.smFieldsExhausted) {
                         show(this.smAddSection);
                     }
-                    hide(this.smNotInTableWarning);
                 } else {
                     hide(this.smTable);
                     hide(this.smNotes);
-                    hide(this.smNotInTableWarning);
                     show(this.smAddSection);
+                }
+                if (tipOrInt === "int" && diffLen > 0) {
+                    updateAndShow(
+                        this.smNotInTableWarning,
+                        "Warning: " +
+                            diffLen +
+                            " / " +
+                            descTipCt +
+                            " descendant tips from this node are not " +
+                            "present within the feature table."
+                    );
+                    show(this.smNotInTableWarning);
+                } else {
+                    hide(this.smNotInTableWarning);
                 }
             }
         } else {
@@ -392,7 +415,6 @@ define(["underscore", "util"], function (_, util) {
                 );
             } else {
                 this._samplesInSelection = [];
-                this._checkTips([node]);
             }
         }
     };
@@ -469,9 +491,13 @@ define(["underscore", "util"], function (_, util) {
                     nodeKey,
                     this.fields
                 );
-                this.makeSampleMetadataTable(samplePresence.fieldsMap, "int");
+                this.makeSampleMetadataTable(
+                    samplePresence.fieldsMap,
+                    "int",
+                    samplePresence.diff.length,
+                    tips.length
+                );
                 this._samplesInSelection = samplePresence.samples;
-                this._checkTips(samplePresence.diff);
             }
         } else {
             // If isUnambiguous is false, we can't show information about
@@ -487,23 +513,6 @@ define(["underscore", "util"], function (_, util) {
                     "descendant tips, if present, due to the ambiguity.";
                 show(this.smNotes);
             }
-        }
-    };
-
-    /**
-     * Given an array of tip names that are not present in the BIOM table,
-     * warns the user about them using a toast message.
-     */
-    SelectedNodeMenu.prototype._checkTips = function (diff) {
-        if (
-            diff.length &&
-            (this.visibleCallback !== null || this.hiddenCallback !== null)
-        ) {
-            util.toastMsg(
-                "The following tips are not represented by your " +
-                    "feature table and ordination: " +
-                    diff.join(", ")
-            );
         }
     };
 
