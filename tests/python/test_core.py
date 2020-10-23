@@ -136,7 +136,7 @@ class TestCore(unittest.TestCase):
 
     def test_init(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      shear_tree=False)
+                      shear_to_table=False)
 
         self.assertEqual(viz.base_url, 'support_files')
         self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1,
@@ -217,7 +217,7 @@ class TestCore(unittest.TestCase):
     def test_init_with_ordination(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.pcoa,
-                      shear_tree=False)
+                      shear_to_table=False)
 
         self.assertEqual(viz.base_url, 'support_files')
         self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1,
@@ -262,14 +262,14 @@ class TestCore(unittest.TestCase):
         ):
             Empress(self.tree, bad_table, self.sample_metadata,
                     ordination=self.pcoa,
-                    shear_tree=False)
+                    shear_to_table=False)
 
     def test_copy_support_files_use_base(self):
         local_path = './some-local-path/'
 
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       resource_path=local_path,
-                      shear_tree=False)
+                      shear_to_table=False)
         self.assertEqual(viz.base_url, local_path)
 
         viz.copy_support_files()
@@ -283,7 +283,7 @@ class TestCore(unittest.TestCase):
 
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       resource_path=local_path,
-                      shear_tree=False)
+                      shear_to_table=False)
         self.assertEqual(viz.base_url, local_path)
 
         viz.copy_support_files(target='./something-else')
@@ -295,7 +295,7 @@ class TestCore(unittest.TestCase):
 
     def test_to_dict(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
-                      shear_tree=False)
+                      shear_to_table=False)
 
         obs = viz._to_dict()
         dict_a_cp = copy.deepcopy(DICT_A)
@@ -313,7 +313,7 @@ class TestCore(unittest.TestCase):
     def test_to_dict_with_feature_metadata(self):
         viz = Empress(
             self.tree, self.table, self.sample_metadata, self.feature_metadata,
-            shear_tree=False
+            shear_to_table=False
         )
         obs = viz._to_dict()
         dict_a_with_fm = copy.deepcopy(DICT_A)
@@ -332,7 +332,7 @@ class TestCore(unittest.TestCase):
 
         viz = Empress(self.tree, self.table, nan_sample_metadata,
                       nan_feature_metadata,
-                      shear_tree=False)
+                      shear_to_table=False)
         obs = viz._to_dict()
         dict_a_nan = copy.deepcopy(DICT_A)
 
@@ -353,7 +353,7 @@ class TestCore(unittest.TestCase):
     def test_to_dict_with_emperor(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.pcoa,
-                      shear_tree=False,
+                      shear_to_table=False,
                       filter_extra_samples=True)
         obs = viz._to_dict()
 
@@ -435,11 +435,11 @@ class TestCore(unittest.TestCase):
         obs = viz._to_dict()
         self.assertEqual(obs, dict_a_cp)
 
-    def test_shear_tree(self):
+    def test_shear_tree_to_table(self):
 
         viz = Empress(self.tree, self.filtered_table,
                       self.filtered_sample_metadata,
-                      shear_tree=True)
+                      shear_to_table=True)
         self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
                                             0, 0, 0])
 
@@ -465,7 +465,7 @@ class TestCore(unittest.TestCase):
         extra_fm.loc["e"] = "i'm going to be filtered :O"
         viz = Empress(self.tree, self.filtered_table,
                       self.filtered_sample_metadata, feature_metadata=extra_fm,
-                      shear_tree=True)
+                      shear_to_table=True)
         # Same as with the shearing test above, check that the tree was handled
         # as expected
         self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
@@ -492,13 +492,100 @@ class TestCore(unittest.TestCase):
 
         self.assertIsNone(viz.ordination)
 
+    def test_shear_tree_to_fm_simple(self):
+        # remove e same as in test_shear_tree
+        mini_fm = self.feature_metadata.copy()
+        mini_fm.loc["b"] = ["pikachu", "raichu"]
+        mini_fm.loc["d"] = ["mew", "mewtwo"]
+        viz = Empress(self.tree, feature_metadata=mini_fm,
+                      shear_to_table=False, shear_to_feature_metadata=True)
+        self.assertEqual(list(viz.tree.B), [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,
+                                            0, 0, 0])
+
+        names = ['a', None, 'b', 'g', 'd', 'h', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
+
+        assert_frame_equal(viz.tip_md, mini_fm.loc[["a", "b", "d"]])
+        assert_frame_equal(viz.int_md, mini_fm.loc[["h"]])
+
+        # feature metadata should be unchanged and be a different id instance
+        assert_frame_equal(mini_fm, viz.features)
+        self.assertNotEqual(id(mini_fm), id(viz.features))
+
+        self.assertIsNone(viz.ordination)
+
+    def test_shear_tree_to_fm_only_int(self):
+        int_fm = pd.DataFrame(
+            {
+                "fmdcol1": ["vulpix", "ninetales"],
+                "fmdcol2": ["growlithe", "arcanine"]
+            },
+            index=["g", "h"]
+        )
+        exp_errmsg = (
+            "Cannot shear tree to feature metadata: no tips in "
+            "the tree are present in the feature metadata."
+        )
+        with self.assertRaisesRegex(ValueError, exp_errmsg):
+            Empress(self.tree, feature_metadata=int_fm, shear_to_table=False,
+                    shear_to_feature_metadata=True)
+
+    def test_shear_tree_to_fm_one_tip(self):
+        lonely_fm = pd.DataFrame(
+            {
+                "fmdcol1": ["mimikyu"],
+            },
+            index=["a"]
+        )
+        viz = Empress(self.tree, feature_metadata=lonely_fm,
+                      shear_to_table=False, shear_to_feature_metadata=True)
+
+        names = ['a', None, 'g', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
+
+        assert_frame_equal(viz.tip_md, lonely_fm.loc[["a"]])
+        self.assertTrue(viz.int_md.empty)
+
+        # feature metadata should be unchanged and be a different id instance
+        assert_frame_equal(lonely_fm, viz.features)
+        self.assertNotEqual(id(lonely_fm), id(viz.features))
+
+        self.assertIsNone(viz.ordination)
+
+    def test_shear_tree_to_fm_rmv_int_md(self):
+        """
+        Shear tree to feature metadata but metadata has entry for an internal
+        node that gets filtered out from the shearing.
+        """
+        # default feature metadata works - internal node h filtered out
+        viz = Empress(self.tree, feature_metadata=self.feature_metadata,
+                      shear_to_table=False, shear_to_feature_metadata=True)
+
+        names = ['a', None, 'g', None]
+        for i in range(1, len(viz.tree) + 1):
+            node = viz.tree.postorderselect(i)
+            self.assertEqual(viz.tree.name(node), names[i - 1])
+
+        assert_frame_equal(viz.tip_md, self.feature_metadata.loc[["a"]])
+        self.assertTrue(viz.int_md.empty)
+
+        # feature metadata should be unchanged and be a different id instance
+        assert_frame_equal(self.feature_metadata, viz.features)
+        self.assertNotEqual(id(self.feature_metadata), id(viz.features))
+
+        self.assertIsNone(viz.ordination)
+
     def test_biplot(self):
         exp = self.feature_metadata.copy()
         viz = Empress(self.tree, self.table,
                       self.sample_metadata,
                       feature_metadata=self.feature_metadata,
                       ordination=self.biplot,
-                      shear_tree=True)
+                      shear_to_table=True)
 
         obs = str(viz)
 
@@ -514,7 +601,7 @@ class TestCore(unittest.TestCase):
                       self.sample_metadata,
                       feature_metadata=self.feature_metadata,
                       ordination=self.biplot_no_matches,
-                      shear_tree=True)
+                      shear_to_table=True)
 
         obs = str(viz)
         self.assertTrue('All elements' in obs)
@@ -532,7 +619,7 @@ class TestCore(unittest.TestCase):
                     self.sample_metadata,
                     feature_metadata=fm,
                     ordination=self.biplot,
-                    shear_tree=True)
+                    shear_to_table=True)
 
     def test_biplot_partial_match_override(self):
         fm = self.feature_metadata.copy()
@@ -543,7 +630,7 @@ class TestCore(unittest.TestCase):
                       feature_metadata=fm,
                       ordination=self.biplot,
                       ignore_missing_samples=True,
-                      shear_tree=True)
+                      shear_to_table=True)
 
         obs = str(viz)
         self.assertTrue('This element has no metadata' in obs)
@@ -570,7 +657,7 @@ class TestCore(unittest.TestCase):
         # Generate an Empress visualization using this data
         viz = Empress(bp_tree, tbl_df, smd_df, feature_metadata=fmd_df,
                       ordination=pcoa_skbio, filter_extra_samples=True,
-                      shear_tree=True)
+                      shear_to_table=True)
         # Check that tip 8406abe6d9a72018bf32d189d1340472 *isn't* in the tip
         # metadata. All of the samples this tip is present in are filtered out
         # when --p-filter-extra-samples is used with this particular PCoA, so
@@ -583,7 +670,7 @@ class TestCore(unittest.TestCase):
             "No features in the feature table are present as tips in the tree."
         ):
             Empress(self.tree, self.unrelated_table, self.sample_metadata,
-                    shear_tree=False)
+                    shear_to_table=False)
         # Check that --p-shear-to-table doesn't override this: the data
         # mismatch should be identified before attempting shearing
         with self.assertRaisesRegex(
@@ -591,7 +678,7 @@ class TestCore(unittest.TestCase):
             "No features in the feature table are present as tips in the tree."
         ):
             Empress(self.tree, self.unrelated_table, self.sample_metadata,
-                    shear_tree=True)
+                    shear_to_table=True)
 
     def test_ordination_integration_callbacks(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,

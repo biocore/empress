@@ -29,6 +29,10 @@ require([
             colorSelect.setAttribute("id", "animate-color-select");
             this.div.appendChild(colorSelect);
 
+            var reverseColorChk = document.createElement("checkbox");
+            reverseColorChk.setAttribute("id", "animate-color-reverse-chk");
+            this.div.appendChild(reverseColorChk);
+
             var gradient = document.createElement("select");
             gradient.setAttribute("id", "animate-gradient");
             this.div.appendChild(gradient);
@@ -149,6 +153,7 @@ require([
 
     test("setEnabled", function () {
         notOk(this.panel.colorSelect.disabled);
+        notOk(this.panel.reverseColorChk.disabled);
         notOk(this.panel.gradient.disabled);
         notOk(this.panel.trajectory.disabled);
 
@@ -165,6 +170,7 @@ require([
         this.panel.setEnabled(true);
 
         notOk(this.panel.colorSelect.disabled);
+        notOk(this.panel.reverseColorChk.disabled);
         notOk(this.panel.gradient.disabled);
         notOk(this.panel.trajectory.disabled);
 
@@ -181,6 +187,7 @@ require([
         this.panel.setEnabled(false);
 
         ok(this.panel.colorSelect.disabled);
+        ok(this.panel.reverseColorChk.disabled);
         ok(this.panel.gradient.disabled);
         ok(this.panel.trajectory.disabled);
 
@@ -292,6 +299,7 @@ require([
     test("_toggleSelects, true", function () {
         this.panel._toggleSelects(true);
         ok(this.panel.colorSelect.disabled);
+        ok(this.panel.reverseColorChk.disabled);
         ok(this.panel.gradient.disabled);
         ok(this.panel.trajectory.disabled);
     });
@@ -299,6 +307,7 @@ require([
     test("_toggleSelects, false", function () {
         this.panel._toggleSelects(false);
         ok(!this.panel.colorSelect.disabled);
+        ok(!this.panel.reverseColorChk.disabled);
         ok(!this.panel.gradient.disabled);
         ok(!this.panel.trajectory.disabled);
     });
