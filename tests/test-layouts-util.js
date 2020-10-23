@@ -39,6 +39,12 @@ require([
                     null
                 );
 
+                // For reference: straightLineTree and noRootLength should both
+                // be laid out identically. This is because the root node's
+                // length (which is the only thing that differs between the
+                // trees) is deliberately not validated and not used in layout
+                // computations.
+                //
                 // In Newick format: "((b:2)a:1)root:100;"
                 this.straightLineTree = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 0, 0]),
@@ -382,7 +388,7 @@ require([
         });
         test("Test straightline tree circular layout (with and without root length)", function () {
             // These are the same tree, just with and without the root having a
-            // length of 100. Since the circ. layout ignores the root's branch
+            // length of 100. Since all layouts should ignore the root's branch
             // length, the output data should be exactly the same.
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
@@ -462,6 +468,10 @@ require([
             });
         });
         test("Test straightline tree circular layout: normalize = true", function () {
+            // As with the other tests that use this.straightLineTree and
+            // this.noRootLength, the layouts should be the same across the two
+            // trees -- since the root node's length is not used in layout
+            // computation.
             var scope = this;
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
