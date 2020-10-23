@@ -217,6 +217,64 @@ require([
             // Menu is visible
             this.isShown("box");
         });
+        test("showNodeMenu: tip node (populated sm table with one row)", function () {
+            this.selectedNodeMenu.setSelectedNodes([2]);
+            this.selectedNodeMenu.showNodeMenu();
+            this.textEquals("nodeNameLabel", "Name: 2");
+            this.isShown("nodeLengthContainer");
+            this.textEquals("nodeLengthLabel", "2");
+            this.isHidden("nodeNameWarning");
+
+            this.fmTableOk("1", "2");
+            this.isShown("fmSection");
+            this.isShown("fmHeader");
+            this.isHidden("fmNoDataNote");
+            this.isShown("fmTable");
+
+            this.isShown("smSection");
+            this.isShown("smHeader");
+            this.isHidden("smTable");
+            this.isHidden("smNotes");
+            this.isShown("smAddSection");
+            this.isHidden("smNotInTableWarning");
+            this.isShown("box");
+
+            // Add a row for "f1" (the default s.m. field) to the s.m. table
+            this.selectedNodeMenu.addBtn.click();
+            var smt = $(this.selectedNodeMenu.smTable);
+
+            deepEqual(smt.children().length, 1);
+            var tbody = smt.children()[0];
+            deepEqual(tbody.tagName, "TBODY");
+            deepEqual($(tbody).children().length, 2);
+            // Table should have two rows: one for values and one for sample
+            // counts for each value
+            var rows = $(tbody).children();
+            deepEqual(rows.length, 2);
+            var tr1 = rows[0];
+            var tr2 = rows[1];
+            deepEqual(tr1.tagName, "TR");
+            deepEqual(tr2.tagName, "TR");
+
+            // First row should have one "extra" cell, which'll be the
+            // rowspan="2" frozen cell containing the field name (in this case,
+            // f1). The remaining cells contain the unique values within this
+            // field.
+            var headerCells = $(tr1).children();
+            deepEqual(headerCells.length, 3);
+            deepEqual(headerCells[0].textContent, "f1");
+            deepEqual(headerCells[1].textContent, "a");
+            deepEqual(headerCells[2].textContent, "b");
+
+            // Second row should just have two cells, one per unique value in
+            // f1 (a and b). Tip 2 is present in four samples where "f1" is
+            // "a", and one sample where "f1" is "b" (this is observable by
+            // comparing the tbl and sm variables created in getTestData()).
+            var dataCells = $(tr2).children();
+            deepEqual(dataCells.length, 2);
+            deepEqual(dataCells[0].textContent, "4");
+            deepEqual(dataCells[1].textContent, "1");
+        });
         test("showNodeMenu: Adding all sm fields to the table causes the 'Add' controls to be hidden", function () {
             this.selectedNodeMenu.setSelectedNodes([2]);
             this.selectedNodeMenu.showNodeMenu();
