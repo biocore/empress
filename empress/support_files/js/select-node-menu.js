@@ -142,7 +142,8 @@ define(["underscore", "util"], function (_, util) {
             this.smTable.innerHTML = "";
             if (_.isNull(ctData)) {
                 // This node (or its descendant tips) isn't present in the
-                // table.
+                // table. Just show some text explaining the situation, and
+                // hide the table.
                 var wtext;
                 if (tipOrInt === "tip") {
                     wtext =
@@ -167,17 +168,19 @@ define(["underscore", "util"], function (_, util) {
                     for (var i = 0; i < sortedFields.length; i++) {
                         var field = sortedFields[i];
 
-                        // Create new rows in menu-table: the first row is for this
-                        // metadata field's "headers" (the unique values in the field,
-                        // e.g. "gut", "tongue", etc. for a field like body site), and
-                        // the second row is for the sample presence data for
-                        // the selected tree node within these unique values.
+                        // Create new rows in menu-table: the first row is for
+                        // this metadata field's "headers" (the unique values
+                        // in the field, e.g. "gut", "tongue", etc. for a field
+                        // like body site), and the second row is for the
+                        // sample presence data for the selected tip(s)
+                        // for these unique values.
                         //
                         // Each group of two rows additionally has a header cell
-                        // on its leftmost side which spans both the header and data
-                        // rows; this header cell contains the name of the selected
-                        // metadata field, and has some fancy CSS that keeps it frozen
-                        // in place as the user scrolls the table horizontally.
+                        // on its leftmost side which spans both the header and
+                        // data rows; this header cell contains the name of the
+                        // selected metadata field, and has some fancy CSS that
+                        // keeps it frozen in place as the user scrolls the
+                        // table horizontally.
                         var fieldHeaderRow = this.smTable.insertRow(-1);
                         var fieldHeaderCell = fieldHeaderRow.insertCell(-1);
                         fieldHeaderCell.innerHTML =
@@ -188,7 +191,8 @@ define(["underscore", "util"], function (_, util) {
 
                         var fieldDataRow = this.smTable.insertRow(-1);
 
-                        // add row values for this metadata field, one column at a time
+                        // add row values for this metadata field, one column
+                        // at a time
                         var categories = util.naturalSort(
                             _.keys(ctData[field])
                         );
