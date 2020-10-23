@@ -557,9 +557,10 @@ define(["underscore", "util"], function (_, util) {
     SelectedNodeMenu.prototype.setSelectedNodes = function (nodeKeys) {
         // If nodeKeys includes multiple nodes, verify that all of these nodes
         // share the same name. If this _isn't_ the case, something is wrong.
+        var i;
         if (nodeKeys.length > 1) {
             var name = this.empress.getNodeInfo(nodeKeys[0], "name");
-            for (var i = 1; i < nodeKeys.length; i++) {
+            for (i = 1; i < nodeKeys.length; i++) {
                 if (this.empress.getNodeInfo(nodeKeys[i], "name") !== name) {
                     throw new Error(
                         "setSelectedNodes(): keys do not represent the same " +
