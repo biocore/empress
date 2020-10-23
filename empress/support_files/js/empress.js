@@ -123,7 +123,7 @@ define([
          * @type {Number}
          * @private
          */
-        this._numOfNonLayoutParam = 3;
+        this._numOfNonLayoutParams = 3;
 
         /**
          * @type {Array}
@@ -369,7 +369,7 @@ define([
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._numOfNonLayoutParam;
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.xr] = data.xCoord[i];
@@ -389,7 +389,7 @@ define([
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._numOfNonLayoutParam;
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.xc0] = data.x0[i];
@@ -413,7 +413,7 @@ define([
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._numOfNonLayoutParam;
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.x2] = data.xCoord[i];
@@ -492,7 +492,10 @@ define([
      *
      * We used to interlace the coorinate information with the color information
      * i.e. [x1, y1, red1, green1, blue1, x2, y2, red2, green2, blue2,...]
-     * However, for large trees
+     * This was inefficient because tree coordinates do not change during most
+     * update operations (such as feature coloring). Thus, we split the
+     * coordinate information into two seperate buffers. One for tree
+     * tree coordinates and another for color.
      *
      * @return {Array}
      */

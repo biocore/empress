@@ -313,6 +313,15 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         return _.mapObject(this.__valueToColor, Colorer.hex2RGB);
     };
 
+    /**
+     * Compresses a color array of the form [red, green, blue], where each
+     * element is in the range of 0 and 255, into a single number.
+     *
+     * @param{Array} rgb The color array. The element in the array must in the
+     *                   range of 0 and 255.
+     *
+     * @return{Number} the compressed color to be used in WebGl shaders
+     */
     Colorer.rgbToFloat = function (rgb) {
         return rgb[0] + rgb[1] * 256 + rgb[2] * 256 * 256;
     };

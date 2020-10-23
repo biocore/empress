@@ -213,6 +213,45 @@ require([
                 equal(obsRGB, scaledExpRGB);
             }
         });
+        test("Test rgbToFloat", function () {
+            // check red
+            var compressed = Colorer.rgbToFloat([1, 0, 0]);
+            equal(compressed, 1, "check compressed red");
+
+            // check green
+            compressed = Colorer.rgbToFloat([0, 1, 0]);
+            equal(compressed, 256, "check compressed green");
+
+            // check blue
+            compressed = Colorer.rgbToFloat([0, 0, 1]);
+            equal(compressed, 256 * 256);
+        });
+        test("Test uncompress rgb", function () {
+            // This function exists in the WebGl shaders and thus cannot be
+            // directly tested.
+            // However, we still want to test its functionality. Note: this
+            // function will need to be updated whenever the function in the
+            // shader is modified.
+            var unpackColor = function (f) {
+                var color = {};
+                color.r = f % 256.0;
+                color.g = ((f - color.r) / 256.0) % 256.0;
+                color.b = (f - color.r - 256.0 * color.g) / 65536.0;
+                return color;
+            };
+
+            var redColor = Colorer.rgbToFloat([1, 0, 0]);
+            unpackedRed = unpackColor(redColor);
+            deepEqual(unpackedRed, { r: 1, g: 0, b: 0 }, "unpacked red");
+
+            var randColor = Colorer.rgbToFloat([47, 255, 52]);
+            var unpackedRand = unpackColor(redFloat);
+            deepEqual(
+                unpackedRand,
+                { r: 47, g: 255, b: 52 },
+                "unpacked random"
+            );
+        });
         test("Test Colorer.getMapHex", function () {
             var eles = ["abc", "def", "ghi"];
             // Analogous to the getColorRGB() test above but simpler
