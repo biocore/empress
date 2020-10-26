@@ -60,6 +60,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.contex_ = canvas.getContext("webgl");
         this.cam = cam;
         this.VERTEX_SIZE = 3;
+        this.COORD_SIZE = 2;
 
         // sets empress to light mode
         this.CLR_COL = 1;
@@ -253,7 +254,6 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         }
 
         // defines constants for a vertex. A vertex is the form [x, y, rgb]
-        const COORD_SIZE = 2;
         const COORD_OFFSET = 0;
         const COLOR_SIZE = 1;
         const COLOR_OFFSET = buffType == 1 ? 2 : 0;
@@ -267,7 +267,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         if (buffType == 1 || buffType == 2) {
             c.vertexAttribPointer(
                 s.vertPosition,
-                COORD_SIZE,
+                this.COORD_SIZE,
                 c.FLOAT,
                 c.FALSE,
                 vertSize * Float32Array.BYTES_PER_ELEMENT,

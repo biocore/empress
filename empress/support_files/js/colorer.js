@@ -325,6 +325,21 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     Colorer.rgbToFloat = function (rgb) {
         return rgb[0] + rgb[1] * 256 + rgb[2] * 256 * 256;
     };
+
+    /**
+     * Uncompress the rgb color.
+     * This is the same function found in the WebGl shaders.
+     * However, functions in WebGl shaders cannot be called by js functions and
+     * vice versa.
+     */
+    Colorer.unpackColor = function (f) {
+        var color = [];
+        color[0] = f % 256.0;
+        color[1] = ((f - color[0]) / 256.0) % 256.0;
+        color[2] = (f - color[0] - 256.0 * color[1]) / 65536.0;
+        return color;
+    };
+
     /**
      * Returns a mapping of unique field values to their corresponding colors,
      * where each color is in hex format.

@@ -1,4 +1,4 @@
-define(["underscore", "chroma"], function (_, chroma) {
+define(["underscore", "chroma", "Colorer"], function (_, chroma, Colorer) {
     /**
      * Given a SVG string and min/max x/y positions, creates an exportable SVG.
      *
@@ -48,8 +48,11 @@ define(["underscore", "chroma"], function (_, chroma) {
          * @param {Number} i
          * @return {String}
          */
-        var getRGB = function (coords, i) {
-            return chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css();
+        var getRGB = function (color, i) {
+            var c = _.map(Colorer.unpackColor(color[i]), function (rgb) {
+                return rgb / 255;
+            });
+            return chroma.gl(...c).css();
         };
 
         var minX = Number.POSITIVE_INFINITY;
@@ -59,18 +62,30 @@ define(["underscore", "chroma"], function (_, chroma) {
         var svg = "<!-- tree branches -->\n";
 
         // create a line from x1,y1 to x2,y2 for every two consecutive
-        // coordinates. 5 array elements encode one coordinate:
-        // i=x, i+1=y, i+2=red, i+3=green, i+4=blue
-        var coords = empress.getCoords();
-        for (
-            var i = 0;
-            i + 2 * drawer.VERTEX_SIZE <= coords.length;
-            i += 2 * drawer.VERTEX_SIZE
-        ) {
+        // coordinates. Two buffers are used to encode one coordinate
+
+        // position buffer:i=x, i+1=y
+        // format: [x1, y1, x2, y2, ...]
+        var coords = empress.getTreeCoords();
+        // color buffer: i=rgb
+        // format: [rgb1, rgb2, ...]
+        var colors = empress.getTreeColor();
+        var totalNodes = colors.length;
+        var coordIndx;
+        for (var node = 0; node + 2 <= totalNodes; node += 2) {
+            coordIndx = node * 2;
+            // NOTE: we negate the y coordinates in order to match the way the
+            // tree is drawn. See #334 on GitHub for discussion.
+            var x1 = coords[coordIndx];
+            var y1 = -coords[coordIndx + 1];
+            var x2 = coords[coordIndx + drawer.COORD_SIZE];
+            var y2 = -coords[coordIndx + 1 + drawer.COORD_SIZE];
+            var color = getRGB(colors, node);
+
             // "normal" lines have a default color,
             // all other lines have a user defined thickness
             // All lines are defined using the information from the child node.
-            // So, if coords[i+2] == DEFAULT_COLOR then coords[i+2+5] will
+            // So, if coords[node+2] == DEFAULT_COLOR then coords[node+2+5] will
             // also be equal to DEFAULT_COLOR. Thus, we can save checking three
             // array elements here.
             // TODO: instead, adjust line width based on a node's isColored
@@ -79,20 +94,9 @@ define(["underscore", "chroma"], function (_, chroma) {
             // (Also: I'm not confident that SVG stroke width and line width in
             // the Empress visualization are comparable, at least now?)
             var linewidth = 1 + empress._currentLineWidth;
-            if (
-                coords[i + 2] == empress.DEFAULT_COLOR[0] &&
-                coords[i + 3] == empress.DEFAULT_COLOR[1] &&
-                coords[i + 4] == empress.DEFAULT_COLOR[2]
-            ) {
+            if (colors[node] == empress.DEFAULT_COLOR) {
                 linewidth = 1;
             }
-            // NOTE: we negate the y coordinates in order to match the way the
-            // tree is drawn. See #334 on GitHub for discussion.
-            var x1 = coords[i];
-            var y1 = -coords[i + 1];
-            var x2 = coords[i + drawer.VERTEX_SIZE];
-            var y2 = -coords[i + 1 + drawer.VERTEX_SIZE];
-            var color = getRGB(coords, i);
 
             // Add the branch to the SVG
             svg +=
@@ -119,7 +123,7 @@ define(["underscore", "chroma"], function (_, chroma) {
 
         // create a circle for each node
         if (drawer.showTreeNodes) {
-            radius = drawer.NODE_CIRCLE_DIAMETER / 2;
+            var radius = drawer.NODE_CIRCLE_DIAMETER;
             svg += "<!-- tree nodes -->\n";
             coords = empress.getNodeCoords();
             for (
@@ -135,7 +139,7 @@ define(["underscore", "chroma"], function (_, chroma) {
                     '" r="' +
                     radius +
                     '" style="fill:' +
-                    getRGB(coords, i) +
+                    getRGB(coords, i + 2) +
                     '"/>\n';
             }
             // The edge of the bounding box should coincide with the "end" of a
