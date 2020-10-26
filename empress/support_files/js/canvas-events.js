@@ -300,7 +300,8 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
                     },
                     true
                 );
-            for (i; i < ids.length && suggestionsAdded < 10; i++) {
+            // for (i; i < ids.length && suggestionsAdded < 10; i++) {
+            for (i = 0; i < ids.length; i++) {
                 var word = ids[i];
 
                 // if node id begins with user query, add it to suggestionMenu
@@ -323,12 +324,12 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
                     // add suggested id to the suggstions menu
                     suggestionMenu.appendChild(suggestId);
                     suggestionsAdded += 1;
-                } else {
-                    // we set i to begin at an index where the users query will
-                    // match and since ids is an assorted array, once we do not
-                    // find a match we know we will not find any more matches.
-                    break;
-                }
+                } // else {
+                //     // we set i to begin at an index where the users query will
+                //     // match and since ids is an assorted array, once we do not
+                //     // find a match we know we will not find any more matches.
+                //     break;
+                // }
             }
 
             // not all node ids were listed in the autofill box
@@ -336,7 +337,6 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             // possible options
             if (suggestionsAdded < ids.length) {
                 suggestId = document.createElement("DIV");
-                suggestId.id = word;
 
                 suggestId.innerHTML = "<strong>...</strong>";
                 suggestionMenu.appendChild(suggestId);
