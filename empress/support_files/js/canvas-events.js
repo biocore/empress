@@ -292,8 +292,11 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
                 suggestionsAdded = 0,
                 i = _.findIndex(
                     ids,
-                    function (id) {
-                        return id.substr(0, query.length) == query;
+                    function (w) {
+                        return (
+                            w.substr(0, query.length).toUpperCase() ==
+                            query.toUpperCase()
+                        );
                     },
                     true
                 );
