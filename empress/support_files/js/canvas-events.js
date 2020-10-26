@@ -1,4 +1,8 @@
-define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
+define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
+    _,
+    gl,
+    SelectedNodeMenu
+) {
     /**
      * @class CanvasEvents
      *
@@ -284,7 +288,16 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             autocompleteContainer.appendChild(suggestionMenu);
 
             // search ids array for all possible words
-            for (var i = 0; i < ids.length; i++) {
+            var suggestId,
+                suggestionsAdded = 0,
+                i = _.findIndex(
+                    ids,
+                    function (id) {
+                        return id.substr(0, query.length) == query;
+                    },
+                    true
+                );
+            for (i; i < ids.length && suggestionsAdded < 10; i++) {
                 var word = ids[i];
 
                 // if node id begins with user query, add it to suggestionMenu
@@ -294,7 +307,7 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
                 ) {
                     // create a container to hold the text/click event for the
                     // suggested id
-                    var suggestId = document.createElement("DIV");
+                    suggestId = document.createElement("DIV");
                     suggestId.id = word;
 
                     suggestId.innerHTML =
@@ -306,7 +319,24 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
 
                     // add suggested id to the suggstions menu
                     suggestionMenu.appendChild(suggestId);
+                    suggestionsAdded += 1;
+                } else {
+                    // we set i to begin at an index where the users query will
+                    // match and since ids is an assorted array, once we do not
+                    // find a match we know we will not find any more matches.
+                    break;
                 }
+            }
+
+            // not all node ids were listed in the autofill box
+            // create an elipse autofill to let users know there are more
+            // possible options
+            if (suggestionsAdded < ids.length) {
+                suggestId = document.createElement("DIV");
+                suggestId.id = word;
+
+                suggestId.innerHTML = "<strong>...</strong>";
+                suggestionMenu.appendChild(suggestId);
             }
         };
 
