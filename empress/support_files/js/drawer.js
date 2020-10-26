@@ -248,7 +248,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @param {Number} vertSize The size of the vertex for webgl
      */
     Drawer.prototype.bindBuffer = function (buffer, buffType, vertSize) {
-        if (this.BUFF_TYPES.indexOf(buffType) == -1 ) {
+        if (this.BUFF_TYPES.indexOf(buffType) == -1) {
             throw "Invalid buffer type";
         }
 
@@ -256,7 +256,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         const COORD_SIZE = 2;
         const COORD_OFFSET = 0;
         const COLOR_SIZE = 1;
-        const COLOR_OFFSET =  (buffType == 1) ? 2 : 0; 
+        const COLOR_OFFSET = buffType == 1 ? 2 : 0;
 
         var c = this.contex_;
         var s = this.sProg_;
@@ -275,7 +275,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
             );
         }
 
-        if (buffType  == 1 || buffType == 3) {
+        if (buffType == 1 || buffType == 3) {
             c.vertexAttribPointer(
                 s.color,
                 COLOR_SIZE,
@@ -283,9 +283,8 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
                 c.FALSE,
                 vertSize * Float32Array.BYTES_PER_ELEMENT,
                 COLOR_OFFSET * Float32Array.BYTES_PER_ELEMENT
-            );    
+            );
         }
-        
     };
 
     /**

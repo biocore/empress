@@ -103,7 +103,7 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                     // we can just chuck both colors to compare through chroma
                     // before checking equality.
                     // Note: firefox breaks on this test. chroma.js does not
-                    // recognize "rgb(255, 0, 0" on firefox. This is not an 
+                    // recognize "rgb(255, 0, 0" on firefox. This is not an
                     // issue for empress as we would not pass "rgb(r, g, b)" to
                     // chroma.js
                     var shownColor = $(cellsInRow[0]).css("background");
