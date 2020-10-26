@@ -80,6 +80,9 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         this.SELECTED_NODE_CIRCLE_DIAMETER = 9.0;
 
         this.showTreeNodes = false;
+
+        // the valid buffer types used in bindBuffer()
+        this.BUFF_TYPES = [1, 2, 3];
     }
 
     /**
@@ -235,15 +238,25 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
 
     /**
      * Binds the buffer so WebGL can use it.
+     * There are three types of buffers:
+     *   type 1: contains both coordinates and color
+     *   type 2: only coordinates
+     *   type 3: only color
      *
      * @param {WebGLBuffer} buffer The Buffer to bind
+     * @param {Number} buffType The type of buffer to bind
+     * @param {Number} vertSize The size of the vertex for webgl
      */
-    Drawer.prototype.bindBuffer = function (buffer) {
+    Drawer.prototype.bindBuffer = function (buffer, buffType, vertSize) {
+        if (this.BUFF_TYPES.indexOf(buffType) == -1 ) {
+            throw "Invalid buffer type";
+        }
+
         // defines constants for a vertex. A vertex is the form [x, y, rgb]
         const COORD_SIZE = 2;
         const COORD_OFFSET = 0;
         const COLOR_SIZE = 1;
-        const COLOR_OFFSET = 2;
+        const COLOR_OFFSET =  (buffType == 1) ? 2 : 0; 
 
         var c = this.contex_;
         var s = this.sProg_;
@@ -251,75 +264,28 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // tell webGL which buffer to use
         c.bindBuffer(c.ARRAY_BUFFER, buffer);
 
-        c.vertexAttribPointer(
-            s.vertPosition,
-            COORD_SIZE,
-            c.FLOAT,
-            c.FALSE,
-            this.VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
-            COORD_OFFSET
-        );
+        if (buffType == 1 || buffType == 2) {
+            c.vertexAttribPointer(
+                s.vertPosition,
+                COORD_SIZE,
+                c.FLOAT,
+                c.FALSE,
+                vertSize * Float32Array.BYTES_PER_ELEMENT,
+                COORD_OFFSET
+            );
+        }
 
-        c.vertexAttribPointer(
-            s.color,
-            COLOR_SIZE,
-            c.FLOAT,
-            c.FALSE,
-            this.VERTEX_SIZE * Float32Array.BYTES_PER_ELEMENT,
-            COLOR_OFFSET * Float32Array.BYTES_PER_ELEMENT
-        );
-    };
-
-    /**
-     * Binds the tree coordinate buffer so WebGL can use it.
-     *
-     * @param {WebGLBuffer} buffer The Buffer to bind
-     */
-    Drawer.prototype.bindCoordBuffer = function (buffer) {
-        // defines constants for a vertex. A vertex is the form [x, y]
-        const COORD_SIZE = 2;
-        const COORD_OFFSET = 0;
-
-        var c = this.contex_;
-        var s = this.sProg_;
-
-        // tell webGL which buffer to use
-        c.bindBuffer(c.ARRAY_BUFFER, buffer);
-
-        c.vertexAttribPointer(
-            s.vertPosition,
-            COORD_SIZE,
-            c.FLOAT,
-            c.FALSE,
-            COORD_SIZE * Float32Array.BYTES_PER_ELEMENT,
-            COORD_OFFSET
-        );
-    };
-
-    /**
-     * Binds the tree color buffer so WebGL can use it.
-     *
-     * @param {WebGLBuffer} buffer The Buffer to bind
-     */
-    Drawer.prototype.bindColorBuffer = function (buffer) {
-        // defines constants for a vertex. A vertex is the form [rgb]
-        const COLOR_SIZE = 1;
-        const COLOR_OFFSET = 0;
-
-        var c = this.contex_;
-        var s = this.sProg_;
-
-        // tell webGL which buffer to use
-        c.bindBuffer(c.ARRAY_BUFFER, buffer);
-
-        c.vertexAttribPointer(
-            s.color,
-            COLOR_SIZE,
-            c.FLOAT,
-            c.FALSE,
-            COLOR_SIZE * Float32Array.BYTES_PER_ELEMENT,
-            COLOR_OFFSET * Float32Array.BYTES_PER_ELEMENT
-        );
+        if (buffType  == 1 || buffType == 3) {
+            c.vertexAttribPointer(
+                s.color,
+                COLOR_SIZE,
+                c.FLOAT,
+                c.FALSE,
+                vertSize * Float32Array.BYTES_PER_ELEMENT,
+                COLOR_OFFSET * Float32Array.BYTES_PER_ELEMENT
+            );    
+        }
+        
     };
 
     /**
@@ -374,7 +340,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      */
     Drawer.prototype.loadSelectedNodeBuff = function (data) {
         data = new Float32Array(data);
-        this.selectedNodeSize = data.length / 5;
+        this.selectedNodeSize = data.length / this.VERTEX_SIZE;
         this.fillBufferData_(this.sProg_.selectedNodeBuff, data);
     };
 
@@ -443,27 +409,29 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         // draw tree node circles, if requested
         if (this.showTreeNodes) {
             c.uniform1f(s.pointSize, this.NODE_CIRCLE_DIAMETER);
-            this.bindBuffer(s.nodeVertBuff);
+            this.bindBuffer(s.nodeVertBuff, 1, 3);
             c.drawArrays(c.POINTS, 0, this.nodeSize);
         }
 
         // draw selected node
         c.uniform1f(s.pointSize, this.SELECTED_NODE_CIRCLE_DIAMETER);
-        this.bindBuffer(s.selectedNodeBuff);
+        this.bindBuffer(s.selectedNodeBuff, 1, 3);
         c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 
         c.uniform1i(s.isSingle, 0);
-        this.bindCoordBuffer(s.treeCoordBuff);
-        this.bindColorBuffer(s.treeColorBuff);
+        // this.bindCoordBuffer(s.treeCoordBuff, 2, 2);
+        // this.bindColorBuffer(s.treeColorBuff, 3, 1);
+        this.bindBuffer(s.treeCoordBuff, 2, 2);
+        this.bindBuffer(s.treeColorBuff, 3, 1);
         c.drawArrays(c.LINES, 0, this.treeCoordSize);
 
-        this.bindBuffer(s.thickNodeBuff);
+        this.bindBuffer(s.thickNodeBuff, 1, 3);
         c.drawArrays(c.TRIANGLES, 0, this.thickNodeSize);
 
-        this.bindBuffer(s.barplotBuff);
+        this.bindBuffer(s.barplotBuff, 1, 3);
         c.drawArrays(c.TRIANGLES, 0, this.barplotSize);
 
-        this.bindBuffer(s.cladeBuff);
+        this.bindBuffer(s.cladeBuff, 1, 3);
         c.drawArrays(c.TRIANGLES, 0, this.cladeVertSize);
     };
 

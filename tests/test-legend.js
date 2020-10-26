@@ -102,6 +102,10 @@ require(["jquery", "chroma", "UtilitiesForTesting", "Legend"], function (
                     // "rgb(255, 0, 0)". Fortunately, chroma.js recognizes this, so
                     // we can just chuck both colors to compare through chroma
                     // before checking equality.
+                    // Note: firefox breaks on this test. chroma.js does not
+                    // recognize "rgb(255, 0, 0" on firefox. This is not an 
+                    // issue for empress as we would not pass "rgb(r, g, b)" to
+                    // chroma.js
                     var shownColor = $(cellsInRow[0]).css("background");
                     // key -> color mappings should be sorted based on the key
                     // using util.naturalSort(). So we can assume that Thing 1 is

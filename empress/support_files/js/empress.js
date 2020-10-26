@@ -504,8 +504,7 @@ define([
         var coords = [];
 
         var addPoint = function (x, y) {
-            coords[coords.length] = x;
-            coords[coords.length] = y;
+            coords.push(x, y);
         };
 
         /* Draw a vertical line, if we're in rectangular layout mode. Note that
@@ -640,8 +639,7 @@ define([
         var coords = [];
         var color;
         var addPoint = function () {
-            coords[coords.length] = color;
-            coords[coords.length] = color;
+            coords.push(color, color);
         };
 
         /* Draw a vertical line, if we're in rectangular layout mode. Note that
@@ -2234,6 +2232,7 @@ define([
             this.setNodeInfo(node, "isColored", false);
             this.setNodeInfo(node, "visible", true);
         }
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
         this._collapsedClades = {};
         this._dontCollapse = new Set();
         this._collapsedCladeBuffer = [];

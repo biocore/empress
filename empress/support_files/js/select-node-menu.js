@@ -491,7 +491,7 @@ define(["underscore", "util"], function (_, util) {
             var node = nodeKeys[i];
             var x = this.empress.getX(node);
             var y = this.empress.getY(node);
-            highlightedNodes.push(...[x, y, 0, 1, 0]);
+            highlightedNodes.push(...[x, y, 65280]);
         }
 
         // send the buffer array to the drawer

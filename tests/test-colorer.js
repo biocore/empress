@@ -245,7 +245,7 @@ require([
             deepEqual(unpackedRed, { r: 1, g: 0, b: 0 }, "unpacked red");
 
             var randColor = Colorer.rgbToFloat([47, 255, 52]);
-            var unpackedRand = unpackColor(redFloat);
+            var unpackedRand = unpackColor(randColor);
             deepEqual(
                 unpackedRand,
                 { r: 47, g: 255, b: 52 },
