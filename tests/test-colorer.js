@@ -556,6 +556,27 @@ require([
             equal(gradInfo.maxValStr, "4");
             notOk(gradInfo.missingNonNumerics);
         });
+        test("Test Colorer.getGradientInfo (numeric + non-numeric values, reverse = true)", function () {
+            var eles = ["0", "1", "2", "3", "asdf", "4"];
+            var colorer = new Colorer("Viridis", eles, true, undefined, true);
+            var gradInfo = colorer.getGradientInfo();
+            ok(
+                gradInfo.gradientSVG.includes(
+                    '<stop offset="0%" stop-color="#fee825"/>'
+                )
+            );
+            ok(
+                gradInfo.gradientSVG.includes(
+                    '<stop offset="100%" stop-color="#440154"/>'
+                )
+            );
+            var ref = UtilitiesForTesting.getReferenceSVGs();
+            equal(gradInfo.pageSVG, ref[1]);
+            equal(gradInfo.minValStr, "0");
+            equal(gradInfo.midValStr, "2");
+            equal(gradInfo.maxValStr, "4");
+            ok(gradInfo.missingNonNumerics);
+        });
         test("Test Colorer.getGradientInfo (error: no gradient data)", function () {
             var expectedErrorRegex = /No gradient data defined for this Colorer; check that useQuantScale is true and that the selected color map is not discrete./;
 
