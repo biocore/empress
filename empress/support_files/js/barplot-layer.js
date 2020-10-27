@@ -94,6 +94,7 @@ define([
         this.colorByFM = false;
         this.colorByFMField = null;
         this.colorByFMColorMap = null;
+        this.colorByFMColorReverse = false;
         this.colorByFMContinuous = false;
         this.colorByFMColorMapDiscrete = true;
         this.defaultLength = BarplotLayer.DEFAULT_LENGTH;
@@ -105,6 +106,7 @@ define([
         // Various properties of the barplot layer state for sample metadata
         this.colorBySMField = null;
         this.colorBySMColorMap = null;
+        this.colorBySMColorReverse = false;
         this.lengthSM = BarplotLayer.DEFAULT_LENGTH;
 
         // Initialize the HTML elements of this barplot layer
@@ -310,6 +312,24 @@ define([
             "barplot-layer-" + this.uniqueNum + "-fm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
+        // Add a row for choosing whether the color scale should
+        // be reversed
+        var reverseColormapP = colorDetailsDiv.appendChild(
+            document.createElement("p")
+        );
+        var reverseColormapLbl = reverseColormapP.appendChild(
+            document.createElement("label")
+        );
+        reverseColormapLbl.innerText = "Reverse Color Map";
+        var reverseColormapCheckbox = reverseColormapP.appendChild(
+            document.createElement("input")
+        );
+        reverseColormapCheckbox.id =
+            "barplot-layer-" + this.uniqueNum + "-fmcolor-reverse-chk";
+        reverseColormapCheckbox.setAttribute("type", "checkbox");
+        reverseColormapCheckbox.classList.add("empress-input");
+        reverseColormapLbl.setAttribute("for", reverseColormapCheckbox.id);
+
         // Add a row for choosing the scale type (i.e. whether to use
         // continuous coloring or not)
         // This mimics Emperor's "Continuous values" checkbox
@@ -336,6 +356,7 @@ define([
         // feature metadata field for coloring is the first in the selector)
         this.colorByFMField = chgColorFMFieldSelector.value;
         this.colorByFMColorMap = colormapSelector.value;
+        this.colorByFMColorReverse = reverseColormapCheckbox.checked;
         // Alter visibility of the color-changing details when the "Color
         // by..." checkbox is clicked
         $(chgColorCheckbox).change(function () {
@@ -345,6 +366,7 @@ define([
                 scope.colorByFM = true;
                 scope.colorByFMField = chgColorFMFieldSelector.value;
                 scope.colorByFMColorMap = colormapSelector.value;
+                scope.colorByFMColorReverse = reverseColormapCheckbox.checked;
                 scope.colorByFMContinuous = continuousValCheckbox.checked;
                 // Hide the default color row (since default colors
                 // aren't used when f.m. coloring is enabled)
@@ -376,6 +398,9 @@ define([
                 continuousValP.classList.remove("hidden");
                 scope.colorByFMColorMapDiscrete = false;
             }
+        });
+        $(reverseColormapCheckbox).change(function () {
+            scope.colorByFMColorReverse = reverseColormapCheckbox.checked;
         });
         $(continuousValCheckbox).change(function () {
             scope.colorByFMContinuous = continuousValCheckbox.checked;
@@ -551,6 +576,24 @@ define([
             "barplot-layer-" + this.uniqueNum + "-sm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
+        // Add a row for choosing whether the color scale should
+        // be reversed
+        var reverseColormapP = this.smDiv.appendChild(
+            document.createElement("p")
+        );
+        var reverseColormapLbl = reverseColormapP.appendChild(
+            document.createElement("label")
+        );
+        reverseColormapLbl.innerText = "Reverse Color Map";
+        var reverseColormapCheckbox = reverseColormapP.appendChild(
+            document.createElement("input")
+        );
+        reverseColormapCheckbox.id =
+            "barplot-layer-" + this.uniqueNum + "-smcolor-reverse-chk";
+        reverseColormapCheckbox.setAttribute("type", "checkbox");
+        reverseColormapCheckbox.classList.add("empress-input");
+        reverseColormapLbl.setAttribute("for", reverseColormapCheckbox.id);
+
         var lenP = this.smDiv.appendChild(document.createElement("p"));
         var lenLbl = lenP.appendChild(document.createElement("label"));
         lenLbl.innerText = "Length";
@@ -565,11 +608,15 @@ define([
         // TODO initialize defaults more sanely
         this.colorBySMField = chgFieldSMFieldSelector.value;
         this.colorBySMColorMap = colormapSelector.value;
+        this.colorBySMColorReverse = reverseColormapCheckbox.checked;
         $(chgFieldSMFieldSelector).change(function () {
             scope.colorBySMField = chgFieldSMFieldSelector.value;
         });
         $(colormapSelector).change(function () {
             scope.colorBySMColorMap = colormapSelector.value;
+        });
+        $(reverseColormapCheckbox).change(function () {
+            scope.colorBySMColorReverse = reverseColormapCheckbox.checked;
         });
         $(lenInput).change(function () {
             scope.lengthSM = util.parseAndValidateNum(

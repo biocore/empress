@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from empress.tree import validate_tree
+from empress.tree import validate_tree, bp_tree_tips
 from empress.tools import (
     match_inputs, match_tree_and_feature_metadata,
     shifting, filter_feature_metadata_to_tree
@@ -35,7 +35,7 @@ class Empress():
                  feature_metadata=None, ordination=None,
                  ignore_missing_samples=False, filter_extra_samples=False,
                  filter_missing_features=False, resource_path=None,
-                 shear_tree=True):
+                 shear_to_table=True, shear_to_feature_metadata=False):
         """Visualize a phylogenetic tree
 
         Use this object to interactively display a phylogenetic tree using the
@@ -45,7 +45,7 @@ class Empress():
         or both be None. If only one of them is None, this will raise a
         ValueError. If both are None, then the values of the ordination,
         ignore_missing_samples, filter_extra_samples, filter_missing_features,
-        and shear_tree arguments will be ignored since no sample
+        and shear_to_table arguments will be ignored since no sample
         information is available.
 
         Parameters
@@ -86,7 +86,7 @@ class Empress():
         resource_path: str, optional
             Load the resources from a user-specified remote location. If set to
             None resources are loaded from the current directory.
-        shear_tree: bool, optional
+        shear_to_table: bool, optional
             If True, shears the tree to just the tips that are present as
             features in the feature table. Otherwise, the tree is not shorn.
 
@@ -132,6 +132,8 @@ class Empress():
             self.samples = None
 
         if feature_metadata is not None:
+            # this will be transformed into self.tip_md and self.int_md in
+            # self._validate_and_match_data()
             self.features = feature_metadata.copy()
         else:
             self.features = None
@@ -146,7 +148,8 @@ class Empress():
             ignore_missing_samples,
             filter_extra_samples,
             filter_missing_features,
-            shear_tree
+            shear_to_table,
+            shear_to_feature_metadata,
         )
 
         if self.ordination is not None:
@@ -178,7 +181,8 @@ class Empress():
     def _validate_and_match_data(self, ignore_missing_samples,
                                  filter_extra_samples,
                                  filter_missing_features,
-                                 shear_tree):
+                                 shear_to_table,
+                                 shear_to_feature_metadata):
 
         if self.is_community_plot:
             self.table, self.samples, self.tip_md, self.int_md = match_inputs(
@@ -199,7 +203,7 @@ class Empress():
                 self.table, self.samples, self.ordination
             )
             # remove unobserved features from the phylogeny (shear the tree)
-            if shear_tree:
+            if shear_to_table:
                 features = set(self.table.ids(axis='observation'))
                 self.tree = self.tree.shear(features)
                 # Remove features in the feature metadata that are no longer
@@ -210,7 +214,18 @@ class Empress():
                     self.tip_md, self.int_md = filter_feature_metadata_to_tree(
                         self.tip_md, self.int_md, self.tree
                     )
+
         else:
+            if shear_to_feature_metadata:
+                features = set(self.features.index)
+                all_tips = set(bp_tree_tips(self.tree))
+                # check that feature metadata contains at least 1 tip
+                if not features.intersection(all_tips):
+                    raise ValueError(
+                        "Cannot shear tree to feature metadata: no tips in "
+                        "the tree are present in the feature metadata."
+                    )
+                self.tree = self.tree.shear(features)
             self.tip_md, self.int_md = match_tree_and_feature_metadata(
                 self.tree, self.features
             )

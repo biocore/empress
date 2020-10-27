@@ -120,13 +120,17 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @param {Boolean} collapse Tells animator to collapse clades
      * @param {Number} lWidth Tells animator how thick to make colored tree
      *                        branches
+     * @param{Boolean} reverse Defaults to false. If true, the color scale
+     *                         will be reversed, with respect to its default
+     *                         orientation.
      */
     Animator.prototype.setAnimationParameters = function (
         trajectory,
         gradient,
         cm,
         collapse,
-        lWidth
+        lWidth,
+        reverse = false
     ) {
         this.gradientCol = gradient;
         this.gradientSteps = this.empress.getUniqueSampleValues(gradient);
@@ -140,7 +144,13 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.trajectoryCol = trajectory;
         var trajectories = this.empress.getUniqueSampleValues(trajectory);
         // Assign a color to each unique category
-        var colorer = new Colorer(cm, trajectories);
+        var colorer = new Colorer(
+            cm,
+            trajectories,
+            undefined,
+            undefined,
+            reverse
+        );
         this.cm = colorer.getMapRGB();
         this.legendInfo = colorer.getMapHex();
 

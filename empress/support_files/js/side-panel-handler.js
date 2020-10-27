@@ -53,6 +53,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.sSel = document.getElementById("sample-options");
         this.sAddOpts = document.getElementById("sample-add");
         this.sColor = document.getElementById("sample-color");
+        this.sReverseColor = document.getElementById(
+            "sample-reverse-color-chk"
+        );
         this.sCollapseCladesChk = document.getElementById(
             "sample-collapse-chk"
         );
@@ -64,6 +67,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.fSel = document.getElementById("feature-options");
         this.fAddOpts = document.getElementById("feature-add");
         this.fColor = document.getElementById("feature-color");
+        this.fReverseColor = document.getElementById(
+            "feature-reverse-color-chk"
+        );
         this.fCollapseCladesChk = document.getElementById(
             "feature-collapse-chk"
         );
@@ -169,6 +175,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 sChk: { checked: false },
                 sSel: { disabled: true },
                 sColor: { value: "discrete-coloring-qiime" },
+                sReverseColor: { checked: false },
                 sLineWidth: { value: 0 },
                 sCollapseCladesChk: { checked: false },
             },
@@ -183,6 +190,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 fChk: { checked: false },
                 fSel: { disabled: true },
                 fColor: { value: "discrete-coloring-qiime" },
+                fReverseColor: { checked: false },
                 fLineWidth: { value: 0 },
                 fMethodChk: { checked: true },
                 fCollapseCladesChk: { checked: false },
@@ -251,7 +259,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     SidePanel.prototype._colorSampleTree = function () {
         var colBy = this.sSel.value;
         var col = this.sColor.value;
-        var keyInfo = this.empress.colorBySampleCat(colBy, col);
+        var reverse = this.sReverseColor.checked;
+        var keyInfo = this.empress.colorBySampleCat(colBy, col, reverse);
         if (keyInfo === null) {
             util.toastMsg(
                 "No unique branches found for this metadata category"
@@ -268,7 +277,13 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var colBy = this.fSel.value;
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
-        this.empress.colorByFeatureMetadata(colBy, col, coloringMethod);
+        var reverse = this.fReverseColor.checked;
+        this.empress.colorByFeatureMetadata(
+            colBy,
+            col,
+            coloringMethod,
+            reverse
+        );
     };
 
     /**
@@ -450,6 +465,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         };
         this.sSel.onchange = showUpdateBtn;
         this.sColor.onchange = showUpdateBtn;
+        this.sReverseColor.onchange = showUpdateBtn;
         this.sLineWidth.onchange = showUpdateBtn;
 
         this.sUpdateBtn.onclick = function () {
@@ -540,6 +556,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         };
         this.fSel.onchange = showUpdateBtn;
         this.fColor.onchange = showUpdateBtn;
+        this.fReverseColor.onchange = showUpdateBtn;
         this.fLineWidth.onchange = showUpdateBtn;
         this.fMethodChk.onchange = function () {
             scope.updateFeatureMethodDesc();

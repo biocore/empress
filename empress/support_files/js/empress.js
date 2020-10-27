@@ -1410,7 +1410,13 @@ define([
         var sortedUniqueValues = this.getUniqueSampleValues(
             layer.colorBySMField
         );
-        var colorer = new Colorer(layer.colorBySMColorMap, sortedUniqueValues);
+        var colorer = new Colorer(
+            layer.colorBySMColorMap,
+            sortedUniqueValues,
+            undefined,
+            undefined,
+            layer.colorBySMColorReverse
+        );
         var sm2color = colorer.getMapRGB();
         // Do most of the hard work: compute the frequencies for each tip (only
         // the tips present in the BIOM table, that is)
@@ -1603,7 +1609,8 @@ define([
                     layer.colorByFMColorMap,
                     sortedUniqueColorValues,
                     layer.colorByFMContinuous,
-                    layer.uniqueNum
+                    layer.uniqueNum,
+                    layer.colorByFMColorReverse
                 );
             } catch (err) {
                 // If the Colorer construction failed (should only have
@@ -1870,19 +1877,32 @@ define([
      *
      * @param {String} cat Sample metadata category to use
      * @param {String} color Color map to use
+     * @param {Boolean} reverse Defaults to false. If true, the color scale
+     *                         will be reversed, with respect to its default
+     *                         orientation.
      *
      * @return {Object} If there exists at least one group with unique features
      *                  then an object will be returned that maps groups with
      *                  unique features to a color. If there doesn't exist a
      *                  group with unique features then null will be returned.
      */
-    Empress.prototype.colorBySampleCat = function (cat, color) {
+    Empress.prototype.colorBySampleCat = function (
+        cat,
+        color,
+        reverse = false
+    ) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
 
         // Assign colors to categories
-        var colorer = new Colorer(color, categories);
+        var colorer = new Colorer(
+            color,
+            categories,
+            undefined,
+            undefined,
+            reverse
+        );
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
@@ -2005,10 +2025,18 @@ define([
      *                        internal node feature metadata without doing any
      *                        propagation. If this is anything else, this will
      *                        throw an error.
+     * @param{Boolean} reverse Defaults to false. If true, the color scale
+     *                         will be reversed, with respect to its default
+     *                         orientation.
      *
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
-    Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+    Empress.prototype.colorByFeatureMetadata = function (
+        cat,
+        color,
+        method,
+        reverse = false
+    ) {
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -2022,7 +2050,13 @@ define([
         });
 
         // assign colors to unique values
-        var colorer = new Colorer(color, sortedUniqueValues);
+        var colorer = new Colorer(
+            color,
+            sortedUniqueValues,
+            undefined,
+            undefined,
+            reverse
+        );
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
