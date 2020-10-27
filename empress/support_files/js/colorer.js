@@ -260,6 +260,12 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         this._gradientID = "Gradient" + this._gradientIDSuffix;
         var mid = (min + max) / 2;
         var stopColors = interpolator.colors(101);
+        // Calling interpolator.colors() returns the colors in order relative
+        // to the actual color map, which means that (if reverse is true) we
+        // need to reverse the color map itself.
+        if (this.reverse) {
+            stopColors.reverse();
+        }
         this._gradientSVG = "<defs>";
         this._gradientSVG +=
             '<linearGradient id="' +
