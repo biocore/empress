@@ -329,7 +329,6 @@ define([
          * Format: [x, y, r, g, b, ...]
          */
         this._collapsedCladeBuffer = [];
-        this._barplotBuffer = [];
 
         /**
          * @type{String}
@@ -1271,10 +1270,35 @@ define([
     };
 
     /**
-     * Draws barplots on the tree.
+     * Computes the coordinate data needed for drawing a collection of barplot
+     * layer(s), as well as additional information needed for populating the
+     * corresponding barplot legends.
      *
-     * @param {Array} layers An array of BarplotLayer objects. This can just be
-     *                       the "layers" attribute of a BarplotPanel object.
+     * Similar to this.getCoords().
+     *
+     * @param {Array} layers Collection of BarplotLayer objects. Layers will be
+     *                       drawn starting from the edge of the tree and going
+     *                       outwards: the first layer in the array will be the
+     *                       innermost and the last will be the outermost
+     *                       (ignoring barplot border layers, which may be
+     *                       added depending on the BarplotPanel's state).
+     *
+     * @returns {Object} Contains three entries:
+     *                   -coords: An array of coordinate data, in the format
+     *                    [x, y, r, g, b, ...] (TODO FOR SELF: Update this when
+     *                    Kalen's color compression PR is merged in.)
+     *                   -colorers: An Array of the same length as the number
+     *                    of barplot layers containing in each position either
+     *                    a Colorer object (for layers for which a color legend
+     *                    should be shown) or null (for layers for which no
+     *                    color legend should be shown).
+     *                   -lengthExtrema: An Array of the same length as the
+     *                    number of barplot layers containing in each position
+     *                    either another Array of two elements (the minimum and
+     *                    maximum value to be shown in a length legend) or
+     *                    null (for layers for which no length legend should be
+     *                    shown).
+     *
      * @throws {Error} If any of the following conditions are met:
      *                 -One of the layers is of barplot type "fm" and:
      *                    -A field with < 2 unique numeric values is used to
@@ -1285,9 +1309,11 @@ define([
      *                     scaleLengthByFMMax attribute is smaller than its
      *                     scaleLengthByFMMin attribute
      */
-    Empress.prototype.drawBarplots = function (layers) {
+    Empress.prototype.getBarplotData = function (layers) {
         var scope = this;
-        this._barplotBuffer = [];
+
+        // The main thing that will be returned by this function
+        var barplotBuffer = [];
 
         // Add on a gap between the closest-to-the-root point at which we can
         // start drawing barplots, and the first barplot layer. This could be
@@ -1305,15 +1331,18 @@ define([
         // i.e. for feature metadata barplots with no color encoding). At the
         // end of this function, when we know that all barplots are valid,
         // we'll populate / clear legends accordingly.
-        var colorLegendsToPopulate = [];
+        var colorers = [];
 
-        // Also, we keep track of length-scaling information as well.
-        var lengthLegendsToPopulate = [];
+        // Also, we keep track of length-scaling information as well. These are
+        // just arrays of [min val, max val]. (Or they'll just be null, if no
+        // length scaling was done -- this is always the case for e.g. stacked
+        // sample metadata barplots.)
+        var lengthExtrema = [];
 
         _.each(layers, function (layer) {
             if (scope._barplotPanel.useBorders) {
                 prevLayerMaxD = scope.addBorderBarplotLayerCoords(
-                    scope._barplotBuffer,
+                    barplotBuffer,
                     prevLayerMaxD
                 );
             }
@@ -1327,44 +1356,73 @@ define([
             } else {
                 addLayerFunc = "addFMBarplotLayerCoords";
             }
+            // The meat of the work here: compute the coordinates needed for
+            // each barplot layer. These functions may throw errors as needed
+            // if certain selections are invalid.
             layerInfo = scope[addLayerFunc](
                 layer,
-                scope._barplotBuffer,
+                barplotBuffer,
                 prevLayerMaxD
             );
             prevLayerMaxD = layerInfo[0];
-            colorLegendsToPopulate.push(layerInfo[1]);
-            lengthLegendsToPopulate.push(layerInfo[2]);
+            colorers.push(layerInfo[1]);
+            lengthExtrema.push(layerInfo[2]);
         });
         // Add a border on the outside of the outermost layer
         if (this._barplotPanel.useBorders) {
             this.addBorderBarplotLayerCoords(
-                this._barplotBuffer,
+                barplotBuffer,
                 prevLayerMaxD
             );
         }
+        return {
+            coords: barplotBuffer,
+            colorers: colorers,
+            lengthExtrema: lengthExtrema,
+        };
+    };
+
+    /**
+     * Returns the current BarplotLayers owned by the BarplotPanel.
+     *
+     * @returns {Array} Array of BarplotLayer objects.
+     */
+    Empress.prototype.getBarplotLayers = function () {
+        return this._barplotPanel.layers;
+    };
+
+    /**
+     * Draws barplots on the tree.
+     *
+     * @throws {Error} If user selections for a barplot layer are invalid; see
+     *                 this.getBarplotData() for details.
+     */
+    Empress.prototype.drawBarplots = function () {
+        var scope = this;
+        var layers = this.getBarplotLayers();
+        var barplotData = this.getBarplotData(layers);
         // NOTE that we purposefuly don't clear the barplot buffer until we
         // know all of the barplots are valid. If we were to call
         // this.loadBarplotBuff([]) at the start of this function, then if we'd
-        // error out in the middle, the barplot buffer would be cleared without
-        // the tree being redrawn; this would result in the barplots
-        // disappearing the next time the user did something that prompted a
-        // redrawing of the tree (e.g. zooming or panning), which would be
-        // confusing.
+        // error out in this.getBarplotData(), the barplot buffer would be
+        // cleared without the tree being redrawn; this would result in the
+        // barplots disappearing the next time the user did something that
+        // prompted a redrawing of the tree (e.g. zooming or panning), which
+        // would be confusing.
         this._drawer.loadBarplotBuff([]);
-        this._drawer.loadBarplotBuff(this._barplotBuffer);
+        this._drawer.loadBarplotBuff(barplotData.coords);
         this.drawTree();
 
         // By the same logic, now we can safely update the barplot legends to
         // match the barplots that are now drawn.
-        _.each(colorLegendsToPopulate, function (colorer, layerIndex) {
+        _.each(barplotData.colorers, function (colorer, layerIndex) {
             if (_.isNull(colorer)) {
                 layers[layerIndex].clearColorLegend();
             } else {
                 layers[layerIndex].populateColorLegend(colorer);
             }
         });
-        _.each(lengthLegendsToPopulate, function (valSpan, layerIndex) {
+        _.each(barplotData.lengthExtrema, function (valSpan, layerIndex) {
             if (_.isNull(valSpan)) {
                 layers[layerIndex].clearLengthLegend();
             } else {
@@ -2283,7 +2341,7 @@ define([
             if (!supported && this._barplotsDrawn) {
                 this.undrawBarplots();
             } else if (supported && this._barplotPanel.enabled) {
-                this.drawBarplots(this._barplotPanel.layers);
+                this.drawBarplots();
             }
         }
         this.centerLayoutAvgPoint();
