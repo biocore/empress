@@ -75,6 +75,30 @@ define(["underscore", "chroma"], function (_, chroma) {
     }
 
     /**
+     * Expands a bounding box in all four directions by a given distance.
+     *
+     * Intended to be used when exporting images of trees where node circles
+     * are drawn -- since a node circle will likely be the outermost point of
+     * the exported image (assuming barplots and clade collapsing are not
+     * done), we want to expand the bounding box slightly to ensure that this
+     * entire circle is included in the image.
+     *
+     * @param {Object} bb Contains minX, maxX, minY, maxY entries.
+     * @param {Number} dist Value to add to maxX and maxY and to subtract from
+     *                      minX and minY.
+     *
+     * @return {Object} Modified bounding box.
+     */
+    function _expandBoundingBox(bb, dist) {
+        return {
+            minX: bb.minX - dist,
+            maxX: bb.maxX + dist,
+            minY: bb.minY - dist,
+            maxY: bb.maxY + dist,
+        };
+    }
+
+    /**
      * Adds polygon definitions to a SVG string.
      *
      * @param {String} svg
@@ -328,18 +352,15 @@ define(["underscore", "chroma"], function (_, chroma) {
                     _getRGB(coords, i) +
                     '"/>\n';
             }
-            // The edge of the bounding box should coincide with the "end" of a
+            // The edge of the bounding box might coincide with the "end" of a
             // node. So we expand each side of the bounding box by the node
             // radius to avoid cutting off nodes.
             // (That a node has to be present at each edge of the bounding box
-            // isn't guaranteed, esp. when we will draw collapsed clades /
+            // isn't guaranteed, esp. when we draw collapsed clades /
             // barplots. However, even if this isn't the case, it'll just make
             // the exported image very slightly larger -- not a huge deal. Best
             // to be safe.)
-            bb.minX -= radius;
-            bb.minY -= radius;
-            bb.maxX += radius;
-            bb.maxY += radius;
+            bb = _expandBoundingBox(bb, radius);
         }
         return _finalizeSVG(svg, bb);
     }
