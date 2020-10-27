@@ -266,9 +266,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         if (this.reverse) {
             stopColors.reverse();
         }
-        this._gradientSVG = "<defs>";
-        this._gradientSVG +=
-            '<linearGradient id="' +
+        this._gradientSVG =
+            '<defs><linearGradient id="' +
             this._gradientID +
             '" x1="0" x2="0" y1="1" y2="0">';
         for (var pos = 0; pos < stopColors.length; pos++) {
