@@ -1370,10 +1370,7 @@ define([
         });
         // Add a border on the outside of the outermost layer
         if (this._barplotPanel.useBorders) {
-            this.addBorderBarplotLayerCoords(
-                barplotBuffer,
-                prevLayerMaxD
-            );
+            this.addBorderBarplotLayerCoords(barplotBuffer, prevLayerMaxD);
         }
         return {
             coords: barplotBuffer,
