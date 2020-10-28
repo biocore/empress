@@ -228,7 +228,7 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
             // the arc for node 3 spans PI radians thus, the number of lines to
             // approximate arc are 60*((radians spanned by arc) / PI) = 60
             // the above calculation can be found at
-            // Empress.__numSampToApproximate()
+            // Empress._numSampToApproximate()
             ok(Math.abs(coords[250] + 2) < 1.0e-15); // end arc x
             ok(Math.abs(coords[251]) < 1.0e-15);
         });

@@ -315,10 +315,10 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
     /**
      * Compresses a color array of the form [red, green, blue], where each
-     * element is in the range of 0 and 255, into a single number.
+     * element is in the range of [0, 255], into a single number.
      *
      * @param{Array} rgb The color array. The element in the array must in the
-     *                   range of 0 and 255.
+     *                   range of [0, 255].
      *
      * @return{Number} the compressed color to be used in WebGl shaders
      */
@@ -327,15 +327,18 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     };
 
     /**
-     * Uncompress the rgb color.
+     * Uncompress a RGB color encoded as a float (eg the output of rgbToFloat).
      * This is the same function found in the WebGl shaders.
      * However, functions in WebGl shaders cannot be called by js functions and
      * vice versa.
      */
     Colorer.unpackColor = function (f) {
         var color = [];
+        // red
         color[0] = f % 256.0;
+        // green
         color[1] = ((f - color[0]) / 256.0) % 256.0;
+        // blue
         color[2] = (f - color[0] - 256.0 * color[1]) / 65536.0;
         return color;
     };

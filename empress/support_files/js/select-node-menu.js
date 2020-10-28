@@ -491,6 +491,7 @@ define(["underscore", "util"], function (_, util) {
             var node = nodeKeys[i];
             var x = this.empress.getX(node);
             var y = this.empress.getY(node);
+            // Add a green circle indicating the highlighted node(s)
             highlightedNodes.push(...[x, y, 65280]);
         }
 

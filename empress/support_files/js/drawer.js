@@ -418,8 +418,6 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
         c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 
         c.uniform1i(s.isSingle, 0);
-        // this.bindCoordBuffer(s.treeCoordBuff, 2, 2);
-        // this.bindColorBuffer(s.treeColorBuff, 3, 1);
         this.bindBuffer(s.treeCoordBuff, 2, 2);
         this.bindBuffer(s.treeColorBuff, 3, 1);
         c.drawArrays(c.LINES, 0, this.treeCoordSize);
