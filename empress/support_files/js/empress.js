@@ -2232,13 +2232,13 @@ define([
             this.setNodeInfo(node, "isColored", false);
             this.setNodeInfo(node, "visible", true);
         }
-        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
         this._collapsedClades = {};
         this._dontCollapse = new Set();
         this._collapsedCladeBuffer = [];
         this._drawer.loadThickNodeBuff([]);
         this._drawer.loadCladeBuff([]);
         this._group = new Array(this._tree.size + 1).fill(-1);
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
     };
 
     /**
