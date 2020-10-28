@@ -230,7 +230,7 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
             // the above calculation can be found at
             // Empress._numSampToApproximate()
             ok(Math.abs(coords[250] + 2) < 1.0e-15); // end arc x
-            ok(Math.abs(coords[251]) < 1.0e-15);
+            ok(Math.abs(coords[251]) < 1.0e-15); //end arc y
         });
     });
 });

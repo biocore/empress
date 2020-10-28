@@ -1,4 +1,4 @@
-define(["glMatrix", "Camera"], function (gl, Camera) {
+define(["underscore", "glMatrix", "Camera"], function (_, gl, Camera) {
     //  Shaders used in Drawer
     var vertShaderTxt = [
         "precision mediump float;",
@@ -249,7 +249,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
      * @param {Number} vertSize The size of the vertex for webgl
      */
     Drawer.prototype.bindBuffer = function (buffer, buffType, vertSize) {
-        if (this.BUFF_TYPES.indexOf(buffType) == -1) {
+        if (!_.contains(this.BUFF_TYPES, buffType)) {
             throw "Invalid buffer type";
         }
 
@@ -288,9 +288,9 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     };
 
     /**
-     * Fills the buffer used to draw the tree
+     * Fills the buffer used to draw the tree.
      *
-     * @param {Array} data The coordinate and color data to fill tree buffer
+     * @param {Array} data The coordinates [x, y, ...] to fill treeCoordBuffr
      */
     Drawer.prototype.loadTreeCoordsBuff = function (data) {
         data = new Float32Array(data);
@@ -301,7 +301,7 @@ define(["glMatrix", "Camera"], function (gl, Camera) {
     /**
      * Fills the buffer used to draw the tree
      *
-     * @param {Array} data The coordinate and color data to fill tree buffer
+     * @param {Array} data The color data to fill treeColorBuff
      */
     Drawer.prototype.loadTreeColorBuff = function (data) {
         data = new Float32Array(data);
