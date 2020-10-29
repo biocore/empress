@@ -79,7 +79,7 @@ define([
          * @type {Array}
          * The default color of the tree
          */
-        this.DEFAULT_COLOR = Colorer.rgbToFloat([50, 50, 50]);
+        this.DEFAULT_COLOR = Colorer.rgbToFloat([64, 64, 64]);
 
         /**
          * @type {BPTree}
