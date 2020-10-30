@@ -1,4 +1,9 @@
-define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
+define(["underscore", "Colorer", "util", "Commands"], function (
+    _,
+    Colorer,
+    util,
+    Commands
+) {
     /**
      *
      * @class SidePanel
@@ -29,6 +34,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         // used to event triggers
         this.empress = empress;
+        this.commandManager = new Commands.CommandManager(this.empress);
 
         // settings components
         this.treeNodesChk = document.getElementById("display-nodes-chk");
@@ -564,12 +570,28 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         };
 
         this.fUpdateBtn.onclick = function () {
-            scope._updateColoring(
-                "_colorFeatureTree",
-                scope.fCollapseCladesChk,
-                scope.fLineWidth,
-                scope.fUpdateBtn
-            );
+            // hide update button
+            scope.fUpdateBtn.classList.add("hidden");
+
+            // this came from colorMethodName
+            let colBy = scope.fSel.value;
+            let col = scope.fColor.value;
+            let coloringMethod = scope.fMethodChk.checked ? "tip" : "all";
+            let reverse = scope.fReverseColor.checked;
+            let collapseChecked = scope.fCollapseCladesChk.checked;
+            let lw = util.parseAndValidateNum(scope.fLineWidth);
+
+            let command = new Commands.ColorFeatureTreeCommand({
+                empress: scope.empress,
+                collapseClades: collapseChecked,
+                lineWidth: lw,
+                colBy: colBy,
+                col: col,
+                coloringMethod: coloringMethod,
+                reverse: reverse,
+            });
+            scope.commandManager.push(command);
+            scope.commandManager.executeAll();
         };
 
         this.fCollapseCladesChk.onclick = function () {
