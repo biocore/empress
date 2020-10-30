@@ -1,6 +1,6 @@
 define([], function () {
     var defaultCommands = {
-        'ColorFeatureTreeCommand': ColorFeatureTreeCommand
+        ColorFeatureTreeCommand: ColorFeatureTreeCommand,
     };
 
     function CommandManager(empress) {
