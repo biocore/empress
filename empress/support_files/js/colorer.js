@@ -58,8 +58,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // be present on the same page without overriding each other. (It's the
         // caller's responsibility to ensure that gradient ID suffixes are
         // unique, at least across Colorers created for continuous scaling.)
-        this._gradientIDSuffix = gradientIDSuffix;
-        this._gradientID = null;
+        this._gradientID = useQuantScale ? "Gradient" + gradientIDSuffix : null;
 
         // Will be set to a string containing just the SVG defining the
         // gradient (i.e. just the <defs>...</defs> stuff).
@@ -257,7 +256,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // map along the domain 101 times, and use these 101 colors to define
         // the <linearGradient /> for each integer percentage in the inclusve
         // range [0%, 100%]. See https://github.com/biocore/emperor/issues/788.
-        this._gradientID = "Gradient" + this._gradientIDSuffix;
         var mid = (min + max) / 2;
         var stopColors = interpolator.colors(101);
         // Calling interpolator.colors() returns the colors in order relative
