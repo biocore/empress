@@ -302,12 +302,11 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
     /**
      * Returns a mapping of unique field values to their corresponding colors,
-     * where each color is in RGB array format.
+     * where each color is in RGB number format.
      *
      * @return{Object} rgbMap An object mapping each item in
      *                 this.sortedUniqueValues to its assigned color. Each
-     *                 color is represented by an array of [R, G, B], where R,
-     *                 G, B are all floats scaled to within the range [0, 1].
+     *                 color is represented by a number (see rgbToFloat()).
      */
     Colorer.prototype.getMapRGB = function () {
         return _.mapObject(this.__valueToColor, Colorer.hex2RGB);

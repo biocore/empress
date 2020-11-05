@@ -85,9 +85,6 @@ define(["underscore", "chroma", "Colorer"], function (_, chroma, Colorer) {
             // "normal" lines have a default color,
             // all other lines have a user defined thickness
             // All lines are defined using the information from the child node.
-            // So, if coords[node+2] == DEFAULT_COLOR then coords[node+2+5] will
-            // also be equal to DEFAULT_COLOR. Thus, we can save checking three
-            // array elements here.
             // TODO: instead, adjust line width based on a node's isColored
             // tree data attribute, in corner-case where dflt node color is
             // included in a color map.
@@ -123,7 +120,7 @@ define(["underscore", "chroma", "Colorer"], function (_, chroma, Colorer) {
 
         // create a circle for each node
         if (drawer.showTreeNodes) {
-            var radius = drawer.NODE_CIRCLE_DIAMETER;
+            var radius = drawer.NODE_CIRCLE_DIAMETER / 2;
             svg += "<!-- tree nodes -->\n";
             coords = empress.getNodeCoords();
             for (

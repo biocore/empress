@@ -66,7 +66,7 @@ require([
     test("Barplot panel border option initialization (incl. initBorderOptions)", function () {
         var empress = this.initTestEmpress();
 
-        deepEqual(empress._barplotPanel.borderColor, [1, 1, 1]);
+        deepEqual(empress._barplotPanel.borderColor, 16777215);
 
         // Color picker should correctly default to white
         var obsColor = $(empress._barplotPanel.borderColorPicker)

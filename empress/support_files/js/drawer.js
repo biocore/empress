@@ -63,7 +63,7 @@ define(["underscore", "glMatrix", "Camera"], function (_, gl, Camera) {
         this.COORD_SIZE = 2;
 
         // sets empress to light mode
-        this.CLR_COL = 1;
+        this.CLR_COL = [1, 1, 1];
 
         // the center of the viewing window in tree coordinates
         this.treeSpaceCenterX = null;
@@ -103,7 +103,7 @@ define(["underscore", "glMatrix", "Camera"], function (_, gl, Camera) {
         }
 
         // initialze canvas to have fully white background
-        c.clearColor(this.CLR_COL, this.CLR_COL, this.CLR_COL, 1);
+        c.clearColor(...this.CLR_COL, 1);
         c.clear(c.COLOR_BUFFER_BIT | c.DEPTH_BUFFER_BIT);
 
         // create webGL program

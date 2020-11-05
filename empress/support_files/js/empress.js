@@ -307,7 +307,7 @@ define([
          *          right: <node_key>,
          *          deepest: <node_key>,
          *          length: <Number>,
-         *          color: <[r,g,b]>
+         *          color: <Number>
          *      }
          *  }
          */
@@ -1846,11 +1846,7 @@ define([
         // we can just increase the displacement and leave it at that.
         // (This works out very well if this is the "outermost" border -- then
         // we really don't need to do anything.)
-        if (
-            borderColor[0] === 1 &&
-            borderColor[1] === 1 &&
-            borderColor[2] === 1
-        ) {
+        if (borderColor === Colorer.rgbToFloat(this._drawer.CLR_COL)) {
             return maxD;
         }
         // ... Otherwise, we actually have to go and create bars
@@ -1923,7 +1919,7 @@ define([
         for (group in observationsPerGroup) {
             obs = Array.from(observationsPerGroup[group]);
 
-            // convert hex string to rgb array
+            // convert hex string to rgb number
             var rgb = Colorer.hex2RGB(group);
 
             for (var i = 0; i < obs.length; i++) {
@@ -2204,7 +2200,7 @@ define([
      * @param{Object} obs Maps categories to the unique nodes to be colored for
      *                    each category.
      * @param{Object} cm Maps categories to the colors to color their nodes
-     *                   with. Colors should be represented as RGB arrays, for
+     *                   with. Colors should be represented as RGB number, for
      *                   example as is done in the color values of the output
      *                   of Colorer.getMapRGB().
      */
