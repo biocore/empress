@@ -79,7 +79,7 @@ define([
          * @type {Array}
          * The default color of the tree
          */
-        this.DEFAULT_COLOR = [0.25, 0.25, 0.25];
+        this.DEFAULT_COLOR = Colorer.rgbToFloat([64, 64, 64]);
 
         /**
          * @type {BPTree}
@@ -91,9 +91,10 @@ define([
         /**
          * Used to index into _treeData
          * @type {Object}
+         * @private
          */
         this._tdToInd = {
-            // all nodes (non layout parameters)
+            // all nodes (non-layout parameters)
             color: 0,
             isColored: 1,
             visible: 2,
@@ -122,7 +123,7 @@ define([
          * @type {Number}
          * @private
          */
-        this._numNonLayoutParams = 3;
+        this._numOfNonLayoutParams = 3;
 
         /**
          * @type {Array}
@@ -306,7 +307,7 @@ define([
          *          right: <node_key>,
          *          deepest: <node_key>,
          *          length: <Number>,
-         *          color: <[r,g,b]>
+         *          color: <Number>
          *      }
          *  }
          */
@@ -368,7 +369,7 @@ define([
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._numNonLayoutParams;
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.xr] = data.xCoord[i];
@@ -388,7 +389,7 @@ define([
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._numNonLayoutParams;
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.xc0] = data.x0[i];
@@ -412,13 +413,14 @@ define([
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._numNonLayoutParams;
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.x2] = data.xCoord[i];
                 this._treeData[i][this._tdToInd.y2] = data.yCoord[i];
             }
         }
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
         this._computeMaxDisplacement();
     };
 
@@ -437,7 +439,6 @@ define([
 
         this.getLayoutInfo();
         this.centerLayoutAvgPoint();
-        // centerLayoutAvgPoint() calls drawTree(), so no need to call it here
     };
 
     /**
@@ -475,7 +476,7 @@ define([
      * Draws the tree
      */
     Empress.prototype.drawTree = function () {
-        this._drawer.loadTreeBuff(this.getCoords());
+        this._drawer.loadTreeColorBuff(this.getTreeColor());
         if (this.drawNodeCircles) {
             this._drawer.loadNodeBuff(this.getNodeCoords());
         } else {
@@ -484,15 +485,6 @@ define([
         }
         this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
-    };
-
-    /**
-     * Exports a SVG image of the tree.
-     *
-     * @return {String} svg
-     */
-    Empress.prototype.exportTreeSVG = function () {
-        return ExportUtil.exportTreeSVG(this, this._drawer);
     };
 
     /**
@@ -529,101 +521,23 @@ define([
     };
 
     /**
-     * Exports a PNG image of the canvas.
-     *
-     * This works a bit differently from the SVG exporting functions -- instead
-     * of returning a string with the SVG, the specified callback will be
-     * called with the Blob representation of the PNG. See
-     * ExportUtil.exportTreePNG() for details.
-     *
-     * @param {Function} callback Function that will be called with a Blob
-     *                            representing the exported PNG image.
-     */
-    Empress.prototype.exportTreePNG = function (callback) {
-        ExportUtil.exportTreePNG(this, this._canvas, callback);
-    };
-
-    /**
-     * Retrieves x coordinate of node in the current layout.
-     *
-     * @param {Number} node Postorder position of node.
-     * @return {Number} x coordinate of node.
-     */
-    Empress.prototype.getX = function (node) {
-        var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
-        return this.getNodeInfo(node, xname);
-    };
-
-    /**
-     * Retrieves y coordinate of node in the current layout.
-     *
-     * @param {Number} node Postorder position of node.
-     * @return {Number} y coordinate of node.
-     */
-    Empress.prototype.getY = function (node) {
-        var yname = "y" + this._layoutToCoordSuffix[this._currentLayout];
-        return this.getNodeInfo(node, yname);
-    };
-
-    /**
-     * Retrieves the node coordinate info (for drawing node circles).
-     *
-     * @return {Array} Node coordinate info, formatted like
-     *                 [x, y, red, green, blue, ...] for every node circle to
-     *                 be drawn.
-     */
-    Empress.prototype.getNodeCoords = function () {
-        var tree = this._tree;
-        var coords = [];
-
-        for (var node = 1; node <= tree.size; node++) {
-            if (!this.getNodeInfo(node, "visible")) {
-                continue;
-            }
-            // In the past, we only drew circles for nodes with an assigned
-            // name (i.e. where the name of a node was not null). Now, we
-            // just draw circles for all nodes.
-            coords.push(
-                this.getX(node),
-                this.getY(node),
-                ...this.getNodeInfo(node, "color")
-            );
-        }
-        return new Float32Array(coords);
-    };
-
-    /**
-     * Returns the number of lines/triangles to approximate an arc/wedge given
-     * the total angle of the arc/wedge.
-     *
-     * @param {Number} totalAngle The total angle of the arc/wedge
-     * @return {Number} The number of lines/triangles to approximate the arc
-     *                  or wedge.
-     */
-    Empress.prototype._numSampToApproximate = function (totalAngle) {
-        var numSamples = Math.floor(60 * Math.abs(totalAngle / Math.PI));
-        return numSamples >= 2 ? numSamples : 2;
-    };
-
-    /**
      * Retrieves the coordinate info of the tree.
-     *  format of coordinate info: [x, y, red, green, blue, ...]
+     *
+     * We used to interlace the coordinate information with the color information
+     * i.e. [x1, y1, red1, green1, blue1, x2, y2, red2, green2, blue2,...]
+     * This was inefficient because tree coordinates do not change during most
+     * update operations (such as feature coloring). Thus, we split the
+     * coordinate information into two seperate buffers. One for tree
+     * tree coordinates and another for color.
      *
      * @return {Array}
      */
-    Empress.prototype.getCoords = function () {
+    Empress.prototype.getTreeCoords = function () {
         var tree = this._tree;
-
-        // The coordinates (and colors) of the tree's nodes.
         var coords = [];
 
-        // branch color
-        var color;
-
-        var coords_index = 0;
-
         var addPoint = function (x, y) {
-            coords.push(x, y, ...color);
+            coords.push(x, y);
         };
 
         /* Draw a vertical line, if we're in rectangular layout mode. Note that
@@ -636,7 +550,6 @@ define([
          * root be the ONLY node in the tree. So this behavior is ok.)
          */
         if (this._currentLayout === "Rectangular") {
-            color = this.getNodeInfo(tree.size, "color");
             addPoint(
                 this.getX(tree.size),
                 this.getNodeInfo(tree.size, "lowestchildyr")
@@ -658,9 +571,6 @@ define([
             if (!this.getNodeInfo(node, "visible")) {
                 continue;
             }
-
-            // branch color
-            color = this.getNodeInfo(node, "color");
 
             if (this._currentLayout === "Rectangular") {
                 /* Nodes in the rectangular layout can have up to two "parts":
@@ -749,14 +659,194 @@ define([
                     }
                 }
             } else {
-                // Draw nodes for the unrooted layout.
-                // coordinate info for parent
                 addPoint(this.getX(parent), this.getY(parent));
-                // coordinate info for current nodeN
                 addPoint(this.getX(node), this.getY(node));
             }
         }
         return new Float32Array(coords);
+    };
+
+    Empress.prototype.getTreeColor = function () {
+        var tree = this._tree;
+
+        var coords = [];
+        var color;
+        var addPoint = function () {
+            coords.push(color, color);
+        };
+
+        /* Draw a vertical line, if we're in rectangular layout mode. Note that
+         * we *don't* draw a horizontal line (with the branch length of the
+         * root) for the root node, even if it has a nonzero branch length;
+         * this could be modified in the future if desired. See #141 on GitHub.
+         *
+         * (The python code explicitly disallows trees with <= 1 nodes, so
+         * we're never going to be in the unfortunate situation of having the
+         * root be the ONLY node in the tree. So this behavior is ok.)
+         */
+        if (this._currentLayout === "Rectangular") {
+            color = this.getNodeInfo(tree.size, "color");
+            addPoint();
+        }
+        // iterate through the tree in postorder, skip root
+        for (var node = 1; node < tree.size; node++) {
+            if (!this.getNodeInfo(node, "visible")) {
+                continue;
+            }
+
+            // branch color
+            color = this.getNodeInfo(node, "color");
+
+            if (this._currentLayout === "Rectangular") {
+                /* Nodes in the rectangular layout can have up to two "parts":
+                 * a horizontal line, and a vertical line at the end of this
+                 * line. These parts are indicated below as AAA... and BBB...,
+                 * respectively. (Child nodes are indicated by CCC...)
+                 *
+                 *        BCCCCCCCCCCCC
+                 *        B
+                 * AAAAAAAB
+                 *        B
+                 *        BCCCCCCCCCCCC
+                 *
+                 * All nodes except for the root are drawn with a horizontal
+                 * line, and all nodes except for tips are drawn with a
+                 * vertical line.
+                 */
+                // 1. Draw horizontal line (we're already skipping the root)
+                addPoint();
+                // 2. Draw vertical line, if this is an internal node
+                if (this.getNodeInfo(node, "lowestchildyr") !== undefined) {
+                    // skip if node is root of collapsed clade
+                    if (this._collapsedClades.hasOwnProperty(node)) continue;
+                    addPoint();
+                }
+            } else if (this._currentLayout === "Circular") {
+                /* Same deal as above, except instead of a "vertical line" this
+                 * time we draw an "arc".
+                 */
+                // 1. Draw line protruding from parent (we're already skipping
+                // the root so this is ok)
+                //
+                // Note that position info for this is stored as two sets of
+                // coordinates: (xc0, yc0) for start point, (xc1, yc1) for end
+                // point. The *c1 coordinates are explicitly associated with
+                // the circular layout so we can just use this.getX() /
+                // this.getY() for these coordinates.
+                addPoint();
+                // 2. Draw arc, if this is an internal node (note again that
+                // we're skipping the root)
+                if (
+                    !this._tree.isleaf(this._tree.postorderselect(node)) &&
+                    !this._collapsedClades.hasOwnProperty(node)
+                ) {
+                    // An arc will be created for all internal nodes.
+                    // arcs are created by sampling up to 60 small lines along
+                    // the arc spanned by rotating the line (arcx0, arcy0)
+                    // arcendangle - arcstartangle radians. This will create an
+                    // arc that starts at each internal node's rightmost child
+                    // and ends on the leftmost child.
+                    var arcDeltaAngle =
+                        this.getNodeInfo(node, "arcendangle") -
+                        this.getNodeInfo(node, "arcstartangle");
+                    var numSamples = this._numSampToApproximate(arcDeltaAngle);
+                    for (var line = 0; line < numSamples; line++) {
+                        addPoint();
+                    }
+                }
+            } else {
+                // Draw nodes for the unrooted layout.
+                // coordinate info for parent
+                addPoint();
+            }
+        }
+        return new Float32Array(coords);
+    };
+
+    /**
+     * Creates an SVG string to export the current drawing
+     * Exports a SVG image of the tree.
+     *
+     * @return {String} svg
+     */
+    Empress.prototype.exportTreeSVG = function () {
+        return ExportUtil.exportTreeSVG(this, this._drawer);
+    };
+
+    /**
+     * Exports a PNG image of the canvas.
+     *
+     * This works a bit differently from the SVG exporting functions -- instead
+     * of returning a string with the SVG, the specified callback will be
+     * called with the Blob representation of the PNG. See
+     * ExportUtil.exportTreePNG() for details.
+     *
+     * @param {Function} callback Function that will be called with a Blob
+     *                            representing the exported PNG image.
+     */
+    Empress.prototype.exportTreePNG = function (callback) {
+        ExportUtil.exportTreePNG(this, this._canvas, callback);
+    };
+
+    /**
+     * Retrieves x coordinate of node in the current layout.
+     *
+     * @param {Number} node Postorder position of node.
+     * @return {Number} x coordinate of node.
+     */
+    Empress.prototype.getX = function (node) {
+        var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
+        return this.getNodeInfo(node, xname);
+    };
+
+    /**
+     * Retrieves y coordinate of node in the current layout.
+     *
+     * @param {Number} node Postorder position of node.
+     * @return {Number} y coordinate of node.
+     */
+    Empress.prototype.getY = function (node) {
+        var yname = "y" + this._layoutToCoordSuffix[this._currentLayout];
+        return this.getNodeInfo(node, yname);
+    };
+
+    /**
+     * Retrieves the node coordinate info (for drawing node circles).
+     *
+     * @return {Array} Node coordinate info, formatted like [x, y, RGB float]
+     *                 for every node circle to be drawn.
+     */
+    Empress.prototype.getNodeCoords = function () {
+        var tree = this._tree;
+        var coords = [];
+
+        for (var node = 1; node <= tree.size; node++) {
+            if (!this.getNodeInfo(node, "visible")) {
+                continue;
+            }
+            // In the past, we only drew circles for nodes with an assigned
+            // name (i.e. where the name of a node was not null). Now, we
+            // just draw circles for all nodes.
+            coords.push(
+                this.getX(node),
+                this.getY(node),
+                this.getNodeInfo(node, "color")
+            );
+        }
+        return new Float32Array(coords);
+    };
+
+    /**
+     * Returns the number of lines/triangles to approximate an arc/wedge given
+     * the total angle of the arc/wedge.
+     *
+     * @param {Number} totalAngle The total angle of the arc/wedge
+     * @return {Number} The number of lines/triangles to approximate the arc
+     *                  or wedge.
+     */
+    Empress.prototype._numSampToApproximate = function (totalAngle) {
+        var numSamples = Math.floor(60 * Math.abs(totalAngle / Math.PI));
+        return numSamples >= 2 ? numSamples : 2;
     };
 
     /**
@@ -957,18 +1047,18 @@ define([
     Empress.prototype._addTriangleCoords = function (coords, corners, color) {
         // Triangle 1
         coords.push(...corners.tL);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.bL);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.bR);
-        coords.push(...color);
+        coords.push(color);
         // Triangle 2
         coords.push(...corners.tL);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.tR);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.bR);
-        coords.push(...color);
+        coords.push(color);
     };
 
     /* Adds coordinate/color info for a vertical line for a given node in the
@@ -1839,11 +1929,7 @@ define([
         // we can just increase the displacement and leave it at that.
         // (This works out very well if this is the "outermost" border -- then
         // we really don't need to do anything.)
-        if (
-            borderColor[0] === 1 &&
-            borderColor[1] === 1 &&
-            borderColor[2] === 1
-        ) {
+        if (borderColor === Colorer.rgbToFloat(this._drawer.CLR_COL)) {
             return maxD;
         }
         // ... Otherwise, we actually have to go and create bars
@@ -1916,7 +2002,7 @@ define([
         for (group in observationsPerGroup) {
             obs = Array.from(observationsPerGroup[group]);
 
-            // convert hex string to rgb array
+            // convert hex string to rgb number
             var rgb = Colorer.hex2RGB(group);
 
             for (var i = 0; i < obs.length; i++) {
@@ -2224,7 +2310,7 @@ define([
      * @param{Object} obs Maps categories to the unique nodes to be colored for
      *                    each category.
      * @param{Object} cm Maps categories to the colors to color their nodes
-     *                   with. Colors should be represented as RGB arrays, for
+     *                   with. Colors should be represented as RGB number, for
      *                   example as is done in the color values of the output
      *                   of Colorer.getMapRGB().
      */
@@ -2258,6 +2344,7 @@ define([
         this._drawer.loadThickNodeBuff([]);
         this._drawer.loadCladeBuff([]);
         this._group = new Array(this._tree.size + 1).fill(-1);
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
     };
 
     /**
@@ -2631,6 +2718,7 @@ define([
                 }
             }
         }
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
     };
 
     /**
@@ -2666,7 +2754,7 @@ define([
         //          left  - the tip with the smallest angle
         //          right - the tip with the largest angle
         var addPoint = function (point) {
-            cladeBuffer.push(...point, ...color);
+            cladeBuffer.push(...point, color);
         };
         var getCoords = function (node) {
             return [scope.getX(node), scope.getY(node)];

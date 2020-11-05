@@ -371,15 +371,44 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
     /**
      * Returns a mapping of unique field values to their corresponding colors,
-     * where each color is in RGB array format.
+     * where each color is in RGB number format.
      *
      * @return{Object} rgbMap An object mapping each item in
      *                 this.sortedUniqueValues to its assigned color. Each
-     *                 color is represented by an array of [R, G, B], where R,
-     *                 G, B are all floats scaled to within the range [0, 1].
+     *                 color is represented by a number (see rgbToFloat()).
      */
     Colorer.prototype.getMapRGB = function () {
         return _.mapObject(this.__valueToColor, Colorer.hex2RGB);
+    };
+
+    /**
+     * Compresses a color array of the form [red, green, blue], where each
+     * element is in the range of [0, 255], into a single number.
+     *
+     * @param{Array} rgb The color array. The element in the array must in the
+     *                   range of [0, 255].
+     *
+     * @return{Number} the compressed color to be used in WebGl shaders
+     */
+    Colorer.rgbToFloat = function (rgb) {
+        return rgb[0] + rgb[1] * 256 + rgb[2] * 256 * 256;
+    };
+
+    /**
+     * Uncompress a RGB color encoded as a float (eg the output of rgbToFloat).
+     * This is the same function found in the WebGl shaders.
+     * However, functions in WebGl shaders cannot be called by js functions and
+     * vice versa.
+     */
+    Colorer.unpackColor = function (f) {
+        var color = [];
+        // red
+        color[0] = f % 256.0;
+        // green
+        color[1] = ((f - color[0]) / 256.0) % 256.0;
+        // blue
+        color[2] = (f - color[0] - 256.0 * color[1]) / 65536.0;
+        return color;
     };
 
     /**
@@ -423,17 +452,18 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     };
 
     /**
-     * Converts a hex color to an RGB array suitable for use with WebGL.
+     * Converts a hex color to an RGB float suitable for use with WebGL.
      *
      * @param {String} hexString
-     * @return {Array} rgbArray
+     * @return {Float} rgb
      * @classmethod
      */
     Colorer.hex2RGB = function (hexString) {
         // chroma(hexString).gl() returns an array with four components (RGBA
         // instead of RGB). The slice() here strips off the final (alpha)
         // element, which causes problems with Empress' drawing code.
-        return chroma(hexString).gl().slice(0, 3);
+        var rgb = chroma(hexString).rgb().slice(0, 3);
+        return Colorer.rgbToFloat(rgb);
     };
 
     /**

@@ -66,7 +66,7 @@ require([
     test("Barplot panel border option initialization (incl. initBorderOptions)", function () {
         var empress = this.initTestEmpress();
 
-        deepEqual(empress._barplotPanel.borderColor, [1, 1, 1]);
+        deepEqual(empress._barplotPanel.borderColor, 16777215);
 
         // Color picker should correctly default to white
         var obsColor = $(empress._barplotPanel.borderColorPicker)
@@ -283,11 +283,7 @@ require([
         // Default color (for feature metadata barplots) defaults to red,
         // a.k.a. the first "Classic QIIME Colors" color
         equal(layer1.initialDefaultColorHex, "#ff0000");
-        // (this is a hacky way of checking each element of a RGB triple; for
-        // some reason QUnit complains when trying to compare arrays)
-        equal(layer1.defaultColor[0], 1);
-        equal(layer1.defaultColor[1], 0);
-        equal(layer1.defaultColor[2], 0);
+        equal(layer1.defaultColor, 255);
 
         // Default length defaults to, well, DEFAULT_LENGTH
         equal(layer1.defaultLength, BarplotLayer.DEFAULT_LENGTH);

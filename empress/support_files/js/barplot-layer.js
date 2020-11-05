@@ -246,7 +246,7 @@ define([
             color: this.initialDefaultColorHex,
             change: function (newColor) {
                 // To my knowledge, there isn't a straightforward way of
-                // getting an RGB array out of the "TinyColor" values passed in
+                // getting an RGB number out of the "TinyColor" values passed in
                 // by Spectrum: see
                 // https://bgrins.github.io/spectrum#details-acceptedColorInputs
                 scope.defaultColor = Colorer.hex2RGB(newColor.toHexString());
