@@ -327,7 +327,7 @@ define([
          *
          * Stores the vertex information that is passed to WebGL
          *
-         * Format: [x, y, r, g, b, ...]
+         * Format: [x, y, RGB, ...]
          */
         this._collapsedCladeBuffer = [];
 
@@ -1375,8 +1375,7 @@ define([
      *
      * @returns {Object} Contains three entries:
      *                   -coords: An array of coordinate data, in the format
-     *                    [x, y, r, g, b, ...] (TODO FOR SELF: Update this when
-     *                    Kalen's color compression PR is merged in.)
+     *                    [x, y, RGB...]
      *                   -colorers: An Array of the same length as the number
      *                    of barplot layers containing in each position either
      *                    a Colorer object (for layers for which a color legend
