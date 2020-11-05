@@ -234,21 +234,38 @@ require([
             c = new Colorer("Dark2", eles);
             var rgbMap = c.getMapRGB();
             for (var i = 0; i < 3; i++) {
-                var expRGB = chroma(
-                    dark2palette[i % dark2palette.length]
-                ).rgb();
+                var expRGB = chroma(dark2palette[i]).rgb();
                 // Convert expRGB from an array of 3 numbers in the range
-                // [0, 255] to an array of 3 numbers in the range [0, 1] scaled
-                // proportionally.
-                var scaledExpRGB = expRGB.map(function (x) {
-                    return x / 255;
-                });
+                // [0, 255] to a float.
+                var scaledExpRGB = Colorer.rgbToFloat(expRGB);
+
                 var obsRGB = rgbMap[eles[i]];
+
                 // Check that individual R/G/B components are correct
-                for (var v = 0; v < 3; v++) {
-                    equal(obsRGB[v], scaledExpRGB[v]);
-                }
+                equal(obsRGB, scaledExpRGB);
             }
+        });
+        test("Test rgbToFloat", function () {
+            // check red
+            var compressed = Colorer.rgbToFloat([1, 0, 0]);
+            equal(compressed, 1, "check compressed red");
+
+            // check green
+            compressed = Colorer.rgbToFloat([0, 1, 0]);
+            equal(compressed, 256, "check compressed green");
+
+            // check blue
+            compressed = Colorer.rgbToFloat([0, 0, 1]);
+            equal(compressed, 256 * 256);
+        });
+        test("Test uncompress rgb", function () {
+            var redColor = Colorer.rgbToFloat([1, 0, 0]);
+            unpackedRed = Colorer.unpackColor(redColor);
+            deepEqual(unpackedRed, [1, 0, 0], "unpacked red");
+
+            var randColor = Colorer.rgbToFloat([47, 255, 52]);
+            var unpackedRand = Colorer.unpackColor(randColor);
+            deepEqual(unpackedRand, [47, 255, 52], "unpacked random");
         });
         test("Test Colorer.getMapHex", function () {
             var eles = ["abc", "def", "ghi"];
@@ -276,11 +293,8 @@ require([
             rgbmap = colorer.getMapRGB();
             equal(_.keys(rgbmap).length, 1);
             equal(_.keys(rgbmap)[0], "abc");
-            // Hack to check that the values here are approximately right.
-            // See https://stackoverflow.com/a/12830454/10730311 for details.
-            equal(rgbmap.abc[0].toFixed(2), 0.89);
-            equal(rgbmap.abc[1].toFixed(2), 0.1);
-            equal(rgbmap.abc[2].toFixed(2), 0.11);
+
+            equal(rgbmap.abc, 1841892);
 
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 1);
@@ -297,9 +311,7 @@ require([
             rgbmap = colorer.getMapRGB();
             equal(_.keys(rgbmap).length, 1);
             equal(_.keys(rgbmap)[0], "abc");
-            equal(rgbmap.abc[0].toFixed(2), 0.27);
-            equal(rgbmap.abc[1].toFixed(2), 0.0);
-            equal(rgbmap.abc[2].toFixed(2), 0.33);
+            equal(rgbmap.abc, 5505348);
 
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 1);
@@ -461,48 +473,27 @@ require([
         });
         test("Test Colorer.hex2RGB", function () {
             // Red
-            deepEqual(Colorer.hex2RGB("#ff0000"), [1, 0, 0]);
-            deepEqual(Colorer.hex2RGB("#f00"), [1, 0, 0]);
+            deepEqual(Colorer.hex2RGB("#ff0000"), 255);
+            deepEqual(Colorer.hex2RGB("#f00"), 255);
             // Green
-            deepEqual(Colorer.hex2RGB("#00ff00"), [0, 1, 0]);
-            deepEqual(Colorer.hex2RGB("#0f0"), [0, 1, 0]);
+            deepEqual(Colorer.hex2RGB("#00ff00"), 65280);
+            deepEqual(Colorer.hex2RGB("#0f0"), 65280);
             // Blue
-            deepEqual(Colorer.hex2RGB("#0000ff"), [0, 0, 1]);
-            deepEqual(Colorer.hex2RGB("#00f"), [0, 0, 1]);
+            deepEqual(Colorer.hex2RGB("#0000ff"), 16711680);
+            deepEqual(Colorer.hex2RGB("#00f"), 16711680);
             // Ugly fuchsia
-            deepEqual(Colorer.hex2RGB("#f0f"), [1, 0, 1]);
+            deepEqual(Colorer.hex2RGB("#f0f"), 16711935);
             // Black
-            deepEqual(Colorer.hex2RGB("#000"), [0, 0, 0]);
-            deepEqual(Colorer.hex2RGB("#000000"), [0, 0, 0]);
+            deepEqual(Colorer.hex2RGB("#000"), 0);
+            deepEqual(Colorer.hex2RGB("#000000"), 0);
             // White
-            deepEqual(Colorer.hex2RGB("#fff"), [1, 1, 1]);
-            deepEqual(Colorer.hex2RGB("#ffffff"), [1, 1, 1]);
+            deepEqual(Colorer.hex2RGB("#fff"), 16777215);
+            deepEqual(Colorer.hex2RGB("#ffffff"), 16777215);
 
-            // For checking less "easy" colors, we round off both
-            // the observed and expected color channels to a reasonable
-            // precision (4 places after the decimal point).
-            // For reference, Chroma.js' docs -- when showing GL color arrays
-            // -- only seem to use 2 places after the decimal point, so this
-            // should be fine.
-            var checkColorApprox = function (obsColorArray, expColorArray) {
-                for (var i = 0; i < 3; i++) {
-                    var obsChannel = obsColorArray[0].toFixed(4);
-                    var expChannel = expColorArray[0].toFixed(4);
-                    deepEqual(obsChannel, expChannel);
-                }
-            };
             // QIIME orange (third value in the Classic QIIME Colors map)
-            checkColorApprox(Colorer.hex2RGB("#f27304"), [
-                0.949019,
-                0.45098,
-                0.015686,
-            ]);
+            equal(Colorer.hex2RGB("#f27304"), 291826);
             // QIIME purple (fifth color in the Classic QIIME Colors map)
-            checkColorApprox(Colorer.hex2RGB("#91278d"), [
-                0.568627,
-                0.152941,
-                0.552941,
-            ]);
+            equal(Colorer.hex2RGB("#91278d"), 9250705);
         });
         test("Test Colorer.getGradientSVG (all numeric values)", function () {
             var eles = ["0", "1", "2", "3", "4"];

@@ -136,8 +136,8 @@ define([
         // next to each other).
         this.useBorders = false;
 
-        // Borders (when enabled) default to white. (This is an RGB array.)
-        this.borderColor = [1, 1, 1];
+        // Borders (when enabled) default to white. (This is an RGB number.)
+        this.borderColor = Colorer.rgbToFloat([255, 255, 255]);
 
         // ... and to having a length of whatever the default barplot layer
         // length divided by 2 is :)
@@ -264,17 +264,12 @@ define([
     BarplotPanel.prototype.initBorderOptions = function () {
         var scope = this;
 
-        // this.borderColor is always a RGB array, for the sake of everyone's
+        // this.borderColor is always a RGB number, for the sake of everyone's
         // sanity. However, spectrum requires that the specified color is a hex
         // string: so we have to convert it to hex first here (only to later
         // convert it back to RGB on change events). Eesh!
-        // A SILLY NOTE: Apparently chroma.gl() modifies the input RGB array if
-        // you pass it in directly, converting it into a weird thing that
-        // is represented in the browser console as "(4) [255, 255, 255,
-        // undefined, _clipped: false, _unclipped: Array(3)]". Unpacking the
-        // input array using ... (as done here with this.borderColor) seems to
-        // avoid this problem.
-        var startingColor = chroma.gl(...this.borderColor).hex();
+        var borderColor = Colorer.unpackColor(this.borderColor);
+        var startingColor = chroma.gl(...borderColor).hex();
 
         $(this.borderColorPicker).spectrum({
             color: startingColor,
