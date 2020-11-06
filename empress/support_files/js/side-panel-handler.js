@@ -574,24 +574,22 @@ define(["underscore", "Colorer", "util", "Commands"], function (
             scope.fUpdateBtn.classList.add("hidden");
 
             // this came from colorMethodName
-            let colBy = scope.fSel.value;
-            let col = scope.fColor.value;
-            let coloringMethod = scope.fMethodChk.checked ? "tip" : "all";
-            let reverse = scope.fReverseColor.checked;
-            let collapseChecked = scope.fCollapseCladesChk.checked;
-            let lw = util.parseAndValidateNum(scope.fLineWidth);
+            var colBy = scope.fSel.value;
+            var col = scope.fColor.value;
+            var coloringMethod = scope.fMethodChk.checked ? "tip" : "all";
+            var reverse = scope.fReverseColor.checked;
+            var collapseChecked = scope.fCollapseCladesChk.checked;
+            var lw = util.parseAndValidateNum(scope.fLineWidth);
 
-            let command = new Commands.ColorFeatureTreeCommand({
-                empress: scope.empress,
+            var command = new Commands.ColorByFeatureMetadataPipeline({
                 collapseClades: collapseChecked,
                 lineWidth: lw,
-                colBy: colBy,
-                col: col,
+                colorBy: colBy,
+                colorMapName: col,
                 coloringMethod: coloringMethod,
-                reverse: reverse,
+                reverseColorMap: reverse,
             });
-            scope.commandManager.push(command);
-            scope.commandManager.executeAll();
+            scope.commandManager.pushAndExecuteAll(command);
         };
 
         this.fCollapseCladesChk.onclick = function () {
