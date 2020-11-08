@@ -1329,8 +1329,9 @@ define([
      * since the root is (0, 0) so we can think of the circular layout in terms
      * of polar coordinates).
      *
-     * This function doesn't return anything; its only effect is updating
-     * this._maxDisplacement.
+     * This function doesn't return anything; its only effects are updating
+     * this._maxDisplacement and updating this._barplotUnit (which is
+     * proportional to the max displacement).
      *
      * If the current layout does not support barplots, then
      * this._maxDisplacement is set to null.
@@ -1338,6 +1339,41 @@ define([
     Empress.prototype._computeMaxDisplacement = function () {
         var maxD = -Infinity;
         var compFunc;
+        // The purpose of this variable is to make barplots have effectively
+        // the same "thickness" from the user's perspective, proportional to
+        // the tree's "thickness" (regardless of the layout).
+        //
+        // In the rectangular layout, this is set to 1, so that 100 barplot
+        // units (the default length for all barplot layers, as of writing) is
+        // 1/10th of the max displacement.
+        //
+        // Total tree width = 10
+        //  __________
+        // |   _       | |
+        // |--|_       | |
+        // |__         | |
+        //
+        // In the circular layout, the tree looks twice as "thick," because the
+        // max displacement is only the radius of the circle:
+        //
+        // Total tree diameter = 20
+        //
+        //          |
+        //       +--+
+        //      / \
+        //     /   \
+        //    -+    +----------
+        //          |
+        //          |
+        //
+        // (... I don't know how to draw a circle of barplots around that in
+        // ASCII art, but please feel free to imagine it :P)
+        //
+        // Anyway, to compensate for this, we use a factor of 2 for the
+        // circular layout to make the barplots twice as thick (and therefore
+        // scale with the tree diameter). I'm not 100% sure that this is the
+        // best way to handle this problem, but it looks good enough and the
+        // lengths are configurable anyway so I don't think it matters much.
         var layoutFactor;
         if (this._currentLayout === "Rectangular") {
             compFunc = "_getMaxOfXAndNumber";
