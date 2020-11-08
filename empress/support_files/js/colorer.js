@@ -395,6 +395,19 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     };
 
     /**
+     * Converts an RGB color array to a GL array.
+     *
+     * @param {Array} rgbArray An array of the format [R, G, B], where each
+     *                         element is in the range [0, 255].
+     * @return {Array} glArray An array of the format [R, G, B], where each
+     *                         element is in the range [0, 1].
+     */
+    Colorer.rgb2gl = function (rgbArray) {
+        // The slice() removes the 4th element, an alpha channel.
+        return chroma(rgbArray).gl().slice(0, 3);
+    };
+
+    /**
      * Uncompress a RGB color encoded as a float (eg the output of rgbToFloat).
      * This is the same function found in the WebGl shaders.
      * However, functions in WebGl shaders cannot be called by js functions and
@@ -459,10 +472,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * @classmethod
      */
     Colorer.hex2RGB = function (hexString) {
-        // chroma(hexString).gl() returns an array with four components (RGBA
-        // instead of RGB). The slice() here strips off the final (alpha)
-        // element, which causes problems with Empress' drawing code.
-        var rgb = chroma(hexString).rgb().slice(0, 3);
+        var rgb = chroma(hexString).rgb();
         return Colorer.rgbToFloat(rgb);
     };
 

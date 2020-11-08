@@ -1983,8 +1983,13 @@ define([
         // we can just increase the displacement and leave it at that.
         // (This works out very well if this is the "outermost" border -- then
         // we really don't need to do anything.)
-        if (borderColor === Colorer.rgbToFloat(this._drawer.CLR_COL)) {
+        if (borderColor === Colorer.rgbToFloat(this._drawer.CLR_COL_RGB)) {
+            console.log("Freebie");
             return maxD;
+        } else {
+            console.log('bc', borderColor);
+            console.log('cc', this._drawer.CLR_COL_RGB);
+            console.log('oof');
         }
         // ... Otherwise, we actually have to go and create bars
         var halfyrscf, halfAngleRange;
