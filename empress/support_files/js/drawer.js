@@ -1,4 +1,9 @@
-define(["underscore", "glMatrix", "Camera", "Colorer"], function (_, gl, Camera, Colorer) {
+define(["underscore", "glMatrix", "Camera", "Colorer"], function (
+    _,
+    gl,
+    Camera,
+    Colorer
+) {
     //  Shaders used in Drawer
     var vertShaderTxt = [
         "precision mediump float;",

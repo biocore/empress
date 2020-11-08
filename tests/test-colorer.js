@@ -495,6 +495,20 @@ require([
             // QIIME purple (fifth color in the Classic QIIME Colors map)
             equal(Colorer.hex2RGB("#91278d"), 9250705);
         });
+        test("Test Colorer.rgb2gl", function () {
+            UtilitiesForTesting.approxDeepEqualMulti(
+                Colorer.rgb2gl([255, 255, 255]),
+                [1, 1, 1]
+            );
+            UtilitiesForTesting.approxDeepEqualMulti(
+                Colorer.rgb2gl([0, 0, 0]),
+                [0, 0, 0]
+            );
+            UtilitiesForTesting.approxDeepEqualMulti(
+                Colorer.rgb2gl([64, 64, 64]),
+                [0.25098, 0.25098, 0.25098]
+            );
+        });
         test("Test Colorer.getGradientInfo (just numeric values)", function () {
             var eles = ["0", "1", "2", "3", "4"];
             var colorer = new Colorer("Viridis", eles, true);
