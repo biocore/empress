@@ -223,13 +223,24 @@ define([
      *                   otherwise
      */
     BarplotPanel.prototype.updateLayoutAvailability = function (layout) {
-        if (_.contains(BarplotPanel.SUPPORTED_LAYOUTS, layout)) {
+        if (this.isLayoutSupported(layout)) {
             this.markAvailable();
             return true;
         } else {
             this.markUnavailable();
             return false;
         }
+    };
+
+    /**
+     * Returns true if a given layout supports barplots, false otherwise.
+     *
+     * @param {String} layout Name of a layout (e.g. "Rectangular", "Circular",
+     *                        "Unrooted")
+     * @return {boolean} whether or not this layout supports barplots
+     */
+    BarplotPanel.prototype.isLayoutSupported = function (layout) {
+        return _.contains(BarplotPanel.SUPPORTED_LAYOUTS, layout);
     };
 
     /**

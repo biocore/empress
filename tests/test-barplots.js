@@ -5,7 +5,16 @@ require([
     "Empress",
     "BarplotLayer",
     "UtilitiesForTesting",
-], function ($, _, spectrum, Empress, BarplotLayer, UtilitiesForTesting) {
+    "Colorer",
+], function (
+    $,
+    _,
+    spectrum,
+    Empress,
+    BarplotLayer,
+    UtilitiesForTesting,
+    Colorer
+) {
     module("Barplots", {
         setup: function () {
             // Clear any prior layer HTML stuff so as to not mess up other
@@ -309,6 +318,43 @@ require([
         equal(layer1.colorBySMColorMap, "discrete-coloring-qiime");
         notOk(layer1.colorBySMColorReverse);
         equal(layer1.lengthSM, BarplotLayer.DEFAULT_LENGTH);
+    });
+    test("Empress.getBarplotData() throws error if layout doesn't support barplots", function () {
+        var empress = this.initTestEmpress();
+        empress._barplotPanel.addLayer();
+        throws(function () {
+            empress.getBarplotData();
+        }, /Non-barplot-supporting layout 'Unrooted' in use./);
+    });
+    test('"Freebies": barplot borders aren\'t drawn when the border color matches the background color', function () {
+        var empress = this.initTestEmpress();
+        empress.initialize();
+        empress.updateLayout("Rectangular");
+        // By default, the border color should default to the background color
+        // -- so we get freebies by default.
+        empress._barplotPanel.borderCheckbox.click();
+        var data = empress.getBarplotData(empress.getBarplotLayers());
+        // For each bar in the rectangular layout, six (x, y, rgb) groups are
+        // added to the coords array for each tip's bar: this is due to how
+        // Empress._addRectangularBarCoords() / _addTriangleCoords() works.
+        // Since there are four tips in the test tree, we then expect to see
+        // exactly 72 values in the coords array:    4  *     6      *    3.
+        //                                        (tips) (xyr groups) (x,y,rgb)
+        deepEqual(data.coords.length, 72);
+
+        // When we change the barplot border color, we should no longer get
+        // freebies -- now we add on two full extra bars for each tip.
+        empress._barplotPanel.borderColor = Colorer.rgbToFloat([0, 0, 0]);
+        var data2 = empress.getBarplotData(empress.getBarplotLayers());
+        // Each barplot border layer takes up the same amount of elements in
+        // coords as a "normal" layer. So we should see 72 * 3 = 216 elements.
+        deepEqual(data2.coords.length, 216);
+
+        // Check that resetting the border color to white re-enables "freebies"
+        // (...less stuff to draw.)
+        empress._barplotPanel.borderColor = Colorer.rgbToFloat([255, 255, 255]);
+        var data3 = empress.getBarplotData(empress.getBarplotLayers());
+        deepEqual(data3.coords.length, 72);
     });
     // TODO: Test that interacting with various elements of the BarplotLayer UI
     // also changes the BarplotLayer state. Testing this shouldn't really be

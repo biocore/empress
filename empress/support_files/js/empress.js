@@ -1449,6 +1449,14 @@ define([
     Empress.prototype.getBarplotData = function (layers) {
         var scope = this;
 
+        if (!this._barplotPanel.isLayoutSupported(this._currentLayout)) {
+            throw new Error(
+                "Non-barplot-supporting layout '" +
+                    this._currentLayout +
+                    "' in use."
+            );
+        }
+
         // The main thing that will be returned by this function
         var barplotBuffer = [];
 
@@ -1662,9 +1670,7 @@ define([
                 // NOTE: In this function and in addFMBarplotLayerCoords(), we
                 // don't bother checking if scope._currentLayout is not
                 // Rectangular / Circular. This should already have been
-                // checked for in drawBarplots(), so we can safely assume that
-                // we're in one of the supported layouts. (If not, it's the
-                // caller's problem.)
+                // checked for by the caller.
                 angleInfo = scope._getNodeAngleInfo(node, halfAngleRange);
             }
 
