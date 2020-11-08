@@ -63,6 +63,13 @@ define([
         this.lengthLegend = null;
 
         this.fmAvailable = this.fmCols.length > 0;
+        this.smAvailable = this.smCols.length > 0;
+
+        // If neither feature nor sample metadata information are available,
+        // barplots are not possible.
+        if (!this.fmAvailable && !this.smAvailable) {
+            throw new Error("No feature or sample metadata columns available");
+        }
 
         // This should be "fm" if the barplot is for feature metadata; "sm" if
         // the barplot is for sample metadata. (The default is to use feature
@@ -87,6 +94,7 @@ define([
         this.colorByFM = false;
         this.colorByFMField = null;
         this.colorByFMColorMap = null;
+        this.colorByFMColorReverse = false;
         this.colorByFMContinuous = false;
         this.colorByFMColorMapDiscrete = true;
         this.defaultLength = BarplotLayer.DEFAULT_LENGTH;
@@ -98,6 +106,7 @@ define([
         // Various properties of the barplot layer state for sample metadata
         this.colorBySMField = null;
         this.colorBySMColorMap = null;
+        this.colorBySMColorReverse = false;
         this.lengthSM = BarplotLayer.DEFAULT_LENGTH;
 
         // Initialize the HTML elements of this barplot layer
@@ -133,14 +142,15 @@ define([
         // Add UI elements for switching between feature and sample metadata
         // barplots for this layer (only if feature metadata is available;
         // otherwise, things will just default to sample metadata barplots.)
-        if (this.fmAvailable) {
+        var fmBtn, smBtn;
+        if (this.fmAvailable && this.smAvailable) {
             var metadataChoiceP = this.layerDiv.appendChild(
                 document.createElement("p")
             );
-            var fmBtn = metadataChoiceP.appendChild(
+            fmBtn = metadataChoiceP.appendChild(
                 document.createElement("button")
             );
-            var smBtn = metadataChoiceP.appendChild(
+            smBtn = metadataChoiceP.appendChild(
                 document.createElement("button")
             );
             fmBtn.innerText = "Feature Metadata";
@@ -151,14 +161,23 @@ define([
             // Since we default to feature metadata barplot layers, we mark the
             // feature metadata button as "selected" (a.k.a. we darken it a bit)
             fmBtn.classList.add("selected-metadata-choice");
+        }
 
-            // We delay calling initFMDiv() (and initSMDiv(), although that
-            // isn't in this block because it doesn't depend on feature
-            // metadata being available) until after we create the
-            // "type switching" choice buttons above. This is so that the
-            // buttons are placed above the FM / SM divs in the page layout.
+        // We delay calling initFMDiv() / initSMDiv() until after we create the
+        // "type switching" choice buttons above. This is so that the
+        // buttons are placed above the FM / SM divs in the page layout.
+        if (this.fmAvailable) {
             this.initFMDiv();
+        }
+        if (this.smAvailable) {
+            this.initSMDiv();
+        }
+        this.initLegendDiv();
 
+        // We don't set the callbacks until fmDiv / smDiv are created, although
+        // I doubt anyone would be able to click on these buttons fast enough
+        // to break things anyway
+        if (this.fmAvailable && this.smAvailable) {
             fmBtn.onclick = function () {
                 if (scope.barplotType !== "fm") {
                     scope.smDiv.classList.add("hidden");
@@ -178,9 +197,6 @@ define([
                 }
             };
         }
-
-        this.initSMDiv();
-        this.initLegendDiv();
         // Add a row of UI elements that supports removing this layer
         var rmP = this.layerDiv.appendChild(document.createElement("p"));
         var rmLbl = rmP.appendChild(document.createElement("label"));
@@ -230,7 +246,7 @@ define([
             color: this.initialDefaultColorHex,
             change: function (newColor) {
                 // To my knowledge, there isn't a straightforward way of
-                // getting an RGB array out of the "TinyColor" values passed in
+                // getting an RGB number out of the "TinyColor" values passed in
                 // by Spectrum: see
                 // https://bgrins.github.io/spectrum#details-acceptedColorInputs
                 scope.defaultColor = Colorer.hex2RGB(newColor.toHexString());
@@ -296,6 +312,24 @@ define([
             "barplot-layer-" + this.uniqueNum + "-fm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
+        // Add a row for choosing whether the color scale should
+        // be reversed
+        var reverseColormapP = colorDetailsDiv.appendChild(
+            document.createElement("p")
+        );
+        var reverseColormapLbl = reverseColormapP.appendChild(
+            document.createElement("label")
+        );
+        reverseColormapLbl.innerText = "Reverse Color Map";
+        var reverseColormapCheckbox = reverseColormapP.appendChild(
+            document.createElement("input")
+        );
+        reverseColormapCheckbox.id =
+            "barplot-layer-" + this.uniqueNum + "-fmcolor-reverse-chk";
+        reverseColormapCheckbox.setAttribute("type", "checkbox");
+        reverseColormapCheckbox.classList.add("empress-input");
+        reverseColormapLbl.setAttribute("for", reverseColormapCheckbox.id);
+
         // Add a row for choosing the scale type (i.e. whether to use
         // continuous coloring or not)
         // This mimics Emperor's "Continuous values" checkbox
@@ -322,6 +356,7 @@ define([
         // feature metadata field for coloring is the first in the selector)
         this.colorByFMField = chgColorFMFieldSelector.value;
         this.colorByFMColorMap = colormapSelector.value;
+        this.colorByFMColorReverse = reverseColormapCheckbox.checked;
         // Alter visibility of the color-changing details when the "Color
         // by..." checkbox is clicked
         $(chgColorCheckbox).change(function () {
@@ -331,6 +366,7 @@ define([
                 scope.colorByFM = true;
                 scope.colorByFMField = chgColorFMFieldSelector.value;
                 scope.colorByFMColorMap = colormapSelector.value;
+                scope.colorByFMColorReverse = reverseColormapCheckbox.checked;
                 scope.colorByFMContinuous = continuousValCheckbox.checked;
                 // Hide the default color row (since default colors
                 // aren't used when f.m. coloring is enabled)
@@ -362,6 +398,9 @@ define([
                 continuousValP.classList.remove("hidden");
                 scope.colorByFMColorMapDiscrete = false;
             }
+        });
+        $(reverseColormapCheckbox).change(function () {
+            scope.colorByFMColorReverse = reverseColormapCheckbox.checked;
         });
         $(continuousValCheckbox).change(function () {
             scope.colorByFMContinuous = continuousValCheckbox.checked;
@@ -537,6 +576,24 @@ define([
             "barplot-layer-" + this.uniqueNum + "-sm-colormap";
         colormapLbl.setAttribute("for", colormapSelector.id);
 
+        // Add a row for choosing whether the color scale should
+        // be reversed
+        var reverseColormapP = this.smDiv.appendChild(
+            document.createElement("p")
+        );
+        var reverseColormapLbl = reverseColormapP.appendChild(
+            document.createElement("label")
+        );
+        reverseColormapLbl.innerText = "Reverse Color Map";
+        var reverseColormapCheckbox = reverseColormapP.appendChild(
+            document.createElement("input")
+        );
+        reverseColormapCheckbox.id =
+            "barplot-layer-" + this.uniqueNum + "-smcolor-reverse-chk";
+        reverseColormapCheckbox.setAttribute("type", "checkbox");
+        reverseColormapCheckbox.classList.add("empress-input");
+        reverseColormapLbl.setAttribute("for", reverseColormapCheckbox.id);
+
         var lenP = this.smDiv.appendChild(document.createElement("p"));
         var lenLbl = lenP.appendChild(document.createElement("label"));
         lenLbl.innerText = "Length";
@@ -551,11 +608,15 @@ define([
         // TODO initialize defaults more sanely
         this.colorBySMField = chgFieldSMFieldSelector.value;
         this.colorBySMColorMap = colormapSelector.value;
+        this.colorBySMColorReverse = reverseColormapCheckbox.checked;
         $(chgFieldSMFieldSelector).change(function () {
             scope.colorBySMField = chgFieldSMFieldSelector.value;
         });
         $(colormapSelector).change(function () {
             scope.colorBySMColorMap = colormapSelector.value;
+        });
+        $(reverseColormapCheckbox).change(function () {
+            scope.colorBySMColorReverse = reverseColormapCheckbox.checked;
         });
         $(lenInput).change(function () {
             scope.lengthSM = util.parseAndValidateNum(
@@ -617,8 +678,7 @@ define([
             this.colorByFMContinuous &&
             !this.colorByFMColorMapDiscrete
         ) {
-            var gradInfo = colorer.getGradientSVG();
-            this.colorLegend.addContinuousKey(title, gradInfo[0], gradInfo[1]);
+            this.colorLegend.addContinuousKey(title, colorer.getGradientInfo());
         } else {
             this.colorLegend.addCategoricalKey(title, colorer.getMapHex());
         }
@@ -682,6 +742,28 @@ define([
      */
     BarplotLayer.prototype.clearLengthLegend = function () {
         this.lengthLegend.clear();
+    };
+
+    /**
+     * Returns an Array containing all of the active legends in this layer.
+     *
+     * Currently, this just returns the color legend and length legends
+     * (assuming both are in use), since those are the only legends barplot
+     * layers own. However, if more sorts of encodings could be used at the
+     * same time (e.g. encoding bars' color, length, and ... opacity, I
+     * guess?), then this Array should be expanded.
+     *
+     * Inactive legends (e.g. the length legend, if no length encoding is in
+     * effect) will be excluded from the Array. However, if all legends are
+     * active, the order in the Array will always be color then length.
+     *
+     * @return {Array} Array of Legend objects
+     */
+    BarplotLayer.prototype.getLegends = function () {
+        var containedLegends = [this.colorLegend, this.lengthLegend];
+        return _.filter(containedLegends, function (legend) {
+            return legend.isActive();
+        });
     };
 
     /**

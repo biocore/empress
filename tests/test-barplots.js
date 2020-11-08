@@ -1,12 +1,19 @@
 require([
     "jquery",
     "underscore",
+    "spectrum",
     "Empress",
     "BarplotLayer",
     "UtilitiesForTesting",
-], function ($, _, Empress, BarplotLayer, UtilitiesForTesting) {
+], function ($, _, spectrum, Empress, BarplotLayer, UtilitiesForTesting) {
     module("Barplots", {
         setup: function () {
+            // Clear any prior layer HTML stuff so as to not mess up other
+            // barplot tests. This is a gross solution; we need to do this
+            // because the barplot panel doesn't have any logic to clear any
+            // existing HTML when it's created, since only one barplot panel
+            // should be created during the normal usage of Empress.
+            $("#barplot-layer-container").empty();
             this.testData = UtilitiesForTesting.getTestData();
             this.initTestEmpress = function () {
                 return new Empress(
@@ -56,6 +63,35 @@ require([
             empress._barplotPanel.unavailContent.classList.contains("hidden")
         );
     });
+    test("Barplot panel border option initialization (incl. initBorderOptions)", function () {
+        var empress = this.initTestEmpress();
+
+        deepEqual(empress._barplotPanel.borderColor, 16777215);
+
+        // Color picker should correctly default to white
+        var obsColor = $(empress._barplotPanel.borderColorPicker)
+            .spectrum("get")
+            .toHexString();
+        deepEqual(obsColor, "#ffffff");
+
+        // Test that the border length defaults to half the default barplot
+        // layer length
+        var expBorderLen = BarplotLayer.DEFAULT_LENGTH / 2;
+        deepEqual(empress._barplotPanel.borderLength, expBorderLen);
+
+        // Test that the border length input's default value and minimum value
+        // are set properly
+        // (The +s convert things to numbers, since value / getAttribute()
+        // seem to just provide Strings [e.g. "50"].)
+        deepEqual(
+            +empress._barplotPanel.borderLengthInput.value,
+            +expBorderLen
+        );
+        deepEqual(
+            +empress._barplotPanel.borderLengthInput.getAttribute("min"),
+            +BarplotLayer.MIN_LENGTH
+        );
+    });
     test("Barplot layers default to feature metadata layers, but only if feature metadata is available", function () {
         // (Sample metadata should always be available. (... That is, until we
         // support visualizing a tree without table / sample metadata info.)
@@ -71,6 +107,83 @@ require([
             this.testData.canvas
         );
         equal(empressWithNoFM._barplotPanel.layers[0].barplotType, "sm");
+    });
+    test("No barplot panel created if Empress has no feature or sample metadata", function () {
+        var empWithNoMetadata = new Empress(
+            this.testData.tree,
+            null,
+            [],
+            {},
+            {},
+            this.testData.canvas
+        );
+        equal(empWithNoMetadata._barplotPanel, null);
+        var empWithFM = new Empress(
+            this.testData.tree,
+            null,
+            this.testData.fmCols,
+            this.testData.tm,
+            this.testData.im,
+            this.testData.canvas
+        );
+        notEqual(empWithFM._barplotPanel, null);
+        var empWithSM = new Empress(
+            this.testData.tree,
+            this.testData.biom,
+            [],
+            {},
+            {},
+            this.testData.canvas
+        );
+        notEqual(empWithSM._barplotPanel, null);
+    });
+    test("Barplot layers only have metadata toggling buttons if Empress has both feature and sample metadata", function () {
+        var empress = this.initTestEmpress();
+        // In the one layer in the barplot panel, there should be a row of
+        // feature / sample metadata toggling buttons (one of which should be
+        // selected). We use the presence of this selected button's class to
+        // check that these toggling buttons exist; this is kind of hacky, but
+        // it's a quick way to do this.
+        equal(
+            $(empress._barplotPanel.layerContainer).find(
+                ".selected-metadata-choice"
+            ).length,
+            1
+        );
+        $("#barplot-layer-container").empty();
+
+        // If only one type of metadata was provided to Empress, then don't
+        // bother showing the metadata toggling buttons.
+        var empWithJustFM = new Empress(
+            this.testData.tree,
+            null,
+            this.testData.fmCols,
+            this.testData.tm,
+            this.testData.im,
+            this.testData.canvas
+        );
+        equal(
+            $(empWithJustFM._barplotPanel.layerContainer).find(
+                ".selected-metadata-choice"
+            ).length,
+            0
+        );
+        $("#barplot-layer-container").empty();
+
+        var empWithJustSM = new Empress(
+            this.testData.tree,
+            this.testData.biom,
+            [],
+            {},
+            {},
+            this.testData.canvas
+        );
+        equal(
+            $(empWithJustSM._barplotPanel.layerContainer).find(
+                ".selected-metadata-choice"
+            ).length,
+            0
+        );
     });
     test("BarplotPanelHandler.addLayer", function () {
         var scope = this;
@@ -170,11 +283,7 @@ require([
         // Default color (for feature metadata barplots) defaults to red,
         // a.k.a. the first "Classic QIIME Colors" color
         equal(layer1.initialDefaultColorHex, "#ff0000");
-        // (this is a hacky way of checking each element of a RGB triple; for
-        // some reason QUnit complains when trying to compare arrays)
-        equal(layer1.defaultColor[0], 1);
-        equal(layer1.defaultColor[1], 0);
-        equal(layer1.defaultColor[2], 0);
+        equal(layer1.defaultColor, 255);
 
         // Default length defaults to, well, DEFAULT_LENGTH
         equal(layer1.defaultLength, BarplotLayer.DEFAULT_LENGTH);
@@ -185,6 +294,7 @@ require([
         notOk(layer1.colorByFM);
         equal(layer1.colorByFMField, empress._barplotPanel.fmCols[0]);
         equal(layer1.colorByFMColorMap, "discrete-coloring-qiime");
+        notOk(layer1.colorByFMColorReverse);
         notOk(layer1.colorByFMContinuous);
         ok(layer1.colorByFMColorMapDiscrete);
 
@@ -197,6 +307,7 @@ require([
         // Check sample metadata barplot defaults
         equal(layer1.colorBySMField, empress._barplotPanel.smCols[0]);
         equal(layer1.colorBySMColorMap, "discrete-coloring-qiime");
+        notOk(layer1.colorBySMColorReverse);
         equal(layer1.lengthSM, BarplotLayer.DEFAULT_LENGTH);
     });
     // TODO: Test that interacting with various elements of the BarplotLayer UI

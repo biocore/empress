@@ -19,6 +19,7 @@ before_install:
   - travis_retry conda env create -n qiime2-dev --file qiime2-latest-py36-linux-conda.yml
   - source activate qiime2-dev
 install:
+  - pip uninstall emperor --yes
   - pip install -e .[all] --verbose
   - npm install -g qunit-puppeteer jshint prettier@2.0.5
 script:
@@ -36,4 +37,10 @@ after_success:
   - if [ ${TRAVIS_PULL_REQUEST} == "false" ]; then export TRAVIS_PULL_REQUEST=${TRAVIS_BRANCH} ; fi
   - echo ${TRAVIS_PULL_REQUEST}
   # now we can upload the files to mchelper
-  - curl -POST -F "files[]=@${PWD}/docs/moving-pictures/empress-tree.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv" http://mchelper.ucsd.edu:8888/uploads/empress/${TRAVIS_PULL_REQUEST}/
+  - >
+    curl -POST -F "files[]=@${PWD}/docs/moving-pictures/plain.qzv"
+    -F "files[]=@${PWD}/docs/moving-pictures/just-fm.qzv"
+    -F "files[]=@${PWD}/docs/moving-pictures/empress-tree.qzv"
+    -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv"
+    -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv" 
+    http://mchelper.ucsd.edu:8888/uploads/empress/${TRAVIS_PULL_REQUEST}/

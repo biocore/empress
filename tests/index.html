@@ -24,6 +24,9 @@
   <!-- Barplot GUI elements, which are automatically accessed when initializing
        BarplotPanel (which is done from within Empress).
        We use "display: none;" to avoid having this junk take up any space.
+       (For reference, I've literally just copied in the contents of
+       barplot-available-content in the side-panel.html template here and
+       removed comments.)
   -->
   <div id="barplot-available-content" style="display: none;">
     <p>
@@ -33,12 +36,31 @@
     <div id="barplot-layer-container" class="hidden">
       <hr />
     </div>
-    <p id="barplot-add-options" class="hidden">
-      <label for="barplot-add-btn">Add another layer</label>
-      <button id="barplot-add-btn">+</button>
-    </p>
-    <p>
-      <button id="barplot-update" class="hidden">Update</button>
+    <div id="barplot-add-options" class="hidden">
+      <p>
+        <label for="barplot-add-btn">Add another layer</label>
+        <button id="barplot-add-btn">+</button>
+      </p>
+    </div>
+    <div id="barplot-border-content" class="hidden">
+      <p>
+        <label for="barplot-border-chk">Add a border around barplot layers?</label>
+        <input id="barplot-border-chk" type="checkbox" class="empress-input">
+      </p>
+      <div id="barplot-border-options" class="hidden">
+        <p>
+          <label for="barplot-border-color">Border color</label>
+          <input id="barplot-border-color" type="text">
+        </p>
+        <p>
+          <label for="barplot-border-length">Length</label>
+          <input id="barplot-border-length" type="number" class="empress-input">
+        </p>
+      </div>
+      <hr />
+    </div>
+    <p id="barplot-update-options" class="hidden">
+      <button id="barplot-update">Update</button>
     </p>
   </div>
   <div id="barplot-unavailable-content" style="display: none;">
@@ -46,6 +68,48 @@
       Barplots are currently only supported in the rectangular layout. Please
       change the layout in order to use barplots.
     </p>
+  </div>
+
+  <!-- Table with tree stats; copy-pasted to here for same reasons as barplot
+       UI elements above
+  -->
+  <table style="margin: 0 auto; display: none;">
+    <tbody>
+      <tr>
+        <td class="header-cell" style="text-align: center;" colspan="2">Node counts</td>
+        <!-- Add padding between the two horizontally separated "halves" of the
+             table. Based on alternate option listed at
+             https://stackoverflow.com/a/11801090/10730311.
+        -->
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td class="header-cell" style="text-align: center;" colspan="2">Node lengths</td>
+      </tr>
+      <tr>
+        <td class="header-cell">Tips</td>
+        <td id="stats-tip-count"></td>
+        <td></td>
+        <td class="header-cell">Minimum</td>
+        <td id="stats-min-length"></td>
+      </tr>
+      <tr>
+        <td class="header-cell">Internal nodes</td>
+        <td id="stats-int-count"></td>
+        <td></td>
+        <td class="header-cell">Maximum</td>
+        <td id="stats-max-length"></td>
+      </tr>
+      <tr>
+        <td class="header-cell">Total</td>
+        <td id="stats-total-count"></td>
+        <td></td>
+        <td class="header-cell">Average</td>
+        <td id="stats-avg-length"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- The main legend; Empress gets a reference to this on initialization -->
+  <div id="legend-main" class="legend">
   </div>
 
   <!-- The tree canvas need for use in test-empress -->
@@ -114,6 +178,7 @@
           'CanvasEvents' : './support_files/js/canvas-events',
           'SelectedNodeMenu' : './support_files/js/select-node-menu',
           'LayoutsUtil' : './support_files/js/layouts-util',
+          'ExportUtil' : './support_files/js/export-util',
 
           /* test utility code */
           'UtilitiesForTesting' : './../tests/utilities-for-testing',
@@ -155,6 +220,7 @@
          'Empress',
          'Legend',
          'LayoutsUtil',
+         'ExportUtil',
          'UtilitiesForTesting',
          'testBPTree',
          'testByteTree',
@@ -192,6 +258,7 @@
           Empress,
           Legend,
           LayoutsUtil,
+          ExportUtil,
           UtilitiesForTesting,
           testBPTree,
           testByteTree,

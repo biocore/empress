@@ -7,6 +7,7 @@
 # ----------------------------------------------------------------------------
 
 import os
+import tempfile
 import unittest
 from qiime2 import Artifact, Metadata
 from qiime2.sdk import Results, Visualization
@@ -70,7 +71,8 @@ class TestIntegration(TestPluginBase):
         # Just for reference for anyone reading this, self.plugin is set upon
         # calling super().setUp() which looks at the "package" variable set
         # above
-        self.plot = self.plugin.visualizers["plot"]
+        self.community_plot = self.plugin.visualizers["community_plot"]
+        self.tree_plot = self.plugin.visualizers["tree_plot"]
 
         self.tree, self.table, self.md, self.fmd, _ = load_mp_data()
 
@@ -81,15 +83,91 @@ class TestIntegration(TestPluginBase):
         # during tearDown().
         self.output_path = os.path.join(PREFIX_DIR, "empress-tree.qzv")
 
-    def test_execution(self):
-        """Just checks that the visualizer at least runs without errors."""
-        self.result = self.plot(tree=self.tree, feature_table=self.table,
-                                sample_metadata=self.md,
-                                feature_metadata=self.fmd)
+    def _check_in_HTML(self, needle):
+        """Utility method: after a visualization has been generated, this
+        exports the visualization to a temporary directory and asserts that
+        a given string (needle) is present within the empress.html file.
+
+        Parameters
+        ----------
+        needle: str
+            Text to attempt to find in the generated empress.html file.
+
+        References
+        ----------
+        Use of tempfile.TemporaryDirectory() (for inspecting the HTML) based
+        on the q2-taxa visualizer tests:
+        https://github.com/qiime2/q2-taxa/blob/master/q2_taxa/tests/test_visualizer.py
+        """
+        with tempfile.TemporaryDirectory() as output_dir:
+            self.result.visualization.export_data(output_dir)
+            with open(os.path.join(output_dir, "empress.html"), "r") as efile:
+                empress_html = efile.read()
+                try:
+                    self.assertIn(needle, empress_html)
+                except AssertionError:
+                    # If the assertion fails, then let's still raise an error
+                    # -- but only include the needle in the error message,
+                    # because the default assertIn() error message includes all
+                    # of empress.html as well (which makes the error basically
+                    # unreadable without a lot of scrolling).
+                    raise AssertionError(
+                        '"{}" not in empress.html.'.format(needle)
+                    )
+
+    def test_community_plot_execution(self):
+        """Checks that the community plot visualizer (basic case) works."""
+        # 1. The visualizer shouldn't error out.
+        self.result = self.community_plot(
+            tree=self.tree,
+            feature_table=self.table,
+            sample_metadata=self.md,
+            feature_metadata=self.fmd
+        )
+        # 2. The visualizer should generate a result containing a
+        # visualization.
         self.assertIsInstance(self.result, Results)
         self.assertIsInstance(self.result.visualization, Visualization)
-        # TODO check details of viz more carefully (likely by digging into the
-        # index HTML of self.result.visualization, etc.)
+        # 3. Within this visualization's HTML, the "isCommunityPlot" JS flag
+        # variable should be set to true, indicating that we'll hide various
+        # parts of the UI that are only useful for sample metadata coloring /
+        # animations / etc.
+        self._check_in_HTML("var isCommunityPlot = true;")
+        self._check_in_HTML(
+            'var fmCols = ["Level 1", "Level 2", "Level 3", "Level 4", '
+            '"Level 5", "Level 6", "Level 7", "Confidence"];'
+        )
+
+    def test_community_plot_fails_if_table_and_sm_not_provided(self):
+        with self.assertRaisesRegex(
+            TypeError,
+            "missing 1 required positional argument: 'sample_metadata'"
+        ):
+            self.community_plot(tree=self.tree, feature_table=self.table)
+        with self.assertRaisesRegex(
+            TypeError,
+            "missing 1 required positional argument: 'feature_table'"
+        ):
+            self.community_plot(tree=self.tree, sample_metadata=self.md)
+
+    def test_tree_plot_execution_with_fm(self):
+        """Checks that tree plot visualizer runs without errors, given fm."""
+        self.result = self.tree_plot(tree=self.tree, feature_metadata=self.fmd)
+        self.assertIsInstance(self.result, Results)
+        self.assertIsInstance(self.result.visualization, Visualization)
+        self._check_in_HTML("var isCommunityPlot = false;")
+        self._check_in_HTML(
+            'var fmCols = ["Level 1", "Level 2", "Level 3", "Level 4", '
+            '"Level 5", "Level 6", "Level 7", "Confidence"];'
+        )
+
+    def test_tree_plot_execution_no_fm(self):
+        """Checks that tree plot visualizer runs without errors; just tree."""
+        self.result = self.tree_plot(tree=self.tree)
+        self.assertIsInstance(self.result, Results)
+        self.assertIsInstance(self.result.visualization, Visualization)
+        self._check_in_HTML("var isCommunityPlot = false;")
+        self._check_in_HTML("var fmCols = [];")
 
     def tearDown(self):
         super().tearDown()

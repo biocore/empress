@@ -203,32 +203,34 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
         });
 
         test("Test Circular Layout Arc Computation", function () {
-            var coords = this.empress.getCoords();
+            var coords = this.empress.getTreeCoords();
 
             // NOTE: all node numbers are in reference to the postorder position
             //      starting at 1.
             // check if line for node 1 is correct (tip)
             var node = 1;
-            equal(coords[(node - 1) * 10], -2); // start x position
-            equal(coords[(node - 1) * 10 + 1], 2); // start y position
-            equal(coords[(node - 1) * 10 + 5], -2); // end x position
-            equal(coords[(node - 1) * 10 + 6], 0); // end y position
+            equal(coords[node - 1], -2); // start x position
+            equal(coords[node - 1 + 1], 2); // start y position
+            equal(coords[node - 1 + 2], -2); // end x position
+            equal(coords[node - 1 + 3], 0); // end y position
 
             // check if line for node 3 is correct (internal)
             node = 3;
-            equal(coords[(node - 1) * 10], 0); // start x position
-            equal(coords[(node - 1) * 10 + 1], 1); // start y position
-            equal(coords[(node - 1) * 10 + 5], 0); // end x position
-            equal(coords[(node - 1) * 10 + 6], -1); // end y position
+            equal(coords[(node - 1) * 4], 0); // start x position
+            equal(coords[(node - 1) * 4 + 1], 1); // start y position
+            equal(coords[(node - 1) * 4 + 2], 0); // end x position
+            equal(coords[(node - 1) * 4 + 3], -1); // end y position
 
             // For the arc for node 3 start at (2,0) and ends at (-2, 0)
             // check if arc for node 3 is correct
-            ok(Math.abs(coords[30] - 2) < 1.0e-15); // start x arc position
-            ok(Math.abs(coords[31 - 0]) < 1.0e-15); //start y arc position
-            // prettier-ignore
-            ok(Math.abs(coords[625] - (-2)) < 1.0e-15); // end x arc position
-            ok(Math.abs(coords[626] - 0 < 1.0e-15)); // end y arc position
-            console.log(coords);
+            ok(Math.abs(coords[12] - 2) < 1.0e-15); // start x arc position
+            ok(Math.abs(coords[13]) < 1.0e-15); //start y arc position
+            // the arc for node 3 spans PI radians thus, the number of lines to
+            // approximate arc are 60*((radians spanned by arc) / PI) = 60
+            // the above calculation can be found at
+            // Empress._numSampToApproximate()
+            ok(Math.abs(coords[250] + 2) < 1.0e-15); // end arc x
+            ok(Math.abs(coords[251]) < 1.0e-15); //end arc y
         });
     });
 });

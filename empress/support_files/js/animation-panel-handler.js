@@ -16,6 +16,9 @@ define(["Colorer", "util"], function (Colorer, util) {
 
         // animation GUI components
         this.colorSelect = document.getElementById("animate-color-select");
+        this.reverseColorChk = document.getElementById(
+            "animate-color-reverse-chk"
+        );
         this.gradient = document.getElementById("animate-gradient");
         this.trajectory = document.getElementById("animate-trajectory");
         this.collapseChk = document.getElementById("animate-collapse-chk");
@@ -109,6 +112,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      */
     AnimationPanel.prototype._toggleSelects = function (disableStatus) {
         this.colorSelect.disabled = disableStatus;
+        this.reverseColorChk.disabled = disableStatus;
         this.gradient.disabled = disableStatus;
         this.trajectory.disabled = disableStatus;
     };
@@ -123,6 +127,7 @@ define(["Colorer", "util"], function (Colorer, util) {
     AnimationPanel.prototype.setEnabled = function (enabled) {
         var isDisabled = !enabled;
         this.colorSelect.disabled = isDisabled;
+        this.reverseColorChk.disabled = isDisabled;
         this.gradient.disabled = isDisabled;
         this.trajectory.disabled = isDisabled;
 
@@ -221,6 +226,7 @@ define(["Colorer", "util"], function (Colorer, util) {
             var gradient = scope.gradient.value;
             var trajectory = scope.trajectory.value;
             var cm = scope.colorSelect.value;
+            var reverse = scope.reverseColorChk.checked;
             var collapse = scope.collapseChk.checked;
             var lWidth = scope.lWidth.value;
 
@@ -230,7 +236,8 @@ define(["Colorer", "util"], function (Colorer, util) {
                 gradient,
                 cm,
                 collapse,
-                lWidth
+                lWidth,
+                reverse
             );
 
             // start animation

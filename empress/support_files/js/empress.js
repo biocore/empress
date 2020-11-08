@@ -6,9 +6,11 @@ define([
     "VectorOps",
     "CanvasEvents",
     "BarplotPanel",
+    "Legend",
     "util",
     "chroma",
     "LayoutsUtil",
+    "ExportUtil",
 ], function (
     _,
     Camera,
@@ -17,15 +19,20 @@ define([
     VectorOps,
     CanvasEvents,
     BarplotPanel,
+    Legend,
     util,
     chroma,
-    LayoutsUtil
+    LayoutsUtil,
+    ExportUtil
 ) {
     /**
      * @class EmpressTree
      *
-     * @param {BPTree} tree The phylogenetic tree
-     * @param {BIOMTable} biom The BIOM table used to color the tree
+     * @param {BPTree} tree The phylogenetic tree.
+     * @param {BIOMTable or null} biom The BIOM table used to color the tree.
+     *                                 If no table / sample metadata was passed
+     *                                 to Empress (i.e. using qiime empress
+     *                                 tree-plot), this should be null.
      * @param {Array} featureMetadataColumns Columns of the feature metadata.
      *                Note: The order of this array should match the order of
      *                      the arrays which are the values of tipMetadata and
@@ -33,11 +40,11 @@ define([
      *                      when generating an Empress visualization, this
      *                      parameter should be [] (and tipMetadata and
      *                      intMetadata should be {}s).
-     * @param {Object} tipMetadata Feature metadata for tips in the tree
+     * @param {Object} tipMetadata Feature metadata for tips in the tree.
      *                 Note: This should map tip names to an array of feature
      *                       metadata values. Each array should have the same
      *                       length as featureMetadataColumns.
-     * @param {Object} intMetadata Feature metadata for internal nodes in tree
+     * @param {Object} intMetadata Feature metadata for internal nodes in tree.
      *                 Note: Should be formatted analogously to tipMetadata.
      *                       Note that internal node names can be non-unique.
      * @param {Canvas} canvas The HTML canvas that the tree will be drawn on.
@@ -72,7 +79,7 @@ define([
          * @type {Array}
          * The default color of the tree
          */
-        this.DEFAULT_COLOR = [0.25, 0.25, 0.25];
+        this.DEFAULT_COLOR = Colorer.rgbToFloat([64, 64, 64]);
 
         /**
          * @type {BPTree}
@@ -84,9 +91,10 @@ define([
         /**
          * Used to index into _treeData
          * @type {Object}
+         * @private
          */
         this._tdToInd = {
-            // all nodes (non layout parameters)
+            // all nodes (non-layout parameters)
             color: 0,
             isColored: 1,
             visible: 2,
@@ -115,7 +123,7 @@ define([
          * @type {Number}
          * @private
          */
-        this._numNonLayoutParams = 3;
+        this._numOfNonLayoutParams = 3;
 
         /**
          * @type {Array}
@@ -141,12 +149,22 @@ define([
         }
 
         /**
+         * @type {Legend}
+         * Legend describing the way the tree is colored.
+         * @private
+         */
+        this._legend = new Legend(document.getElementById("legend-main"));
+
+        /**
          * @type {BiomTable}
          * BIOM table: includes feature presence information and sample-level
-         * metadata.
+         * metadata. Can be null if no table / sample metadata was passed to
+         * Empress.
          * @private
          */
         this._biom = biom;
+
+        this.isCommunityPlot = !_.isNull(this._biom);
 
         /**
          * @type{Array}
@@ -190,10 +208,14 @@ define([
          * @type {BarplotPanel}
          * Manages a collection of BarplotLayers, as well as the state of the
          * barplot panel. Also can call Empress.drawBarplots() /
-         * Empress.undrawBarplots() when needed.
+         * Empress.undrawBarplots() when needed. Can be null if no feature or
+         * sample metadata was passed to Empress.
          * @private
          */
-        this._barplotPanel = new BarplotPanel(this, this._defaultLayout);
+        this._barplotPanel = null;
+        if (this.isCommunityPlot || this._featureMetadataColumns.length > 0) {
+            this._barplotPanel = new BarplotPanel(this, this._defaultLayout);
+        }
 
         /**
          * @type {Number}
@@ -231,17 +253,17 @@ define([
         this._barplotsDrawn = false;
 
         /**
-         * type {Object}
-         * Maps tree layouts to the average point of each layout
-         */
-        this.layoutAvgPoint = {};
-
-        /**
          * @type{Number}
          * The (not-yet-scaled) line width used for drawing "thick" lines.
          * Can be passed as input to this.thickenColoredNodes().
          */
         this._currentLineWidth = 0;
+
+        /**
+         * @type{Bool}
+         * Whether or not to draw node circles.
+         */
+        this.drawNodeCircles = false;
 
         /**
          * @type{Bool}
@@ -260,6 +282,12 @@ define([
          * Whether to ignore node lengths during layout or not
          */
         this.ignoreLengths = false;
+
+        /**
+         * @type{String}
+         * Leaf sorting method: one of "none", "ascending", or "descending"
+         */
+        this.leafSorting = "descending";
 
         /**
          * @type{CanvasEvents}
@@ -287,19 +315,27 @@ define([
          *          right: <node_key>,
          *          deepest: <node_key>,
          *          length: <Number>,
-         *          color: <[r,g,b]>
+         *          color: <Number>
          *      }
          *  }
          */
         this._collapsedClades = {};
 
         /**
+         * @type(Set)
+         * @private
+         * Clades that should will not be collapse. Currently, clades are only
+         * cleared from this set when resetTree() is called.
+         */
+        this._dontCollapse = new Set();
+
+        /**
          * @type{Array}
          * @private
          *
-         * Stores the vertex information that is passed to WebGl
+         * Stores the vertex information that is passed to WebGL
          *
-         * Format: [x, y, r, g, b, ...]
+         * Format: [x, y, RGB, ...]
          */
         this._collapsedCladeBuffer = [];
 
@@ -335,12 +371,13 @@ define([
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths
+                this.ignoreLengths,
+                this.leafSorting
             );
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._numNonLayoutParams;
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.xr] = data.xCoord[i];
@@ -355,11 +392,12 @@ define([
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths
+                this.ignoreLengths,
+                this.leafSorting
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._numNonLayoutParams;
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.xc0] = data.x0[i];
@@ -383,13 +421,14 @@ define([
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
-                this._treeData[i].length = this._numNonLayoutParams;
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.x2] = data.xCoord[i];
                 this._treeData[i][this._tdToInd.y2] = data.yCoord[i];
             }
         }
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
         this._computeMaxDisplacement();
     };
 
@@ -400,13 +439,14 @@ define([
         this._drawer.initialize();
         this._events.setMouseEvents();
         var nodeNames = this._tree.getAllNames();
+        // Don't include nodes with the name null (i.e. nodes without a
+        // specified name in the Newick file) in the auto-complete.
         nodeNames = nodeNames.filter((n) => n !== null);
         nodeNames.sort();
         this._events.autocomplete(nodeNames);
 
         this.getLayoutInfo();
         this.centerLayoutAvgPoint();
-        // centerLayoutAvgPoint() calls drawTree(), so no need to call it here
     };
 
     /**
@@ -444,344 +484,68 @@ define([
      * Draws the tree
      */
     Empress.prototype.drawTree = function () {
-        this._drawer.loadTreeBuff(this.getCoords());
-        this._drawer.loadNodeBuff(this.getNodeCoords());
+        this._drawer.loadTreeColorBuff(this.getTreeColor());
+        if (this.drawNodeCircles) {
+            this._drawer.loadNodeBuff(this.getNodeCoords());
+        } else {
+            // Clear the node circle buffer to save some memory / space
+            this._drawer.loadNodeBuff([]);
+        }
         this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
     };
 
     /**
-     * Creates an SVG string to export the current drawing
-     */
-    Empress.prototype.exportSvg = function () {
-        // TODO: use the same value as the actual WebGL drawing engine, but
-        // right now this value is hard coded on line 327 of drawer.js
-        NODE_RADIUS = 4;
-
-        minX = 0;
-        maxX = 0;
-        minY = 0;
-        maxY = 0;
-        svg = "";
-
-        // create a line from x1,y1 to x2,y2 for every two consecutive coordinates
-        // 5 array elements encode one coordinate:
-        // i=x, i+1=y, i+2=red, i+3=green, i+4=blue
-        svg += "<!-- tree branches -->\n";
-        coords = this.getCoords();
-        for (
-            i = 0;
-            i + 2 * this._drawer.VERTEX_SIZE <= coords.length;
-            i += 2 * this._drawer.VERTEX_SIZE
-        ) {
-            // "normal" lines have a default color,
-            // all other lines have a user defined thickness
-            // All lines are defined using the information from the child node.
-            // So, if coords[i+2] == DEFAULT_COLOR then coords[i+2+5] will
-            // also be equal to DEFAULT_COLOR. Thus, we can save checking three
-            // array elements here.
-            linewidth = 1 + this._currentLineWidth;
-            if (
-                coords[i + 2] == this.DEFAULT_COLOR[0] &&
-                coords[i + 3] == this.DEFAULT_COLOR[1] &&
-                coords[i + 4] == this.DEFAULT_COLOR[2]
-            ) {
-                linewidth = 1;
-            }
-            svg +=
-                '<line x1="' +
-                coords[i] +
-                '" y1="' +
-                coords[i + 1] +
-                '" x2="' +
-                coords[i + this._drawer.VERTEX_SIZE] +
-                '" y2="' +
-                coords[i + 1 + this._drawer.VERTEX_SIZE] +
-                '" stroke="' +
-                chroma.gl(coords[i + 2], coords[i + 3], coords[i + 4]).css() +
-                '" style="stroke-width:' +
-                linewidth +
-                '" />\n';
-
-            // obtain viewport from tree coordinates
-            minX = Math.min(
-                minX,
-                coords[i],
-                coords[i + this._drawer.VERTEX_SIZE]
-            );
-            maxX = Math.max(
-                maxX,
-                coords[i],
-                coords[i + this._drawer.VERTEX_SIZE]
-            );
-
-            minY = Math.min(
-                minY,
-                coords[i + 1],
-                coords[i + 1 + this._drawer.VERTEX_SIZE]
-            );
-            maxY = Math.max(
-                maxY,
-                coords[i + 1],
-                coords[i + 1 + this._drawer.VERTEX_SIZE]
-            );
-        }
-
-        // create a circle for each node
-        if (this._drawer.showTreeNodes) {
-            svg += "<!-- tree nodes -->\n";
-            coords = this.getNodeCoords();
-            for (
-                i = 0;
-                i + this._drawer.VERTEX_SIZE <= coords.length;
-                i += this._drawer.VERTEX_SIZE
-            ) {
-                // getNodeCoords array seem to be larger than necessary and
-                // elements are initialized with 0.  Thus, nodes at (0, 0) will
-                // be skipped (root will always be positioned at 0,0 and drawn
-                // below) This is a known issue and will be resolved with #142
-                if (coords[i] == 0 && coords[i + 1] == 0) {
-                    continue;
-                }
-                svg +=
-                    '<circle cx="' +
-                    coords[i] +
-                    '" cy="' +
-                    coords[i + 1] +
-                    '" r="' +
-                    NODE_RADIUS +
-                    '" style="fill:' +
-                    chroma
-                        .gl(coords[i + 2], coords[i + 3], coords[i + 4])
-                        .css() +
-                    '"/>\n';
-            }
-        }
-
-        // add one black circle to indicate the root
-        // Not sure if this speacial treatment for root is necessary once #142
-        // is merged.
-        svg += "<!-- root node -->\n";
-        svg +=
-            '<circle cx="0" cy="0" r="' +
-            NODE_RADIUS +
-            '" fill="rgb(0,0,0)"/>\n';
-
-        return [
-            svg,
-            'viewBox="' +
-                (minX - NODE_RADIUS) +
-                " " +
-                (minY - NODE_RADIUS) +
-                " " +
-                (maxX - minX + 2 * NODE_RADIUS) +
-                " " +
-                (maxY - minY + 2 * NODE_RADIUS) +
-                '"',
-        ];
-    };
-
-    /**
-     * Creates an SVG string to export legends
-     */
-    Empress.prototype.exportSVG_legend = function (dom) {
-        // top left position of legends, multiple legends are placed below
-        // each other.
-        top_left_x = 0;
-        top_left_y = 0;
-        unit = 30; // all distances are based on this variable, thus "zooming"
-        // can be realised by just increasing this single value
-        factor_lineheight = 1.8; // distance between two text lines as a
-        // multiplication factor of unit
-        svg = ""; // the svg string to be generated
-
-        // used as a rough estimate about the consumed width by text strings
-        var myCanvas = document.createElement("canvas");
-        var context = myCanvas.getContext("2d");
-        context.font = "bold " + unit + "pt verdana";
-
-        // the document can have up to three legends, of which at most one shall
-        // be visible at any given timepoint. This might change and thus this
-        // method can draw multiple legends
-        row = 1; // count the number of used rows
-        for (let legend of dom.getElementsByClassName("legend")) {
-            max_line_width = 0;
-            title = legend.getElementsByClassName("legend-title");
-            svg_legend = "";
-            if (title.length > 0) {
-                titlelabel = title.item(0).innerHTML;
-                max_line_width = Math.max(
-                    max_line_width,
-                    context.measureText(titlelabel).width
-                );
-                svg_legend +=
-                    '<text x="' +
-                    (top_left_x + unit) +
-                    '" y="' +
-                    (top_left_y + row * (unit * factor_lineheight)) +
-                    '" style="font-weight:bold;font-size:' +
-                    unit +
-                    'pt;">' +
-                    titlelabel +
-                    "</text>\n";
-                row++;
-                for (let item of legend.getElementsByClassName(
-                    "gradient-bar"
-                )) {
-                    color = item
-                        .getElementsByClassName("category-color")
-                        .item(0)
-                        .getAttribute("style")
-                        .split(":")[1]
-                        .split(";")[0];
-                    itemlabel = item
-                        .getElementsByClassName("gradient-label")
-                        .item(0)
-                        .getAttribute("title");
-                    max_line_width = Math.max(
-                        max_line_width,
-                        context.measureText(itemlabel).width
-                    );
-
-                    // a rect left of the label to indicate the used color
-                    svg_legend +=
-                        '<rect x="' +
-                        (top_left_x + unit) +
-                        '" y="' +
-                        (top_left_y + row * (unit * factor_lineheight) - unit) +
-                        '" width="' +
-                        unit +
-                        '" height="' +
-                        unit +
-                        '" style="fill:' +
-                        color +
-                        '"/>\n';
-                    // the key label
-                    svg_legend +=
-                        '<text x="' +
-                        (top_left_x + 2.5 * unit) +
-                        '" y="' +
-                        (top_left_y + row * (unit * factor_lineheight)) +
-                        '" style="font-size:' +
-                        unit +
-                        'pt;">' +
-                        itemlabel +
-                        "</text>\n";
-                    row++;
-                }
-                // draw a rect behind, i.e. lower z-order, the legend title and
-                // colored keys to visually group the legend. Also acutally put
-                // these elements into a group for easier manual editing
-                // rect shall have a certain padding, its height must exceed
-                //number of used text rows and width must be larger than longest
-                // key text and/or legend title
-                svg +=
-                    '<g>\n<rect x="' +
-                    top_left_x +
-                    '" y="' +
-                    (top_left_y +
-                        (row -
-                            legend.getElementsByClassName("gradient-bar")
-                                .length -
-                            2) *
-                            (unit * factor_lineheight)) +
-                    '" width="' +
-                    (max_line_width + 2 * unit) +
-                    '" height="' +
-                    ((legend.getElementsByClassName("gradient-bar").length +
-                        1) *
-                        unit *
-                        factor_lineheight +
-                        unit) +
-                    '" style="fill:#eeeeee;stroke:#000000;stroke-width:1" ry="30" />\n' +
-                    svg_legend +
-                    "</g>\n";
-                row += 2; // one blank row between two legends
-            }
-        }
-
-        return svg;
-    };
-
-    /**
-     * Retrieves x coordinate of node in the current layout.
+     * Exports a SVG image of the active legends.
      *
-     * @param {Number} node Postorder position of node.
-     * @return {Number} x coordinate of node.
-     */
-    Empress.prototype.getX = function (node) {
-        var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
-        return this.getNodeInfo(node, xname);
-    };
-
-    /**
-     * Retrieves y coordinate of node in the current layout.
+     * Currently this just includes the legend used for tree coloring, but
+     * eventually this'll be expanded to include all the barplot legends as
+     * well.
      *
-     * @param {Number} node Postorder position of node.
-     * @return {Number} y coordinate of node.
+     * @return {String} svg
      */
-    Empress.prototype.getY = function (node) {
-        var yname = "y" + this._layoutToCoordSuffix[this._currentLayout];
-        return this.getNodeInfo(node, yname);
-    };
-
-    /**
-     * Retrieves the node coordinate info
-     * format of node coordinate info: [x, y, red, green, blue, ...]
-     *
-     * @return {Array}
-     */
-    Empress.prototype.getNodeCoords = function () {
-        var tree = this._tree;
-        var coords = [];
-
-        for (var node = 1; node <= tree.size; node++) {
-            if (!this.getNodeInfo(node, "visible")) {
-                continue;
-            }
-            if (this.getNodeInfo(node, "name") !== null) {
-                coords.push(
-                    this.getX(node),
-                    this.getY(node),
-                    ...this.getNodeInfo(node, "color")
-                );
-            }
+    Empress.prototype.exportLegendSVG = function () {
+        var legends = [];
+        // Add the legend used for coloring the tree (if shown).
+        if (this._legend.isActive()) {
+            legends.push(this._legend);
         }
-        return new Float32Array(coords);
-    };
-
-    /**
-     * Returns the number of lines/triangles to approximate an arc/wedge given
-     * the total angle of the arc/wedge.
-     *
-     * @param {Number} totalAngle The total angle of the arc/wedge
-     * @return {Number} The number of lines/triangles to approximate the arc
-     *                  or wedge.
-     */
-    Empress.prototype._numSampToApproximate = function (totalAngle) {
-        var numSamples = Math.floor(60 * Math.abs(totalAngle / Math.PI));
-        return numSamples >= 2 ? numSamples : 2;
+        // Add all the active legends from all the barplot layers.
+        // NOTE: Since we expect there to be many more barplot legends than
+        // just the one tree-coloring legend, we could potentially save a tiny
+        // bit of time by just setting legends to the output of getLegends()
+        // and then calling unshift() to add this._legend to the start of the
+        // array. However, I don't think the speed gain would be worth making
+        // this code much less readable ._.
+        if (this._barplotsDrawn) {
+            legends.push(...this._barplotPanel.getLegends());
+        }
+        if (legends.length === 0) {
+            util.toastMsg("No active legends to export.", 5000);
+            return null;
+        } else {
+            return ExportUtil.exportLegendSVG(legends);
+        }
     };
 
     /**
      * Retrieves the coordinate info of the tree.
-     *  format of coordinate info: [x, y, red, green, blue, ...]
+     *
+     * We used to interlace the coordinate information with the color information
+     * i.e. [x1, y1, red1, green1, blue1, x2, y2, red2, green2, blue2,...]
+     * This was inefficient because tree coordinates do not change during most
+     * update operations (such as feature coloring). Thus, we split the
+     * coordinate information into two seperate buffers. One for tree
+     * tree coordinates and another for color.
      *
      * @return {Array}
      */
-    Empress.prototype.getCoords = function () {
+    Empress.prototype.getTreeCoords = function () {
         var tree = this._tree;
-
-        // The coordinates (and colors) of the tree's nodes.
         var coords = [];
 
-        // branch color
-        var color;
-
-        var coords_index = 0;
-
         var addPoint = function (x, y) {
-            coords.push(x, y, ...color);
+            coords.push(x, y);
         };
 
         /* Draw a vertical line, if we're in rectangular layout mode. Note that
@@ -794,7 +558,6 @@ define([
          * root be the ONLY node in the tree. So this behavior is ok.)
          */
         if (this._currentLayout === "Rectangular") {
-            color = this.getNodeInfo(tree.size, "color");
             addPoint(
                 this.getX(tree.size),
                 this.getNodeInfo(tree.size, "lowestchildyr")
@@ -816,9 +579,6 @@ define([
             if (!this.getNodeInfo(node, "visible")) {
                 continue;
             }
-
-            // branch color
-            color = this.getNodeInfo(node, "color");
 
             if (this._currentLayout === "Rectangular") {
                 /* Nodes in the rectangular layout can have up to two "parts":
@@ -907,14 +667,194 @@ define([
                     }
                 }
             } else {
-                // Draw nodes for the unrooted layout.
-                // coordinate info for parent
                 addPoint(this.getX(parent), this.getY(parent));
-                // coordinate info for current nodeN
                 addPoint(this.getX(node), this.getY(node));
             }
         }
         return new Float32Array(coords);
+    };
+
+    Empress.prototype.getTreeColor = function () {
+        var tree = this._tree;
+
+        var coords = [];
+        var color;
+        var addPoint = function () {
+            coords.push(color, color);
+        };
+
+        /* Draw a vertical line, if we're in rectangular layout mode. Note that
+         * we *don't* draw a horizontal line (with the branch length of the
+         * root) for the root node, even if it has a nonzero branch length;
+         * this could be modified in the future if desired. See #141 on GitHub.
+         *
+         * (The python code explicitly disallows trees with <= 1 nodes, so
+         * we're never going to be in the unfortunate situation of having the
+         * root be the ONLY node in the tree. So this behavior is ok.)
+         */
+        if (this._currentLayout === "Rectangular") {
+            color = this.getNodeInfo(tree.size, "color");
+            addPoint();
+        }
+        // iterate through the tree in postorder, skip root
+        for (var node = 1; node < tree.size; node++) {
+            if (!this.getNodeInfo(node, "visible")) {
+                continue;
+            }
+
+            // branch color
+            color = this.getNodeInfo(node, "color");
+
+            if (this._currentLayout === "Rectangular") {
+                /* Nodes in the rectangular layout can have up to two "parts":
+                 * a horizontal line, and a vertical line at the end of this
+                 * line. These parts are indicated below as AAA... and BBB...,
+                 * respectively. (Child nodes are indicated by CCC...)
+                 *
+                 *        BCCCCCCCCCCCC
+                 *        B
+                 * AAAAAAAB
+                 *        B
+                 *        BCCCCCCCCCCCC
+                 *
+                 * All nodes except for the root are drawn with a horizontal
+                 * line, and all nodes except for tips are drawn with a
+                 * vertical line.
+                 */
+                // 1. Draw horizontal line (we're already skipping the root)
+                addPoint();
+                // 2. Draw vertical line, if this is an internal node
+                if (this.getNodeInfo(node, "lowestchildyr") !== undefined) {
+                    // skip if node is root of collapsed clade
+                    if (this._collapsedClades.hasOwnProperty(node)) continue;
+                    addPoint();
+                }
+            } else if (this._currentLayout === "Circular") {
+                /* Same deal as above, except instead of a "vertical line" this
+                 * time we draw an "arc".
+                 */
+                // 1. Draw line protruding from parent (we're already skipping
+                // the root so this is ok)
+                //
+                // Note that position info for this is stored as two sets of
+                // coordinates: (xc0, yc0) for start point, (xc1, yc1) for end
+                // point. The *c1 coordinates are explicitly associated with
+                // the circular layout so we can just use this.getX() /
+                // this.getY() for these coordinates.
+                addPoint();
+                // 2. Draw arc, if this is an internal node (note again that
+                // we're skipping the root)
+                if (
+                    !this._tree.isleaf(this._tree.postorderselect(node)) &&
+                    !this._collapsedClades.hasOwnProperty(node)
+                ) {
+                    // An arc will be created for all internal nodes.
+                    // arcs are created by sampling up to 60 small lines along
+                    // the arc spanned by rotating the line (arcx0, arcy0)
+                    // arcendangle - arcstartangle radians. This will create an
+                    // arc that starts at each internal node's rightmost child
+                    // and ends on the leftmost child.
+                    var arcDeltaAngle =
+                        this.getNodeInfo(node, "arcendangle") -
+                        this.getNodeInfo(node, "arcstartangle");
+                    var numSamples = this._numSampToApproximate(arcDeltaAngle);
+                    for (var line = 0; line < numSamples; line++) {
+                        addPoint();
+                    }
+                }
+            } else {
+                // Draw nodes for the unrooted layout.
+                // coordinate info for parent
+                addPoint();
+            }
+        }
+        return new Float32Array(coords);
+    };
+
+    /**
+     * Creates an SVG string to export the current drawing
+     * Exports a SVG image of the tree.
+     *
+     * @return {String} svg
+     */
+    Empress.prototype.exportTreeSVG = function () {
+        return ExportUtil.exportTreeSVG(this, this._drawer);
+    };
+
+    /**
+     * Exports a PNG image of the canvas.
+     *
+     * This works a bit differently from the SVG exporting functions -- instead
+     * of returning a string with the SVG, the specified callback will be
+     * called with the Blob representation of the PNG. See
+     * ExportUtil.exportTreePNG() for details.
+     *
+     * @param {Function} callback Function that will be called with a Blob
+     *                            representing the exported PNG image.
+     */
+    Empress.prototype.exportTreePNG = function (callback) {
+        ExportUtil.exportTreePNG(this, this._canvas, callback);
+    };
+
+    /**
+     * Retrieves x coordinate of node in the current layout.
+     *
+     * @param {Number} node Postorder position of node.
+     * @return {Number} x coordinate of node.
+     */
+    Empress.prototype.getX = function (node) {
+        var xname = "x" + this._layoutToCoordSuffix[this._currentLayout];
+        return this.getNodeInfo(node, xname);
+    };
+
+    /**
+     * Retrieves y coordinate of node in the current layout.
+     *
+     * @param {Number} node Postorder position of node.
+     * @return {Number} y coordinate of node.
+     */
+    Empress.prototype.getY = function (node) {
+        var yname = "y" + this._layoutToCoordSuffix[this._currentLayout];
+        return this.getNodeInfo(node, yname);
+    };
+
+    /**
+     * Retrieves the node coordinate info (for drawing node circles).
+     *
+     * @return {Array} Node coordinate info, formatted like [x, y, RGB float]
+     *                 for every node circle to be drawn.
+     */
+    Empress.prototype.getNodeCoords = function () {
+        var tree = this._tree;
+        var coords = [];
+
+        for (var node = 1; node <= tree.size; node++) {
+            if (!this.getNodeInfo(node, "visible")) {
+                continue;
+            }
+            // In the past, we only drew circles for nodes with an assigned
+            // name (i.e. where the name of a node was not null). Now, we
+            // just draw circles for all nodes.
+            coords.push(
+                this.getX(node),
+                this.getY(node),
+                this.getNodeInfo(node, "color")
+            );
+        }
+        return new Float32Array(coords);
+    };
+
+    /**
+     * Returns the number of lines/triangles to approximate an arc/wedge given
+     * the total angle of the arc/wedge.
+     *
+     * @param {Number} totalAngle The total angle of the arc/wedge
+     * @return {Number} The number of lines/triangles to approximate the arc
+     *                  or wedge.
+     */
+    Empress.prototype._numSampToApproximate = function (totalAngle) {
+        var numSamples = Math.floor(60 * Math.abs(totalAngle / Math.PI));
+        return numSamples >= 2 ? numSamples : 2;
     };
 
     /**
@@ -1115,18 +1055,18 @@ define([
     Empress.prototype._addTriangleCoords = function (coords, corners, color) {
         // Triangle 1
         coords.push(...corners.tL);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.bL);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.bR);
-        coords.push(...color);
+        coords.push(color);
         // Triangle 2
         coords.push(...corners.tL);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.tR);
-        coords.push(...color);
+        coords.push(color);
         coords.push(...corners.bR);
-        coords.push(...color);
+        coords.push(color);
     };
 
     /* Adds coordinate/color info for a vertical line for a given node in the
@@ -1432,10 +1372,34 @@ define([
     };
 
     /**
-     * Draws barplots on the tree.
+     * Computes the coordinate data needed for drawing a collection of barplot
+     * layer(s), as well as additional information needed for populating the
+     * corresponding barplot legends.
      *
-     * @param {Array} layers An array of BarplotLayer objects. This can just be
-     *                       the "layers" attribute of a BarplotPanel object.
+     * Similar to this.getCoords().
+     *
+     * @param {Array} layers Collection of BarplotLayer objects. Layers will be
+     *                       drawn starting from the edge of the tree and going
+     *                       outwards: the first layer in the array will be the
+     *                       innermost and the last will be the outermost
+     *                       (ignoring barplot border layers, which may be
+     *                       added depending on the BarplotPanel's state).
+     *
+     * @returns {Object} Contains three entries:
+     *                   -coords: An array of coordinate data, in the format
+     *                    [x, y, RGB...]
+     *                   -colorers: An Array of the same length as the number
+     *                    of barplot layers containing in each position either
+     *                    a Colorer object (for layers for which a color legend
+     *                    should be shown) or null (for layers for which no
+     *                    color legend should be shown).
+     *                   -lengthExtrema: An Array of the same length as the
+     *                    number of barplot layers containing in each position
+     *                    either another Array of two elements (the minimum and
+     *                    maximum value to be shown in a length legend) or
+     *                    null (for layers for which no length legend should be
+     *                    shown).
+     *
      * @throws {Error} If any of the following conditions are met:
      *                 -One of the layers is of barplot type "fm" and:
      *                    -A field with < 2 unique numeric values is used to
@@ -1446,9 +1410,11 @@ define([
      *                     scaleLengthByFMMax attribute is smaller than its
      *                     scaleLengthByFMMin attribute
      */
-    Empress.prototype.drawBarplots = function (layers) {
+    Empress.prototype.getBarplotData = function (layers) {
         var scope = this;
-        var coords = [];
+
+        // The main thing that will be returned by this function
+        var barplotBuffer = [];
 
         // Add on a gap between the closest-to-the-root point at which we can
         // start drawing barplots, and the first barplot layer. This could be
@@ -1466,12 +1432,21 @@ define([
         // i.e. for feature metadata barplots with no color encoding). At the
         // end of this function, when we know that all barplots are valid,
         // we'll populate / clear legends accordingly.
-        var colorLegendsToPopulate = [];
+        var colorers = [];
 
-        // Also, we keep track of length-scaling information as well.
-        var lengthLegendsToPopulate = [];
+        // Also, we keep track of length-scaling information as well. These are
+        // just arrays of [min val, max val]. (Or they'll just be null, if no
+        // length scaling was done -- this is always the case for e.g. stacked
+        // sample metadata barplots.)
+        var lengthExtrema = [];
 
         _.each(layers, function (layer) {
+            if (scope._barplotPanel.useBorders) {
+                prevLayerMaxD = scope.addBorderBarplotLayerCoords(
+                    barplotBuffer,
+                    prevLayerMaxD
+                );
+            }
             var layerInfo;
             // Normally I'd just set addLayerFunc as a reference to
             // scope.addSMBarplotLayerCoords (or ...FM...), but that apparently
@@ -1482,33 +1457,70 @@ define([
             } else {
                 addLayerFunc = "addFMBarplotLayerCoords";
             }
-            layerInfo = scope[addLayerFunc](layer, coords, prevLayerMaxD);
+            // The meat of the work here: compute the coordinates needed for
+            // each barplot layer. These functions may throw errors as needed
+            // if certain selections are invalid.
+            layerInfo = scope[addLayerFunc](
+                layer,
+                barplotBuffer,
+                prevLayerMaxD
+            );
             prevLayerMaxD = layerInfo[0];
-            colorLegendsToPopulate.push(layerInfo[1]);
-            lengthLegendsToPopulate.push(layerInfo[2]);
+            colorers.push(layerInfo[1]);
+            lengthExtrema.push(layerInfo[2]);
         });
+        // Add a border on the outside of the outermost layer
+        if (this._barplotPanel.useBorders) {
+            this.addBorderBarplotLayerCoords(barplotBuffer, prevLayerMaxD);
+        }
+        return {
+            coords: barplotBuffer,
+            colorers: colorers,
+            lengthExtrema: lengthExtrema,
+        };
+    };
+
+    /**
+     * Returns the current BarplotLayers owned by the BarplotPanel.
+     *
+     * @returns {Array} Array of BarplotLayer objects.
+     */
+    Empress.prototype.getBarplotLayers = function () {
+        return this._barplotPanel.layers;
+    };
+
+    /**
+     * Draws barplots on the tree.
+     *
+     * @throws {Error} If user selections for a barplot layer are invalid; see
+     *                 this.getBarplotData() for details.
+     */
+    Empress.prototype.drawBarplots = function () {
+        var scope = this;
+        var layers = this.getBarplotLayers();
+        var barplotData = this.getBarplotData(layers);
         // NOTE that we purposefuly don't clear the barplot buffer until we
         // know all of the barplots are valid. If we were to call
         // this.loadBarplotBuff([]) at the start of this function, then if we'd
-        // error out in the middle, the barplot buffer would be cleared without
-        // the tree being redrawn; this would result in the barplots
-        // disappearing the next time the user did something that prompted a
-        // redrawing of the tree (e.g. zooming or panning), which would be
-        // confusing.
+        // error out in this.getBarplotData(), the barplot buffer would be
+        // cleared without the tree being redrawn; this would result in the
+        // barplots disappearing the next time the user did something that
+        // prompted a redrawing of the tree (e.g. zooming or panning), which
+        // would be confusing.
         this._drawer.loadBarplotBuff([]);
-        this._drawer.loadBarplotBuff(coords);
+        this._drawer.loadBarplotBuff(barplotData.coords);
         this.drawTree();
 
         // By the same logic, now we can safely update the barplot legends to
         // match the barplots that are now drawn.
-        _.each(colorLegendsToPopulate, function (colorer, layerIndex) {
+        _.each(barplotData.colorers, function (colorer, layerIndex) {
             if (_.isNull(colorer)) {
                 layers[layerIndex].clearColorLegend();
             } else {
                 layers[layerIndex].populateColorLegend(colorer);
             }
         });
-        _.each(lengthLegendsToPopulate, function (valSpan, layerIndex) {
+        _.each(barplotData.lengthExtrema, function (valSpan, layerIndex) {
             if (_.isNull(valSpan)) {
                 layers[layerIndex].clearLengthLegend();
             } else {
@@ -1527,9 +1539,9 @@ define([
      * @param {Array} coords The array to which the coordinates for this layer
      *                       will be added.
      * @param {Number} prevLayerMaxD The "displacement" (either in
-     *                               x-coordinates, or in radius coordinates) to
-     *                               use as the starting point for drawing this
-     *                               layer's bars.
+     *                               x-coordinates, or in radius coordinates)
+     *                               to use as the starting point for drawing
+     *                               this layer's bars.
      *
      * @return {Array} layerInfo An array containing three elements:
      *                           1. The maximum displacement of a bar within
@@ -1554,7 +1566,13 @@ define([
         var sortedUniqueValues = this.getUniqueSampleValues(
             layer.colorBySMField
         );
-        var colorer = new Colorer(layer.colorBySMColorMap, sortedUniqueValues);
+        var colorer = new Colorer(
+            layer.colorBySMColorMap,
+            sortedUniqueValues,
+            undefined,
+            undefined,
+            layer.colorBySMColorReverse
+        );
         var sm2color = colorer.getMapRGB();
         // Do most of the hard work: compute the frequencies for each tip (only
         // the tips present in the BIOM table, that is)
@@ -1682,9 +1700,9 @@ define([
      * @param {Array} coords The array to which the coordinates for this layer
      *                       will be added.
      * @param {Number} prevLayerMaxD The "displacement" (either in
-     *                               x-coordinates, or in radius coordinates) to
-     *                               use as the starting point for drawing this
-     *                               layer's bars.
+     *                               x-coordinates, or in radius coordinates)
+     *                               to use as the starting point for drawing
+     *                               this layer's bars.
      *
      * @return {Array} layerInfo An array containing three elements:
      *                           1. The maximum displacement of a bar within
@@ -1749,7 +1767,8 @@ define([
                     layer.colorByFMColorMap,
                     sortedUniqueColorValues,
                     layer.colorByFMContinuous,
-                    layer.uniqueNum
+                    layer.uniqueNum,
+                    layer.colorByFMColorReverse
                 );
             } catch (err) {
                 // If the Colorer construction failed (should only have
@@ -1855,13 +1874,19 @@ define([
                     length = layer.defaultLength;
                 }
 
+                if (length === 0) {
+                    // This tip maps to a length of 0, so don't waste
+                    // resources trying to draw it.
+                    continue;
+                }
+
                 // Update maxD if needed
                 var thisLayerMaxD = prevLayerMaxD + length * this._barplotUnit;
                 if (thisLayerMaxD > maxD) {
                     maxD = thisLayerMaxD;
                 }
 
-                // Finally, add this tip's bar data to to an array of data
+                // Finally, add this tip's bar data to an array of data
                 // describing the bars to draw
                 if (this._currentLayout === "Rectangular") {
                     var y = this.getY(node);
@@ -1888,6 +1913,78 @@ define([
         }
         var lenValSpan = _.isNull(lenValMin) ? null : [lenValMin, lenValMax];
         return [maxD, colorer, lenValSpan];
+    };
+
+    /**
+     * Adds coordinates for a "border" barplot layer to an array.
+     *
+     * @param {Array} coords The array to which the coordinates for this
+     *                       "layer" will be added.
+     * @param {Number} prevLayerMaxD The "displacement" (either in
+     *                               x-coordinates, or in radius coordinates)
+     *                               to use as the starting point for drawing
+     *                               this layer's bars.
+     *
+     * @return {Number} maxD The maximum displacement of a bar within this
+     *                       layer. This is really just prevLayerMaxD +
+     *                       this._barplotPanel.borderLength.
+     */
+    Empress.prototype.addBorderBarplotLayerCoords = function (
+        coords,
+        prevLayerMaxD
+    ) {
+        var borderColor = this._barplotPanel.borderColor;
+        var borderLength = this._barplotPanel.borderLength;
+        var maxD = prevLayerMaxD + borderLength;
+        // TODO: Should be changed when the ability to change the background
+        // color is added. Basically, we get a "freebie" if the border color
+        // matches the background color, and we don't need to draw anything --
+        // we can just increase the displacement and leave it at that.
+        // (This works out very well if this is the "outermost" border -- then
+        // we really don't need to do anything.)
+        if (borderColor === Colorer.rgbToFloat(this._drawer.CLR_COL)) {
+            return maxD;
+        }
+        // ... Otherwise, we actually have to go and create bars
+        var halfyrscf, halfAngleRange;
+        if (this._currentLayout === "Rectangular") {
+            halfyrscf = this._yrscf / 2;
+        } else {
+            halfAngleRange = Math.PI / this._tree.numleaves();
+        }
+        // Currently, this just draws a bar for every tip. This is relatively
+        // slow! For the rectangular layout, it should be possible to speed
+        // this up by figuring out the topmost and bottommost node and then
+        // drawing just two triangles (one rectangle, based on their y-values).
+        // For the circular layout, how to speed this up is less clear -- I
+        // suspect it should be possible using WebGL and some fancy
+        // trigonometry somehow, but I'm not sure.
+        for (var node = 1; node < this._tree.size; node++) {
+            if (this._tree.isleaf(this._tree.postorderselect(node))) {
+                if (this._currentLayout === "Rectangular") {
+                    var y = this.getY(node);
+                    var ty = y + halfyrscf;
+                    var by = y - halfyrscf;
+                    this._addRectangularBarCoords(
+                        coords,
+                        prevLayerMaxD,
+                        maxD,
+                        by,
+                        ty,
+                        borderColor
+                    );
+                } else {
+                    this._addCircularBarCoords(
+                        coords,
+                        prevLayerMaxD,
+                        maxD,
+                        this._getNodeAngleInfo(node, halfAngleRange),
+                        borderColor
+                    );
+                }
+            }
+        }
+        return maxD;
     };
 
     /**
@@ -1918,7 +2015,7 @@ define([
         for (group in observationsPerGroup) {
             obs = Array.from(observationsPerGroup[group]);
 
-            // convert hex string to rgb array
+            // convert hex string to rgb number
             var rgb = Colorer.hex2RGB(group);
 
             for (var i = 0; i < obs.length; i++) {
@@ -1934,19 +2031,32 @@ define([
      *
      * @param {String} cat Sample metadata category to use
      * @param {String} color Color map to use
+     * @param {Boolean} reverse Defaults to false. If true, the color scale
+     *                         will be reversed, with respect to its default
+     *                         orientation.
      *
      * @return {Object} If there exists at least one group with unique features
      *                  then an object will be returned that maps groups with
      *                  unique features to a color. If there doesn't exist a
      *                  group with unique features then null will be returned.
      */
-    Empress.prototype.colorBySampleCat = function (cat, color) {
+    Empress.prototype.colorBySampleCat = function (
+        cat,
+        color,
+        reverse = false
+    ) {
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
 
         // Assign colors to categories
-        var colorer = new Colorer(color, categories);
+        var colorer = new Colorer(
+            color,
+            categories,
+            undefined,
+            undefined,
+            reverse
+        );
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
@@ -1979,6 +2089,8 @@ define([
 
         // color tree
         this._colorTree(obs, cm);
+
+        this.updateLegendCategorical(cat, keyInfo);
 
         return keyInfo;
     };
@@ -2067,10 +2179,18 @@ define([
      *                        internal node feature metadata without doing any
      *                        propagation. If this is anything else, this will
      *                        throw an error.
+     * @param{Boolean} reverse Defaults to false. If true, the color scale
+     *                         will be reversed, with respect to its default
+     *                         orientation.
      *
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
-    Empress.prototype.colorByFeatureMetadata = function (cat, color, method) {
+    Empress.prototype.colorByFeatureMetadata = function (
+        cat,
+        color,
+        method,
+        reverse = false
+    ) {
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -2084,7 +2204,13 @@ define([
         });
 
         // assign colors to unique values
-        var colorer = new Colorer(color, sortedUniqueValues);
+        var colorer = new Colorer(
+            color,
+            sortedUniqueValues,
+            undefined,
+            undefined,
+            reverse
+        );
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
@@ -2100,6 +2226,8 @@ define([
 
         // color tree
         this._colorTree(obs, cm);
+
+        this.updateLegendCategorical(cat, keyInfo);
 
         return keyInfo;
     };
@@ -2195,7 +2323,7 @@ define([
      * @param{Object} obs Maps categories to the unique nodes to be colored for
      *                    each category.
      * @param{Object} cm Maps categories to the colors to color their nodes
-     *                   with. Colors should be represented as RGB arrays, for
+     *                   with. Colors should be represented as RGB number, for
      *                   example as is done in the color values of the output
      *                   of Colorer.getMapRGB().
      */
@@ -2224,19 +2352,51 @@ define([
             this.setNodeInfo(node, "visible", true);
         }
         this._collapsedClades = {};
+        this._dontCollapse = new Set();
         this._collapsedCladeBuffer = [];
         this._drawer.loadThickNodeBuff([]);
         this._drawer.loadCladeBuff([]);
         this._group = new Array(this._tree.size + 1).fill(-1);
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
     };
 
     /**
-     * Returns a list of sample categories
+     * Clears the legend.
+     */
+    Empress.prototype.clearLegend = function () {
+        this._legend.clear();
+    };
+
+    /**
+     * Updates the legend based on a categorical color key.
+     *
+     * This is set up as a public method so that the Animator can update the
+     * legend on its own (without having to reference this._legend from outside
+     * of Empress).
+     *
+     * @param {String} name Text to show in the legend title.
+     * @param {Object} keyInfo Color key information. Maps unique values (e.g.
+     *                         in sample or feature metadata) to their assigned
+     *                         color, expressed in hex format.
+     */
+    Empress.prototype.updateLegendCategorical = function (name, keyInfo) {
+        this._legend.addCategoricalKey(name, keyInfo);
+    };
+
+    /**
+     * Returns a list of sample categories.
+     *
+     * If this.isCommunityPlot is false (no table / sample metadata were
+     * provided), this just returns [].
      *
      * @return {Array}
      */
     Empress.prototype.getSampleCategories = function () {
-        return this._biom.getSampleCategories();
+        if (this.isCommunityPlot) {
+            return this._biom.getSampleCategories();
+        } else {
+            return [];
+        }
     };
 
     /**
@@ -2268,20 +2428,30 @@ define([
         // stuff to only change whenever the tree is redrawn.
         this.thickenColoredNodes(this._currentLineWidth);
 
-        // Undraw or redraw barplots as needed
-        var supported = this._barplotPanel.updateLayoutAvailability(
-            this._currentLayout
-        );
-        if (!supported && this._barplotsDrawn) {
-            this.undrawBarplots();
-        } else if (supported && this._barplotPanel.enabled) {
-            this.drawBarplots(this._barplotPanel.layers);
+        // Undraw or redraw barplots as needed (assuming barplots are supported
+        // in the first place, of course; if no feature or sample metadata at
+        // all was passed then barplots are not available :()
+        if (!_.isNull(this._barplotPanel)) {
+            var supported = this._barplotPanel.updateLayoutAvailability(
+                this._currentLayout
+            );
+            if (!supported && this._barplotsDrawn) {
+                this.undrawBarplots();
+            } else if (supported && this._barplotPanel.enabled) {
+                this.drawBarplots();
+            }
         }
         this.centerLayoutAvgPoint();
     };
 
     /**
      * Redraws the tree with a new layout (if different from current layout).
+     *
+     * Note that this not always called when the tree is redrawn in a different
+     * way; it's possible to change certain layout parameters (e.g. to ignore
+     * branch lengths) and then call reLayout() without touching this method.
+     * This is by design, since whether or not to ignore branch lengths is a
+     * separate decision from what layout the tree is currently using.
      */
     Empress.prototype.updateLayout = function (newLayout) {
         if (this._currentLayout !== newLayout) {
@@ -2352,65 +2522,79 @@ define([
 
     /**
      * Display the tree nodes.
-     * Note: Currently Empress will only display the nodes that had an assigned
-     * name in the newick string.
      *
-     * @param{Boolean} showTreeNodes If true then empress will display the tree
-     *                               nodes.
+     * @param{Boolean} showTreeNodes If true, then Empress will draw circles at
+     *                               each node's position.
      */
     Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
+        this.drawNodeCircles = showTreeNodes;
         this._drawer.setTreeNodeVisibility(showTreeNodes);
         this.drawTree();
     };
 
     /**
      * Centers the viewing window at the average of the current layout.
+     *
+     * The layout's average point is defined as [x, y, zoomAmount], where:
+     *
+     * -x is the average of all x coordinates
+     * -y is the average of all y coordinates
+     * -zoomAmount takes the largest x or y coordinate and normalizes it by
+     *  dim / 2 (where dim is the dimension of the canvas).
+     *
+     * zoomAmount is defined be a simple heuristic that should allow the
+     * majority of the tree to be visible in the viewing window.
+     *
+     * NOTE: Previously, layoutAvgPoint was cached for each layout. This
+     * behavior has been removed, because (with the advent of leaf sorting and
+     * "ignore lengths") a given "layout" (e.g. Rectangular) can now have
+     * pretty drastically different locations across all the options available.
+     *
+     * @return {Array} Contains three elements, in the following order:
+     *                 1. Average x-coordinate
+     *                 2. Average y-coordinate
+     *                 3. zoomAmount
+     *                 As of writing, nothing in Empress that I'm aware of
+     *                 consumes the output of this function. The main reason we
+     *                 return this is to make testing this easier.
      */
     Empress.prototype.centerLayoutAvgPoint = function () {
-        if (!(this._currentLayout in this.layoutAvgPoint)) {
-            // Add up x and y coordinates of all nodes in the tree (using
-            // current layout).
-            var x = 0,
-                y = 0,
-                zoomAmount = 0;
-            for (var node = 1; node <= this._tree.size; node++) {
-                // node = this._treeData[node];
-                x += this.getX(node);
-                y += this.getY(node);
-                zoomAmount = Math.max(
-                    zoomAmount,
-                    Math.abs(this.getX(node)),
-                    Math.abs(this.getY(node))
-                );
-            }
-
-            // each layout's avegerage point is define as followed:
-            // [x, y, zoomAmount] where x is the average of all x coordinates,
-            // y is the average of all y coordinates, and zoomAmount takes the
-            // largest x or y coordinate and normaizes it by dim / 2 (where
-            // dim is the dimension of the canvas).
-            // Note: zoomAmount is defined be a simple heuristic that should
-            // allow the majority of the tree to be visible in the viewing
-            // window.
-            this.layoutAvgPoint[this._currentLayout] = [
-                x / this._tree.size,
-                y / this._tree.size,
-                (2 * zoomAmount) / this._drawer.dim,
-            ];
+        var layoutAvgPoint = [];
+        // Add up x and y coordinates of all nodes in the tree (using
+        // current layout).
+        var x = 0,
+            y = 0,
+            zoomAmount = 0;
+        for (var node = 1; node <= this._tree.size; node++) {
+            // node = this._treeData[node];
+            x += this.getX(node);
+            y += this.getY(node);
+            zoomAmount = Math.max(
+                zoomAmount,
+                Math.abs(this.getX(node)),
+                Math.abs(this.getY(node))
+            );
         }
+
+        layoutAvgPoint = [
+            x / this._tree.size,
+            y / this._tree.size,
+            (2 * zoomAmount) / this._drawer.dim,
+        ];
 
         // center the viewing window on the average point of the current layout
         // and zoom out so the majority of the tree is visible.
-        var cX = this.layoutAvgPoint[this._currentLayout][0],
-            cY = this.layoutAvgPoint[this._currentLayout][1];
+        var cX = layoutAvgPoint[0],
+            cY = layoutAvgPoint[1];
         this._drawer.centerCameraOn(cX, cY);
         this._drawer.zoom(
             this._drawer.treeSpaceCenterX,
             this._drawer.treeSpaceCenterY,
             false,
-            this.layoutAvgPoint[this._currentLayout][2]
+            layoutAvgPoint[2]
         );
         this.drawTree();
+        return layoutAvgPoint;
     };
 
     /**
@@ -2457,6 +2641,29 @@ define([
         }
     };
 
+    /**
+     * Adds clade to the "do not collapse list"
+     *
+     * @param{Number/String} clade The postorder position of a node (clade).
+     *                             This can either be an integer or a string.
+     */
+    Empress.prototype.dontCollapseClade = function (clade) {
+        var scope = this;
+        var nodes = this.getCladeNodes(parseInt(clade));
+        nodes.forEach(function (node) {
+            scope._dontCollapse.add(node);
+        });
+        this._collapsedClades = {};
+        // Note: currently collapseClades is the only method that set
+        // the node visibility property.
+        for (var i = 1; i <= this._tree.size; i++) {
+            this.setNodeInfo(i, "visible", true);
+        }
+
+        this._collapsedCladeBuffer = [];
+        this.collapseClades();
+        this.drawTree();
+    };
     /**
      * Collapses all clades that share the same color into a quadrilateral.
      *
@@ -2508,13 +2715,23 @@ define([
         var inorder = this._tree.inOrderNodes();
         for (var node in inorder) {
             node = inorder[node];
+
+            // dont collapse clade
+            if (this._dontCollapse.has(node)) {
+                continue;
+            }
             var visible = this.getNodeInfo(node, "visible");
             var isTip = this._tree.isleaf(this._tree.postorderselect(node));
 
             if (visible && !isTip && this._group[node] !== -1) {
-                this._collapseClade(node);
+                if (this._tree.getNumTips(node) > 1) {
+                    this._collapseClade(node);
+                } else {
+                    this._dontCollapse.add(node);
+                }
             }
         }
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
     };
 
     /**
@@ -2550,7 +2767,7 @@ define([
         //          left  - the tip with the smallest angle
         //          right - the tip with the largest angle
         var addPoint = function (point) {
-            cladeBuffer.push(...point, ...color);
+            cladeBuffer.push(...point, color);
         };
         var getCoords = function (node) {
             return [scope.getX(node), scope.getY(node)];
@@ -3131,7 +3348,8 @@ define([
         return samplePresence;
     };
 
-    /** Show the node menu for a node name
+    /**
+     * Show the node menu for a node name
      *
      * @param {String} nodeName The name of the node to show.
      */
@@ -3145,6 +3363,57 @@ define([
 
         this._events.selectedNodeMenu.clearSelectedNode();
         this._events.placeNodeSelectionMenu(nodeName, this.focusOnSelectedNode);
+    };
+
+    /**
+     * Returns an Object describing various tree-level statistics.
+     *
+     * @return {Object} Contains six keys:
+     *                  -min: Minimum non-root node length
+     *                  -max: Maximum non-root node length
+     *                  -avg: Average non-root node length
+     *                  -tipCt: Number of tips in the tree
+     *                  -intCt: Number of internal nodes in the tree (incl.
+     *                          root)
+     *                  -allCt: Number of all nodes in the tree (incl. root)
+     * @throws {Error} If the tree does not have length information, this will
+     *                 be unable to call BPTree.getLengthStats() and will thus
+     *                 fail.
+     */
+    Empress.prototype.getTreeStats = function () {
+        // Compute node counts
+        var allCt = this._tree.size;
+        var tipCt = this._tree.getNumTips(this._tree.size);
+        var intCt = allCt - tipCt;
+        // Get length statistics
+        var lenStats = this._tree.getLengthStats();
+        return {
+            min: lenStats.min,
+            max: lenStats.max,
+            avg: lenStats.avg,
+            tipCt: tipCt,
+            intCt: intCt,
+            allCt: allCt,
+        };
+    };
+
+    /**
+     * Returns the length corresponding to a node key, or null if the node key
+     * corresponds to the root of the tree.
+     *
+     * (The reason for the null thing is that the root node's length is not
+     * currently validated, so we don't want to show whatever the value
+     * there is stored as internally to the user.)
+     *
+     * @param {Number} nodeKey Postorder position of a node in the tree.
+     * @return {Number} The length of the node.
+     */
+    Empress.prototype.getNodeLength = function (nodeKey) {
+        if (nodeKey === this._tree.size) {
+            return null;
+        } else {
+            return this._tree.length(this._tree.postorderselect(nodeKey));
+        }
     };
 
     return Empress;

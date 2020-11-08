@@ -1,9 +1,10 @@
-require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
-    $,
-    UtilitiesForTesting,
-    util,
-    chroma
-) {
+require([
+    "jquery",
+    "UtilitiesForTesting",
+    "util",
+    "chroma",
+    "Empress",
+], function ($, UtilitiesForTesting, util, chroma, Empress) {
     $(document).ready(function () {
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray
@@ -56,16 +57,19 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
         });
 
         test("Test getNodeCoords", function () {
-            // Note: node 6's name is null which means it will not be
-            // included in the getNodeCoords()
+            // Note: node 6's name is null, which would indicate that it didn't
+            // have an assigned name in the input Newick file. However, for
+            // #348, we still want to draw a circle for it.
             // prettier-ignore
             var rectCoords = new Float32Array([
-                1, 2, 0.75, 0.75, 0.75,
-                3, 4, 0.75, 0.75, 0.75,
-                5, 6, 0.75, 0.75, 0.75,
-                7, 8, 0.75, 0.75, 0.75,
-                9, 10, 0.75, 0.75, 0.75,
-                13, 14, 0.75, 0.75, 0.75,
+                1, 2, 3289650,
+                3, 4, 3289650,
+                5, 6, 3289650,
+                7, 8, 3289650,
+                9, 10, 3289650,
+                // This next row contains coordinate data for node 6
+                11, 12, 3289650,
+                13, 14, 3289650,
             ]);
             this.empress._currentLayout = "Rectangular";
             var empressRecCoords = this.empress.getNodeCoords();
@@ -73,12 +77,13 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
 
             // prettier-ignore
             var circCoords = new Float32Array([
-                15, 16, 0.75, 0.75, 0.75,
-                17, 18, 0.75, 0.75, 0.75,
-                19, 20, 0.75, 0.75, 0.75,
-                21, 22, 0.75, 0.75, 0.75,
-                23, 24, 0.75, 0.75, 0.75,
-                27, 28, 0.75, 0.75, 0.75,
+                15, 16, 3289650,
+                17, 18, 3289650,
+                19, 20, 3289650,
+                21, 22, 3289650,
+                23, 24, 3289650,
+                25, 26, 3289650,
+                27, 28, 3289650,
             ]);
             this.empress._currentLayout = "Circular";
             var empressCirCoords = this.empress.getNodeCoords();
@@ -86,12 +91,13 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
 
             // prettier-ignore
             var unrootCoords = new Float32Array([
-                29, 30, 0.75, 0.75, 0.75,
-                31, 32, 0.75, 0.75, 0.75,
-                33, 34, 0.75, 0.75, 0.75,
-                35, 36, 0.75, 0.75, 0.75,
-                37, 38, 0.75, 0.75, 0.75,
-                41, 42, 0.75, 0.75, 0.75,
+                29, 30, 3289650,
+                31, 32, 3289650,
+                33, 34, 3289650,
+                35, 36, 3289650,
+                37, 38, 3289650,
+                39, 40, 3289650,
+                41, 42, 3289650,
             ]);
             this.empress._currentLayout = "Unrooted";
             var empressUnrootCoords = this.empress.getNodeCoords();
@@ -108,7 +114,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
 
             // the entire tree should be colored. sampleGroup contain all tips
             for (var node = 1; node <= 7; node++) {
-                deepEqual(this.empress.getNodeInfo(node, "color"), [1.0, 0, 0]);
+                deepEqual(this.empress.getNodeInfo(node, "color"), 255);
             }
         });
 
@@ -127,23 +133,11 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             this.empress.colorSampleGroups(sampleGroups);
             for (var node = 1; node <= 7; node++) {
                 if (redNodes.has(node)) {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        1.0,
-                        0,
-                        0,
-                    ]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 255);
                 } else if (greeNodes.has(node)) {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0,
-                        1.0,
-                        0,
-                    ]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 65280);
                 } else {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0.75,
-                        0.75,
-                        0.75,
-                    ]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 3289650);
                 }
             }
         });
@@ -170,18 +164,24 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var aGroupNodes = new Set([1, 3]);
             for (var node = 1; node <= 7; node++) {
                 if (aGroupNodes.has(node)) {
-                    deepEqual(
-                        this.empress.getNodeInfo(node, "color"),
-                        chroma(cm.a).gl().slice(0, 3)
-                    );
+                    equal(this.empress.getNodeInfo(node, "color"), 255);
                 } else {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0.75,
-                        0.75,
-                        0.75,
-                    ]);
+                    equal(this.empress.getNodeInfo(node, "color"), 3289650);
                 }
             }
+
+            cm = this.empress.colorBySampleCat(
+                "f1",
+                "discrete-coloring-qiime",
+                true
+            );
+            // check that the color scales are flipped
+            equal(chroma(cm.a).hex(), "#008080", "color 1 is last qiime color");
+            equal(
+                chroma(cm.b).hex(),
+                "#808000",
+                "color 2 is second last qiime color"
+            );
         });
 
         test("Test colorByFeatureMetadata, tip only", function () {
@@ -212,23 +212,38 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["1"]).gl().slice(0, 3),
+                        255,
                         "node: " + node
                     );
                 } else if (group2.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["2"]).gl().slice(0, 3),
+                        16711680,
                         "node: " + node
                     );
                 } else {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0.75,
-                        0.75,
-                        0.75,
-                    ]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 3289650);
                 }
             }
+
+            // get color map with reverse = true
+            cm = this.empress.colorByFeatureMetadata(
+                "f1",
+                "discrete-coloring-qiime",
+                "tip",
+                true
+            );
+            // check that the color scales are flipped
+            equal(
+                chroma(cm["1"]).hex(),
+                "#008080",
+                "color 1 is last qiime color"
+            );
+            equal(
+                chroma(cm["2"]).hex(),
+                "#808000",
+                "color 2 is second last qiime color"
+            );
 
             // test 'all' method
 
@@ -248,21 +263,17 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["1"]).gl().slice(0, 3),
+                        255,
                         "node: " + node
                     );
                 } else if (group2.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["2"]).gl().slice(0, 3),
+                        16711680,
                         "node: " + node
                     );
                 } else {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0.75,
-                        0.75,
-                        0.75,
-                    ]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 3289650);
                 }
             }
         });
@@ -448,6 +459,21 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var result = this.empress.getSampleCategories();
             result = util.naturalSort(result);
             deepEqual(result, categories);
+
+            // Check getSampleCategories() if no sample metadata passed to
+            // Empress -- an empty array should be returned
+            testData = UtilitiesForTesting.getTestData();
+            var empWithJustFM = new Empress(
+                testData.tree,
+                null,
+                testData.fmCols,
+                testData.tm,
+                testData.im,
+                testData.canvas
+            );
+            // NOTE: for some reason this fails with equal() but succeeds with
+            // deepEqual(). I have no idea why ._.
+            deepEqual(empWithJustFM.getSampleCategories(), []);
         });
 
         test("Test getAvailableLayouts", function () {
@@ -512,46 +538,31 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
         });
 
         test("Test centerLayoutAvgPoint", function () {
-            // cache average point for all layouts
+            // Epsilon for approximate equality tests
+            var e = 1.0e-15;
             this.empress._currentLayout = "Rectangular";
-            this.empress.centerLayoutAvgPoint();
-            this.empress._currentLayout = "Circular";
-            this.empress.centerLayoutAvgPoint();
-            this.empress._currentLayout = "Unrooted";
-            this.empress.centerLayoutAvgPoint();
+            var avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for rectangular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Rectangular[0] - 7) <=
-                    1.0e-15
-            );
-            // y coor for rectangular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Rectangular[1] - 8) <=
-                    1.0e-15
-            );
+            UtilitiesForTesting.approxDeepEqual(avgPt[0], 7, e);
+            // y coord for rectangular layout
+            UtilitiesForTesting.approxDeepEqual(avgPt[1], 8, e);
+
+            this.empress._currentLayout = "Circular";
+            avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for circular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Circular[0] - 21) <=
-                    1.0e-15
-            );
-            // y coor for circular layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Circular[1] - 22) <=
-                    1.0e-15
-            );
+            UtilitiesForTesting.approxDeepEqual(avgPt[0], 21, e);
+            // y coord for circular layout
+            UtilitiesForTesting.approxDeepEqual(avgPt[1], 22, e);
+
+            this.empress._currentLayout = "Unrooted";
+            avgPt = this.empress.centerLayoutAvgPoint();
 
             // x coord for Unrooted layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Unrooted[0] - 35) <=
-                    1.0e-15
-            );
-            // y coor for Unrooted layout
-            ok(
-                Math.abs(this.empress.layoutAvgPoint.Unrooted[1] - 36) <=
-                    1.0e-15
-            );
+            UtilitiesForTesting.approxDeepEqual(avgPt[0], 35, e);
+            // y coord for Unrooted layout
+            UtilitiesForTesting.approxDeepEqual(avgPt[1], 36, e);
         });
 
         test("Test assignGroups", function () {
@@ -610,34 +621,22 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var collapseClades = [
                 35,
                 36,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
                 33,
                 34,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
                 31,
                 32,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
                 35,
                 36,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
                 33,
                 34,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
                 33,
                 34,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
             ];
             deepEqual(this.empress._collapsedCladeBuffer, collapseClades);
 
@@ -671,12 +670,12 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 left: 2,
                 right: 3,
                 deepest: 4,
-                color: [1, 1, 1],
+                color: 255,
             };
 
             // manual set coorindate of nodes to make testing easier
             this.empress._treeData[1] = [
-                [1, 1, 1],
+                255,
                 false,
                 true,
                 0,
@@ -690,7 +689,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 0,
             ];
             this.empress._treeData[2] = [
-                [1, 1, 1],
+                255,
                 false,
                 true,
                 1,
@@ -704,7 +703,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 Math.PI / 4,
             ];
             this.empress._treeData[3] = [
-                [1, 1, 1],
+                255,
                 false,
                 true,
                 -1,
@@ -718,7 +717,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 (3 * Math.PI) / 4,
             ];
             this.empress._treeData[4] = [
-                [1, 1, 1],
+                255,
                 false,
                 true,
                 0,
@@ -737,34 +736,22 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var exp = [
                 0,
                 1,
-                1,
-                1,
-                1,
+                255,
                 0,
                 5,
+                255,
                 1,
                 1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
+                255,
                 0,
                 1,
-                1,
-                1,
-                1,
+                255,
                 0,
                 5,
-                1,
-                1,
-                1,
+                255,
                 -1,
                 -1,
-                1,
-                1,
-                1,
+                255,
             ];
             deepEqual(this.empress._collapsedCladeBuffer, exp);
 
@@ -772,7 +759,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             this.empress._collapsedCladeBuffer = [];
             this.empress._currentLayout = "Rectangular";
             this.empress.createCollapsedCladeShape(1);
-            exp = [1, 0, 1, 1, 1, 5, -1, 1, 1, 1, 5, 1, 1, 1, 1];
+            exp = [1, 0, 255, 5, -1, 255, 5, 1, 255];
             deepEqual(this.empress._collapsedCladeBuffer, exp);
 
             // check circular
@@ -802,17 +789,17 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             sin = Math.sin(0);
             for (var line = 0; line < numSamp; line++) {
                 // root of clade
-                exp.push(...[0, 1, 1, 1, 1]);
+                exp.push(...[0, 1, 255]);
 
                 x = sX * cos - sY * sin;
                 y = sX * sin + sY * cos;
-                exp.push(...[x, y, 1, 1, 1]);
+                exp.push(...[x, y, 255]);
 
                 cos = Math.cos((line + 1) * deltaAngle);
                 sin = Math.sin((line + 1) * deltaAngle);
                 x = sX * cos - sY * sin;
                 y = sX * sin + sY * cos;
-                exp.push(...[x, y, 1, 1, 1]);
+                exp.push(...[x, y, 255]);
             }
             deepEqual(this.empress._collapsedCladeBuffer, exp);
         });
@@ -824,7 +811,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 right: 3,
                 deepest: 3,
                 length: 3,
-                color: [0.75, 0.75, 0.75],
+                color: 3289650,
             };
             deepEqual(this.empress._collapsedClades[4], exp);
 
@@ -835,7 +822,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             this.empress._currentLayout = "Circular";
             this.empress._collapseClade(4);
             exp = {
-                color: [0.75, 0.75, 0.75],
+                color: 3289650,
                 deepest: 3,
                 left: 2,
                 length: 3,
@@ -1145,23 +1132,23 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             this.empress.updateLayout("Circular");
             var node = 1;
             var angleInfo = this.empress._getNodeAngleInfo(node, Math.PI / 2);
-            // The [0.25, 0.5, 0.75] is the GL color we use. (Mostly chosen
-            // here so that each R/G/B value is distinct; apparently this is a
-            // weird shade of blue when you draw it.)
-            this.empress._addCircularBarCoords(coords, 100, 200, angleInfo, [
-                0.25,
-                0.5,
-                0.75,
-            ]);
+            // The 255 is the GL color we use.
+            this.empress._addCircularBarCoords(
+                coords,
+                100,
+                200,
+                angleInfo,
+                255
+            );
             // Each call of _addTriangleCoords() draws a rectangle with two
             // triangles. This involves adding 6 positions to coords, and since
-            // positions take up 5 spaces in an array here (x, y, r, g, b),
+            // positions take up 3 spaces in an array here (x, y, rgb),
             // and since _addCircularBarCoords() creates two rectangles (four
-            // triangles), coords should contain 6*5 = 30 * 2 = 60 + 1 = 61
+            // triangles), coords should contain 6*3*2+1 = 18*2+1 = 36+1 = 37
             // elements. (The + 1 is for the preexisting thing in the array --
             // it's in this test just to check that the input coords array
             // is appended to, not overwritten.)
-            equal(coords.length, 61);
+            equal(coords.length, 37);
 
             // Check the actual coordinate values.
             // For reference, _addTriangleCoords() works by (given four
@@ -1207,18 +1194,18 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 if (i === 0) {
                     equal(v, "preexisting thing in the array");
                 } else {
-                    // Which group of 5 elements (x, y, r, g, b) does this
+                    // Which group of 3 elements (x, y, rgb) does this
                     // value fall in? We can figure this out by taking the
-                    // floor of i / 5. The 0th 5-tuple is tL in the lower
-                    // rectangle (covering [1, 5]), the 1th 5-tuple is bL in
+                    // floor of i / 3. The 0th 3-tuple is tL in the lower
+                    // rectangle (covering [1, 5]), the 1th 3-tuple is bL in
                     // the lower rectangle (covering [6, 10]), etc.
-                    // (This isn't necessary to compute for R / G / B values
-                    // since those are going to be the same at every point, but
+                    // (This isn't necessary to compute for R / G / B value
+                    // since it will be the same at every point, but
                     // this is needed for figuring out what the expected value
                     // should be for an x or y value. checkCoordVal() does the
                     // hard work in figuring that out.)
-                    var floor = Math.floor(i / 5);
-                    switch (i % 5) {
+                    var floor = Math.floor(i / 3);
+                    switch (i % 3) {
                         case 1:
                             // x coordinate
                             checkCoordVal(floor, v, true);
@@ -1227,20 +1214,9 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                             // y coordinate
                             checkCoordVal(floor, v, false);
                             break;
-                        case 3:
-                            // Red (constant)
-                            equal(v, 0.25);
-                            break;
-                        case 4:
-                            // Green (constant)
-                            equal(v, 0.5);
-                            break;
                         case 0:
-                            // Blue (constant)
-                            // Note that although coords[0] is divisible by 5,
-                            // it shouldn't be 0.75 since it's filled in with a
-                            // preexisting value.
-                            equal(v, 0.75);
+                            // color (constant)
+                            equal(v, 255);
                             break;
                         default:
                             throw new Error(
@@ -1257,7 +1233,7 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
             var rx = 1;
             var by = 2;
             var ty = 3;
-            var color = [0.3, 0.8, 0.9];
+            var color = 255;
             this.empress._addRectangularBarCoords(
                 coords,
                 lx,
@@ -1266,24 +1242,24 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                 ty,
                 color
             );
-            // Each point has 5 values (x, y, r, g, b) and there are 3
+            // Each point has 3 values (x, y, rgb) and there are 3
             // triangles (6 points) added, so the length of coords should now
-            // be 6 * 5 = 30.
-            equal(coords.length, 30);
+            // be 6 * 3 = 18.
+            equal(coords.length, 18);
             // We use a pared-down form of the iteration test used above in
             // testing _addCircularBarCoords(). This function is simpler (it
             // only calls _addTriangleCoords() once, so only one rectangle is
             // added), and there isn't a preexisting element in coords, so
             // checking things is much less involved.
             _.each(coords, function (v, i) {
-                var floor = Math.floor(i / 5);
-                switch (i % 5) {
+                var floor = Math.floor(i / 3);
+                switch (i % 3) {
                     case 0:
                         // x coordinate
                         // Same logic as in the circular bar coords test --
-                        // which 5-tuplet of (x, y, r, g, b) is this
+                        // which 3-tuplet of (x, y, rgb) is this
                         // x-coordinate present in? This will determine what it
-                        // SHOULD be (i.e. if this 5-tuplet is supposed to be
+                        // SHOULD be (i.e. if this 3-tuplet is supposed to be
                         // the "top left" of the rectangle being drawn, then
                         // its x-coordinate should be the left x-coordinate)
                         switch (floor) {
@@ -1313,16 +1289,8 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                         }
                         break;
                     case 2:
-                        // Red (constant)
-                        equal(v, 0.3);
-                        break;
-                    case 3:
-                        // Green (constant)
-                        equal(v, 0.8);
-                        break;
-                    case 4:
-                        // Blue (constant)
-                        equal(v, 0.9);
+                        // color (constant)
+                        equal(v, 255);
                         break;
                     default:
                         throw new Error(
@@ -1331,6 +1299,31 @@ require(["jquery", "UtilitiesForTesting", "util", "chroma"], function (
                         );
                 }
             });
+        });
+        test("Test getNodeLength", function () {
+            // The test tree's lengths are the same as the postorder position
+            // of each node, so this is very simple to test
+            for (var i = 1; i < 7; i++) {
+                deepEqual(this.empress.getNodeLength(i), i);
+            }
+            deepEqual(
+                this.empress.getNodeLength(7),
+                null,
+                "Root length always returned as null"
+            );
+            // We don't check it here, but if you pass in 0 then you get back
+            // undefined (at least as of writing). This should probably throw
+            // an error -- I think delegating that to BPTree.length() would
+            // make more sense.
+        });
+        test("Test getTreeStats", function () {
+            var stats = this.empress.getTreeStats();
+            deepEqual(stats.min, 1, "Minimum length");
+            deepEqual(stats.max, 6, "Maximum length");
+            deepEqual(stats.avg, 3.5, "Average length");
+            deepEqual(stats.tipCt, 4, "Tip count");
+            deepEqual(stats.intCt, 3, "Internal node count");
+            deepEqual(stats.allCt, 7, "Total node count");
         });
     });
 });

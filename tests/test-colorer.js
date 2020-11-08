@@ -127,6 +127,20 @@ require([
             equal(colorer.__valueToColor["3"], "#e6f5d0");
             equal(colorer.__valueToColor["4"], "#7fbc41");
         });
+        test("Test construction with a div. color map, all numeric values, and reverse", function () {
+            // Mostly same as the sequential + all numeric values test above,
+            // but just with a Colorer.DIVERGING color map that is reversed.
+            var eles = ["5", "2", "3", "1", "4", "-5"];
+            var colorer = new Colorer("PiYG", eles, false, undefined, true);
+            // Test extreme numeric values
+            equal(colorer.__valueToColor["5"], "#8e0152");
+            equal(colorer.__valueToColor["-5"], "#276419");
+            // Test intermediate numeric values
+            equal(colorer.__valueToColor["4"], "#de77ae");
+            equal(colorer.__valueToColor["3"], "#fde0ef");
+            equal(colorer.__valueToColor["2"], "#e6f5d0");
+            equal(colorer.__valueToColor["1"], "#7fbc41");
+        });
         test("Test construction with a div. color map, all numeric values, and useQuantScale = true", function () {
             var eles = ["5", "2", "3", "1", "4", "0", "-5"];
             var colorer = new Colorer("PiYG", eles, true);
@@ -168,6 +182,24 @@ require([
             equal(hexmap["3"], "#450a5c");
             equal(hexmap["100"], "#fee825");
         });
+        test("Test construction with a seq. color map, all numeric values, useQuantScale = true, and reverse = true", function () {
+            var colorer = new Colorer(
+                "Viridis",
+                ["1", "0", "100", "3", "2"],
+                true,
+                undefined,
+                true
+            );
+            hexmap = colorer.getMapHex();
+            equal(_.keys(hexmap).length, 5);
+            // As with above, (reversed here) expected colors determined by
+            // trying chroma.scale(chroma.brewer.Viridis).domain([100, 0])(n);
+            equal(hexmap["0"], "#fee825");
+            equal(hexmap["1"], "#f8e725");
+            equal(hexmap["2"], "#f2e626");
+            equal(hexmap["3"], "#ede626");
+            equal(hexmap["100"], "#440154");
+        });
         test("Test construction with a seq. color map, numeric + non-numeric values, and useQuantScale = true", function () {
             // Same as the above test but with an extra non-numeric thing
             // tossed in
@@ -202,21 +234,38 @@ require([
             c = new Colorer("Dark2", eles);
             var rgbMap = c.getMapRGB();
             for (var i = 0; i < 3; i++) {
-                var expRGB = chroma(
-                    dark2palette[i % dark2palette.length]
-                ).rgb();
+                var expRGB = chroma(dark2palette[i]).rgb();
                 // Convert expRGB from an array of 3 numbers in the range
-                // [0, 255] to an array of 3 numbers in the range [0, 1] scaled
-                // proportionally.
-                var scaledExpRGB = expRGB.map(function (x) {
-                    return x / 255;
-                });
+                // [0, 255] to a float.
+                var scaledExpRGB = Colorer.rgbToFloat(expRGB);
+
                 var obsRGB = rgbMap[eles[i]];
+
                 // Check that individual R/G/B components are correct
-                for (var v = 0; v < 3; v++) {
-                    equal(obsRGB[v], scaledExpRGB[v]);
-                }
+                equal(obsRGB, scaledExpRGB);
             }
+        });
+        test("Test rgbToFloat", function () {
+            // check red
+            var compressed = Colorer.rgbToFloat([1, 0, 0]);
+            equal(compressed, 1, "check compressed red");
+
+            // check green
+            compressed = Colorer.rgbToFloat([0, 1, 0]);
+            equal(compressed, 256, "check compressed green");
+
+            // check blue
+            compressed = Colorer.rgbToFloat([0, 0, 1]);
+            equal(compressed, 256 * 256);
+        });
+        test("Test uncompress rgb", function () {
+            var redColor = Colorer.rgbToFloat([1, 0, 0]);
+            unpackedRed = Colorer.unpackColor(redColor);
+            deepEqual(unpackedRed, [1, 0, 0], "unpacked red");
+
+            var randColor = Colorer.rgbToFloat([47, 255, 52]);
+            var unpackedRand = Colorer.unpackColor(randColor);
+            deepEqual(unpackedRand, [47, 255, 52], "unpacked random");
         });
         test("Test Colorer.getMapHex", function () {
             var eles = ["abc", "def", "ghi"];
@@ -244,11 +293,8 @@ require([
             rgbmap = colorer.getMapRGB();
             equal(_.keys(rgbmap).length, 1);
             equal(_.keys(rgbmap)[0], "abc");
-            // Hack to check that the values here are approximately right.
-            // See https://stackoverflow.com/a/12830454/10730311 for details.
-            equal(rgbmap.abc[0].toFixed(2), 0.89);
-            equal(rgbmap.abc[1].toFixed(2), 0.1);
-            equal(rgbmap.abc[2].toFixed(2), 0.11);
+
+            equal(rgbmap.abc, 1841892);
 
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 1);
@@ -265,14 +311,32 @@ require([
             rgbmap = colorer.getMapRGB();
             equal(_.keys(rgbmap).length, 1);
             equal(_.keys(rgbmap)[0], "abc");
-            equal(rgbmap.abc[0].toFixed(2), 0.27);
-            equal(rgbmap.abc[1].toFixed(2), 0.0);
-            equal(rgbmap.abc[2].toFixed(2), 0.33);
+            equal(rgbmap.abc, 5505348);
 
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 1);
             equal(_.keys(hexmap)[0], "abc");
             equal(hexmap.abc, "#440154");
+        });
+        test("Test using a sequential color map and a single value and reverse = true", function () {
+            var colorer = new Colorer(
+                "Viridis",
+                ["abc"],
+                undefined,
+                undefined,
+                true
+            );
+            // The last value in the color map (for viridis, yellow)
+            // should be used.
+            equal(colorer.__valueToColor.abc, "#fee825");
+
+            rgbmap = colorer.getMapRGB();
+            equal(_.keys(rgbmap).length, 1);
+            equal(_.keys(rgbmap)[0], "abc");
+            hexmap = colorer.getMapHex();
+            equal(_.keys(hexmap).length, 1);
+            equal(_.keys(hexmap)[0], "abc");
+            equal(hexmap.abc, "#fee825");
         });
         test("Test that using a sequential / diverging color map with useQuantScale = true throws an error when there are < 2 unique numeric values", function () {
             throws(function () {
@@ -296,6 +360,23 @@ require([
             equal(hexmap["1"], "#1f78b4");
             equal(hexmap["2"], "#b2df8a");
             equal(hexmap["100"], "#33a02c");
+        });
+        test("Test discrete color map with reverse = true", function () {
+            var colorer = new Colorer(
+                "discrete-coloring-qiime",
+                ["1", "2", "100", "abc"],
+                false,
+                undefined,
+                true
+            );
+            hexmap = colorer.getMapHex();
+            equal(_.keys(hexmap).length, 4);
+            // Note that although "abc" is non-numeric it still gets assigned a
+            // (normal) color
+            equal(hexmap.abc, "#008080");
+            equal(hexmap["1"], "#808000");
+            equal(hexmap["2"], "#a54700");
+            equal(hexmap["100"], "#00b6ff");
         });
         test("Test that useQuantScale = true works if only 2 numeric values", function () {
             var colorer = new Colorer(
@@ -392,107 +473,123 @@ require([
         });
         test("Test Colorer.hex2RGB", function () {
             // Red
-            deepEqual(Colorer.hex2RGB("#ff0000"), [1, 0, 0]);
-            deepEqual(Colorer.hex2RGB("#f00"), [1, 0, 0]);
+            deepEqual(Colorer.hex2RGB("#ff0000"), 255);
+            deepEqual(Colorer.hex2RGB("#f00"), 255);
             // Green
-            deepEqual(Colorer.hex2RGB("#00ff00"), [0, 1, 0]);
-            deepEqual(Colorer.hex2RGB("#0f0"), [0, 1, 0]);
+            deepEqual(Colorer.hex2RGB("#00ff00"), 65280);
+            deepEqual(Colorer.hex2RGB("#0f0"), 65280);
             // Blue
-            deepEqual(Colorer.hex2RGB("#0000ff"), [0, 0, 1]);
-            deepEqual(Colorer.hex2RGB("#00f"), [0, 0, 1]);
+            deepEqual(Colorer.hex2RGB("#0000ff"), 16711680);
+            deepEqual(Colorer.hex2RGB("#00f"), 16711680);
             // Ugly fuchsia
-            deepEqual(Colorer.hex2RGB("#f0f"), [1, 0, 1]);
+            deepEqual(Colorer.hex2RGB("#f0f"), 16711935);
             // Black
-            deepEqual(Colorer.hex2RGB("#000"), [0, 0, 0]);
-            deepEqual(Colorer.hex2RGB("#000000"), [0, 0, 0]);
+            deepEqual(Colorer.hex2RGB("#000"), 0);
+            deepEqual(Colorer.hex2RGB("#000000"), 0);
             // White
-            deepEqual(Colorer.hex2RGB("#fff"), [1, 1, 1]);
-            deepEqual(Colorer.hex2RGB("#ffffff"), [1, 1, 1]);
+            deepEqual(Colorer.hex2RGB("#fff"), 16777215);
+            deepEqual(Colorer.hex2RGB("#ffffff"), 16777215);
 
-            // For checking less "easy" colors, we round off both
-            // the observed and expected color channels to a reasonable
-            // precision (4 places after the decimal point).
-            // For reference, Chroma.js' docs -- when showing GL color arrays
-            // -- only seem to use 2 places after the decimal point, so this
-            // should be fine.
-            var checkColorApprox = function (obsColorArray, expColorArray) {
-                for (var i = 0; i < 3; i++) {
-                    var obsChannel = obsColorArray[0].toFixed(4);
-                    var expChannel = expColorArray[0].toFixed(4);
-                    deepEqual(obsChannel, expChannel);
-                }
-            };
             // QIIME orange (third value in the Classic QIIME Colors map)
-            checkColorApprox(Colorer.hex2RGB("#f27304"), [
-                0.949019,
-                0.45098,
-                0.015686,
-            ]);
+            equal(Colorer.hex2RGB("#f27304"), 291826);
             // QIIME purple (fifth color in the Classic QIIME Colors map)
-            checkColorApprox(Colorer.hex2RGB("#91278d"), [
-                0.568627,
-                0.152941,
-                0.552941,
-            ]);
+            equal(Colorer.hex2RGB("#91278d"), 9250705);
         });
-        test("Test Colorer.getGradientSVG (all numeric values)", function () {
+        test("Test Colorer.getGradientInfo (just numeric values)", function () {
             var eles = ["0", "1", "2", "3", "4"];
             var colorer = new Colorer("Viridis", eles, true);
-            var gradInfo = colorer.getGradientSVG();
+            var gradInfo = colorer.getGradientInfo();
 
-            equal(gradInfo[0], UtilitiesForTesting.getReferenceSVG());
+            var ref = UtilitiesForTesting.getReferenceSVGs();
+            equal(gradInfo.gradientSVG, ref[0]);
+            equal(gradInfo.pageSVG, ref[1]);
+            equal(gradInfo.minValStr, "0");
+            equal(gradInfo.midValStr, "2");
+            equal(gradInfo.maxValStr, "4");
             // The missingNonNumerics value should be false, since all of the
             // values we passed to Colorer are numeric
-            notOk(gradInfo[1]);
+            notOk(gradInfo.missingNonNumerics);
         });
-        test("Test Colorer.getGradientSVG (numeric + non-numeric values)", function () {
+        test("Test Colorer.getGradientInfo (numeric + non-numeric values)", function () {
             var eles = ["0", "1", "2", "3", "asdf", "4"];
             var colorer = new Colorer("Viridis", eles, true);
-            var gradInfo = colorer.getGradientSVG();
-            equal(gradInfo[0], UtilitiesForTesting.getReferenceSVG());
-            // Should be true -- since the values we passed are not all numeric
-            ok(gradInfo[1]);
+            var gradInfo = colorer.getGradientInfo();
+
+            var ref = UtilitiesForTesting.getReferenceSVGs();
+            equal(gradInfo.gradientSVG, ref[0]);
+            equal(gradInfo.pageSVG, ref[1]);
+            equal(gradInfo.minValStr, "0");
+            equal(gradInfo.midValStr, "2");
+            equal(gradInfo.maxValStr, "4");
+            // Main difference with previous test: non-numeric warning should
+            // be used
+            ok(gradInfo.missingNonNumerics);
         });
-        test("Test Colorer.getGradientSVG (custom gradientIDSuffix)", function () {
+        test("Test Colorer.getGradientInfo (custom gradientIDSuffix)", function () {
             var eles = ["0", "1", "2", "3", "4"];
             var colorer = new Colorer("Viridis", eles, true, 5);
-            var gradInfo = colorer.getGradientSVG();
+            var gradInfo = colorer.getGradientInfo();
 
-            // The "Gradient0" IDs in the reference SVG should be replaced with
-            // "Gradient5". The split/join thing is a way of replacing one
+            // The "Gradient0" IDs in the reference SVGs should be replaced
+            // with "Gradient5". The split/join thing is a way of replacing one
             // sequence with another, since JS' standard library doesn't seem
             // to have an easy cross-browser-supported way to do this as of
             // writing: see https://stackoverflow.com/a/1145525/10730311.
-            equal(
-                gradInfo[0],
-                UtilitiesForTesting.getReferenceSVG()
-                    .split("Gradient0")
-                    .join("Gradient5")
-            );
-            notOk(gradInfo[1]);
+            var repl = function (svgtext) {
+                return svgtext.split("Gradient0").join("Gradient5");
+            };
+
+            var ref = UtilitiesForTesting.getReferenceSVGs();
+            equal(gradInfo.gradientSVG, repl(ref[0]));
+            equal(gradInfo.pageSVG, repl(ref[1]));
+            equal(gradInfo.minValStr, "0");
+            equal(gradInfo.midValStr, "2");
+            equal(gradInfo.maxValStr, "4");
+            notOk(gradInfo.missingNonNumerics);
         });
-        test("Test Colorer.getGradientSVG (error: no gradient defined)", function () {
-            var expectedErrorRegex = /No gradient defined for this Colorer; check that useQuantScale is true and that the selected color map is not discrete./;
+        test("Test Colorer.getGradientInfo (numeric + non-numeric values, reverse = true)", function () {
+            var eles = ["0", "1", "2", "3", "asdf", "4"];
+            var colorer = new Colorer("Viridis", eles, true, undefined, true);
+            var gradInfo = colorer.getGradientInfo();
+            ok(
+                gradInfo.gradientSVG.includes(
+                    '<stop offset="0%" stop-color="#fee825"/>'
+                )
+            );
+            ok(
+                gradInfo.gradientSVG.includes(
+                    '<stop offset="100%" stop-color="#440154"/>'
+                )
+            );
+            var ref = UtilitiesForTesting.getReferenceSVGs();
+            equal(gradInfo.pageSVG, ref[1]);
+            equal(gradInfo.minValStr, "0");
+            equal(gradInfo.midValStr, "2");
+            equal(gradInfo.maxValStr, "4");
+            ok(gradInfo.missingNonNumerics);
+        });
+        test("Test Colorer.getGradientInfo (error: no gradient data)", function () {
+            var expectedErrorRegex = /No gradient data defined for this Colorer; check that useQuantScale is true and that the selected color map is not discrete./;
 
             // Error case 1: useQuantScale is false
             var eles = ["0", "1", "2", "3", "4"];
             var colorer = new Colorer("Viridis", eles);
             throws(function () {
-                colorer.getGradientSVG();
+                colorer.getGradientInfo();
             }, expectedErrorRegex);
 
             // Error case 2: useQuantScale is true, but the color map is
             // discrete
             colorer = new Colorer("Paired", eles, true);
             throws(function () {
-                colorer.getGradientSVG();
+                colorer.getGradientInfo();
             }, expectedErrorRegex);
 
             // Error case 3: useQuantScale is false and the color map is
             // discrete
             colorer = new Colorer("Pastel2", eles);
             throws(function () {
-                colorer.getGradientSVG();
+                colorer.getGradientInfo();
             }, expectedErrorRegex);
         });
         test("Test Colorer with custom colormaps", function () {

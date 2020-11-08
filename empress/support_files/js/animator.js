@@ -7,26 +7,16 @@ define(["Colorer", "util"], function (Colorer, util) {
      *
      * @param{Empress} empress The core class. Entry point for all metadata and
      *                tree operations.
-     * @param{Legend} legend Display on the left side of screen. The legend will
-     *                show the current time frame and the color assigned the
-     *                trajectories.
      *
      * @returns{Animator}
      * @constructs Animator
      */
-    function Animator(empress, legend) {
+    function Animator(empress) {
         /**
          * @type {Empress}
          * The Empress state machine
          */
         this.empress = empress;
-
-        /**
-         * @type {Legend}
-         * Used to display current time frame and the color assigned the
-         * trajectories.
-         */
-        this.legend = legend;
 
         /**
          * @type {Object}
@@ -130,13 +120,17 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @param {Boolean} collapse Tells animator to collapse clades
      * @param {Number} lWidth Tells animator how thick to make colored tree
      *                        branches
+     * @param{Boolean} reverse Defaults to false. If true, the color scale
+     *                         will be reversed, with respect to its default
+     *                         orientation.
      */
     Animator.prototype.setAnimationParameters = function (
         trajectory,
         gradient,
         cm,
         collapse,
-        lWidth
+        lWidth,
+        reverse = false
     ) {
         this.gradientCol = gradient;
         this.gradientSteps = this.empress.getUniqueSampleValues(gradient);
@@ -150,7 +144,13 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.trajectoryCol = trajectory;
         var trajectories = this.empress.getUniqueSampleValues(trajectory);
         // Assign a color to each unique category
-        var colorer = new Colorer(cm, trajectories);
+        var colorer = new Colorer(
+            cm,
+            trajectories,
+            undefined,
+            undefined,
+            reverse
+        );
         this.cm = colorer.getMapRGB();
         this.legendInfo = colorer.getMapHex();
 
@@ -227,7 +227,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         }
 
         // draw new legend
-        this.legend.addCategoricalKey(name, keyInfo);
+        this.empress.updateLegendCategorical(name, keyInfo);
 
         // draw tree
         this.empress.resetTree();
@@ -329,7 +329,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      */
     Animator.prototype.stopAnimation = function () {
         this.__resetParams();
-        this.legend.clear();
+        this.empress.clearLegend();
         this.empress.resetTree();
         this.empress.drawTree();
     };

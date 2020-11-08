@@ -11,6 +11,10 @@ define(["underscore", "util"], function (_, util) {
         this.nodeNameLabel = document.getElementById("menu-box-node-id");
         this.notes = document.getElementById("menu-box-notes");
         this.warning = document.getElementById("menu-box-warning");
+        this.nodeLengthContainer = document.getElementById(
+            "menu-box-node-length-container"
+        );
+        this.nodeLengthLabel = document.getElementById("menu-box-node-length");
         this.fmTable = document.getElementById("menu-fm-table");
         this.fmHeader = document.getElementById("menu-fm-header");
         this.smHeader = document.getElementById("menu-sm-header");
@@ -28,24 +32,27 @@ define(["underscore", "util"], function (_, util) {
     SelectedNodeMenu.prototype.initialize = function () {
         var scope = this;
 
-        // add items to select
-        var selOpts = this.empress.getSampleCategories();
-        for (var i = 0; i < selOpts.length; i++) {
-            var opt = document.createElement("option");
-            opt.value = selOpts[i];
-            opt.innerHTML = selOpts[i];
-            this.sel.appendChild(opt);
+        if (this.empress.isCommunityPlot) {
+            // add items to select
+            var selOpts = this.empress.getSampleCategories();
+            for (var i = 0; i < selOpts.length; i++) {
+                var opt = document.createElement("option");
+                opt.value = selOpts[i];
+                opt.innerHTML = selOpts[i];
+                this.sel.appendChild(opt);
+            }
+            // add event to add button
+            var click = function () {
+                var val = scope.sel.value;
+                scope.sel.options[scope.sel.selectedIndex].remove();
+                scope.fields.push(val);
+                scope.smHeader.classList.remove("hidden");
+                scope.showNodeMenu();
+            };
+            this.addBtn.onclick = click;
+        } else {
+            this.smSection.classList.add("hidden");
         }
-
-        // add event to add button
-        var click = function () {
-            var val = scope.sel.value;
-            scope.sel.options[scope.sel.selectedIndex].remove();
-            scope.fields.push(val);
-            scope.smHeader.classList.remove("hidden");
-            scope.showNodeMenu();
-        };
-        this.addBtn.onclick = click;
     };
 
     /*
@@ -184,7 +191,11 @@ define(["underscore", "util"], function (_, util) {
         var node = nodeKeys[0];
         var name = emp.getNodeInfo(node, "name");
 
-        this.nodeNameLabel.textContent = "Name: " + name;
+        if (name === null) {
+            this.nodeNameLabel.textContent = "Unnamed node";
+        } else {
+            this.nodeNameLabel.textContent = "Name: " + name;
+        }
 
         this.notes.textContent = "";
         this.warning.textContent = "";
@@ -240,33 +251,43 @@ define(["underscore", "util"], function (_, util) {
             this.fmTable
         );
 
-        // 2. Add sample presence information for this tip
-        var ctData = this.empress.computeTipSamplePresence(node, this.fields);
+        this.setNodeLengthLabel(node);
 
-        // 2.1 The samples represented by this tip are sent to Emperor
-
-        // check if this tip is present in the BIOM table. The array returned
-        // by BIOMTable.getObsIDsDifference() contains the feature IDs present
-        // in the input array but not in the BIOM table -- so if the length of
-        // this array is zero, this feature is present in the table.
-        var diff = this.empress._biom.getObsIDsDifference([node]);
-        if (diff.length == 0) {
-            this._samplesInSelection = this.empress._biom.getSamplesByObservations(
-                [node]
+        if (this.empress.isCommunityPlot) {
+            // 2. Add sample presence information for this tip
+            // TODO: handle case where tip isn't in table, which happens if
+            // --p-no-shear-to-table is passed
+            // (https://github.com/biocore/empress/issues/314)
+            var ctData = this.empress.computeTipSamplePresence(
+                node,
+                this.fields
             );
-        } else {
-            this._samplesInSelection = [];
-        }
-        this._checkTips(diff);
 
-        SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
-        if (this.fields.length > 0) {
-            this.notes.textContent =
-                "This node is a tip in the tree. These values represent the " +
-                "number of unique samples that contain this node.";
+            // 2.1 The samples represented by this tip are sent to Emperor
+
+            // check if this tip is present in the BIOM table. The array returned
+            // by BIOMTable.getObsIDsDifference() contains the feature IDs present
+            // in the input array but not in the BIOM table -- so if the length of
+            // this array is zero, this feature is present in the table.
+            var diff = this.empress._biom.getObsIDsDifference([node]);
+            if (diff.length == 0) {
+                this._samplesInSelection = this.empress._biom.getSamplesByObservations(
+                    [node]
+                );
+            } else {
+                this._samplesInSelection = [];
+            }
+            this._checkTips(diff);
+
+            SelectedNodeMenu.makeSampleMetadataTable(ctData, this.smTable);
+            if (this.fields.length > 0) {
+                this.notes.textContent =
+                    "This node is a tip in the tree. These values represent the " +
+                    "number of unique samples that contain this node.";
+            }
+            this.smSection.classList.remove("hidden");
+            this.smTable.classList.remove("hidden");
         }
-        this.smSection.classList.remove("hidden");
-        this.smTable.classList.remove("hidden");
     };
 
     /**
@@ -296,13 +317,20 @@ define(["underscore", "util"], function (_, util) {
         // The reason we try to figure this out here is so that we can
         // determine whether or not to show a warning about duplicate names
         // in the menu.
-        var keysOfNodesWithThisName = this.empress._tree.getNodesWithName(name);
-        if (keysOfNodesWithThisName.length > 1) {
+        if (name !== null) {
+            var keysOfNodesWithThisName = this.empress._tree.getNodesWithName(
+                name
+            );
+            if (keysOfNodesWithThisName.length > 1) {
+                this.warning.textContent =
+                    "Warning: " +
+                    keysOfNodesWithThisName.length +
+                    " nodes exist with the " +
+                    "above name.";
+            }
+        } else {
             this.warning.textContent =
-                "Warning: " +
-                keysOfNodesWithThisName.length +
-                " nodes exist with the " +
-                "above name.";
+                "No name was provided for this node in the input tree file.";
         }
 
         // 1. Add feature metadata information (if present) for this node
@@ -326,30 +354,34 @@ define(["underscore", "util"], function (_, util) {
         if (isUnambiguous) {
             // this.nodeKeys has a length of 1
             var nodeKey = this.nodeKeys[0];
-            var tips = this.empress._tree.findTips(nodeKey);
+            this.setNodeLengthLabel(nodeKey);
+            if (this.empress.isCommunityPlot) {
+                var tips = this.empress._tree.findTips(nodeKey);
 
-            var emp = this.empress;
-            var samplePresence = emp.computeIntSamplePresence(
-                nodeKey,
-                this.fields
-            );
+                var emp = this.empress;
+                var samplePresence = emp.computeIntSamplePresence(
+                    nodeKey,
+                    this.fields
+                );
 
-            // used for the emperor callback
-            this._samplesInSelection = this._samplesInSelection.concat(
-                samplePresence.samples
-            );
+                // used for the emperor callback
+                this._samplesInSelection = this._samplesInSelection.concat(
+                    samplePresence.samples
+                );
 
-            this._checkTips(samplePresence.diff);
+                this._checkTips(samplePresence.diff);
 
-            SelectedNodeMenu.makeSampleMetadataTable(
-                samplePresence.fieldsMap,
-                this.smTable
-            );
-            this.smSection.classList.remove("hidden");
-            this.smTable.classList.remove("hidden");
+                SelectedNodeMenu.makeSampleMetadataTable(
+                    samplePresence.fieldsMap,
+                    this.smTable
+                );
+                this.smSection.classList.remove("hidden");
+                this.smTable.classList.remove("hidden");
+            }
         } else {
             this.smSection.classList.add("hidden");
             this.smTable.classList.add("hidden");
+            this.nodeLengthContainer.classList.add("hidden");
         }
 
         // If isUnambiguous is false, no notes will be shown and the sample
@@ -376,6 +408,25 @@ define(["underscore", "util"], function (_, util) {
                     "feature table and ordination: " +
                     diff.join(", ")
             );
+        }
+    };
+
+    /**
+     * Updates and shows the node length UI elements for a given node.
+     *
+     * (If the node is the root of the tree, this will actually hide the UI
+     * elements. See Empress.getNodeLength() for details.)
+     *
+     * @param {Number} nodeKey Postorder position of a node in the tree.
+     */
+    SelectedNodeMenu.prototype.setNodeLengthLabel = function (nodeKey) {
+        var nodeLength = this.empress.getNodeLength(nodeKey);
+        if (nodeLength !== null) {
+            this.nodeLengthLabel.textContent = nodeLength;
+            this.nodeLengthContainer.classList.remove("hidden");
+        } else {
+            // Don't show the length for the root node
+            this.nodeLengthContainer.classList.add("hidden");
         }
     };
 
@@ -440,7 +491,8 @@ define(["underscore", "util"], function (_, util) {
             var node = nodeKeys[i];
             var x = this.empress.getX(node);
             var y = this.empress.getY(node);
-            highlightedNodes.push(...[x, y, 0, 1, 0]);
+            // Add a green circle indicating the highlighted node(s)
+            highlightedNodes.push(...[x, y, 65280]);
         }
 
         // send the buffer array to the drawer
