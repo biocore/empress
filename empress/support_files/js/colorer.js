@@ -395,7 +395,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     };
 
     /**
-     * Converts an RGB color array to a GL array.
+     * Converts an RGB color array (with values in the range [0, 255])
+     * to an RGB GL array (with values in the range [0, 1]).
      *
      * @param {Array} rgbArray An array of the format [R, G, B], where each
      *                         element is in the range [0, 255].
