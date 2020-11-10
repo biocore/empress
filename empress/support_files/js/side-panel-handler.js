@@ -84,6 +84,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             "layout-method-container"
         );
         this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
+        this.makeUltrametricChk = document.getElementById(
+            "make-ultrametric-chk"
+        );
         this.leafSortingContainer = document.getElementById(
             "leaf-sorting-container"
         );
@@ -91,6 +94,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.leafSortingDesc = document.getElementById("leaf-sorting-desc");
         this.ignoreLengthsChk.onclick = function () {
             empress.ignoreLengths = this.checked;
+            empress.reLayout();
+        };
+        this.makeUltrametricChk.onclick = function () {
+            empress.makeUltrametric = this.checked;
             empress.reLayout();
         };
         this.leafSortingSel.onchange = function () {

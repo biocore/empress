@@ -276,6 +276,12 @@ define([
         this.ignoreLengths = false;
 
         /**
+         * @type{Bool}
+         * Whether to make branch lengths ultrametric during layout or not
+         */
+        this.makeUltrametric = false;
+
+        /**
          * @type{String}
          * Leaf sorting method: one of "none", "ascending", or "descending"
          */
@@ -356,7 +362,17 @@ define([
      * Also updates this._maxDisplacement.
      */
     Empress.prototype.getLayoutInfo = function () {
-        var data, i;
+        var data, i, lengthGetter;
+        // set up length getter
+        var ultraMetricLengths;
+        if (this.makeUltrametric) {
+            ultraMetricLengths = LayoutsUtil.getUltrametricLengths(this._tree);
+            lengthGetter = function (i) {
+                return ultraMetricLengths[i];
+            };
+        } else {
+            lengthGetter = null;
+        }
         // Rectangular
         if (this._currentLayout === "Rectangular") {
             data = LayoutsUtil.rectangularLayout(
@@ -364,7 +380,9 @@ define([
                 4020,
                 4020,
                 this.ignoreLengths,
-                this.leafSorting
+                this.leafSorting,
+                undefined,
+                lengthGetter
             );
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
@@ -385,7 +403,10 @@ define([
                 4020,
                 4020,
                 this.ignoreLengths,
-                this.leafSorting
+                this.leafSorting,
+                undefined,
+                undefined,
+                lengthGetter
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
@@ -409,7 +430,9 @@ define([
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths
+                this.ignoreLengths,
+                undefined,
+                lengthGetter
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
