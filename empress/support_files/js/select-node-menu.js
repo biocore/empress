@@ -238,7 +238,10 @@ define(["underscore", "util"], function (_, util) {
                     }
                 } else {
                     hide(this.smTable);
-                    hide(this.smNotes);
+                    updateAndShow(
+                        this.smNotes,
+                        "No sample metadata columns selected yet."
+                    );
                     show(this.smAddSection);
                 }
                 if (tipOrInt === "int" && diffLen > 0) {
