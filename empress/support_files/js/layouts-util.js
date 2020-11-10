@@ -85,6 +85,18 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         return lengths;
     }
 
+    function _determineLengthGetter(lengthGetter, ignoreLengths, tree) {
+        var getLength;
+        if (lengthGetter === null) {
+            getLength = function (i) {
+                return ignoreLengths ? 1 : tree.length(i);
+            };
+        } else {
+            getLength = lengthGetter;
+        }
+        return getLength;
+    }
+
     /**
      * Rectangular layout.
      *
@@ -123,6 +135,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
+     * @param {function} lengthGetter TODO
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -139,7 +152,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         height,
         ignoreLengths,
         leafSorting,
-        normalize = true
+        normalize = true,
+        lengthGetter = null,
     ) {
         var maxWidth = 0;
         var maxHeight = 0;
@@ -148,6 +162,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var yCoord = new Array(tree.size + 1).fill(0);
         var highestChildYr = new Array(tree.size + 1);
         var lowestChildYr = new Array(tree.size + 1);
+        var getLength = _determineLengthGetter(lengthGetter, ignoreLengths, tree);
 
         var postOrderNodes = getPostOrderNodes(tree, leafSorting);
         var i;
@@ -183,7 +198,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var node = tree.postorder(prepos);
             parent = tree.postorder(tree.parent(prepos));
 
-            var nodeLen = ignoreLengths ? 1 : tree.length(prepos);
+            var nodeLen = getLength(prepos);
             xCoord[node] = xCoord[parent] + nodeLen;
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
@@ -354,7 +369,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         ignoreLengths,
         leafSorting,
         normalize = true,
-        startAngle = 0
+        startAngle = 0,
+        lengthGetter = null,
     ) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
@@ -378,6 +394,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minX = Number.POSITIVE_INFINITY;
         var maxY = 0,
             minY = Number.POSITIVE_INFINITY;
+
+        var getLength = _determineLengthGetter(lengthGetter, ignoreLengths, tree);
 
         // Iterate over the tree in postorder, assigning angles
         // Note that we skip the root (using "p < postOrderNodes.length - 1"),
@@ -415,7 +433,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var node = tree.postorder(prepos);
             var parent = tree.postorder(tree.parent(prepos));
 
-            var nodeLen = ignoreLengths ? 1 : tree.length(prepos);
+            var nodeLen = getLength(prepos);
             radius[node] = radius[parent] + nodeLen;
         }
 
@@ -553,7 +571,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         width,
         height,
         ignoreLengths,
-        normalize = true
+        normalize = true,
+        lengthGetter = null,
     ) {
         var da = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
@@ -561,6 +580,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var y1Arr = new Array(tree.size + 1);
         var y2Arr = new Array(tree.size + 1).fill(0);
         var aArr = new Array(tree.size + 1);
+        var getLength = _determineLengthGetter(lengthGetter, ignoreLengths, tree);
 
         var n = tree.postorderselect(tree.size);
         var x1, y1, a;
@@ -593,7 +613,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             a += (tree.getNumTips(node) * da) / 2;
 
             n = tree.postorderselect(node);
-            var nodeLen = ignoreLengths ? 1 : tree.length(n);
+            var nodeLen = getLength(n);
             x2 = x1 + nodeLen * Math.sin(a);
             y2 = y1 + nodeLen * Math.cos(a);
             x1Arr[node] = x1;
