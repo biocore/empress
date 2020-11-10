@@ -580,7 +580,9 @@ define(["underscore", "util"], function (_, util) {
         }
         /* Highlight the nodes in nodeKeys on the canvas.
          * The buffer that holds this information is formatted as
-         * [x,y,r,g,b,...] where x,y are the coords of the highlighted nodes.
+         * [x, y, rgb, ...] where x, y are the coords of the
+         * highlighted node(s) and rgb is the RGB float corresponding to the
+         * node highlighting color.
          */
         var highlightedNodes = [];
         for (i = 0; i < nodeKeys.length; i++) {
