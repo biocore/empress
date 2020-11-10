@@ -238,6 +238,14 @@ define([
         this._maxDisplacement = null;
 
         /**
+         * @type {Number}
+         * A multiple of this._maxDisplacement. This is used as the unit for
+         * barplot lengths.
+         * @private
+         */
+        this._barplotUnit = null;
+
+        /**
          * @type{Boolean}
          * Indicates whether or not barplots are currently drawn.
          * @private
@@ -1321,8 +1329,9 @@ define([
      * since the root is (0, 0) so we can think of the circular layout in terms
      * of polar coordinates).
      *
-     * This function doesn't return anything; its only effect is updating
-     * this._maxDisplacement.
+     * This function doesn't return anything; its only effects are updating
+     * this._maxDisplacement and updating this._barplotUnit (which is
+     * proportional to the max displacement).
      *
      * If the current layout does not support barplots, then
      * this._maxDisplacement is set to null.
@@ -1330,10 +1339,48 @@ define([
     Empress.prototype._computeMaxDisplacement = function () {
         var maxD = -Infinity;
         var compFunc;
+        // The purpose of this variable is to make barplots have effectively
+        // the same "thickness" from the user's perspective, proportional to
+        // the tree's "thickness" (regardless of the layout).
+        //
+        // In the rectangular layout, this is set to 1, so that 100 barplot
+        // units (the default length for all barplot layers, as of writing) is
+        // 1/10th of the max displacement.
+        //
+        // Total tree width = 10
+        //  __________
+        // |   _       | |
+        // |--|_       | |
+        // |__         | |
+        //
+        // In the circular layout, the tree looks twice as "thick," because the
+        // max displacement is only the radius of the circle:
+        //
+        // Total tree diameter = 20
+        //
+        //          |
+        //       +--+
+        //      / \
+        //     /   \
+        //    -+    +----------
+        //          |
+        //          |
+        //
+        // (... I don't know how to draw a circle of barplots around that in
+        // ASCII art, but please feel free to imagine it :P)
+        //
+        // Anyway, to compensate for this, we use a factor of 2 for the
+        // circular layout to make the barplots twice as thick (and therefore
+        // scale with the tree diameter). I'm not 100% sure that this is the
+        // best way to handle this problem, but it looks good enough and the
+        // lengths are configurable anyway so I don't think it matters much.
+        var layoutFactor;
         if (this._currentLayout === "Rectangular") {
             compFunc = "_getMaxOfXAndNumber";
+            layoutFactor = 1;
         } else if (this._currentLayout === "Circular") {
             compFunc = "_getMaxOfRadiusAndNumber";
+            layoutFactor = 2;
         } else {
             this._maxDisplacement = null;
             return;
@@ -1344,6 +1391,7 @@ define([
             }
         }
         this._maxDisplacement = maxD;
+        this._barplotUnit = (this._maxDisplacement / 1000) * layoutFactor;
     };
 
     /**
@@ -1401,14 +1449,27 @@ define([
     Empress.prototype.getBarplotData = function (layers) {
         var scope = this;
 
+        if (!this._barplotPanel.isLayoutSupported(this._currentLayout)) {
+            throw new Error(
+                "Non-barplot-supporting layout '" +
+                    this._currentLayout +
+                    "' in use."
+            );
+        }
+
         // The main thing that will be returned by this function
         var barplotBuffer = [];
 
         // Add on a gap between the closest-to-the-root point at which we can
         // start drawing barplots, and the first barplot layer. This could be
         // made into a barplot-panel-level configurable thing if desired.
-        // (Note that, as with barplot lengths, the units here are arbitrary.)
-        var maxD = this._maxDisplacement + 100;
+        // Currently, the 1.1 term here means that the barplots start at the
+        // max displacement plus 1/10th of the max displacement. If we used
+        // a 1.0 term instead, then barplots would start immediately at the max
+        // displacement (this looks kinda bad because the node circle of the
+        // tip(s) at this max displacement are partially covered by the
+        // barplots, so we don't do that).
+        var maxD = 1.1 * this._maxDisplacement;
 
         // As we iterate through the layers, we'll store the "previous layer
         // max D" as a separate variable. This will help us easily work with
@@ -1583,6 +1644,8 @@ define([
             halfAngleRange = Math.PI / this._tree.numleaves();
         }
 
+        var layerLength = layer.lengthSM * this._barplotUnit;
+
         // For each tip in the BIOM table...
         // (We implicitly ignore [and don't draw anything for] tips that
         // *aren't* in the BIOM table.)
@@ -1607,9 +1670,7 @@ define([
                 // NOTE: In this function and in addFMBarplotLayerCoords(), we
                 // don't bother checking if scope._currentLayout is not
                 // Rectangular / Circular. This should already have been
-                // checked for in drawBarplots(), so we can safely assume that
-                // we're in one of the supported layouts. (If not, it's the
-                // caller's problem.)
+                // checked for by the caller.
                 angleInfo = scope._getNodeAngleInfo(node, halfAngleRange);
             }
 
@@ -1638,7 +1699,7 @@ define([
                 // present in at least one sample with that value.
                 if (!_.isUndefined(freq)) {
                     var sectionColor = sm2color[smVal];
-                    var barSectionLen = layer.lengthSM * freq;
+                    var barSectionLen = layerLength * freq;
                     // Assign each unique sample metadata value a length
                     // proportional to its, well, proportion within the sample
                     // presence information for this tip.
@@ -1676,7 +1737,7 @@ define([
         // for this layer. When we get around to supporting scaling sample
         // metadata barplots by length (see issue #353 on GitHub), we'll just
         // need to replace the null.
-        return [prevLayerMaxD + layer.lengthSM, colorer, null];
+        return [prevLayerMaxD + layerLength, colorer, null];
     };
 
     /**
@@ -1867,7 +1928,7 @@ define([
                 }
 
                 // Update maxD if needed
-                var thisLayerMaxD = prevLayerMaxD + length;
+                var thisLayerMaxD = prevLayerMaxD + length * this._barplotUnit;
                 if (thisLayerMaxD > maxD) {
                     maxD = thisLayerMaxD;
                 }
@@ -1921,14 +1982,14 @@ define([
     ) {
         var borderColor = this._barplotPanel.borderColor;
         var borderLength = this._barplotPanel.borderLength;
-        var maxD = prevLayerMaxD + borderLength;
+        var maxD = prevLayerMaxD + borderLength * this._barplotUnit;
         // TODO: Should be changed when the ability to change the background
         // color is added. Basically, we get a "freebie" if the border color
         // matches the background color, and we don't need to draw anything --
         // we can just increase the displacement and leave it at that.
         // (This works out very well if this is the "outermost" border -- then
         // we really don't need to do anything.)
-        if (borderColor === Colorer.rgbToFloat(this._drawer.CLR_COL)) {
+        if (borderColor === Colorer.rgbToFloat(this._drawer.CLR_COL_RGB)) {
             return maxD;
         }
         // ... Otherwise, we actually have to go and create bars

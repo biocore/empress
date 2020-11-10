@@ -1,4 +1,9 @@
-define(["underscore", "glMatrix", "Camera"], function (_, gl, Camera) {
+define(["underscore", "glMatrix", "Camera", "Colorer"], function (
+    _,
+    gl,
+    Camera,
+    Colorer
+) {
     //  Shaders used in Drawer
     var vertShaderTxt = [
         "precision mediump float;",
@@ -62,8 +67,10 @@ define(["underscore", "glMatrix", "Camera"], function (_, gl, Camera) {
         this.VERTEX_SIZE = 3;
         this.COORD_SIZE = 2;
 
-        // sets empress to light mode
-        this.CLR_COL = [1, 1, 1];
+        // The background is colored white.
+        // This value is referenced in initialize() below and also in
+        // Empress.addBorderBarplotLayerCoords().
+        this.CLR_COL_RGB = [255, 255, 255];
 
         // the center of the viewing window in tree coordinates
         this.treeSpaceCenterX = null;
@@ -102,8 +109,9 @@ define(["underscore", "glMatrix", "Camera"], function (_, gl, Camera) {
             return;
         }
 
-        // initialze canvas to have fully white background
-        c.clearColor(...this.CLR_COL, 1);
+        // initialze canvas with the background color specified above, in the
+        // constructor
+        c.clearColor(...Colorer.rgb2gl(this.CLR_COL_RGB), 1);
         c.clear(c.COLOR_BUFFER_BIT | c.DEPTH_BUFFER_BIT);
 
         // create webGL program
