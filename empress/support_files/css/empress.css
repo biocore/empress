@@ -660,10 +660,37 @@ p.side-header button:hover,
     font-weight: bold;
 }
 
-/* TODO: remove overlap between top/bottom borders? */
-#menu-fm-section,
-#menu-sm-section {
+/* If there's just one metadata section in the selection menu (i.e. only
+ * feature or sample metadata was passed to Empress), then show a border around
+ * all sides of this section. However, if there are multiple sections, then the
+ * second (and third, although as of writing only two of these can be shown)
+ * section shouldn't have a top border, to avoid the borders between adjacent
+ * metadata sections visually blending together.
+ *
+ * CSS selectors (~ syntax) based on
+ * https://stackoverflow.com/a/6447072/10730311.
+ */
+.menu-metadata-section {
     border: 2px solid #777;
+}
+
+/* All metadata sections after the first one shouldn't have a top border. */
+.menu-metadata-section ~ .menu-metadata-section {
+    /* This is a terrible no good very bad hack. Basically, the <h3> within a
+     * metadata section (e.g. the one in the sample metadata section saying
+     * "Sample Presence Information") will, due to most browsers' user agent
+     * styling, have a margin-top. However, for some reason, the left and right
+     * borders will not extend vertically up to cover this margin -- UNLESS
+     * there is something above the <h3>. For some reason, applying an
+     * arbitrarily small padding-top to the metadata section seems to fix this.
+     * https://stackoverflow.com/questions/24886772#comment38656671_24886772
+     */
+    padding-top: 0.1px;
+    /* Now, we can remove the top border. */
+    border-top: none;
+    border-left: 2px solid #777;
+    border-right: 2px solid #777;
+    border-bottom: 2px solid #777;
 }
 
 #menu-box h3 {
