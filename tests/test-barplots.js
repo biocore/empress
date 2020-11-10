@@ -83,15 +83,16 @@ require([
             .toHexString();
         deepEqual(obsColor, "#ffffff");
 
-        // Test that the border length defaults to half the default barplot
-        // layer length
-        var expBorderLen = BarplotLayer.DEFAULT_LENGTH / 2;
+        // Test that the border length defaults to 1/10 the default barplot
+        // layer length (previously it was 1/2 of this, but we made the default
+        // barplot layer length a lot thicker so I'm changing this accordingly)
+        var expBorderLen = BarplotLayer.DEFAULT_LENGTH / 10;
         deepEqual(empress._barplotPanel.borderLength, expBorderLen);
 
         // Test that the border length input's default value and minimum value
         // are set properly
         // (The +s convert things to numbers, since value / getAttribute()
-        // seem to just provide Strings [e.g. "50"].)
+        // seem to just provide Strings [e.g. "10"].)
         deepEqual(
             +empress._barplotPanel.borderLengthInput.value,
             +expBorderLen
