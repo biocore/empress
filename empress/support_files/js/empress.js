@@ -405,7 +405,6 @@ define([
                 this.ignoreLengths,
                 this.leafSorting,
                 undefined,
-                undefined,
                 lengthGetter
             );
             for (i = 1; i <= this._tree.size; i++) {
