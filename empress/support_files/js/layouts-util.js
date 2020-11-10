@@ -49,6 +49,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var nodeIndex;
         var children;
         var child;
+        /*
+        This loop is responsible for finding the maximum distance from
+        each node to its deepest tip.
+         */
         for (i = 1; i <= tree.size; i++) {
             nodeIndex = tree.postorderselect(i);
             if (tree.isleaf(nodeIndex)) {
@@ -67,6 +71,43 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 maxNodeToTipDistance[nodeIndex] = maxDist;
             }
         }
+        /*
+         This loop is responsible for determining new branch lengths
+         The lengths for intermediate nodes are effectively "stretched" until
+         their deepest descendant hits the deepest level in the whole tree.
+
+         E.g., if we are at the node represented by * in the tree below:
+
+         |--------------------------maxDistance-------------------------|
+         |--distanceAbove--|           |---distanceBelow---|
+                            |-length--|                     |-remainder-|
+                                                    ____
+                                        ___________|
+                            *__________|           |_______
+          __________________|          |__
+                            |
+                            |___________________________________________
+
+         then the branch will be extended so that its deepest tip has the
+         same depth as the deepest tip in the whole tree,
+         i.e., newLength = length + remainder
+         however, below it is equivalently calculated with
+         newLength = maxDistance - distanceAbove - distanceBelow
+
+         E.g.,
+         |--------------------------maxDistance-------------------------|
+         |--distanceAbove--|                        |---distanceBelow---|
+                            |-length--||-remainder-|
+                                                                 ____
+                                                     ___________|
+                            *_______________________|           |_______
+          __________________|                       |__
+                            |
+                            |___________________________________________
+
+        Repeated in a pre-order traversal, this will result in an ultrametric tree
+
+         */
         var maxDistance = maxNodeToTipDistance[tree.root()];
         depths[tree.root()] = 0;
         lengths[tree.root()] = tree.depth(tree.root());
