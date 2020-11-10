@@ -1982,7 +1982,7 @@ define([
     ) {
         var borderColor = this._barplotPanel.borderColor;
         var borderLength = this._barplotPanel.borderLength;
-        var maxD = prevLayerMaxD + borderLength;
+        var maxD = prevLayerMaxD + borderLength * this._barplotUnit;
         // TODO: Should be changed when the ability to change the background
         // color is added. Basically, we get a "freebie" if the border color
         // matches the background color, and we don't need to draw anything --

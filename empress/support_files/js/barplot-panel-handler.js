@@ -140,8 +140,8 @@ define([
         this.borderColor = Colorer.rgbToFloat([255, 255, 255]);
 
         // ... and to having a length of whatever the default barplot layer
-        // length divided by 2 is :)
-        this.borderLength = BarplotLayer.DEFAULT_LENGTH / 2;
+        // length divided by 10 is :)
+        this.borderLength = BarplotLayer.DEFAULT_LENGTH / 10;
 
         // Now, initialize the border options UI accordingly
         this.initBorderOptions();
