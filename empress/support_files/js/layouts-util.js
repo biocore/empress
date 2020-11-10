@@ -135,7 +135,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
-     * @param {function} lengthGetter TODO
+     * @param {Function} lengthGetter Is a function that takes a single argument
+     *                                that corresponds to the index of a node in
+     *                                tree. Returns the length of the node at that
+     *                                index. Defaults to the length in tree, unless
+     *                                ignoreLengths is falsy.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -349,6 +353,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                           that circle, etc.). I believe this is
      *                           analogous to how the "rotation" parameter of
      *                           iTOL works.
+     * @param {Function} lengthGetter Is a function that takes a single argument
+     *                                that corresponds to the index of a node in
+     *                                tree. Returns the length of the node at that
+     *                                index. Defaults to the length in tree, unless
+     *                                ignoreLengths is falsy.
      * @return {Object} Object with the following properties:
      *                   -x0, y0 ("starting point" x and y)
      *                   -x1, y1 ("ending point" x and y)
@@ -560,6 +569,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                                is used.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
+     * @param {Function} lengthGetter Is a function that takes a single argument
+     *                                that corresponds to the index of a node in
+     *                                tree. Returns the length of the node at that
+     *                                index. Defaults to the length in tree, unless
+     *                                ignoreLengths is falsy.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
