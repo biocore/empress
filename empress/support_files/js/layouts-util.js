@@ -37,53 +37,51 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *
      * @param {BPTree} tree The tree to generate the lengths for.
      *
-     * @returns {Object} TODO
+     * @returns {Object} Keys are the index position of the node in tree.
+     *                   Values are the length of the node in an ultrametric tree.
      */
     function getUltrametricLengths(tree) {
         var lengths = {};
         var i;
+        var j;
         var maxNodeToTipDistance = new Array(tree.size);
         var depths = new Array(tree.size);
+        var nodeIndex;
+        var children;
+        var child;
         for (i = 1; i <= tree.size; i++) {
-            var nodeIndex = tree.postorderselect(i);
-            // lengths[tree.name(nodeIndex)] = {order: i, length: tree.length(nodeIndex)};
+            nodeIndex = tree.postorderselect(i);
             if (tree.isleaf(nodeIndex)) {
                 maxNodeToTipDistance[nodeIndex] = 0;
             } else {
                 var maxDist = 0;
-                var children = tree.getChildren(nodeIndex);
-                children.forEach(function (child) {
+                children = tree.getChildren(nodeIndex);
+                for (j = 0; j < children.length; j++) {
+                    child = children[j];
                     var childMaxLen =
                         maxNodeToTipDistance[child] + tree.length(child);
                     if (childMaxLen > maxDist) {
                         maxDist = childMaxLen;
                     }
-                });
+                }
                 maxNodeToTipDistance[nodeIndex] = maxDist;
             }
         }
         var maxDistance = maxNodeToTipDistance[tree.root()];
-        // let traverse = [];
         depths[tree.root()] = 0;
         lengths[tree.root()] = tree.depth(tree.root());
         for (i = 1; i <= tree.size; i++) {
             nodeIndex = tree.preorderselect(i);
             children = tree.getChildren(nodeIndex);
-            children.forEach(function (child) {
+            for (j = 0; j < children.length; j++) {
+                child = children[j];
                 var totalDistance = maxDistance;
                 var distanceAbove = depths[nodeIndex];
                 var distanceBelow = maxNodeToTipDistance[child];
                 lengths[child] = totalDistance - distanceAbove - distanceBelow;
                 depths[child] = distanceAbove + lengths[child];
-            });
+            }
         }
-        // // return maxNodeToTipDistance;
-        var newLengths = {};
-        Object.entries(lengths).forEach(function (entry) {
-            const [index, length] = entry;
-            newLengths[tree.preorder(index)] = length;
-        });
-        lengths = newLengths;
         return lengths;
     }
 

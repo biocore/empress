@@ -72,26 +72,19 @@ require([
         test("Test get ultrametric lengths", function () {
             // Revised tree should be:
             // In Newick format: "(((a:2,e:2)f:1,b:3)g:2,(c:3,d:3)h:2)i:1;"
-            // Also note that in a pre-order traversal
-            // 1: i
-            // 2: g
-            // 3: f
-            // 4: a
-            // 5: e
-            // 6: b
-            // 7: h
-            // 8: c
-            // 9: d
+            // Also note that this is the BP structure
+            // igfaaeefbbghccddhi
+            // 111101001001101000
             var expLengths = {
-                4: 2,
-                6: 3,
+                3: 2,
                 8: 3,
-                9: 3,
+                12: 3,
+                14: 3,
                 5: 2,
-                3: 1,
-                2: 2,
-                7: 2,
-                1: 1,
+                2: 1,
+                1: 2,
+                11: 2,
+                0: 1,
             };
 
             var obs = LayoutsUtil.getUltrametricLengths(this.tree);
