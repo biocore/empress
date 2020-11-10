@@ -67,9 +67,10 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
         this.VERTEX_SIZE = 3;
         this.COORD_SIZE = 2;
 
-        // sets empress to light mode
+        // The background is colored white.
+        // This value is referenced in initialize() below and also in
+        // Empress.addBorderBarplotLayerCoords().
         this.CLR_COL_RGB = [255, 255, 255];
-        this.CLR_COL_GL = Colorer.rgb2gl(this.CLR_COL_RGB);
 
         // the center of the viewing window in tree coordinates
         this.treeSpaceCenterX = null;
@@ -108,8 +109,9 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
             return;
         }
 
-        // initialze canvas to have fully white background
-        c.clearColor(...this.CLR_COL_GL, 1);
+        // initialze canvas with the background color specified above, in the
+        // constructor
+        c.clearColor(...Colorer.rgb2gl(this.CLR_COL_RGB), 1);
         c.clear(c.COLOR_BUFFER_BIT | c.DEPTH_BUFFER_BIT);
 
         // create webGL program
