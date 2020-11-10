@@ -133,23 +133,43 @@
   <p class="side-panel-inner-header">
     Layout options
   </p>
-  <p>
-    <label for="ignore-lengths-chk">Ignore branch lengths?</label>
-    <input id="ignore-lengths-chk" type="checkbox" class="empress-input">
+  <p class="side-panel-notes">
+    Change how the branch lengths are determined.
   </p>
-  <p class="side-panel-notes indented">
-    If checked, branch lengths are ignored when drawing the tree. Note that the
-    root node is never drawn with any length, regardless of if this
-    is checked or not.
-  </p>
-  <p>
-    <label for="make-ultrametric-chk"> Make tree ultrametric?</label>
-    <input id="make-ultrametric-chk" type="checkbox" class="empress-input">
-  </p>
-  <p class="side-panel-notes indented">
-    If checked, branch lengths will be adjusted so that the root-to-tip distance
-    is the same for all tips.
-  </p>
+  <div id="branch-length-method-container">
+    <p>
+      <label for="normal">Normal</label>
+      <input type="radio" id="normal-lengths-chk" name="branches-radio" value="normal"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      The branch lengths shown correspond to the branch lengths in the original tree.
+    </p>
+    <p class="side-panel-notes warning">
+      WARNING: the 'Ignore branch lengths' and 'Make ultrametric' options display
+      modified branch lengths that can be useful for aesthetics. The resulting
+      trees should NOT be interpreted with respect to their branch lengths.
+    </p>
+    <p>
+      <label for="ignore">Ignore branch lengths</label>
+      <input type="radio" id="ignore-lengths-chk" name="branches-radio" value="ignore"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      If checked, branch lengths are ignored when drawing the tree. Note that the
+      root node is never drawn with any length, regardless of if this
+      is checked or not.
+    </p>
+    <p>
+      <label for="ignore">Make ultrametric</label>
+      <input type="radio" id="make-ultrametric-chk" name="branches-radio" value="ultrametric"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      If checked, branch lengths will be adjusted so that the root-to-tip distance
+      is the same for all tips.
+    </p>
+  </div>
   <div id="leaf-sorting-container">
     <p>
       <label for="leaf-sorting-select">Sort clades based on tip count?</label>

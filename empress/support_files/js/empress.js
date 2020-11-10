@@ -276,10 +276,10 @@ define([
         this.ignoreLengths = false;
 
         /**
-         * @type{Bool}
-         * Whether to make branch lengths ultrametric during layout or not
+         * @type{String}
+         * Branch length method: one of "normal", "ignore", or "ultrametric"
          */
-        this.makeUltrametric = false;
+        this.branchMethod = "normal";
 
         /**
          * @type{String}
@@ -365,21 +365,36 @@ define([
         var data, i, lengthGetter;
         // set up length getter
         var ultraMetricLengths;
-        if (this.makeUltrametric) {
+        var branchMethod = this.branchMethod;
+
+        if (branchMethod === "ultrametric") {
             ultraMetricLengths = LayoutsUtil.getUltrametricLengths(this._tree);
             lengthGetter = function (i) {
                 return ultraMetricLengths[i];
             };
-        } else {
+        } else if (branchMethod === "ignore") {
+            lengthGetter = function (i) {
+                return 1;
+            };
+        } else if (branchMethod === "normal") {
             lengthGetter = null;
+        } else {
+            throw "Invalid branchMethod: '" + branchMethod + "'.";
         }
+
         // Rectangular
         if (this._currentLayout === "Rectangular") {
             data = LayoutsUtil.rectangularLayout(
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths,
+                // since lengths for "ignoreLengths" are set by `lengthGetter`,
+                // we don't need (and should likely deprecate) the ignoreLengths
+                // option for the Layout functions since the layout function only
+                // needs to know lengths in order to layout a tree, it doesn't
+                // really need encapsulate all of the logic for determining
+                // what lengths it should lay out.
+                null,
                 this.leafSorting,
                 undefined,
                 lengthGetter
@@ -402,7 +417,7 @@ define([
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths,
+                null,
                 this.leafSorting,
                 undefined,
                 lengthGetter
@@ -429,7 +444,7 @@ define([
                 this._tree,
                 4020,
                 4020,
-                this.ignoreLengths,
+                null,
                 undefined,
                 lengthGetter
             );

@@ -683,6 +683,10 @@ p.side-header button:hover,
     margin-left: 2em;
 }
 
+.warning {
+    color: #ff0000;
+}
+
 .selected-metadata-choice {
     background-color: #333 !important;
 }

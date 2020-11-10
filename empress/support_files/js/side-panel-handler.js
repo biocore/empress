@@ -83,23 +83,43 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.layoutMethodContainer = document.getElementById(
             "layout-method-container"
         );
-        this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
-        this.makeUltrametricChk = document.getElementById(
-            "make-ultrametric-chk"
-        );
         this.leafSortingContainer = document.getElementById(
             "leaf-sorting-container"
         );
         this.leafSortingSel = document.getElementById("leaf-sorting-select");
         this.leafSortingDesc = document.getElementById("leaf-sorting-desc");
-        this.ignoreLengthsChk.onclick = function () {
-            empress.ignoreLengths = this.checked;
-            empress.reLayout();
-        };
-        this.makeUltrametricChk.onclick = function () {
-            empress.makeUltrametric = this.checked;
-            empress.reLayout();
-        };
+
+        // Initialize the callbacks for selecting the branch method
+        var branchesMethodRadio = document.getElementsByName("branches-radio");
+
+        // for each branch method, we want to use the value of the radio button to set
+        // branch method for empress
+        function checkBranchMethod(option, empress, allOptions) {
+            function innerCheck() {
+                if (option.checked) {
+                    // since these are coded in the interface as the empress options,
+                    // they can be plugged directly into empress.branchMethod, but they
+                    // theoretically could be remapped here
+                    empress.branchMethod = option.value;
+                    empress.reLayout();
+                }
+                // we want to make sure empress knows whether or not to ignore lengths
+                // at the moment this is most critical for empress._collapseClade
+                // since the length's for the layout methods will be determined
+                // by setting empress.branchMethod
+                empress.ignoreLengths = allOptions.ignore.checked;
+            }
+            return innerCheck;
+        }
+        // branchOptions maps method names to the object corresponding to the actual
+        // radio select
+        var branchOptions = {};
+        for (var i = 0; i < branchesMethodRadio.length; i++) {
+            var option = branchesMethodRadio[i];
+            branchOptions[option.value] = option;
+            option.onclick = checkBranchMethod(option, empress, branchOptions);
+        }
+
         this.leafSortingSel.onchange = function () {
             empress.leafSorting = this.value;
             empress.reLayout();
