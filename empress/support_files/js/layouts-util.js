@@ -33,6 +33,79 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     /**
+     * Computes the "scale factor" for the circular / unrooted layouts.
+     *
+     * NOTE that we don't bother with this for the rectangular layout since --
+     * 1. we scale the x- and y- axes separately in the rectangular layout
+     * 2. the rectangular layout y-coordinates should increase in increments of
+     *    one, so we shouldn't need to worry too much about detecting
+     *    floating-point numbers (if the max y is > 0, it's at least 1, so
+     *    we're fine)
+     *
+     * @param {Number} width Width to which the coordinates should be scaled
+     * @param {Number} height Height to which the coordinates should be scaled
+     * @param {Number} minX Minimum x-coordinate
+     * @param {Number} maxX Maximum x-coordinate
+     * @param {Number} minY Minimum y-coordinate
+     * @param {Number} maxY Maximum y-coordinate
+     * @param {Number} epsilon Threshold to use when considering the min and
+     *                         max coordinates on a given axis "different".
+     *                         If dx (a.k.a. maxX - minX) is < epsilon, then
+     *                         this will only look at the y-axis for scaling,
+     *                         and vice versa. If both dx and dy are < epsilon,
+     *                         this will raise an error: this should never
+     *                         happen in practice since the Python code
+     *                         guarantees that input trees have at least one
+     *                         non-root node and that the non-root node(s) have
+     *                         a positive length, but we catch it here just in
+     *                         case. (If this *does* start happening to people
+     *                         with real trees, which it shouldn't, then we may
+     *                         want to decrease this epsilon. But I highly
+     *                         doubt that will ever happen.)
+     *
+     * @return {Number} scaleFactor Equal to max(width/dx, height/dy), assuming
+     *                              that dx and dy are both >= epsilon. If
+     *                              either dx or dy is < epsilon, this'll just
+     *                              return the other term.
+     *
+     * @throws {Error} If (maxX - minX) < epsilon AND (maxY - minY) < epsilon.
+     *                 (Only one of the epsilon
+     *                 conditions being satisifed implies that the tree is a
+     *                 straight line along either the y- or x-axis, which is
+     *                 fine; if BOTH epsilon conditions are satisified, then
+     *                 something is probably very wrong.)
+     */
+    function computeScaleFactor(
+        width,
+        height,
+        minX,
+        maxX,
+        minY,
+        maxY,
+        epsilon = 1e-5
+    ) {
+        var dx = maxX - minX;
+        var dy = maxY - minY;
+        var widthScale = width / dx;
+        var heightScale = height / dy;
+        if (dy >= epsilon) {
+            if (dx >= epsilon) {
+                return Math.max(widthScale, heightScale);
+            } else {
+                return heightScale;
+            }
+        } else {
+            if (dx >= epsilon) {
+                return widthScale;
+            } else {
+                throw new Error(
+                    "dx and dy are < epsilon; can't scale this layout."
+                );
+            }
+        }
+    }
+
+    /**
      * Rectangular layout.
      *
      * In this sort of layout, each tip has a distinct y-position, and parent
@@ -273,14 +346,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
-     * @param {Float} startAngle The first tip in the tree visited is assigned
-     *                           this angle (in radians). Can be used to rotate
-     *                           the tree: 0 is the eastmost point of the
-     *                           theoretical "circle" surrounding the root
-     *                           node, Math.PI / 2 is the northmost point of
-     *                           that circle, etc.). I believe this is
-     *                           analogous to how the "rotation" parameter of
-     *                           iTOL works.
      * @return {Object} Object with the following properties:
      *                   -x0, y0 ("starting point" x and y)
      *                   -x1, y1 ("ending point" x and y)
@@ -300,8 +365,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         height,
         ignoreLengths,
         leafSorting,
-        normalize = true,
-        startAngle = 0
+        normalize = true
     ) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
@@ -319,7 +383,16 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var arcEndAngle = new Array(tree.size + 1).fill(0);
 
         var anglePerTip = (2 * Math.PI) / tree.numleaves();
-        var prevAngle = startAngle;
+
+        // Note: this means that the first tip visited in the tree is
+        // positioned on the rightmost point of the circle. This also means
+        // that trees with a single tip should look basically identical in the
+        // circular and rectangular layouts. This really should not be changed
+        // -- when we add support for rotating the tree, that should be done
+        // after computing layouts, as a WebGL matrix multiplication thing.
+        // See https://github.com/biocore/empress/issues/359.
+        var prevAngle = 0;
+
         var child, currRadius;
         var maxX = 0,
             minX = Number.POSITIVE_INFINITY;
@@ -403,19 +476,34 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             x1[i] = currRadius * angleCos;
             y1[i] = currRadius * angleSin;
 
-            maxX = Math.max(maxX, x1[i]);
-            minX = Math.min(minX, x1[i]);
-            maxY = Math.max(maxY, y1[i]);
-            minY = Math.min(minY, y1[i]);
+            // _Usually_ we won't need to take the x0/y0 coordinates into
+            // account when expanding the bounding box (since by nature nodes
+            // should radiate "outward" from the root node, positioned at the
+            // center the circle at (0, 0)), but this assumption can fail for
+            // 1-tip trees or if in the future we modify the circular layout to
+            // e.g. only go from 0 to 180 degrees or something. So for safety's
+            // sake we consider the x0/y0 coordinates as well.
+            maxX = Math.max(maxX, x1[i], x0[i]);
+            minX = Math.min(minX, x1[i], x0[i]);
+            maxY = Math.max(maxY, y1[i], y0[i]);
+            minY = Math.min(minY, y1[i], y0[i]);
         }
 
-        var widthScale = width / (maxX - minX);
-        var heightScale = height / (maxY - minY);
-        var scaleFactor = Math.max(widthScale, heightScale);
+        var scaleFactor = 1;
+        if (normalize) {
+            scaleFactor = computeScaleFactor(
+                width,
+                height,
+                minX,
+                maxX,
+                minY,
+                maxY
+            );
+        }
+
         // Go over the tree (in postorder, but order doesn't really matter
         // for this) to determine arc positions for non-root internal nodes.
-        // I think determining arc positions could be included in the above for
-        // loop...
+        // Also scale nodes' coordinates, while we're at it.
         for (i = 1; i < tree.size; i++) {
             if (normalize) {
                 x0[i] *= scaleFactor;
@@ -554,18 +642,20 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
         }
-        var scale;
         if (normalize) {
-            var widthScale = width / (maxX - minX);
-            var heightScale = height / (maxY - minY);
-            scale = Math.min(widthScale, heightScale);
-        } else {
-            scale = 1;
-        }
-        // skip the first element since the tree is zero-indexed
-        for (var i = 1; i <= tree.size - 1; i++) {
-            x2Arr[i] *= scale;
-            y2Arr[i] *= scale;
+            var scaleFactor = computeScaleFactor(
+                width,
+                height,
+                minX,
+                maxX,
+                minY,
+                maxY
+            );
+            // skip the first element since the tree is zero-indexed
+            for (var i = 1; i <= tree.size - 1; i++) {
+                x2Arr[i] *= scaleFactor;
+                y2Arr[i] *= scaleFactor;
+            }
         }
         // Don't need to reposition coordinates relative to the root because
         // the root is already at (0, 0)
@@ -575,6 +665,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
 
     return {
         getPostOrderNodes: getPostOrderNodes,
+        computeScaleFactor: computeScaleFactor,
         rectangularLayout: rectangularLayout,
         circularLayout: circularLayout,
         unrootedLayout: unrootedLayout,

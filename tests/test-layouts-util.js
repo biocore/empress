@@ -9,6 +9,9 @@ require([
     $(document).ready(function () {
         module("Layout Utilities", {
             setup: function () {
+                // Save a bunch of extra typing
+                this.eq = UtilitiesForTesting.approxDeepEqualMulti;
+
                 // In Newick format: "(((a:1,e:2)f:1,b:2)g:1,(c:1,d:3)h:2)i:1;"
                 this.tree = new BPTree(
                     new Uint8Array([
@@ -36,6 +39,12 @@ require([
                     null
                 );
 
+                // For reference: straightLineTree and noRootLength should both
+                // be laid out identically. This is because the root node's
+                // length (which is the only thing that differs between the
+                // trees) is deliberately not validated and not used in layout
+                // computations.
+                //
                 // In Newick format: "((b:2)a:1)root:100;"
                 this.straightLineTree = new BPTree(
                     new Uint8Array([1, 1, 1, 0, 0, 0]),
@@ -57,6 +66,14 @@ require([
                     new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0]),
                     ["", "d", "c", "b", "a", "root"],
                     ["", 4.0, 3.0, 2.0, 1.0, 1.0],
+                    null
+                );
+
+                // In Newick format: "(a:1, b:2)root:3;"
+                this.twoTipTree = new BPTree(
+                    new Uint8Array([1, 1, 0, 1, 0, 0]),
+                    ["", "a", "b", "root"],
+                    ["", 1, 2, 3],
                     null
                 );
             },
@@ -310,33 +327,15 @@ require([
             // e.g. tip "d"'s parent node is b, which has a total radius from
             // the root of 2. The angle d was assigned is 0, so d's x0 position
             // is 2*cos(0) = 2*1 = 2.
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.x0,
-                [0, 2, -1, 0, 0, 0],
-                "x0"
-            );
+            this.eq(obs.x0, [0, 2, -1, 0, 0, 0], "x0");
             // Should be equal to (total radius to parent node)*sin(node angle)
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.y0,
-                [0, 0, 1.7321, 0, 0, 0],
-                "y0",
-                1e-4
-            );
+            this.eq(obs.y0, [0, 0, 1.7321, 0, 0, 0], "y0", 1e-4);
 
             // Check ending positions.
             // Should be equal to (total radius to node)*cos(node angle).
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.x1,
-                [0, 6, -2.5, 1, -0.5, 0],
-                "x1"
-            );
+            this.eq(obs.x1, [0, 6, -2.5, 1, -0.5, 0], "x1");
             // Should be equal to (total radius to node)*sin(node angle).
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.y1,
-                [0, 0, 4.3301, 1.7321, -0.866, 0],
-                "y1",
-                1e-4
-            );
+            this.eq(obs.y1, [0, 0, 4.3301, 1.7321, -0.866, 0], "y1", 1e-4);
 
             // Check angles. There are just 3 tips so they get assigned
             // multiples of (2pi / 3) (that is: 0, 2pi/3, and 4pi/3). The lone
@@ -344,7 +343,7 @@ require([
             // child angles (i.e. 0 and 2pi/3, so just pi/3). And finally, the
             // root gets an angle of 0 (but the root's angle isn't used for
             // anything anyway).
-            UtilitiesForTesting.approxDeepEqualMulti(
+            this.eq(
                 obs.angle,
                 [0, 0, (2 * Math.PI) / 3, Math.PI / 3, (4 * Math.PI) / 3, 0],
                 "angle"
@@ -355,32 +354,19 @@ require([
             // Should be equal to
             // (total radius to b = 2) * op(largest child angle of b = 2pi/3),
             // where "op" is cos() for x and sin() for y.
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcx0,
-                [0, 0, 0, -1, 0, 0],
-                "arcx0"
-            );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcy0,
-                [0, 0, 0, 1.7321, 0, 0],
-                "arcy0",
-                1e-4
-            );
+            this.eq(obs.arcx0, [0, 0, 0, -1, 0, 0], "arcx0");
+            this.eq(obs.arcy0, [0, 0, 0, 1.7321, 0, 0], "arcy0", 1e-4);
             // Check arc start and end angles. We've defined the "start" angle
             // to be the largest angle of an internal node's children, and the
             // "end" angle to be the smallest angle of these children.
             // In the case of b, it just has two children (with angles 2pi/3
             // and 0), so determining this is pretty straightforward...
-            UtilitiesForTesting.approxDeepEqualMulti(
+            this.eq(
                 obs.arcStartAngle,
                 [0, 0, 0, (2 * Math.PI) / 3, 0, 0],
                 "arc start angle"
             );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcEndAngle,
-                [0, 0, 0, 0, 0, 0],
-                "arc end angle"
-            );
+            this.eq(obs.arcEndAngle, [0, 0, 0, 0, 0, 0], "arc end angle");
         });
         test("Test circular layout preserves branch lengths", function () {
             var obs = LayoutsUtil.circularLayout(
@@ -402,7 +388,7 @@ require([
         });
         test("Test straightline tree circular layout (with and without root length)", function () {
             // These are the same tree, just with and without the root having a
-            // length of 100. Since the circ. layout ignores the root's branch
+            // length of 100. Since all layouts should ignore the root's branch
             // length, the output data should be exactly the same.
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
@@ -481,184 +467,132 @@ require([
                 deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
             });
         });
-        test("Test straightline tree circular layout, rotated CCW by 90 degrees", function () {
-            var piover2 = Math.PI / 2;
+        test("Test straightline tree circular layout: normalize = true", function () {
+            // As with the other tests that use this.straightLineTree and
+            // this.noRootLength, the layouts should be the same across the two
+            // trees -- since the root node's length is not used in layout
+            // computation.
+            var scope = this;
+            var trees = [this.straightLineTree, this.noRootLength];
+            _.each(trees, function (tree) {
+                var obs = LayoutsUtil.circularLayout(
+                    tree,
+                    100,
+                    50000,
+                    false,
+                    "none",
+                    true
+                );
+                // The tree looks like:
+                // root -- a ---- b
+                // We're normalizing the coordinates, so each coordinate will
+                // be multiplied by width / (maxX - minX), aka 100 / (3 - 0) =
+                // 100 / 3 = 33.3333...
+                scope.eq(obs.x0, [0, 100 / 3, 0, 0], "x0");
+                scope.eq(obs.y0, [0, 0, 0, 0], "y0");
+                scope.eq(obs.x1, [0, 100, 100 / 3, 0], "x1");
+                scope.eq(obs.y1, [0, 0, 0, 0], "y1");
+
+                // Check that angle / arc data remains ok
+                scope.eq(obs.angle, [0, 0, 0, 0], "angle");
+                scope.eq(obs.arcx0, [0, 0, 100 / 3, 0], "arcx0");
+                scope.eq(obs.arcy0, [0, 0, 0, 0], "arcy0");
+                scope.eq(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
+                scope.eq(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
+            });
+        });
+        test("Test two-tip tree circular layout: normalize = true", function () {
             var obs = LayoutsUtil.circularLayout(
-                this.straightLineTree,
-                1,
-                1,
+                this.twoTipTree,
+                100,
+                500,
                 false,
                 "none",
-                false,
-                piover2
+                true
             );
             // The tree looks like:
-            //  b
-            //  |
-            //  |
-            //  a
-            //  |
-            // root
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.x0,
-                [0, 0, 0, 0],
-                "x0"
-            );
-            deepEqual(obs.y0, [0, 1, 0, 0], "y0");
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.x1,
-                [0, 0, 0, 0],
-                "x1"
-            );
-            deepEqual(obs.y1, [0, 3, 1, 0], "y1");
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.angle,
-                [0, piover2, piover2, 0],
-                "angle"
-            );
-            // As with the above test, this arc will be invisible when drawn
-            // since a only has 1 child (b). This is clear from how a's
-            // arcStartAngle is equal to its arcEndAngle...
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcx0,
-                [0, 0, 0, 0],
-                "arcx0"
-            );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcy0,
-                [0, 0, 1, 0],
-                "arcy0"
-            );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcStartAngle,
-                [0, 0, piover2, 0],
-                "arcStartAngle"
-            );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcEndAngle,
-                [0, 0, piover2, 0],
-                "arcEndAngle"
-            );
+            // b ---- root -- a
+            // We're normalizing the coordinates, so each coordinate will
+            // be multiplied by width / (maxX - minX), aka 100 / (1 - (-2)) =
+            // 100 / 3 = 33.3333...
+            //
+            // a and b both "start" at the root node, so their x0 and y0
+            // positions are (0, 0)
+            this.eq(obs.x0, [0, 0, 0, 0], "x0");
+            this.eq(obs.y0, [0, 0, 0, 0], "y0");
+            this.eq(obs.x1, [0, 100 / 3, -200 / 3, 0], "x1");
+            this.eq(obs.y1, [0, 0, 0, 0], "y1");
+
+            // Check that angles remain ok. a should have been assigned an
+            // angle of 0, and b should have been assigned an angle of pi
+            // (since it's exactly half of the (2pi - 0) angle range, since we
+            // have just two tips)
+            this.eq(obs.angle, [0, 0, Math.PI, 0], "angle");
+            // And there aren't any non-root internal nodes, so arc data should
+            // all be empty.
+            deepEqual(obs.arcx0, [0, 0, 0, 0], "arcx0");
+            deepEqual(obs.arcy0, [0, 0, 0, 0], "arcy0");
+            deepEqual(obs.arcStartAngle, [0, 0, 0, 0], "arcStartAngle");
+            deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
         });
-        test("Test circular layout with startAngle = 3pi and ignoreLengths", function () {
-            // Just a reminder of what this tree looks like in
-            // Newick format: "((d:4,c:3)b:2,a:1)root:1;"
-            // (Of course, we're ignoring branch lengths here, so you can
-            // ignore all the numbers in that string.)
-            var obs = LayoutsUtil.circularLayout(
-                this.circLayoutTestTree,
-                1,
-                1,
-                true,
-                "none",
-                false,
-                3 * Math.PI
-            );
-            // Should be equal to (# non-root ancestor nodes)*cos(node angle)
-            // ... For d and c, there's only 1 non-root ancestor node. For all
-            // other nodes it's 0. Hence, you know, all the zeroes.
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.x0,
-                [0, -1, 0.5, 0, 0, 0],
-                "x0"
-            );
-            // Should be equal to (# non-root ancestor nodes)*sin(node angle)
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.y0,
-                [0, 0, -0.866025, 0, 0, 0],
-                "y0"
-            );
-
-            // Check ending positions.
-            // Should be equal to (# non-root ancestor nodes+1)*cos(node angle)
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.x1,
-                [0, -2, 1, -0.5, 0.5, 0],
-                "x1"
-            );
-            // Should be equal to (# non-root ancestor nodes+1)*sin(node angle)
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.y1,
-                [0, 0, -1.7321, -0.866, 0.866, 0],
-                "y1",
-                1e-4
-            );
-
-            // Check angles. Now things start at 3pi.
-            var tpi = 3 * Math.PI;
-            var tpiPlusDelta = tpi + (2 * Math.PI) / 3;
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.angle,
-                [
-                    0,
-                    tpi,
-                    tpiPlusDelta,
-                    (tpi + tpiPlusDelta) / 2,
-                    tpi + (4 * Math.PI) / 3,
-                    0,
-                ],
-                "angle"
-            );
-
-            // Check arc start points (just for b).
-            // Should be equal to 1 * op(tpiPlusDelta),
-            // where "op" is cos() for x and sin() for y.
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcx0,
-                [0, 0, 0, 0.5, 0, 0],
-                "arcx0"
-            );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcy0,
-                [0, 0, 0, -0.866, 0, 0],
-                "arcy0",
-                1e-4
-            );
-            // Check arc start and end (largest and smallest) angles.
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcStartAngle,
-                [0, 0, 0, tpiPlusDelta, 0, 0],
-                "arc start angle"
-            );
-            UtilitiesForTesting.approxDeepEqualMulti(
-                obs.arcEndAngle,
-                [0, 0, 0, tpi, 0, 0],
-                "arc end angle"
-            );
-        });
-
         test("Test unrooted layout", function () {
             var obs = LayoutsUtil.unrootedLayout(this.tree, 1, 1, false);
             var exp = {
                 xCoord: [
                     0,
-                    -0.3333333333333333,
-                    -0.5092880150001401,
-                    -0.25464400750007005,
-                    -0.12732200375003502,
-                    -0.12732200375003502,
-                    0.3819660112501051,
-                    0.49071198499985974,
-                    0.25464400750007005,
+                    -0.4650449880443435,
+                    -0.7105255165406029,
+                    -0.35526275827030146,
+                    -0.1776313791351507,
+                    -0.1776313791351507,
+                    0.5328941374054522,
+                    0.6846094475924276,
+                    0.35526275827030146,
                     0,
                 ],
                 yCoord: [
                     0,
-                    -0.10830656541096874,
-                    0.0827388535644527,
+                    -0.1511022762500036,
+                    0.1154318675000508,
                     0,
-                    0.309117981297196,
-                    0.04136942678222635,
-                    -0.04136942678222631,
-                    -0.4076585497973588,
-                    -0.08273885356445265,
+                    0.4312613037499384,
+                    0.05771593375002539,
+                    -0.05771593375002535,
+                    -0.5687386962500616,
+                    -0.11543186750005074,
                     0,
                 ],
             };
-            UtilitiesForTesting.approxDeepEqualMulti(obs.xCoord, exp.xCoord);
-            UtilitiesForTesting.approxDeepEqualMulti(obs.yCoord, exp.yCoord);
+            this.eq(obs.xCoord, exp.xCoord, "x-coordinates");
+            this.eq(obs.yCoord, exp.yCoord, "y-coordinates");
         });
-
+        test("Test straightline tree unrooted layout: normalize = true", function () {
+            var scope = this;
+            var trees = [this.straightLineTree, this.noRootLength];
+            _.each(trees, function (tree) {
+                var obs = LayoutsUtil.unrootedLayout(
+                    tree,
+                    100,
+                    500,
+                    false,
+                    true
+                );
+                // The tree looks like a vertical line:
+                //
+                //  b
+                //  |
+                //  |
+                //  a
+                //  |
+                // root
+                //
+                // We're normalizing the coordinates, so each coordinate will
+                // be multiplied by height / (maxY - minY), aka 500 / (3 - 0) =
+                // 500 / 3 = 166.6666...
+                scope.eq(obs.xCoord, [0, 0, 0, 0], "x1");
+                scope.eq(obs.yCoord, [0, 500, 500 / 3, 0], "y1");
+            });
+        });
         test("Test getPostOrderNodes (ascending)", function () {
             var po = LayoutsUtil.getPostOrderNodes(this.tree, "ascending");
             // Two explicit "choices" (all other choices, I think, are between
@@ -691,6 +625,48 @@ require([
             throws(function () {
                 LayoutsUtil.getPostOrderNodes(scope.tree, "bluhbluhbluh");
             }, /Unrecognized leaf sorting method bluhbluhbluh/);
+        });
+        test("Test computeScaleFactor (both axes >= epsilon)", function () {
+            var sf = LayoutsUtil.computeScaleFactor(100, 200, 1, 2, 3, 4);
+            deepEqual(sf, 200);
+        });
+        test("Test computeScaleFactor (only 1 axis >= epsilon)", function () {
+            // Since minY = ~maxY, we should just use x-axis scaling (even
+            // though 200 / 1e-10 will be much larger than 100 / 9).
+            var sf = LayoutsUtil.computeScaleFactor(
+                100,
+                200,
+                1,
+                10,
+                3,
+                3 + 1e-10
+            );
+            deepEqual(sf, 100 / 9);
+
+            // Check the reverse case (minX and maxX are too close)
+            var sf2 = LayoutsUtil.computeScaleFactor(
+                200,
+                5,
+                10,
+                10 + 1e-6,
+                3,
+                40
+            );
+            deepEqual(sf2, 5 / 37);
+        });
+        test("Test computeScaleFactor (error: both axes < epsilon)", function () {
+            // a.k.a. the tree is basically just a single point, which is not
+            // allowed
+            throws(function () {
+                LayoutsUtil.computeScaleFactor(
+                    100,
+                    200,
+                    1e-10,
+                    2e-10,
+                    3e-6,
+                    4e-6
+                );
+            }, /dx and dy are < epsilon; can't scale this layout./);
         });
     });
 });

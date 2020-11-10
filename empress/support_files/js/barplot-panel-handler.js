@@ -136,12 +136,12 @@ define([
         // next to each other).
         this.useBorders = false;
 
-        // Borders (when enabled) default to white. (This is an RGB array.)
-        this.borderColor = [1, 1, 1];
+        // Borders (when enabled) default to white. (This is an RGB number.)
+        this.borderColor = Colorer.rgbToFloat([255, 255, 255]);
 
         // ... and to having a length of whatever the default barplot layer
-        // length divided by 2 is :)
-        this.borderLength = BarplotLayer.DEFAULT_LENGTH / 2;
+        // length divided by 10 is :)
+        this.borderLength = BarplotLayer.DEFAULT_LENGTH / 10;
 
         // Now, initialize the border options UI accordingly
         this.initBorderOptions();
@@ -223,13 +223,24 @@ define([
      *                   otherwise
      */
     BarplotPanel.prototype.updateLayoutAvailability = function (layout) {
-        if (_.contains(BarplotPanel.SUPPORTED_LAYOUTS, layout)) {
+        if (this.isLayoutSupported(layout)) {
             this.markAvailable();
             return true;
         } else {
             this.markUnavailable();
             return false;
         }
+    };
+
+    /**
+     * Returns true if a given layout supports barplots, false otherwise.
+     *
+     * @param {String} layout Name of a layout (e.g. "Rectangular", "Circular",
+     *                        "Unrooted")
+     * @return {boolean} whether or not this layout supports barplots
+     */
+    BarplotPanel.prototype.isLayoutSupported = function (layout) {
+        return _.contains(BarplotPanel.SUPPORTED_LAYOUTS, layout);
     };
 
     /**
@@ -264,17 +275,12 @@ define([
     BarplotPanel.prototype.initBorderOptions = function () {
         var scope = this;
 
-        // this.borderColor is always a RGB array, for the sake of everyone's
+        // this.borderColor is always a RGB number, for the sake of everyone's
         // sanity. However, spectrum requires that the specified color is a hex
         // string: so we have to convert it to hex first here (only to later
         // convert it back to RGB on change events). Eesh!
-        // A SILLY NOTE: Apparently chroma.gl() modifies the input RGB array if
-        // you pass it in directly, converting it into a weird thing that
-        // is represented in the browser console as "(4) [255, 255, 255,
-        // undefined, _clipped: false, _unclipped: Array(3)]". Unpacking the
-        // input array using ... (as done here with this.borderColor) seems to
-        // avoid this problem.
-        var startingColor = chroma.gl(...this.borderColor).hex();
+        var borderColor = Colorer.unpackColor(this.borderColor);
+        var startingColor = chroma.gl(...borderColor).hex();
 
         $(this.borderColorPicker).spectrum({
             color: startingColor,
@@ -291,6 +297,24 @@ define([
                 BarplotLayer.MIN_LENGTH
             );
         });
+    };
+
+    /**
+     * Returns an Array containing all active legends owned by barplot layers.
+     *
+     * This Array is ordered (it starts with the first barplot layer's legends,
+     * then the second layer's legends, etc.). The ordering of legends within a
+     * layer (e.g. color then length legends) is dependent on how
+     * BarplotLayer.getLegends() works.
+     *
+     * @return {Array} Array of Legend objects
+     */
+    BarplotPanel.prototype.getLegends = function () {
+        var legends = [];
+        _.each(this.layers, function (layer) {
+            legends.push(...layer.getLegends());
+        });
+        return legends;
     };
 
     /**

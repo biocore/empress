@@ -52,17 +52,36 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
 
-        // Will be set to a string containing the SVG for a gradient, if
-        // continuous scaling is done (i.e. useQuantScale is true and the
-        // input color map is sequential / diverging)
+        /*** Continuous-scaling-specific things ***/
+
+        // We append a number to the gradient ID so that multiple gradients can
+        // be present on the same page without overriding each other. (It's the
+        // caller's responsibility to ensure that gradient ID suffixes are
+        // unique, at least across Colorers created for continuous scaling.)
+        this._gradientID = useQuantScale ? "Gradient" + gradientIDSuffix : null;
+
+        // Will be set to a string containing just the SVG defining the
+        // gradient (i.e. just the <defs>...</defs> stuff).
         this._gradientSVG = null;
 
-        this._gradientIDSuffix = gradientIDSuffix;
+        // Will be set to a string describing the <rect> containing the
+        // gradient and the <text> representations of the min/mid/max values
+        // alongside it. Used to display the gradient in the page HTML.
+        this._pageSVG = null;
+
+        // Will be set to strings describing the minimum, middle, and maximum
+        // values along the gradient. Designed for use with this._gradientSVG
+        // (so they can be scaled as needed for SVG exporting).
+        this._minValStr = null;
+        this._midValStr = null;
+        this._maxValStr = null;
 
         // Will be set to true if there were any non-numeric elements included
-        // in the input values that couldn't be assigned colors (only if
-        // continuous scaling was done)
+        // in the input values that couldn't be assigned colors (controls
+        // whether or not to show a warning)
         this._missingNonNumerics = false;
+
+        /*** End continuous-scaling-specific things ***/
 
         // Based on the color map, container, type and the value of
         // useQuantScale, assign colors accordingly
@@ -192,8 +211,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * by this.color) for every value in this.sortedUniqueValues, taking into
      * account the magnitudes/etc. of the numeric values in
      * this.sortedUniqueValues. This will populate this.__valueToColor with
-     * this information. This will also populate this._gradientSVG with a
-     * String describing this gradient.
+     * this information. This will also populate this._gradientSVG,
+     * this._pageSVG, this._gradientID, this._missingNonNumerics,
+     * this._minValStr, this._midValStr, and this._maxValStr.
      *
      * Non-numeric values will not be assigned a color.
      *
@@ -211,7 +231,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
                     " custom colormap"
             );
         }
-
         var split = util.splitNumericValues(this.sortedUniqueValues);
         if (split.numeric.length < 2) {
             throw new Error("Category has less than 2 unique numeric values.");
@@ -229,23 +248,26 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
         });
-        // Figure out if we should show a warning message about missing values
-        // to the user
+        // Figure out if we should show a warning message about missing /
+        // non-numeric values to the user
         this._missingNonNumerics = split.nonNumeric.length > 0;
 
-        // Create SVG describing the gradient
+        // Create SVG describing the gradient: basically, we sample the color
+        // map along the domain 101 times, and use these 101 colors to define
+        // the <linearGradient /> for each integer percentage in the inclusve
+        // range [0%, 100%]. See https://github.com/biocore/emperor/issues/788.
         var mid = (min + max) / 2;
-        var step = (max - min) / 100;
-        var stopColors = [];
-        for (var s = min; s <= max; s += step) {
-            stopColors.push(interpolator(s).hex());
+        var stopColors = interpolator.colors(101);
+        // Calling interpolator.colors() returns the colors in order relative
+        // to the actual color map, which means that (if reverse is true) we
+        // need to reverse the color map itself.
+        if (this.reverse) {
+            stopColors.reverse();
         }
-        var gradientSVG = "<defs>";
-        // We append a number to the gradient ID so that multiple gradients can
-        // be present on the same page without overriding each other
-        var gID = "Gradient" + this._gradientIDSuffix;
-        gradientSVG +=
-            '<linearGradient id="' + gID + '" x1="0" x2="0" y1="1" y2="0">';
+        this._gradientSVG =
+            '<defs><linearGradient id="' +
+            this._gradientID +
+            '" x1="0" x2="0" y1="1" y2="0">';
         for (var pos = 0; pos < stopColors.length; pos++) {
             // "stop" tags are written here as <stop .../>. This matches what
             // Emperor does, and also the example on MDN here:
@@ -256,86 +278,151 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             // document.createElementNS(). Anyway, we keep things shorter for
             // now for consistency, but replacing '"/>' with '"></stop>' works
             // fine also.
-            gradientSVG +=
+            this._gradientSVG +=
                 '<stop offset="' +
                 pos +
                 '%" stop-color="' +
                 stopColors[pos] +
                 '"/>';
         }
-        gradientSVG +=
-            "</linearGradient></defs><rect " +
-            'width="20" height="95%" fill="url(#' +
-            gID +
-            ')"/>';
+        this._gradientSVG += "</linearGradient></defs>\n";
 
-        gradientSVG +=
+        // Add a rect containing the gradient. This'll only be used in the
+        // in-app representation of the gradient (not in the SVG export!)
+        this._pageSVG =
+            '<rect width="20" height="95%" fill="url(#' +
+            this._gradientID +
+            ')"/>\n';
+
+        this._minValStr = min.toString();
+        this._midValStr = mid.toString();
+        this._maxValStr = max.toString();
+        this._pageSVG +=
             '<text x="25" y="12px" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
-            max +
-            "</text>";
-        gradientSVG +=
+            this._maxValStr +
+            "</text>\n";
+        this._pageSVG +=
             '<text x="25" y="50%" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
-            mid +
-            "</text>";
-        gradientSVG +=
+            this._midValStr +
+            "</text>\n";
+        this._pageSVG +=
             '<text x="25" y="95%" font-family="sans-serif" ' +
             'font-size="12px" text-anchor="start">' +
-            min +
-            "</text>";
-
-        this._gradientSVG = gradientSVG;
+            this._minValStr +
+            "</text>\n";
     };
 
     /**
-     * Returns an array containing SVG information and a flag about non-numeric
-     * values, to be used when creating a legend based on continuous scaling.
+     * Returns an Object containing gradient information for a Legend.
      *
-     * This function should only be called if, on Colorer construction,
-     * useQuantScale is true and the input color map is sequential or
-     * diverging. If this is not the case (a.k.a. assignContinuousScaledColors
-     * was not called during construction), then this function will throw an
-     * error.
+     * The intent with this method is to make sure that the Legend holding a
+     * gradient has all of the information needed to export a SVG of this
+     * gradient (since this may involve rescaling or otherwise altering the
+     * way the legend is displayed, we pass things besides the SVG).
      *
-     * @return{Array} gradientInfo An array containing two elements:
-     *                             1. gradientSVG: a String containing the SVG
-     *                                describing this Colorer's gradient. This
-     *                                will include information about the
-     *                                input numeric values along this gradient.
-     *                             2. missingNonNumerics: a Boolean value that
-     *                                is true if any of the values passed to
-     *                                this Colorer were not numeric (and
-     *                                therefore not assignable to any colors on
-     *                                the gradient), and false otherwise. If
-     *                                this is true, it's recommended that the
-     *                                caller show a warning along with the
-     *                                gradient that some value(s) have been
-     *                                omitted from the color map.
+     * @return {Object} gradientInfo An Object with the following entries:
+     *                               -gradientSVG: SVG String containing the
+     *                                <defs> and <linearGradient> that define
+     *                                the gradient.
+     *                               -pageSVG: SVG String containing the <rect>
+     *                                and <text>s that position the gradient
+     *                                within a rectangle and place min / mid
+     *                                / max value text along it. (This is used
+     *                                for displaying the gradient in the
+     *                                application interface, but not used for
+     *                                exporting.)
+     *                               -gradientID: String ID of the gradient
+     *                                defined in gradientSVG.
+     *                               -minValStr: String representation of the
+     *                                minimum numeric value.
+     *                               -midValStr: String representation of the
+     *                                middle numeric value (halfway between the
+     *                                min and max; not necessarily present
+     *                                within the input data).
+     *                               -midValStr: String representation of the
+     *                                maximum numeric value.
+     *                               -missingNonNumerics: Boolean describing
+     *                                whether or not missing / non-numeric
+     *                                values were provided to the Colorer.
+     *                                (If true, a warning about this should
+     *                                be shown in the legend about this.)
      */
-    Colorer.prototype.getGradientSVG = function () {
+    Colorer.prototype.getGradientInfo = function () {
         if (_.isNull(this._gradientSVG)) {
             throw new Error(
-                "No gradient defined for this Colorer; check that " +
+                "No gradient data defined for this Colorer; check that " +
                     "useQuantScale is true and that the selected color map " +
                     "is not discrete."
             );
         } else {
-            return [this._gradientSVG, this._missingNonNumerics];
+            return {
+                gradientSVG: this._gradientSVG,
+                pageSVG: this._pageSVG,
+                gradientID: this._gradientID,
+                minValStr: this._minValStr,
+                midValStr: this._midValStr,
+                maxValStr: this._maxValStr,
+                missingNonNumerics: this._missingNonNumerics,
+            };
         }
     };
 
     /**
      * Returns a mapping of unique field values to their corresponding colors,
-     * where each color is in RGB array format.
+     * where each color is in RGB number format.
      *
      * @return{Object} rgbMap An object mapping each item in
      *                 this.sortedUniqueValues to its assigned color. Each
-     *                 color is represented by an array of [R, G, B], where R,
-     *                 G, B are all floats scaled to within the range [0, 1].
+     *                 color is represented by a number (see rgbToFloat()).
      */
     Colorer.prototype.getMapRGB = function () {
         return _.mapObject(this.__valueToColor, Colorer.hex2RGB);
+    };
+
+    /**
+     * Compresses a color array of the form [red, green, blue], where each
+     * element is in the range of [0, 255], into a single number.
+     *
+     * @param{Array} rgb The color array. The element in the array must in the
+     *                   range of [0, 255].
+     *
+     * @return{Number} the compressed color to be used in WebGl shaders
+     */
+    Colorer.rgbToFloat = function (rgb) {
+        return rgb[0] + rgb[1] * 256 + rgb[2] * 256 * 256;
+    };
+
+    /**
+     * Converts an RGB color array (with values in the range [0, 255])
+     * to an RGB GL array (with values in the range [0, 1]).
+     *
+     * @param {Array} rgbArray An array of the format [R, G, B], where each
+     *                         element is in the range [0, 255].
+     * @return {Array} glArray An array of the format [R, G, B], where each
+     *                         element is in the range [0, 1].
+     */
+    Colorer.rgb2gl = function (rgbArray) {
+        // The slice() removes the 4th element, an alpha channel.
+        return chroma(rgbArray).gl().slice(0, 3);
+    };
+
+    /**
+     * Uncompress a RGB color encoded as a float (eg the output of rgbToFloat).
+     * This is the same function found in the WebGl shaders.
+     * However, functions in WebGl shaders cannot be called by js functions and
+     * vice versa.
+     */
+    Colorer.unpackColor = function (f) {
+        var color = [];
+        // red
+        color[0] = f % 256.0;
+        // green
+        color[1] = ((f - color[0]) / 256.0) % 256.0;
+        // blue
+        color[2] = (f - color[0] - 256.0 * color[1]) / 65536.0;
+        return color;
     };
 
     /**
@@ -379,17 +466,15 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     };
 
     /**
-     * Converts a hex color to an RGB array suitable for use with WebGL.
+     * Converts a hex color to an RGB float suitable for use with WebGL.
      *
      * @param {String} hexString
-     * @return {Array} rgbArray
+     * @return {Float} rgb
      * @classmethod
      */
     Colorer.hex2RGB = function (hexString) {
-        // chroma(hexString).gl() returns an array with four components (RGBA
-        // instead of RGB). The slice() here strips off the final (alpha)
-        // element, which causes problems with Empress' drawing code.
-        return chroma(hexString).gl().slice(0, 3);
+        var rgb = chroma(hexString).rgb();
+        return Colorer.rgbToFloat(rgb);
     };
 
     /**
