@@ -120,7 +120,6 @@ define(["underscore"], function (_) {
      *
      */
     class ColorByFeatureMetadataCommand extends Command {
-
         /**
          * @param {Object} props Properties to use for coloring based on feature metadata
          * @param {string} props.colorBy Category to color based on.
@@ -244,9 +243,9 @@ define(["underscore"], function (_) {
          * @param {string} props.colorBy Category to color based on.
          * @param {string} props.colorMapName Name of color map to use.
          * @param {string} props.coloringMethod Method to use for coloring.
+         * @param {Number} props.lineWidth Amount of thickness to use.
          * @param {Boolean} props.reverseColorMap (optional) Indicates whether the the color
          *                                        map should be reverse.
-         * @param {Number} props.lineWidth Amount of thickness to use.
          */
         constructor(props) {
             super(props);
@@ -274,12 +273,13 @@ define(["underscore"], function (_) {
     }
 
     return {
-        CommandManager: CommandManager,
-        ResetTreeCommand: ResetTreeCommand,
-        ColorByFeatureMetadataCommand: ColorByFeatureMetadataCommand,
         CollapseCladesCommand: CollapseCladesCommand,
-        ThickenColoredNodesCommand: ThickenColoredNodesCommand,
-        DrawTreeCommand: DrawTreeCommand,
+        ColorByFeatureMetadataCommand: ColorByFeatureMetadataCommand,
         ColorByFeatureMetadataPipeline: ColorByFeatureMetadataPipeline,
+        CommandManager: CommandManager,
+        DrawTreeCommand: DrawTreeCommand,
+        NullCommand: NullCommand,
+        ResetTreeCommand: ResetTreeCommand,
+        ThickenColoredNodesCommand: ThickenColoredNodesCommand,
     };
 });
