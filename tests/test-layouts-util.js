@@ -69,6 +69,35 @@ require([
             },
         });
 
+        test("Test get ultrametric lengths", function () {
+            // Revised tree should be:
+            // In Newick format: "(((a:2,e:2)f:1,b:3)g:2,(c:3,d:3)h:2)i:1;"
+            // Also note that in a pre-order traversal
+            // 1: i
+            // 2: g
+            // 3: f
+            // 4: a
+            // 5: e
+            // 6: b
+            // 7: h
+            // 8: c
+            // 9: d
+            var expLengths = {
+                4: 2,
+                6: 3,
+                8: 3,
+                9: 3,
+                5: 2,
+                3: 1,
+                2: 2,
+                7: 2,
+                1: 1,
+            };
+
+            var obs = LayoutsUtil.getUltrametricLengths(this.tree);
+            deepEqual(obs, expLengths);
+        });
+
         test("Test rectangular layout (none and descending leaf sorting)", function () {
             var obs = LayoutsUtil.rectangularLayout(
                 this.tree,
