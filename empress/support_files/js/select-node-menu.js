@@ -286,10 +286,6 @@ define(["underscore", "util"], function (_, util) {
         if (this.hasFeatureMetadata) {
             this.fmTable.innerHTML = "";
             var mdObj;
-            // TODO: it'd be nice to add methods to Empress that return the
-            // feature metadata, so we can avoid having to access "private"
-            // attributes here. This is planned as part of the
-            // https://github.com/biocore/empress/issues/337 refactoring.
             if (tipOrInt === "tip") {
                 mdObj = this.empress._tipMetadata;
             } else if (tipOrInt === "int") {
