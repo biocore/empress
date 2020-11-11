@@ -60,6 +60,8 @@ require([
                     deepEqual(dataCells[0].textContent, expf1val);
                     deepEqual(dataCells[1].textContent, expf2val);
                 };
+
+                this.expNoSMColsSelectedNotesText = "No sample metadata columns selected yet.";
             },
             teardown: function () {
                 $(this.selectedNodeMenu.sel).empty();
@@ -130,11 +132,14 @@ require([
             this.isShown("fmTable");
 
             // Check that the sample metadata section is visible. Just the
-            // header and add section stuff should be visible right now.
+            // header and add section stuff should be visible right now, as
+            // well as a cursory note saying that no sample metadata columns
+            // are selected.
             this.isShown("smSection");
             this.isShown("smHeader");
             this.isHidden("smTable");
-            this.isHidden("smNotes");
+            this.isShown("smNotes");
+            this.textEquals("smNotes", this.expNoSMColsSelectedNotesText);
             this.isShown("smAddSection");
             this.isHidden("smNotInTableWarning");
 
@@ -164,11 +169,12 @@ require([
             this.isShown("fmTable");
 
             // Check that the sample metadata section is visible. Just the
-            // header and add section stuff should be visible right now.
+            // header, add section stuff, and notes should be visible now.
             this.isShown("smSection");
             this.isShown("smHeader");
             this.isHidden("smTable");
-            this.isHidden("smNotes");
+            this.isShown("smNotes");
+            this.textEquals("smNotes", this.expNoSMColsSelectedNotesText);
             this.isShown("smAddSection");
             this.isHidden("smNotInTableWarning");
 
@@ -234,7 +240,8 @@ require([
             this.isShown("smSection");
             this.isShown("smHeader");
             this.isHidden("smTable");
-            this.isHidden("smNotes");
+            this.isShown("smNotes");
+            this.textEquals("smNotes", this.expNoSMColsSelectedNotesText);
             this.isShown("smAddSection");
             this.isHidden("smNotInTableWarning");
             this.isShown("box");
