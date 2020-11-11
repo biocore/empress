@@ -61,7 +61,8 @@ require([
                     deepEqual(dataCells[1].textContent, expf2val);
                 };
 
-                this.expNoSMColsSelectedNotesText = "No sample metadata columns selected yet.";
+                this.expNoSMColsSelectedNotesText =
+                    "No sample metadata columns selected yet.";
             },
             teardown: function () {
                 $(this.selectedNodeMenu.sel).empty();
