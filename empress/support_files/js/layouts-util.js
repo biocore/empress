@@ -72,7 +72,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
         }
         /*
-         This loop is responsible for determining new branch lengths
+         This loop is responsible for determining new branch lengths.
          The lengths for intermediate nodes are effectively "stretched" until
          their deepest descendant hits the deepest level in the whole tree.
 
@@ -116,10 +116,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             children = tree.getChildren(nodeIndex);
             for (j = 0; j < children.length; j++) {
                 child = children[j];
-                var totalDistance = maxDistance;
                 var distanceAbove = depths[nodeIndex];
                 var distanceBelow = maxNodeToTipDistance[child];
-                lengths[child] = totalDistance - distanceAbove - distanceBelow;
+                lengths[child] = maxDistance - distanceAbove - distanceBelow;
                 depths[child] = distanceAbove + lengths[child];
             }
         }
