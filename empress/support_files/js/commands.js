@@ -1,26 +1,54 @@
 define(["underscore"], function (_) {
+    /**
+     *
+     * @class CommandManager
+     *
+     * Maintains and provides operations for manipulating a FIFO queue of commands.
+     *
+     * @param {Empress} empress The empress object to execute all of the commands on.
+     *
+     * @return {CommandManager}
+     * @constructs CommandManager
+     */
     function CommandManager(empress) {
         this.empress = empress;
         this.executed = [];
         this.toExecute = [];
     }
 
+    /**
+     * Adds a new command at the end of the queue
+     *
+     * @param {Command} command Command to be added to the queue.
+     */
     CommandManager.prototype.push = function (command) {
         this.toExecute.push(command);
     };
 
+    /**
+     * Removes the first Command from the queue and executes it.
+     */
     CommandManager.prototype.executeNext = function () {
         var command = this.toExecute.shift();
         command.execute(this.empress);
         this.executed.push(command);
     };
 
+    /**
+     * Executes all commands that have yet to be executed.
+     */
     CommandManager.prototype.executeAll = function () {
         while (this.toExecute.length > 0) {
             this.executeNext();
         }
     };
 
+    /**
+     * Adds a command to the queue then executes everything that has yet
+     * to be executed.
+     *
+     * @param {Command} command Command to be executed.
+     */
     CommandManager.prototype.pushAndExecuteAll = function (command) {
         this.toExecute.push(command);
         this.executeAll();
