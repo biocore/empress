@@ -125,6 +125,15 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         return lengths;
     }
 
+    /**
+     * Sets the default length getter, if necessary. Otherwise passes through the length getter.
+     *
+     * @param {Function|null} lengthGetter determines the length at a given node index
+     * @param {Boolean} ignoreLengths indicates whether branch lengths should be ignored.
+     * @param {BPTree} tree Tree for setting branch lengths in default length getter
+     * @returns {Function} map from node index to branch length
+     * @private
+     */
     function _determineLengthGetter(lengthGetter, ignoreLengths, tree) {
         var getLength;
         if (lengthGetter === null) {
