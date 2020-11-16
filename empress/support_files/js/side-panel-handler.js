@@ -92,8 +92,12 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // Initialize the callbacks for selecting the branch method
         var branchesMethodRadio = document.getElementsByName("branches-radio");
         var warnBranchMethods = ["ignore", "ultrametric"];
-        this.branchLengthText = document.getElementById("branch-length-determination-text");
-        this.branchLengthWarningContainer = document.getElementById("branch-length-warning");
+        this.branchLengthText = document.getElementById(
+            "branch-length-determination-text"
+        );
+        this.branchLengthWarningContainer = document.getElementById(
+            "branch-length-warning"
+        );
         this.branchLengthWarningContainer.classList.add("hidden");
 
         // for each branch method, we want to use the value of the radio button to set
@@ -109,10 +113,14 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                     empress.reLayout();
                     // some methods require a warning that branch lengths are being modified
                     if (warnBranchMethods.includes(value)) {
-                        scope.branchLengthWarningContainer.classList.remove("hidden");
+                        scope.branchLengthWarningContainer.classList.remove(
+                            "hidden"
+                        );
                         scope.branchLengthText.classList.add("hidden");
                     } else {
-                        scope.branchLengthWarningContainer.classList.add("hidden");
+                        scope.branchLengthWarningContainer.classList.add(
+                            "hidden"
+                        );
                         scope.branchLengthText.classList.remove("hidden");
                     }
                 }
@@ -121,7 +129,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 // since the length's for the layout methods will be determined
                 // by setting empress.branchMethod
                 empress.ignoreLengths = allOptions.ignore.checked;
-
             }
             return innerCheck;
         }
