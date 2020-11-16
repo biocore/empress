@@ -262,7 +262,7 @@ define(["underscore"], function (_) {
     }
 
     /**
-     * Composite pipeline for performing multipel steps of coloring a tree by feature metadata
+     * Composite pipeline for performing multiple steps of coloring a tree by feature metadata
      */
     class ColorByFeatureMetadataPipeline extends CompositeCommand {
         /**
