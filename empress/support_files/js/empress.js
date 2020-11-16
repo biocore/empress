@@ -362,25 +362,13 @@ define([
      * Also updates this._maxDisplacement.
      */
     Empress.prototype.getLayoutInfo = function () {
-        var data, i, lengthGetter;
+        var data, i;
         // set up length getter
-        var ultraMetricLengths;
         var branchMethod = this.branchMethod;
-
-        if (branchMethod === "ultrametric") {
-            ultraMetricLengths = LayoutsUtil.getUltrametricLengths(this._tree);
-            lengthGetter = function (i) {
-                return ultraMetricLengths[i];
-            };
-        } else if (branchMethod === "ignore") {
-            lengthGetter = function (i) {
-                return 1;
-            };
-        } else if (branchMethod === "normal") {
-            lengthGetter = null;
-        } else {
-            throw "Invalid branchMethod: '" + branchMethod + "'.";
-        }
+        var lengthGetter = LayoutsUtil.getLengthMethod(
+            branchMethod,
+            this._tree
+        );
 
         // Rectangular
         if (this._currentLayout === "Rectangular") {

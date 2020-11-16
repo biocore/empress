@@ -126,6 +126,35 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     /**
+     * Gets a method for determining branch lengths by name, parameterized on a tree.
+     *
+     * @param {String} methodName Method for determing branch lengths.
+     *                            One of ("ultrametric", "ignore", "normal").
+     * @param {BPTree} tree Tree that needs branch lengths determined.
+     * @returns {Function} A function that maps node indices to branch lengths.
+     */
+    function getLengthMethod(methodName, tree) {
+        var lengthGetter;
+        if (methodName === "ultrametric") {
+            var ultraMetricLengths = getUltrametricLengths(tree);
+            lengthGetter = function (i) {
+                return ultraMetricLengths[i];
+            };
+        } else if (methodName === "ignore") {
+            lengthGetter = function (i) {
+                return 1;
+            };
+        } else if (methodName === "normal") {
+            lengthGetter = function (i) {
+                return tree.length(i);
+            };
+        } else {
+            throw "Invalid method: '" + methodName + "'.";
+        }
+        return lengthGetter;
+    }
+
+    /**
      * Sets the default length getter, if necessary. Otherwise passes through the length getter.
      *
      * @param {Function|null} lengthGetter determines the length at a given node index
@@ -812,6 +841,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     return {
+        getLengthMethod: getLengthMethod,
         getPostOrderNodes: getPostOrderNodes,
         getUltrametricLengths: getUltrametricLengths,
         computeScaleFactor: computeScaleFactor,
