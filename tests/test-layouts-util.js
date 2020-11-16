@@ -69,6 +69,14 @@ require([
                     null
                 );
 
+                // In Newick format: "((d:3,c:3)b:1,a:4)r:1;"
+                this.ultrametricTestTree = new BPTree(
+                    new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0]),
+                    ["", "d", "c", "b", "a", "r"],
+                    ["", 3.0, 3.0, 1.0, 4.0, 1.0],
+                    null
+                );
+
                 // In Newick format: "(a:1, b:2)root:3;"
                 this.twoTipTree = new BPTree(
                     new Uint8Array([1, 1, 0, 1, 0, 0]),
@@ -105,6 +113,25 @@ require([
             };
 
             var obs = LayoutsUtil.getUltrametricLengths(this.tree);
+            deepEqual(obs, expLengths);
+        });
+
+        test("Test get ultrametric lengths (ultrametric tree)", function () {
+            // Revised tree should be:
+            // In Newick format: "((d:3,c:3)b:1,a:4)root:1;"
+            // Also note that this is the BP structure
+            // rbddccbaar
+            // 1110100100
+            // this corresponds to the lengths remaining unchanged
+            var expLengths = {
+                0: 1,
+                1: 1,
+                2: 3,
+                4: 3,
+                7: 4
+            };
+
+            var obs = LayoutsUtil.getUltrametricLengths(this.ultrametricTestTree);
             deepEqual(obs, expLengths);
         });
 
