@@ -37,7 +37,7 @@ require([
                     equal(ele.innerText, expText);
                 };
             },
-            tearDown: function () {
+            teardown: function () {
                 this.containerEle.remove();
             },
         });

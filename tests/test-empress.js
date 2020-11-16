@@ -4,7 +4,8 @@ require([
     "util",
     "chroma",
     "Empress",
-], function ($, UtilitiesForTesting, util, chroma, Empress) {
+    "BiomTable",
+], function ($, UtilitiesForTesting, util, chroma, Empress, BiomTable) {
     $(document).ready(function () {
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray
@@ -462,7 +463,7 @@ require([
 
             // Check getSampleCategories() if no sample metadata passed to
             // Empress -- an empty array should be returned
-            testData = UtilitiesForTesting.getTestData();
+            var testData = UtilitiesForTesting.getTestData();
             var empWithJustFM = new Empress(
                 testData.tree,
                 null,
@@ -947,6 +948,16 @@ require([
             deepEqual(ctData, lf2presence);
         });
 
+        test("Test computeTipSamplePresence when tip not in table", function () {
+            var e = this.empress;
+            var fields = e._biom._smCols;
+            var ctData = e.computeTipSamplePresence(
+                "like a billion lol",
+                fields
+            );
+            deepEqual(ctData, null);
+        });
+
         test("Test computeIntSamplePresence", function () {
             var e = this.empress;
             var fields = e._biom._smCols;
@@ -958,8 +969,14 @@ require([
                 traj: { t1: 2, t2: 2, t3: 2, t4: 0 },
             };
             deepEqual(values.fieldsMap, int4presence);
+            // diff should be [] since all of node 4's descendant tips
+            // (2 and 3) are in the table
+            deepEqual(values.diff, []);
+            // All samples but s7 are represented by node 4: this is because
+            // tips 2 and 3 are present in all samples except s7.
+            deepEqual(values.samples, ["s1", "s2", "s3", "s4", "s5", "s6"]);
 
-            //also testing root which should have all tips -> all samples
+            // Also test root which should have all tips -> all samples
             var rootPresence = {
                 f1: { a: 5, b: 2 },
                 grad: { 1: 2, 2: 2, 3: 2, 4: 1 },
@@ -967,6 +984,54 @@ require([
             };
             var rootValues = e.computeIntSamplePresence(7, fields);
             deepEqual(rootValues.fieldsMap, rootPresence);
+            // Note that diff being [] is only a guarantee if the tree was
+            // shorn to the table. If shearing was not done, it is possible
+            // that tips in the tree could not be present in the table.
+            deepEqual(rootValues.diff, []);
+            // However, the root should always correspond to all samples, since
+            // all of the features in the table should be tips in the tree, and
+            // since the root by definition is an ancestor of all those tips.
+            deepEqual(rootValues.samples, [
+                "s1",
+                "s2",
+                "s3",
+                "s4",
+                "s5",
+                "s6",
+                "s7",
+            ]);
+        });
+
+        test("Test computeIntSamplePresence when no child tips in table", function () {
+            // Two samples (s1 and s2), both of which contain exactly one
+            // feature (6)
+            var tinyBiom = new BiomTable(
+                ["s1", "s2"],
+                [6],
+                { s1: 0, s2: 1 },
+                { 6: 0 },
+                [[0], [0]],
+                ["sm1"],
+                [["a"], ["b"]]
+            );
+            var testData = UtilitiesForTesting.getTestData();
+            var e = new Empress(
+                testData.tree,
+                tinyBiom,
+                testData.fmCols,
+                testData.tm,
+                testData.im,
+                testData.canvas
+            );
+            // The internal node 4 has two descendant tips, 2 and 3. Since this
+            // table only has one feature (6), this means that
+            // computeIntSamplePresence() for 4 should result in fieldsMap
+            // being null.
+            var values = e.computeIntSamplePresence(4, ["sm1"]);
+
+            deepEqual(values.fieldsMap, null);
+            deepEqual(values.diff, [2, 3]);
+            deepEqual(values.samples, []);
         });
 
         test("Test getUniqueFeatureMetadataInfo (method = tip)", function () {

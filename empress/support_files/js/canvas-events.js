@@ -28,7 +28,6 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
          */
         this.mouseMove = false;
         this.selectedNodeMenu = new SelectedNodeMenu(this.empress, this.drawer);
-        this.selectedNodeMenu.initialize();
 
         // the quick search bar
         this.quickSearchBar = document.getElementById("quick-search");

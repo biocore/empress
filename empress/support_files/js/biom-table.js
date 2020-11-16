@@ -200,6 +200,17 @@ define(["underscore", "util"], function (_, util) {
     };
 
     /**
+     * Returns true if the table contains a feature name, false otherwise.
+     *
+     * @param {String} fID
+     *
+     * @return {Boolean}
+     */
+    BIOMTable.prototype.hasFeatureID = function (fID) {
+        return _.has(this._fID2Idx, fID);
+    };
+
+    /**
      * Return the feature IDs shared by the BIOM table and input array
      *
      * @param {Array[String]} other Array of strings to compute the
@@ -455,6 +466,13 @@ define(["underscore", "util"], function (_, util) {
      * For example, if col == 'body_site', then this function will return an
      * an object that maps each body site (oral, gut,...) to the number of
      * samples in 'samples' labelled as being from that body site.
+     *
+     * The returned object is a "sparse" representation, in the sense that
+     * unique values in the metadata field that are not present within the
+     * specified samples array will be omitted. For the body site example,
+     * this would mean that if, say, all of the samples were gut samples, then
+     * the returned object would just have "gut" as the only key (even if the
+     * full dataset included samples from other body sites).
      *
      * @param {Array} samples Array of sample IDs
      * @param {String} col Sample metadata column

@@ -3310,30 +3310,39 @@ define([
         }
         return this.getNodeInfo(node, "name");
     };
+
     /*
-     * Show the node menu for a node name
+     * Given a tip name and a list of sample metadata fields, computes the
+     * sample presence information: the number of samples for each unique
+     * value within each field that contain this tip.
      *
-     * Calculate the number of samples in which a tip appears for the
-     * unique values of a metadata field across a list of metadata fields.
+     * If the specified tip name is not present within the BIOM table (i.e. the
+     * tree was not shorn just to tips in the table, and one of those
+     * not-in-the-table tips was clicked on) then this will return null.
      *
      * @param {String} nodeName Name of the (tip) node for which to calculate
      *                          sample presence.
      * @param {Array} fields Metadata fields for which to calculate tip
      *                       sample presence.
-     * @return {Object} ctData Maps metadata field names to another Object,
-     *                         which in turn maps unique metadata values to
-     *                         the number of samples with this metadata value
-     *                         in this field that contain the given tip.
+     * @return {Object or null} ctData Maps metadata field names to another
+     *                                 Object, which in turn maps unique
+     *                                 metadata values to the number of samples
+     *                                 with this metadata value in this field
+     *                                 that contain the given tip.
+     *                                 (Will just be null, instead, if the tip
+     *                                 isn't present in the table.)
      */
     Empress.prototype.computeTipSamplePresence = function (nodeName, fields) {
-        var ctData = {};
-
-        for (var f = 0; f < fields.length; f++) {
-            var field = fields[f];
-            ctData[field] = this._biom.getObsCountsBy(field, nodeName);
+        if (this._biom.hasFeatureID(nodeName)) {
+            var ctData = {};
+            for (var f = 0; f < fields.length; f++) {
+                var field = fields[f];
+                ctData[field] = this._biom.getObsCountsBy(field, nodeName);
+            }
+            return ctData;
+        } else {
+            return null;
         }
-
-        return ctData;
     };
 
     /**
@@ -3348,21 +3357,47 @@ define([
      * @return {Object} samplePresence A mapping with three entries:
      *                                 (1) fieldsMap Maps metadata field names
      *                                 to Object mapping unique metadata values
-     *                                 to the number of samples with this metadata
-     *                                 value in this field containing at least one
-     *                                 tip in the subtree of the given nodeKey.
-     *                                 (2) diff Array of tip names not present
-     *                                 as features in the table.
-     *                                 (3) samples Array of samples represented by
-     *                                 tips present in the table.
+     *                                 to the number of samples with this
+     *                                 metadata value in this field containing
+     *                                 at least one tip in the subtree of the
+     *                                 given nodeKey. If none of the descendant
+     *                                 tips of this internal node are present
+     *                                 in the table, this will just be null.
+     *                                 (2) diff Array of descendant tip names
+     *                                 not present as features in the table.
+     *                                 (3) samples Array of samples represented
+     *                                 by descendant tips present in the table.
      */
     Empress.prototype.computeIntSamplePresence = function (nodeKey, fields) {
-        // retrieve the sample data for the tips in the table
+        // Find the descendant tips of this internal node
         var tips = this._tree.findTips(nodeKey);
+
+        // descendant tips that aren't features in the table
         var diff = this._biom.getObsIDsDifference(tips);
+
+        // Handle the case where none of the descendant tips are present in the
+        // table specially -- the main distinguishing thing here is we return
+        // null for fieldsMap, which lets the caller know that they should just
+        // show a warning instead of a table.
+        if (tips.length === diff.length) {
+            return {
+                fieldsMap: null,
+                diff: diff,
+                samples: [],
+            };
+        }
+
+        // descendant tips that _are_ features in the table
         var intersection = this._biom.getObsIDsIntersection(tips);
+        // samples represented by the "intersection" tips above
         var samples = this._biom.getSamplesByObservations(intersection);
 
+        // Initialize an Object that, for each field within fields, maps each
+        // unique value in that field to a 0. These 0s will be updated in the
+        // next loop based on sample presence information for this internal
+        // node.
+        // NOTE that we could skip this step if we didn't want to show 0s in
+        // the table; see https://github.com/biocore/empress/issues/329.
         var fieldsMap = {};
         for (var i = 0; i < fields.length; i++) {
             field = fields[i];
@@ -3374,16 +3409,16 @@ define([
             }
         }
 
-        // iterate over the samples and extract the field values
+        // Iterate over the fields, calling getSampleValuesCount() to get the
+        // sample presence information for the values within the fields
         for (var k = 0; k < fields.length; k++) {
             field = fields[k];
 
-            // update fields mapping object
-            var result = this._biom.getSampleValuesCount(samples, field);
-            fieldValues = Object.keys(result);
+            var value2cts = this._biom.getSampleValuesCount(samples, field);
+            var fieldValues = Object.keys(value2cts);
             for (var m = 0; m < fieldValues.length; m++) {
                 fieldValue = fieldValues[m];
-                fieldsMap[field][fieldValue] += result[fieldValue];
+                fieldsMap[field][fieldValue] += value2cts[fieldValue];
             }
         }
 
