@@ -128,10 +128,12 @@ require([
                 1: 1,
                 2: 3,
                 4: 3,
-                7: 4
+                7: 4,
             };
 
-            var obs = LayoutsUtil.getUltrametricLengths(this.ultrametricTestTree);
+            var obs = LayoutsUtil.getUltrametricLengths(
+                this.ultrametricTestTree
+            );
             deepEqual(obs, expLengths);
         });
 
