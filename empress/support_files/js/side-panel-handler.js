@@ -92,6 +92,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // Initialize the callbacks for selecting the branch method
         var branchesMethodRadio = document.getElementsByName("branches-radio");
         var warnBranchMethods = ["ignore", "ultrametric"];
+        this.branchLengthText = document.getElementById("branch-length-determination-text");
         this.branchLengthWarningContainer = document.getElementById("branch-length-warning");
         this.branchLengthWarningContainer.classList.add("hidden");
 
@@ -109,8 +110,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                     // some methods require a warning that branch lengths are being modified
                     if (warnBranchMethods.includes(value)) {
                         scope.branchLengthWarningContainer.classList.remove("hidden");
+                        scope.branchLengthText.classList.add("hidden");
                     } else {
                         scope.branchLengthWarningContainer.classList.add("hidden");
+                        scope.branchLengthText.classList.remove("hidden");
                     }
                 }
                 // we want to make sure empress knows whether or not to ignore lengths
