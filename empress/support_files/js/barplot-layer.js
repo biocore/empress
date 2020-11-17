@@ -246,7 +246,7 @@ define([
             color: this.initialDefaultColorHex,
             change: function (newColor) {
                 // To my knowledge, there isn't a straightforward way of
-                // getting an RGB array out of the "TinyColor" values passed in
+                // getting an RGB number out of the "TinyColor" values passed in
                 // by Spectrum: see
                 // https://bgrins.github.io/spectrum#details-acceptedColorInputs
                 scope.defaultColor = Colorer.hex2RGB(newColor.toHexString());
@@ -678,8 +678,7 @@ define([
             this.colorByFMContinuous &&
             !this.colorByFMColorMapDiscrete
         ) {
-            var gradInfo = colorer.getGradientSVG();
-            this.colorLegend.addContinuousKey(title, gradInfo[0], gradInfo[1]);
+            this.colorLegend.addContinuousKey(title, colorer.getGradientInfo());
         } else {
             this.colorLegend.addCategoricalKey(title, colorer.getMapHex());
         }
@@ -743,6 +742,28 @@ define([
      */
     BarplotLayer.prototype.clearLengthLegend = function () {
         this.lengthLegend.clear();
+    };
+
+    /**
+     * Returns an Array containing all of the active legends in this layer.
+     *
+     * Currently, this just returns the color legend and length legends
+     * (assuming both are in use), since those are the only legends barplot
+     * layers own. However, if more sorts of encodings could be used at the
+     * same time (e.g. encoding bars' color, length, and ... opacity, I
+     * guess?), then this Array should be expanded.
+     *
+     * Inactive legends (e.g. the length legend, if no length encoding is in
+     * effect) will be excluded from the Array. However, if all legends are
+     * active, the order in the Array will always be color then length.
+     *
+     * @return {Array} Array of Legend objects
+     */
+    BarplotLayer.prototype.getLegends = function () {
+        var containedLegends = [this.colorLegend, this.lengthLegend];
+        return _.filter(containedLegends, function (legend) {
+            return legend.isActive();
+        });
     };
 
     /**

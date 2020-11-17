@@ -47,23 +47,32 @@
     <!-- node selection menu box -->
     <div class="hidden" id="menu-box">
       <h1 id="menu-box-node-id"></h1>
-      <p id="menu-box-warning"></p>
+      <p class="hidden" id="menu-box-node-name-warning"></p>
       <div id="menu-box-node-length-container" class="hidden">
         <strong>Node length:</strong>
         <span id="menu-box-node-length"></span>
       </div>
-      <h3 class="hidden" id="menu-fm-header">Feature Metadata</h3>
-      <table class="menu-table hidden" id="menu-fm-table"></table>
+      <!-- Feature metadata section -->
+      <div id="menu-fm-section">
+        <hr />
+        <h3 id="menu-fm-header">Feature Metadata</h3>
+        <p id="menu-fm-no-fm-note"></p>
+        <table class="menu-table" id="menu-fm-table"></table>
+      </div>
+      <!-- Sample metadata section -->
       <div id="menu-sm-section">
-        <h3 class="hidden" id="menu-sm-header">Sample Presence Information</h3>
-        <p id="menu-box-notes"></p>
+        <hr />
+        <h3 id="menu-sm-header">Sample Presence Information</h3>
+        <p id="menu-box-node-not-in-table-warning"></p>
+        <p id="menu-box-sm-notes"></p>
         <table class="menu-table" id="menu-sm-table"></table>
-        <br>
-        <strong>Select a metadata column to summarize</strong>
-        <label class="menu-select-container">
-          <select id="menu-select"></select>
-        </label>
-        <button id="menu-add-btn">Add</button>
+        <div id="menu-sm-add-section">
+          <strong>Select a metadata column to summarize</strong>
+          <label class="menu-select-container">
+            <select id="menu-select"></select>
+          </label>
+          <button id="menu-add-btn">Add</button>
+        </div>
       </div>
     </div>
 

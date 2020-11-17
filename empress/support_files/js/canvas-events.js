@@ -32,7 +32,6 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
          */
         this.mouseMove = false;
         this.selectedNodeMenu = new SelectedNodeMenu(this.empress, this.drawer);
-        this.selectedNodeMenu.initialize();
 
         // the quick search bar
         this.quickSearchBar = document.getElementById("quick-search");

@@ -250,6 +250,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         }
         var lw = util.parseAndValidateNum(lwInput);
         this.empress.thickenColoredNodes(lw);
+
         this.empress.drawTree();
     };
 
@@ -579,23 +580,37 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
     /**
      * Fills in tree statistics in various HTML elements on the side panel.
+     *
+     * Uses of toLocaleString() here based on
+     * https://stackoverflow.com/a/31581206/10730311.
      */
     SidePanel.prototype.populateTreeStats = function () {
-        var populate = function (htmlID, val) {
-            document.getElementById(htmlID).textContent = val;
+        // Formats a number with just toLocaleString() (leaving the locale
+        // unspecified should mean the user's settings are respected).
+        // For English, at least, this should mean that numbers are formatted
+        // with commas as thousands separators (e.g. 12,345).
+        var populateNum = function (htmlID, val, localeOptions) {
+            document.getElementById(htmlID).textContent = val.toLocaleString(
+                undefined,
+                localeOptions
+            );
         };
-        var populateWithFixedPrecision = function (htmlID, val) {
-            populate(htmlID, val.toFixed(4));
+
+        // Formats a number with toLocaleString(), and also limits
+        // the number to 4 digits after the decimal point.
+        var populateFloat = function (htmlID, val) {
+            populateNum(htmlID, val, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 4,
+            });
         };
         var stats = this.empress.getTreeStats();
-        // only call toFixed on the length stats; the node counts are all
-        // integers
-        populate("stats-tip-count", stats.tipCt);
-        populate("stats-int-count", stats.intCt);
-        populate("stats-total-count", stats.allCt);
-        populateWithFixedPrecision("stats-min-length", stats.min);
-        populateWithFixedPrecision("stats-max-length", stats.max);
-        populateWithFixedPrecision("stats-avg-length", stats.avg);
+        populateNum("stats-tip-count", stats.tipCt);
+        populateNum("stats-int-count", stats.intCt);
+        populateNum("stats-total-count", stats.allCt);
+        populateFloat("stats-min-length", stats.min);
+        populateFloat("stats-max-length", stats.max);
+        populateFloat("stats-avg-length", stats.avg);
     };
 
     return SidePanel;
