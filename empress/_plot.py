@@ -7,7 +7,6 @@
 # ----------------------------------------------------------------------------
 
 import qiime2
-import pandas as pd
 import biom
 
 from q2_types.tree import NewickFormat
@@ -61,6 +60,9 @@ def tree_plot(
     shear_to_feature_metadata: bool = False,
 ) -> None:
     """Visualizes a tree (optionally with feature metadata)."""
+
+    if feature_metadata is not None:
+        feature_metadata = feature_metadata.to_dataframe()
 
     t = get_bp(tree)
     viz = Empress(tree=t, feature_metadata=feature_metadata,
