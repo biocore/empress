@@ -7,7 +7,10 @@ import pandas as pd
 from skbio.stats.ordination import OrdinationResults
 
 from empress.core import Empress
+import empress._parameter_descriptions as desc
 from empress._plot_utils import save_viz, prepare_pcoa
+
+OUTPUT_DIR = "Directory to output EMPress plot."
 
 
 @click.group()
@@ -16,10 +19,12 @@ def empress():
 
 
 @empress.command("tree-plot")
-@click.option("--tree", required=True)
-@click.option("--output-dir", required=True)
-@click.option("--feature-metadata", required=False, default=None)
-@click.option("--shear-to-feature-metadata", required=False, default=False)
+@click.option("--tree", required=True, help=desc.TREE_DESC)
+@click.option("--output-dir", required=True, help=OUTPUT_DIR)
+@click.option("--feature-metadata", required=False, default=None,
+              help=desc.FM_DESC)
+@click.option("--shear-to-feature-metadata", required=False, default=False,
+              help=desc.SHEAR_TO_FM)
 def tree_plot(
     tree: str,
     feature_metadata: str,
@@ -41,17 +46,23 @@ def tree_plot(
 
 
 @empress.command("community-plot")
-@click.option("--tree", required=True)
-@click.option("--table", required=True)
-@click.option("--sample-metadata", required=True)
-@click.option("--output-dir", required=True)
-@click.option("--pcoa", required=False, default=None)
-@click.option("--feature-metadata", required=False, default=None)
-@click.option("--ignore-missing-samples", required=False, default=False)
-@click.option("--filter-extra-samples", required=False, default=False)
-@click.option("--filter-missing-features", required=False, default=False)
-@click.option("--number-of-pcoa-features", required=False, default=5)
-@click.option("--shear-to-table", required=False, default=True)
+@click.option("--tree", required=True, help=desc.TREE_DESC)
+@click.option("--table", required=True, help=desc.TBL)
+@click.option("--sample-metadata", required=True, help=desc.SM_DESC)
+@click.option("--output-dir", required=True, help=OUTPUT_DIR)
+@click.option("--pcoa", required=False, default=None, help=desc.PCOA)
+@click.option("--feature-metadata", required=False, default=None,
+              help=desc.FM_DESC)
+@click.option("--ignore-missing-samples", required=False, default=False,
+              help=desc.IGNORE_MISS_SAMP)
+@click.option("--filter-extra-samples", required=False, default=False,
+              help=desc.FILT_EX_SAMP)
+@click.option("--filter-missing-features", required=False, default=False,
+              help=desc.FILT_MISS_FEAT)
+@click.option("--number-of-pcoa-features", required=False, default=5,
+              help=desc.NUM_FEAT)
+@click.option("--shear-to-table", required=False, default=True,
+              help=desc.SHEAR_TO_TBL)
 def community_plot(
     tree: str,
     table: str,
