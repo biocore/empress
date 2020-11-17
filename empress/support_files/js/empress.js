@@ -382,7 +382,6 @@ define([
                 // needs to know lengths in order to layout a tree, it doesn't
                 // really need encapsulate all of the logic for determining
                 // what lengths it should lay out.
-                null,
                 this.leafSorting,
                 undefined,
                 lengthGetter
@@ -405,7 +404,6 @@ define([
                 this._tree,
                 4020,
                 4020,
-                null,
                 this.leafSorting,
                 undefined,
                 lengthGetter
@@ -432,7 +430,6 @@ define([
                 this._tree,
                 4020,
                 4020,
-                null,
                 undefined,
                 lengthGetter
             );

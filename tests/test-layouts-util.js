@@ -141,8 +141,8 @@ require([
             var obs = LayoutsUtil.rectangularLayout(
                 this.tree,
                 1,
+
                 1,
-                false,
                 "none",
                 false
             );
@@ -215,7 +215,6 @@ require([
                 this.tree,
                 1,
                 1,
-                false,
                 "descending",
                 false
             );
@@ -227,7 +226,6 @@ require([
                 this.tree,
                 1,
                 1,
-                false,
                 "ascending",
                 false
             );
@@ -297,7 +295,6 @@ require([
                 this.straightLineTree,
                 1,
                 1,
-                false,
                 "none",
                 false
             );
@@ -313,13 +310,14 @@ require([
         });
 
         test("Test straightline tree rectangular layout: ignoreLengths", function () {
+            var lengthGetter = LayoutsUtil.getLengthMethod("ignore", this.straightLineTree);
             var obs = LayoutsUtil.rectangularLayout(
                 this.straightLineTree,
                 1,
                 1,
-                true,
                 "none",
-                false
+                false,
+                lengthGetter
             );
 
             // The only difference in output is that the one tip node in the
@@ -339,7 +337,6 @@ require([
                 this.noRootLength,
                 1,
                 1,
-                false,
                 "none",
                 false
             );
@@ -359,7 +356,6 @@ require([
                 this.circLayoutTestTree,
                 5,
                 5,
-                false,
                 "none",
                 false
             );
@@ -424,7 +420,6 @@ require([
                 this.circLayoutTestTree,
                 1,
                 1,
-                false,
                 "none",
                 false
             );
@@ -447,7 +442,6 @@ require([
                     tree,
                     1,
                     1,
-                    false,
                     "none",
                     false
                 );
@@ -476,7 +470,6 @@ require([
                     scope.straightLineTree,
                     1,
                     1,
-                    false,
                     opt,
                     false
                 );
@@ -495,13 +488,14 @@ require([
         test("Test straightline tree circular layout: ignoreLengths", function () {
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
+                var lengthGetter = LayoutsUtil.getLengthMethod("ignore", tree);
                 var obs = LayoutsUtil.circularLayout(
                     tree,
                     1,
                     1,
-                    true,
                     "none",
-                    false
+                    false,
+                    lengthGetter
                 );
                 // The tree looks like: (note the equal branch lengths)
                 // root -- a -- b
@@ -530,7 +524,6 @@ require([
                     tree,
                     100,
                     50000,
-                    false,
                     "none",
                     true
                 );
@@ -557,7 +550,6 @@ require([
                 this.twoTipTree,
                 100,
                 500,
-                false,
                 "none",
                 true
             );
@@ -587,7 +579,7 @@ require([
             deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
         });
         test("Test unrooted layout", function () {
-            var obs = LayoutsUtil.unrootedLayout(this.tree, 1, 1, false);
+            var obs = LayoutsUtil.unrootedLayout(this.tree, 1, 1);
             var exp = {
                 xCoord: [
                     0,
@@ -625,7 +617,6 @@ require([
                     tree,
                     100,
                     500,
-                    false,
                     true
                 );
                 // The tree looks like a vertical line:
