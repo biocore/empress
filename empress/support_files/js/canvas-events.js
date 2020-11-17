@@ -287,6 +287,10 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             autocompleteContainer.appendChild(suggestionMenu);
 
             // helper function to compare query to node name
+            // returns true if the first (query.length) characters of nodeName
+            // are equal to query, ignoring case (if query.length >
+            // nodeName.length this should be false, since .substr()
+            // will just not modify the nodeName)
             var compareQuery = function (nodeName) {
                 return (
                     nodeName.substr(0, query.length).toUpperCase() ===
@@ -322,8 +326,8 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             }
 
             // not all node ids were listed in the autofill box
-            // create an elipse autofill to let users know there are more
-            // possible options
+            // create an ellipse autofill (...) to let users know there are
+            // more possible options
             if (suggestionsAdded < ids.length) {
                 suggestId = document.createElement("DIV");
 
