@@ -328,7 +328,7 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             // not all node ids were listed in the autofill box
             // create an ellipse autofill (...) to let users know there are
             // more possible options
-            if (suggestionsAdded < ids.length) {
+            if (compareQuery(ids[i])) {
                 suggestId = document.createElement("DIV");
 
                 suggestId.innerHTML = "<strong>...</strong>";
