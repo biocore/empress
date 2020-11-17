@@ -286,28 +286,25 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             );
             autocompleteContainer.appendChild(suggestionMenu);
 
+            // helper function to compare query to node name
+            var compareQuery = function(nodeName) {
+                return nodeName.substr(0, query.length).toUpperCase() ===
+                       query.toUpperCase();
+            }
+
             // search ids array for all possible words
             var suggestId,
                 suggestionsAdded = 0,
                 i = _.findIndex(
                     ids,
-                    function (w) {
-                        return (
-                            w.substr(0, query.length).toUpperCase() ==
-                            query.toUpperCase()
-                        );
-                    },
+                    compareQuery,
                     true
                 );
-            // for (i; i < ids.length && suggestionsAdded < 10; i++) {
-            for (i = 0; i < ids.length; i++) {
+            for (i; i < ids.length && suggestionsAdded < 10; i++) {
                 var word = ids[i];
 
                 // if node id begins with user query, add it to suggestionMenu
-                if (
-                    word.substr(0, query.length).toUpperCase() ===
-                    query.toUpperCase()
-                ) {
+                if ( compareQuery(word) ) {
                     // create a container to hold the text/click event for the
                     // suggested id
                     suggestId = document.createElement("DIV");
@@ -323,12 +320,7 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
                     // add suggested id to the suggstions menu
                     suggestionMenu.appendChild(suggestId);
                     suggestionsAdded += 1;
-                } // else {
-                //     // we set i to begin at an index where the users query will
-                //     // match and since ids is an assorted array, once we do not
-                //     // find a match we know we will not find any more matches.
-                //     break;
-                // }
+                } 
             }
 
             // not all node ids were listed in the autofill box

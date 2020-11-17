@@ -441,7 +441,9 @@ define([
         var nodeNames = this._tree.getAllNames();
         // Don't include nodes with the name null (i.e. nodes without a
         // specified name in the Newick file) in the auto-complete.
+        nodeNames = nodeNames.filter((n) => n !== null);
         nodeNames.sort();
+        nodeNames = _.uniq(nodeNames);
         this._events.autocomplete(nodeNames);
 
         this.getLayoutInfo();
