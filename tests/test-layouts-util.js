@@ -310,7 +310,10 @@ require([
         });
 
         test("Test straightline tree rectangular layout: ignoreLengths", function () {
-            var lengthGetter = LayoutsUtil.getLengthMethod("ignore", this.straightLineTree);
+            var lengthGetter = LayoutsUtil.getLengthMethod(
+                "ignore",
+                this.straightLineTree
+            );
             var obs = LayoutsUtil.rectangularLayout(
                 this.straightLineTree,
                 1,
@@ -438,13 +441,7 @@ require([
             // length, the output data should be exactly the same.
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.circularLayout(
-                    tree,
-                    1,
-                    1,
-                    "none",
-                    false
-                );
+                var obs = LayoutsUtil.circularLayout(tree, 1, 1, "none", false);
                 // The tree looks like:
                 // root -- a ---- b
                 deepEqual(obs.x0, [0, 1, 0, 0], "x0");
@@ -613,12 +610,7 @@ require([
             var scope = this;
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.unrootedLayout(
-                    tree,
-                    100,
-                    500,
-                    true
-                );
+                var obs = LayoutsUtil.unrootedLayout(tree, 100, 500, true);
                 // The tree looks like a vertical line:
                 //
                 //  b
