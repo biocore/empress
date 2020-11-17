@@ -302,6 +302,12 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             var suggestId,
                 suggestionsAdded = 0,
                 i = _.findIndex(ids, compareQuery, true);
+            
+            // no match was found
+            if (i === -1) {
+                return;
+            }
+
             for (i; i < ids.length && suggestionsAdded < 10; i++) {
                 var word = ids[i];
 
@@ -322,13 +328,15 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
                     // add suggested id to the suggstions menu
                     suggestionMenu.appendChild(suggestId);
                     suggestionsAdded += 1;
+                } else {
+                    break;
                 }
             }
 
             // not all node ids were listed in the autofill box
             // create an ellipse autofill (...) to let users know there are
             // more possible options
-            if (compareQuery(ids[i])) {
+            if (i < ids.length && compareQuery(ids[i])) {
                 suggestId = document.createElement("DIV");
 
                 suggestId.innerHTML = "<strong>...</strong>";

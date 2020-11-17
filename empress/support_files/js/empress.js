@@ -442,7 +442,12 @@ define([
         // Don't include nodes with the name null (i.e. nodes without a
         // specified name in the Newick file) in the auto-complete.
         nodeNames = nodeNames.filter((n) => n !== null);
-        nodeNames.sort();
+        nodeNames.sort(
+            function(a, b) {
+                return a.localeCompare(b, 'en', {'sensitivity': 'base'});
+            }
+        );
+        console.log(nodeNames)
         nodeNames = _.uniq(nodeNames);
         this._events.autocomplete(nodeNames);
 
