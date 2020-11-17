@@ -100,8 +100,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         );
         this.branchLengthWarningContainer.classList.add("hidden");
 
-        // for each branch method, we want to use the value of the radio button to set
-        // branch method for empress
+        // For each branch method, we want to use the value of the radio button
+        // to set the branch method for Empress.
+        // checkBranchMethod() is a utility function that returns a function with no
+        // arguments (it works thanks to a closure) which can be set as a callback
+        // function for when a new branch method is selected.
         function checkBranchMethod(option, empress, allOptions) {
             function innerCheck() {
                 if (option.checked) {
@@ -132,8 +135,11 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             }
             return innerCheck;
         }
-        // branchOptions maps method names to the object corresponding to the actual
-        // radio select
+        // branchOptions maps branch method names (e.g. "ultrametric") to the
+        // DOM object corresponding to the actual radio select. Objects in JS
+        // are mutable, so branchOptions is updated as we go through this loop
+        // (and this updated version of branchOptions should be available to
+        // every callback function created)
         var branchOptions = {};
         for (var i = 0; i < branchesMethodRadio.length; i++) {
             var option = branchesMethodRadio[i];

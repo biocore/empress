@@ -116,7 +116,7 @@ require([
             deepEqual(obs, expLengths);
         });
 
-        test("Test get ultrametric lengths (ultrametric tree)", function () {
+        test("Test get ultrametric lengths (already-ultrametric tree)", function () {
             // Revised tree should be:
             // In Newick format: "((d:3,c:3)b:1,a:4)root:1;"
             // Also note that this is the BP structure
