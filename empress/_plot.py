@@ -57,7 +57,7 @@ def community_plot(
 def tree_plot(
     output_dir: str,
     tree: NewickFormat,
-    feature_metadata: pd.DataFrame = None,
+    feature_metadata: qiime2.Metadata = None,
     shear_to_feature_metadata: bool = False,
 ) -> None:
     """Visualizes a tree (optionally with feature metadata)."""
