@@ -50,8 +50,8 @@ setup(
     maintainer_email=__email__,
     url='http://github.com/biocore/empress',
     entry_points={
-        'qiime2.plugins':
-        ['q2-empress=empress.plugin_setup:plugin']
+        'qiime2.plugins': ['q2-empress=empress.plugin_setup:plugin'],
+        'console_scripts': ['empress=empress.scripts._cli:empress'],
     },
     packages=find_packages(),
     package_data={
