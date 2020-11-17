@@ -287,24 +287,22 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             autocompleteContainer.appendChild(suggestionMenu);
 
             // helper function to compare query to node name
-            var compareQuery = function(nodeName) {
-                return nodeName.substr(0, query.length).toUpperCase() ===
-                       query.toUpperCase();
-            }
+            var compareQuery = function (nodeName) {
+                return (
+                    nodeName.substr(0, query.length).toUpperCase() ===
+                    query.toUpperCase()
+                );
+            };
 
             // search ids array for all possible words
             var suggestId,
                 suggestionsAdded = 0,
-                i = _.findIndex(
-                    ids,
-                    compareQuery,
-                    true
-                );
+                i = _.findIndex(ids, compareQuery, true);
             for (i; i < ids.length && suggestionsAdded < 10; i++) {
                 var word = ids[i];
 
                 // if node id begins with user query, add it to suggestionMenu
-                if ( compareQuery(word) ) {
+                if (compareQuery(word)) {
                     // create a container to hold the text/click event for the
                     // suggested id
                     suggestId = document.createElement("DIV");
@@ -320,7 +318,7 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
                     // add suggested id to the suggstions menu
                     suggestionMenu.appendChild(suggestId);
                     suggestionsAdded += 1;
-                } 
+                }
             }
 
             // not all node ids were listed in the autofill box
