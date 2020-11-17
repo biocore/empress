@@ -123,8 +123,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                     }
                 }
                 // we want to make sure empress knows whether or not to ignore lengths
-                // at the moment this is most critical for empress._collapseClade
-                // since the length's for the layout methods will be determined
+                // at the moment; this is most critical for empress._collapseClade,
+                // since the lengths for the layout methods will be determined
                 // by setting empress.branchMethod
                 empress.ignoreLengths = allOptions.ignore.checked;
             }
