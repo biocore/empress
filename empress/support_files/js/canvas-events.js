@@ -302,7 +302,7 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             var suggestId,
                 suggestionsAdded = 0,
                 i = _.findIndex(ids, compareQuery, true);
-            
+
             // no match was found
             if (i === -1) {
                 return;
