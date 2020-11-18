@@ -99,3 +99,19 @@ class TestCLI(unittest.TestCase):
         assert result.exit_code == 0
         files_present(output_dir)
         assert os.path.isdir(f"{output_dir}/emperor-resources")
+
+    def test_existing_directory(cls):
+        output_dir = "existing_dir"
+        os.mkdir("existing_dir")
+        result = cls.runner.invoke(
+            empress,
+            ["community-plot", "--tree", cls.tree_loc, "--table",
+             cls.table_loc, "--sample-metadata", cls.sm_loc,
+             "--output-dir", output_dir]
+        )
+        assert result.exit_code == 1
+        error_class, value, _ = result.exc_info
+        assert error_class == OSError
+        assert str(value) == "Output directory already exists!"
+        assert not os.path.isdir(f"{output_dir}/support_files")
+        assert "empress.html" not in os.listdir(output_dir)
