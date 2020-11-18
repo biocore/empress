@@ -60,7 +60,7 @@ def tree_plot(
 @click.option("--filter-missing-features", required=False, default=False,
               help=desc.FILT_MISS_FEAT, is_flag=True)
 @click.option("--number-of-pcoa-features", required=False, default=5,
-              help=desc.NUM_FEAT, is_flag=True)
+              help=desc.NUM_FEAT)
 @click.option("--shear-to-table", required=False, default=True,
               help=desc.SHEAR_TO_TBL, is_flag=True)
 def community_plot(
