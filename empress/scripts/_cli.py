@@ -24,7 +24,7 @@ def empress():
 @click.option("--feature-metadata", required=False, default=None,
               help=desc.FM_DESC)
 @click.option("--shear-to-feature-metadata", required=False, default=False,
-              help=desc.SHEAR_TO_FM)
+              help=desc.SHEAR_TO_FM, is_flag=True)
 def tree_plot(
     tree: str,
     feature_metadata: str,
@@ -54,15 +54,15 @@ def tree_plot(
 @click.option("--feature-metadata", required=False, default=None,
               help=desc.FM_DESC)
 @click.option("--ignore-missing-samples", required=False, default=False,
-              help=desc.IGNORE_MISS_SAMP)
+              help=desc.IGNORE_MISS_SAMP, is_flag=True)
 @click.option("--filter-extra-samples", required=False, default=False,
-              help=desc.FILT_EX_SAMP)
+              help=desc.FILT_EX_SAMP, is_flag=True)
 @click.option("--filter-missing-features", required=False, default=False,
-              help=desc.FILT_MISS_FEAT)
+              help=desc.FILT_MISS_FEAT, is_flag=True)
 @click.option("--number-of-pcoa-features", required=False, default=5,
-              help=desc.NUM_FEAT)
+              help=desc.NUM_FEAT, is_flag=True)
 @click.option("--shear-to-table", required=False, default=True,
-              help=desc.SHEAR_TO_TBL)
+              help=desc.SHEAR_TO_TBL, is_flag=True)
 def community_plot(
     tree: str,
     table: str,
