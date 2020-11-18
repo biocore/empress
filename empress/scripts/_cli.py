@@ -1,14 +1,11 @@
-import os
-
 from biom import load_table
-from bp import parse_newick
 import click
 import pandas as pd
 from skbio.stats.ordination import OrdinationResults
 
 from empress.core import Empress
 import empress._parameter_descriptions as desc
-from empress._plot_utils import save_viz, prepare_pcoa
+from empress._plot_utils import save_viz, prepare_pcoa, check_and_process_files
 
 OUTPUT_DIR = "Directory to output EMPress plot."
 
@@ -27,20 +24,17 @@ def empress():
               help=desc.SHEAR_TO_FM, is_flag=True)
 def tree_plot(
     tree: str,
+    output_dir: str,
     feature_metadata: str,
     shear_to_feature_metadata: bool,
-    output_dir: str,
 ) -> None:
-    if os.path.isdir(output_dir):
-        raise OSError("Output directory already exists!")
-    else:
-        os.mkdir(output_dir)
-    with open(str(tree), "r") as f:
-        tree_newick = parse_newick(f.readline())
-    if feature_metadata is not None:
-        feature_metadata = pd.read_csv(feature_metadata, sep="\t", index_col=0)
+    tree_newick, fm = check_and_process_files(
+        output_dir,
+        tree,
+        feature_metadata
+    )
 
-    viz = Empress(tree_newick, feature_metadata=feature_metadata,
+    viz = Empress(tree_newick, feature_metadata=fm,
                   shear_to_feature_metadata=shear_to_feature_metadata)
     save_viz(viz, output_dir, q2=False)
 
@@ -76,26 +70,23 @@ def community_plot(
     number_of_pcoa_features: int,
     shear_to_table: bool,
 ) -> None:
-    if os.path.isdir(output_dir):
-        raise OSError("Output directory already exists!")
-    else:
-        os.mkdir(output_dir)
-    with open(str(tree), "r") as f:
-        tree_newick = parse_newick(f.readline())
+    tree_newick, fm = check_and_process_files(
+        output_dir,
+        tree,
+        feature_metadata
+    )
     table = load_table(table)
     sample_metadata = pd.read_csv(sample_metadata, sep="\t", index_col=0)
 
     if pcoa is not None:
         pcoa = OrdinationResults.read(pcoa)
         pcoa = prepare_pcoa(pcoa, number_of_pcoa_features)
-    if feature_metadata is not None:
-        feature_metadata = pd.read_csv(feature_metadata, sep="\t", index_col=0)
 
     viz = Empress(
         tree_newick,
         table=table,
         sample_metadata=sample_metadata,
-        feature_metadata=feature_metadata,
+        feature_metadata=fm,
         ordination=pcoa,
         ignore_missing_samples=ignore_missing_samples,
         filter_extra_samples=filter_extra_samples,

@@ -13,6 +13,7 @@ import pkg_resources
 import q2templates
 from bp import parse_newick
 import numpy as np
+import pandas as pd
 from scipy.spatial.distance import euclidean
 
 SUPPORT_FILES = pkg_resources.resource_filename('empress', 'support_files')
@@ -59,8 +60,18 @@ def save_viz(viz, output_dir, q2=True):
 
 
 def prepare_pcoa(pcoa, number_of_features):
-    # select the top N most important features based on the vector's
-    # magnitude (coped from q2-emperor)
+    """Selects top N biplot features by magnitude (coped from q2-emperor).
+
+
+    Parameters
+    ----------
+    pcoa : skbio.stats.ordination.OrdinationResults
+    number_of_features : int
+
+    Returns
+    -------
+    skbio.stats.ordination.OrdinationResults
+    """
     feats = pcoa.features.copy()
     # in cases where the axes are all zero there might be all-NA
     # columns
@@ -71,3 +82,29 @@ def prepare_pcoa(pcoa, number_of_features):
     feats.drop(['importance'], inplace=True, axis=1)
     pcoa.features = feats[:number_of_features].copy()
     return pcoa
+
+
+def check_and_process_files(output_dir, tree_file, feature_metadata):
+    """Initial checks and processing of files for standalone CLI plotting.
+
+    Parameters
+    ----------
+    output_dir : str
+    tree_file : str
+    fm_file : str
+
+    Returns
+    -------
+    bp.Tree
+    pd.DataFrame
+    """
+    if os.path.isdir(output_dir):
+        raise OSError("Output directory already exists!")
+    else:
+        os.mkdir(output_dir)
+    with open(str(tree_file), "r") as f:
+        tree_newick = parse_newick(f.readline())
+    if feature_metadata is not None:
+        feature_metadata = pd.read_csv(feature_metadata, sep="\t", index_col=0)
+
+    return tree_newick, feature_metadata
