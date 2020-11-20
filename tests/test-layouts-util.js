@@ -69,6 +69,14 @@ require([
                     null
                 );
 
+                // In Newick format: "((d:3,c:3)b:1,a:4)r:1;"
+                this.ultrametricTestTree = new BPTree(
+                    new Uint8Array([1, 1, 1, 0, 1, 0, 0, 1, 0, 0]),
+                    ["", "d", "c", "b", "a", "r"],
+                    ["", 3.0, 3.0, 1.0, 4.0, 1.0],
+                    null
+                );
+
                 // In Newick format: "(a:1, b:2)root:3;"
                 this.twoTipTree = new BPTree(
                     new Uint8Array([1, 1, 0, 1, 0, 0]),
@@ -86,12 +94,55 @@ require([
             },
         });
 
+        test("Test get ultrametric lengths", function () {
+            // Revised tree should be:
+            // In Newick format: "(((a:2,e:2)f:1,b:3)g:2,(c:3,d:3)h:2)i:1;"
+            // Also note that this is the BP structure
+            // igfaaeefbbghccddhi
+            // 111101001001101000
+            var expLengths = {
+                3: 2,
+                8: 3,
+                12: 3,
+                14: 3,
+                5: 2,
+                2: 1,
+                1: 2,
+                11: 2,
+                0: 1,
+            };
+
+            var obs = LayoutsUtil.getUltrametricLengths(this.tree);
+            deepEqual(obs, expLengths);
+        });
+
+        test("Test get ultrametric lengths (already-ultrametric tree)", function () {
+            // Revised tree should be:
+            // In Newick format: "((d:3,c:3)b:1,a:4)root:1;"
+            // Also note that this is the BP structure
+            // rbddccbaar
+            // 1110100100
+            // this corresponds to the lengths remaining unchanged
+            var expLengths = {
+                0: 1,
+                1: 1,
+                2: 3,
+                4: 3,
+                7: 4,
+            };
+
+            var obs = LayoutsUtil.getUltrametricLengths(
+                this.ultrametricTestTree
+            );
+            deepEqual(obs, expLengths);
+        });
+
         test("Test rectangular layout (none and descending leaf sorting)", function () {
             var obs = LayoutsUtil.rectangularLayout(
                 this.tree,
                 1,
+
                 1,
-                false,
                 "none",
                 false
             );
@@ -164,7 +215,6 @@ require([
                 this.tree,
                 1,
                 1,
-                false,
                 "descending",
                 false
             );
@@ -176,7 +226,6 @@ require([
                 this.tree,
                 1,
                 1,
-                false,
                 "ascending",
                 false
             );
@@ -246,7 +295,6 @@ require([
                 this.straightLineTree,
                 1,
                 1,
-                false,
                 "none",
                 false
             );
@@ -262,13 +310,17 @@ require([
         });
 
         test("Test straightline tree rectangular layout: ignoreLengths", function () {
+            var lengthGetter = LayoutsUtil.getLengthMethod(
+                "ignore",
+                this.straightLineTree
+            );
             var obs = LayoutsUtil.rectangularLayout(
                 this.straightLineTree,
                 1,
                 1,
-                true,
                 "none",
-                false
+                false,
+                lengthGetter
             );
 
             // The only difference in output is that the one tip node in the
@@ -288,7 +340,6 @@ require([
                 this.noRootLength,
                 1,
                 1,
-                false,
                 "none",
                 false
             );
@@ -308,7 +359,6 @@ require([
                 this.circLayoutTestTree,
                 5,
                 5,
-                false,
                 "none",
                 false
             );
@@ -373,7 +423,6 @@ require([
                 this.circLayoutTestTree,
                 1,
                 1,
-                false,
                 "none",
                 false
             );
@@ -392,14 +441,7 @@ require([
             // length, the output data should be exactly the same.
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.circularLayout(
-                    tree,
-                    1,
-                    1,
-                    false,
-                    "none",
-                    false
-                );
+                var obs = LayoutsUtil.circularLayout(tree, 1, 1, "none", false);
                 // The tree looks like:
                 // root -- a ---- b
                 deepEqual(obs.x0, [0, 1, 0, 0], "x0");
@@ -425,7 +467,6 @@ require([
                     scope.straightLineTree,
                     1,
                     1,
-                    false,
                     opt,
                     false
                 );
@@ -444,13 +485,14 @@ require([
         test("Test straightline tree circular layout: ignoreLengths", function () {
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
+                var lengthGetter = LayoutsUtil.getLengthMethod("ignore", tree);
                 var obs = LayoutsUtil.circularLayout(
                     tree,
                     1,
                     1,
-                    true,
                     "none",
-                    false
+                    false,
+                    lengthGetter
                 );
                 // The tree looks like: (note the equal branch lengths)
                 // root -- a -- b
@@ -479,7 +521,6 @@ require([
                     tree,
                     100,
                     50000,
-                    false,
                     "none",
                     true
                 );
@@ -506,7 +547,6 @@ require([
                 this.twoTipTree,
                 100,
                 500,
-                false,
                 "none",
                 true
             );
@@ -536,7 +576,7 @@ require([
             deepEqual(obs.arcEndAngle, [0, 0, 0, 0], "arcEndAngle");
         });
         test("Test unrooted layout", function () {
-            var obs = LayoutsUtil.unrootedLayout(this.tree, 1, 1, false);
+            var obs = LayoutsUtil.unrootedLayout(this.tree, 1, 1);
             var exp = {
                 xCoord: [
                     0,
@@ -570,13 +610,7 @@ require([
             var scope = this;
             var trees = [this.straightLineTree, this.noRootLength];
             _.each(trees, function (tree) {
-                var obs = LayoutsUtil.unrootedLayout(
-                    tree,
-                    100,
-                    500,
-                    false,
-                    true
-                );
+                var obs = LayoutsUtil.unrootedLayout(tree, 100, 500, true);
                 // The tree looks like a vertical line:
                 //
                 //  b

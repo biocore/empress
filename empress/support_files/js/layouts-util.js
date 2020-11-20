@@ -33,6 +33,128 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     /**
+     * Compute ultrametric lengths on a tree
+     *
+     * @param {BPTree} tree The tree to generate the lengths for.
+     *
+     * @returns {Object} Keys are the index position of the node in tree.
+     *                   Values are the length of the node in an ultrametric tree.
+     */
+    function getUltrametricLengths(tree) {
+        var lengths = {};
+        var i;
+        var j;
+        var maxNodeToTipDistance = new Array(tree.size);
+        var depths = new Array(tree.size);
+        var nodeIndex;
+        var children;
+        var child;
+        /*
+        This loop is responsible for finding the maximum distance from
+        each node to its deepest tip.
+         */
+        for (i = 1; i <= tree.size; i++) {
+            nodeIndex = tree.postorderselect(i);
+            if (tree.isleaf(nodeIndex)) {
+                maxNodeToTipDistance[nodeIndex] = 0;
+            } else {
+                var maxDist = 0;
+                children = tree.getChildren(nodeIndex);
+                for (j = 0; j < children.length; j++) {
+                    child = children[j];
+                    var childMaxLen =
+                        maxNodeToTipDistance[child] + tree.length(child);
+                    if (childMaxLen > maxDist) {
+                        maxDist = childMaxLen;
+                    }
+                }
+                maxNodeToTipDistance[nodeIndex] = maxDist;
+            }
+        }
+        /*
+         This loop is responsible for determining new branch lengths.
+         The lengths for intermediate nodes are effectively "stretched" until
+         their deepest descendant hits the deepest level in the whole tree.
+
+         E.g., if we are at the node represented by * in the tree below:
+
+         |--------------------------maxDistance-------------------------|
+         |--distanceAbove--|           |---distanceBelow---|
+                            |-length--|                     |-remainder-|
+                                                    ____
+                                        ___________|
+                            *__________|           |_______
+          __________________|          |__
+                            |
+                            |___________________________________________
+
+         then the branch will be extended so that its deepest tip has the
+         same depth as the deepest tip in the whole tree,
+         i.e., newLength = length + remainder
+         however, below it is equivalently calculated with
+         newLength = maxDistance - distanceAbove - distanceBelow
+
+         E.g.,
+         |--------------------------maxDistance-------------------------|
+         |--distanceAbove--|                        |---distanceBelow---|
+                            |-length--||-remainder-|
+                                                                 ____
+                                                     ___________|
+                            *_______________________|           |_______
+          __________________|                       |__
+                            |
+                            |___________________________________________
+
+        Repeated in a pre-order traversal, this will result in an ultrametric tree
+
+         */
+        var maxDistance = maxNodeToTipDistance[tree.root()];
+        depths[tree.root()] = 0;
+        lengths[tree.root()] = tree.depth(tree.root());
+        for (i = 1; i <= tree.size; i++) {
+            nodeIndex = tree.preorderselect(i);
+            children = tree.getChildren(nodeIndex);
+            for (j = 0; j < children.length; j++) {
+                child = children[j];
+                var distanceAbove = depths[nodeIndex];
+                var distanceBelow = maxNodeToTipDistance[child];
+                lengths[child] = maxDistance - distanceAbove - distanceBelow;
+                depths[child] = distanceAbove + lengths[child];
+            }
+        }
+        return lengths;
+    }
+
+    /**
+     * Gets a method for determining branch lengths by name, parameterized on a tree.
+     *
+     * @param {String} methodName Method for determing branch lengths.
+     *                            One of ("ultrametric", "ignore", "normal").
+     * @param {BPTree} tree Tree that needs branch lengths determined.
+     * @returns {Function} A function that maps node indices to branch lengths.
+     */
+    function getLengthMethod(methodName, tree) {
+        var lengthGetter;
+        if (methodName === "ultrametric") {
+            var ultraMetricLengths = getUltrametricLengths(tree);
+            lengthGetter = function (i) {
+                return ultraMetricLengths[i];
+            };
+        } else if (methodName === "ignore") {
+            lengthGetter = function (i) {
+                return 1;
+            };
+        } else if (methodName === "normal") {
+            lengthGetter = function (i) {
+                return tree.length(i);
+            };
+        } else {
+            throw "Invalid method: '" + methodName + "'.";
+        }
+        return lengthGetter;
+    }
+
+    /**
      * Computes the "scale factor" for the circular / unrooted layouts.
      *
      * NOTE that we don't bother with this for the rectangular layout since --
@@ -137,12 +259,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
-     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
-     *                                layout; otherwise, a uniform length of 1
-     *                                is used.
      * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
+     * @param {Function} lengthGetter Is a function that takes a single argument
+     *                                that corresponds to the index of a node in
+     *                                tree. Returns the length of the node at that
+     *                                index. Defaults to 'normal' method.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -157,9 +280,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         tree,
         width,
         height,
-        ignoreLengths,
         leafSorting,
-        normalize = true
+        normalize = true,
+        lengthGetter = null
     ) {
         var maxWidth = 0;
         var maxHeight = 0;
@@ -168,6 +291,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var yCoord = new Array(tree.size + 1).fill(0);
         var highestChildYr = new Array(tree.size + 1);
         var lowestChildYr = new Array(tree.size + 1);
+        if (lengthGetter === null) {
+            lengthGetter = getLengthMethod("normal", tree);
+        }
 
         var postOrderNodes = getPostOrderNodes(tree, leafSorting);
         var i;
@@ -203,7 +329,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var node = tree.postorder(prepos);
             parent = tree.postorder(tree.parent(prepos));
 
-            var nodeLen = ignoreLengths ? 1 : tree.length(prepos);
+            var nodeLen = lengthGetter(prepos);
             xCoord[node] = xCoord[parent] + nodeLen;
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
@@ -340,12 +466,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
-     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
-     *                                layout; otherwise, a uniform length of 1
-     *                                is used.
      * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
+     * @param {Function} lengthGetter Is a function that takes a single argument
+     *                                that corresponds to the index of a node in
+     *                                tree. Returns the length of the node at that
+     *                                index. Defaults to 'normal' method.
      * @return {Object} Object with the following properties:
      *                   -x0, y0 ("starting point" x and y)
      *                   -x1, y1 ("ending point" x and y)
@@ -363,9 +490,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         tree,
         width,
         height,
-        ignoreLengths,
         leafSorting,
-        normalize = true
+        normalize = true,
+        lengthGetter = null
     ) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
@@ -398,6 +525,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minX = Number.POSITIVE_INFINITY;
         var maxY = 0,
             minY = Number.POSITIVE_INFINITY;
+
+        if (lengthGetter === null) {
+            lengthGetter = getLengthMethod("normal", tree);
+        }
 
         // Iterate over the tree in postorder, assigning angles
         // Note that we skip the root (using "p < postOrderNodes.length - 1"),
@@ -435,7 +566,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var node = tree.postorder(prepos);
             var parent = tree.postorder(tree.parent(prepos));
 
-            var nodeLen = ignoreLengths ? 1 : tree.length(prepos);
+            var nodeLen = lengthGetter(prepos);
             radius[node] = radius[parent] + nodeLen;
         }
 
@@ -572,11 +703,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
-     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
-     *                                layout; otherwise, a uniform length of 1
-     *                                is used.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
+     * @param {Function} lengthGetter Is a function that takes a single argument
+     *                                that corresponds to the index of a node in
+     *                                tree. Returns the length of the node at that
+     *                                index. Defaults to 'normal' method.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -587,8 +719,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         tree,
         width,
         height,
-        ignoreLengths,
-        normalize = true
+        normalize = true,
+        lengthGetter = null
     ) {
         var da = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
@@ -596,6 +728,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var y1Arr = new Array(tree.size + 1);
         var y2Arr = new Array(tree.size + 1).fill(0);
         var aArr = new Array(tree.size + 1);
+        if (lengthGetter === null) {
+            lengthGetter = getLengthMethod("normal", tree);
+        }
 
         var n = tree.postorderselect(tree.size);
         var x1, y1, a;
@@ -628,7 +763,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             a += (tree.getNumTips(node) * da) / 2;
 
             n = tree.postorderselect(node);
-            var nodeLen = ignoreLengths ? 1 : tree.length(n);
+            var nodeLen = lengthGetter(n);
             x2 = x1 + nodeLen * Math.sin(a);
             y2 = y1 + nodeLen * Math.cos(a);
             x1Arr[node] = x1;
@@ -664,7 +799,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     return {
+        getLengthMethod: getLengthMethod,
         getPostOrderNodes: getPostOrderNodes,
+        getUltrametricLengths: getUltrametricLengths,
         computeScaleFactor: computeScaleFactor,
         rectangularLayout: rectangularLayout,
         circularLayout: circularLayout,

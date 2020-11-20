@@ -131,18 +131,49 @@
   </div>
   <hr />
   <p class="side-panel-inner-header">
-    Layout options
+    Branch lengths
   </p>
-  <p>
-    <label for="ignore-lengths-chk">Ignore branch lengths?</label>
-    <input id="ignore-lengths-chk" type="checkbox" class="empress-input">
-  </p>
-  <p class="side-panel-notes indented">
-    If checked, branch lengths are ignored when drawing the tree. Note that the
-    root node is never drawn with any length, regardless of if this
-    is checked or not.
-  </p>
+  <div id="branch-length-warning">
+    <p class="side-panel-notes">
+      Warning: the "Ignore branch lengths" and "Make ultrametric" options display
+      modified branch lengths that can be useful for aesthetics. The resulting
+      trees should not be interpreted with respect to their branch lengths.
+    </p>
+  </div>
+  <div id="branch-length-method-container">
+    <p>
+      <label for="normal-lengths-chk">Normal</label>
+      <input type="radio" id="normal-lengths-chk" name="branches-radio" value="normal"
+             class="empress-input" checked="true">
+    </p>
+    <p class="side-panel-notes indented">
+      The branch lengths shown correspond to the branch lengths in the original tree.
+    </p>
+    <p>
+      <label for="ignore-lengths-chk">Ignore branch lengths</label>
+      <input type="radio" id="ignore-lengths-chk" name="branches-radio" value="ignore"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      If checked, all branches are drawn with the same length. Note that the
+      root node is never drawn with any length, regardless of if this
+      is checked or not.
+    </p>
+    <p>
+      <label for="make-ultrametric-chk">Make ultrametric</label>
+      <input type="radio" id="make-ultrametric-chk" name="branches-radio" value="ultrametric"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      If checked, branch lengths will be adjusted so that the root-to-tip distance
+      is the same for all tips.
+    </p>
+  </div>
   <div id="leaf-sorting-container">
+    <hr />
+    <p class="side-panel-inner-header">
+      Clade sorting
+    </p>
     <p>
       <label for="leaf-sorting-select">Sort clades based on tip count?</label>
       <label class="select-container">
