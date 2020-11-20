@@ -125,7 +125,12 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 // we want to make sure empress knows whether or not to ignore lengths
                 // at the moment; this is most critical for empress._collapseClade,
                 // since the lengths for the layout methods will be determined
-                // by setting empress.branchMethod
+                // by setting empress.branchMethod. Note that we don't pass information
+                // about whether or not the tree is ultrametric; this is ok for now,
+                // because lengths are just used to determine the "depth" of collapsed
+                // clades, and by definition all tips in an ultrametric tree end at the
+                // same "length" from the root of the tree. However, we should fix
+                // this in the future; see https://github.com/biocore/empress/issues/448.
                 empress.ignoreLengths = allOptions.ignore.checked;
             }
             return innerCheck;
