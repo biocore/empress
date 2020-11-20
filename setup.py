@@ -9,7 +9,7 @@
 
 from setuptools import setup, find_packages
 
-__version__ = "0.3.0-dev"
+__version__ = "1.0.0"
 __maintainer__ = "Empress development team"
 __email__ = "kcantrel@ucsd.edu"
 
