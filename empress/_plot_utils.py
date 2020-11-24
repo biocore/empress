@@ -100,8 +100,6 @@ def check_and_process_files(output_dir, tree_file, feature_metadata):
     """
     if os.path.isdir(output_dir):
         raise OSError("Output directory already exists!")
-    else:
-        os.mkdir(output_dir)
     with open(str(tree_file), "r") as f:
         tree_newick = parse_newick(f.readline())
     if feature_metadata is not None:
