@@ -7,17 +7,16 @@ from empress.core import Empress
 import empress._parameter_descriptions as desc
 from empress._plot_utils import save_viz, prepare_pcoa, check_and_process_files
 
-OUTPUT_DIR = "Directory to output EMPress plot."
-
 
 @click.group()
 def empress():
+    """Generates an interactive visualization of a phylogenetic tree."""
     pass
 
 
-@empress.command("tree-plot")
+@empress.command("tree-plot", short_help=desc.TREE_PLOT_DESC)
 @click.option("--tree", required=True, help=desc.TREE_DESC)
-@click.option("--output-dir", required=True, help=OUTPUT_DIR)
+@click.option("--output-dir", required=True, help=desc.OUTPUT_DIR)
 @click.option("--feature-metadata", required=False, default=None,
               help=desc.FM_DESC)
 @click.option("--shear-to-feature-metadata", required=False, default=False,
@@ -39,11 +38,11 @@ def tree_plot(
     save_viz(viz, output_dir, q2=False)
 
 
-@empress.command("community-plot")
+@empress.command("community-plot", short_help=desc.COMM_PLOT_DESC)
 @click.option("--tree", required=True, help=desc.TREE_DESC)
 @click.option("--table", required=True, help=desc.TBL)
 @click.option("--sample-metadata", required=True, help=desc.SM_DESC)
-@click.option("--output-dir", required=True, help=OUTPUT_DIR)
+@click.option("--output-dir", required=True, help=desc.OUTPUT_DIR)
 @click.option("--pcoa", required=False, default=None, help=desc.PCOA)
 @click.option("--feature-metadata", required=False, default=None,
               help=desc.FM_DESC)

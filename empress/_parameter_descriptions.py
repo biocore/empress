@@ -89,3 +89,7 @@ COMM_PLOT_DESC = (
     'supporting interaction with sample and feature metadata and, '
     'optionally, Emperor integration.'
 )
+
+OUTPUT_DIR = (
+    'Directory to create in which an EMPress visualization will be written.'
+)
