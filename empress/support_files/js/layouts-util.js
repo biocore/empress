@@ -154,6 +154,24 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         return lengthGetter;
     }
 
+    function shouldCheckBranchLengthsChanged(methodName) {
+        var methods = {
+            ultrametric: true,
+            ignore: true,
+            normal: false,
+        };
+        if (methodName in methods) {
+            return methods[methodName];
+        } else {
+            throw "Invalid method: '" + methodName + "'.";
+        }
+    }
+
+    var NO_LENGTHS_CHANGED_MSG =
+        "No branch lengths modified by layout options.";
+    var NO_LENGTHS_CHANGED_DURATION = 3000;
+    var TOL = 0.0000001;
+
     /**
      * Computes the "scale factor" for the circular / unrooted layouts.
      *
@@ -282,7 +300,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         height,
         leafSorting,
         normalize = true,
-        lengthGetter = null
+        lengthGetter = null,
+        checkLengthsChange = false
     ) {
         var maxWidth = 0;
         var maxHeight = 0;
@@ -322,6 +341,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
         }
 
+        var anyDifferent = false;
         // iterates in preorder
         var parent;
         for (i = 2; i <= tree.size; i++) {
@@ -334,6 +354,11 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
             }
+            anyDifferent =
+                anyDifferent || Math.abs(nodeLen - tree.length(prepos)) > TOL;
+        }
+        if (!anyDifferent && checkLengthsChange) {
+            util.toastMsg(NO_LENGTHS_CHANGED_MSG, NO_LENGTHS_CHANGED_DURATION);
         }
 
         // We don't check if max_width == 0 here, because we check when
@@ -492,7 +517,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         height,
         leafSorting,
         normalize = true,
-        lengthGetter = null
+        lengthGetter = null,
+        checkLengthsChange = false
     ) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
@@ -556,6 +582,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
         }
 
+        var anyDifferent = false;
         // Iterate over the tree in preorder, assigning radii
         // (The "i = 2" skips the root of the tree; its radius is implicitly 0)
         for (i = 2; i <= tree.size; i++) {
@@ -568,6 +595,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
 
             var nodeLen = lengthGetter(prepos);
             radius[node] = radius[parent] + nodeLen;
+            // anyDifferent = anyDifferent || nodeLen !== tree.length(prepos);
+            anyDifferent =
+                anyDifferent || Math.abs(nodeLen - tree.length(prepos)) > TOL;
+        }
+        if (!anyDifferent && checkLengthsChange) {
+            util.toastMsg(NO_LENGTHS_CHANGED_MSG, NO_LENGTHS_CHANGED_DURATION);
         }
 
         // Now that we have the polar coordinates of the nodes, convert them to
@@ -720,7 +753,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         width,
         height,
         normalize = true,
-        lengthGetter = null
+        lengthGetter = null,
+        checkLengthsChange = false
     ) {
         var da = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
@@ -747,6 +781,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var maxY = y2Arr[tree.size],
             minY = y2Arr[tree.size];
 
+        var anyDifferent = false;
         // reverse postorder
         for (var node = tree.size - 1; node > 0; node--) {
             var parent = tree.postorder(
@@ -776,6 +811,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minX = Math.min(minX, x2Arr[node]);
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
+
+            // anyDifferent = anyDifferent || nodeLen !== tree.length(n);
+            anyDifferent =
+                anyDifferent || Math.abs(nodeLen - tree.length(n)) > TOL;
+        }
+        if (!anyDifferent && checkLengthsChange) {
+            util.toastMsg(NO_LENGTHS_CHANGED_MSG, NO_LENGTHS_CHANGED_DURATION);
         }
         if (normalize) {
             var scaleFactor = computeScaleFactor(
@@ -802,6 +844,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         getLengthMethod: getLengthMethod,
         getPostOrderNodes: getPostOrderNodes,
         getUltrametricLengths: getUltrametricLengths,
+        shouldCheckBranchLengthsChanged: shouldCheckBranchLengthsChanged,
         computeScaleFactor: computeScaleFactor,
         rectangularLayout: rectangularLayout,
         circularLayout: circularLayout,
