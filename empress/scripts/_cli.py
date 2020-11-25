@@ -37,7 +37,7 @@ def tree_plot(
 
     viz = Empress(tree_newick, feature_metadata=fm,
                   shear_to_feature_metadata=shear_to_feature_metadata)
-    os.makedirs(output_dir) 
+    os.makedirs(output_dir)
     save_viz(viz, output_dir, q2=False)
 
 
@@ -95,6 +95,7 @@ def community_plot(
         filter_missing_features=filter_missing_features,
         shear_to_table=shear_to_table,
     )
+    os.makedirs(output_dir)
     save_viz(viz, output_dir, q2=False)
 
 

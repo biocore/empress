@@ -21,40 +21,72 @@ and barplots).
 <i>"Empire plot" visualizing a phylogenetic tree of amplicon sequence variants (ASVs) in Empress, left, alongside a PCoA biplot in Emperor, right. As one of the ways in which these displays are integrated, selecting a tip in the tree (representing an ASV) enlarges the samples containing this ASV in Emperor -- thereby providing more information than would be available from either display alone.</i>
 </div>
 
-# Installation   
+# Installation & Basic Usage
 
 Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/).
 
+## Standalone Version
+
+EMPress is available through [PyPi](https://pypi.org/project/empress/). Run the following command to install Empress:
+
+`pip install empress`
+
+Try running the command `empress --help` to ensure that Empress has been installed properly. If you see details for the different Empress commands then your installation has completed and you are ready to start using Empress!.
+
+### Example standalone usage
+
+The standalone version of Empress takes the following filetypes as inputs.
+
+| Input | Filetype |
+| ----- | -------- |
+| Tree | [Newick](https://en.wikipedia.org/wiki/Newick_format) |
+| Feature Table | [biom](http://biom-format.org/) |
+| Sample Metadata | TSV |
+| Feature Metadata | TSV |
+| PCoA | [skbio OrdinationResults](http://scikit-bio.org/docs/latest/generated/skbio.io.format.ordination.html) |
+
+```
+empress community-plot \
+    --tree tree.nwk \
+    --table feature-table.biom \
+    --sample-metadata sample_metadata.tsv \
+    --feature-metadata feature_metadata.tsv \
+    --pcoa ordination.txt \
+    --filter-extra-samples \
+    --output-dir tree_viz
+```
+
+You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `--output-dir` must not exist as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files, you should concatenate them all into one file that you pass to Empress.
+
+The output will be a directory containing an `empress.html` file and a `support_files` directory containing the JS/CSS files required to view the plot in your browser. If you provided a PCoA to the `community-plot` command there will also be an `emperor-resources` subdirectory containing the files required to view the Emperor plot alongside the tree. You can view the `empress.html` file in any modern browser to interact with it the same way you would the QIIME 2 Visualization.
+
 ## QIIME 2 Version
 
-If you are not using QIIME 2, feel free to skip to the next section.
+See the [QIIME 2 installation](https://docs.qiime2.org/2020.8/install/) page for instructions on how to install QIIME 2. Once you have QIIME 2 installed, make sure the conda environment is activated by running:
 
-See the [QIIME 2 installation](https://docs.qiime2.org/2020.8/install/) page for installation instructions. Once you have QIIME 2 installed, make sure the conda environment is activated by running:
+`conda activate qiime2-2020.8`
 
-```
-conda activate qiime2-2020.8
-```
-
-You can replace `qiime2-2020.8` above with whichever version of QIIME 2 you have currently installed. Once you have installed Empress, run the following commands to ensure that Empress was installed correctly. If you see information about Empress' QIIME 2 plugin, the installation was successful!
+You can replace `qiime2-2020.8` above with whichever version of QIIME 2 you have currently installed. Install Empress through PyPi by using `pip install empress`. Once you have installed Empress, run the following commands to ensure that Empress was installed correctly. If you see information about Empress' QIIME 2 plugin, the installation was successful!
 
 ```
 qiime dev refresh-cache
 qiime empress --help
 ```
 
-## Installing Empress
-
-Now we are ready to install Empress. Run the following commands to do so. (Note
-that Emperor will be _re-installed_ when the second command is run; the reason
-we uninstall it first is so that we can ensure the most up-to-date version of
-it is available.)
+### Example QIIME 2 usage
 
 ```
-pip uninstall --yes emperor
-pip install git+https://github.com/biocore/empress.git
+qiime empress community-plot \
+    --i-tree tree.qza \
+    --i-feature-table feature-table.qza \
+    --m-sample-metadata-file sample_metadata.tsv \
+    --m-feature-metadata-file taxonomy.qza \
+    --i-pcoa ordination.qza \
+    --p-filter-extra-samples \
+    --o-visualization tree_viz.qzv
 ```
 
-# Tutorial: Using Empress in QIIME 2   
+# Tutorial: Using Empress in QIIME 2
 
 In this tutorial, we'll use Empress through QIIME 2 and demonstrate its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.8/tutorials/moving-pictures/) dataset. This dataset contains human microbiome samples from
 two individuals at four body sites across five timepoints.
@@ -453,35 +485,6 @@ When your ordination was created from a subset of your original dataset (e.g. th
 There are some pros and cons for either of these choices. If you use a *filtered table*, then the Empress visualization will include less data than in the *raw dataset*: this will impact sample presence information, sample metadata coloring, and other parts of the visualization. If you select the *raw table*, you might find that some nodes in the tree won't be represented by any of the samples in the ordination (if the ordination was made using a *filtered table*, and `--p-no-shear-to-table` is used). If you'd like to read more about this, there's some informal discussion in [pull request 237](https://github.com/biocore/empress/pull/237).
 
 The commands in this README use the *raw dataset*. The Empire plot command removes extra samples not represented in the ordination using the `--p-filter-extra-samples` flag.
-
-## Using Empress standalone
-
-Using Empress as a standalone application works almost the same as with QIIME 2. The primary difference is that the input and output files are slightly different. The following table shows the required file formats for using the standalone version of Empress.
-
-| Input | Filetype |
-| ----- | -------- |
-| Tree | [Newick](https://en.wikipedia.org/wiki/Newick_format) |
-| Feature Table | [biom](http://biom-format.org/) |
-| Sample Metadata | TSV |
-| Feature Metadata | TSV |
-| PCoA | [skbio OrdinationResults](http://scikit-bio.org/docs/0.5.1/generated/generated/skbio.stats.ordination.OrdinationResults.read.html) |
-
-The output will be a directory containing an `empress.html` file and a `support_files` directory containing the JS/CSS files required to view the plot in your browser. If you provided a PCoA to the `community-plot` command there will also be an `emperor-resources` subdirectory containing the files required to view the Emperor plot alongside the tree. You can view the `empress.html` file in any modern browser to interact with it the same way you would the QIIME 2 Visualization.
-
-### Example standalone usage
-
-```
-empress community-plot \
-    --tree tree.nwk \
-    --table feature-table.biom \
-    --sample-metadata sample_metadata.tsv \
-    --feature-metadata feature_metadata.tsv \
-    --output-dir my_tree \
-    --pcoa ordination.txt \
-    --filter-extra-samples
-```
-
-You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `--output-dir` must not exist as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files you should concatenate them all into one file that you pass to Empress.
 
 <!---# Animations   
 
