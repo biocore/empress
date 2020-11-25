@@ -38,8 +38,7 @@ we uninstall it first is so that we can ensure the most up-to-date version of
 it is available.)
 
 ```
-pip uninstall --yes emperor
-pip install git+https://github.com/biocore/empress.git
+pip install empress
 qiime dev refresh-cache
 qiime empress --help
 ```
