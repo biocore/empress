@@ -1,4 +1,8 @@
-define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
+define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
+    _,
+    gl,
+    SelectedNodeMenu
+) {
     /**
      * @class CanvasEvents
      *
@@ -282,18 +286,36 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
             );
             autocompleteContainer.appendChild(suggestionMenu);
 
+            // helper function to compare query to node name
+            // returns true if the first (query.length) characters of nodeName
+            // are equal to query, ignoring case (if query.length >
+            // nodeName.length this should be false, since .substr()
+            // will just not modify the nodeName)
+            var compareQuery = function (nodeName) {
+                return (
+                    nodeName.substr(0, query.length).toUpperCase() ===
+                    query.toUpperCase()
+                );
+            };
+
             // search ids array for all possible words
-            for (var i = 0; i < ids.length; i++) {
+            var suggestId,
+                suggestionsAdded = 0,
+                i = _.findIndex(ids, compareQuery, true);
+
+            // no match was found
+            if (i === -1) {
+                return;
+            }
+
+            for (i; i < ids.length && suggestionsAdded < 10; i++) {
                 var word = ids[i];
 
                 // if node id begins with user query, add it to suggestionMenu
-                if (
-                    word.substr(0, query.length).toUpperCase() ===
-                    query.toUpperCase()
-                ) {
+                if (compareQuery(word)) {
                     // create a container to hold the text/click event for the
                     // suggested id
-                    var suggestId = document.createElement("DIV");
+                    suggestId = document.createElement("DIV");
                     suggestId.id = word;
 
                     suggestId.innerHTML =
@@ -305,7 +327,20 @@ define(["glMatrix", "SelectedNodeMenu"], function (gl, SelectedNodeMenu) {
 
                     // add suggested id to the suggstions menu
                     suggestionMenu.appendChild(suggestId);
+                    suggestionsAdded += 1;
+                } else {
+                    break;
                 }
+            }
+
+            // not all node ids were listed in the autofill box
+            // create an ellipse autofill (...) to let users know there are
+            // more possible options
+            if (i < ids.length && compareQuery(ids[i])) {
+                suggestId = document.createElement("DIV");
+
+                suggestId.innerHTML = "<strong>...</strong>";
+                suggestionMenu.appendChild(suggestId);
             }
         };
 
