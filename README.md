@@ -32,10 +32,7 @@ conda activate qiime2-2020.8
 
 You can replace `qiime2-2020.8` above with whichever version of QIIME 2 you have currently installed.  
 
-Now we are ready to install Empress. Run the following commands to do so. (Note
-that Emperor will be _re-installed_ when the second command is run; the reason
-we uninstall it first is so that we can ensure the most up-to-date version of
-it is available.)
+Now we are ready to install Empress. Run the following commands to do so.
 
 ```
 pip install empress
