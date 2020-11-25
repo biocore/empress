@@ -154,6 +154,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         return lengthGetter;
     }
 
+    /**
+     * Determines whether a given method should check if branch lengths were changed.
+     *
+     * @param {String} methodName Method for determing branch lengths.
+     *                            One of ("ultrametric", "ignore", "normal").
+     * @returns {Function} A function that maps node indices to branch lengths.
+     */
     function shouldCheckBranchLengthsChanged(methodName) {
         var methods = {
             ultrametric: true,
@@ -284,6 +291,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                                that corresponds to the index of a node in
      *                                tree. Returns the length of the node at that
      *                                index. Defaults to 'normal' method.
+     * @param {Boolean} checkLengthsChange If true, then a warning will be raised
+     *                                     if no branch lengths in the tree differ
+     *                                     from the value determined by lengthGetter.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -498,6 +508,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                                that corresponds to the index of a node in
      *                                tree. Returns the length of the node at that
      *                                index. Defaults to 'normal' method.
+     * @param {Boolean} checkLengthsChange If true, then a warning will be raised
+     *                                     if no branch lengths in the tree differ
+     *                                     from the value determined by lengthGetter.
      * @return {Object} Object with the following properties:
      *                   -x0, y0 ("starting point" x and y)
      *                   -x1, y1 ("ending point" x and y)
@@ -742,6 +755,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                                that corresponds to the index of a node in
      *                                tree. Returns the length of the node at that
      *                                index. Defaults to 'normal' method.
+     * @param {Boolean} checkLengthsChange If true, then a warning will be raised
+     *                                     if no branch lengths in the tree differ
+     *                                     from the value determined by lengthGetter.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
