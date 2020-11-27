@@ -43,7 +43,10 @@ all_deps = base + test
 setup(
     name='empress',
     version=__version__,
-    description='Empress',
+    description=(
+        "Fast and scalable phylogenetic tree viewer for multi-omic data "
+        "analysis"
+    ),
     author="Empress Development Team",
     author_email=__email__,
     maintainer=__maintainer__,
