@@ -4,7 +4,8 @@ require([
     "util",
     "chroma",
     "Empress",
-], function ($, UtilitiesForTesting, util, chroma, Empress) {
+    "BiomTable",
+], function ($, UtilitiesForTesting, util, chroma, Empress, BiomTable) {
     $(document).ready(function () {
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray
@@ -62,14 +63,14 @@ require([
             // #348, we still want to draw a circle for it.
             // prettier-ignore
             var rectCoords = new Float32Array([
-                1, 2, 0.75, 0.75, 0.75,
-                3, 4, 0.75, 0.75, 0.75,
-                5, 6, 0.75, 0.75, 0.75,
-                7, 8, 0.75, 0.75, 0.75,
-                9, 10, 0.75, 0.75, 0.75,
+                1, 2, 3289650,
+                3, 4, 3289650,
+                5, 6, 3289650,
+                7, 8, 3289650,
+                9, 10, 3289650,
                 // This next row contains coordinate data for node 6
-                11, 12, 0.75, 0.75, 0.75,
-                13, 14, 0.75, 0.75, 0.75,
+                11, 12, 3289650,
+                13, 14, 3289650,
             ]);
             this.empress._currentLayout = "Rectangular";
             var empressRecCoords = this.empress.getNodeCoords();
@@ -77,13 +78,13 @@ require([
 
             // prettier-ignore
             var circCoords = new Float32Array([
-                15, 16, 0.75, 0.75, 0.75,
-                17, 18, 0.75, 0.75, 0.75,
-                19, 20, 0.75, 0.75, 0.75,
-                21, 22, 0.75, 0.75, 0.75,
-                23, 24, 0.75, 0.75, 0.75,
-                25, 26, 0.75, 0.75, 0.75,
-                27, 28, 0.75, 0.75, 0.75,
+                15, 16, 3289650,
+                17, 18, 3289650,
+                19, 20, 3289650,
+                21, 22, 3289650,
+                23, 24, 3289650,
+                25, 26, 3289650,
+                27, 28, 3289650,
             ]);
             this.empress._currentLayout = "Circular";
             var empressCirCoords = this.empress.getNodeCoords();
@@ -91,13 +92,13 @@ require([
 
             // prettier-ignore
             var unrootCoords = new Float32Array([
-                29, 30, 0.75, 0.75, 0.75,
-                31, 32, 0.75, 0.75, 0.75,
-                33, 34, 0.75, 0.75, 0.75,
-                35, 36, 0.75, 0.75, 0.75,
-                37, 38, 0.75, 0.75, 0.75,
-                39, 40, 0.75, 0.75, 0.75,
-                41, 42, 0.75, 0.75, 0.75,
+                29, 30, 3289650,
+                31, 32, 3289650,
+                33, 34, 3289650,
+                35, 36, 3289650,
+                37, 38, 3289650,
+                39, 40, 3289650,
+                41, 42, 3289650,
             ]);
             this.empress._currentLayout = "Unrooted";
             var empressUnrootCoords = this.empress.getNodeCoords();
@@ -114,7 +115,7 @@ require([
 
             // the entire tree should be colored. sampleGroup contain all tips
             for (var node = 1; node <= 7; node++) {
-                deepEqual(this.empress.getNodeInfo(node, "color"), [1.0, 0, 0]);
+                deepEqual(this.empress.getNodeInfo(node, "color"), 255);
             }
         });
 
@@ -133,23 +134,11 @@ require([
             this.empress.colorSampleGroups(sampleGroups);
             for (var node = 1; node <= 7; node++) {
                 if (redNodes.has(node)) {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        1.0,
-                        0,
-                        0,
-                    ]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 255);
                 } else if (greeNodes.has(node)) {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0,
-                        1.0,
-                        0,
-                    ]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 65280);
                 } else {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0.75,
-                        0.75,
-                        0.75,
-                    ]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 3289650);
                 }
             }
         });
@@ -176,16 +165,9 @@ require([
             var aGroupNodes = new Set([1, 3]);
             for (var node = 1; node <= 7; node++) {
                 if (aGroupNodes.has(node)) {
-                    deepEqual(
-                        this.empress.getNodeInfo(node, "color"),
-                        chroma(cm.a).gl().slice(0, 3)
-                    );
+                    equal(this.empress.getNodeInfo(node, "color"), 255);
                 } else {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0.75,
-                        0.75,
-                        0.75,
-                    ]);
+                    equal(this.empress.getNodeInfo(node, "color"), 3289650);
                 }
             }
 
@@ -231,21 +213,17 @@ require([
                 if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["1"]).gl().slice(0, 3),
+                        255,
                         "node: " + node
                     );
                 } else if (group2.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["2"]).gl().slice(0, 3),
+                        16711680,
                         "node: " + node
                     );
                 } else {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0.75,
-                        0.75,
-                        0.75,
-                    ]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 3289650);
                 }
             }
 
@@ -286,21 +264,17 @@ require([
                 if (group1.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["1"]).gl().slice(0, 3),
+                        255,
                         "node: " + node
                     );
                 } else if (group2.has(node)) {
                     deepEqual(
                         this.empress.getNodeInfo(node, "color"),
-                        chroma(cm["2"]).gl().slice(0, 3),
+                        16711680,
                         "node: " + node
                     );
                 } else {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0.75,
-                        0.75,
-                        0.75,
-                    ]);
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 3289650);
                 }
             }
         });
@@ -489,7 +463,7 @@ require([
 
             // Check getSampleCategories() if no sample metadata passed to
             // Empress -- an empty array should be returned
-            testData = UtilitiesForTesting.getTestData();
+            var testData = UtilitiesForTesting.getTestData();
             var empWithJustFM = new Empress(
                 testData.tree,
                 null,
@@ -648,34 +622,22 @@ require([
             var collapseClades = [
                 35,
                 36,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
                 33,
                 34,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
                 31,
                 32,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
                 35,
                 36,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
                 33,
                 34,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
                 33,
                 34,
-                0.75,
-                0.75,
-                0.75,
+                3289650,
             ];
             deepEqual(this.empress._collapsedCladeBuffer, collapseClades);
 
@@ -709,12 +671,12 @@ require([
                 left: 2,
                 right: 3,
                 deepest: 4,
-                color: [1, 1, 1],
+                color: 255,
             };
 
             // manual set coorindate of nodes to make testing easier
             this.empress._treeData[1] = [
-                [1, 1, 1],
+                255,
                 false,
                 true,
                 0,
@@ -728,7 +690,7 @@ require([
                 0,
             ];
             this.empress._treeData[2] = [
-                [1, 1, 1],
+                255,
                 false,
                 true,
                 1,
@@ -742,7 +704,7 @@ require([
                 Math.PI / 4,
             ];
             this.empress._treeData[3] = [
-                [1, 1, 1],
+                255,
                 false,
                 true,
                 -1,
@@ -756,7 +718,7 @@ require([
                 (3 * Math.PI) / 4,
             ];
             this.empress._treeData[4] = [
-                [1, 1, 1],
+                255,
                 false,
                 true,
                 0,
@@ -775,34 +737,22 @@ require([
             var exp = [
                 0,
                 1,
-                1,
-                1,
-                1,
+                255,
                 0,
                 5,
+                255,
                 1,
                 1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
+                255,
                 0,
                 1,
-                1,
-                1,
-                1,
+                255,
                 0,
                 5,
-                1,
-                1,
-                1,
+                255,
                 -1,
                 -1,
-                1,
-                1,
-                1,
+                255,
             ];
             deepEqual(this.empress._collapsedCladeBuffer, exp);
 
@@ -810,7 +760,7 @@ require([
             this.empress._collapsedCladeBuffer = [];
             this.empress._currentLayout = "Rectangular";
             this.empress.createCollapsedCladeShape(1);
-            exp = [1, 0, 1, 1, 1, 5, -1, 1, 1, 1, 5, 1, 1, 1, 1];
+            exp = [1, 0, 255, 5, -1, 255, 5, 1, 255];
             deepEqual(this.empress._collapsedCladeBuffer, exp);
 
             // check circular
@@ -840,17 +790,17 @@ require([
             sin = Math.sin(0);
             for (var line = 0; line < numSamp; line++) {
                 // root of clade
-                exp.push(...[0, 1, 1, 1, 1]);
+                exp.push(...[0, 1, 255]);
 
                 x = sX * cos - sY * sin;
                 y = sX * sin + sY * cos;
-                exp.push(...[x, y, 1, 1, 1]);
+                exp.push(...[x, y, 255]);
 
                 cos = Math.cos((line + 1) * deltaAngle);
                 sin = Math.sin((line + 1) * deltaAngle);
                 x = sX * cos - sY * sin;
                 y = sX * sin + sY * cos;
-                exp.push(...[x, y, 1, 1, 1]);
+                exp.push(...[x, y, 255]);
             }
             deepEqual(this.empress._collapsedCladeBuffer, exp);
         });
@@ -862,7 +812,7 @@ require([
                 right: 3,
                 deepest: 3,
                 length: 3,
-                color: [0.75, 0.75, 0.75],
+                color: 3289650,
             };
             deepEqual(this.empress._collapsedClades[4], exp);
 
@@ -873,7 +823,7 @@ require([
             this.empress._currentLayout = "Circular";
             this.empress._collapseClade(4);
             exp = {
-                color: [0.75, 0.75, 0.75],
+                color: 3289650,
                 deepest: 3,
                 left: 2,
                 length: 3,
@@ -998,6 +948,16 @@ require([
             deepEqual(ctData, lf2presence);
         });
 
+        test("Test computeTipSamplePresence when tip not in table", function () {
+            var e = this.empress;
+            var fields = e._biom._smCols;
+            var ctData = e.computeTipSamplePresence(
+                "like a billion lol",
+                fields
+            );
+            deepEqual(ctData, null);
+        });
+
         test("Test computeIntSamplePresence", function () {
             var e = this.empress;
             var fields = e._biom._smCols;
@@ -1009,8 +969,14 @@ require([
                 traj: { t1: 2, t2: 2, t3: 2, t4: 0 },
             };
             deepEqual(values.fieldsMap, int4presence);
+            // diff should be [] since all of node 4's descendant tips
+            // (2 and 3) are in the table
+            deepEqual(values.diff, []);
+            // All samples but s7 are represented by node 4: this is because
+            // tips 2 and 3 are present in all samples except s7.
+            deepEqual(values.samples, ["s1", "s2", "s3", "s4", "s5", "s6"]);
 
-            //also testing root which should have all tips -> all samples
+            // Also test root which should have all tips -> all samples
             var rootPresence = {
                 f1: { a: 5, b: 2 },
                 grad: { 1: 2, 2: 2, 3: 2, 4: 1 },
@@ -1018,6 +984,54 @@ require([
             };
             var rootValues = e.computeIntSamplePresence(7, fields);
             deepEqual(rootValues.fieldsMap, rootPresence);
+            // Note that diff being [] is only a guarantee if the tree was
+            // shorn to the table. If shearing was not done, it is possible
+            // that tips in the tree could not be present in the table.
+            deepEqual(rootValues.diff, []);
+            // However, the root should always correspond to all samples, since
+            // all of the features in the table should be tips in the tree, and
+            // since the root by definition is an ancestor of all those tips.
+            deepEqual(rootValues.samples, [
+                "s1",
+                "s2",
+                "s3",
+                "s4",
+                "s5",
+                "s6",
+                "s7",
+            ]);
+        });
+
+        test("Test computeIntSamplePresence when no child tips in table", function () {
+            // Two samples (s1 and s2), both of which contain exactly one
+            // feature (6)
+            var tinyBiom = new BiomTable(
+                ["s1", "s2"],
+                [6],
+                { s1: 0, s2: 1 },
+                { 6: 0 },
+                [[0], [0]],
+                ["sm1"],
+                [["a"], ["b"]]
+            );
+            var testData = UtilitiesForTesting.getTestData();
+            var e = new Empress(
+                testData.tree,
+                tinyBiom,
+                testData.fmCols,
+                testData.tm,
+                testData.im,
+                testData.canvas
+            );
+            // The internal node 4 has two descendant tips, 2 and 3. Since this
+            // table only has one feature (6), this means that
+            // computeIntSamplePresence() for 4 should result in fieldsMap
+            // being null.
+            var values = e.computeIntSamplePresence(4, ["sm1"]);
+
+            deepEqual(values.fieldsMap, null);
+            deepEqual(values.diff, [2, 3]);
+            deepEqual(values.samples, []);
         });
 
         test("Test getUniqueFeatureMetadataInfo (method = tip)", function () {
@@ -1183,23 +1197,23 @@ require([
             this.empress.updateLayout("Circular");
             var node = 1;
             var angleInfo = this.empress._getNodeAngleInfo(node, Math.PI / 2);
-            // The [0.25, 0.5, 0.75] is the GL color we use. (Mostly chosen
-            // here so that each R/G/B value is distinct; apparently this is a
-            // weird shade of blue when you draw it.)
-            this.empress._addCircularBarCoords(coords, 100, 200, angleInfo, [
-                0.25,
-                0.5,
-                0.75,
-            ]);
+            // The 255 is the GL color we use.
+            this.empress._addCircularBarCoords(
+                coords,
+                100,
+                200,
+                angleInfo,
+                255
+            );
             // Each call of _addTriangleCoords() draws a rectangle with two
             // triangles. This involves adding 6 positions to coords, and since
-            // positions take up 5 spaces in an array here (x, y, r, g, b),
+            // positions take up 3 spaces in an array here (x, y, rgb),
             // and since _addCircularBarCoords() creates two rectangles (four
-            // triangles), coords should contain 6*5 = 30 * 2 = 60 + 1 = 61
+            // triangles), coords should contain 6*3*2+1 = 18*2+1 = 36+1 = 37
             // elements. (The + 1 is for the preexisting thing in the array --
             // it's in this test just to check that the input coords array
             // is appended to, not overwritten.)
-            equal(coords.length, 61);
+            equal(coords.length, 37);
 
             // Check the actual coordinate values.
             // For reference, _addTriangleCoords() works by (given four
@@ -1245,18 +1259,18 @@ require([
                 if (i === 0) {
                     equal(v, "preexisting thing in the array");
                 } else {
-                    // Which group of 5 elements (x, y, r, g, b) does this
+                    // Which group of 3 elements (x, y, rgb) does this
                     // value fall in? We can figure this out by taking the
-                    // floor of i / 5. The 0th 5-tuple is tL in the lower
-                    // rectangle (covering [1, 5]), the 1th 5-tuple is bL in
+                    // floor of i / 3. The 0th 3-tuple is tL in the lower
+                    // rectangle (covering [1, 5]), the 1th 3-tuple is bL in
                     // the lower rectangle (covering [6, 10]), etc.
-                    // (This isn't necessary to compute for R / G / B values
-                    // since those are going to be the same at every point, but
+                    // (This isn't necessary to compute for R / G / B value
+                    // since it will be the same at every point, but
                     // this is needed for figuring out what the expected value
                     // should be for an x or y value. checkCoordVal() does the
                     // hard work in figuring that out.)
-                    var floor = Math.floor(i / 5);
-                    switch (i % 5) {
+                    var floor = Math.floor(i / 3);
+                    switch (i % 3) {
                         case 1:
                             // x coordinate
                             checkCoordVal(floor, v, true);
@@ -1265,20 +1279,9 @@ require([
                             // y coordinate
                             checkCoordVal(floor, v, false);
                             break;
-                        case 3:
-                            // Red (constant)
-                            equal(v, 0.25);
-                            break;
-                        case 4:
-                            // Green (constant)
-                            equal(v, 0.5);
-                            break;
                         case 0:
-                            // Blue (constant)
-                            // Note that although coords[0] is divisible by 5,
-                            // it shouldn't be 0.75 since it's filled in with a
-                            // preexisting value.
-                            equal(v, 0.75);
+                            // color (constant)
+                            equal(v, 255);
                             break;
                         default:
                             throw new Error(
@@ -1295,7 +1298,7 @@ require([
             var rx = 1;
             var by = 2;
             var ty = 3;
-            var color = [0.3, 0.8, 0.9];
+            var color = 255;
             this.empress._addRectangularBarCoords(
                 coords,
                 lx,
@@ -1304,24 +1307,24 @@ require([
                 ty,
                 color
             );
-            // Each point has 5 values (x, y, r, g, b) and there are 3
+            // Each point has 3 values (x, y, rgb) and there are 3
             // triangles (6 points) added, so the length of coords should now
-            // be 6 * 5 = 30.
-            equal(coords.length, 30);
+            // be 6 * 3 = 18.
+            equal(coords.length, 18);
             // We use a pared-down form of the iteration test used above in
             // testing _addCircularBarCoords(). This function is simpler (it
             // only calls _addTriangleCoords() once, so only one rectangle is
             // added), and there isn't a preexisting element in coords, so
             // checking things is much less involved.
             _.each(coords, function (v, i) {
-                var floor = Math.floor(i / 5);
-                switch (i % 5) {
+                var floor = Math.floor(i / 3);
+                switch (i % 3) {
                     case 0:
                         // x coordinate
                         // Same logic as in the circular bar coords test --
-                        // which 5-tuplet of (x, y, r, g, b) is this
+                        // which 3-tuplet of (x, y, rgb) is this
                         // x-coordinate present in? This will determine what it
-                        // SHOULD be (i.e. if this 5-tuplet is supposed to be
+                        // SHOULD be (i.e. if this 3-tuplet is supposed to be
                         // the "top left" of the rectangle being drawn, then
                         // its x-coordinate should be the left x-coordinate)
                         switch (floor) {
@@ -1351,16 +1354,8 @@ require([
                         }
                         break;
                     case 2:
-                        // Red (constant)
-                        equal(v, 0.3);
-                        break;
-                    case 3:
-                        // Green (constant)
-                        equal(v, 0.8);
-                        break;
-                    case 4:
-                        // Blue (constant)
-                        equal(v, 0.9);
+                        // color (constant)
+                        equal(v, 255);
                         break;
                     default:
                         throw new Error(

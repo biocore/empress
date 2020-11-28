@@ -83,16 +83,70 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.layoutMethodContainer = document.getElementById(
             "layout-method-container"
         );
-        this.ignoreLengthsChk = document.getElementById("ignore-lengths-chk");
         this.leafSortingContainer = document.getElementById(
             "leaf-sorting-container"
         );
         this.leafSortingSel = document.getElementById("leaf-sorting-select");
         this.leafSortingDesc = document.getElementById("leaf-sorting-desc");
-        this.ignoreLengthsChk.onclick = function () {
-            empress.ignoreLengths = this.checked;
-            empress.reLayout();
-        };
+
+        // Initialize the callbacks for selecting the branch method
+        var branchesMethodRadio = document.getElementsByName("branches-radio");
+        var warnBranchMethods = ["ignore", "ultrametric"];
+        this.branchLengthWarningContainer = document.getElementById(
+            "branch-length-warning"
+        );
+        this.branchLengthWarningContainer.classList.add("hidden");
+
+        // For each branch method, we want to use the value of the radio button
+        // to set the branch method for Empress.
+        // checkBranchMethod() is a utility function that returns a function with no
+        // arguments (it works thanks to a closure) which can be set as a callback
+        // function for when a new branch method is selected.
+        function checkBranchMethod(option, empress, allOptions) {
+            function innerCheck() {
+                if (option.checked) {
+                    // since these are coded in the interface as the empress options,
+                    // they can be plugged directly into empress.branchMethod, but they
+                    // theoretically could be remapped here
+                    var value = option.value;
+                    empress.branchMethod = value;
+                    empress.reLayout();
+                    // some methods require a warning that branch lengths are being modified
+                    if (warnBranchMethods.includes(value)) {
+                        scope.branchLengthWarningContainer.classList.remove(
+                            "hidden"
+                        );
+                    } else {
+                        scope.branchLengthWarningContainer.classList.add(
+                            "hidden"
+                        );
+                    }
+                }
+                // we want to make sure empress knows whether or not to ignore lengths
+                // at the moment; this is most critical for empress._collapseClade,
+                // since the lengths for the layout methods will be determined
+                // by setting empress.branchMethod. Note that we don't pass information
+                // about whether or not the tree is ultrametric; this is ok for now,
+                // because lengths are just used to determine the "depth" of collapsed
+                // clades, and by definition all tips in an ultrametric tree end at the
+                // same "length" from the root of the tree. However, we should fix
+                // this in the future; see https://github.com/biocore/empress/issues/448.
+                empress.ignoreLengths = allOptions.ignore.checked;
+            }
+            return innerCheck;
+        }
+        // branchOptions maps branch method names (e.g. "ultrametric") to the
+        // DOM object corresponding to the actual radio select. Objects in JS
+        // are mutable, so branchOptions is updated as we go through this loop
+        // (and this updated version of branchOptions should be available to
+        // every callback function created)
+        var branchOptions = {};
+        for (var i = 0; i < branchesMethodRadio.length; i++) {
+            var option = branchesMethodRadio[i];
+            branchOptions[option.value] = option;
+            option.onclick = checkBranchMethod(option, empress, branchOptions);
+        }
+
         this.leafSortingSel.onchange = function () {
             empress.leafSorting = this.value;
             empress.reLayout();
@@ -250,6 +304,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         }
         var lw = util.parseAndValidateNum(lwInput);
         this.empress.thickenColoredNodes(lw);
+
         this.empress.drawTree();
     };
 
@@ -579,23 +634,37 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
     /**
      * Fills in tree statistics in various HTML elements on the side panel.
+     *
+     * Uses of toLocaleString() here based on
+     * https://stackoverflow.com/a/31581206/10730311.
      */
     SidePanel.prototype.populateTreeStats = function () {
-        var populate = function (htmlID, val) {
-            document.getElementById(htmlID).textContent = val;
+        // Formats a number with just toLocaleString() (leaving the locale
+        // unspecified should mean the user's settings are respected).
+        // For English, at least, this should mean that numbers are formatted
+        // with commas as thousands separators (e.g. 12,345).
+        var populateNum = function (htmlID, val, localeOptions) {
+            document.getElementById(htmlID).textContent = val.toLocaleString(
+                undefined,
+                localeOptions
+            );
         };
-        var populateWithFixedPrecision = function (htmlID, val) {
-            populate(htmlID, val.toFixed(4));
+
+        // Formats a number with toLocaleString(), and also limits
+        // the number to 4 digits after the decimal point.
+        var populateFloat = function (htmlID, val) {
+            populateNum(htmlID, val, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 4,
+            });
         };
         var stats = this.empress.getTreeStats();
-        // only call toFixed on the length stats; the node counts are all
-        // integers
-        populate("stats-tip-count", stats.tipCt);
-        populate("stats-int-count", stats.intCt);
-        populate("stats-total-count", stats.allCt);
-        populateWithFixedPrecision("stats-min-length", stats.min);
-        populateWithFixedPrecision("stats-max-length", stats.max);
-        populateWithFixedPrecision("stats-avg-length", stats.avg);
+        populateNum("stats-tip-count", stats.tipCt);
+        populateNum("stats-int-count", stats.intCt);
+        populateNum("stats-total-count", stats.allCt);
+        populateFloat("stats-min-length", stats.min);
+        populateFloat("stats-max-length", stats.max);
+        populateFloat("stats-avg-length", stats.avg);
     };
 
     return SidePanel;

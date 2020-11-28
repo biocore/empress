@@ -33,6 +33,201 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     /**
+     * Compute ultrametric lengths on a tree
+     *
+     * @param {BPTree} tree The tree to generate the lengths for.
+     *
+     * @returns {Object} Keys are the index position of the node in tree.
+     *                   Values are the length of the node in an ultrametric tree.
+     */
+    function getUltrametricLengths(tree) {
+        var lengths = {};
+        var i;
+        var j;
+        var maxNodeToTipDistance = new Array(tree.size);
+        var depths = new Array(tree.size);
+        var nodeIndex;
+        var children;
+        var child;
+        /*
+        This loop is responsible for finding the maximum distance from
+        each node to its deepest tip.
+         */
+        for (i = 1; i <= tree.size; i++) {
+            nodeIndex = tree.postorderselect(i);
+            if (tree.isleaf(nodeIndex)) {
+                maxNodeToTipDistance[nodeIndex] = 0;
+            } else {
+                var maxDist = 0;
+                children = tree.getChildren(nodeIndex);
+                for (j = 0; j < children.length; j++) {
+                    child = children[j];
+                    var childMaxLen =
+                        maxNodeToTipDistance[child] + tree.length(child);
+                    if (childMaxLen > maxDist) {
+                        maxDist = childMaxLen;
+                    }
+                }
+                maxNodeToTipDistance[nodeIndex] = maxDist;
+            }
+        }
+        /*
+         This loop is responsible for determining new branch lengths.
+         The lengths for intermediate nodes are effectively "stretched" until
+         their deepest descendant hits the deepest level in the whole tree.
+
+         E.g., if we are at the node represented by * in the tree below:
+
+         |--------------------------maxDistance-------------------------|
+         |--distanceAbove--|           |---distanceBelow---|
+                            |-length--|                     |-remainder-|
+                                                    ____
+                                        ___________|
+                            *__________|           |_______
+          __________________|          |__
+                            |
+                            |___________________________________________
+
+         then the branch will be extended so that its deepest tip has the
+         same depth as the deepest tip in the whole tree,
+         i.e., newLength = length + remainder
+         however, below it is equivalently calculated with
+         newLength = maxDistance - distanceAbove - distanceBelow
+
+         E.g.,
+         |--------------------------maxDistance-------------------------|
+         |--distanceAbove--|                        |---distanceBelow---|
+                            |-length--||-remainder-|
+                                                                 ____
+                                                     ___________|
+                            *_______________________|           |_______
+          __________________|                       |__
+                            |
+                            |___________________________________________
+
+        Repeated in a pre-order traversal, this will result in an ultrametric tree
+
+         */
+        var maxDistance = maxNodeToTipDistance[tree.root()];
+        depths[tree.root()] = 0;
+        lengths[tree.root()] = tree.depth(tree.root());
+        for (i = 1; i <= tree.size; i++) {
+            nodeIndex = tree.preorderselect(i);
+            children = tree.getChildren(nodeIndex);
+            for (j = 0; j < children.length; j++) {
+                child = children[j];
+                var distanceAbove = depths[nodeIndex];
+                var distanceBelow = maxNodeToTipDistance[child];
+                lengths[child] = maxDistance - distanceAbove - distanceBelow;
+                depths[child] = distanceAbove + lengths[child];
+            }
+        }
+        return lengths;
+    }
+
+    /**
+     * Gets a method for determining branch lengths by name, parameterized on a tree.
+     *
+     * @param {String} methodName Method for determing branch lengths.
+     *                            One of ("ultrametric", "ignore", "normal").
+     * @param {BPTree} tree Tree that needs branch lengths determined.
+     * @returns {Function} A function that maps node indices to branch lengths.
+     */
+    function getLengthMethod(methodName, tree) {
+        var lengthGetter;
+        if (methodName === "ultrametric") {
+            var ultraMetricLengths = getUltrametricLengths(tree);
+            lengthGetter = function (i) {
+                return ultraMetricLengths[i];
+            };
+        } else if (methodName === "ignore") {
+            lengthGetter = function (i) {
+                return 1;
+            };
+        } else if (methodName === "normal") {
+            lengthGetter = function (i) {
+                return tree.length(i);
+            };
+        } else {
+            throw "Invalid method: '" + methodName + "'.";
+        }
+        return lengthGetter;
+    }
+
+    /**
+     * Computes the "scale factor" for the circular / unrooted layouts.
+     *
+     * NOTE that we don't bother with this for the rectangular layout since --
+     * 1. we scale the x- and y- axes separately in the rectangular layout
+     * 2. the rectangular layout y-coordinates should increase in increments of
+     *    one, so we shouldn't need to worry too much about detecting
+     *    floating-point numbers (if the max y is > 0, it's at least 1, so
+     *    we're fine)
+     *
+     * @param {Number} width Width to which the coordinates should be scaled
+     * @param {Number} height Height to which the coordinates should be scaled
+     * @param {Number} minX Minimum x-coordinate
+     * @param {Number} maxX Maximum x-coordinate
+     * @param {Number} minY Minimum y-coordinate
+     * @param {Number} maxY Maximum y-coordinate
+     * @param {Number} epsilon Threshold to use when considering the min and
+     *                         max coordinates on a given axis "different".
+     *                         If dx (a.k.a. maxX - minX) is < epsilon, then
+     *                         this will only look at the y-axis for scaling,
+     *                         and vice versa. If both dx and dy are < epsilon,
+     *                         this will raise an error: this should never
+     *                         happen in practice since the Python code
+     *                         guarantees that input trees have at least one
+     *                         non-root node and that the non-root node(s) have
+     *                         a positive length, but we catch it here just in
+     *                         case. (If this *does* start happening to people
+     *                         with real trees, which it shouldn't, then we may
+     *                         want to decrease this epsilon. But I highly
+     *                         doubt that will ever happen.)
+     *
+     * @return {Number} scaleFactor Equal to max(width/dx, height/dy), assuming
+     *                              that dx and dy are both >= epsilon. If
+     *                              either dx or dy is < epsilon, this'll just
+     *                              return the other term.
+     *
+     * @throws {Error} If (maxX - minX) < epsilon AND (maxY - minY) < epsilon.
+     *                 (Only one of the epsilon
+     *                 conditions being satisifed implies that the tree is a
+     *                 straight line along either the y- or x-axis, which is
+     *                 fine; if BOTH epsilon conditions are satisified, then
+     *                 something is probably very wrong.)
+     */
+    function computeScaleFactor(
+        width,
+        height,
+        minX,
+        maxX,
+        minY,
+        maxY,
+        epsilon = 1e-5
+    ) {
+        var dx = maxX - minX;
+        var dy = maxY - minY;
+        var widthScale = width / dx;
+        var heightScale = height / dy;
+        if (dy >= epsilon) {
+            if (dx >= epsilon) {
+                return Math.max(widthScale, heightScale);
+            } else {
+                return heightScale;
+            }
+        } else {
+            if (dx >= epsilon) {
+                return widthScale;
+            } else {
+                throw new Error(
+                    "dx and dy are < epsilon; can't scale this layout."
+                );
+            }
+        }
+    }
+
+    /**
      * Rectangular layout.
      *
      * In this sort of layout, each tip has a distinct y-position, and parent
@@ -64,12 +259,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
-     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
-     *                                layout; otherwise, a uniform length of 1
-     *                                is used.
      * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
+     * @param {Function} lengthGetter Is a function that takes a single argument
+     *                                that corresponds to the index of a node in
+     *                                tree. Returns the length of the node at that
+     *                                index. Defaults to 'normal' method.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -84,9 +280,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         tree,
         width,
         height,
-        ignoreLengths,
         leafSorting,
-        normalize = true
+        normalize = true,
+        lengthGetter = null
     ) {
         var maxWidth = 0;
         var maxHeight = 0;
@@ -95,6 +291,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var yCoord = new Array(tree.size + 1).fill(0);
         var highestChildYr = new Array(tree.size + 1);
         var lowestChildYr = new Array(tree.size + 1);
+        if (lengthGetter === null) {
+            lengthGetter = getLengthMethod("normal", tree);
+        }
 
         var postOrderNodes = getPostOrderNodes(tree, leafSorting);
         var i;
@@ -130,7 +329,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var node = tree.postorder(prepos);
             parent = tree.postorder(tree.parent(prepos));
 
-            var nodeLen = ignoreLengths ? 1 : tree.length(prepos);
+            var nodeLen = lengthGetter(prepos);
             xCoord[node] = xCoord[parent] + nodeLen;
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
@@ -267,20 +466,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
-     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
-     *                                layout; otherwise, a uniform length of 1
-     *                                is used.
      * @param {String} leafSorting See the getPostOrderNodes() docs above.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
-     * @param {Float} startAngle The first tip in the tree visited is assigned
-     *                           this angle (in radians). Can be used to rotate
-     *                           the tree: 0 is the eastmost point of the
-     *                           theoretical "circle" surrounding the root
-     *                           node, Math.PI / 2 is the northmost point of
-     *                           that circle, etc.). I believe this is
-     *                           analogous to how the "rotation" parameter of
-     *                           iTOL works.
+     * @param {Function} lengthGetter Is a function that takes a single argument
+     *                                that corresponds to the index of a node in
+     *                                tree. Returns the length of the node at that
+     *                                index. Defaults to 'normal' method.
      * @return {Object} Object with the following properties:
      *                   -x0, y0 ("starting point" x and y)
      *                   -x1, y1 ("ending point" x and y)
@@ -298,10 +490,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         tree,
         width,
         height,
-        ignoreLengths,
         leafSorting,
         normalize = true,
-        startAngle = 0
+        lengthGetter = null
     ) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
@@ -319,12 +510,25 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var arcEndAngle = new Array(tree.size + 1).fill(0);
 
         var anglePerTip = (2 * Math.PI) / tree.numleaves();
-        var prevAngle = startAngle;
+
+        // Note: this means that the first tip visited in the tree is
+        // positioned on the rightmost point of the circle. This also means
+        // that trees with a single tip should look basically identical in the
+        // circular and rectangular layouts. This really should not be changed
+        // -- when we add support for rotating the tree, that should be done
+        // after computing layouts, as a WebGL matrix multiplication thing.
+        // See https://github.com/biocore/empress/issues/359.
+        var prevAngle = 0;
+
         var child, currRadius;
         var maxX = 0,
             minX = Number.POSITIVE_INFINITY;
         var maxY = 0,
             minY = Number.POSITIVE_INFINITY;
+
+        if (lengthGetter === null) {
+            lengthGetter = getLengthMethod("normal", tree);
+        }
 
         // Iterate over the tree in postorder, assigning angles
         // Note that we skip the root (using "p < postOrderNodes.length - 1"),
@@ -362,7 +566,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var node = tree.postorder(prepos);
             var parent = tree.postorder(tree.parent(prepos));
 
-            var nodeLen = ignoreLengths ? 1 : tree.length(prepos);
+            var nodeLen = lengthGetter(prepos);
             radius[node] = radius[parent] + nodeLen;
         }
 
@@ -403,19 +607,34 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             x1[i] = currRadius * angleCos;
             y1[i] = currRadius * angleSin;
 
-            maxX = Math.max(maxX, x1[i]);
-            minX = Math.min(minX, x1[i]);
-            maxY = Math.max(maxY, y1[i]);
-            minY = Math.min(minY, y1[i]);
+            // _Usually_ we won't need to take the x0/y0 coordinates into
+            // account when expanding the bounding box (since by nature nodes
+            // should radiate "outward" from the root node, positioned at the
+            // center the circle at (0, 0)), but this assumption can fail for
+            // 1-tip trees or if in the future we modify the circular layout to
+            // e.g. only go from 0 to 180 degrees or something. So for safety's
+            // sake we consider the x0/y0 coordinates as well.
+            maxX = Math.max(maxX, x1[i], x0[i]);
+            minX = Math.min(minX, x1[i], x0[i]);
+            maxY = Math.max(maxY, y1[i], y0[i]);
+            minY = Math.min(minY, y1[i], y0[i]);
         }
 
-        var widthScale = width / (maxX - minX);
-        var heightScale = height / (maxY - minY);
-        var scaleFactor = Math.max(widthScale, heightScale);
+        var scaleFactor = 1;
+        if (normalize) {
+            scaleFactor = computeScaleFactor(
+                width,
+                height,
+                minX,
+                maxX,
+                minY,
+                maxY
+            );
+        }
+
         // Go over the tree (in postorder, but order doesn't really matter
         // for this) to determine arc positions for non-root internal nodes.
-        // I think determining arc positions could be included in the above for
-        // loop...
+        // Also scale nodes' coordinates, while we're at it.
         for (i = 1; i < tree.size; i++) {
             if (normalize) {
                 x0[i] *= scaleFactor;
@@ -484,11 +703,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                      displayed.
      * @param {Float} height Height of the canvas where the tree will be
      *                       displayed.
-     * @param {Boolean} ignoreLengths If falsy, branch lengths are used in the
-     *                                layout; otherwise, a uniform length of 1
-     *                                is used.
      * @param {Boolean} normalize If true, then the tree will be scaled up to
      *                            fill the bounds of width and height.
+     * @param {Function} lengthGetter Is a function that takes a single argument
+     *                                that corresponds to the index of a node in
+     *                                tree. Returns the length of the node at that
+     *                                index. Defaults to 'normal' method.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -499,8 +719,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         tree,
         width,
         height,
-        ignoreLengths,
-        normalize = true
+        normalize = true,
+        lengthGetter = null
     ) {
         var da = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
@@ -508,6 +728,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var y1Arr = new Array(tree.size + 1);
         var y2Arr = new Array(tree.size + 1).fill(0);
         var aArr = new Array(tree.size + 1);
+        if (lengthGetter === null) {
+            lengthGetter = getLengthMethod("normal", tree);
+        }
 
         var n = tree.postorderselect(tree.size);
         var x1, y1, a;
@@ -540,7 +763,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             a += (tree.getNumTips(node) * da) / 2;
 
             n = tree.postorderselect(node);
-            var nodeLen = ignoreLengths ? 1 : tree.length(n);
+            var nodeLen = lengthGetter(n);
             x2 = x1 + nodeLen * Math.sin(a);
             y2 = y1 + nodeLen * Math.cos(a);
             x1Arr[node] = x1;
@@ -554,18 +777,20 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
         }
-        var scale;
         if (normalize) {
-            var widthScale = width / (maxX - minX);
-            var heightScale = height / (maxY - minY);
-            scale = Math.min(widthScale, heightScale);
-        } else {
-            scale = 1;
-        }
-        // skip the first element since the tree is zero-indexed
-        for (var i = 1; i <= tree.size - 1; i++) {
-            x2Arr[i] *= scale;
-            y2Arr[i] *= scale;
+            var scaleFactor = computeScaleFactor(
+                width,
+                height,
+                minX,
+                maxX,
+                minY,
+                maxY
+            );
+            // skip the first element since the tree is zero-indexed
+            for (var i = 1; i <= tree.size - 1; i++) {
+                x2Arr[i] *= scaleFactor;
+                y2Arr[i] *= scaleFactor;
+            }
         }
         // Don't need to reposition coordinates relative to the root because
         // the root is already at (0, 0)
@@ -574,7 +799,10 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     return {
+        getLengthMethod: getLengthMethod,
         getPostOrderNodes: getPostOrderNodes,
+        getUltrametricLengths: getUltrametricLengths,
+        computeScaleFactor: computeScaleFactor,
         rectangularLayout: rectangularLayout,
         circularLayout: circularLayout,
         unrootedLayout: unrootedLayout,

@@ -16,7 +16,7 @@ and barplots).
 
 ## Screenshot
 
-![Fancy Empire plot](docs/moving-pictures/img/empire_fancy.png)
+![Fancy Empire plot](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_fancy.png)
 <div align="center">
 <i>"Empire plot" visualizing a phylogenetic tree of amplicon sequence variants (ASVs) in Empress, left, alongside a PCoA biplot in Emperor, right. As one of the ways in which these displays are integrated, selecting a tip in the tree (representing an ASV) enlarges the samples containing this ASV in Emperor -- thereby providing more information than would be available from either display alone.</i>
 </div>
@@ -32,14 +32,10 @@ conda activate qiime2-2020.8
 
 You can replace `qiime2-2020.8` above with whichever version of QIIME 2 you have currently installed.  
 
-Now we are ready to install Empress. Run the following commands to do so. (Note
-that Emperor will be _re-installed_ when the second command is run; the reason
-we uninstall it first is so that we can ensure the most up-to-date version of
-it is available.)
+Now we are ready to install Empress. Run the following commands to do so.
 
 ```
-pip uninstall --yes emperor
-pip install git+https://github.com/biocore/empress.git
+pip install empress
 qiime dev refresh-cache
 qiime empress --help
 ```
@@ -141,7 +137,7 @@ To view the newly made `empress-tree.qzv` artifact, you can drag and drop the fi
 ```bash
 qiime tools view empress-tree.qzv
 ```
-![empress_plain](docs/moving-pictures/img/empress_plain.png)
+![empress_plain](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_plain.png)
 
 The starting plot is a simple unrooted tree which has all the normal properties of a phylogenetic tree. The outermost “tips” of the tree are also referred to as “leaves”, “terminal nodes”, or “external nodes” and here represent a unique ASV. The line connected to a tip is referred to as a “branch”. A branch connects two or more nodes, or in this case a tip to an internal node. These internal nodes represent a divergent point between nodes and the branch length represents the evolutionary distance between divergence points.
 You can use your mouse’s scroll wheel to zoom in and out, and click and drag anywhere on the plot to move the display to take a closer look at the various tree components. On the top-right we see a display menu with several subcategories that allow us to customize the plot. We will explore these options in more detail below.  
@@ -151,7 +147,7 @@ You can use your mouse’s scroll wheel to zoom in and out, and click and drag a
 
 The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Zoom in on the tip of the longest branch and click on the node.   
 
-![empress_plain_first_outlier](docs/moving-pictures/img/empress_plain_first_outlier.png)
+![empress_plain_first_outlier](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_plain_first_outlier.png)
 
 A new menu appears with details about the selected node, including its name and taxonomic assignment. You’ll notice that this feature has only been classified at the Kingdom level, meaning that our feature-classifier was not able to find a suitable match in the reference database used to assign these taxonomy classifications (in this case, Greengenes). More often than not, these features correspond to non-biological reads such as chimeras, contaminants, or reads that have [index-hopped](https://www.illumina.com/content/dam/illumina-marketing/documents/products/whitepapers/index-hopping-white-paper-770-2017-004.pdf) from other samples. We will explore these possibilities further later.
 
@@ -159,7 +155,7 @@ We should also note that the tree used in this tutorial was built using the comm
 
 In this window we can also view details about sample metadata related to this feature. From the drop-down menu select `body-site` and click the *Add* button. A new *Sample Presence Information* summary table appears which displays the number of samples containing the selected feature.
 
-![empress_plain_first_outlier_2](docs/moving-pictures/img/empress_plain_first_outlier_2.png)
+![empress_plain_first_outlier_2](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_plain_first_outlier_2.png)
 
 We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.8%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in the QIIME 2 Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the tips in a few other outlier branches. Do you see a similar pattern? Now try clicking on a tip of one of the shorter branches. Notice the much improved classification!
 
@@ -169,14 +165,14 @@ It looks like this ASV is a species belonging to the _Bacteroides_ genus, and
 is present in all of the four "body sites" included in this data (although it's
 only present in one tongue sample).
 
-![empress_search_feature](docs/moving-pictures/img/empress_search_features.png)
+![empress_search_feature](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_search_features.png)
 
 
 ### Exploring groups of features
 
 Another way of exploring the classification of our features is to color the branches based on their taxonomic designation. From the main menu, click *Feature Metadata Coloring*, check the *Color by…* box, select *Level 2* (which here corresponds to the phylum level), and click *Update*.
 
-![empress_unrooted_feature_coloring](docs/moving-pictures/img/empress_unrooted_feature_coloring.png)
+![empress_unrooted_feature_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_unrooted_feature_coloring.png)
 
 The plot is now updated so each branch is now colored by its phylum-level classification. We can see that the extra long branches are now mostly the same magenta color. Check out the legend on the left side of the screen -- it turns out that the magenta color corresponds to an *Unspecified* phylum. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
 
@@ -184,11 +180,11 @@ The plot is now updated so each branch is now colored by its phylum-level classi
 
 So far, we’ve looked at our data using the default unrooted tree view. To visually locate these features’ closest common ancestors, it may be easier to switch to a different layout. From the main menu, click *Layout* then select *Circular* (or *Rectangular*). Our plot automatically switches to a rooted layout.
 
-![empress_circular_feature_coloring](docs/moving-pictures/img/empress_circular_feature_coloring.png)
+![empress_circular_feature_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_feature_coloring.png)
 
 Now, let's zoom into the longest branch of the bottom cluster of *Unspecified* nodes and click on one of the close tips that has a different phylum classification (light blue).   
 
-![empress_circular_common_ancestor](docs/moving-pictures/img/empress_circular_common_ancestor.png)
+![empress_circular_common_ancestor](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_common_ancestor.png)
 
 Interestingly, we see that this node is classified as _Acanthamoeba Palestinensis_ which is actually not a bacteria but rather a protozoa. It is not uncommon for certain Eukaryotes to appear in bacterial/archaeal reference databases as they may share a similar genetic lineage. Remember that mitochondria and chloroplasts likely evolved from prokaryotes themselves. Explore a few other common ancestral nodes from different outlier branches. We can see other surprising appearances by _Cucurbita pepo_ (a variety of squash or pumpkin), _Raphanus sativus_ (radish), and _Streptophyta_ (an order of plants). Based on these results one might speculate that our *Unspecified* features likely also belong to either plants or protozoa groups rather than bacteria. Further, since these features appear only on the palm samples, it’s possible the source of these are in fact environmental contaminants rather than common human microbes.  
 
@@ -198,7 +194,7 @@ Summarizing things for these *Unspecified*-phylum features: in general, given th
 
 The composition of microbial communities of the gut, tongue, and palms are very different from each other. Suppose we are interested in identifying which features are unique to each body-site and their evolutionary relationships. We can do this in Empress by colorizing our tree based on columns from our sample metadata file. From the main menu, click *Sample Metadata Coloring*, check the *Color by…* box, and from the drop-down menu select `body-site`. Click the *Update* button.  
 
-![empress_sample_metadata_coloring](docs/moving-pictures/img/empress_sample_metadata_coloring.png)
+![empress_sample_metadata_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_sample_metadata_coloring.png)
 
 In this plot the colored branches represent lineages that are unique to the corresponding body site, while the uncolored branches are those that are shared across at least 2 body sites and thus cannot be displayed with a single color. While it is not surprising to see a large number of unique features in the gut samples (red) compared to the palm samples (blue and orange), it is interesting to see a large number of unique features between the left and right palm. Can you think of any biological reasons why the left and right palms may contain such different unique microbes? Even though the left and right palm do harbor unique features, the representative clades appear more integrated among themselves, suggesting that their phylogeny are still more similar to each other than the gut taxa which appear to cluster mainly among themselves.  
 
@@ -215,7 +211,7 @@ away from that tip (e.g. in the rectangular layout if one tip is at the top of
 its clade, and another tip just "above" it is at the bottom of its clade). An
 example of this is shown below with the mustard and lavender clades:
 
-![Example of this phenomenon on the moving pictures dataset](docs/moving-pictures/img/empress_funky_barplot_example.png)
+![Example of this phenomenon on the moving pictures dataset](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_funky_barplot_example.png)
 
 This can impact the way barplots look in ways that might not be immediately
 obvious. To quote "Inferring Phylogenies" (Felsenstein 2004), pages 573–574:
@@ -228,19 +224,19 @@ Barplots in Empress are compatible with either the rectangular or circular layou
 
 First off, change the layout to *Rectangular* (using the *Layout* section of the main menu), and then open up the *Barplots* section of the main menu and check the `Draw Barplots?` checkbox. Click the *Update* button that appears. By default, a red bar of uniform length will be drawn for every tip in the tree:
 
-![empress barplots initial view](docs/moving-pictures/img/empress_barplots_1.png)
+![empress barplots initial view](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_1.png)
 
 Although these bars are not very useful by default, we can _encode_ them with information based on the feature or sample metadata you passed in to Empress when generating a visualization. Let's try coloring each tip's bar by its `Level 2` feature metadata field (a.k.a. the phylum-level taxonomic assignments for the tips in this dataset): under the *Layer 1* header, check the *Color by...* box, and from the drop-down menu select `Level 2`. Click the *Update* button.
 
-![empress barplots: phylum coloring](docs/moving-pictures/img/empress_barplots_2.png)
+![empress barplots: phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_2.png)
 
 These patterns should look familiar -- this is the same information as we showed when coloring the tree by feature metadata earlier. We can confirm this by trying out feature metadata coloring by `Level 2` again, using the same `Classic QIIME Colors` color map (see the "Exploring groups of features" section above for a refresher on how to do this):
 
-![empress barplots: phylum coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_3.png)
+![empress barplots: phylum coloring and tree phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_3.png)
 
 Since both the node colorings and the barplot layer are now showing the same information (`Level 2`), this display is a bit redundant (although it is reassuring :). Let's try taking things down a level, and adjust our barplot layer to show the `Level 3` feature metadata field (a.k.a. the class-level taxonomic assignments). To do this, adjust the drop-down menu next to the *Color by...* box (under the _Layer 1_ header in the _Barplots_ section, not in the _Feature Metadata Coloring_ section) to go from `Level 2` to `Level 3`, and then click the *Update* button again.
 
-![empress barplots: class coloring and tree phylum coloring](docs/moving-pictures/img/empress_barplots_4.png)
+![empress barplots: class coloring and tree phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_4.png)
 
 Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at multiple "clusters" throughout the tree: are all of these the same class? We can tell from the legend for this layer (under the heading `Level 3`) that there is only one class colored lavender here, `c__Clostridia`.
 
@@ -250,7 +246,7 @@ So, these lavender classes are all *Clostridia*. Does it make sense that represe
 
 Up until now, we've just been working with a single "barplot layer." We can add on more layers if we want -- this will let us visualize additional tip information alongside the layer we have that currently shows `Level 3` information. To add a new layer, click on the `+` button (with the label _Add another layer_). Now, click *Update* again to see what this new layer looks like.
 
-![empress barplots: class coloring layer 1, empty layer 2, and tree phylum coloring](docs/moving-pictures/img/empress_barplots_5.png)
+![empress barplots: class coloring layer 1, empty layer 2, and tree phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_5.png)
 
 We have a new layer to work with!
 
@@ -260,11 +256,11 @@ Let's revisit our analysis above of which tips are unique to which body sites in
 
 In order to do this, we'll need to change our new layer (_Layer 2_) from a feature metadata layer to a sample metadata layer. You can do this by clicking on the _Sample Metadata_ button underneath the text _Layer 2_. The controls available for this barplot layer should change; in order to show sample presence information for body sites, change the _Show sample info for..._ drop-down menu to `body-site`. Try clicking _Update_ to see what our new Layer 2 looks like.
 
-![empress barplots: class coloring layer 1, bodysite layer 2, and tree phylum coloring](docs/moving-pictures/img/empress_barplots_6.png)
+![empress barplots: class coloring layer 1, bodysite layer 2, and tree phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_6.png)
 
 Layer 2 now shows a stacked barplot for each tip, based on the proportions of sample groups containing a given tip. As with layer 1, the colors are described in this layer's legend. When we zoom in, we can see things in detail:
 
-![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2](docs/moving-pictures/img/empress_barplots_7.png)
+![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_7.png)
 
 The top-most tip is only present in right palm samples (colored orange), the second-from-the-top tip is only present in left palm samples (colored blue), and so on. The length taken up by a "block" for a given tip is proportional to how many samples of that type contain the tip (relative to the total number of samples containing the tip; it's [not absolute](https://github.com/biocore/empress/issues/322)).
 
@@ -282,14 +278,14 @@ annotations in this dataset. (See [this thread](https://forum.qiime2.org/t/confi
 
 All of the confidence values in this dataset are numeric, but we don't _have_ to interpret them as numbers. Let's see what it looks like if we try to use a "categorical" (a.k.a. "discrete") color map for this field. Click on the `+` button to add a new layer, check the *Color by...* box, and select `Confidence`. Click the *Update* button.
 
-![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, categorical-colored confidence layer 3](docs/moving-pictures/img/empress_barplots_8.png)
+![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, categorical-colored confidence layer 3](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_8.png)
 
 Try scrolling through this layer's legend. It should be clear that this color map (`Classic QIIME Colors`) does not make sense for this field -- although the confidence values are correctly sorted in ascending order, the actual color assignments are meaningless.
 
 Let's try changing away from this discrete color map to a "sequential" one.
 Select [`Viridis`](https://www.youtube.com/watch?v=xAoljeRJ3lU) from the `Color Map` drop-down menu, and click *Update*.
 
-![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, Viridis-ordinal-colored confidence layer 3](docs/moving-pictures/img/empress_barplots_9.png)
+![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, Viridis-ordinal-colored confidence layer 3](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_9.png)
 
 Try scrolling through the legend now. Things should be a bit clearer -- there's
 a gradient from purple to yellow that seems to align with the `Confidence`
@@ -304,7 +300,7 @@ We can fix this by checking the `Continuous values?` box (it shows up when a
 sequential or diverging color map is selected). Try doing that, and then click
 *Update* one last time for now:
 
-![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, Viridis-continuous-colored confidence layer 3](docs/moving-pictures/img/empress_barplots_10.png)
+![empress barplots: zoomed in on barplots: class coloring layer 1, bodysite layer 2, Viridis-continuous-colored confidence layer 3](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_10.png)
 
 Now, colors are assigned based on `Confidence`s as we might expect, using
 linear interpolation.
@@ -313,9 +309,10 @@ This was a brief introduction to some of the barplot functionality available in 
 
 ## Exporting Plots  
 
-Once you are done customizing your tree, you can export the tree as an SVG or PNG file by going to the *Export* section in the main menu and clicking on `Export tree as SVG` or `Export tree as PNG`. You can also export the legend used for tree coloring, if the tree has been colored, using the `Export legend as SVG` button.
+Once you are done customizing your tree, you can export the current visualization of the tree as an SVG or PNG file by going to the *Export* section in the main menu and clicking on `Export tree as SVG` or `Export tree as PNG`. You can also export the legend(s) used for tree and/or barplot coloring, if applicable, using the `Export legends as SVG` button.
 
-Currently, certain elements of the display (e.g. barplots, collapsed clades) are not included in the SVG export; we're working on making this functionality more comprehensive. Also, note that the SVG export does not change as you zoom / pan the tree, while the PNG export will change as you zoom / pan the tree.
+Note that SVG export will always include the entire tree display, while the
+contents of the PNG export will change as you zoom / pan the tree.
 
 ## Empire plots! Side-by-side integration of tree and PCoA plots  
 
@@ -346,7 +343,7 @@ Load the new Empire plot. Here we see the Empress plot as before on the left, an
 
 At first, the plot may look a bit messy. For clarity, let’s remove the long feature ID labels. Right click anywhere on the Emperor plot and select *Toggle label visibility*. Next, in Emperor, from the main menu click on *Select a color category* and select `body-site` under the *scatter* subheading. Now our samples are color-coded based on their body site origin. Notice the clear clustering of these sample-types. Next, click on the same drop-down menu and this time under the *biplot* subheading select `Level 2`. Now we can see the top explanatory features (arrows) colored by their phylum-level classification. Switch over to Empress, change the plot layout to *Circular*, and set the *Feature Metadata Coloring* to `Level 2` also. Minimize the menu bar to fully appreciate the plots!   
 
-![empire_plain](docs/moving-pictures/img/empire_plain.png)
+![empire_plain](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_plain.png)
 
 (Note that the tree and arrow colorings don't necessarily match up between Empress and Emperor—for example, in the screenshot above Actinobacteria-phylum arrows are colored red in Emperor but Actinobacteria-phylum nodes are colored orange in Empress. If you'd like, you can change the arrow colors in Emperor to match the colors Empress assigned. Fixing this is [on our radar](https://github.com/biocore/empress/issues/369).)
 
@@ -364,7 +361,7 @@ Click on this arrow (you may have to zoom in a bit in Emperor to do so). Two cha
    clearly highlighting them in contrast to the other samples that do not
    contain this feature.
 
-![empire_feature_arrow_selection](docs/moving-pictures/img/empire_feature_arrow_selection.png)
+![empire_feature_arrow_selection](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_feature_arrow_selection.png)
 
 This interaction between Empress and Emperor can go the other direction. Selecting a node on the Empress plot will enlarge the samples in Emperor in which that feature is present.
 

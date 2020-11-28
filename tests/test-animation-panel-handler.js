@@ -133,7 +133,7 @@ require([
 
         ok(this.panel._onAnimationStarted !== null);
         // note we can't call startBtn because this module does not create a
-        // working animator object (see notes in the setUp)
+        // working animator object (see notes in the setup)
         this.panel._onAnimationStarted();
     });
 
@@ -147,7 +147,7 @@ require([
 
         ok(this.panel._onAnimationStopped !== null);
         // note we can't call stopBtn because this module does not create a
-        // working animator object (see notes in the setUp)
+        // working animator object (see notes in the setup)
         this.panel._onAnimationStopped();
     });
 
