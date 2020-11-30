@@ -608,7 +608,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
 
             var nodeLen = lengthGetter(prepos);
             radius[node] = radius[parent] + nodeLen;
-            // anyDifferent = anyDifferent || nodeLen !== tree.length(prepos);
             anyDifferent =
                 anyDifferent || Math.abs(nodeLen - tree.length(prepos)) > TOL;
         }
@@ -828,7 +827,6 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
 
-            // anyDifferent = anyDifferent || nodeLen !== tree.length(n);
             anyDifferent =
                 anyDifferent || Math.abs(nodeLen - tree.length(n)) > TOL;
         }
