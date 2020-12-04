@@ -1,7 +1,89 @@
-define(["jquery", "underscore", "util"], function ($, _, util) {
+define(["jquery", "underscore", "util", "spectrum"], function ($, _, util, spectrum) {
+
+    function ColorEditor(args) {
+        var scope = this;
+        this.$input = $("<div class='colorbox'></div>");
+        this.$input.appendTo($(args.container));
+
+        // initialize spectrum
+        this.$input.spectrum({
+            color: args.color,
+            showInput: true,
+            allowEmpty: false,
+            showInitial: true,
+            clickoutFiresChange: true,
+            className: 'full-spectrum',
+            preferredFormat: 'hex6',
+            // Show the whole set of color palette on the menu (only discrete)
+            showPalette: args.palette !== undefined,
+            showSelectionPalette: args.palette !== undefined,
+            palette: args.palette,
+
+            /* On change callback */
+            change: function(color) {
+                const col = color.toHexString();
+                // args.container.setAttribute("style", "background: " + col + ";");
+                var map = {};
+                map[args.colorKey] = col;
+                args.controller.remapColors(map);
+                scope.$input.spectrum('hide');
+                scope.$input.spectrum('destroy');
+                scope.$input.remove();
+            }
+        });
+
+    }
+
+    function LegendModel(map) {
+        this.map = map;
+        this.observers = [];
+        this.name = undefined;
+    }
+
+    LegendModel.prototype.registerObserver = function(observer) {
+        this.observers.push(observer);
+    };
+
+    LegendModel.prototype.setColorMap = function(map) {
+        this.map = map;
+        this.notify();
+    };
+
+    LegendModel.prototype.getColorMap = function() {
+        return this.map;
+    };
+
+    LegendModel.prototype.setName = function(name) {
+        this.name = name;
+        this.notify();
+    };
+
+    LegendModel.prototype.getName = function() {
+        return this.name;
+    };
+
+    LegendModel.prototype.updateColorMap = function(update) {
+        _.extend(this.map, update);
+        this.notify();
+    };
+
+    LegendModel.prototype.notify = function() {
+        // TODO change updateColorMap to updateLegend
+        _.each(this.observers, obs => obs.updateColorMap());
+    };
+
+    function LegendController(model, view) {
+        this.model = model;
+        this.view = view;
+    }
+
+    LegendController.prototype.remapColors = function(update) {
+        this.model.updateColorMap(update);
+    };
+
     /**
      *
-     * @class Legend
+     * @class Legend (View)
      *
      * Creates a legend within a given HTML element. (You'll need to call
      * addCategoricalKey(), addContinuousKey(), or addLengthKey() to populate
@@ -13,7 +95,14 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
      * @return {Legend}
      * @constructs Legend
      */
-    function Legend(container) {
+    function Legend(container, enableUpdate = false) {
+
+        this.model = new LegendModel({});
+        this.model.registerObserver(this);
+        this.controller = new LegendController(this.model, this);
+        this.updateEnabled = enableUpdate;
+
+
         /**
          * @type {HTMLElement}
          * Reference to the element containing the legend.
@@ -103,6 +192,14 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         this._minLengthVal = null;
         this._maxLengthVal = null;
     }
+
+    Legend.prototype.enableUpdate = function() {
+        this.updateEnabled = true;
+    };
+
+    Legend.prototype.disableUpdate = function() {
+        this.updateEnabled = false;
+    };
 
     /**
      * Adds a title element to the legend container.
@@ -229,7 +326,17 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
                     "categories in the info"
             );
         }
+
+        this.model.setName(name);
+        this.model.setColorMap(info);
+    };
+
+    Legend.prototype.updateColorMap = function() {
+        var scope = this;
         this.clear();
+        var info = this.model.getColorMap();
+        var name = this.model.getName();
+
         this.addTitle(name);
         this._sortedCategories = util.naturalSort(_.keys(info));
         this._category2color = info;
@@ -249,6 +356,16 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             colorCell.classList.add("category-color");
             colorCell.classList.add("frozen-cell");
             colorCell.setAttribute("style", "background: " + info[key] + ";");
+            colorCell.onclick = () => {
+                if (scope.updateEnabled) {
+                    var editor = new ColorEditor({
+                        container: colorCell,
+                        color: info[key],
+                        controller: scope.controller,
+                        colorKey: key
+                    });
+                }
+            };
 
             // Add a label for that color box.
             var labelCell = newRow.insertCell(-1);

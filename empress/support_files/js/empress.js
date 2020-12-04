@@ -155,6 +155,11 @@ define([
          */
         this._legend = new Legend(document.getElementById("legend-main"));
 
+        // rename to this._legendModel
+        this._legend_model = this._legend.model;
+        // TODO update the observers when legend changes
+        this._legend_model.registerObserver(this);
+
         /**
          * @type {BiomTable}
          * BIOM table: includes feature presence information and sample-level
@@ -2119,6 +2124,8 @@ define([
         color,
         reverse = false
     ) {
+        this.resetUpdateColorMap();
+        this._legend.disableUpdate();
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
@@ -2265,6 +2272,7 @@ define([
         method,
         reverse = false
     ) {
+        var scope = this;
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -2301,10 +2309,27 @@ define([
         // color tree
         this._colorTree(obs, cm);
 
+
+        this._legend.enableUpdate();
+        this.updateColorMap = function() {
+            // TODO will need to be whatever the current model is
+            var hexmap = scope._legend_model.getColorMap();
+            var rgbmap = _.mapObject(hexmap, Colorer.hex2RGB);
+            scope._colorTree(obs, rgbmap);
+            scope.drawTree();
+        };
+
         this.updateLegendCategorical(cat, keyInfo);
+        // scope._legend_model.notify();
 
         return keyInfo;
     };
+
+    Empress.prototype.resetUpdateColorMap = function() {
+        this.updateColorMap = () => {};
+    };
+
+    Empress.prototype.updateColorMap = function() {};
 
     /*
      * Projects the groups in obs up the tree.
@@ -2414,6 +2439,7 @@ define([
                 this.setNodeInfo(node, "isColored", true);
             }
         }
+
     };
 
     /**
