@@ -1,7 +1,12 @@
 define(["jquery", "underscore", "util", "spectrum"], function ($, _, util, spectrum) {
 
     function ColorEditor(args) {
-        var scope = this;
+        // TODO
+        // NOTE: We are having trouble getting the spectrum picker to show
+        //  on initialization...
+        //  Additionally, it seems like the colorbox class adds a border and
+        //  changes the shape of the ColorCell and we would prefer to not
+        //  do that.
         this.$input = $("<div class='colorbox'></div>");
         this.$input.appendTo($(args.container));
 
@@ -22,16 +27,11 @@ define(["jquery", "underscore", "util", "spectrum"], function ($, _, util, spect
             /* On change callback */
             change: function(color) {
                 const col = color.toHexString();
-                // args.container.setAttribute("style", "background: " + col + ";");
                 var map = {};
                 map[args.colorKey] = col;
                 args.controller.remapColors(map);
-                scope.$input.spectrum('hide');
-                scope.$input.spectrum('destroy');
-                scope.$input.remove();
             }
         });
-
     }
 
     function LegendModel(map) {

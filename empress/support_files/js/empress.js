@@ -2124,8 +2124,9 @@ define([
         color,
         reverse = false
     ) {
+        var scope = this;
         this.resetUpdateColorMap();
-        this._legend.disableUpdate();
+        // this._legend.disableUpdate();
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
@@ -2168,8 +2169,17 @@ define([
         // assigns node in obs to groups in this._groups
         this.assignGroups(obs);
 
-        // color tree
-        this._colorTree(obs, cm);
+        // TODO also remove this from feature metadata
+        // // color tree
+        // this._colorTree(obs, cm);
+
+        this._legend.enableUpdate();
+        this.updateColorMap = function() {
+            var hexmap = scope._legend_model.getColorMap();
+            var rgbmap = _.mapObject(hexmap, Colorer.hex2RGB);
+            scope._colorTree(obs, rgbmap);
+            scope.drawTree();
+        };
 
         this.updateLegendCategorical(cat, keyInfo);
 
@@ -2306,8 +2316,8 @@ define([
         // assigns nodes in to a group in this._group array
         this.assignGroups(obs);
 
-        // color tree
-        this._colorTree(obs, cm);
+        // // color tree
+        // this._colorTree(obs, cm);
 
 
         this._legend.enableUpdate();
@@ -2320,7 +2330,6 @@ define([
         };
 
         this.updateLegendCategorical(cat, keyInfo);
-        // scope._legend_model.notify();
 
         return keyInfo;
     };
