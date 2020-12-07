@@ -62,7 +62,6 @@ def save_viz(viz, output_dir, q2=True):
 def prepare_pcoa(pcoa, number_of_features):
     """Selects top N biplot features by magnitude (coped from q2-emperor).
 
-
     Parameters
     ----------
     pcoa : skbio.stats.ordination.OrdinationResults

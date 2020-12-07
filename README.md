@@ -23,27 +23,40 @@ and barplots).
 
 # Installation & Basic Usage
 
-Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/).
+Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/) or by using `qiime tools view`.
 
 ## Standalone Version
 
-EMPress is available through [PyPi](https://pypi.org/project/empress/). Run the following command to install Empress:
+EMPress is available through [PyPI](https://PyPI.org/project/empress/). Run the following command to install Empress:
 
 `pip install empress`
 
-Try running the command `empress --help` to ensure that Empress has been installed properly. If you see details for the different Empress commands then your installation has completed and you are ready to start using Empress!.
+Try running the command `empress --help` to ensure that Empress has been installed properly. If you see details for the different Empress commands then the installation has succeeded and you are ready to start using Empress!.
 
-### Example standalone usage
+### Available commands
 
-The standalone version of Empress takes the following filetypes as inputs.
+Empress provides two commands: `empress tree-plot` and `empress community-plot`. Both commands generate an Empress visualization, but `community-plot` requires you to pass in a feature table and sample metadata while `tree-plot` only requires a tree file. See [this section](#first-a-note-about-empress-commands) of the docs for some more details.
+
+### Input files
+
+The standalone version of Empress takes the following filetypes as inputs. (Note that for `empress tree-plot` all of these except for the tree are optional, and for `empress community-plot` all except for the tree, feature table, and sample metadata are optional.)
 
 | Input | Filetype |
 | ----- | -------- |
 | Tree | [Newick](https://en.wikipedia.org/wiki/Newick_format) |
-| Feature Table | [biom](http://biom-format.org/) |
-| Sample Metadata | TSV |
-| Feature Metadata | TSV |
-| PCoA | [skbio OrdinationResults](http://scikit-bio.org/docs/latest/generated/skbio.io.format.ordination.html) |
+| Feature Table | [BIOM](http://biom-format.org/) |
+| Sample Metadata | [TSV](https://en.wikipedia.org/wiki/Tab-separated_values) |
+| Feature Metadata | [TSV](https://en.wikipedia.org/wiki/Tab-separated_values) |
+| PCoA | [scikit-bio OrdinationResults](http://scikit-bio.org/docs/latest/generated/skbio.io.format.ordination.html) |
+
+### Example standalone usage
+
+```
+empress tree-plot \
+    --tree tree.nwk \
+    --feature-metadata feature_metadata.tsv \
+    --output-dir tree_viz
+```
 
 ```
 empress community-plot \
@@ -53,7 +66,7 @@ empress community-plot \
     --feature-metadata feature_metadata.tsv \
     --pcoa ordination.txt \
     --filter-extra-samples \
-    --output-dir tree_viz
+    --output-dir community_tree_viz
 ```
 
 You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `--output-dir` must not exist as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files, you should concatenate them all into one file that you pass to Empress.
@@ -66,7 +79,13 @@ See the [QIIME 2 installation](https://docs.qiime2.org/2020.8/install/) page for
 
 `conda activate qiime2-2020.8`
 
-You can replace `qiime2-2020.8` above with whichever version of QIIME 2 you have currently installed. Install Empress through PyPi by using `pip install empress`. Once you have installed Empress, run the following commands to ensure that Empress was installed correctly. If you see information about Empress' QIIME 2 plugin, the installation was successful!
+You can replace `qiime2-2020.8` above with whichever version of QIIME 2 you have currently installed.
+
+Now, run the following command to install Empress using PyPI:
+
+`pip install empress`
+
+Once you have installed Empress, run the following commands to ensure that Empress was installed correctly. If you see information about Empress' QIIME 2 plugin, the installation was successful!
 
 ```
 qiime dev refresh-cache
@@ -76,6 +95,13 @@ qiime empress --help
 ### Example QIIME 2 usage
 
 ```
+qiime empress tree-plot \
+    --i-tree tree.qza \
+    --m-feature-metadata-file taxonomy.qza \
+    --o-visualization tree_viz.qzv
+```
+
+```
 qiime empress community-plot \
     --i-tree tree.qza \
     --i-feature-table feature-table.qza \
@@ -83,7 +109,7 @@ qiime empress community-plot \
     --m-feature-metadata-file taxonomy.qza \
     --i-pcoa ordination.qza \
     --p-filter-extra-samples \
-    --o-visualization tree_viz.qzv
+    --o-visualization community_tree_viz.qzv
 ```
 
 # Tutorial: Using Empress in QIIME 2
@@ -93,7 +119,7 @@ two individuals at four body sites across five timepoints.
 
 ## First, a note about Empress' commands
 
-Empress currently has two commands available through QIIME 2:
+Empress currently has two commands available:
 
 ```
 $ qiime empress --help
