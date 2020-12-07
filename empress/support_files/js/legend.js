@@ -1,5 +1,24 @@
-define(["jquery", "underscore", "util", "spectrum"], function ($, _, util, spectrum) {
-
+define(["jquery", "underscore", "util", "spectrum"], function (
+    $,
+    _,
+    util,
+    spectrum
+) {
+    /**
+     * Class ColorEditor
+     *
+     * Provides a class for constructing a spectrum color picker for a container.
+     *
+     * @param {Object} args Options for configuring the color picker.
+     * @param {HTMLElement} args.container Container to append the color picker to.
+     * @param {Array} args.palette (Optional) palette to pick colors from in the picker.
+     * @param {String} args.colorKey The key that should have its color updated by the picker.
+     * @param {String} args.color Color to initialize the picker with.
+     * @param {LegendController} args.controller A controller to send color updates to.
+     *
+     * @return ColorEditor
+     * @constructs ColorEditor
+     */
     function ColorEditor(args) {
         // TODO
         // NOTE: We are having trouble getting the spectrum picker to show
@@ -10,74 +29,145 @@ define(["jquery", "underscore", "util", "spectrum"], function ($, _, util, spect
         this.$input = $("<div class='colorbox'></div>");
         this.$input.appendTo($(args.container));
 
-        // initialize spectrum
+        // initialize spectrum (heavily lifted from Emperor)
         this.$input.spectrum({
             color: args.color,
             showInput: true,
             allowEmpty: false,
             showInitial: true,
             clickoutFiresChange: true,
-            className: 'full-spectrum',
-            preferredFormat: 'hex6',
+            className: "full-spectrum",
+            preferredFormat: "hex6",
             // Show the whole set of color palette on the menu (only discrete)
             showPalette: args.palette !== undefined,
             showSelectionPalette: args.palette !== undefined,
             palette: args.palette,
 
             /* On change callback */
-            change: function(color) {
+            change: function (color) {
                 const col = color.toHexString();
                 var map = {};
                 map[args.colorKey] = col;
                 args.controller.remapColors(map);
-            }
+            },
         });
     }
 
+    /**
+     * Class LegendModel
+     *
+     * Maintains Observable information for mapping key values to colors to be rendered.
+     *
+     * @param {Object} map Object mapping key values to HexStrings.
+     * @return {LegendModel}
+     * @constructs {LegendModel}
+     */
     function LegendModel(map) {
         this.map = map;
         this.observers = [];
         this.name = undefined;
     }
 
-    LegendModel.prototype.registerObserver = function(observer) {
+    /**
+     * Resets the legend.
+     */
+    LegendModel.prototype.clear = function() {
+        this.map = {};
+        this.name = undefined;
+        // not notifying...
+    };
+
+    /**
+     * Adds an observer to the model.
+     *
+     * @param {LegendObserver} observer An Object that should observe the model.
+     */
+    LegendModel.prototype.registerObserver = function (observer) {
         this.observers.push(observer);
     };
 
-    LegendModel.prototype.setColorMap = function(map) {
+    /**
+     * Removes the specified observer from the objects observers.
+     *
+     * @param {LegendObserver} observer The observer to be unregistered.
+     */
+    LegendModel.prototype.unregisterObserver = function (observer) {
+        const index = this.observers.indexOf(observer);
+        if (index > -1) {
+          array.splice(index, 1);
+        }
+    };
+
+    /**
+     * Functionality for setting the color map.
+     *
+     * @param {Object} map Key to color mapping.
+     */
+    LegendModel.prototype.setColorMap = function (map) {
         this.map = map;
         this.notify();
     };
 
-    LegendModel.prototype.getColorMap = function() {
+    /**
+     * Allows getting the color map for the pull observers.
+     */
+    LegendModel.prototype.getColorMap = function () {
         return this.map;
     };
 
-    LegendModel.prototype.setName = function(name) {
+    /**
+     * Functionality for setting the name of the legend.
+     *
+     * @param {String} name The name of the legend.
+     */
+    LegendModel.prototype.setName = function (name) {
         this.name = name;
         this.notify();
     };
 
-    LegendModel.prototype.getName = function() {
+    /**
+     * Gets the name of the legend.
+     */
+    LegendModel.prototype.getName = function () {
         return this.name;
     };
 
-    LegendModel.prototype.updateColorMap = function(update) {
+    /**
+     * Allows setting the colors for specifc keys.
+     * @param {Object} update Values that should be added or updated in the legend.
+     */
+    LegendModel.prototype.updateColorMap = function (update) {
         _.extend(this.map, update);
         this.notify();
     };
 
-    LegendModel.prototype.notify = function() {
-        // TODO change updateColorMap to updateLegend
-        _.each(this.observers, obs => obs.updateColorMap());
+    /**
+     * Notifies the observers that the state of the model has changed.
+     */
+    LegendModel.prototype.notify = function () {
+        _.each(this.observers, (obs) => obs.updateLegend());
     };
 
+    /**
+     * Class LegendController
+     *
+     * Class for manipulating the Legend
+     *
+     * @param {LegendModel} model Model for the controller.
+     * @param {LegendView} view View for the controller.
+     * @return LegendController
+     * @constructs LegendController
+     */
     function LegendController(model, view) {
         this.model = model;
         this.view = view;
     }
 
-    LegendController.prototype.remapColors = function(update) {
+    /**
+     * Remap the colors in the legend
+     * @param {Object} update Contains the keys and color mappings to update in the legend.
+     */
+    LegendController.prototype.remapColors = function (update) {
         this.model.updateColorMap(update);
     };
 
@@ -96,12 +186,10 @@ define(["jquery", "underscore", "util", "spectrum"], function ($, _, util, spect
      * @constructs Legend
      */
     function Legend(container, enableUpdate = false) {
-
         this.model = new LegendModel({});
         this.model.registerObserver(this);
         this.controller = new LegendController(this.model, this);
         this.updateEnabled = enableUpdate;
-
 
         /**
          * @type {HTMLElement}
@@ -193,11 +281,17 @@ define(["jquery", "underscore", "util", "spectrum"], function ($, _, util, spect
         this._maxLengthVal = null;
     }
 
-    Legend.prototype.enableUpdate = function() {
+    /**
+     * Enables the legend to be updated with a spectrum color picker
+     */
+    Legend.prototype.enableUpdate = function () {
         this.updateEnabled = true;
     };
 
-    Legend.prototype.disableUpdate = function() {
+    /**
+     * Disables the legend from be updated with a spectrum color picker
+     */
+    Legend.prototype.disableUpdate = function () {
         this.updateEnabled = false;
     };
 
@@ -331,7 +425,7 @@ define(["jquery", "underscore", "util", "spectrum"], function ($, _, util, spect
         this.model.setColorMap(info);
     };
 
-    Legend.prototype.updateColorMap = function() {
+    Legend.prototype.updateLegend = function () {
         var scope = this;
         this.clear();
         var info = this.model.getColorMap();
@@ -362,7 +456,7 @@ define(["jquery", "underscore", "util", "spectrum"], function ($, _, util, spect
                         container: colorCell,
                         color: info[key],
                         controller: scope.controller,
-                        colorKey: key
+                        colorKey: key,
                     });
                 }
             };

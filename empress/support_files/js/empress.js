@@ -156,9 +156,9 @@ define([
         this._legend = new Legend(document.getElementById("legend-main"));
 
         // rename to this._legendModel
-        this._legend_model = this._legend.model;
+        this._legendModel = this._legend.model;
         // TODO update the observers when legend changes
-        this._legend_model.registerObserver(this);
+        this._legendModel.registerObserver(this);
 
         /**
          * @type {BiomTable}
@@ -2124,9 +2124,7 @@ define([
         color,
         reverse = false
     ) {
-        var scope = this;
-        this.resetUpdateColorMap();
-        // this._legend.disableUpdate();
+        this.resetUpdateLegend();
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
@@ -2169,17 +2167,8 @@ define([
         // assigns node in obs to groups in this._groups
         this.assignGroups(obs);
 
-        // TODO also remove this from feature metadata
-        // // color tree
-        // this._colorTree(obs, cm);
-
         this._legend.enableUpdate();
-        this.updateColorMap = function() {
-            var hexmap = scope._legend_model.getColorMap();
-            var rgbmap = _.mapObject(hexmap, Colorer.hex2RGB);
-            scope._colorTree(obs, rgbmap);
-            scope.drawTree();
-        };
+        this.updateLegend = this._updateLegendFromModel(obs);
 
         this.updateLegendCategorical(cat, keyInfo);
 
@@ -2282,7 +2271,6 @@ define([
         method,
         reverse = false
     ) {
-        var scope = this;
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -2316,29 +2304,46 @@ define([
         // assigns nodes in to a group in this._group array
         this.assignGroups(obs);
 
-        // // color tree
-        // this._colorTree(obs, cm);
-
-
         this._legend.enableUpdate();
-        this.updateColorMap = function() {
-            // TODO will need to be whatever the current model is
-            var hexmap = scope._legend_model.getColorMap();
-            var rgbmap = _.mapObject(hexmap, Colorer.hex2RGB);
-            scope._colorTree(obs, rgbmap);
-            scope.drawTree();
-        };
+        this.updateLegend = this._updateLegendFromModel(obs);
 
         this.updateLegendCategorical(cat, keyInfo);
 
         return keyInfo;
     };
 
-    Empress.prototype.resetUpdateColorMap = function() {
-        this.updateColorMap = () => {};
+    Empress.prototype._updateLegendFromModel = function(obs) {
+        // A few known issues:
+        // Legend changes are not kept on:
+        // * changing collapse
+        // * changing line width
+        //
+        // These can be tied to how the update button is implemented in
+        // the side panel handler (it resets the legend).
+        // We may want to refactor it to continue to use the legend
+        // state that is in the active legend.
+        return () => {
+            var scope = this;
+            var hexmap = scope._legendModel.getColorMap();
+            var rgbmap = _.mapObject(hexmap, Colorer.hex2RGB);
+            scope._colorTree(obs, rgbmap);
+            // this allows us to recolor collapsed clades
+            if (!_.isEmpty(scope._collapsedClades)) {
+                _.map(scope._collapsedClades, (info, node) => {
+                    var color = scope.getNodeInfo(node, 'color');
+                    info.color = color;
+                });
+                scope.collapseClades();
+            }
+            scope.drawTree();
+        };
     };
 
-    Empress.prototype.updateColorMap = function() {};
+    Empress.prototype.resetUpdateLegend = function () {
+        this.updateLegend = () => {};
+    };
+
+    Empress.prototype.updateLegend = function () {};
 
     /*
      * Projects the groups in obs up the tree.
@@ -2448,7 +2453,6 @@ define([
                 this.setNodeInfo(node, "isColored", true);
             }
         }
-
     };
 
     /**
