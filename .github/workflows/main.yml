@@ -43,5 +43,5 @@ jobs:
           conda run -n qiime2-dev pip install Empress
           conda run -n qiime2-dev qiime dev refresh-cache
 
-      - test: Test Empress
+      - name: Test Empress
         run: conda run -n qiime2-dev qiime empress --help
