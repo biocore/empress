@@ -29,9 +29,6 @@ jobs:
         with:
           node-version: 14
 
-      - name: Install Node.js modules
-        run: npm install -g qunit-puppeteer jshint prettier@2.0.5
-
       - name: Set up conda
         uses: s-weigand/setup-conda@v1
         with:
@@ -52,4 +49,6 @@ jobs:
           conda run -n qiime2-dev qiime dev refresh-cache
 
       - name: Run linter on js code
-        run: prettier --check --tab-width 4 empress/support_files/js/*.js tests/*.js empress/support_files/css/*.css
+        run: |
+          npm install -g qunit-puppeteer jshint prettier@2.0.5
+          prettier --check --tab-width 4 empress/support_files/js/*.js tests/*.js
