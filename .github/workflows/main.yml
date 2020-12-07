@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Empress CI
 
 # Controls when the action will run. 
 on:
@@ -9,8 +9,8 @@ on:
     branches: [ master ]
 
 jobs:
-  # installs conda/create enviroment
-  create_qiime_environment:
+  # name of job
+  build:
     # The type of runner that the job will run on (available options are window/max/linux)
     runs-on: ubuntu-latest
     # we can add more versions of node.js in the future
