@@ -35,10 +35,9 @@ jobs:
       - name: Install flake8
         run: conda run -n base pip install flake8
 
-      - name: Run linters on code
+      - name: Run linters
         run: |
-          prettier --check --tab-width 4 empress/support_files/js/*.js tests/*.js empress/support_files/css/*.css
-          conda run -n base flake8 empress/*.py tests/python/*.py setup.py
+          conda run -n base make stylecheck
 
       - name: Set up conda
         uses: s-weigand/setup-conda@v1
