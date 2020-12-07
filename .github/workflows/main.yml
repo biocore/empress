@@ -32,6 +32,14 @@ jobs:
       - name: Install Node.js modules
         run: npm install -g qunit-puppeteer jshint prettier@2.0.5
 
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Run linters on code
+        run: |
+          prettier --check --tab-width 4 empress/support_files/js/*.js tests/*.js empress/support_files/css/*.css
+          flake8 empress/*.py tests/python/*.py setup.py
+
       - name: Set up conda
         uses: s-weigand/setup-conda@v1
         with:
@@ -51,9 +59,6 @@ jobs:
           conda run -n qiime2-dev pip uninstall emperor --yes
           conda run -n qiime2-dev pip install -e .[all] --verbose
           conda run -n qiime2-dev qiime dev refresh-cache
-
-      - name: Run linter on js code
-        run: prettier --check --tab-width 4 empress/support_files/js/*.js tests/*.js empress/support_files/css/*.css
 
       - name: Check development script
         run: |
