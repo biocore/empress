@@ -24,11 +24,15 @@ jobs:
       # first grab branch from github
       - uses: actions/checkout@v2
   
+      - name: Set up Node.js enviroment
       - uses: actions/setup-node@v1
         with:
           node-version: 14
 
-      - name: Setup conda
+      - name: Install Node.js modules
+        run: npm install -g qunit-puppeteer jshint prettier@2.0.5
+
+      - name: Set up conda
         uses: s-weigand/setup-conda@v1
         with:
           update-conda: true
@@ -48,6 +52,11 @@ jobs:
           conda run -n qiime2-dev qiime dev refresh-cache
 
       - name: Run linter on js code
+        run: prettier --check --tab-width 4 empress/support_files/js/*.js tests/*.js empress/support_files/css/*.css
+
+      - name: Check development script
         run: |
-          npm install -g qunit-puppeteer jshint prettier@2.0.5
-          prettier --check --tab-width 4 empress/support_files/js/*.js tests/*.js
+          ./tests/python/make-dev-page.py
+          ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza
+          ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/unweighted_unifrac_pcoa_results.qza --filter-extra-samples
+          ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/biplot.qza --filter-extra-samples
