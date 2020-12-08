@@ -71,7 +71,7 @@ define(["jquery", "underscore", "util", "spectrum"], function (
     /**
      * Resets the legend.
      */
-    LegendModel.prototype.clear = function() {
+    LegendModel.prototype.clear = function () {
         this.map = {};
         this.name = undefined;
         // not notifying...
@@ -94,7 +94,7 @@ define(["jquery", "underscore", "util", "spectrum"], function (
     LegendModel.prototype.unregisterObserver = function (observer) {
         const index = this.observers.indexOf(observer);
         if (index > -1) {
-          array.splice(index, 1);
+            array.splice(index, 1);
         }
     };
 

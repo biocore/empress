@@ -2312,7 +2312,7 @@ define([
         return keyInfo;
     };
 
-    Empress.prototype._updateLegendFromModel = function(obs) {
+    Empress.prototype._updateLegendFromModel = function (obs) {
         // A few known issues:
         // Legend changes are not kept on:
         // * changing collapse
@@ -2330,7 +2330,7 @@ define([
             // this allows us to recolor collapsed clades
             if (!_.isEmpty(scope._collapsedClades)) {
                 _.map(scope._collapsedClades, (info, node) => {
-                    var color = scope.getNodeInfo(node, 'color');
+                    var color = scope.getNodeInfo(node, "color");
                     info.color = color;
                 });
                 scope.collapseClades();
