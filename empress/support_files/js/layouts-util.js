@@ -373,7 +373,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
             anyDifferent =
                 // this expression assumes nodeLen and tree.length will both be positive
-                anyDifferent || Math.abs((tree.length(prepos) / nodeLen) - 1) > TOL;
+                anyDifferent ||
+                Math.abs(tree.length(prepos) / nodeLen - 1) > TOL;
         }
         if (!anyDifferent && checkLengthsChange) {
             noLengthsChangedMsg();
