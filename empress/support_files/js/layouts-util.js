@@ -180,6 +180,13 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     var TOL = 0.000001;
 
     /**
+     * Raises a toast message telling the user that no branch lengths changed.
+     */
+    function noLengthsChangedMsg() {
+        util.toastMsg(NO_LENGTHS_CHANGED_MSG, NO_LENGTHS_CHANGED_DURATION);
+    }
+
+    /**
      * Computes the "scale factor" for the circular / unrooted layouts.
      *
      * NOTE that we don't bother with this for the rectangular layout since --
@@ -369,7 +376,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 anyDifferent || Math.abs((tree.length(prepos) / nodeLen) - 1) > TOL;
         }
         if (!anyDifferent && checkLengthsChange) {
-            util.toastMsg(NO_LENGTHS_CHANGED_MSG, NO_LENGTHS_CHANGED_DURATION);
+            noLengthsChangedMsg();
         }
 
         // We don't check if max_width == 0 here, because we check when
@@ -613,7 +620,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 anyDifferent || Math.abs(nodeLen - tree.length(prepos)) > TOL;
         }
         if (!anyDifferent && checkLengthsChange) {
-            util.toastMsg(NO_LENGTHS_CHANGED_MSG, NO_LENGTHS_CHANGED_DURATION);
+            noLengthsChangedMsg();
         }
 
         // Now that we have the polar coordinates of the nodes, convert them to
@@ -832,7 +839,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 anyDifferent || Math.abs(nodeLen - tree.length(n)) > TOL;
         }
         if (!anyDifferent && checkLengthsChange) {
-            util.toastMsg(NO_LENGTHS_CHANGED_MSG, NO_LENGTHS_CHANGED_DURATION);
+            noLengthsChangedMsg();
         }
         if (normalize) {
             var scaleFactor = computeScaleFactor(
