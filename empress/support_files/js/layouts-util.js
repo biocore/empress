@@ -159,7 +159,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *
      * @param {String} methodName Method for determing branch lengths.
      *                            One of ("ultrametric", "ignore", "normal").
-     * @returns {Function} A function that maps node indices to branch lengths.
+     * @returns {Boolean} Indicates whether the check should be performed.
      */
     function shouldCheckBranchLengthsChanged(methodName) {
         var methods = {
