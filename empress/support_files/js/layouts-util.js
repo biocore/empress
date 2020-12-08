@@ -177,7 +177,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     var NO_LENGTHS_CHANGED_MSG =
         "No branch lengths modified by layout options.";
     var NO_LENGTHS_CHANGED_DURATION = 3000;
-    var TOL = 0.0000001;
+    var TOL = 0.000001;
 
     /**
      * Computes the "scale factor" for the circular / unrooted layouts.
@@ -365,7 +365,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 maxWidth = xCoord[node];
             }
             anyDifferent =
-                anyDifferent || Math.abs(nodeLen - tree.length(prepos)) > TOL;
+                // this expression assumes nodeLen and tree.length will both be positive
+                anyDifferent || Math.abs((tree.length(prepos) / nodeLen) - 1) > TOL;
         }
         if (!anyDifferent && checkLengthsChange) {
             util.toastMsg(NO_LENGTHS_CHANGED_MSG, NO_LENGTHS_CHANGED_DURATION);
