@@ -437,6 +437,10 @@ define(["jquery", "underscore", "util", "spectrum"], function (
         this.model.setColorMap(info);
     };
 
+    /**
+     * Updates the legend by pulling legend info from the model. This is the
+     * requisite function to implement the LegendObserver interface.
+     */
     Legend.prototype.updateLegend = function () {
         var scope = this;
         this.clear();

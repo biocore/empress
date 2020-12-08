@@ -2124,7 +2124,6 @@ define([
         color,
         reverse = false
     ) {
-        this.resetUpdateLegend();
         var tree = this._tree;
         var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
@@ -2312,6 +2311,14 @@ define([
         return keyInfo;
     };
 
+    /**
+     * A method for updating tree coloring from _legendModel
+     *
+     * @param{Object} obs Maps categories to the unique nodes to be colored for
+     *                    each category.
+     * @returns {Function} Function to be called when the LegendModel updates.
+     * @private
+     */
     Empress.prototype._updateLegendFromModel = function (obs) {
         // A few known issues:
         // Legend changes are not kept on:
@@ -2339,10 +2346,10 @@ define([
         };
     };
 
-    Empress.prototype.resetUpdateLegend = function () {
-        this.updateLegend = () => {};
-    };
-
+    /**
+     * Function called when there is an update to any LegendModel that
+     * Empress subscribes to.
+     */
     Empress.prototype.updateLegend = function () {};
 
     /*
