@@ -94,7 +94,7 @@ define(["jquery", "underscore", "util", "spectrum"], function (
     LegendModel.prototype.unregisterObserver = function (observer) {
         const index = this.observers.indexOf(observer);
         if (index > -1) {
-            array.splice(index, 1);
+            this.observers.splice(index, 1);
         }
     };
 
@@ -280,6 +280,18 @@ define(["jquery", "underscore", "util", "spectrum"], function (
         this._minLengthVal = null;
         this._maxLengthVal = null;
     }
+
+    /**
+     * @type {Function}
+     * The constructor of the model for the legend.
+     */
+    Legend.modelConstructor = LegendModel;
+
+    /**
+     * @type {Function}
+     * The constructor of the controller for the legend.
+     */
+    Legend.controllerConstructor = LegendController;
 
     /**
      * Enables the legend to be updated with a spectrum color picker
