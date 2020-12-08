@@ -31,7 +31,7 @@ EMPress is available through [PyPI](https://PyPI.org/project/empress/). Run the 
 
 `pip install empress`
 
-Try running the command `empress --help` to ensure that Empress has been installed properly. If you see details for the different Empress commands then the installation has succeeded and you are ready to start using Empress!.
+Try running the command `empress --help` to ensure that Empress has been installed properly. If you see details for the different Empress commands then the installation has succeeded and you are ready to start using Empress!
 
 ### Available commands
 
@@ -69,7 +69,7 @@ empress community-plot \
     --output-dir community_tree_viz
 ```
 
-You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `--output-dir` must not exist as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files, you should concatenate them all into one file that you pass to Empress.
+You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `--output-dir` must not exist as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files, you should combine them all into one file that you pass to Empress.
 
 The output will be a directory containing an `empress.html` file and a `support_files` directory containing the JS/CSS files required to view the plot in your browser. If you provided a PCoA to the `community-plot` command there will also be an `emperor-resources` subdirectory containing the files required to view the Emperor plot alongside the tree. You can view the `empress.html` file in any modern browser to interact with it the same way you would the QIIME 2 Visualization.
 
