@@ -1,16 +1,14 @@
-name: Node.js CI
+name: Empress CI
 
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
 jobs:
-  # installs conda/create enviroment
-  create_qiime_environment:
+  # name of job
+  build:
     # The type of runner that the job will run on (available options are window/max/linux)
     runs-on: ubuntu-latest
     # we can add more versions of node.js in the future
@@ -21,16 +19,50 @@ jobs:
   
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # get miniconda2
-      - name: Install Miniconda2
+      # first grab branch from github
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+  
+      - name: Set up Node.js enviroment
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: Install Node.js modules
+        run: npm install -g qunit-puppeteer jshint prettier@2.0.5
+
+      - name: Install flake8
+        run: conda run -n base pip install flake8
+
+      - name: Run linters
         run: |
-          wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh && chmod +x miniconda.sh
-          ./miniconda.sh -b
-          # Update conda itself
-          conda update --yes conda
+          conda run -n base make stylecheck
+
+      - name: Set up conda
+        uses: s-weigand/setup-conda@v1
+        with:
+          update-conda: true
+          python-version: 3.6
+          conda-channels: anaconda, conda-forge
+
+      - name: Create Qiime enviroment
+        run: |
           # Install the latest QIIME 2 version. These lines copied from
           # https://github.com/biocore/qurro/blob/d71f55b82f427c0d7d3db80bfd629e2ae1b6a335/.travis.yml.
           wget https://raw.githubusercontent.com/qiime2/environment-files/master/latest/staging/qiime2-latest-py36-linux-conda.yml
-          travis_retry conda env create -n qiime2-dev --file qiime2-latest-py36-linux-conda.yml
-          source activate qiime2-dev
-      
+          conda env create -n qiime2-dev --file qiime2-latest-py36-linux-conda.yml      
+
+      - name: Install Empress
+        run: |
+          conda run -n qiime2-dev pip uninstall emperor --yes
+          conda run -n qiime2-dev pip install -e .[all] --verbose
+          conda run -n qiime2-dev qiime dev refresh-cache
+
+      - name: Check development script
+        run: |
+          conda run -n qiime2-dev ./tests/python/make-dev-page.py
+          conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza
+          conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/unweighted_unifrac_pcoa_results.qza --filter-extra-samples
+          conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/biplot.qza --filter-extra-samples
