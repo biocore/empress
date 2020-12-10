@@ -48,8 +48,6 @@ jobs:
       - name: Create Docs 
         run: |
           conda run -n qiime2-dev make docs
-          git add -A
-          git commit -m "Update docs"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
