@@ -239,6 +239,13 @@ define([
 
         /**
          * @type {Number}
+         * Determines the fraction of _maxDisplacement to use as the gap
+         * between the first barplot layer and the closest-to-root point.
+         */
+        this._displacementFrac = 0.1;
+
+        /**
+         * @type {Number}
          * A multiple of this._maxDisplacement. This is used as the unit for
          * barplot lengths.
          * @private
@@ -1139,6 +1146,11 @@ define([
         this._addTriangleCoords(coords, corners, color);
     };
 
+    Empress.prototype.changeBorderGap = function (width) {
+        this._displacementFrac = width / 100;
+        console.log(this._maxDisplacement);
+    };
+
     /**
      * Thickens the colored branches of the tree.
      *
@@ -1496,7 +1508,7 @@ define([
         // displacement (this looks kinda bad because the node circle of the
         // tip(s) at this max displacement are partially covered by the
         // barplots, so we don't do that).
-        var maxD = 1.1 * this._maxDisplacement;
+        var maxD = (1 + this._displacementFrac) * this._maxDisplacement;
 
         // As we iterate through the layers, we'll store the "previous layer
         // max D" as a separate variable. This will help us easily work with

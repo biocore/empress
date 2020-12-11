@@ -55,6 +55,7 @@ define([
         this.borderContent = document.getElementById("barplot-border-content");
         this.borderCheckbox = document.getElementById("barplot-border-chk");
         this.borderOptions = document.getElementById("barplot-border-options");
+        this.borderGapInput = document.getElementById("barplot-custom-gap");
         this.borderColorPicker = document.getElementById(
             "barplot-border-color"
         );
@@ -129,6 +130,7 @@ define([
 
         // And define behavior for how to add in barplots
         this.updateButton.onclick = function () {
+            scope.empress.changeBorderGap(scope.borderGap);
             scope.empress.drawBarplots(scope.layers);
         };
 
@@ -142,6 +144,7 @@ define([
         // ... and to having a length of whatever the default barplot layer
         // length divided by 10 is :)
         this.borderLength = BarplotLayer.DEFAULT_LENGTH / 10;
+        this.borderGap = 10;
 
         // Now, initialize the border options UI accordingly
         this.initBorderOptions();
@@ -158,8 +161,17 @@ define([
             }
         };
 
+        // Define behavior for border gap input
+        this.borderGapInput.value = this.borderGap;
+        console.log("Default set!");
+        console.log(this.borderGapInput.value);
+        $(this.borderGapInput).change(function () {
+            scope.borderGap = this.value;
+        });
+
         // To get things started off with, let's add a layer
         this.addLayer();
+
     }
 
     /**
