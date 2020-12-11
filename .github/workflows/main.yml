@@ -16,7 +16,9 @@ jobs:
       matrix:
         node-version: [14.x]
     
-  
+    env:
+      BRANCH_NUMBER: github.event.number
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # first grab branch from github
@@ -51,8 +53,8 @@ jobs:
         run: |
           # Install the latest QIIME 2 version. These lines copied from
           # https://github.com/biocore/qurro/blob/d71f55b82f427c0d7d3db80bfd629e2ae1b6a335/.travis.yml.
-          wget https://raw.githubusercontent.com/qiime2/environment-files/master/latest/staging/qiime2-latest-py36-linux-conda.yml
-          conda env create -n qiime2-dev --file qiime2-latest-py36-linux-conda.yml      
+          wget https://data.qiime2.org/distro/core/qiime2-2020.6-py36-linux-conda.yml
+          conda env create -n qiime2-dev --file qiime2-2020.6-py36-linux-conda.yml      
 
       - name: Install Empress
         run: |
@@ -66,3 +68,9 @@ jobs:
           conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza
           conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/unweighted_unifrac_pcoa_results.qza --filter-extra-samples
           conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/biplot.qza --filter-extra-samples
+
+      # - name: Upload to McHelper
+      #   run: |
+      #     make docs
+      #     if [ ${github.event.number} == "false" ]; then export TRAVIS_PULL_REQUEST=${TRAVIS_BRANCH} ; fi
+
