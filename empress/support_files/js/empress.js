@@ -1148,7 +1148,6 @@ define([
 
     Empress.prototype.changeBorderGap = function (width) {
         this._displacementFrac = width / 100;
-        console.log(this._maxDisplacement);
     };
 
     /**

@@ -163,8 +163,6 @@ define([
 
         // Define behavior for border gap input
         this.borderGapInput.value = this.borderGap;
-        console.log("Default set!");
-        console.log(this.borderGapInput.value);
         $(this.borderGapInput).change(function () {
             scope.borderGap = this.value;
         });
