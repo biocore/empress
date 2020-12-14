@@ -44,3 +44,5 @@ after_success:
     -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv"
     -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv" 
     http://mchelper.ucsd.edu:8888/uploads/empress/${TRAVIS_PULL_REQUEST}/
+
+    
