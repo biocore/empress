@@ -241,6 +241,7 @@ define([
          * @type {Number}
          * Determines the fraction of _maxDisplacement to use as the gap
          * between the first barplot layer and the closest-to-root point.
+         * @private
          */
         this._displacementFrac = 0.1;
 
@@ -1146,10 +1147,6 @@ define([
         this._addTriangleCoords(coords, corners, color);
     };
 
-    Empress.prototype.changeBorderGap = function (width) {
-        this._displacementFrac = width / 100;
-    };
-
     /**
      * Thickens the colored branches of the tree.
      *
@@ -1501,12 +1498,11 @@ define([
         // Add on a gap between the closest-to-the-root point at which we can
         // start drawing barplots, and the first barplot layer. This could be
         // made into a barplot-panel-level configurable thing if desired.
-        // Currently, the 1.1 term here means that the barplots start at the
-        // max displacement plus 1/10th of the max displacement. If we used
-        // a 1.0 term instead, then barplots would start immediately at the max
-        // displacement (this looks kinda bad because the node circle of the
-        // tip(s) at this max displacement are partially covered by the
-        // barplots, so we don't do that).
+        // Defaults to 1.1 * max displacement. If we used a 1.0 term instead,
+        // then barplots would start immediately at the max displacement (this
+        // looks kinda bad because the node circle of the tip(s) at this max
+        // displacement are partially covered by the barplots, so we don't do
+        // that).
         var maxD = (1 + this._displacementFrac) * this._maxDisplacement;
 
         // As we iterate through the layers, we'll store the "previous layer

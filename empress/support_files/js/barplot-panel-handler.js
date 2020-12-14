@@ -130,7 +130,6 @@ define([
 
         // And define behavior for how to add in barplots
         this.updateButton.onclick = function () {
-            scope.empress.changeBorderGap(scope.borderGap);
             scope.empress.drawBarplots(scope.layers);
         };
 
@@ -144,7 +143,16 @@ define([
         // ... and to having a length of whatever the default barplot layer
         // length divided by 10 is :)
         this.borderLength = BarplotLayer.DEFAULT_LENGTH / 10;
+
+        // Initialize default spacing between tree and first barplot layer
+        // as well as change behavior.
         this.borderGap = 10;
+        $(this.borderGapInput).change(function () {
+            var gapInput = util.parseAndValidateNum(
+                scope.borderGapInput, 0
+            );
+            scope.empress._displacementFrac = gapInput / 100;
+        });
 
         // Now, initialize the border options UI accordingly
         this.initBorderOptions();
