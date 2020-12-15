@@ -2,20 +2,21 @@ name: Empress CI
 
 # Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
+  # Triggers the workflow on pull request events but only on the master branch
   pull_request:
     branches: [ master ]
 
 jobs:
   # name of job
   build:
-    # The type of runner that the job will run on (available options are window/max/linux)
+    # The type of runner that the job will run on (available options are window/macOS/linux)
     runs-on: ubuntu-latest
     # we can add more versions of node.js in the future
     strategy:
       matrix:
         node-version: [14.x]
     
+    # used in McHelper (similar to TRAVIS_PULL_REQUEST variable)
     env:
       BRANCH_NUMBER: ${{ github.event.number }}
 
