@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}q2-empress : {{ plot_name }}{% endblock %}
+
+{% block head %}
+
+<style media="screen">
+    body {
+        overflow: hidden; /* hide rounding error in viewport calc */
+    }
+
+    iframe {
+        height: 100vh;
+        width: 100%;
+        border: none;
+    }
+
+    #q2templatesheader {
+        /* border color between header and application matches side panel
+           background color */
+        border-bottom: 1px solid #777;
+    }
+
+    #q2templatesheader ~ .row > iframe {
+        height: calc(100vh - 85px);
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+    <div class="row text-center">
+        <iframe src="./empress.html"></iframe>
+    </div>
+
+{% endblock %}

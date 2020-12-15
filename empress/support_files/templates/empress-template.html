@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Empress</title>
+    <link rel='stylesheet' type="text/css" href='{{ base_url }}/css/empress.css'>
+    <link rel='stylesheet' type="text/css" href='{{ base_url }}/vendor/spectrum.min.css'>
+    <script src='{{ base_url }}/vendor/require-2.1.22.min.js'></script>
+    {{ emperor_base_dependencies }}
+    {{ emperor_style }}
+  </head>
+  <body>
+
+  <div>
+    <!-- The tree -->
+    <div class="{{ emperor_classes }}">
+      <div id="tree-container" class="container {{ emperor_classes }}">
+        <!-- loading screen -->
+        <div id="loading-screen">
+          <div id="loading-animation"></div>
+          <div id="loading-text">Loading...</div>
+        </div>
+
+        <canvas class="tree-surface" id="tree-surface">
+            Your browser does not support HTML5
+        </canvas>
+        <div id="tip-label-container"></div>
+        <div id="node-label-container"></div>
+        <div class="square"></div>
+
+        <!-- Side panel -->
+        <div id="side-panel" class="unselectable-text hidden">
+          {% include 'side-panel.html'%}
+        </div>
+
+        <!-- toast -->
+        <div id="toast" class="hidden"></div>
+
+        <!-- show control panel button -->
+        <button id="show-ctrl" title="Show control panel" class="hidden unselectable-text">&#9699;</button>
+
+      </div>
+    </div>
+
+    {{ emperor_div }}
+  </div>
+
+    <!-- node selection menu box -->
+    <div class="hidden" id="menu-box">
+      <h1 id="menu-box-node-id"></h1>
+      <p class="hidden" id="menu-box-node-name-warning"></p>
+      <div id="menu-box-node-length-container" class="hidden">
+        <strong>Node length:</strong>
+        <span id="menu-box-node-length"></span>
+      </div>
+      <!-- Feature metadata section -->
+      <div id="menu-fm-section">
+        <hr />
+        <h3 id="menu-fm-header">Feature Metadata</h3>
+        <p id="menu-fm-no-fm-note"></p>
+        <table class="menu-table" id="menu-fm-table"></table>
+      </div>
+      <!-- Sample metadata section -->
+      <div id="menu-sm-section">
+        <hr />
+        <h3 id="menu-sm-header">Sample Presence Information</h3>
+        <p id="menu-box-node-not-in-table-warning"></p>
+        <p id="menu-box-sm-notes"></p>
+        <table class="menu-table" id="menu-sm-table"></table>
+        <div id="menu-sm-add-section">
+          <strong>Select a metadata column to summarize</strong>
+          <label class="menu-select-container">
+            <select id="menu-select"></select>
+          </label>
+          <button id="menu-add-btn">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tree coloring legend -->
+    <div id="legend-panel" class="unselectable-text">
+      <div id="legend-main" class="legend hidden"></div>
+    </div>
+  </body>
+
+  <script>
+    var empressRequire = requirejs.config({
+        'baseUrl' : '{{ base_url }}',
+
+        // paths are relative to baseUrl (.js not needed)
+        'paths' : {
+            /* vendor paths */
+            'jquery' : './vendor/jquery-2.2.4.min',
+            'glMatrix' : './vendor/gl-matrix.min',
+            'chroma' : './vendor/chroma.min',
+            'underscore' : './vendor/underscore-min',
+            'spectrum' : './vendor/spectrum.min',
+            'filesaver': './vendor/FileSaver.min',
+
+            'ByteArray' : './js/byte-array',
+            'BPTree' : './js/bp-tree',
+            'Camera' : './js/camera',
+            'Drawer' : './js/drawer',
+            'SidePanel' : './js/side-panel-handler',
+            'AnimationPanel' : './js/animation-panel-handler',
+            'Animator' : './js/animator',
+            'BarplotLayer' : './js/barplot-layer',
+            'BarplotPanel' : './js/barplot-panel-handler',
+            'BIOMTable' : './js/biom-table',
+            'Empress' : './js/empress',
+            'Legend' : './js/legend',
+            'Colorer' : './js/colorer',
+            'VectorOps' : './js/vector-ops',
+            'CanvasEvents' : './js/canvas-events',
+            'SelectedNodeMenu' : './js/select-node-menu',
+            'util' : './js/util',
+            'LayoutsUtil': './js/layouts-util',
+            'ExportUtil': './js/export-util',
+        }
+    });
+
+    empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'spectrum',
+                    'filesaver', 'ByteArray', 'BPTree', 'Camera', 'Drawer',
+                    'SidePanel', 'AnimationPanel', 'Animator', 'BarplotLayer',
+                    'BarplotPanel', 'BIOMTable', 'Empress', 'Legend',
+                    'Colorer', 'VectorOps', 'CanvasEvents', 'SelectedNodeMenu',
+                    'util', 'LayoutsUtil', 'ExportUtil'],
+        function($, gl, chroma, underscore, spectrum, filesaver, ByteArray,
+                 BPTree, Camera, Drawer, SidePanel, AnimationPanel, Animator,
+                 BarplotLayer, BarplotPanel, BIOMTable, Empress, Legend,
+                 Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util,
+                 LayoutsUtil, ExportUtil) {
+        // initialze the tree and model
+        var tree = new BPTree(
+          {{ tree  }},
+          {{ names  | tojson }},
+          {{ lengths | tojson }}
+        );
+
+        var fmCols = {{ feature_metadata_columns | tojson }};
+
+        var canvas = document.getElementById('tree-surface');
+
+        // NOTE: the contents of this line are validated in the python
+        // integration tests. If this line is changed somehow, the integration
+        // tests will need to be updated accordingly.
+        var isCommunityPlot = {{ is_community_plot | tojson }};
+
+        var biom = null;
+        if (isCommunityPlot) {
+            biom = new BIOMTable(
+              {{ s_ids | tojson }},
+              {{ f_ids | tojson }},
+              {{ s_ids_to_indices | tojson }},
+              {{ f_ids_to_indices | tojson }},
+              {{ compressed_table | tojson }},
+              {{ sample_metadata_columns | tojson }},
+              {{ compressed_sample_metadata | tojson }},
+            );
+        }
+        var empress = new Empress(
+            tree,
+            biom,
+            fmCols,
+            {{ compressed_tip_metadata | tojson }},
+            {{ compressed_int_metadata | tojson }},
+            canvas
+        );
+        empress.initialize();
+
+        // The side menu
+        var sPanel = new SidePanel(document.getElementById('side-panel'),
+                                   empress);
+        sPanel.addSettingsTab();
+        sPanel.addLayoutTab();
+        sPanel.addExportTab();
+
+        // Only show the sample metadata coloring / animation panels if a
+        // feature table and sample metadata file were provided
+        if (isCommunityPlot) {
+            sPanel.addSampleTab();
+
+            // Create animator state machine
+            var animator = new Animator(empress);
+
+            // Add animator GUI components
+            var animationPanel = new AnimationPanel(animator);
+            animationPanel.addAnimationTab();
+            document.getElementById("animationOpenButton").classList
+                .remove("hidden");
+        } else {
+            $(".needs-community-data").addClass("hidden");
+            if (fmCols.length === 0) {
+                // Neither feature nor sample metadata is available, so hide
+                // things that require at least one type of metadata (e.g.
+                // the barplot panel)
+                $(".needs-metadata").addClass("hidden");
+            }
+        }
+
+        // Similarly, only show the feature metadata coloring panel if feature
+        // metadata was provided
+        if (fmCols.length > 0) {
+            sPanel.addFeatureTab();
+        } else {
+            $(".needs-feature-metadata").addClass("hidden");
+        }
+
+        // make all tabs collapsable
+        document.querySelectorAll(".collapsible").forEach(function(btn) {
+            btn.addEventListener("click", function() {
+                // Only compute tree stats the first time the user opens up
+                // the tree statistics tab
+                if (
+                    this.id === "stats-btn" &&
+                    this.classList.contains("unpopulated")
+                ) {
+                    sPanel.populateTreeStats();
+                    this.classList.remove("unpopulated");
+                }
+
+                this.classList.toggle("active");
+                this.nextElementSibling.classList.toggle("hidden");
+                document.getElementById("side-panel").classList.toggle(
+                    "panel-active",
+                    document.querySelector(".side-content:not(.hidden)")
+                );
+          });
+        });
+
+        // make side panel visible (this is done after hiding controls so that
+        // the user sees it all appear at once, rather than seeing certain
+        // input-data-dependent controls [e.g. s/f metadata, barplots,
+        // animation] pop in above)
+        document.getElementById("side-panel").classList.remove("hidden");
+
+        document.getElementById("loading-screen").classList.add("hidden");
+
+        {{ emperor_require_logic }}
+    });
+  </script>
+</html>

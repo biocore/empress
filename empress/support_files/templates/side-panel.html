@@ -1,0 +1,473 @@
+<!-- The Header bar -->
+<div id="autocomplete-container">
+  <p class="side-header">
+    <!-- Attempt to stop the browser's autocomplete suggestions, since Empress
+         shows its own autocomplete menu (see #445 on GitHub)
+    -->
+    <input type="text" id="quick-search" placeholder="Search by node name..."
+           style="flex-grow: 1;" autocomplete="off" class="empress-input">
+    <button id="side-header-search-btn" style="flex-grow: 1;">Search</button>
+    <button id="hide-ctrl" title="Hide control panel"
+            style="font-size: 10pt; padding: 0 0 3px 3px;">&#9701;</button>
+  </p>
+</div>
+
+<!-- Sample Coloring Options -->
+<button id="smOpenButton" class="side-header collapsible needs-community-data">
+    Sample Metadata Coloring</button>
+<div class="side-content control hidden">
+  <p class="side-panel-notes">
+    Color tips in the tree that are unique to certain groups of samples.
+    Internal nodes where all descendants are unique to a group are themselves
+    considered unique to that group.
+  </p>
+  <p>
+    <label for="sample-chk">Color by...</label>
+    <input id="sample-chk" type="checkbox" class="empress-input">
+    <label class="select-container">
+      <select id="sample-options"  disabled="true"></select>
+    </label>
+  </p>
+  <p class="hidden">
+    <div id="sample-add" class="hidden">
+      <p>
+        <label for="sample-color">Color Map</label>
+        <label class="select-container">
+          <select id="sample-color"></select>
+        </label>
+      </p>
+      <p>
+        <label for="sample-reverse-color-chk">Reverse Color Map</label>
+        <input id="sample-reverse-color-chk" type="checkbox" value="false"
+               class="empress-input">
+      </p>
+      <p>
+        <label for="sample-collapse-chk">Collapse Clades</label>
+        <input id="sample-collapse-chk" type="checkbox" value="false"
+               class="empress-input">
+      </p>
+      <p class="side-panel-notes indented">
+        If checked, collapse all clades whose members share the same sample
+        metadata value.
+      </p>
+      <p>
+        <label for="sample-line-width">Extra Line Width</label>
+        <input id="sample-line-width" type="number" value="0" min="0"
+               step="any" class="empress-input">
+      </p>
+      <p>
+        <button id="sample-update" class="hidden">Update</button>
+      </p>
+    </div>
+  </p>
+</div>
+
+<!-- Feature Metadata Coloring Options -->
+<button id="fmOpenButton" class="side-header collapsible needs-feature-metadata">
+    Feature Metadata Coloring</button>
+<div class="side-content control hidden">
+  <p class="side-panel-notes">
+    Color nodes in the tree based on feature metadata: for example,
+    taxonomic annotations.
+  </p>
+  <p>
+    <label for="feature-chk">Color by...</label>
+    <input id="feature-chk" type="checkbox" class="empress-input">
+    <label class="select-container">
+      <select id="feature-options"  disabled="true"></select>
+    </label>
+  </p>
+  <p class="hidden">
+    <div id="feature-add" class="hidden">
+      <p>
+        <label for="feature-color">Color Map</label>
+        <label class="select-container">
+          <select id="feature-color"></select>
+        </label>
+      </p>
+    <p>
+      <label for="feature-reverse-color-chk">Reverse Color Map</label>
+      <input id="feature-reverse-color-chk" type="checkbox" value="false"
+             class="empress-input">
+    </p>
+      <p>
+        <label for="feature-collapse-chk">Collapse Clades</label>
+        <input id="feature-collapse-chk" type="checkbox" value="false"
+               class="empress-input">
+      </p>
+      <p class="side-panel-notes indented">
+        If checked, collapse all clades whose members share the same feature
+        metadata value.
+      </p>
+      <p>
+        <label for="feature-line-width">Extra Line Width</label>
+        <input id="feature-line-width" type="number" value="0" min="0"
+               step="any" class="empress-input">
+      </p>
+      <p>
+        <label for="fm-method-chk">Only use tip-level metadata?</label>
+        <input id="fm-method-chk" type="checkbox" checked="true"
+               class="empress-input">
+        <!-- We'll fill this in when the feature metadata tab is opened,
+             and we'll update it when fm-method-chk is updated.
+        -->
+        <p class="side-panel-notes indented" id="fm-method-desc">
+        </p>
+      </p>
+      <p>
+        <button id="feature-update" class="hidden">Update</button>
+      </p>
+    </div>
+  </p>
+</div>
+
+<!-- Layout methods and options; shamelessly copied from above. -->
+<button class="side-header collapsible">Layout</button>
+<div class="side-content control hidden">
+  <p class="side-panel-notes">
+    Change how the tree is drawn.
+  </p>
+  <!-- Layout methods (e.g. Rectangular, Circular, Unrooted) will be added to
+       this <div> when SidePanel.addLayoutTab() is called.
+  -->
+  <div id="layout-method-container">
+  </div>
+  <hr />
+  <p class="side-panel-inner-header">
+    Branch lengths
+  </p>
+  <div id="branch-length-warning">
+    <p class="side-panel-notes">
+      Warning: the "Ignore branch lengths" and "Make ultrametric" options display
+      modified branch lengths that can be useful for aesthetics. The resulting
+      trees should not be interpreted with respect to their branch lengths.
+    </p>
+  </div>
+  <div id="branch-length-method-container">
+    <p>
+      <label for="normal-lengths-chk">Normal</label>
+      <input type="radio" id="normal-lengths-chk" name="branches-radio" value="normal"
+             class="empress-input" checked="true">
+    </p>
+    <p class="side-panel-notes indented">
+      The branch lengths shown correspond to the branch lengths in the original tree.
+    </p>
+    <p>
+      <label for="ignore-lengths-chk">Ignore branch lengths</label>
+      <input type="radio" id="ignore-lengths-chk" name="branches-radio" value="ignore"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      If checked, all branches are drawn with the same length. Note that the
+      root node is never drawn with any length, regardless of if this
+      is checked or not.
+    </p>
+    <p>
+      <label for="make-ultrametric-chk">Make ultrametric</label>
+      <input type="radio" id="make-ultrametric-chk" name="branches-radio" value="ultrametric"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      If checked, branch lengths will be adjusted so that the root-to-tip distance
+      is the same for all tips.
+    </p>
+  </div>
+  <div id="leaf-sorting-container">
+    <hr />
+    <p class="side-panel-inner-header">
+      Clade sorting
+    </p>
+    <p>
+      <label for="leaf-sorting-select">Sort clades based on tip count?</label>
+      <label class="select-container">
+        <select id="leaf-sorting-select">
+          <option value="none">No sorting</option>
+          <option value="ascending">Sort (ascending)</option>
+          <option value="descending" selected>Sort (descending)</option>
+        </select>
+      </label>
+    </p>
+    <p class="side-panel-notes indented" id="leaf-sorting-desc">
+    </p>
+  </div>
+</div>
+
+<!-- Barplot options -->
+<button id="barplotOpenButton" class="side-header collapsible needs-metadata">
+    Barplots</button>
+<div class="side-content control hidden" id="barplot-div">
+  <p class="side-panel-notes">
+    Annotate tips by metadata.
+  </p>
+  <!-- Depending on the current layout, one of the below divs
+      (#barplot-available-content or #barplot-unavailable-content) will be
+      visible (i.e. doesn't have the class "hidden"). We default to
+      barplot-unavailable-content being visible, since the default layout is
+      unrooted; however, the BarplotPanel object will figure things out on
+      initialization anyway.
+  -->
+  <div id="barplot-available-content" class="hidden">
+    <p>
+      <label for="barplot-chk">Draw barplots?</label>
+      <input id="barplot-chk" type="checkbox" class="empress-input">
+    </p>
+    <div id="barplot-layer-container" class="hidden">
+      <hr />
+    </div>
+    <div id="barplot-add-options" class="hidden">
+      <p>
+        <label for="barplot-add-btn">Add another layer</label>
+        <button id="barplot-add-btn">+</button>
+      </p>
+    </div>
+    <div id="barplot-border-content" class="hidden">
+      <p>
+        <label for="barplot-border-chk">Add a border around barplot layers?</label>
+        <input id="barplot-border-chk" type="checkbox" class="empress-input">
+      </p>
+      <div id="barplot-border-options" class="hidden">
+        <p>
+          <label for="barplot-border-color">Border color</label>
+          <!-- Will get turned into a Spectrum color picker by
+               BarplotPanelHandler
+          -->
+          <input id="barplot-border-color" type="text">
+        </p>
+        <p>
+          <label for="barplot-border-length">Length</label>
+          <!-- Minimum, default, etc will be applied by BarplotPanelHandler -->
+          <input id="barplot-border-length" type="number" class="empress-input">
+        </p>
+      </div>
+      <hr />
+    </div>
+    <p id="barplot-update-options" class="hidden">
+      <button id="barplot-update">Update</button>
+    </p>
+  </div>
+  <div id="barplot-unavailable-content">
+    <p class="side-panel-notes" style="font-weight: bold;">
+      Barplots are only supported in the rectangular and circular layouts.
+      Please change the layout in order to use barplots.
+    </p>
+  </div>
+</div>
+
+<!-- animate Options -->
+<button id="animationOpenButton" class="side-header collapsible hidden">
+    Animation</button>
+<div class="side-content control hidden">
+  <p class="side-panel-notes">
+    Color nodes in the tree that are unique to certain groups of samples
+    (specified by the trajectory) at different timepoints throughout a
+    gradient.
+  </p>
+  <p>
+    <label for="animate-color-select">Color Map</label>
+    <label class="select-container">
+      <select id="animate-color-select"></select>
+    </label>
+  </p>
+  <p>
+    <label for="animate-color-reverse-chk">Reverse Color Map</label>
+    <input id="animate-color-reverse-chk" type="checkbox" value="false"
+           class="empress-input">
+  </p>
+  <p>
+    <label for="animate-gradient">Gradient</label>
+    <label class="select-container">
+      <select id="animate-gradient"></select>
+    </label>
+  </p>
+  <p>
+    <label for="animate-trajectory">Trajectory</label>
+    <label class="select-container">
+      <select id="animate-trajectory"></select>
+    </label>
+  </p>
+  <p>
+    <label for="animate-collapse-chk">Collapse Clades</label>
+    <input id="animate-collapse-chk" type="checkbox" value="false"
+           class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, collapse all clades whose members share the same sample
+    metadata value.
+  </p>
+  <p>
+    <label for="animate-line-width">Extra Line Width</label>
+    <input id="animate-line-width" type="number" value="0" min="0"
+           step="any" class="empress-input">
+  </p>
+  <div>
+    <p>
+      <button id="animate-start-btn">Start</button>
+    </p>
+    <p>
+      <button id="animate-stop-btn">Stop Animation</button>
+    </p>
+    <p>
+      <button id="animate-pause-btn">Pause</button>
+    </p>
+    <div>
+      <p>
+        <button id="animate-resume-btn">Resume</button>
+        <button id="animate-prev-btn">Previous Frame</button>
+        <button id="animate-next-btn">Next Frame</button>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- options to export plot as images -->
+<button class="side-header collapsible">Export</button>
+<div class="side-content control hidden" id="export-div">
+  <p class="side-panel-notes">
+    Export images of the tree and its legends.
+    Note that PNG exports will change as the tree is zoomed and panned.
+  </p>
+  <!-- Applying the margin: 0 auto; style to the exterior <p> doesn't work;
+       the centering requires it be applied to each of the buttons
+  -->
+  <p>
+    <button style="margin: 0 auto;" id="export-tree-svg-btn">Export tree as SVG</button>
+    <button style="margin: 0 auto;" id="export-tree-png-btn">Export tree as PNG</button>
+  </p>
+  <div class="needs-metadata">
+    <p>
+      <button style="margin: 0 auto;" id="export-legend-svg-btn">Export legends as SVG</button>
+    </p>
+  </div>
+</div>
+
+<!-- Tree statistics -->
+<button class="side-header collapsible unpopulated" id="stats-btn">Tree Statistics</button>
+<div class="side-content control hidden">
+  <p class="side-panel-notes">
+    Information about the tree's topology.
+  </p>
+  <p>
+    <table style="margin: 0 auto;">
+      <tbody>
+        <!-- Lord, forgive me not for what I've done but what I'm about to do -->
+        <tr>
+          <td class="header-cell" style="text-align: center;" colspan="2">Node counts</td>
+          <!-- Add padding between the two horizontally separated "halves" of the
+               table. Based on alternate option listed at
+               https://stackoverflow.com/a/11801090/10730311.
+          -->
+          <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td class="header-cell" style="text-align: center;" colspan="2">Node lengths</td>
+        </tr>
+        <tr>
+          <td class="header-cell">Tips</td>
+          <td id="stats-tip-count"></td>
+          <td></td>
+          <td class="header-cell">Minimum</td>
+          <td id="stats-min-length"></td>
+        </tr>
+        <tr>
+          <td class="header-cell">Internal nodes</td>
+          <td id="stats-int-count"></td>
+          <td></td>
+          <td class="header-cell">Maximum</td>
+          <td id="stats-max-length"></td>
+        </tr>
+        <tr>
+          <td class="header-cell">Total</td>
+          <td id="stats-total-count"></td>
+          <td></td>
+          <td class="header-cell">Average</td>
+          <td id="stats-avg-length"></td>
+        </tr>
+      </tbody>
+    </table>
+  </p>
+  <p class="side-panel-notes">
+    Please note that the root node's length, even
+    if specified, is not included in the node length statistics. Node length
+    statistics are rounded to four decimal places.
+  </p>
+  <p class="needs-community-data side-panel-notes">
+    Also note that these statistics only pertain to the tree shown here; if the
+    tree was sheared to a table, for example, the node counts shown here will
+    be lower than for the full tree.
+  </p>
+</div>
+
+<!-- Global settings -->
+<button class="side-header collapsible">Settings</button>
+<div class="side-content control hidden">
+  <p class="side-panel-inner-header">
+    Node circles
+  </p>
+  <p>
+    <label for="display-nodes-chk">Show node circles?</label>
+    <input id="display-nodes-chk" type="checkbox" class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, this draws circles at all nodes' positions.
+  </p>
+  <hr />
+  <p class="side-panel-inner-header">
+    Camera
+  </p>
+  <p>
+    <button id="center-tree-btn">Reset Camera</button>
+  </p>
+  <p class="side-panel-notes indented">
+    Repositions the camera at the center of the tree.
+  </p>
+  <p>
+    <label for="focus-on-node-chk">Focus on selected nodes?</label>
+    <input id="focus-on-node-chk" type="checkbox" checked="true"
+           class="empress-input">
+  </p>
+  <p class="side-panel-notes indented">
+    If checked, the camera will automatically focus on nodes that are selected
+    via searching by name or by clicking on an arrow in a biplot.
+  </p>
+  <div class="needs-metadata">
+    <hr />
+    <p class="side-panel-inner-header">
+      Clade collapsing method
+    </p>
+    <p>
+      <label for="normal">Normal</label>
+      <input type="radio" id="normal" name="collapse-radio" value="normal"
+             checked="true" class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      The shape of the collapsed clade will show both the depth and width of the
+      clade. This option applies to all layouts.
+    </p>
+    <p>
+      <label for="symmetric">Symmetric</label>
+      <input type="radio" id="symmetric" name="collapse-radio" value="symmetric"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      The shape of the collapsed clade will only show the depth of the clade but
+      the shape will be symmetric w.r.t. to the root of the clade. This option
+      only applies to the Rectangular and Circular layouts.
+    </p>
+  </div>
+  <div class="needs-community-data">
+    <hr />
+    <p class="side-panel-inner-header">
+      Tree coloring
+    </p>
+    <p>
+      <label for="absent-tip-chk">Ignore absent tips?</label>
+      <input id="absent-tip-chk" type="checkbox" checked="true"
+             class="empress-input">
+    </p>
+    <p class="side-panel-notes indented">
+      If checked, tips not represented in the current sample selection are
+      ignored when propagating the color of a clade. Applies to sample metadata
+      coloring, animations, and sample selections in Emperor. We recommend
+      changing this setting before starting an animation; otherwise, this
+      setting may only be partially applied throughout the animation.
+    </p>
+  </div>
+</div>
