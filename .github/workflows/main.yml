@@ -51,8 +51,6 @@ jobs:
 
       - name: Create Qiime enviroment
         run: |
-          # Install the latest QIIME 2 version. These lines copied from
-          # https://github.com/biocore/qurro/blob/d71f55b82f427c0d7d3db80bfd629e2ae1b6a335/.travis.yml.
           wget https://data.qiime2.org/distro/core/qiime2-2020.6-py36-linux-conda.yml
           conda env create -n qiime2-dev --file qiime2-2020.6-py36-linux-conda.yml      
 
@@ -61,6 +59,9 @@ jobs:
           conda run -n qiime2-dev pip uninstall emperor --yes
           conda run -n qiime2-dev pip install -e .[all] --verbose
           conda run -n qiime2-dev qiime dev refresh-cache
+
+      - name: Run tests
+        run: conda run -n qiime2-dev make test
 
       - name: Check development script
         run: |
