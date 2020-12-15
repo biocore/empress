@@ -11,6 +11,9 @@ jobs:
   build:
     # The type of runner that the job will run on (available options are window/max/linux)
     runs-on: ubuntu-latest
+
+    env:
+      DOCS_CHAGNED: -1 # false
   
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -48,9 +51,29 @@ jobs:
       - name: Create Docs 
         run: |
           conda run -n qiime2-dev make docs
+          echo 'Add value2' >> docs/testfile.txt
+          git status
+          git add docs
+          git diff
+          # if ! git diff-index --cached --quiet HEAD --ignore-submodules --
+          # then
+          git commit -m "update docs"
+          echo "DOCS_CHAGNED=0" >> $GITHUB_ENV
+          # fi
+
 
       - name: Push changes
+        if: ${{ env.DOCS_CHAGNED == 0 }}
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+
+      # - name: test
+      #   run: |
+      #     echo ${{ env.DOCS_CHAGNED }}
+      #     echo "DOCS_CHAGNED=10" >> $GITHUB_ENV
+      
+      - name: change
+        run: echo ${{ env.DOCS_CHAGNED }}
+

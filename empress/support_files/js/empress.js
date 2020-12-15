@@ -57,6 +57,7 @@ define([
         intMetadata,
         canvas
     ) {
+        console.log("this is a test!")
         /**
          * @type {Camera}
          * The camera used to look at the tree
