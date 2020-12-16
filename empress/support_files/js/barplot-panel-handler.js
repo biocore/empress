@@ -148,9 +148,7 @@ define([
         // as well as change behavior.
         this.borderGap = 5;
         $(this.borderGapInput).change(function () {
-            var gapInput = util.parseAndValidateNum(
-                scope.borderGapInput, 0
-            );
+            var gapInput = util.parseAndValidateNum(scope.borderGapInput, 0);
             scope.empress._displacementFrac = gapInput / 100;
         });
 
@@ -177,7 +175,6 @@ define([
 
         // To get things started off with, let's add a layer
         this.addLayer();
-
     }
 
     /**
