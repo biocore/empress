@@ -9,8 +9,7 @@ addition, make sure to periodically update to the latest development version of
 Emperor using `pip install git+https://github.com/biocore/emperor.git`.
 
 You will also need to install a few Node.js packages in order to test Empress'
-JavaScript code. The `.travis.yml` file (under the `install` section) shows
-how to install these packages: essentially, you'll just need to run
+JavaScript code.
 
 ```bash
 npm install -g qunit-puppeteer jshint prettier@2.0.5
@@ -67,7 +66,7 @@ make stylecheck
 
 to see if your code passes these checks.
 
-**`make stylecheck` will be run on Travis-CI**, so it's useful to run this
+**`make stylecheck` will be run on GitHub Actions**, so it's useful to run this
 periodically while developing to make sure that your code looks good (and so
 you can address any issues as they come up, rather than all at once when trying
 to submit a pull request).

@@ -1,0 +1,77 @@
+name: Empress CI
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on pull request events but only on the master branch
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  # name of job
+  build:
+    # The type of runner that the job will run on (available options are window/macOS/linux)
+    runs-on: ubuntu-latest
+    # we can add more versions of node.js in the future
+    strategy:
+      matrix:
+        node-version: [14.x]
+    
+    # used in McHelper (similar to TRAVIS_PULL_REQUEST variable)
+    env:
+      BRANCH_NUMBER: ${{ github.event.number }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # first grab branch from github
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+  
+      - name: Set up Node.js enviroment
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: Install Node.js modules
+        run: npm install -g qunit-puppeteer jshint prettier@2.0.5
+
+      - name: Install flake8
+        run: conda run -n base pip install flake8
+
+      - name: Run linters
+        run: |
+          conda run -n base make stylecheck
+
+      - name: Set up conda
+        uses: s-weigand/setup-conda@v1
+        with:
+          update-conda: true
+          python-version: 3.6
+          conda-channels: anaconda, conda-forge
+
+      - name: Create Qiime enviroment
+        run: |
+          wget https://data.qiime2.org/distro/core/qiime2-2020.6-py36-linux-conda.yml
+          conda env create -n qiime2-dev --file qiime2-2020.6-py36-linux-conda.yml      
+
+      - name: Install Empress
+        run: |
+          conda run -n qiime2-dev pip uninstall emperor --yes
+          conda run -n qiime2-dev pip install -e .[all] --verbose
+          conda run -n qiime2-dev qiime dev refresh-cache
+
+      - name: Run tests
+        run: conda run -n qiime2-dev make test
+
+      - name: Check development script
+        run: |
+          conda run -n qiime2-dev ./tests/python/make-dev-page.py
+          conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza
+          conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/unweighted_unifrac_pcoa_results.qza --filter-extra-samples
+          conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/biplot.qza --filter-extra-samples
+
+      # - name: Upload to McHelper
+      #   run: |
+      #     conda run -n qiime2-dev make docs
+      #     conda run -n qiime2-dev curl -POST -F "files[]=@${PWD}/docs/moving-pictures/plain.qzv" -F "files[]=@${PWD}/docs/moving-pictures/just-fm.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empress-tree.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv"  http://mchelper.ucsd.edu:8888/uploads/empress/${{env.BRANCH_NUMBER}}/

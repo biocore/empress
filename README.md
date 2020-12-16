@@ -1,5 +1,5 @@
 # Empress
-[![Build Status](https://travis-ci.org/biocore/empress.svg?branch=master)](https://travis-ci.org/biocore/empress)
+[![](https://github.com/biocore/empress/workflows/Empress%20CI/badge.svg)](https://github.com/biocore/empress/actions)
 
 <!---Empress Logo--->
 
