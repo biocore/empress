@@ -34,11 +34,16 @@ make test
 If you just want to run the Python or JavaScript tests, you can run
 `make pytest` or `make jstest` respectively.
 
-### Important note about JavaScript tests
+### Notes about JavaScript tests
 If you add HTML elements to EMPress' HTML code that the JavaScript code relies
 on, you will also need to add these elements to the `tests/index.html` file.
 Ideally this would not be necessary, but for now it is. (Failing to do this can
 cause obscure error messages from the JS tests.)
+
+Also, loading the test `index.html` fails on Firefox for some of the `Legend`
+tests: see https://github.com/biocore/empress/issues/435. To circumvent this,
+if you need to load the tests in the browser (rather than using puppeteer),
+we recommend using a different browser for the time being.
 
 ## Front-end development
 
