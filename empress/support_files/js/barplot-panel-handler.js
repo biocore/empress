@@ -146,7 +146,7 @@ define([
 
         // Initialize default spacing between tree and first barplot layer
         // as well as change behavior.
-        this.borderGap = 10;
+        this.borderGap = 5;
         $(this.borderGapInput).change(function () {
             var gapInput = util.parseAndValidateNum(
                 scope.borderGapInput, 0
