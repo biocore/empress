@@ -146,7 +146,7 @@ define([
 
         // Initialize default spacing between tree and first barplot layer
         // as well as change behavior.
-        this.borderGap = 5;
+        this.borderGapInput.value = 5;
         $(this.borderGapInput).change(function () {
             var gapInput = util.parseAndValidateNum(scope.borderGapInput, 0);
             scope.empress._displacementFrac = gapInput / 100;
@@ -166,12 +166,6 @@ define([
                 scope.useBorders = false;
             }
         };
-
-        // Define behavior for border gap input
-        this.borderGapInput.value = this.borderGap;
-        $(this.borderGapInput).change(function () {
-            scope.borderGap = this.value;
-        });
 
         // To get things started off with, let's add a layer
         this.addLayer();
