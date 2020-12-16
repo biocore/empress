@@ -17,8 +17,8 @@ npm install -g qunit-puppeteer jshint prettier@2.0.5
 
 If you don't have `npm` installed, you will need to install that first.
 
-**Note**: if you can't install puppeteer, the test suite can be run using a
-web browser by opening the page in `tests/index.html`.
+**Note**: if you can't install puppeteer, the (JavaScript) test suite can be
+run using a web browser by opening the page in `tests/index.html`.
 
 ## Running tests
 
@@ -33,6 +33,12 @@ make test
 
 If you just want to run the Python or JavaScript tests, you can run
 `make pytest` or `make jstest` respectively.
+
+### Important note about JavaScript tests
+If you add HTML elements to EMPress' HTML code that the JavaScript code relies
+on, you will also need to add these elements to the `tests/index.html` file.
+Ideally this would not be necessary, but for now it is. (Failing to do this can
+cause obscure error messages from the JS tests.)
 
 ## Front-end development
 
