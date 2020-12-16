@@ -300,43 +300,44 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
 
             // search ids array for all possible words
             var suggestId,
-                suggestionsAdded = 0,
-                i = _.findIndex(ids, compareQuery, true);
+                word,
+                i = 0,
+                suggestedWords = [];
 
-            // no match was found
-            if (i === -1) {
-                return;
-            }
-
-            for (i; i < ids.length && suggestionsAdded < 10; i++) {
-                var word = ids[i];
+            for (i; i < ids.length && suggestedWords.length < 10; i++) {
+                word = ids[i];
 
                 // if node id begins with user query, add it to suggestionMenu
-                if (compareQuery(word)) {
-                    // create a container to hold the text/click event for the
-                    // suggested id
-                    suggestId = document.createElement("DIV");
-                    suggestId.id = word;
-
-                    suggestId.innerHTML =
-                        "<strong>" + word.substr(0, query.length) + "</strong>";
-                    suggestId.innerHTML += word.substr(query.length);
-
-                    // add click event so user can select id from menu
-                    suggestId.addEventListener("mousedown", createClickEvent);
-
-                    // add suggested id to the suggstions menu
-                    suggestionMenu.appendChild(suggestId);
-                    suggestionsAdded += 1;
-                } else {
-                    break;
+                if (compareQuery(word) && !_.contains(suggestedWords, word)) {
+                    suggestedWords.push(word);
                 }
+            }
+
+            suggestedWords.sort(function (a, b) {
+                return a.localeCompare(b, "en", { sensitivity: "base" });
+            });
+            for (var suggestion in suggestedWords) {
+                // create a container to hold the text/click event for the
+                // suggested id
+                word = suggestedWords[suggestion];
+                suggestId = document.createElement("DIV");
+                suggestId.id = word;
+
+                suggestId.innerHTML =
+                    "<strong>" + word.substr(0, query.length) + "</strong>";
+                suggestId.innerHTML += word.substr(query.length);
+
+                // add click event so user can select id from menu
+                suggestId.addEventListener("mousedown", createClickEvent);
+
+                // add suggested id to the suggstions menu
+                suggestionMenu.appendChild(suggestId);
             }
 
             // not all node ids were listed in the autofill box
             // create an ellipse autofill (...) to let users know there are
             // more possible options
-            if (i < ids.length && compareQuery(ids[i])) {
+            if (i < ids.length) {
                 suggestId = document.createElement("DIV");
 
                 suggestId.innerHTML = "<strong>...</strong>";
