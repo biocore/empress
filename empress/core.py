@@ -278,15 +278,19 @@ class Empress():
         main_template = self._get_template()
 
         # _process_data does a lot of munging to the coordinates data and
-        # _to_dict puts the data into a dictionary-like object for consumption
-        data = self._to_dict()
+        # to_dict puts the data into a dictionary-like object for consumption
+        data = self.to_dict()
 
         plot = main_template.render(data)
 
         return plot
 
-    def _to_dict(self):
+    def to_dict(self):
         """Convert processed data into a dictionary
+
+        Warning: the object returned by to_dict will contain references to
+        internal variables. Exercise caution if modifying the value of objects
+        returned by to_dict.
 
         Returns
         -------
