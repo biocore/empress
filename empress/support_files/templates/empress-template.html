@@ -95,6 +95,7 @@
             'underscore' : './vendor/underscore-min',
             'spectrum' : './vendor/spectrum.min',
             'filesaver': './vendor/FileSaver.min',
+            'papa' : './vendor/papaparse.min',
 
             'ByteArray' : './js/byte-array',
             'BPTree' : './js/bp-tree',
@@ -115,6 +116,7 @@
             'util' : './js/util',
             'LayoutsUtil': './js/layouts-util',
             'ExportUtil': './js/export-util',
+            'Parser' : './js/parser',
         }
     });
 
@@ -123,12 +125,20 @@
                     'SidePanel', 'AnimationPanel', 'Animator', 'BarplotLayer',
                     'BarplotPanel', 'BIOMTable', 'Empress', 'Legend',
                     'Colorer', 'VectorOps', 'CanvasEvents', 'SelectedNodeMenu',
-                    'util', 'LayoutsUtil', 'ExportUtil'],
+                    'util', 'LayoutsUtil', 'ExportUtil', 'Parser'],
         function($, gl, chroma, underscore, spectrum, filesaver, ByteArray,
                  BPTree, Camera, Drawer, SidePanel, AnimationPanel, Animator,
                  BarplotLayer, BarplotPanel, BIOMTable, Empress, Legend,
                  Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util,
-                 LayoutsUtil, ExportUtil) {
+                 LayoutsUtil, ExportUtil, Parser) {
+        var test = document.getElementById("upload-fmetadata-input");
+        test.addEventListener("change", function() {
+            var test1 = new Parser(test.files[0], function(results, file) {
+                console.log(results, file);
+            });
+          test1.parse();
+        });
+
         // initialze the tree and model
         var tree = new BPTree(
           {{ tree  }},
