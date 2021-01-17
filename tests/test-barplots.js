@@ -209,17 +209,17 @@ require([
         _.each(empress._barplotPanel.layers, function (layer, i) {
             // Basic information about the visualization -- should be the same
             // across every layer
-            equal(layer.fmCols, scope.testData.fmCols);
-            equal(layer.smCols, empress._barplotPanel.smCols);
-            equal(layer.barplotPanel, empress._barplotPanel);
-            equal(layer.layerContainer, empress._barplotPanel.layerContainer);
+            deepEqual(layer.fmCols, scope.testData.fmCols);
+            deepEqual(layer.smCols, empress._barplotPanel.smCols);
+            deepEqual(layer.barplotPanel, empress._barplotPanel);
+            deepEqual(layer.layerContainer, empress._barplotPanel.layerContainer);
             // Check that the "num" and "unique num" of each barplot layer were
             // assigned correctly. Since no layers have been removed, these
             // numbers should be identical.
-            equal(layer.num, i + 1);
-            equal(layer.uniqueNum, i + 1);
+            deepEqual(layer.num, i + 1);
+            deepEqual(layer.uniqueNum, i + 1);
             // Check that each layer's header says "Layer N" (N = layer.num)
-            equal(layer.headerElement.innerText, "Layer " + (i + 1));
+            deepEqual(layer.headerElement.innerText, "Layer " + (i + 1));
         });
     });
     test("BarplotPanelHandler.removeLayer", function () {

@@ -2591,7 +2591,7 @@ define([
      * @return {Array}
      */
     Empress.prototype.getFeatureMetadataCategories = function () {
-        return this._featureMetadataColumns;
+        return util.naturalSort(this._featureMetadataColumns);
     };
 
     /**
@@ -3523,6 +3523,35 @@ define([
         } else {
             return this._tree.length(this._tree.postorderselect(nodeKey));
         }
+    };
+
+
+    /**
+     * Temporary funciton. This will be deleted once feature metadata is con
+     */
+    Empress.prototype.updateFMetadata = function(fmCols, uploadCols, metadata) {
+        // if (this.featureMetadataColumns.length !== fmCols.length) {
+
+        // }
+        console.log("update metadata!!!", fmCols, uploadCols, metadata)
+        this.featureMetadataColumns = fmCols;
+        var idCol = uploadCols[0];
+        uploadCols.shift();
+        _.each(metadata, (item) => {_.each(uploadCols, (col) => {
+            var name = item[idCol];
+            var nodes = this._tree.getNodesWithName(name);
+            var value = item[col];
+            var index = _.indexOf(fmCols, col);
+            _.each(nodes, (node) => {
+                if (this._tipMetadata.hasOwnProperty(node)) {
+                    this._tipMetadata[node][index] = value;
+                }
+                if (this._intMetadata.hasOwnProperty(node)) {
+                    this._intMetadata[node][index] = value;
+                }
+            });
+            
+        })});
     };
 
     return Empress;

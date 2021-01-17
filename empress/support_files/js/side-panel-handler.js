@@ -185,6 +185,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 .getElementById(scope.SIDE_PANEL_ID)
                 .classList.remove("hidden");
         };
+
+        if (window.uploadFMModel !== undefined) {
+            window.uploadFMModel.registerObserver(this);
+        }
     }
 
     /**
@@ -665,6 +669,35 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         populateFloat("stats-min-length", stats.min);
         populateFloat("stats-max-length", stats.max);
         populateFloat("stats-avg-length", stats.avg);
+    };
+
+    SidePanel.prototype.updateFMetadata = function(
+        fmCols,
+        uploadCols,
+        metadata
+    ) {
+        console.log("update side panel!!!");
+        
+        // TODO: add new columns, if any to, color by feature metadata tab
+        //       reset selections on color by feature metadata tab and
+        //       the layout ")
+        var selectedValue = this.fSel.value;
+        this.fSel.options.length = 0;
+        this.fmCols = util.naturalSort(fmCols);
+        var scope = this;
+        _.each(this.fmCols, function (c) {
+            var opt = document.createElement("option");
+            opt.innerText = opt.value = c;
+            scope.fSel.appendChild(opt);
+        });
+        var selectedIndx = _.indexOf(this.fmCols, selectedValue);
+        this.fSel.value = selectedValue;
+        if (
+            this.fChk.checked &&
+            this.fUpdateBtn.classList.contains("hidden")
+        ) {
+            this.fUpdateBtn.click()
+        }
     };
 
     return SidePanel;

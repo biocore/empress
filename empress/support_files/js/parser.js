@@ -11,7 +11,7 @@ define(["underscore", "papa"], function (_, Papa) {
     function Parser(file, callback) {
         this.file = file;
         this.callback = callback;
-        this.success = true;
+        this.success = undefined;
         this.caseInsensitiveIDHeader = [
             "id",
             "sampleid",
@@ -51,10 +51,12 @@ define(["underscore", "papa"], function (_, Papa) {
                 !== -1
             ) {
                 console.log("found!")
+                scope.success = true;
             } else if ( // check case sensitive ID headers
                 checkHeader(scope.caseSensitiveIDHeader, header) !== -1
             ) {
                 console.log("found!")
+                scope.success = true;
             } else {
                 console.log("not found!")
                 scope.success = false;
@@ -87,6 +89,7 @@ define(["underscore", "papa"], function (_, Papa) {
     }
 
     Parser.prototype.parse = function () {
+        // calls validate() when done
         Papa.parse(this.file, this.config);
         
     };

@@ -117,6 +117,9 @@ define([
         this.colorLegendDiv = null;
         this.lengthLegendDiv = null;
         this.initHTML();
+        if (window.uploadFMModel !== undefined) {
+            window.uploadFMModel.registerObserver(this);
+        }
     }
 
     /**
@@ -527,6 +530,20 @@ define([
 
         // TODO: reuse code, e.g. for adding feature metadata col
         // info to a selector (duplicated btwn color and length stuff)
+        this.updateFMetadata = function(fmCols, uploadCols, metadata) {
+            console.log("layer", chgColorFMFieldSelector);
+            // Populate the selector with all of the feature metadata columns
+            var selectedValue = chgColorFMFieldSelector.value;
+            chgColorFMFieldSelector.options.length = 0;
+            this.fmCols = util.naturalSort(fmCols);
+            _.each(this.fmCols, function (c) {
+                var opt = document.createElement("option");
+                opt.innerText = opt.value = c;
+                chgColorFMFieldSelector.appendChild(opt);
+            });
+            var selectedIndx = _.indexOf(this.fmCols, selectedValue);
+            chgColorFMFieldSelector.value = selectedValue;
+        }
     };
 
     /**
@@ -792,6 +809,13 @@ define([
         this.num--;
         this.updateHeader();
     };
+
+    BarplotLayer.prototype.updateFMetadata = function(fmCols, metadata) {
+        console.log("layer", this.uniqueNum);
+        this.fmCols = fmCols;
+        this.initFMDiv();
+
+    }
 
     /**
      * @type{Number}

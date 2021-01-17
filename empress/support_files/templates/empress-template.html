@@ -117,6 +117,8 @@
             'LayoutsUtil': './js/layouts-util',
             'ExportUtil': './js/export-util',
             'Parser' : './js/parser',
+            'UploadFMController' : './js/upload-fm-controller',
+            'UploadFMModel' : './js/upload-fm-model',
         }
     });
 
@@ -125,20 +127,15 @@
                     'SidePanel', 'AnimationPanel', 'Animator', 'BarplotLayer',
                     'BarplotPanel', 'BIOMTable', 'Empress', 'Legend',
                     'Colorer', 'VectorOps', 'CanvasEvents', 'SelectedNodeMenu',
-                    'util', 'LayoutsUtil', 'ExportUtil', 'Parser'],
+                    'util', 'LayoutsUtil', 'ExportUtil', 'Parser',
+                    'UploadFMController', 'UploadFMModel'],
         function($, gl, chroma, underscore, spectrum, filesaver, ByteArray,
                  BPTree, Camera, Drawer, SidePanel, AnimationPanel, Animator,
                  BarplotLayer, BarplotPanel, BIOMTable, Empress, Legend,
                  Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util,
-                 LayoutsUtil, ExportUtil, Parser) {
-        var test = document.getElementById("upload-fmetadata-input");
-        test.addEventListener("change", function() {
-            var test1 = new Parser(test.files[0], function(results, file) {
-                console.log(results, file);
-            });
-          test1.parse();
-        });
-
+                 LayoutsUtil, ExportUtil, Parser, UploadFMController,
+                 UploadFMModel) {
+        
         // initialze the tree and model
         var tree = new BPTree(
           {{ tree  }},
@@ -167,6 +164,13 @@
               {{ compressed_sample_metadata | tojson }},
             );
         }
+
+        window.uploadFMModel = new UploadFMModel(
+          {{ names  | tojson }},
+          fmCols
+        );
+        var uploadFMController = new UploadFMController(uploadFMModel);
+
         var empress = new Empress(
             tree,
             biom,
@@ -175,7 +179,9 @@
             {{ compressed_int_metadata | tojson }},
             canvas
         );
-        empress.initialize();
+        empress.initialize();        
+
+        window.uploadFMModel.addFMObject(empress);
 
         // The side menu
         var sPanel = new SidePanel(document.getElementById('side-panel'),

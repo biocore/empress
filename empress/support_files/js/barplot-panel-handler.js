@@ -129,6 +129,7 @@ define([
 
         // And define behavior for how to add in barplots
         this.updateButton.onclick = function () {
+            console.log("WTF!!!!!!!!!!!!");
             scope.empress.drawBarplots(scope.layers);
         };
 
@@ -160,6 +161,10 @@ define([
 
         // To get things started off with, let's add a layer
         this.addLayer();
+
+        if (window.uploadFMModel !== undefined) {
+            window.uploadFMModel.registerObserver(this);
+        }
     }
 
     /**
@@ -315,6 +320,15 @@ define([
             legends.push(...layer.getLegends());
         });
         return legends;
+    };
+
+    BarplotPanel.prototype.updateFMetadata = function(fmCols, uploadCols, metadata) {
+        console.log("update barplots!");
+        // TODO: update barplot tabs and reset barplots
+        if (this.enabled && this.layers.length > 0) {
+            console.log("draw barplots")
+            this.empress.drawBarplots(this.layers);
+        }
     };
 
     /**
