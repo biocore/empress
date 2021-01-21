@@ -15,39 +15,49 @@ define(["underscore", "util"], function (_, util) {
     }
 
     UploadFMModel.prototype._validateMetadata = function (idCol, metadata) {
-    	console.log("???")
-    	var invalidIds = []
+    	var invalidIds = [];
+        var validIds = [];
     	var scope = this;
     	var checkId = function(id) {
     		return (_.indexOf(scope.validIds, id) !== -1) ?  true : false;
     	}
     	_.each(metadata, (item) => {
-    		if (!checkId(item[idCol])) {invalidIds.push(item[idCol])}
+    		if (!checkId(item[idCol])) {
+                invalidIds.push(item[idCol])
+            } else {
+                validIds.push(item[idCol]);
+            }
     	});
-    	return invalidIds;
+    	return {
+            invalidIds : invalidIds,
+            validIds : validIds
+        };
     };
 
+    UploadFMModel.prototype._valideColumns = function(fmCols) {
+        return fmCols.length === _.uniq(fmCols).length;
+    }
+
     UploadFMModel.prototype.uploadFMetadata = function (fmCols, metadata) {
-    	console.log("return", fmCols, metadata);
-        console.log("validate");
-        var invalidIds = this._validateMetadata(fmCols[0], metadata); 
-        if (invalidIds.length > 0) {
+        if (!this._valideColumns(fmCols)) {
+            window.alert("Error: File contains non-unique columns!");
+            return;
+        }
+        var ids = this._validateMetadata(fmCols[0], metadata); 
+        if (ids.validIds.length > 0) {
         	if (window.confirm(
-        		"file contains " +
-        		invalidIds.length +
-        		" ids not found in the tree. Would you like to continue?"
+        		"File contains " +
+                ids.validIds.length + " ids found in the tree and " +
+        		ids.invalidIds.length +
+        		" ids not found in the tree\n" +
+                "Would you like to continue?"
         	    )
         	) {
-      			console.log("continue");
-	        	this._upload(fmCols, metadata);
-        	} else {
-        		console.log("not continue")
-        	}
+            	this._upload(fmCols, metadata);
+        	} 
         } else {
-        	console.log("notify");
-        	this._upload(fmCols, metadata);
+        	window.alert("Error: No feature ids were found in the tree!");
         }
-
     };
 
     UploadFMModel.prototype._upload = function(fmCols, metadata) {
@@ -64,7 +74,6 @@ define(["underscore", "util"], function (_, util) {
     }
 
     UploadFMModel.prototype.registerObserver = function (observer) {
-    	console.log("register observer")
     	this.observers.push(observer)
     };
 

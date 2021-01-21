@@ -3530,10 +3530,6 @@ define([
      * Temporary funciton. This will be deleted once feature metadata is con
      */
     Empress.prototype.updateFMetadata = function(fmCols, uploadCols, metadata) {
-        // if (this.featureMetadataColumns.length !== fmCols.length) {
-
-        // }
-        console.log("update metadata!!!", fmCols, uploadCols, metadata)
         this.featureMetadataColumns = fmCols;
         var idCol = uploadCols[0];
         uploadCols.shift();

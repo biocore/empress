@@ -1,4 +1,4 @@
-define(["underscore", "papa"], function (_, Papa) {
+define(["underscore", "papa", "util"], function (_, Papa, util) {
     /**
      * @class Parser
      *
@@ -11,7 +11,7 @@ define(["underscore", "papa"], function (_, Papa) {
     function Parser(file, callback) {
         this.file = file;
         this.callback = callback;
-        this.success = undefined;
+        this.success = false;
         this.caseInsensitiveIDHeader = [
             "id",
             "sampleid",
@@ -48,29 +48,24 @@ define(["underscore", "papa"], function (_, Papa) {
                     );
             if ( // check case insensitive ID headers
                 checkHeader(scope.caseInsensitiveIDHeader, header.toLowerCase())
-                !== -1
+                    !== -1 ||
+                checkHeader(scope.caseSensitiveIDHeader, header)
+                    !== -1
             ) {
-                console.log("found!")
                 scope.success = true;
-            } else if ( // check case sensitive ID headers
-                checkHeader(scope.caseSensitiveIDHeader, header) !== -1
-            ) {
-                console.log("found!")
-                scope.success = true;
-            } else {
-                console.log("not found!")
-                scope.success = false;
             }
-
+            
             if (scope.success) {
-                console.log("success")
                 scope.callback(fields, results.data);
             } else {
-                console.log("not success")
+                window.alert("Error: " +
+                    "'" + header + "' is an invalid Identifier Column name! " +
+                    "Please see Qiime2 documentation.\n\n" +
+                    "https://docs.qiime2.org/2020.11/tutorials/metadata/")
             }
         }
         this.config = {
-            delimiter: "",  // auto-detect
+            delimiter: "\t",  // auto-detect
             newline: "",    // auto-detect
             quoteChar: '"',
             escapeChar: '"',
@@ -84,7 +79,7 @@ define(["underscore", "papa"], function (_, Papa) {
             complete: validate, // controls what happens after file is parsed
             download: false,
             skipEmptyLines: "greedy",
-            delimitersToGuess: ['\t']
+            // delimitersToGuess: ['\t']
         }
     }
 

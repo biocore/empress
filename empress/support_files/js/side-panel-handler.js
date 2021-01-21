@@ -676,8 +676,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         uploadCols,
         metadata
     ) {
-        console.log("update side panel!!!");
-        
         // TODO: add new columns, if any to, color by feature metadata tab
         //       reset selections on color by feature metadata tab and
         //       the layout ")

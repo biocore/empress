@@ -531,7 +531,6 @@ define([
         // TODO: reuse code, e.g. for adding feature metadata col
         // info to a selector (duplicated btwn color and length stuff)
         this.updateFMetadata = function(fmCols, uploadCols, metadata) {
-            console.log("layer", chgColorFMFieldSelector);
             // Populate the selector with all of the feature metadata columns
             var selectedValue = chgColorFMFieldSelector.value;
             chgColorFMFieldSelector.options.length = 0;
@@ -811,7 +810,6 @@ define([
     };
 
     BarplotLayer.prototype.updateFMetadata = function(fmCols, metadata) {
-        console.log("layer", this.uniqueNum);
         this.fmCols = fmCols;
         this.initFMDiv();
 
