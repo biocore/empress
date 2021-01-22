@@ -146,7 +146,8 @@ define([
 
         // Initialize default spacing between tree and first barplot layer
         // as well as change behavior.
-        this.distBtwnTreeAndBarplots = BarplotPanel.DEFAULT_DIST_BTWN_TREE_AND_BARPLOTS;
+        this.distBtwnTreeAndBarplots =
+            BarplotPanel.DEFAULT_DIST_BTWN_TREE_AND_BARPLOTS;
         this.borderGapInput.value = this.distBtwnTreeAndBarplots;
         $(this.borderGapInput).change(function () {
             var gapInput = util.parseAndValidateNum(scope.borderGapInput, 0);

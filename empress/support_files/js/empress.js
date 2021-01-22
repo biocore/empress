@@ -1494,8 +1494,9 @@ define([
         // drawn because the node circle of the tip(s) at this max displacement
         // are partially covered by the barplots -- hence why this isn't the
         // default).
-        var maxD = this._maxDisplacement +
-            (this._barplotPanel.distBtwnTreeAndBarplots * this._barplotUnit);
+        var maxD =
+            this._maxDisplacement +
+            this._barplotPanel.distBtwnTreeAndBarplots * this._barplotUnit;
 
         // As we iterate through the layers, we'll store the "previous layer
         // max D" as a separate variable. This will help us easily work with
