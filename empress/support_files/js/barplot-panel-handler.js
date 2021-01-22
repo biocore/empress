@@ -146,10 +146,11 @@ define([
 
         // Initialize default spacing between tree and first barplot layer
         // as well as change behavior.
-        this.borderGapInput.value = 5;
+        this.distBtwnTreeAndBarplots = BarplotPanel.DEFAULT_DIST_BTWN_TREE_AND_BARPLOTS;
+        this.borderGapInput.value = this.distBtwnTreeAndBarplots;
         $(this.borderGapInput).change(function () {
             var gapInput = util.parseAndValidateNum(scope.borderGapInput, 0);
-            scope.empress._displacementFrac = gapInput / 100;
+            scope.distBtwnTreeAndBarplots = gapInput;
         });
 
         // Now, initialize the border options UI accordingly
@@ -330,6 +331,13 @@ define([
      * Array containing the names of layouts compatible with barplots.
      */
     BarplotPanel.SUPPORTED_LAYOUTS = ["Rectangular", "Circular"];
+
+    /**
+     * Default distance (in "barplot units," the same as used for barplot
+     * lengths) between the farthest point on the tree and the start of the
+     * first barplot layer.
+     */
+    BarplotPanel.DEFAULT_DIST_BTWN_TREE_AND_BARPLOTS = 10;
 
     return BarplotPanel;
 });
