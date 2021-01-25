@@ -1482,15 +1482,15 @@ define([
         var barplotBuffer = [];
 
         // Add on a gap between the closest-to-the-root point at which we can
-        // start drawing barplots, and the first barplot layer. This could be
-        // made into a barplot-panel-level configurable thing if desired.
-        // Currently, the 1.1 term here means that the barplots start at the
-        // max displacement plus 1/10th of the max displacement. If we used
-        // a 1.0 term instead, then barplots would start immediately at the max
-        // displacement (this looks kinda bad because the node circle of the
-        // tip(s) at this max displacement are partially covered by the
-        // barplots, so we don't do that).
-        var maxD = 1.1 * this._maxDisplacement;
+        // start drawing barplots, and the first barplot layer. (It's possible
+        // for this._barplotPanel.distBtwnTreeAndBarplots to be 0, in which
+        // case there isn't a gap -- this looks kinda bad if node circles are
+        // drawn because the node circle of the tip(s) at this max displacement
+        // are partially covered by the barplots -- hence why this isn't the
+        // default).
+        var maxD =
+            this._maxDisplacement +
+            this._barplotPanel.distBtwnTreeAndBarplots * this._barplotUnit;
 
         // As we iterate through the layers, we'll store the "previous layer
         // max D" as a separate variable. This will help us easily work with
