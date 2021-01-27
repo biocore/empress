@@ -160,6 +160,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * @param {String} methodName Method for determing branch lengths.
      *                            One of ("ultrametric", "ignore", "normal").
      * @returns {Boolean} Indicates whether the check should be performed.
+     * @throws {Error} If methodName is invalid.
      */
     function shouldCheckBranchLengthsChanged(methodName) {
         var methods = {
@@ -175,7 +176,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     var NO_LENGTHS_CHANGED_MSG =
-        "No branch lengths modified by layout options.";
+        "It doesn't look like any branch lengths were changed " +
+        "by the current method of modifying branch lengths.";
     var NO_LENGTHS_CHANGED_DURATION = 3000;
     var TOL = 0.000001;
 
