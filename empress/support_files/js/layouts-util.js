@@ -373,9 +373,16 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
             }
-            anyDifferent = updateAnyDifferent(anyDifferent, nodeLen, tree, prepos);
+            if (checkLengthsChange && !anyDifferent) {
+                anyDifferent = updateAnyDifferent(
+                    anyDifferent,
+                    nodeLen,
+                    tree,
+                    prepos
+                );
+            }
         }
-        if (!anyDifferent && checkLengthsChange) {
+        if (checkLengthsChange && !anyDifferent) {
             noLengthsChangedMsg();
         }
 
@@ -616,9 +623,16 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
 
             var nodeLen = lengthGetter(prepos);
             radius[node] = radius[parent] + nodeLen;
-            anyDifferent = updateAnyDifferent(anyDifferent, nodeLen, tree, prepos);
+            if (checkLengthsChange && !anyDifferent) {
+                anyDifferent = updateAnyDifferent(
+                    anyDifferent,
+                    nodeLen,
+                    tree,
+                    prepos
+                );
+            }
         }
-        if (!anyDifferent && checkLengthsChange) {
+        if (checkLengthsChange && !anyDifferent) {
             noLengthsChangedMsg();
         }
 
@@ -850,9 +864,16 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minX = Math.min(minX, x2Arr[node]);
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
-            anyDifferent = updateAnyDifferent(anyDifferent, nodeLen, tree, n);
+            if (checkLengthsChange && !anyDifferent) {
+                anyDifferent = updateAnyDifferent(
+                    anyDifferent,
+                    nodeLen,
+                    tree,
+                    n
+                );
+            }
         }
-        if (!anyDifferent && checkLengthsChange) {
+        if (checkLengthsChange && !anyDifferent) {
             noLengthsChangedMsg();
         }
         if (normalize) {
