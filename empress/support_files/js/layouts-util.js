@@ -374,7 +374,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 maxWidth = xCoord[node];
             }
             if (checkLengthsChange && !anyDifferent) {
-                anyDifferent = isTransformedLenDifferent(nodeLen, tree, n);
+                anyDifferent = isTransformedLenDifferent(nodeLen, tree, prepos);
             }
         }
         if (checkLengthsChange && !anyDifferent) {
