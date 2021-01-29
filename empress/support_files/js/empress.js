@@ -373,6 +373,9 @@ define([
         var data, i;
         // set up length getter
         var branchMethod = this.branchMethod;
+        var checkLengthsChange = LayoutsUtil.shouldCheckBranchLengthsChanged(
+            branchMethod
+        );
         var lengthGetter = LayoutsUtil.getLengthMethod(
             branchMethod,
             this._tree
@@ -392,7 +395,8 @@ define([
                 // what lengths it should lay out.
                 this.leafSorting,
                 undefined,
-                lengthGetter
+                lengthGetter,
+                checkLengthsChange
             );
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
@@ -414,7 +418,8 @@ define([
                 4020,
                 this.leafSorting,
                 undefined,
-                lengthGetter
+                lengthGetter,
+                checkLengthsChange
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
@@ -439,7 +444,8 @@ define([
                 4020,
                 4020,
                 undefined,
-                lengthGetter
+                lengthGetter,
+                checkLengthsChange
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
