@@ -619,7 +619,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var nodeLen = lengthGetter(prepos);
             radius[node] = radius[parent] + nodeLen;
             if (checkLengthsChange && !anyDifferent) {
-                anyDifferent = isTransformedLenDifferent(nodeLen, tree, n);
+                anyDifferent = isTransformedLenDifferent(nodeLen, tree, prepos);
             }
         }
         if (checkLengthsChange && !anyDifferent) {
@@ -758,7 +758,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                    different from its original length.
      */
     function isTransformedLenDifferent(branchLen, tree, n) {
-        return Math.abs(branchLen - tree.length(n)) > TOL;
+        return Math.abs(tree.length(n) / branchLen - 1) > TOL;
     }
 
     /**
