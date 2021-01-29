@@ -374,12 +374,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
                 maxWidth = xCoord[node];
             }
             if (checkLengthsChange && !anyDifferent) {
-                anyDifferent = updateAnyDifferent(
-                    anyDifferent,
-                    nodeLen,
-                    tree,
-                    prepos
-                );
+                anyDifferent = isTransformedLenDifferent(nodeLen, tree, n);
             }
         }
         if (checkLengthsChange && !anyDifferent) {
@@ -624,12 +619,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             var nodeLen = lengthGetter(prepos);
             radius[node] = radius[parent] + nodeLen;
             if (checkLengthsChange && !anyDifferent) {
-                anyDifferent = updateAnyDifferent(
-                    anyDifferent,
-                    nodeLen,
-                    tree,
-                    prepos
-                );
+                anyDifferent = isTransformedLenDifferent(nodeLen, tree, n);
             }
         }
         if (checkLengthsChange && !anyDifferent) {
@@ -758,20 +748,17 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     /**
+     * Returns true if a given node (a.k.a. branch) in the tree has a
+     * transformed length differing from its original length.
      *
-     * @param {Boolean} anyDifferent Indicates if any branches have different
-     *                               transformed lengths that differ from
-     *                               their original length in the tree.
      * @param {Float} branchLen Transformed length of the branch.
      * @param {BPTree} tree That has (potentially) been transformed.
      * @param {Number} n Node index in tree.
-     * @returns {Boolean} Indicates if any of the branches checked in the tree
-     *                    so far are different than the transformed length.
+     * @returns {Boolean} Indicates if this branch's transformed length is
+     *                    different from its original length.
      */
-    function updateAnyDifferent(anyDifferent, branchLen, tree, n) {
-        anyDifferent =
-            anyDifferent || Math.abs(branchLen - tree.length(n)) > TOL;
-        return anyDifferent;
+    function isTransformedLenDifferent(branchLen, tree, n) {
+        return Math.abs(branchLen - tree.length(n)) > TOL;
     }
 
     /**
@@ -865,12 +852,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
             if (checkLengthsChange && !anyDifferent) {
-                anyDifferent = updateAnyDifferent(
-                    anyDifferent,
-                    nodeLen,
-                    tree,
-                    n
-                );
+                anyDifferent = isTransformedLenDifferent(nodeLen, tree, n);
             }
         }
         if (checkLengthsChange && !anyDifferent) {
