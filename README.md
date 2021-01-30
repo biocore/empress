@@ -1,5 +1,6 @@
 # Empress
-[![](https://github.com/biocore/empress/workflows/Empress%20CI/badge.svg)](https://github.com/biocore/empress/actions)
+[![GitHub Actions CI](https://github.com/biocore/empress/workflows/Empress%20CI/badge.svg)](https://github.com/biocore/empress/actions)
+[![PyPI](https://img.shields.io/pypi/v/empress.svg)](https://pypi.org/project/empress)
 
 <!---Empress Logo--->
 
