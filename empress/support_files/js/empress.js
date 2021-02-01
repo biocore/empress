@@ -2257,8 +2257,10 @@ define([
         cat,
         color,
         method,
-        reverse = false
+        reverse = false,
+        continuous = false,
     ) {
+        console.log("is continous?", continuous)
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -2275,14 +2277,16 @@ define([
         var colorer = new Colorer(
             color,
             sortedUniqueValues,
-            undefined,
-            undefined,
+            continuous,
+            (continuous) ? -1 : undefined,
             reverse
         );
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
-        var keyInfo = colorer.getMapHex();
+        var keyInfo = (continuous) ? 
+            colorer.getGradientInfo() :
+            colorer.getMapHex();
 
         // Do upwards propagation only if the coloring method is "tip"
         if (method === "tip") {
@@ -2294,8 +2298,12 @@ define([
 
         // color tree
         this._colorTree(obs, cm);
-
-        this.updateLegendCategorical(cat, keyInfo);
+        if (continuous) {
+            this._legend.addContinuousKey(cat, keyInfo);
+        } else {
+            this.updateLegendCategorical(cat, keyInfo);
+        }
+        // this.updateLegendCategorical(cat, keyInfo);
 
         return keyInfo;
     };
