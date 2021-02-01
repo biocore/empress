@@ -38,7 +38,7 @@ define(["underscore", "util"], function (_, util) {
         // the table. Signifies to the class that we should never show the add
         // section again. See #272 on GitHub.
         this.smFieldsExhausted = false;
-        this.fmCols = this.empress.getFeatureMetadataCategories();
+        this.fmCols = this.empress._featureMetadataColumns;
         this.hasSampleMetadata = false;
         this.hasFeatureMetadata = false;
         this.hiddenCallback = null;
