@@ -440,11 +440,11 @@ Another way to explore our data is to select samples on Emperor and look for the
 
 You may have noticed that in the Emperor plot one of the *Right Palm* samples is strangely clustering closer to the gut samples rather than the other palm samples. On Emperor, select some of the gut samples as well as some of the palm samples from the right hand side, taking care to not include the outlier palm sample on the left. On the Empress plot you will see several branches light up as either red, orange, or blue. These colors represent the unique features found in only that body-site; shared features are left uncolored.  
 
-![empire_sample_selection_gut_and_palm](docs/moving-pictures/img/empire_sample_selection_gut_and_palm.gif)
+![empire_sample_selection_gut_and_palm](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_sample_selection_gut_and_palm.gif)
 
 Once the samples have been deselected (within a couple of seconds), select the outlier palm sample + one of the gut samples. What do you notice? You’ll see that comparatively few unique red or orange branches light up, suggesting that this sample shares many more features with the gut samples than the other palm samples.\*
 
-![empire_sample_selection_outlierpalm_plus_gut](docs/moving-pictures/img/empire_sample_selection_outlierpalm_plus_gut.gif)
+![empire_sample_selection_outlierpalm_plus_gut](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_sample_selection_outlierpalm_plus_gut.gif)
 
 This is a good example of when your data can tell you something about your metadata that you may have missed. In reality, in this experiment, this palm sample was in fact mislabelled by accident.  
 
@@ -456,7 +456,7 @@ all samples in a certain group (e.g. for this dataset, all gut samples at
 once), to show which features are present in these samples. This can be done by
 double-clicking on a sample coloring category in Emperor, as shown below:
 
-![empire_groupselection](docs/moving-pictures/img/empire_groupselection.gif)
+![empire_groupselection](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_groupselection.gif)
 
 This makes it easy to get a quick glance at which parts of the tree are "used"
 within a certain group of samples. (If you have a hard time viewing certain colors
