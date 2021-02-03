@@ -52,22 +52,41 @@ The standalone version of Empress takes the following filetypes as inputs. (Note
 
 ### Example standalone usage
 
-```
+```bash
+# Using "long" parameter names
 empress tree-plot \
     --tree tree.nwk \
-    --feature-metadata feature_metadata.tsv \
-    --output-dir tree_viz
+    --feature-metadata feature-metadata.tsv \
+    --output-dir tree-viz
 ```
 
+```bash
+# Using "short" parameter names
+empress tree-plot -t tree.nwk -fm feature-metadata.tsv -o tree-viz
 ```
+
+```bash
+# Using "long" parameter names
 empress community-plot \
     --tree tree.nwk \
     --table feature-table.biom \
-    --sample-metadata sample_metadata.tsv \
-    --feature-metadata feature_metadata.tsv \
+    --sample-metadata sample-metadata.tsv \
+    --feature-metadata feature-metadata.tsv \
     --pcoa ordination.txt \
     --filter-extra-samples \
-    --output-dir community_tree_viz
+    --output-dir community-tree-viz
+```
+
+```bash
+# Using "short" parameter names
+empress community-plot \
+    -t tree.nwk \
+    -tbl feature-table.biom \
+    -sm sample-metadata.tsv \
+    -fm feature-metadata.tsv \
+    -p ordination.txt \
+    --filter-extra-samples \
+    -o community-tree-viz
 ```
 
 You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `--output-dir` must not exist as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files, you should combine them all into one file that you pass to Empress.
@@ -95,22 +114,22 @@ qiime empress --help
 
 ### Example QIIME 2 usage
 
-```
+```bash
 qiime empress tree-plot \
     --i-tree tree.qza \
     --m-feature-metadata-file taxonomy.qza \
-    --o-visualization tree_viz.qzv
+    --o-visualization tree-viz.qzv
 ```
 
-```
+```bash
 qiime empress community-plot \
     --i-tree tree.qza \
     --i-feature-table feature-table.qza \
-    --m-sample-metadata-file sample_metadata.tsv \
+    --m-sample-metadata-file sample-metadata.tsv \
     --m-feature-metadata-file taxonomy.qza \
     --i-pcoa ordination.qza \
     --p-filter-extra-samples \
-    --o-visualization community_tree_viz.qzv
+    --o-visualization community-tree-viz.qzv
 ```
 
 # Tutorial: Using Empress in QIIME 2
