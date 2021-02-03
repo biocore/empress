@@ -52,7 +52,7 @@ The standalone version of Empress takes the following filetypes as inputs. (Note
 
 ### Example standalone usage
 
-#### `tree-plot`: If you just want to visualize a tree, optionally with "feature" (node) metadata
+#### `empress tree-plot`
 
 ```bash
 # Option 1: Using "long" parameter names
@@ -65,7 +65,7 @@ empress tree-plot \
 empress tree-plot -t tree.nwk -fm feature-metadata.tsv -o tree-viz
 ```
 
-#### `community-plot`: If you want to visualize a tree along with "community" (sample-level) information
+#### `empress community-plot`
 
 ```bash
 # Option 1: Using "long" parameter names
@@ -89,7 +89,7 @@ empress community-plot \
     -o community-tree-viz
 ```
 
-You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `--output-dir` must not exist as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files, you should combine them all into one file that you pass to Empress.
+You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `-o`/`--output-dir` must not exist, as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files, you should combine them all into one file that you pass to Empress.
 
 The output will be a directory containing an `empress.html` file and a `support_files` directory containing the JS/CSS files required to view the plot in your browser. If you provided a PCoA to the `community-plot` command there will also be an `emperor-resources` subdirectory containing the files required to view the Emperor plot alongside the tree. You can view the `empress.html` file in any modern browser to interact with it the same way you would the QIIME 2 Visualization.
 
@@ -114,7 +114,7 @@ qiime empress --help
 
 ### Example QIIME 2 usage
 
-#### `tree-plot`: If you just want to visualize a tree, optionally with "feature" (node) metadata
+#### `qiime empress tree-plot`
 
 ```bash
 qiime empress tree-plot \
@@ -123,7 +123,7 @@ qiime empress tree-plot \
     --o-visualization tree-viz.qzv
 ```
 
-#### `community-plot`: If you want to visualize a tree along with "community" (sample-level) information
+#### `qiime empress community-plot`
 
 ```bash
 qiime empress community-plot \
