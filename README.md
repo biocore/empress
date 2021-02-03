@@ -24,7 +24,7 @@ and barplots).
 
 # Installation & Basic Usage
 
-Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/) or by using `qiime tools view`.
+Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with the HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/) or by using `qiime tools view`.
 
 ## Standalone Version
 
@@ -52,6 +52,8 @@ The standalone version of Empress takes the following filetypes as inputs. (Note
 
 ### Example standalone usage
 
+#### `tree-plot`: If you just want to visualize a tree, optionally with "feature" (node) metadata
+
 ```bash
 # Option 1: Using "long" parameter names
 empress tree-plot \
@@ -62,6 +64,8 @@ empress tree-plot \
 # Option 2: Using "short" parameter names
 empress tree-plot -t tree.nwk -fm feature-metadata.tsv -o tree-viz
 ```
+
+#### `community-plot`: If you want to visualize a tree along with "community" (sample-level) information
 
 ```bash
 # Option 1: Using "long" parameter names
@@ -110,12 +114,16 @@ qiime empress --help
 
 ### Example QIIME 2 usage
 
+#### `tree-plot`: If you just want to visualize a tree, optionally with "feature" (node) metadata
+
 ```bash
 qiime empress tree-plot \
     --i-tree tree.qza \
     --m-feature-metadata-file taxonomy.qza \
     --o-visualization tree-viz.qzv
 ```
+
+#### `community-plot`: If you want to visualize a tree along with "community" (sample-level) information
 
 ```bash
 qiime empress community-plot \
