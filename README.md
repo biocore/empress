@@ -53,20 +53,18 @@ The standalone version of Empress takes the following filetypes as inputs. (Note
 ### Example standalone usage
 
 ```bash
-# Using "long" parameter names
+# Option 1: Using "long" parameter names
 empress tree-plot \
     --tree tree.nwk \
     --feature-metadata feature-metadata.tsv \
     --output-dir tree-viz
-```
 
-```bash
-# Using "short" parameter names
+# Option 2: Using "short" parameter names
 empress tree-plot -t tree.nwk -fm feature-metadata.tsv -o tree-viz
 ```
 
 ```bash
-# Using "long" parameter names
+# Option 1: Using "long" parameter names
 empress community-plot \
     --tree tree.nwk \
     --table feature-table.biom \
@@ -75,10 +73,8 @@ empress community-plot \
     --pcoa ordination.txt \
     --filter-extra-samples \
     --output-dir community-tree-viz
-```
 
-```bash
-# Using "short" parameter names
+# Option 2: Using "short" parameter names
 empress community-plot \
     -t tree.nwk \
     -tbl feature-table.biom \
