@@ -115,3 +115,12 @@ class TestCLI(unittest.TestCase):
         assert str(value) == "Output directory already exists!"
         assert not os.path.isdir(f"{output_dir}/support_files")
         assert "empress.html" not in os.listdir(output_dir)
+
+    def test_tree_plot_basic_cli_abbrev(cls):
+        output_dir = "tree_plot_basic_cli_abbrev"
+        result = cls.runner.invoke(
+            empress,
+            ["tree-plot", "-t", cls.tree_loc, "-o", output_dir]
+        )
+        assert result.exit_code == 0
+        files_present(output_dir)
