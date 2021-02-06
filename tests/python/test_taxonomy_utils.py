@@ -64,10 +64,22 @@ class TestTaxonomyUtils(unittest.TestCase):
                 "Level 1": "k__Bacteria",
                 "Level 2": "k__Bacteria; p__Bacteroidetes",
                 "Level 3": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia",
-                "Level 4": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales",
-                "Level 5": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae",
-                "Level 6": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides",
-                "Level 7": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; s__",
+                "Level 4": (
+                    "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                    "o__Bacteroidales"
+                ),
+                "Level 5": (
+                    "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                    "o__Bacteroidales; f__Bacteroidaceae"
+                ),
+                "Level 6": (
+                    "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                    "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides"
+                ),
+                "Level 7": (
+                    "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                    "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; s__"
+                ),
                 "Confidence": 0.95
             }, name="f1")
         )
@@ -76,11 +88,25 @@ class TestTaxonomyUtils(unittest.TestCase):
             pd.Series({
                 "Level 1": "k__Bacteria",
                 "Level 2": "k__Bacteria; p__Proteobacteria",
-                "Level 3": "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria",
-                "Level 4": "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales",
-                "Level 5": "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae",
-                "Level 6": "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae; g__",
-                "Level 7": "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae; g__; s__",
+                "Level 3": (
+                    "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria"
+                ),
+                "Level 4": (
+                    "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; "
+                    "o__Pasteurellales"
+                ),
+                "Level 5": (
+                    "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; "
+                    "o__Pasteurellales; f__Pasteurellaceae"
+                ),
+                "Level 6": (
+                    "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; "
+                    "o__Pasteurellales; f__Pasteurellaceae; g__"
+                ),
+                "Level 7": (
+                    "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; "
+                    "o__Pasteurellales; f__Pasteurellaceae; g__; s__"
+                ),
                 "Confidence": 0.8
             }, name="f2")
         )
@@ -90,10 +116,23 @@ class TestTaxonomyUtils(unittest.TestCase):
                 "Level 1": "k__Bacteria",
                 "Level 2": "k__Bacteria; p__Bacteroidetes",
                 "Level 3": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia",
-                "Level 4": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales",
-                "Level 5": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae",
-                "Level 6": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides",
-                "Level 7": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; s__uniformis",
+                "Level 4": (
+                    "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                    "o__Bacteroidales"
+                ),
+                "Level 5": (
+                    "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                    "o__Bacteroidales; f__Bacteroidaceae"
+                ),
+                "Level 6": (
+                    "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                    "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides"
+                ),
+                "Level 7": (
+                    "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; "
+                    "o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; "
+                    "s__uniformis"
+                ),
                 "Confidence": 0
             }, name="f3")
         )
@@ -103,10 +142,21 @@ class TestTaxonomyUtils(unittest.TestCase):
                 "Level 1": "k__Bacteria",
                 "Level 2": "k__Bacteria; p__Firmicutes",
                 "Level 3": "k__Bacteria; p__Firmicutes; c__Bacilli",
-                "Level 4": "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified",
-                "Level 5": "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified; Unspecified",
-                "Level 6": "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified; Unspecified; Unspecified",
-                "Level 7": "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified; Unspecified; Unspecified; Unspecified",
+                "Level 4": (
+                    "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified"
+                ),
+                "Level 5": (
+                    "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified; "
+                    "Unspecified"
+                ),
+                "Level 6": (
+                    "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified; "
+                    "Unspecified; Unspecified"
+                ),
+                "Level 7": (
+                    "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified; "
+                    "Unspecified; Unspecified; Unspecified"
+                ),
                 "Confidence": 1
             }, name="f4")
         )
@@ -294,11 +344,30 @@ class TestTaxonomyUtils(unittest.TestCase):
             pd.Series({
                 "Level 1": "D_0__Bacteria",
                 "Level 2": "D_0__Bacteria; D_1__Gemmatimonadetes",
-                "Level 3": "D_0__Bacteria; D_1__Gemmatimonadetes; D_2__Gemmatimonadetes",
-                "Level 4": "D_0__Bacteria; D_1__Gemmatimonadetes; D_2__Gemmatimonadetes; D_3__Gemmatimonadales",
-                "Level 5": "D_0__Bacteria; D_1__Gemmatimonadetes; D_2__Gemmatimonadetes; D_3__Gemmatimonadales; D_4__Gemmatimonadaceae",
-                "Level 6": "D_0__Bacteria; D_1__Gemmatimonadetes; D_2__Gemmatimonadetes; D_3__Gemmatimonadales; D_4__Gemmatimonadaceae; D_5__Gemmatimonas",
-                "Level 7": "D_0__Bacteria; D_1__Gemmatimonadetes; D_2__Gemmatimonadetes; D_3__Gemmatimonadales; D_4__Gemmatimonadaceae; D_5__Gemmatimonas; D_6__uncultured bacterium",
+                "Level 3": (
+                    "D_0__Bacteria; D_1__Gemmatimonadetes; "
+                    "D_2__Gemmatimonadetes"
+                ),
+                "Level 4": (
+                    "D_0__Bacteria; D_1__Gemmatimonadetes; "
+                    "D_2__Gemmatimonadetes; D_3__Gemmatimonadales"
+                ),
+                "Level 5": (
+                    "D_0__Bacteria; D_1__Gemmatimonadetes; "
+                    "D_2__Gemmatimonadetes; D_3__Gemmatimonadales; "
+                    "D_4__Gemmatimonadaceae"
+                ),
+                "Level 6": (
+                    "D_0__Bacteria; D_1__Gemmatimonadetes; "
+                    "D_2__Gemmatimonadetes; D_3__Gemmatimonadales; "
+                    "D_4__Gemmatimonadaceae; D_5__Gemmatimonas"
+                ),
+                "Level 7": (
+                    "D_0__Bacteria; D_1__Gemmatimonadetes; "
+                    "D_2__Gemmatimonadetes; D_3__Gemmatimonadales; "
+                    "D_4__Gemmatimonadaceae; D_5__Gemmatimonas; "
+                    "D_6__uncultured bacterium"
+                ),
             }, name="f0")
         )
 
