@@ -125,6 +125,14 @@ def split_taxonomy(feature_metadata):
                 ),
                 TaxonomyWarning
             )
+        else:
+            # Solve #473 -- add ancestor taxonomy strings
+            # (producing stuff like "k__Bacteria; p__Firmicutes; c__Bacilli"
+            # for class-level taxonomy levels).
+            # This disambiguates things like "s__" or "Unspecified" in the UI,
+            # at the cost of increasing metadata size.
+            for t in range(1, len(tax_levels.columns)):
+                tax_levels[t] = tax_levels[t - 1] + "; " + tax_levels[t]
 
         # Our use of expand=True means that tax_levels will be a DataFrame with
         # the same index as feature_metadata but with one column for each
