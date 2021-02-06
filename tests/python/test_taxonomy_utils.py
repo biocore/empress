@@ -62,12 +62,12 @@ class TestTaxonomyUtils(unittest.TestCase):
             split_fm.loc["f1"],
             pd.Series({
                 "Level 1": "k__Bacteria",
-                "Level 2": "p__Bacteroidetes",
-                "Level 3": "c__Bacteroidia",
-                "Level 4": "o__Bacteroidales",
-                "Level 5": "f__Bacteroidaceae",
-                "Level 6": "g__Bacteroides",
-                "Level 7": "s__",
+                "Level 2": "k__Bacteria; p__Bacteroidetes",
+                "Level 3": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia",
+                "Level 4": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales",
+                "Level 5": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae",
+                "Level 6": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides",
+                "Level 7": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; s__",
                 "Confidence": 0.95
             }, name="f1")
         )
@@ -75,12 +75,12 @@ class TestTaxonomyUtils(unittest.TestCase):
             split_fm.loc["f2"],
             pd.Series({
                 "Level 1": "k__Bacteria",
-                "Level 2": "p__Proteobacteria",
-                "Level 3": "c__Gammaproteobacteria",
-                "Level 4": "o__Pasteurellales",
-                "Level 5": "f__Pasteurellaceae",
-                "Level 6": "g__",
-                "Level 7": "s__",
+                "Level 2": "k__Bacteria; p__Proteobacteria",
+                "Level 3": "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria",
+                "Level 4": "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales",
+                "Level 5": "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae",
+                "Level 6": "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae; g__",
+                "Level 7": "k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae; g__; s__",
                 "Confidence": 0.8
             }, name="f2")
         )
@@ -88,12 +88,12 @@ class TestTaxonomyUtils(unittest.TestCase):
             split_fm.loc["f3"],
             pd.Series({
                 "Level 1": "k__Bacteria",
-                "Level 2": "p__Bacteroidetes",
-                "Level 3": "c__Bacteroidia",
-                "Level 4": "o__Bacteroidales",
-                "Level 5": "f__Bacteroidaceae",
-                "Level 6": "g__Bacteroides",
-                "Level 7": "s__uniformis",
+                "Level 2": "k__Bacteria; p__Bacteroidetes",
+                "Level 3": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia",
+                "Level 4": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales",
+                "Level 5": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae",
+                "Level 6": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides",
+                "Level 7": "k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Bacteroidaceae; g__Bacteroides; s__uniformis",
                 "Confidence": 0
             }, name="f3")
         )
@@ -101,12 +101,12 @@ class TestTaxonomyUtils(unittest.TestCase):
             split_fm.loc["f4"],
             pd.Series({
                 "Level 1": "k__Bacteria",
-                "Level 2": "p__Firmicutes",
-                "Level 3": "c__Bacilli",
-                "Level 4": "Unspecified",
-                "Level 5": "Unspecified",
-                "Level 6": "Unspecified",
-                "Level 7": "Unspecified",
+                "Level 2": "k__Bacteria; p__Firmicutes",
+                "Level 3": "k__Bacteria; p__Firmicutes; c__Bacilli",
+                "Level 4": "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified",
+                "Level 5": "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified; Unspecified",
+                "Level 6": "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified; Unspecified; Unspecified",
+                "Level 7": "k__Bacteria; p__Firmicutes; c__Bacilli; Unspecified; Unspecified; Unspecified; Unspecified",
                 "Confidence": 1
             }, name="f4")
         )
@@ -181,8 +181,8 @@ class TestTaxonomyUtils(unittest.TestCase):
             split_fm.loc["f1"],
             pd.Series({
                 "Level 1": "birds aren't real",
-                "Level 2": "Unspecified",
-                "Level 3": "Unspecified",
+                "Level 2": "birds aren't real; Unspecified",
+                "Level 3": "birds aren't real; Unspecified; Unspecified",
                 "Confidence": 0.95
             }, name="f1")
         )
@@ -190,8 +190,8 @@ class TestTaxonomyUtils(unittest.TestCase):
             split_fm.loc["f2"],
             pd.Series({
                 "Level 1": "theyve been drones",
-                "Level 2": "Unspecified",
-                "Level 3": "Unspecified",
+                "Level 2": "theyve been drones; Unspecified",
+                "Level 3": "theyve been drones; Unspecified; Unspecified",
                 "Confidence": 0.8
             }, name="f2")
         )
@@ -199,8 +199,8 @@ class TestTaxonomyUtils(unittest.TestCase):
             split_fm.loc["f3"],
             pd.Series({
                 "Level 1": "all along :O",
-                "Level 2": "Unspecified",
-                "Level 3": "Unspecified",
+                "Level 2": "all along :O; Unspecified",
+                "Level 3": "all along :O; Unspecified; Unspecified",
                 "Confidence": 0
             }, name="f3")
         )
@@ -208,8 +208,8 @@ class TestTaxonomyUtils(unittest.TestCase):
             split_fm.loc["f4"],
             pd.Series({
                 "Level 1": "k__Bacteria",
-                "Level 2": "p__Firmicutes",
-                "Level 3": "c__Bacilli",
+                "Level 2": "k__Bacteria; p__Firmicutes",
+                "Level 3": "k__Bacteria; p__Firmicutes; c__Bacilli",
                 "Confidence": 1
             }, name="f4")
         )
@@ -293,12 +293,12 @@ class TestTaxonomyUtils(unittest.TestCase):
             split_fm.loc["f0"],
             pd.Series({
                 "Level 1": "D_0__Bacteria",
-                "Level 2": "D_1__Gemmatimonadetes",
-                "Level 3": "D_2__Gemmatimonadetes",
-                "Level 4": "D_3__Gemmatimonadales",
-                "Level 5": "D_4__Gemmatimonadaceae",
-                "Level 6": "D_5__Gemmatimonas",
-                "Level 7": "D_6__uncultured bacterium",
+                "Level 2": "D_0__Bacteria; D_1__Gemmatimonadetes",
+                "Level 3": "D_0__Bacteria; D_1__Gemmatimonadetes; D_2__Gemmatimonadetes",
+                "Level 4": "D_0__Bacteria; D_1__Gemmatimonadetes; D_2__Gemmatimonadetes; D_3__Gemmatimonadales",
+                "Level 5": "D_0__Bacteria; D_1__Gemmatimonadetes; D_2__Gemmatimonadetes; D_3__Gemmatimonadales; D_4__Gemmatimonadaceae",
+                "Level 6": "D_0__Bacteria; D_1__Gemmatimonadetes; D_2__Gemmatimonadetes; D_3__Gemmatimonadales; D_4__Gemmatimonadaceae; D_5__Gemmatimonas",
+                "Level 7": "D_0__Bacteria; D_1__Gemmatimonadetes; D_2__Gemmatimonadetes; D_3__Gemmatimonadales; D_4__Gemmatimonadaceae; D_5__Gemmatimonas; D_6__uncultured bacterium",
             }, name="f0")
         )
 
