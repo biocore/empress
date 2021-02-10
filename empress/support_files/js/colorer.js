@@ -185,7 +185,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             // If there's only 1 unique value, set its color as the first in
             // the color map. This matches the behavior of Emperor.
             var onlyVal = this.sortedUniqueValues[0];
-            // var brewer = chroma.brewer[this.color];
             if (this.reverse) {
                 this.__valueToColor[onlyVal] = interpolator(1);
             } else {
@@ -203,7 +202,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             } else {
                 domain = [0, rangeMax];
             }
-            // var interpolator = chroma.scale(this.color).domain(domain);
             interpolator = interpolator.domain(domain);
 
             for (var i = 0; i < this.sortedUniqueValues.length; i++) {
