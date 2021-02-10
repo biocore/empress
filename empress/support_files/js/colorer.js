@@ -142,6 +142,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         } else {
             // palette = chroma.brewer[this.color];
             palette = chroma.scale(["purple", "green"]).colors(2);
+            console.log(palette)
         }
         if (this.reverse) {
             palette = _.clone(palette);
