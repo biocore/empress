@@ -2258,7 +2258,7 @@ define([
         color,
         method,
         reverse = false,
-        continuous = false,
+        continuous = false
     ) {
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
@@ -2277,15 +2277,15 @@ define([
             color,
             sortedUniqueValues,
             continuous,
-            (continuous) ? -1 : undefined,
+            continuous ? -1 : undefined,
             reverse
         );
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
-        var keyInfo = (continuous) ? 
-            colorer.getGradientInfo() :
-            colorer.getMapHex();
+        var keyInfo = continuous
+            ? colorer.getGradientInfo()
+            : colorer.getMapHex();
 
         // Do upwards propagation only if the coloring method is "tip"
         if (method === "tip") {

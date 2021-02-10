@@ -337,14 +337,15 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
         var reverse = this.fReverseColor.checked;
-        var continuous = !this.fContinuousDiv.classList.contains("hidden") && 
+        var continuous =
+            !this.fContinuousDiv.classList.contains("hidden") &&
             this.fContinuousChk.checked;
         this.empress.colorByFeatureMetadata(
             colBy,
             col,
             coloringMethod,
             reverse,
-            continuous,
+            continuous
         );
     };
 
