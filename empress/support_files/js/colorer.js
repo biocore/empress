@@ -246,9 +246,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         } else {
             domain = [min, max];
         }
-        // var interpolator = chroma.scale(this.color).domain(domain);
-        // var interpolator = chroma.scale(["blue", "yellow", "red"]).domain(domain);
-        var interpolator = chroma.scale(["green", "#fed8b1", "purple"]).domain(domain);
+        var interpolator = chroma.scale(this.color).domain(domain);
+        // var interpolator = chroma.scale(["green", "#fed8b1", "purple"]).domain(domain);
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
         });
@@ -609,6 +608,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         { id: "BrBG", name: "Brown-Blue-Green", type: Colorer.DIVERGING },
         { id: "PuOr", name: "Purple-Orange", type: Colorer.DIVERGING },
         { id: "PRGn", name: "Purple-Green", type: Colorer.DIVERGING },
+        { id: "PrYlGn": name: "Purple-Light Orange-Green", type: Colorer.DIVERGING}
     ];
     return Colorer;
 });
