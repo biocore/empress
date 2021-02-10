@@ -175,10 +175,11 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             );
         }
 
+        var interpolator;
         if (this.color === Colorer.__PR_OR_GR) {
-            var interpolator = chroma.scale(Colorer.__prOrGr).domain([0, 1]);
+            interpolator = chroma.scale(Colorer.__prOrGr).domain([0, 1]);
         } else {
-            var interpolator = chroma.scale(this.color).domain([0, 1]);
+            interpolator = chroma.scale(this.color).domain([0, 1]);
         }
 
         if (this.sortedUniqueValues.length === 1) {
@@ -251,9 +252,9 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         }
         var interpolator;
         if (this.color === Colorer.__PR_OR_GR) {
-            var interpolator = chroma.scale(Colorer.__prOrGr).domain(domain);
+            interpolator = chroma.scale(Colorer.__prOrGr).domain(domain);
         } else {
-            var interpolator = chroma.scale(this.color).domain(domain);
+            interpolator = chroma.scale(this.color).domain(domain);
         }
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
@@ -617,7 +618,11 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         { id: "BrBG", name: "Brown-Blue-Green", type: Colorer.DIVERGING },
         { id: "PuOr", name: "Purple-Orange", type: Colorer.DIVERGING },
         { id: "PRGn", name: "Purple-Green", type: Colorer.DIVERGING },
-        { id: "PrOrGn", name: "Purple-Light Orange-Green", type: Colorer.DIVERGING },
+        {
+            id: "PrOrGn",
+            name: "Purple-Light Orange-Green",
+            type: Colorer.DIVERGING,
+        },
     ];
     return Colorer;
 });
