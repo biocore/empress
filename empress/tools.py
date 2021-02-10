@@ -73,7 +73,7 @@ def match_tree_and_feature_metadata(bp_tree, feature_metadata=None):
         int_metadata = ts_feature_metadata.loc[fm_and_int_features]
 
         if len(tip_metadata.index) == 0 and len(int_metadata.index) == 0:
-            # Error condition 5 in match_inputs_community_plot()
+            # Error condition 5 in match_inputs()
             raise DataMatchingError(
                 "No features in the feature metadata are present in the tree, "
                 "either as tips or as internal nodes."
@@ -166,8 +166,10 @@ def match_inputs(
                metadata, AND ignore_missing_samples is False.
             5. The feature metadata was passed, but no features present in it
                are also present as tips or internal nodes in the tree.
-            6. The ordination AND feature table don't have exactly the same
-               samples.
+            6. The ordination and feature table don't share any samples.
+            7. The feature table contains more samples than the ordination, AND
+               filter_extra_samples is False.
+            8. The ordination contains more samples than the feature table.
 
     References
     ----------
@@ -186,6 +188,7 @@ def match_inputs(
 
         # don't allow for disjoint datasets
         if not (table_ids & ord_ids):
+            # Error condition 6
             raise DataMatchingError(
                 "No samples in the feature table are present in the "
                 "ordination"
@@ -195,6 +198,7 @@ def match_inputs(
             extra = table_ids - ord_ids
             if extra:
                 if not filter_extra_samples:
+                    # Error condition 7
                     raise DataMatchingError(
                         "The feature table has more samples than the "
                         "ordination. These are the problematic sample "
@@ -206,6 +210,7 @@ def match_inputs(
                 # We'll remove now-empty features from the table later in
                 # the code
         else:
+            # Error condition 8
             raise DataMatchingError(
                 "The ordination has more samples than the feature table."
             )
