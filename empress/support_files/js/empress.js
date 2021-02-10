@@ -40,6 +40,13 @@ define([
      *                      when generating an Empress visualization, this
      *                      parameter should be [] (and tipMetadata and
      *                      intMetadata should be {}s).
+     * @param {Array} splitTaxonomyColumns Columns of the feature metadata
+     *                                     corresponding to explicitly
+     *                                     specified levels of a taxonomy, if
+     *                                     available. Should be [] if not
+     *                                     applicable. Every value in this
+     *                                     Array must also be present in
+     *                                     featureMetadataColumns.
      * @param {Object} tipMetadata Feature metadata for tips in the tree.
      *                 Note: This should map tip names to an array of feature
      *                       metadata values. Each array should have the same
@@ -53,6 +60,7 @@ define([
         tree,
         biom,
         featureMetadataColumns,
+        splitTaxonomyColumns,
         tipMetadata,
         intMetadata,
         canvas
@@ -167,11 +175,21 @@ define([
         this.isCommunityPlot = !_.isNull(this._biom);
 
         /**
-         * @type{Array}
+         * @type {Array}
          * Feature metadata column names.
          * @private
          */
         this._featureMetadataColumns = featureMetadataColumns;
+
+        /**
+         * @type {Array}
+         * Taxonomy column names. Should be handled specially when coloring
+         * by these, or using them in feature metadata barplots -- see
+         * https://github.com/biocore/empress/issues/473 and
+         * https://github.com/biocore/empress/pull/482 for details/discussion.
+         * @private
+         */
+        this._splitTaxonomyColumns = splitTaxonomyColumns;
 
         /**
          * @type{Object}

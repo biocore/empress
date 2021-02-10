@@ -44,6 +44,17 @@ def split_taxonomy(feature_metadata):
         taxonomy columns, this DataFrame is identical to the input DataFrame.)
         The new "Level" columns will be placed at the start of the returned
         DataFrame's columns.
+    tax_columns : list
+        If taxonomy splitting is done, this will contain the resulting taxonomy
+        column names, in descending order (e.g. ["Level 1", "Level 2",
+        "Level 3"]). If no taxonomy splitting is done, this'll just return [].
+        The motivation for returning a list of the new column names, rather
+        than just a boolean "has / doesn't have taxonomy columns" flag, is to
+        make changes to the names used to represent taxonomy columns minimally
+        painful in the future -- "Level" isn't that uncommon of a word, and I
+        can imagine that we might want to change the names of taxonomy columns
+        in the future, so storing the taxonomy column names here should prevent
+        us from having to change both the Python and JS code. Hopefully :P
 
     Raises
     ------
@@ -88,6 +99,7 @@ def split_taxonomy(feature_metadata):
             # this.)
             invalid_level_columns_present = True
 
+    new_tax_cols = []
     if tax_col_index is not None:
         if invalid_level_columns_present:
             # Error condition 2 -- there is at least one "Level" column already
@@ -129,12 +141,13 @@ def split_taxonomy(feature_metadata):
         # Our use of expand=True means that tax_levels will be a DataFrame with
         # the same index as feature_metadata but with one column for each
         # taxonomic level (in order -- Kingdom, Phylum, etc.)
-        tax_levels.columns = [
+        new_tax_cols = [
             "Level {}".format(i) for i in range(1, len(tax_levels.columns) + 1)
         ]
+        tax_levels.columns = new_tax_cols
         fm_no_tax = feature_metadata.drop(columns=tax_col_name)
         # Finally, join the f.m. with the tax. levels DF by the index.
-        return pd.concat([tax_levels, fm_no_tax], axis="columns")
+        return pd.concat([tax_levels, fm_no_tax], axis="columns"), new_tax_cols
     else:
         # No taxonomy column found, so no need to modify the DataFrame
-        return feature_metadata
+        return feature_metadata, new_tax_cols
