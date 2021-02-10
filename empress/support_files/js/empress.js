@@ -2257,7 +2257,7 @@ define([
         cat,
         color,
         method,
-        reverse = false,
+        reverse = false
     ) {
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
@@ -2294,6 +2294,7 @@ define([
 
         // color tree
         this._colorTree(obs, cm);
+
         this.updateLegendCategorical(cat, keyInfo);
 
         return keyInfo;
