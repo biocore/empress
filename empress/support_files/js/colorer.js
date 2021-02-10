@@ -140,9 +140,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         if (this.color === Colorer.__QIIME_COLOR) {
             palette = Colorer.__qiimeDiscrete;
         } else {
-            // palette = chroma.brewer[this.color];
-            palette = chroma.scale(["purple", "green"]).colors(2);
-            console.log(palette)
+            palette = chroma.brewer[this.color];
         }
         if (this.reverse) {
             palette = _.clone(palette);
@@ -246,9 +244,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         } else {
             domain = [min, max];
         }
-        // var interpolator = chroma.scale(this.color).domain(domain);
-        // var interpolator = chroma.scale(["blue", "yellow", "red"]).domain(domain);
-        var interpolator = chroma.scale(["green", "#fed8b1", "purple"]).domain(domain);
+        var interpolator = chroma.scale(this.color).domain(domain);
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
         });

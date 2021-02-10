@@ -2260,7 +2260,6 @@ define([
         reverse = false,
         continuous = false,
     ) {
-        console.log("is continous?", continuous)
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -2303,7 +2302,6 @@ define([
         } else {
             this.updateLegendCategorical(cat, keyInfo);
         }
-        // this.updateLegendCategorical(cat, keyInfo);
 
         return keyInfo;
     };

@@ -615,10 +615,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
 
         var showUpdateBtn = function () {
             if (Colorer.isColorMapDiscrete(scope.fColor.value)) {
-                console.log("hide", scope.fContinuousDiv)
                 scope.fContinuousDiv.classList.add("hidden");
             } else {
-                console.log("Show", scope.fContinuousDiv)
                 scope.fContinuousDiv.classList.remove("hidden");
             }
             scope.fUpdateBtn.classList.remove("hidden");
