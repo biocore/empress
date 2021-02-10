@@ -2283,9 +2283,12 @@ define([
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
-        var keyInfo = continuous
-            ? colorer.getGradientInfo()
-            : colorer.getMapHex();
+        var keyInfo;
+        if (continuous) {
+            keyInfo = colorer.getGradientInfo();
+        } else {
+            keyInfo = colorer.getMapHex();
+        }
 
         // Do upwards propagation only if the coloring method is "tip"
         if (method === "tip") {
