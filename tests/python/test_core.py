@@ -246,7 +246,6 @@ class TestCore(unittest.TestCase):
     def test_init_with_ordination_features(self):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.pcoa, shear_to_table=False)
-        
         '''check that empress does not break when ordination has features
         but empress itself does not'''
         viz.ordination.features = self.feature_metadata
