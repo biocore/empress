@@ -249,7 +249,7 @@ class TestCore(unittest.TestCase):
         '''check that empress does not break when ordination has features
         but empress itself does not'''
         viz.ordination.features = self.feature_metadata
-        self.assertEqual(viz.features, pd.DataFrame())
+        self.assertTrue(viz.features.empty)
 
     def test_init_with_ordination_empty_samples_in_pcoa(self):
         def make_bad(v, i, m):
