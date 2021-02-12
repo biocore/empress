@@ -164,7 +164,7 @@ class Empress():
 
                 # if there are no matches set to None so Emperor can ignore
                 # the feature metadata
-                if (self.tip_md is None) and (self.int_md is None): 
+                if self.tip_md is None and self.int_md is None: 
                     feature_metadata = pd.DataFrame()
                 else: 
                     feature_metadata = pd.concat([self.tip_md, self.int_md])

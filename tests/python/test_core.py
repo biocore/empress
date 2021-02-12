@@ -243,6 +243,15 @@ class TestCore(unittest.TestCase):
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
+    def test_init_with_ordination_features(self):
+        viz = Empress(self.tree, self.table, self.sample_metadata,
+                      ordination=self.pcoa, shear_to_table=False)
+        
+        '''check that empress does not break when ordination has features
+        but empress itself does not'''
+        viz.ordination.features = self.feature_metadata
+        self.assertEqual(viz.feature_metadata, pd.DataFrame())
+
     def test_init_with_ordination_empty_samples_in_pcoa(self):
         def make_bad(v, i, m):
             if i in ['Sample2', 'Sample4']:
