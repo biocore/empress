@@ -57,7 +57,9 @@ require([
             }
         });
 
-        test("Test getNodeCoords", function () {
+        test("Test getNodeCoords all node circles", function () {
+            // have empress draw all node circles
+            this.empress.drawNodeCircles = 1;
             // Note: node 6's name is null, which would indicate that it didn't
             // have an assigned name in the input Newick file. However, for
             // #348, we still want to draw a circle for it.
@@ -98,6 +100,43 @@ require([
                 35, 36, 3289650,
                 37, 38, 3289650,
                 39, 40, 3289650,
+                41, 42, 3289650,
+            ]);
+            this.empress._currentLayout = "Unrooted";
+            var empressUnrootCoords = this.empress.getNodeCoords();
+            deepEqual(empressUnrootCoords, unrootCoords);
+        });
+
+        test("Test getNodeCoords only internal node circles", function () {
+            // have empress draw only internal node circles
+            this.empress.drawNodeCircles = 0;
+            // Note: node 6's name is null, which would indicate that it didn't
+            // have an assigned name in the input Newick file. However, for
+            // #348, we still want to draw a circle for it.
+            // prettier-ignore
+            var rectCoords = new Float32Array([
+                7, 8, 3289650,
+                9, 10, 3289650,
+                13, 14, 3289650,
+            ]);
+            this.empress._currentLayout = "Rectangular";
+            var empressRecCoords = this.empress.getNodeCoords();
+            deepEqual(empressRecCoords, rectCoords);
+
+            // prettier-ignore
+            var circCoords = new Float32Array([
+                21, 22, 3289650,
+                23, 24, 3289650,
+                27, 28, 3289650,
+            ]);
+            this.empress._currentLayout = "Circular";
+            var empressCirCoords = this.empress.getNodeCoords();
+            deepEqual(empressCirCoords, circCoords);
+
+            // prettier-ignore
+            var unrootCoords = new Float32Array([
+                35, 36, 3289650,
+                37, 38, 3289650,
                 41, 42, 3289650,
             ]);
             this.empress._currentLayout = "Unrooted";

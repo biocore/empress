@@ -262,7 +262,7 @@ define([
         /**
          * @type{Bool}
          * Whether or not to draw node circles.
-         * Values will range between 0 and 2. 
+         * Values will range between 0 and 2.
          * 0 - Show only internal node circles
          * 1 - Show all node circles
          * 2 - Do not show node circles
@@ -854,27 +854,26 @@ define([
         var tree = this._tree;
         var coords = [];
         var scope = this;
-        var visible = function(node) {
+        var visible = function (node) {
             return scope.getNodeInfo(node, "visible");
         };
-        var comp; 
+        var comp;
         if (this.drawNodeCircles === 0) {
-            comp = function(node) {
-                return visible(node) && 
-                       !tree.isleaf(tree.postorderselect(node));
-            }
+            comp = function (node) {
+                return (
+                    visible(node) && !tree.isleaf(tree.postorderselect(node))
+                );
+            };
         } else if (this.drawNodeCircles === 1) {
-            comp = function(node) {
+            comp = function (node) {
                 return visible(node);
-            }
+            };
         } else if (this.drawNodeCircles === 2) {
-            comp = function(node) {
+            comp = function (node) {
                 return false;
-            }
+            };
         } else {
-            throw new Error(
-                "getNodeCoords() drawNodeCircles is out of range"
-            );
+            throw new Error("getNodeCoords() drawNodeCircles is out of range");
         }
 
         for (var node = 1; node <= tree.size; node++) {
