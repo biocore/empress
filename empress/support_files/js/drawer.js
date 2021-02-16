@@ -87,7 +87,7 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
         this.NODE_CIRCLE_DIAMETER = 4.0;
         this.SELECTED_NODE_CIRCLE_DIAMETER = 9.0;
 
-        this.showTreeNodes = false;
+        this.showTreeNodes = true;
 
         // the valid buffer types used in bindBuffer()
         this.BUFF_TYPES = [1, 2, 3];
@@ -414,11 +414,11 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
 
         c.uniform1i(s.isSingle, 1);
         // draw tree node circles, if requested
-        if (this.showTreeNodes) {
+        // if (this.showTreeNodes) {
             c.uniform1f(s.pointSize, this.NODE_CIRCLE_DIAMETER);
             this.bindBuffer(s.nodeVertBuff, 1, 3);
             c.drawArrays(c.POINTS, 0, this.nodeSize);
-        }
+        // }
 
         // draw selected node
         c.uniform1f(s.pointSize, this.SELECTED_NODE_CIRCLE_DIAMETER);

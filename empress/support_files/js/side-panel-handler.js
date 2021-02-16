@@ -31,7 +31,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.empress = empress;
 
         // settings components
-        this.treeNodesChk = document.getElementById("display-nodes-chk");
+        this.treeNodesSelect = document.getElementById("display-nodes-select");
         this.recenterBtn = document.getElementById("center-tree-btn");
         this.focusOnNodeChk = document.getElementById("focus-on-node-chk");
         this.absentTipChk = document.getElementById("absent-tip-chk");
@@ -546,8 +546,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      */
     SidePanel.prototype.addSettingsTab = function () {
         var scope = this;
-        this.treeNodesChk.onchange = function () {
-            scope.empress.setTreeNodeVisibility(scope.treeNodesChk.checked);
+        this.treeNodesSelect.onchange = function () {
+            scope.empress.setTreeNodeVisibility(scope.treeNodesSelect.value);
         };
         this.recenterBtn.onclick = function () {
             scope.empress.centerLayoutAvgPoint();
