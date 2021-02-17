@@ -1918,6 +1918,17 @@ define([
         } else {
             halfAngleRange = Math.PI / this._tree.numleaves();
         }
+        // NOTE that, for drawing a barplot layer representing a taxonomy
+        // column, we are essentially doing the work here of "reassembling"
+        // the ancestor taxonomy with the child taxonomy info twice -- once
+        // when we call this.getUniqueFeatureMetadataInfo() above, and again
+        // as we go through this loop and look at each tip (this is done for
+        // each tip by the "retrieval function" mentioned below).
+        //
+        // It would be ideal to use the mapping information returned by
+        // this.getUniqueFeatureMetadataInfo() to avoid having to repeat this
+        // work, although this would likely require restructuring the rest
+        // of this function -- might be too much work for its own good.
         for (node = 1; node < this._tree.size; node++) {
             if (this._tree.isleaf(this._tree.postorderselect(node))) {
                 var name = this.getNodeInfo(node, "name");
