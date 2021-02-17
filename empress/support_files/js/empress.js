@@ -1925,18 +1925,15 @@ define([
                 // Assign this tip's bar a color
                 var color;
                 if (layer.colorByFM) {
-                    // We only need to try to see if this is a taxonomy column
-                    // for the color encodings -- since encoding a taxonomy col
-                    // as length should trigger an error, since taxonomy is
-                    // inherently not numeric (and anyway we insert ; characters
-                    // into the taxonomy values, so this should force errors when
-                    // trying to convert taxonomy values into numbers)
-                    var getValFromFM = this._getFMValRetrievalFunction(
+                    // Get a function that'll retrieve feature metadata from
+                    // this field for us. As of writing, only does anything
+                    // special for certain taxonomy columns.
+                    var getValFromColorFM = this._getFMValRetrievalFunction(
                         layer.colorByFMField
                     );
 
                     if (_.has(this._tipMetadata, node)) {
-                        fm = getValFromFM(this._tipMetadata[node]);
+                        fm = getValFromColorFM(this._tipMetadata[node]);
                         if (_.has(fm2color, fm)) {
                             color = fm2color[fm];
                         } else {
@@ -1959,8 +1956,19 @@ define([
                 // Assign this tip's bar a length
                 var length;
                 if (layer.scaleLengthByFM) {
+                    // Get a function that'll retrieve feature metadata from
+                    // this field for us. As of writing, this currently is
+                    // not especially useful for length scaling, since this
+                    // function only does something special for taxonomy
+                    // columns -- and those shouldn't be numeric. However,
+                    // using this function as the middle-man here ensures
+                    // consistency with how the other uses of feature metadata
+                    // work (in case we define further special cases later on).
+                    var getValFromLengthFM = this._getFMValRetrievalFunction(
+                        layer.scaleLengthByFMField
+                    );
                     if (_.has(this._tipMetadata, node)) {
-                        fm = this._tipMetadata[node][lengthFMIdx];
+                        fm = getValFromLengthFM(this._tipMetadata[node]);
                         if (_.has(fm2length, fm)) {
                             length = fm2length[fm];
                         } else {
