@@ -266,8 +266,9 @@ define([
          * 0 - Show only internal node circles
          * 1 - Show all node circles
          * 2 - Do not show node circles
+         * 3 - show nodes with only 1 descendant
          */
-        this.drawNodeCircles = 0;
+        this.drawNodeCircles = 3;
 
         /**
          * @type{Bool}
@@ -871,6 +872,15 @@ define([
         } else if (this.drawNodeCircles === 2) {
             comp = function (node) {
                 return false;
+            };
+        } else if (this.drawNodeCircles === 3) {
+            comp = function (node) {
+                var treeNode = tree.postorderselect(node);
+                return (
+                    visible(node) &&
+                    !tree.isleaf(treeNode) &&
+                    tree.fchild(treeNode) === tree.lchild(treeNode)
+                );
             };
         } else {
             throw new Error("getNodeCoords() drawNodeCircles is out of range");
