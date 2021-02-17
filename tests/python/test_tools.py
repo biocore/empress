@@ -98,9 +98,9 @@ class TestTools(unittest.TestCase):
                 proportion_explained=proportion_explained)
 
     def test_match_inputs_nothing_dropped(self):
-        filtered_table, filtered_sample_md, t_md, i_md, taxcols = tools.match_inputs(
-            self.bp_tree, self.table, self.sample_metadata
-        )
+        (
+            filtered_table, filtered_sample_md, t_md, i_md, taxcols
+        ) = tools.match_inputs(self.bp_tree, self.table, self.sample_metadata)
         self.assertEqual(filtered_table, self.table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
         # We didn't pass in any feature metadata, so we shouldn't get any out
@@ -111,7 +111,9 @@ class TestTools(unittest.TestCase):
     def test_match_inputs_nothing_dropped_with_ordination(self):
         # everything is the same since the ordination has a 1:1 match to the
         # feature table
-        filtered_table, filtered_sample_md, t_md, i_md, taxcols = tools.match_inputs(
+        (
+            filtered_table, filtered_sample_md, t_md, i_md, taxcols
+        ) = tools.match_inputs(
             self.bp_tree, self.table, self.sample_metadata,
             ordination=self.ordination
         )
@@ -127,9 +129,9 @@ class TestTools(unittest.TestCase):
         # This is technically allowed (so long as this 1 feature is a tree tip)
         tiny_table = self.table.filter({"a", }, axis='observation',
                                        inplace=False)
-        filtered_tiny_table, filtered_sample_md, tm, im, taxcols = tools.match_inputs(
-            self.bp_tree, tiny_table, self.sample_metadata
-        )
+        (
+            filtered_tiny_table, filtered_sample_md, tm, im, taxcols
+        ) = tools.match_inputs(self.bp_tree, tiny_table, self.sample_metadata)
         self.assertEqual(filtered_tiny_table, tiny_table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
         self.assertIsNone(tm)
@@ -297,7 +299,9 @@ class TestTools(unittest.TestCase):
            (self.feature_metadata describes three features, "e", "h", and "a".
             h is an internal node in self.tree, and e and a are tips.)
         """
-        f_table, f_sample_metadata, tip_md, int_md, taxcols = tools.match_inputs(
+        (
+            f_table, f_sample_metadata, tip_md, int_md, taxcols
+        ) = tools.match_inputs(
             self.bp_tree, self.table,
             self.sample_metadata, self.feature_metadata
         )
@@ -494,9 +498,12 @@ class TestTools(unittest.TestCase):
                            ['Sample1', 'Sample2', 'Sample3', 'Sample4',
                             'Sample5'])
 
-        filtered_table, filtered_sample_md, t_md, i_md, taxcols = tools.match_inputs(
+        (
+            filtered_table, filtered_sample_md, t_md, i_md, taxcols
+        ) = tools.match_inputs(
             self.bp_tree, table, self.sample_metadata,
-            ordination=self.ordination, filter_extra_samples=True)
+            ordination=self.ordination, filter_extra_samples=True
+        )
 
         # NOTE: even though 'e' is now empty, it isn't removed now; it'll be
         # removed later on, in remove_empty_samples_and_features().
