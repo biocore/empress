@@ -14,24 +14,13 @@ from skbio import TreeNode, OrdinationResults
 from empress import tools
 from empress.taxonomy_utils import split_taxonomy
 from bp import parse_newick, from_skbio_treenode
+from .test_taxonomy_utils import assert_taxcols_ok
 
 
 class TestTools(unittest.TestCase):
 
     def mock_tree_from_nwk(self):
         return TreeNode.read(['(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2):1;'])
-
-    def _check_taxcols_ok(self, taxcols, exp_num_levels=7):
-        """Checks that a given taxcols list (returned by split_taxonomy())
-           looks how we expect it to. This is done frequently in these tests,
-           which is why it is a utility function here.
-
-           exp_num_levels is the number of levels in the taxonomy -- it
-           defaults to 7, which is the case for the moving pictures dataset
-           (kingdom, phylum, class, order, family, genus, species).
-        """
-        expcols = ["Level {}".format(i) for i in range(1, exp_num_levels + 1)]
-        self.assertEqual(taxcols, expcols)
 
     def setUp(self):
         self.tree = self.mock_tree_from_nwk()
@@ -326,7 +315,7 @@ class TestTools(unittest.TestCase):
         self.assertListEqual(list(tip_md.columns), self.exp_split_fm_cols)
         self.assertListEqual(list(int_md.columns), self.exp_split_fm_cols)
         # Check that the split-up taxonomy columns look good
-        self._check_taxcols_ok(taxcols)
+        assert_taxcols_ok(taxcols)
 
     def test_match_inputs_feature_metadata_no_features_in_tree(self):
         """Tests that feature names not corresponding to internal nodes / tips
@@ -371,7 +360,7 @@ class TestTools(unittest.TestCase):
         self.assertListEqual(list(t_fm.columns), self.exp_split_fm_cols)
         self.assertListEqual(list(i_fm.columns), self.exp_split_fm_cols)
         # Check that the split-up taxonomy columns look good
-        self._check_taxcols_ok(taxcols)
+        assert_taxcols_ok(taxcols)
 
     def test_match_inputs_feature_metadata_root_metadata_allowed(self):
         """Tests that feature metadata for the root node is preserved."""
@@ -393,7 +382,7 @@ class TestTools(unittest.TestCase):
         # is important to verify, since it's the root)
         assert_frame_equal(t_fm, split_fm.loc[["a"]])
         assert_frame_equal(i_fm, split_fm.loc[["g", "i"]], check_like=True)
-        self._check_taxcols_ok(taxcols1)
+        assert_taxcols_ok(taxcols1)
         self.assertEqual(taxcols1, taxcols2)
 
     def test_match_inputs_feature_metadata_duplicate_name_internal_node(self):
@@ -423,7 +412,7 @@ class TestTools(unittest.TestCase):
         # kept, even though g and i were both duplicate node names.
         assert_frame_equal(t_fm, split_fm.loc[["a"]])
         assert_frame_equal(i_fm, split_fm.loc[["g", "i"]], check_like=True)
-        self._check_taxcols_ok(taxcols1)
+        assert_taxcols_ok(taxcols1)
         self.assertEqual(taxcols1, taxcols2)
 
     def test_match_inputs_feature_metadata_only_internal_node_metadata(self):
@@ -448,7 +437,7 @@ class TestTools(unittest.TestCase):
         self.assertListEqual(list(i_fm.columns), self.exp_split_fm_cols)
         # 4) Check that the taxonomy columns produced by splitting the
         # taxonomic feature metadata were produced as expected
-        self._check_taxcols_ok(taxcols1)
+        assert_taxcols_ok(taxcols1)
         self.assertEqual(taxcols1, taxcols2)
 
     def test_disjoint_table_and_ordination(self):
