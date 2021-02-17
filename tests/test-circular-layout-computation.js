@@ -181,6 +181,7 @@ require(["jquery", "BPTree", "BiomTable", "Empress"], function (
                     tree,
                     biom,
                     [], // feature metadata columns
+                    [], // split taxonomy columns
                     {}, // tip metadata
                     {}, // internal node metadata
                     null // canvas

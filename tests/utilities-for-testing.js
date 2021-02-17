@@ -115,6 +115,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
             ["b", "4", "t4"],
         ];
         var featureColumns = ["f1", "f2"];
+        var splitTaxColumns = [];
         var tipMetadata = {
             1: ["2", "2"],
             2: ["1", "2"],
@@ -137,6 +138,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
                 tree,
                 biom,
                 featureColumns,
+                splitTaxColumns,
                 tipMetadata,
                 intMetadata,
                 canvas
@@ -156,6 +158,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
             tdToInd: tdToInd,
             biom: biom,
             fmCols: featureColumns,
+            splitTaxCols: splitTaxColumns,
             tm: tipMetadata,
             im: intMetadata,
             canvas: canvas,

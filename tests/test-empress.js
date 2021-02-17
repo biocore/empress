@@ -468,6 +468,7 @@ require([
                 testData.tree,
                 null,
                 testData.fmCols,
+                testData.splitTaxCols,
                 testData.tm,
                 testData.im,
                 testData.canvas
@@ -1019,6 +1020,7 @@ require([
                 testData.tree,
                 tinyBiom,
                 testData.fmCols,
+                testData.splitTaxCols,
                 testData.tm,
                 testData.im,
                 testData.canvas
