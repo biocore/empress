@@ -248,6 +248,7 @@ class TestCore(unittest.TestCase):
         but empress itself does not.'''
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       ordination=self.biplot, shear_to_table=False)
+        self.assertIsNone(viz.features)
 
     def test_init_with_ordination_empty_samples_in_pcoa(self):
         def make_bad(v, i, m):
