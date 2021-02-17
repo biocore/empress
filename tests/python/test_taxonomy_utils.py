@@ -41,9 +41,10 @@ class TestTaxonomyUtils(unittest.TestCase):
             index=["f1", "f2", "f3", "f4"]
         )
 
-    def check_basic_case_worked(self, split_fm):
-        """Checks that a given DataFrame matches the expected output from
-           running split_taxonomy() on self.feature_metadata.
+    def check_basic_case_worked(self, split_fm, taxcols):
+        """Checks that a given DataFrame (and list of split-up taxonomy columns)
+           matches the expected output from running split_taxonomy() on
+           self.feature_metadata.
         """
 
         # Let's verify that split_fm looks how we expect it to look.
@@ -56,6 +57,12 @@ class TestTaxonomyUtils(unittest.TestCase):
         # ...Next, check the index -- no features should've been dropped (that
         # isn't even a thing that split_taxonomy() does, but let's be safe :P)
         self.assertCountEqual(split_fm.index, ["f1", "f2", "f3", "f4"])
+
+        # While we're at it, let's check that taxcols looks good
+        self.assertEqual(taxcols, [
+            "Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Level 6",
+            "Level 7"
+        ])
 
         # Finally, let's check each row individually. This is kinda inelegant.
         assert_series_equal(
@@ -114,8 +121,9 @@ class TestTaxonomyUtils(unittest.TestCase):
     def test_split_taxonomy_no_tax_column(self):
         fm2 = self.feature_metadata.copy()
         fm2.columns = ["asdf", "ghjkl"]
-        fm3 = tax_utils.split_taxonomy(fm2)
+        fm3, taxcols = tax_utils.split_taxonomy(fm2)
         assert_frame_equal(fm2, fm3)
+        self.assertEqual(taxcols, [])
 
     def test_split_taxonomy_multiple_tax_columns(self):
         bad_fm = self.feature_metadata.copy()
@@ -148,33 +156,36 @@ class TestTaxonomyUtils(unittest.TestCase):
     def test_split_taxonomy_level_column_but_no_taxonomy_column(self):
         meh_fm = self.feature_metadata.copy()
         meh_fm.columns = ["I'm ambivalent!", "Level 20"]
-        meh_fm2 = tax_utils.split_taxonomy(meh_fm)
+        meh_fm2, taxcols = tax_utils.split_taxonomy(meh_fm)
         assert_frame_equal(meh_fm, meh_fm2)
+        self.assertEqual(taxcols, [])
 
     def test_split_taxonomy_basic_case(self):
         initial_fm = self.feature_metadata.copy()
-        split_fm = tax_utils.split_taxonomy(initial_fm)
+        split_fm, taxcols = tax_utils.split_taxonomy(initial_fm)
 
         # First off, check that initial_fm was NOT modified: the input DF
         # should remain untouched
         assert_frame_equal(self.feature_metadata, initial_fm)
 
-        # Do all the in-depth testing of split_fm in a utility func (we'll
-        # reuse this code a bit later)
-        self.check_basic_case_worked(split_fm)
+        # Do all the in-depth testing of split_fm and taxcols in a utility
+        # func (we'll reuse this code a bit later)
+        self.check_basic_case_worked(split_fm, taxcols)
 
     def test_split_taxonomy_rows_with_no_semicolons(self):
         funky_fm = self.feature_metadata.copy()
         funky_fm.loc["f1", "Taxonomy"] = "birds aren't real"
         funky_fm.loc["f2", "Taxonomy"] = "theyve been drones"
         funky_fm.loc["f3", "Taxonomy"] = "all along :O"
-        split_fm = tax_utils.split_taxonomy(funky_fm)
+        split_fm, taxcols = tax_utils.split_taxonomy(funky_fm)
 
         # Notice that f4's taxonomy is still there -- so each feature will have
         # 3 levels
         self.assertCountEqual(split_fm.columns, [
             "Level 1", "Level 2", "Level 3", "Confidence"
         ])
+
+        self.assertEqual(taxcols, ["Level 1", "Level 2", "Level 3"])
 
         # Check each row individually
         assert_series_equal(
@@ -228,9 +239,10 @@ class TestTaxonomyUtils(unittest.TestCase):
                 'is formatted so that "levels" are separated by semicolons.'
             )
         ):
-            split_fm = tax_utils.split_taxonomy(funky_fm)
+            split_fm, taxcols = tax_utils.split_taxonomy(funky_fm)
 
         self.assertCountEqual(split_fm.columns, ["Level 1", "Confidence"])
+        self.assertEqual(taxcols, ["Level 1"])
         assert_series_equal(
             split_fm.loc["f1"],
             pd.Series({"Level 1": "Bacteria", "Confidence": 0.95}, name="f1")
@@ -271,8 +283,8 @@ class TestTaxonomyUtils(unittest.TestCase):
         funky_fm.loc["f4", "Taxonomy"] = (
             " \t " + funky_fm.loc["f4", "Taxonomy"] + "\t"
         )
-        split_fm = tax_utils.split_taxonomy(funky_fm)
-        self.check_basic_case_worked(split_fm)
+        split_fm, taxcols = tax_utils.split_taxonomy(funky_fm)
+        self.check_basic_case_worked(split_fm, taxcols)
 
     def test_split_taxonomy_SILVA_annotation(self):
         """Tests that a particular taxonomy annotation that has caused
@@ -288,7 +300,7 @@ class TestTaxonomyUtils(unittest.TestCase):
                 )
             ]
         }, index=["f0"])
-        split_fm = tax_utils.split_taxonomy(fm)
+        split_fm, taxcols = tax_utils.split_taxonomy(fm)
         assert_series_equal(
             split_fm.loc["f0"],
             pd.Series({
@@ -300,6 +312,9 @@ class TestTaxonomyUtils(unittest.TestCase):
                 "Level 6": "D_5__Gemmatimonas",
                 "Level 7": "D_6__uncultured bacterium",
             }, name="f0")
+        )
+        self.assertEqual(taxcols,
+            ["Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Level 6", "Level 7"]
         )
 
 
