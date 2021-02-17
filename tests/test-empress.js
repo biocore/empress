@@ -1081,6 +1081,90 @@ require([
                 );
             }, /F. metadata coloring method "i'm invalid!" unrecognized./);
         });
+        test("Test getUniqueFeatureMetadataInfo with ancestor taxonomy propagation (lowest level, just tip metadata)", function () {
+            var stEmp = UtilitiesForTesting.getEmpressForAncestorTaxProp();
+            var info = stEmp.getUniqueFeatureMetadataInfo("f2", "tip");
+            var uniqVals = ["1; 2", "2; 2"];
+            deepEqual(info.sortedUniqueValues, uniqVals);
+            // Check that the uniqueValueToFeatures object looks good
+            deepEqual(
+                new Set(Object.keys(info.uniqueValueToFeatures)),
+                new Set(uniqVals)
+            );
+            // Two tips have the "1; 2" taxonomy, and two tips have the "2; 2"
+            // taxonomy. ... Of course, in practice, these will probably be
+            // fancy strings like "k__Bacteria" or something, so the taxonomy
+            // displayed will look nicer
+            deepEqual(
+                new Set(info.uniqueValueToFeatures["1; 2"]),
+                new Set([2, 3])
+            );
+            deepEqual(
+                new Set(info.uniqueValueToFeatures["2; 2"]),
+                new Set([1, 6])
+            );
+        });
+        test("Test getUniqueFeatureMetadataInfo with ancestor taxonomy propagation (highest level, just tip metadata)", function () {
+            var stEmp = UtilitiesForTesting.getEmpressForAncestorTaxProp();
+            var info = stEmp.getUniqueFeatureMetadataInfo("f1", "tip");
+            var uniqVals = ["1", "2"];
+            deepEqual(info.sortedUniqueValues, uniqVals);
+            // Check that the uniqueValueToFeatures object looks good
+            deepEqual(
+                new Set(Object.keys(info.uniqueValueToFeatures)),
+                new Set(uniqVals)
+            );
+            deepEqual(
+                new Set(info.uniqueValueToFeatures["1"]),
+                new Set([2, 3])
+            );
+            deepEqual(
+                new Set(info.uniqueValueToFeatures["2"]),
+                new Set([1, 6])
+            );
+        });
+        test("Test getUniqueFeatureMetadataInfo with ancestor taxonomy propagation (lowest level, all f. metadata)", function () {
+            var stEmp = UtilitiesForTesting.getEmpressForAncestorTaxProp();
+            var info = stEmp.getUniqueFeatureMetadataInfo("f2", "all");
+            var uniqVals = ["1; 1", "1; 2", "2; 2"];
+            deepEqual(info.sortedUniqueValues, uniqVals);
+            // Check that the uniqueValueToFeatures object looks good
+            deepEqual(
+                new Set(Object.keys(info.uniqueValueToFeatures)),
+                new Set(uniqVals)
+            );
+            deepEqual(
+                new Set(info.uniqueValueToFeatures["1; 1"]),
+                new Set([4, 5])
+            );
+            deepEqual(
+                new Set(info.uniqueValueToFeatures["1; 2"]),
+                new Set([2, 3])
+            );
+            deepEqual(
+                new Set(info.uniqueValueToFeatures["2; 2"]),
+                new Set([1, 6])
+            );
+        });
+        test("Test getUniqueFeatureMetadataInfo with ancestor taxonomy propagation (highest level, all f. metadata)", function () {
+            var stEmp = UtilitiesForTesting.getEmpressForAncestorTaxProp();
+            var info = stEmp.getUniqueFeatureMetadataInfo("f1", "all");
+            var uniqVals = ["1", "2"];
+            deepEqual(info.sortedUniqueValues, uniqVals);
+            // Check that the uniqueValueToFeatures object looks good
+            deepEqual(
+                new Set(Object.keys(info.uniqueValueToFeatures)),
+                new Set(uniqVals)
+            );
+            deepEqual(
+                new Set(info.uniqueValueToFeatures["1"]),
+                new Set([2, 3, 4, 5])
+            );
+            deepEqual(
+                new Set(info.uniqueValueToFeatures["2"]),
+                new Set([1, 6])
+            );
+        });
         test("Test _getNodeAngleInfo", function () {
             var scope = this;
             this.empress.updateLayout("Circular");
