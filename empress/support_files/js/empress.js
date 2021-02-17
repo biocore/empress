@@ -1925,8 +1925,42 @@ define([
                 // Assign this tip's bar a color
                 var color;
                 if (layer.colorByFM) {
+                    // We only need to try to see if this is a taxonomy column
+                    // for the color encodings -- since encoding a taxonomy col
+                    // as length should trigger an error, since taxonomy is
+                    // inherently not numeric (and anyway we insert ; characters
+                    // into the taxonomy values, so this should force errors when
+                    // trying to convert taxonomy values into numbers)
+                    var getValFromFM;
+                    var taxIdx = _.indexOf(this._splitTaxonomyColumns, layer.colorByFMField);
+                    if (taxIdx <= 0) {
+                        getValFromFM = function (fmRow) {
+                            return fmRow[colorFMIdx];
+                        };
+                    } else {
+                        var ancestorFMIndices = [];
+                        for (var i = 0; i < taxIdx; i++) {
+                            var currTaxCol = this._splitTaxonomyColumns[i];
+                            var currTaxColFMIdx = _.indexOf(
+                                this._featureMetadataColumns, currTaxCol
+                            );
+                            ancestorFMIndices.push(currTaxColFMIdx);
+                        }
+                        ancestorFMIndices.push(colorFMIdx);
+                        getValFromFM = function (fmRow) {
+                            var totalFMVal = "";
+                            _.each(ancestorFMIndices, function (ancestorFMIdx, t) {
+                                if (t > 0) {
+                                    totalFMVal += "; ";
+                                }
+                                totalFMVal += fmRow[ancestorFMIdx];
+                            });
+                            return totalFMVal;
+                        };
+                    }
+
                     if (_.has(this._tipMetadata, node)) {
-                        fm = this._tipMetadata[node][colorFMIdx];
+                        fm = getValFromFM(this._tipMetadata[node]);
                         if (_.has(fm2color, fm)) {
                             color = fm2color[fm];
                         } else {
@@ -2229,6 +2263,56 @@ define([
         } else {
             throw 'F. metadata coloring method "' + method + '" unrecognized.';
         }
+
+        // Define how we're going to extract feature metadata for a given "row"
+        // (i.e. for each entry in the feature metadata).
+        var getValFromFM;
+        var taxIdx = _.indexOf(this._splitTaxonomyColumns, cat);
+        if (taxIdx <= 0) {
+            // If this feature metadata column is not in the "split taxonomy
+            // columns" (i.e. taxIdx is -1), or if this feature metadata column
+            // corresponds to the highest (and therefore first) taxonomy level
+            // (e.g. "Kingdom" -- in this case taxIdx will be 0), then, when
+            // extracting feature metadata from a given row, we can just get
+            // this column's single value in that row.
+            getValFromFM = function (fmRow) {
+                return fmRow[fmIdx];
+            };
+        } else {
+            // If this feature metadata column corresponds to a taxonomy level
+            // below the highest one (e.g. phylum, or class, ...) then we want
+            // to handle it specially -- see #473 on GitHub. We'll do this by
+            // recording all the "indices" of the feature metadata columns
+            // corresponding to the ancestors above this feature metadata
+            // column (and then this column itself). This makes it easier to
+            // identify all the ancestral information for a given taxonomy
+            // entry.
+            var ancestorFMIndices = [];
+            for (var i = 0; i < taxIdx; i++) {
+                var currTaxCol = this._splitTaxonomyColumns[i];
+                var currTaxColFMIdx = _.indexOf(
+                    this._featureMetadataColumns, currTaxCol
+                );
+                ancestorFMIndices.push(currTaxColFMIdx);
+            }
+            // We already know the index of the column we end at, so just put
+            // it here at the end manually. (Saving this extra work probably
+            // won't make an appreciable time difference, but it feels nice :)
+            ancestorFMIndices.push(fmIdx);
+            getValFromFM = function (fmRow) {
+                var totalFMVal = "";
+                _.each(ancestorFMIndices, function (ancestorFMIdx, t) {
+                    // Separate adjacent levels in the resulting f.m. value
+                    // shown: e.g. "k__Bacteria; p__Cyanobacteria"
+                    if (t > 0) {
+                        totalFMVal += "; ";
+                    }
+                    totalFMVal += fmRow[ancestorFMIdx];
+                });
+                return totalFMVal;
+            };
+        }
+
         // Produce a mapping of unique values in this feature metadata
         // column to an array of the node name(s) with each value.
         var uniqueValueToFeatures = {};
@@ -2237,7 +2321,7 @@ define([
                 // need to convert to integer
                 node = parseInt(node);
                 // This is loosely based on how BIOMTable.getObsBy() works.
-                var fmVal = fmRow[fmIdx];
+                var fmVal = getValFromFM(fmRow);
                 if (_.has(uniqueValueToFeatures, fmVal)) {
                     uniqueValueToFeatures[fmVal].push(node);
                 } else {
