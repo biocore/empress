@@ -1932,7 +1932,10 @@ define([
                     // into the taxonomy values, so this should force errors when
                     // trying to convert taxonomy values into numbers)
                     var getValFromFM;
-                    var taxIdx = _.indexOf(this._splitTaxonomyColumns, layer.colorByFMField);
+                    var taxIdx = _.indexOf(
+                        this._splitTaxonomyColumns,
+                        layer.colorByFMField
+                    );
                     if (taxIdx <= 0) {
                         getValFromFM = function (fmRow) {
                             return fmRow[colorFMIdx];
@@ -1942,14 +1945,18 @@ define([
                         for (var i = 0; i < taxIdx; i++) {
                             var currTaxCol = this._splitTaxonomyColumns[i];
                             var currTaxColFMIdx = _.indexOf(
-                                this._featureMetadataColumns, currTaxCol
+                                this._featureMetadataColumns,
+                                currTaxCol
                             );
                             ancestorFMIndices.push(currTaxColFMIdx);
                         }
                         ancestorFMIndices.push(colorFMIdx);
                         getValFromFM = function (fmRow) {
                             var totalFMVal = "";
-                            _.each(ancestorFMIndices, function (ancestorFMIdx, t) {
+                            _.each(ancestorFMIndices, function (
+                                ancestorFMIdx,
+                                t
+                            ) {
                                 if (t > 0) {
                                     totalFMVal += "; ";
                                 }
@@ -2291,7 +2298,8 @@ define([
             for (var i = 0; i < taxIdx; i++) {
                 var currTaxCol = this._splitTaxonomyColumns[i];
                 var currTaxColFMIdx = _.indexOf(
-                    this._featureMetadataColumns, currTaxCol
+                    this._featureMetadataColumns,
+                    currTaxCol
                 );
                 ancestorFMIndices.push(currTaxColFMIdx);
             }
