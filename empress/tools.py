@@ -143,7 +143,7 @@ def match_inputs(
     Returns
     -------
     (table, sample_metadata, tip_metadata, int_metadata, tax_columns):
-        (biom.Table, pd.DataFrame, pd.DataFrame / None, pd.DataFrame / None, list)
+        (biom.Table, pd.DataFrame, pd.DataFrame|None, pd.DataFrame|None, list)
         Versions of the input table, sample metadata, and feature metadata
         filtered such that:
             -The table only contains features also present as tips in the tree.
@@ -331,7 +331,9 @@ def match_inputs(
         feature_metadata
     )
 
-    return ff_table, sf_sample_metadata, tip_metadata, int_metadata, tax_columns
+    return (
+        ff_table, sf_sample_metadata, tip_metadata, int_metadata, tax_columns
+    )
 
 
 def shifting(bitlist, size=51):
