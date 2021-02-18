@@ -144,6 +144,41 @@ require([
             deepEqual(empressUnrootCoords, unrootCoords);
         });
 
+        test("Test getNodeCoords internal node circles w/ 1 descendant", function () {
+            var testObject = UtilitiesForTesting.getTestDataSingleDescendant();
+            // have empress draw internal node circles w/ 1 descendant
+            testObject.empress.drawNodeCircles = 3;
+            // Note: node 6's name is null, which would indicate that it didn't
+            // have an assigned name in the input Newick file. However, for
+            // #348, we still want to draw a circle for it.
+            // prettier-ignore
+            var rectCoords = new Float32Array([
+                3, 4, 3289650, // root  
+                5, 6, 3289650, // internal node
+            ]);
+            testObject.empress._currentLayout = "Rectangular";
+            var empressRecCoords = testObject.empress.getNodeCoords();
+            deepEqual(empressRecCoords, rectCoords);
+
+            // prettier-ignore
+            var circCoords = new Float32Array([
+                3, 4, 3289650, // root  
+                5, 6, 3289650, // internal node
+            ]);
+            testObject.empress._currentLayout = "Circular";
+            var empressCirCoords = testObject.empress.getNodeCoords();
+            deepEqual(empressCirCoords, circCoords);
+
+            // prettier-ignore
+            var unrootCoords = new Float32Array([
+                3, 4, 3289650, // root  
+                5, 6, 3289650, // internal node
+            ]);
+            testObject.empress._currentLayout = "Unrooted";
+            var empressUnrootCoords = testObject.empress.getNodeCoords();
+            deepEqual(empressUnrootCoords, unrootCoords);
+        });
+
         test("Test colorSampleGroups, single group", function () {
             // Note: the group names for colorSampleGroup must be a color
             // hex string

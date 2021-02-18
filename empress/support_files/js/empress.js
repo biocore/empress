@@ -859,21 +859,26 @@ define([
             return scope.getNodeInfo(node, "visible");
         };
         var comp;
+
         if (this.drawNodeCircles === 0) {
+            // draw internall node circles
             comp = function (node) {
                 return (
                     visible(node) && !tree.isleaf(tree.postorderselect(node))
                 );
             };
         } else if (this.drawNodeCircles === 1) {
+            // draw all node circles
             comp = function (node) {
                 return visible(node);
             };
         } else if (this.drawNodeCircles === 2) {
+            // hide all node circles
             comp = function (node) {
                 return false;
             };
         } else if (this.drawNodeCircles === 3) {
+            // draw node with 1 descendant
             comp = function (node) {
                 var treeNode = tree.postorderselect(node);
                 return (
@@ -2630,7 +2635,8 @@ define([
      *
      * @param{String} showTreeNodes 0 - draw only internal nodes circles,
      *                              1 - draw all node circles,
-     *                              2 - hide all node circles
+     *                              2 - hide all node circles,
+     *                              3 - draw node only 1 descendant
      */
     Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
         this.drawNodeCircles = Number(showTreeNodes);
