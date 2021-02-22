@@ -176,8 +176,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         }
 
         var interpolator;
-        if (this.color === Colorer.__PR_OR_GR) {
-            interpolator = chroma.scale(Colorer.__prOrGr);
+        if (this.color === Colorer.__GR_OR_PR) {
+            interpolator = chroma.scale(Colorer.__gnOrPr);
         } else {
             interpolator = chroma.scale(this.color);
         }
@@ -252,8 +252,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             domain = [min, max];
         }
         var interpolator;
-        if (this.color === Colorer.__PR_OR_GR) {
-            interpolator = chroma.scale(Colorer.__prOrGr).domain(domain);
+        if (this.color === Colorer.__GR_OR_PR) {
+            interpolator = chroma.scale(Colorer.__gnOrPr).domain(domain);
         } else {
             interpolator = chroma.scale(this.color).domain(domain);
         }
@@ -565,8 +565,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         "#808000",
         "#008080",
     ];
-    Colorer.__PR_OR_GR = "GnOrPr";
-    Colorer.__prOrGr = ["#008000", "#fed8b1", "#800080"];
+    Colorer.__GR_OR_PR = "GnOrPr";
+    Colorer.__gnOrPr = ["#008000", "#fed8b1", "#800080"];
 
     // Used to create color select option and chroma.brewer
     //Modified from:
