@@ -2272,14 +2272,29 @@ define([
             obs[uniqueVal] = new Set(uniqueValueToFeatures[uniqueVal]);
         });
 
-        // assign colors to unique values
-        var colorer = new Colorer(
-            color,
-            sortedUniqueValues,
-            continuous,
-            continuous ? -1 : undefined,
-            reverse
-        );
+        try {
+            // assign colors to unique values
+            var colorer = new Colorer(
+                color,
+                sortedUniqueValues,
+                continuous,
+                continuous ? -1 : undefined,
+                reverse
+            );
+        } catch (err) {
+            // If the Colorer construction failed (should only have
+            // happened if the user asked for continuous values but the
+            // selected field doesn't have at least 2 unique numeric
+            // values), then we open a toast message about this error and
+            // then raise it again to send error to console.
+            var msg = 
+                "Error with assigning colors: '" +
+                cat +
+                "' is either non-numeric" +
+                " or has less than 2 unique numeric values";
+                util.toastMsg(msg, 5000);
+                throw msg;
+        }
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
         // colors for the legend
