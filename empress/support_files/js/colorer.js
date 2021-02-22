@@ -177,14 +177,15 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
         var interpolator;
         if (this.color === Colorer.__PR_OR_GR) {
-            interpolator = chroma.scale(Colorer.__prOrGr).domain([0, 1]);
+            interpolator = chroma.scale(Colorer.__prOrGr);
         } else {
-            interpolator = chroma.scale(this.color).domain([0, 1]);
+            interpolator = chroma.scale(this.color);
         }
 
         if (this.sortedUniqueValues.length === 1) {
             // If there's only 1 unique value, set its color as the first in
             // the color map. This matches the behavior of Emperor.
+            interpolator = interpolator.domain([0,1]);
             var onlyVal = this.sortedUniqueValues[0];
             if (this.reverse) {
                 this.__valueToColor[onlyVal] = interpolator(1);
@@ -564,8 +565,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         "#808000",
         "#008080",
     ];
-    Colorer.__PR_OR_GR = "PrOrGn";
-    Colorer.__prOrGr = ["green", "#fed8b1", "purple"];
+    Colorer.__PR_OR_GR = "GnOrPr";
+    Colorer.__prOrGr = ["#008000", "#fed8b1", "#800080"];
 
     // Used to create color select option and chroma.brewer
     //Modified from:
@@ -619,8 +620,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         { id: "PuOr", name: "Purple-Orange", type: Colorer.DIVERGING },
         { id: "PRGn", name: "Purple-Green", type: Colorer.DIVERGING },
         {
-            id: "PrOrGn",
-            name: "Purple-Light Orange-Green",
+            id: "GnOrPr",
+            name: "Green-LightOrange-Purple",
             type: Colorer.DIVERGING,
         },
     ];
