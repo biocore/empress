@@ -2278,6 +2278,14 @@ define([
                 color,
                 sortedUniqueValues,
                 continuous,
+                // Colorer will create a special gradient ID using the number
+                // we pass into this parameter. This allows empress to display
+                // multiple gradients at the same time without them overriding
+                // each other. Currently, the barplots are setup to start at
+                // 0. So we set this to -1 this value will never be -1 in
+                // the barplots. Thus, by setting this value to -1 we can
+                // display the feature metadata gradient along side the
+                // barplot gradients.
                 continuous ? -1 : undefined,
                 reverse
             );
@@ -2287,13 +2295,13 @@ define([
             // selected field doesn't have at least 2 unique numeric
             // values), then we open a toast message about this error and
             // then raise it again to send error to console.
-            var msg = 
+            var msg =
                 "Error with assigning colors: '" +
                 cat +
                 "' is either non-numeric" +
                 " or has less than 2 unique numeric values";
-                util.toastMsg(msg, 5000);
-                throw msg;
+            util.toastMsg(msg, 5000);
+            throw msg;
         }
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
@@ -2324,19 +2332,6 @@ define([
         return keyInfo;
     };
 
-    
-    Empress.prototype._projectObservations = function (
-        obs,
-        ignoreAbsentTips,
-        isContinuous=false
-    ) {
-        var result;
-        if (!isContinuous) {
-            result = this._projectDiscreteObservations(obs, ignoreAbsentTips);
-        }
-        return result;
-    };
-
     /*
      * Projects the groups in obs up the tree.
      *
@@ -2361,9 +2356,10 @@ define([
                         to a set of keys (i.e. tree nodes) that are unique to
                         each group.
      */
-    Empress.prototype._projectDiscreteObservations = function(
-        obs, 
-        ignoreAbsentTips
+    Empress.prototype._projectObservations = function (
+        obs,
+        ignoreAbsentTips,
+        isContinuous = false
     ) {
         var tree = this._tree,
             categories = Object.keys(obs),
@@ -2419,75 +2415,7 @@ define([
         });
 
         return result;
-    }
-
-    /*
-     * This function will assign internal nodes to be the average of its tips.
-     *
-     * Note: All tips that are not passed into obs are ignored
-     *
-     * @param {Object} obs Maps categories to a set of observations (i.e. tips)
-     *
-     * @return {Object} returns A Map with the same group names that maps groups
-                        to a set of keys (i.e. tree nodes) that are unique to
-                        each group.
-     */
-    Empress.prototype._projectContinuousObservations = function(obs) {
-        var tree = this._tree,
-            categories = Object.keys(obs),
-            notRepresented = new Set(),
-            i,
-            j;
-
-        if (!ignoreAbsentTips) {
-            // find "non-represented" tips
-            // Note: the following uses postorder traversal
-            for (i = 1; i < tree.size; i++) {
-                if (tree.isleaf(tree.postorderselect(i))) {
-                    var represented = false;
-                    for (j = 0; j < categories.length; j++) {
-                        if (obs[categories[j]].has(i)) {
-                            represented = true;
-                            break;
-                        }
-                    }
-                    if (!represented) notRepresented.add(i);
-                }
-            }
-        }
-
-        // assign internal nodes to appropriate category based on children
-        // iterate using postorder
-        // Note that, although we don't explicitly iterate over the
-        // root (at index tree.size) in this loop, we iterate over all its
-        // descendants; so in the event that all leaves are unique,
-        // the root can still get assigned to a group.
-        for (i = 1; i < tree.size; i++) {
-            var node = i;
-            var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
-
-            for (j = 0; j < categories.length; j++) {
-                category = categories[j];
-
-                // add internal nodes to groups
-                if (obs[category].has(node)) {
-                    obs[category].add(parent);
-                }
-                if (notRepresented.has(node)) {
-                    notRepresented.add(parent);
-                }
-            }
-        }
-
-        var result = util.keepUniqueKeys(obs, notRepresented);
-
-        // remove all groups that do not contain unique features
-        result = _.pick(result, function (value, key) {
-            return value.size > 0;
-        });
-
-        return result;
-    }
+    };
 
     /**
      * Updates the tree based on obs and cm but does not draw a new tree.
