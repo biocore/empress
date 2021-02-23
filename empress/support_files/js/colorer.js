@@ -175,15 +175,22 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             );
         }
 
+        var interpolator;
+        if (this.color === Colorer.__GN_OR_PR) {
+            interpolator = chroma.scale(Colorer.__gnOrPr);
+        } else {
+            interpolator = chroma.scale(this.color);
+        }
+
         if (this.sortedUniqueValues.length === 1) {
             // If there's only 1 unique value, set its color as the first in
             // the color map. This matches the behavior of Emperor.
+            interpolator = interpolator.domain([0, 1]);
             var onlyVal = this.sortedUniqueValues[0];
-            var brewer = chroma.brewer[this.color];
             if (this.reverse) {
-                this.__valueToColor[onlyVal] = brewer[brewer.length - 1];
+                this.__valueToColor[onlyVal] = interpolator(1);
             } else {
-                this.__valueToColor[onlyVal] = brewer[0];
+                this.__valueToColor[onlyVal] = interpolator(0);
             }
         } else {
             // ... Otherwise, do normal interpolation -- the first value gets
@@ -197,7 +204,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             } else {
                 domain = [0, rangeMax];
             }
-            var interpolator = chroma.scale(this.color).domain(domain);
+            interpolator = interpolator.domain(domain);
 
             for (var i = 0; i < this.sortedUniqueValues.length; i++) {
                 var val = this.sortedUniqueValues[i];
@@ -244,7 +251,12 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         } else {
             domain = [min, max];
         }
-        var interpolator = chroma.scale(this.color).domain(domain);
+        var interpolator;
+        if (this.color === Colorer.__GN_OR_PR) {
+            interpolator = chroma.scale(Colorer.__gnOrPr).domain(domain);
+        } else {
+            interpolator = chroma.scale(this.color).domain(domain);
+        }
         _.each(split.numeric, function (n) {
             scope.__valueToColor[n] = interpolator(parseFloat(n));
         });
@@ -553,6 +565,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         "#808000",
         "#008080",
     ];
+    Colorer.__GN_OR_PR = "GnOrPr";
+    Colorer.__gnOrPr = ["#008000", "#fed8b1", "#800080"];
 
     // Used to create color select option and chroma.brewer
     //Modified from:
@@ -605,6 +619,11 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         { id: "BrBG", name: "Brown-Blue-Green", type: Colorer.DIVERGING },
         { id: "PuOr", name: "Purple-Orange", type: Colorer.DIVERGING },
         { id: "PRGn", name: "Purple-Green", type: Colorer.DIVERGING },
+        {
+            id: "GnOrPr",
+            name: "Green-LightOrange-Purple",
+            type: Colorer.DIVERGING,
+        },
     ];
     return Colorer;
 });
