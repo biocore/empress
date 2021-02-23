@@ -2272,9 +2272,10 @@ define([
             obs[uniqueVal] = new Set(uniqueValueToFeatures[uniqueVal]);
         });
 
+        var colorer;
         try {
             // assign colors to unique values
-            var colorer = new Colorer(
+            colorer = new Colorer(
                 color,
                 sortedUniqueValues,
                 continuous,
