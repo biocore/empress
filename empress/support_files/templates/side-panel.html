@@ -413,8 +413,17 @@
     Node circles
   </p>
   <p>
-    <label for="display-nodes-chk">Show node circles?</label>
-    <input id="display-nodes-chk" type="checkbox" class="empress-input">
+    <label for="display-nodes-select">Show node circles?</label>
+    <label class="select-container">
+      <select id="display-nodes-select">
+        <option value=0>Show internal node circles</option>
+        <option value=1>Show all node circles</option>
+        <option value=2>Hide all node circles</option>
+        <option value=3 selected>Show node circles of internal nodes with only one 
+                        descendant
+        </option>
+      </select>
+    </label>
   </p>
   <p class="side-panel-notes indented">
     If checked, this draws circles at all nodes' positions.

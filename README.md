@@ -1,5 +1,6 @@
 # Empress
-[![](https://github.com/biocore/empress/workflows/Empress%20CI/badge.svg)](https://github.com/biocore/empress/actions)
+[![GitHub Actions CI](https://github.com/biocore/empress/workflows/Empress%20CI/badge.svg)](https://github.com/biocore/empress/actions)
+[![PyPI](https://img.shields.io/pypi/v/empress.svg)](https://pypi.org/project/empress)
 
 <!---Empress Logo--->
 
@@ -23,7 +24,7 @@ and barplots).
 
 # Installation & Basic Usage
 
-Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/) or by using `qiime tools view`.
+Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with the HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/) or by using `qiime tools view`.
 
 ## Standalone Version
 
@@ -51,25 +52,44 @@ The standalone version of Empress takes the following filetypes as inputs. (Note
 
 ### Example standalone usage
 
-```
+#### `empress tree-plot`
+
+```bash
+# Option 1: Using "long" parameter names
 empress tree-plot \
     --tree tree.nwk \
-    --feature-metadata feature_metadata.tsv \
-    --output-dir tree_viz
+    --feature-metadata feature-metadata.tsv \
+    --output-dir tree-viz
+
+# Option 2: Using "short" parameter names
+empress tree-plot -t tree.nwk -fm feature-metadata.tsv -o tree-viz
 ```
 
-```
+#### `empress community-plot`
+
+```bash
+# Option 1: Using "long" parameter names
 empress community-plot \
     --tree tree.nwk \
     --table feature-table.biom \
-    --sample-metadata sample_metadata.tsv \
-    --feature-metadata feature_metadata.tsv \
+    --sample-metadata sample-metadata.tsv \
+    --feature-metadata feature-metadata.tsv \
     --pcoa ordination.txt \
     --filter-extra-samples \
-    --output-dir community_tree_viz
+    --output-dir community-tree-viz
+
+# Option 2: Using "short" parameter names
+empress community-plot \
+    -t tree.nwk \
+    -tbl feature-table.biom \
+    -sm sample-metadata.tsv \
+    -fm feature-metadata.tsv \
+    -p ordination.txt \
+    --filter-extra-samples \
+    -o community-tree-viz
 ```
 
-You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `--output-dir` must not exist as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files, you should combine them all into one file that you pass to Empress.
+You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `-o`/`--output-dir` must not exist, as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files, you should combine them all into one file that you pass to Empress.
 
 The output will be a directory containing an `empress.html` file and a `support_files` directory containing the JS/CSS files required to view the plot in your browser. If you provided a PCoA to the `community-plot` command there will also be an `emperor-resources` subdirectory containing the files required to view the Emperor plot alongside the tree. You can view the `empress.html` file in any modern browser to interact with it the same way you would the QIIME 2 Visualization.
 
@@ -94,22 +114,26 @@ qiime empress --help
 
 ### Example QIIME 2 usage
 
-```
+#### `qiime empress tree-plot`
+
+```bash
 qiime empress tree-plot \
     --i-tree tree.qza \
     --m-feature-metadata-file taxonomy.qza \
-    --o-visualization tree_viz.qzv
+    --o-visualization tree-viz.qzv
 ```
 
-```
+#### `qiime empress community-plot`
+
+```bash
 qiime empress community-plot \
     --i-tree tree.qza \
     --i-feature-table feature-table.qza \
-    --m-sample-metadata-file sample_metadata.tsv \
+    --m-sample-metadata-file sample-metadata.tsv \
     --m-feature-metadata-file taxonomy.qza \
     --i-pcoa ordination.qza \
     --p-filter-extra-samples \
-    --o-visualization community_tree_viz.qzv
+    --o-visualization community-tree-viz.qzv
 ```
 
 # Tutorial: Using Empress in QIIME 2
@@ -439,11 +463,11 @@ Another way to explore our data is to select samples on Emperor and look for the
 
 You may have noticed that in the Emperor plot one of the *Right Palm* samples is strangely clustering closer to the gut samples rather than the other palm samples. On Emperor, select some of the gut samples as well as some of the palm samples from the right hand side, taking care to not include the outlier palm sample on the left. On the Empress plot you will see several branches light up as either red, orange, or blue. These colors represent the unique features found in only that body-site; shared features are left uncolored.  
 
-![empire_sample_selection_gut_and_palm](docs/moving-pictures/img/empire_sample_selection_gut_and_palm.gif)
+![empire_sample_selection_gut_and_palm](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_sample_selection_gut_and_palm.gif)
 
 Once the samples have been deselected (within a couple of seconds), select the outlier palm sample + one of the gut samples. What do you notice? You’ll see that comparatively few unique red or orange branches light up, suggesting that this sample shares many more features with the gut samples than the other palm samples.\*
 
-![empire_sample_selection_outlierpalm_plus_gut](docs/moving-pictures/img/empire_sample_selection_outlierpalm_plus_gut.gif)
+![empire_sample_selection_outlierpalm_plus_gut](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_sample_selection_outlierpalm_plus_gut.gif)
 
 This is a good example of when your data can tell you something about your metadata that you may have missed. In reality, in this experiment, this palm sample was in fact mislabelled by accident.  
 
@@ -455,7 +479,7 @@ all samples in a certain group (e.g. for this dataset, all gut samples at
 once), to show which features are present in these samples. This can be done by
 double-clicking on a sample coloring category in Emperor, as shown below:
 
-![empire_groupselection](docs/moving-pictures/img/empire_groupselection.gif)
+![empire_groupselection](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_groupselection.gif)
 
 This makes it easy to get a quick glance at which parts of the tree are "used"
 within a certain group of samples. (If you have a hard time viewing certain colors
