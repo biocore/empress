@@ -7,15 +7,13 @@
 # ----------------------------------------------------------------------------
 
 import qiime2
-import numpy as np
 import biom
 
-from scipy.spatial.distance import euclidean
 from q2_types.tree import NewickFormat
 from skbio import OrdinationResults
 
 from empress.core import Empress
-from empress._plot_utils import get_bp, save_viz
+from empress._plot_utils import get_bp, save_viz, prepare_pcoa
 
 
 def community_plot(
@@ -37,17 +35,7 @@ def community_plot(
        barplots, animations, and Emperor integration support.
     """
     if pcoa is not None and pcoa.features is not None:
-        # select the top N most important features based on the vector's
-        # magnitude (coped from q2-emperor)
-        feats = pcoa.features.copy()
-        # in cases where the axes are all zero there might be all-NA
-        # columns
-        feats.fillna(0, inplace=True)
-        origin = np.zeros_like(feats.columns)
-        feats['importance'] = feats.apply(euclidean, axis=1, args=(origin,))
-        feats.sort_values('importance', inplace=True, ascending=False)
-        feats.drop(['importance'], inplace=True, axis=1)
-        pcoa.features = feats[:number_of_features].copy()
+        pcoa = prepare_pcoa(pcoa, number_of_features)
 
     sample_metadata = sample_metadata.to_dataframe()
 

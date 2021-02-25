@@ -1,5 +1,6 @@
 # Empress
-[![Build Status](https://travis-ci.org/biocore/empress.svg?branch=master)](https://travis-ci.org/biocore/empress)
+[![GitHub Actions CI](https://github.com/biocore/empress/workflows/Empress%20CI/badge.svg)](https://github.com/biocore/empress/actions)
+[![PyPI](https://img.shields.io/pypi/v/empress.svg)](https://pypi.org/project/empress)
 
 <!---Empress Logo--->
 
@@ -21,35 +22,128 @@ and barplots).
 <i>"Empire plot" visualizing a phylogenetic tree of amplicon sequence variants (ASVs) in Empress, left, alongside a PCoA biplot in Emperor, right. As one of the ways in which these displays are integrated, selecting a tip in the tree (representing an ASV) enlarges the samples containing this ASV in Emperor -- thereby providing more information than would be available from either display alone.</i>
 </div>
 
-# Installation   
+# Installation & Basic Usage
 
-Currently, Empress is only accessible as a QIIME 2 plugin. To follow the tutorial below you'll need to have a QIIME 2 (version 2019.10 or newer) conda environment installed and activated. See the [QIIME 2 installation](https://docs.qiime2.org/2020.8/install/) page for installation instructions.  
-Once you have QIIME 2 installed, make sure the conda environment is activated by running:
+Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with the HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/) or by using `qiime tools view`.
+
+## Standalone Version
+
+EMPress is available through [PyPI](https://PyPI.org/project/empress/). Run the following command to install Empress:
+
+`pip install empress`
+
+Try running the command `empress --help` to ensure that Empress has been installed properly. If you see details for the different Empress commands then the installation has succeeded and you are ready to start using Empress!
+
+### Available commands
+
+Empress provides two commands: `empress tree-plot` and `empress community-plot`. Both commands generate an Empress visualization, but `community-plot` requires you to pass in a feature table and sample metadata while `tree-plot` only requires a tree file. See [this section](#first-a-note-about-empress-commands) of the docs for some more details.
+
+### Input files
+
+The standalone version of Empress takes the following filetypes as inputs. (Note that for `empress tree-plot` all of these except for the tree are optional, and for `empress community-plot` all except for the tree, feature table, and sample metadata are optional.)
+
+| Input | Filetype |
+| ----- | -------- |
+| Tree | [Newick](https://en.wikipedia.org/wiki/Newick_format) |
+| Feature Table | [BIOM](http://biom-format.org/) |
+| Sample Metadata | [TSV](https://en.wikipedia.org/wiki/Tab-separated_values) |
+| Feature Metadata | [TSV](https://en.wikipedia.org/wiki/Tab-separated_values) |
+| PCoA | [scikit-bio OrdinationResults](http://scikit-bio.org/docs/latest/generated/skbio.io.format.ordination.html) |
+
+### Example standalone usage
+
+#### `empress tree-plot`
+
+```bash
+# Option 1: Using "long" parameter names
+empress tree-plot \
+    --tree tree.nwk \
+    --feature-metadata feature-metadata.tsv \
+    --output-dir tree-viz
+
+# Option 2: Using "short" parameter names
+empress tree-plot -t tree.nwk -fm feature-metadata.tsv -o tree-viz
+```
+
+#### `empress community-plot`
+
+```bash
+# Option 1: Using "long" parameter names
+empress community-plot \
+    --tree tree.nwk \
+    --table feature-table.biom \
+    --sample-metadata sample-metadata.tsv \
+    --feature-metadata feature-metadata.tsv \
+    --pcoa ordination.txt \
+    --filter-extra-samples \
+    --output-dir community-tree-viz
+
+# Option 2: Using "short" parameter names
+empress community-plot \
+    -t tree.nwk \
+    -tbl feature-table.biom \
+    -sm sample-metadata.tsv \
+    -fm feature-metadata.tsv \
+    -p ordination.txt \
+    --filter-extra-samples \
+    -o community-tree-viz
+```
+
+You can view the details of the command line arguments with `empress tree-plot --help` and `empress community-plot --help`. Note that the path provided to `-o`/`--output-dir` must not exist, as it will be created by Empress upon successful execution of the command. It is also worth noting that the standalone version of the Empress commands does not support providing multiple sample/feature metadata files. If you have, for example, multiple feature metadata files, you should combine them all into one file that you pass to Empress.
+
+The output will be a directory containing an `empress.html` file and a `support_files` directory containing the JS/CSS files required to view the plot in your browser. If you provided a PCoA to the `community-plot` command there will also be an `emperor-resources` subdirectory containing the files required to view the Emperor plot alongside the tree. You can view the `empress.html` file in any modern browser to interact with it the same way you would the QIIME 2 Visualization.
+
+## QIIME 2 Version
+
+See the [QIIME 2 installation](https://docs.qiime2.org/2020.8/install/) page for instructions on how to install QIIME 2. Once you have QIIME 2 installed, make sure the conda environment is activated by running:
+
+`conda activate qiime2-2020.8`
+
+You can replace `qiime2-2020.8` above with whichever version of QIIME 2 you have currently installed.
+
+Now, run the following command to install Empress using PyPI:
+
+`pip install empress`
+
+Once you have installed Empress, run the following commands to ensure that Empress was installed correctly. If you see information about Empress' QIIME 2 plugin, the installation was successful!
 
 ```
-conda activate qiime2-2020.8
-```
-
-You can replace `qiime2-2020.8` above with whichever version of QIIME 2 you have currently installed.  
-
-Now we are ready to install Empress. Run the following commands to do so.
-
-```
-pip install empress
 qiime dev refresh-cache
 qiime empress --help
 ```
 
-If you see information about Empress' QIIME 2 plugin, the installation was successful!
+### Example QIIME 2 usage
 
-# Tutorial: Using Empress in QIIME 2   
+#### `qiime empress tree-plot`
+
+```bash
+qiime empress tree-plot \
+    --i-tree tree.qza \
+    --m-feature-metadata-file taxonomy.qza \
+    --o-visualization tree-viz.qzv
+```
+
+#### `qiime empress community-plot`
+
+```bash
+qiime empress community-plot \
+    --i-tree tree.qza \
+    --i-feature-table feature-table.qza \
+    --m-sample-metadata-file sample-metadata.tsv \
+    --m-feature-metadata-file taxonomy.qza \
+    --i-pcoa ordination.qza \
+    --p-filter-extra-samples \
+    --o-visualization community-tree-viz.qzv
+```
+
+# Tutorial: Using Empress in QIIME 2
 
 In this tutorial, we'll use Empress through QIIME 2 and demonstrate its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.8/tutorials/moving-pictures/) dataset. This dataset contains human microbiome samples from
 two individuals at four body sites across five timepoints.
 
 ## First, a note about Empress' commands
 
-Empress currently has two commands available through QIIME 2:
+Empress currently has two commands available:
 
 ```
 $ qiime empress --help
@@ -369,11 +463,11 @@ Another way to explore our data is to select samples on Emperor and look for the
 
 You may have noticed that in the Emperor plot one of the *Right Palm* samples is strangely clustering closer to the gut samples rather than the other palm samples. On Emperor, select some of the gut samples as well as some of the palm samples from the right hand side, taking care to not include the outlier palm sample on the left. On the Empress plot you will see several branches light up as either red, orange, or blue. These colors represent the unique features found in only that body-site; shared features are left uncolored.  
 
-![empire_sample_selection_gut_and_palm](docs/moving-pictures/img/empire_sample_selection_gut_and_palm.gif)
+![empire_sample_selection_gut_and_palm](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_sample_selection_gut_and_palm.gif)
 
 Once the samples have been deselected (within a couple of seconds), select the outlier palm sample + one of the gut samples. What do you notice? You’ll see that comparatively few unique red or orange branches light up, suggesting that this sample shares many more features with the gut samples than the other palm samples.\*
 
-![empire_sample_selection_outlierpalm_plus_gut](docs/moving-pictures/img/empire_sample_selection_outlierpalm_plus_gut.gif)
+![empire_sample_selection_outlierpalm_plus_gut](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_sample_selection_outlierpalm_plus_gut.gif)
 
 This is a good example of when your data can tell you something about your metadata that you may have missed. In reality, in this experiment, this palm sample was in fact mislabelled by accident.  
 
@@ -385,7 +479,7 @@ all samples in a certain group (e.g. for this dataset, all gut samples at
 once), to show which features are present in these samples. This can be done by
 double-clicking on a sample coloring category in Emperor, as shown below:
 
-![empire_groupselection](docs/moving-pictures/img/empire_groupselection.gif)
+![empire_groupselection](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_groupselection.gif)
 
 This makes it easy to get a quick glance at which parts of the tree are "used"
 within a certain group of samples. (If you have a hard time viewing certain colors

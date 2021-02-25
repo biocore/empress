@@ -243,6 +243,13 @@ class TestCore(unittest.TestCase):
         # emperor is instantiated as needed but not yet setup
         self.assertTrue(isinstance(viz._emperor, Emperor))
 
+    def test_init_with_ordination_features(self):
+        '''Check that empress does not break when ordination has features
+        but empress itself does not.'''
+        viz = Empress(self.tree, self.table, self.sample_metadata,
+                      ordination=self.biplot, shear_to_table=False)
+        self.assertIsNone(viz.features)
+
     def test_init_with_ordination_empty_samples_in_pcoa(self):
         def make_bad(v, i, m):
             if i in ['Sample2', 'Sample4']:
@@ -297,7 +304,7 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.table, self.sample_metadata,
                       shear_to_table=False)
 
-        obs = viz._to_dict()
+        obs = viz.to_dict()
         dict_a_cp = copy.deepcopy(DICT_A)
 
         # NOTE: Uncomment the following two lines of code to write the current
@@ -315,7 +322,7 @@ class TestCore(unittest.TestCase):
             self.tree, self.table, self.sample_metadata, self.feature_metadata,
             shear_to_table=False
         )
-        obs = viz._to_dict()
+        obs = viz.to_dict()
         dict_a_with_fm = copy.deepcopy(DICT_A)
         dict_a_with_fm["compressed_tip_metadata"] = {1: ["asdf", "qwer"]}
         dict_a_with_fm["compressed_int_metadata"] = {8: ["ghjk", "tyui"]}
@@ -333,7 +340,7 @@ class TestCore(unittest.TestCase):
         viz = Empress(self.tree, self.table, nan_sample_metadata,
                       nan_feature_metadata,
                       shear_to_table=False)
-        obs = viz._to_dict()
+        obs = viz.to_dict()
         dict_a_nan = copy.deepcopy(DICT_A)
 
         # [1][3] corresponds to Sample2, Metadata4
@@ -355,7 +362,7 @@ class TestCore(unittest.TestCase):
                       ordination=self.pcoa,
                       shear_to_table=False,
                       filter_extra_samples=True)
-        obs = viz._to_dict()
+        obs = viz.to_dict()
 
         self.assertEqual(viz._emperor.width, '50vw')
         self.assertEqual(viz._emperor.height, '100vh; float: right')
@@ -418,7 +425,7 @@ class TestCore(unittest.TestCase):
         dict_a_cp = copy.deepcopy(DICT_A)
         self._clear_copied_dict_a(dict_a_cp)
 
-        obs = viz._to_dict()
+        obs = viz.to_dict()
         self.assertEqual(obs, dict_a_cp)
 
     def test_to_dict_tree_plot_with_feature_metadata(self):
@@ -432,7 +439,7 @@ class TestCore(unittest.TestCase):
         dict_a_cp["compressed_int_metadata"] = {8: ["ghjk", "tyui"]}
         dict_a_cp["feature_metadata_columns"] = ["fmdcol1", "fmdcol2"]
 
-        obs = viz._to_dict()
+        obs = viz.to_dict()
         self.assertEqual(obs, dict_a_cp)
 
     def test_shear_tree_to_table(self):

@@ -9,7 +9,7 @@
 
 from setuptools import setup, find_packages
 
-__version__ = "1.0.1-dev"
+__version__ = "1.1.0-dev"
 __maintainer__ = "Empress development team"
 __email__ = "kcantrel@ucsd.edu"
 
@@ -43,15 +43,18 @@ all_deps = base + test
 setup(
     name='empress',
     version=__version__,
-    description='Empress',
+    description=(
+        "Fast and scalable phylogenetic tree viewer for multi-omic data "
+        "analysis"
+    ),
     author="Empress Development Team",
     author_email=__email__,
     maintainer=__maintainer__,
     maintainer_email=__email__,
     url='http://github.com/biocore/empress',
     entry_points={
-        'qiime2.plugins':
-        ['q2-empress=empress.plugin_setup:plugin']
+        'qiime2.plugins': ['q2-empress=empress.plugin_setup:plugin'],
+        'console_scripts': ['empress=empress.scripts._cli:empress'],
     },
     packages=find_packages(),
     package_data={

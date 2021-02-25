@@ -55,6 +55,7 @@ define([
         this.borderContent = document.getElementById("barplot-border-content");
         this.borderCheckbox = document.getElementById("barplot-border-chk");
         this.borderOptions = document.getElementById("barplot-border-options");
+        this.borderGapInput = document.getElementById("barplot-custom-gap");
         this.borderColorPicker = document.getElementById(
             "barplot-border-color"
         );
@@ -142,6 +143,16 @@ define([
         // ... and to having a length of whatever the default barplot layer
         // length divided by 10 is :)
         this.borderLength = BarplotLayer.DEFAULT_LENGTH / 10;
+
+        // Initialize default spacing between tree and first barplot layer
+        // as well as change behavior.
+        this.distBtwnTreeAndBarplots =
+            BarplotPanel.DEFAULT_DIST_BTWN_TREE_AND_BARPLOTS;
+        this.borderGapInput.value = this.distBtwnTreeAndBarplots;
+        $(this.borderGapInput).change(function () {
+            var gapInput = util.parseAndValidateNum(scope.borderGapInput, 0);
+            scope.distBtwnTreeAndBarplots = gapInput;
+        });
 
         // Now, initialize the border options UI accordingly
         this.initBorderOptions();
@@ -321,6 +332,13 @@ define([
      * Array containing the names of layouts compatible with barplots.
      */
     BarplotPanel.SUPPORTED_LAYOUTS = ["Rectangular", "Circular"];
+
+    /**
+     * Default distance (in "barplot units," the same as used for barplot
+     * lengths) between the farthest point on the tree and the start of the
+     * first barplot layer.
+     */
+    BarplotPanel.DEFAULT_DIST_BTWN_TREE_AND_BARPLOTS = 10;
 
     return BarplotPanel;
 });

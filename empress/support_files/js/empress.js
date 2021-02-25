@@ -271,8 +271,13 @@ define([
         /**
          * @type{Bool}
          * Whether or not to draw node circles.
+         * Values will range between 0 and 2.
+         * 0 - Show only internal node circles
+         * 1 - Show all node circles
+         * 2 - Do not show node circles
+         * 3 - show nodes with only 1 descendant
          */
-        this.drawNodeCircles = false;
+        this.drawNodeCircles = 3;
 
         /**
          * @type{Bool}
@@ -382,6 +387,9 @@ define([
         var data, i;
         // set up length getter
         var branchMethod = this.branchMethod;
+        var checkLengthsChange = LayoutsUtil.shouldCheckBranchLengthsChanged(
+            branchMethod
+        );
         var lengthGetter = LayoutsUtil.getLengthMethod(
             branchMethod,
             this._tree
@@ -401,7 +409,8 @@ define([
                 // what lengths it should lay out.
                 this.leafSorting,
                 undefined,
-                lengthGetter
+                lengthGetter,
+                checkLengthsChange
             );
             this._yrscf = data.yScalingFactor;
             for (i = 1; i <= this._tree.size; i++) {
@@ -423,7 +432,8 @@ define([
                 4020,
                 this.leafSorting,
                 undefined,
-                lengthGetter
+                lengthGetter,
+                checkLengthsChange
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
@@ -448,7 +458,8 @@ define([
                 4020,
                 4020,
                 undefined,
-                lengthGetter
+                lengthGetter,
+                checkLengthsChange
             );
             for (i = 1; i <= this._tree.size; i++) {
                 // remove old layout information
@@ -473,12 +484,6 @@ define([
         // Don't include nodes with the name null (i.e. nodes without a
         // specified name in the Newick file) in the auto-complete.
         nodeNames = nodeNames.filter((n) => n !== null);
-
-        // Sort node names case insensitively
-        nodeNames.sort(function (a, b) {
-            return a.localeCompare(b, "en", { sensitivity: "base" });
-        });
-        nodeNames = _.uniq(nodeNames);
         this._events.autocomplete(nodeNames);
 
         this.getLayoutInfo();
@@ -521,12 +526,7 @@ define([
      */
     Empress.prototype.drawTree = function () {
         this._drawer.loadTreeColorBuff(this.getTreeColor());
-        if (this.drawNodeCircles) {
-            this._drawer.loadNodeBuff(this.getNodeCoords());
-        } else {
-            // Clear the node circle buffer to save some memory / space
-            this._drawer.loadNodeBuff([]);
-        }
+        this._drawer.loadNodeBuff(this.getNodeCoords());
         this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
     };
@@ -863,9 +863,45 @@ define([
     Empress.prototype.getNodeCoords = function () {
         var tree = this._tree;
         var coords = [];
+        var scope = this;
+        var visible = function (node) {
+            return scope.getNodeInfo(node, "visible");
+        };
+        var comp;
+
+        if (this.drawNodeCircles === 0) {
+            // draw internall node circles
+            comp = function (node) {
+                return (
+                    visible(node) && !tree.isleaf(tree.postorderselect(node))
+                );
+            };
+        } else if (this.drawNodeCircles === 1) {
+            // draw all node circles
+            comp = function (node) {
+                return visible(node);
+            };
+        } else if (this.drawNodeCircles === 2) {
+            // hide all node circles
+            comp = function (node) {
+                return false;
+            };
+        } else if (this.drawNodeCircles === 3) {
+            // draw node with 1 descendant
+            comp = function (node) {
+                var treeNode = tree.postorderselect(node);
+                return (
+                    visible(node) &&
+                    !tree.isleaf(treeNode) &&
+                    tree.fchild(treeNode) === tree.lchild(treeNode)
+                );
+            };
+        } else {
+            throw new Error("getNodeCoords() drawNodeCircles is out of range");
+        }
 
         for (var node = 1; node <= tree.size; node++) {
-            if (!this.getNodeInfo(node, "visible")) {
+            if (!comp(node)) {
                 continue;
             }
             // In the past, we only drew circles for nodes with an assigned
@@ -1497,15 +1533,15 @@ define([
         var barplotBuffer = [];
 
         // Add on a gap between the closest-to-the-root point at which we can
-        // start drawing barplots, and the first barplot layer. This could be
-        // made into a barplot-panel-level configurable thing if desired.
-        // Currently, the 1.1 term here means that the barplots start at the
-        // max displacement plus 1/10th of the max displacement. If we used
-        // a 1.0 term instead, then barplots would start immediately at the max
-        // displacement (this looks kinda bad because the node circle of the
-        // tip(s) at this max displacement are partially covered by the
-        // barplots, so we don't do that).
-        var maxD = 1.1 * this._maxDisplacement;
+        // start drawing barplots, and the first barplot layer. (It's possible
+        // for this._barplotPanel.distBtwnTreeAndBarplots to be 0, in which
+        // case there isn't a gap -- this looks kinda bad if node circles are
+        // drawn because the node circle of the tip(s) at this max displacement
+        // are partially covered by the barplots -- hence why this isn't the
+        // default).
+        var maxD =
+            this._maxDisplacement +
+            this._barplotPanel.distBtwnTreeAndBarplots * this._barplotUnit;
 
         // This is the "nearest" displacement where barplots start, so store
         // this for later
@@ -2615,12 +2651,13 @@ define([
     /**
      * Display the tree nodes.
      *
-     * @param{Boolean} showTreeNodes If true, then Empress will draw circles at
-     *                               each node's position.
+     * @param{String} showTreeNodes 0 - draw only internal nodes circles,
+     *                              1 - draw all node circles,
+     *                              2 - hide all node circles,
+     *                              3 - draw node only 1 descendant
      */
     Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
-        this.drawNodeCircles = showTreeNodes;
-        this._drawer.setTreeNodeVisibility(showTreeNodes);
+        this.drawNodeCircles = Number(showTreeNodes);
         this.drawTree();
     };
 

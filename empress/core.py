@@ -164,7 +164,10 @@ class Empress():
 
                 # if there are no matches set to None so Emperor can ignore
                 # the feature metadata
-                feature_metadata = pd.concat([self.tip_md, self.int_md])
+                if self.tip_md is None and self.int_md is None:
+                    feature_metadata = pd.DataFrame()
+                else:
+                    feature_metadata = pd.concat([self.tip_md, self.int_md])
                 arrows = self.ordination.features.index
                 if (feature_metadata.index.intersection(arrows).empty or
                    feature_metadata.empty):
@@ -278,15 +281,19 @@ class Empress():
         main_template = self._get_template()
 
         # _process_data does a lot of munging to the coordinates data and
-        # _to_dict puts the data into a dictionary-like object for consumption
-        data = self._to_dict()
+        # to_dict puts the data into a dictionary-like object for consumption
+        data = self.to_dict()
 
         plot = main_template.render(data)
 
         return plot
 
-    def _to_dict(self):
+    def to_dict(self):
         """Convert processed data into a dictionary
+
+        Warning: the object returned by to_dict will contain references to
+        internal variables. Exercise caution if modifying the value of objects
+        returned by to_dict.
 
         Returns
         -------

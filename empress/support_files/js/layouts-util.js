@@ -155,6 +155,40 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     /**
+     * Determines whether a given method should check if branch lengths were changed.
+     *
+     * @param {String} methodName Method for determing branch lengths.
+     *                            One of ("ultrametric", "ignore", "normal").
+     * @returns {Boolean} Indicates whether the check should be performed.
+     * @throws {Error} If methodName is invalid.
+     */
+    function shouldCheckBranchLengthsChanged(methodName) {
+        var methods = {
+            ultrametric: true,
+            ignore: true,
+            normal: false,
+        };
+        if (methodName in methods) {
+            return methods[methodName];
+        } else {
+            throw "Invalid method: '" + methodName + "'.";
+        }
+    }
+
+    var NO_LENGTHS_CHANGED_MSG =
+        "It doesn't look like any branch lengths were changed " +
+        "by the current method of modifying branch lengths.";
+    var NO_LENGTHS_CHANGED_DURATION = 3000;
+    var TOL = 0.000001;
+
+    /**
+     * Raises a toast message telling the user that no branch lengths changed.
+     */
+    function noLengthsChangedMsg() {
+        util.toastMsg(NO_LENGTHS_CHANGED_MSG, NO_LENGTHS_CHANGED_DURATION);
+    }
+
+    /**
      * Computes the "scale factor" for the circular / unrooted layouts.
      *
      * NOTE that we don't bother with this for the rectangular layout since --
@@ -266,6 +300,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                                that corresponds to the index of a node in
      *                                tree. Returns the length of the node at that
      *                                index. Defaults to 'normal' method.
+     * @param {Boolean} checkLengthsChange If true, then a warning will be raised
+     *                                     if no branch lengths in the tree differ
+     *                                     from the value determined by lengthGetter.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -282,7 +319,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         height,
         leafSorting,
         normalize = true,
-        lengthGetter = null
+        lengthGetter = null,
+        checkLengthsChange = false
     ) {
         var maxWidth = 0;
         var maxHeight = 0;
@@ -322,6 +360,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
         }
 
+        var anyDifferent = false;
         // iterates in preorder
         var parent;
         for (i = 2; i <= tree.size; i++) {
@@ -334,6 +373,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             if (maxWidth < xCoord[node]) {
                 maxWidth = xCoord[node];
             }
+            if (checkLengthsChange && !anyDifferent) {
+                anyDifferent = isTransformedLenDifferent(nodeLen, tree, prepos);
+            }
+        }
+        if (checkLengthsChange && !anyDifferent) {
+            noLengthsChangedMsg();
         }
 
         // We don't check if max_width == 0 here, because we check when
@@ -473,6 +518,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                                that corresponds to the index of a node in
      *                                tree. Returns the length of the node at that
      *                                index. Defaults to 'normal' method.
+     * @param {Boolean} checkLengthsChange If true, then a warning will be raised
+     *                                     if no branch lengths in the tree differ
+     *                                     from the value determined by lengthGetter.
      * @return {Object} Object with the following properties:
      *                   -x0, y0 ("starting point" x and y)
      *                   -x1, y1 ("ending point" x and y)
@@ -492,7 +540,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         height,
         leafSorting,
         normalize = true,
-        lengthGetter = null
+        lengthGetter = null,
+        checkLengthsChange = false
     ) {
         // Set up arrays we're going to store the results in
         var x0 = new Array(tree.size + 1).fill(0);
@@ -556,6 +605,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             }
         }
 
+        var anyDifferent = false;
         // Iterate over the tree in preorder, assigning radii
         // (The "i = 2" skips the root of the tree; its radius is implicitly 0)
         for (i = 2; i <= tree.size; i++) {
@@ -568,6 +618,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
 
             var nodeLen = lengthGetter(prepos);
             radius[node] = radius[parent] + nodeLen;
+            if (checkLengthsChange && !anyDifferent) {
+                anyDifferent = isTransformedLenDifferent(nodeLen, tree, prepos);
+            }
+        }
+        if (checkLengthsChange && !anyDifferent) {
+            noLengthsChangedMsg();
         }
 
         // Now that we have the polar coordinates of the nodes, convert them to
@@ -692,6 +748,20 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     }
 
     /**
+     * Returns true if a given node (a.k.a. branch) in the tree has a
+     * transformed length differing from its original length.
+     *
+     * @param {Float} branchLen Transformed length of the branch.
+     * @param {BPTree} tree That has (potentially) been transformed.
+     * @param {Number} n Node index in tree.
+     * @returns {Boolean} Indicates if this branch's transformed length is
+     *                    different from its original length.
+     */
+    function isTransformedLenDifferent(branchLen, tree, n) {
+        return Math.abs(tree.length(n) / branchLen - 1) > TOL;
+    }
+
+    /**
      * Unrooted layout.
      *
      * REFERENCES
@@ -709,6 +779,9 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      *                                that corresponds to the index of a node in
      *                                tree. Returns the length of the node at that
      *                                index. Defaults to 'normal' method.
+     * @param {Boolean} checkLengthsChange If true, then a warning will be raised
+     *                                     if no branch lengths in the tree differ
+     *                                     from the value determined by lengthGetter.
      * @return {Object} Object with the following properties:
      *                   -xCoords
      *                   -yCoords
@@ -720,7 +793,8 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         width,
         height,
         normalize = true,
-        lengthGetter = null
+        lengthGetter = null,
+        checkLengthsChange = false
     ) {
         var da = (2 * Math.PI) / tree.numleaves();
         var x1Arr = new Array(tree.size + 1);
@@ -747,6 +821,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         var maxY = y2Arr[tree.size],
             minY = y2Arr[tree.size];
 
+        var anyDifferent = false;
         // reverse postorder
         for (var node = tree.size - 1; node > 0; node--) {
             var parent = tree.postorder(
@@ -776,6 +851,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
             minX = Math.min(minX, x2Arr[node]);
             maxY = Math.max(maxY, y2Arr[node]);
             minY = Math.min(minY, y2Arr[node]);
+            if (checkLengthsChange && !anyDifferent) {
+                anyDifferent = isTransformedLenDifferent(nodeLen, tree, n);
+            }
+        }
+        if (checkLengthsChange && !anyDifferent) {
+            noLengthsChangedMsg();
         }
         if (normalize) {
             var scaleFactor = computeScaleFactor(
@@ -802,6 +883,7 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
         getLengthMethod: getLengthMethod,
         getPostOrderNodes: getPostOrderNodes,
         getUltrametricLengths: getUltrametricLengths,
+        shouldCheckBranchLengthsChanged: shouldCheckBranchLengthsChanged,
         computeScaleFactor: computeScaleFactor,
         rectangularLayout: rectangularLayout,
         circularLayout: circularLayout,

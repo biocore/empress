@@ -3,8 +3,11 @@
 # Empress ("make test", run style-checking ("make stylecheck"), auto-format the
 # JS code ("make jsstyle"), etc.
 #
-# Requires that a few command-line utilities are installed; see the Travis-CI
-# config file (.travis.yml) for examples of installing these utilities.
+# Running the follow requires the following npm packages: qunit-puppeteer,
+# jshint, prettier@2.0.5. In addition, you will need a working version of flake8
+# in your conda env. Note: if you are having difficulties getting qunit to
+# to run, you can simply load tests/index.html into a browser instead of
+# make jstest.
 
 .PHONY: test pytest jstest stylecheck jsstyle githook docs
 
