@@ -280,8 +280,13 @@ define([
         /**
          * @type{Bool}
          * Whether or not to draw node circles.
+         * Values will range between 0 and 2.
+         * 0 - Show only internal node circles
+         * 1 - Show all node circles
+         * 2 - Do not show node circles
+         * 3 - show nodes with only 1 descendant
          */
-        this.drawNodeCircles = false;
+        this.drawNodeCircles = 3;
 
         /**
          * @type{Bool}
@@ -530,12 +535,7 @@ define([
      */
     Empress.prototype.drawTree = function () {
         this._drawer.loadTreeColorBuff(this.getTreeColor());
-        if (this.drawNodeCircles) {
-            this._drawer.loadNodeBuff(this.getNodeCoords());
-        } else {
-            // Clear the node circle buffer to save some memory / space
-            this._drawer.loadNodeBuff([]);
-        }
+        this._drawer.loadNodeBuff(this.getNodeCoords());
         this._drawer.loadCladeBuff(this._collapsedCladeBuffer);
         this._drawer.draw();
     };
@@ -872,9 +872,45 @@ define([
     Empress.prototype.getNodeCoords = function () {
         var tree = this._tree;
         var coords = [];
+        var scope = this;
+        var visible = function (node) {
+            return scope.getNodeInfo(node, "visible");
+        };
+        var comp;
+
+        if (this.drawNodeCircles === 0) {
+            // draw internall node circles
+            comp = function (node) {
+                return (
+                    visible(node) && !tree.isleaf(tree.postorderselect(node))
+                );
+            };
+        } else if (this.drawNodeCircles === 1) {
+            // draw all node circles
+            comp = function (node) {
+                return visible(node);
+            };
+        } else if (this.drawNodeCircles === 2) {
+            // hide all node circles
+            comp = function (node) {
+                return false;
+            };
+        } else if (this.drawNodeCircles === 3) {
+            // draw node with 1 descendant
+            comp = function (node) {
+                var treeNode = tree.postorderselect(node);
+                return (
+                    visible(node) &&
+                    !tree.isleaf(treeNode) &&
+                    tree.fchild(treeNode) === tree.lchild(treeNode)
+                );
+            };
+        } else {
+            throw new Error("getNodeCoords() drawNodeCircles is out of range");
+        }
 
         for (var node = 1; node <= tree.size; node++) {
-            if (!this.getNodeInfo(node, "visible")) {
+            if (!comp(node)) {
                 continue;
             }
             // In the past, we only drew circles for nodes with an assigned
@@ -2734,12 +2770,13 @@ define([
     /**
      * Display the tree nodes.
      *
-     * @param{Boolean} showTreeNodes If true, then Empress will draw circles at
-     *                               each node's position.
+     * @param{String} showTreeNodes 0 - draw only internal nodes circles,
+     *                              1 - draw all node circles,
+     *                              2 - hide all node circles,
+     *                              3 - draw node only 1 descendant
      */
     Empress.prototype.setTreeNodeVisibility = function (showTreeNodes) {
-        this.drawNodeCircles = showTreeNodes;
-        this._drawer.setTreeNodeVisibility(showTreeNodes);
+        this.drawNodeCircles = Number(showTreeNodes);
         this.drawTree();
     };
 
