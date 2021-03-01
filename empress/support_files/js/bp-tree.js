@@ -974,7 +974,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     /**
      * tips - Set
      */
-    BPTree.prototype.shear = function(keepTips) {
+    BPTree.prototype.shear = function (keepTips) {
         // closure
         var scope = this;
 
@@ -989,7 +989,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         var set_bits = (node) => {
             mask[node] = 1;
             mask[scope.close(node)] = 0;
-        }
+        };
 
         // set root open/close bits
         set_bits(this.root());
@@ -1006,7 +1006,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
 
                 // set open/close bits for tips ancestors
                 var parent = this.parent(node);
-                while(parent !== this.root() || mask[parent] !== 1) {
+                while (parent !== this.root() || mask[parent] !== 1) {
                     set_bits(parent);
                     parent = this.parent(parent);
                 }
@@ -1028,7 +1028,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             }
         }
         return new BPTree(newBitArray, names, lengths, null);
-    }
+    };
 
     return BPTree;
 });

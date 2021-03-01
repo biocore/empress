@@ -878,7 +878,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             );
         });
 
-        test("Test shear", function() {
+        test("Test shear", function () {
             // test modified from https://github.com/wasade/improved-octo-waddle/blob/master/bp/tests/test_bp.py#L228
             // newick represenation
             // ((3,4,(6)5)2, 7, ((10, 11)9)8)r;
@@ -904,7 +904,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 0,
                 0,
                 0,
-                0
+                0,
             ];
             var preShearNames = [
                 null,
@@ -918,28 +918,15 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 "11",
                 "9",
                 "8",
-                "r"
+                "r",
             ];
-            var preShearLenghts = [
-                null,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11
-            ];
+            var preShearLenghts = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
             var preShearBPTree = new BPTree(
                 preShearArr,
                 preShearNames,
                 preShearLenghts,
                 null
-            )
+            );
 
             var keep = new Set(["4", "6", "7", "10", "11"]);
             var result = preShearBPTree.shear(keep);
@@ -963,7 +950,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 0,
                 0,
                 0,
-                0
+                0,
             ]);
             deepEqual(result.names_, [
                 null,
@@ -976,56 +963,15 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 "11",
                 "9",
                 "8",
-                "r"
+                "r",
             ]);
-            deepEqual(result.lengths_, [
-                null,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11
-            ]);
+            deepEqual(result.lengths_, [null, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
 
             keep = new Set(["7", "10", "11"]);
             result = preShearBPTree.shear(keep);
-            deepEqual(result.b_, [
-                1,
-                1,
-                0,
-                1,
-                1,
-                1,
-                0,
-                1,
-                0,
-                0,
-                0,
-                0
-            ]);
-            deepEqual(result.names_, [
-                null,
-                "7",
-                "10",
-                "11",
-                "9",
-                "8",
-                "r"
-            ]);
-            deepEqual(result.lengths_, [
-                null,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11
-            ]);
+            deepEqual(result.b_, [1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]);
+            deepEqual(result.names_, [null, "7", "10", "11", "9", "8", "r"]);
+            deepEqual(result.lengths_, [null, 6, 7, 8, 9, 10, 11]);
         });
     });
 });
