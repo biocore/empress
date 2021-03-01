@@ -65,7 +65,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         /**
          * @type {Array}
          * @private
-         * stores the name of each node in preorder. If names are not provided
+         * stores the name of each node in postorder. If names are not provided
          * then the names will be set to null by default.
          * Note: if memory becomes an issue this could be converted into a
          *       Uint16Array
@@ -85,7 +85,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         /**
          * @type {Array}
          * @private
-         * Stores the length of the nodes in preorder. If lengths are not
+         * Stores the length of the nodes in postorder. If lengths are not
          * provided then lengths will be set to null.
          */
         this.lengths_ = lengths ? lengths : null;
@@ -970,6 +970,65 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
 
         return this._nameToNodes[name];
     };
+
+    /**
+     * tips - Set
+     */
+    BPTree.prototype.shear = function(keepTips) {
+        // closure
+        var scope = this;
+
+        // create new names and lengths array
+        var names = [null];
+        var lengths = [null];
+
+        // create new bit array
+        var mask = [];
+
+        // function to that will set open/close bits for a node
+        var set_bits = (node) => {
+            mask[node] = 1;
+            mask[scope.close(node)] = 0;
+        }
+
+        // set root open/close bits
+        set_bits(this.root());
+
+        // iterate over bp tree in post order and add all tips that are in
+        // keepTips plus their ancestors
+        var i;
+        for (i = 1; i <= this.size; i++) {
+            var node = this.postorderselect(i);
+            var name = this.name(node);
+            if (this.isleaf(node) && keepTips.has(name)) {
+                // set open/close bits for tip
+                set_bits(node);
+
+                // set open/close bits for tips ancestors
+                var parent = this.parent(node);
+                while(parent !== this.root() || mask[parent] !== 1) {
+                    set_bits(parent);
+                    parent = this.parent(parent);
+                }
+            }
+        }
+
+        var newBitArray = [];
+        for (i = 0; i < mask.length; i++) {
+            if (mask[i] !== undefined) {
+                newBitArray.push(mask[i]);
+            }
+
+            // get name and length of node
+            // Note: names and lengths of nodes are stored in postorder
+
+            if (mask[i] === 0) {
+                names.push(this.name(i));
+                lengths.push(this.length(i));
+            }
+        }
+        return new BPTree(newBitArray, names, lengths, null);
+    }
 
     return BPTree;
 });
