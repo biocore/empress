@@ -311,7 +311,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.empress.thickenColoredNodes(lw);
 
             this.empress.drawTree();
-        } catch(err) {
+        } catch (err) {
             this.empress.resetTree();
             this.empress.drawTree();
             this.empress.clearLegend();

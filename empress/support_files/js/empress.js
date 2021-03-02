@@ -2293,7 +2293,7 @@ define([
      *                         will be reversed, with respect to its default
      *                         orientation.
      * @param{Boolean} continuous Defaults to false. If true, the colorer will
-     *                            use a gradient color scale. 
+     *                            use a gradient color scale.
      *
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
@@ -2401,10 +2401,7 @@ define([
                         to a set of keys (i.e. tree nodes) that are unique to
                         each group.
      */
-    Empress.prototype._projectObservations = function (
-        obs,
-        ignoreAbsentTips,
-    ) {
+    Empress.prototype._projectObservations = function (obs, ignoreAbsentTips) {
         var tree = this._tree,
             categories = Object.keys(obs),
             notRepresented = new Set(),
