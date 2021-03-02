@@ -295,21 +295,28 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         lwInput,
         updateBtn
     ) {
-        this.empress.resetTree();
+        try {
+            this.empress.resetTree();
 
-        // hide update button
-        updateBtn.classList.add("hidden");
+            // hide update button
+            updateBtn.classList.add("hidden");
 
-        // color tree
-        this[colorMethodName]();
+            // color tree
+            this[colorMethodName]();
 
-        if (collapseChk.checked) {
-            this.empress.collapseClades();
+            if (collapseChk.checked) {
+                this.empress.collapseClades();
+            }
+            var lw = util.parseAndValidateNum(lwInput);
+            this.empress.thickenColoredNodes(lw);
+
+            this.empress.drawTree();
+        } catch(err) {
+            this.empress.resetTree();
+            this.empress.drawTree();
+            this.empress.clearLegend();
+            updateBtn.classList.remove("hidden");
         }
-        var lw = util.parseAndValidateNum(lwInput);
-        this.empress.thickenColoredNodes(lw);
-
-        this.empress.drawTree();
     };
 
     /**

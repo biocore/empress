@@ -2220,7 +2220,7 @@ define([
      * @return {Object} An object with two keys:
      *                  -sortedUniqueValues: maps to an Array of the unique
      *                   values in this feature metadata field, sorted using
-     *                   util.naturalSort().
+     *                   util.naturalSort().q
      *                  -uniqueValueToFeatures: maps to an Object which maps
      *                   the unique values in this feature metadata column to
      *                   an array of the node name(s) with each value.
@@ -2292,6 +2292,8 @@ define([
      * @param{Boolean} reverse Defaults to false. If true, the color scale
      *                         will be reversed, with respect to its default
      *                         orientation.
+     * @param{Boolean} continuous Defaults to false. If true, the colorer will
+     *                            use a gradient color scale. 
      *
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
@@ -2402,7 +2404,6 @@ define([
     Empress.prototype._projectObservations = function (
         obs,
         ignoreAbsentTips,
-        isContinuous = false
     ) {
         var tree = this._tree,
             categories = Object.keys(obs),
