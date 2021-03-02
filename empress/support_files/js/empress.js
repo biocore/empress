@@ -2326,10 +2326,10 @@ define([
                 // Colorer will create a special gradient ID using the number
                 // we pass into this parameter. This allows empress to display
                 // multiple gradients at the same time without them overriding
-                // each other. Currently, the barplots are setup to start at
-                // 0. So we set this to -1 this value will never be -1 in
-                // the barplots. Thus, by setting this value to -1 we can
-                // display the feature metadata gradient along side the
+                // each other. Currently, the barplots are set up to start at
+                // 0. So, we set this value to -1 here to avoid conflict with
+                // the barplot gradients; this allows us to display the
+                // feature metadata gradient alongside the
                 // barplot gradients.
                 continuous ? -1 : undefined,
                 reverse
@@ -2341,10 +2341,10 @@ define([
             // values), then we open a toast message about this error and
             // then raise it again to send error to console.
             var msg =
-                "Error with assigning colors: '" +
+                'Error with assigning colors: ' +
+                'the feature metadata field "' +
                 cat +
-                "' is either non-numeric" +
-                " or has less than 2 unique numeric values";
+                '" has less than 2 unique numeric values.';
             util.toastMsg(msg, 5000);
             throw msg;
         }
