@@ -1014,6 +1014,8 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         }
 
         var newBitArray = [];
+        var newIndxToOld = {};
+        var postorderPos = 1;
         for (i = 0; i < mask.length; i++) {
             if (mask[i] !== undefined) {
                 newBitArray.push(mask[i]);
@@ -1025,9 +1027,13 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             if (mask[i] === 0) {
                 names.push(this.name(i));
                 lengths.push(this.length(i));
+                newIndxToOld[postorderPos++] = this.postorder(i);
             }
         }
-        return new BPTree(newBitArray, names, lengths, null);
+        return {
+            newIndxToOld: newIndxToOld,
+            tree: new BPTree(newBitArray, names, lengths, null),
+        }
     };
 
     return BPTree;
