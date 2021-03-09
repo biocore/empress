@@ -1021,7 +1021,6 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
 
             // get name and length of node
             // Note: names and lengths of nodes are stored in postorder
-
             if (mask[i] === 0) {
                 names.push(this.name(i));
                 lengths.push(this.length(i));
