@@ -493,7 +493,8 @@ define([
             var node = this._tree.postorderselect(obs[i]);
             test.push(this._tree.name(node))
         }
-        this._temp.shear(new Set(test));
+        // this._temp.shear(new Set(test));
+        // this._temp.shear(new Set());
 
 
         this._drawer.initialize();
@@ -2159,6 +2160,7 @@ define([
             var rgb = Colorer.hex2RGB(group);
 
             for (var i = 0; i < obs.length; i++) {
+                console.log(obs[i])
                 this.setNodeInfo(obs[i], "color", rgb);
             }
         }

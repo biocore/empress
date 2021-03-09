@@ -35,6 +35,12 @@ define(["LayoutsUtil"], function (LayoutsUtil) {
             arcstartangle: 10,
             arcendangle: 11,
         };
+
+        /**
+         * @type {Array}
+         * The default color of the tree
+         */
+        // this.DEFAULT_COLOR = Colorer.rgbToFloat([64, 64, 64]);
 	}
 
 	TreeHandler.prototype.shear = function(tips, treeData) {
@@ -178,6 +184,8 @@ define(["LayoutsUtil"], function (LayoutsUtil) {
 		}
 		yield* nodes;
 	};
+
+    TreeHandler
 
 	return TreeHandler;
 });
