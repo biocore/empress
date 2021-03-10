@@ -972,7 +972,12 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     };
 
     /**
-     * tips - Set
+     * Returns a new BPTree object that contains just the tips (and ancestors)
+     * of the nodes in keepTips.
+     *
+     * @param {Set} keepTips The set of tip names to keep.
+     *
+     * @return {BPTree} The new BPTree.
      */
     BPTree.prototype.shear = function (keepTips) {
         // closure

@@ -972,6 +972,12 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             deepEqual(result.b_, [1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]);
             deepEqual(result.names_, [null, "7", "10", "11", "9", "8", "r"]);
             deepEqual(result.lengths_, [null, 6, 7, 8, 9, 10, 11]);
+
+            keep = new Set([]);
+            result = preShearBPTree.shear(keep);
+            deepEqual(result.b_, [1, 0]);
+            deepEqual(result.names_, [null, "r"]);
+            deepEqual(result.lengths_, [null, 11]);
         });
     });
 });
