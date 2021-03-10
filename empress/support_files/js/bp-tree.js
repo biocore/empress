@@ -643,7 +643,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      */
     BPTree.prototype.inOrderNodes = function () {
         if (this._inorder !== null) {
-            return this._inorder;
+            return _.clone(this._inorder);
         }
 
         // the root node of the tree
@@ -658,7 +658,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             // append children to stack
             nodeStack = nodeStack.concat(this.getChildren(curNode));
         }
-        return this._inorder;
+        return _.clone(this._inorder);
     };
 
     /**
@@ -958,7 +958,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      */
     BPTree.prototype.getNodesWithName = function (name) {
         if (name in this._nameToNodes) {
-            return this._nameToNodes[name];
+            return _.clone(this._nameToNodes[name]);
         }
 
         this._nameToNodes[name] = [];
@@ -968,7 +968,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             }
         }
 
-        return this._nameToNodes[name];
+        return _.clone(this._nameToNodes[name]);
     };
 
     /**
@@ -1014,7 +1014,8 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         }
 
         var newBitArray = [];
-        var newIndxToOld = {};
+        var newToOld = {};
+        var oldToNew = {}
         var postorderPos = 1;
         for (i = 0; i < mask.length; i++) {
             if (mask[i] !== undefined) {
@@ -1027,11 +1028,13 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             if (mask[i] === 0) {
                 names.push(this.name(i));
                 lengths.push(this.length(i));
-                newIndxToOld[postorderPos++] = this.postorder(i);
+                newToOld[postorderPos] = this.postorder(i);
+                oldToNew[this.postorder(i)] = postorderPos++;
             }
         }
         return {
-            newIndxToOld: newIndxToOld,
+            newToOld: newToOld,
+            oldToNew: oldToNew,
             tree: new BPTree(newBitArray, names, lengths, null),
         }
     };

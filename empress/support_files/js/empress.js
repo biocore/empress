@@ -11,7 +11,7 @@ define([
     "chroma",
     "LayoutsUtil",
     "ExportUtil",
-    "TreeHandler"
+    "TreeController",
 ], function (
     _,
     Camera,
@@ -25,7 +25,7 @@ define([
     chroma,
     LayoutsUtil,
     ExportUtil,
-    TreeHandler
+    TreeController,
 ) {
     /**
      * @class EmpressTree
@@ -88,8 +88,7 @@ define([
          * The phylogenetic balance parenthesis tree
          * @private
          */
-        this._tree = tree;
-        this._temp = new TreeHandler(this._tree);
+        this._tree = new TreeController(tree);
 
         /**
          * Used to index into _treeData
@@ -378,94 +377,91 @@ define([
      * Also updates this._maxDisplacement.
      */
     Empress.prototype.getLayoutInfo = function () {
-        // var data, i;
-        // // set up length getter
-        // var branchMethod = this.branchMethod;
-        // var checkLengthsChange = LayoutsUtil.shouldCheckBranchLengthsChanged(
-        //     branchMethod
-        // );
-        // var lengthGetter = LayoutsUtil.getLengthMethod(
-        //     branchMethod,
-        //     this._tree
-        // );
+        var data, i, j = 1;
+        // set up length getter
+        var branchMethod = this.branchMethod;
+        var checkLengthsChange = LayoutsUtil.shouldCheckBranchLengthsChanged(
+            branchMethod
+        );
+        var lengthGetter = LayoutsUtil.getLengthMethod(
+            branchMethod,
+            this._tree.model.currentTree
+        );
+        // Rectangular
+        if (this._currentLayout === "Rectangular") {
+            data = LayoutsUtil.rectangularLayout(
+                this._tree.model.currentTree,
+                4020,
+                4020,
+                // since lengths for "ignoreLengths" are set by `lengthGetter`,
+                // we don't need (and should likely deprecate) the ignoreLengths
+                // option for the Layout functions since the layout function only
+                // needs to know lengths in order to layout a tree, it doesn't
+                // really need encapsulate all of the logic for determining
+                // what lengths it should lay out.
+                this.leafSorting,
+                undefined,
+                lengthGetter,
+                checkLengthsChange
+            );
+            this._yrscf = data.yScalingFactor;
+            for (i of this._tree.postorderTraversal(includeRoot=true)) {
+                // remove old layout information
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
-        // // Rectangular
-        // if (this._currentLayout === "Rectangular") {
-        //     data = LayoutsUtil.rectangularLayout(
-        //         this._tree,
-        //         4020,
-        //         4020,
-        //         // since lengths for "ignoreLengths" are set by `lengthGetter`,
-        //         // we don't need (and should likely deprecate) the ignoreLengths
-        //         // option for the Layout functions since the layout function only
-        //         // needs to know lengths in order to layout a tree, it doesn't
-        //         // really need encapsulate all of the logic for determining
-        //         // what lengths it should lay out.
-        //         this.leafSorting,
-        //         undefined,
-        //         lengthGetter,
-        //         checkLengthsChange
-        //     );
-        //     this._yrscf = data.yScalingFactor;
-        //     for (i = 1; i <= this._tree.size; i++) {
-        //         // remove old layout information
-        //         this._treeData[i].length = this._numOfNonLayoutParams;
+                // store new layout information
+                this._treeData[i][this._tdToInd.xr] = data.xCoord[j];
+                this._treeData[i][this._tdToInd.yr] = data.yCoord[j];
+                this._treeData[i][this._tdToInd.highestchildyr] =
+                    data.highestChildYr[j];
+                this._treeData[i][this._tdToInd.lowestchildyr] =
+                    data.lowestChildYr[j++];
+            }
+        } else if (this._currentLayout === "Circular") {
+            data = LayoutsUtil.circularLayout(
+                this._tree.model.currentTree,
+                4020,
+                4020,
+                this.leafSorting,
+                undefined,
+                lengthGetter,
+                checkLengthsChange
+            );
+            for (i of this._tree.postorderTraversal(includeRoot=true)) {
+                // remove old layout information
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
-        //         // store new layout information
-        //         this._treeData[i][this._tdToInd.xr] = data.xCoord[i];
-        //         this._treeData[i][this._tdToInd.yr] = data.yCoord[i];
-        //         this._treeData[i][this._tdToInd.highestchildyr] =
-        //             data.highestChildYr[i];
-        //         this._treeData[i][this._tdToInd.lowestchildyr] =
-        //             data.lowestChildYr[i];
-        //     }
-        // } else if (this._currentLayout === "Circular") {
-        //     data = LayoutsUtil.circularLayout(
-        //         this._tree,
-        //         4020,
-        //         4020,
-        //         this.leafSorting,
-        //         undefined,
-        //         lengthGetter,
-        //         checkLengthsChange
-        //     );
-        //     for (i = 1; i <= this._tree.size; i++) {
-        //         // remove old layout information
-        //         this._treeData[i].length = this._numOfNonLayoutParams;
+                // store new layout information
+                this._treeData[i][this._tdToInd.xc0] = data.x0[j];
+                this._treeData[i][this._tdToInd.yc0] = data.y0[j];
+                this._treeData[i][this._tdToInd.xc1] = data.x1[j];
+                this._treeData[i][this._tdToInd.yc1] = data.y1[j];
+                this._treeData[i][this._tdToInd.angle] = data.angle[j];
+                this._treeData[i][this._tdToInd.arcx0] = data.arcx0[j];
+                this._treeData[i][this._tdToInd.arcy0] = data.arcy0[j];
+                this._treeData[i][this._tdToInd.arcstartangle] =
+                    data.arcStartAngle[j];
+                this._treeData[i][this._tdToInd.arcendangle] =
+                    data.arcEndAngle[j++];
+            }
+        } else {
+            data = LayoutsUtil.unrootedLayout(
+                this._tree.model.currentTree,
+                4020,
+                4020,
+                undefined,
+                lengthGetter,
+                checkLengthsChange
+            );
+            for (i of this._tree.postorderTraversal(includeRoot=true)) {
+                // remove old layout information
+                this._treeData[i].length = this._numOfNonLayoutParams;
 
-        //         // store new layout information
-        //         this._treeData[i][this._tdToInd.xc0] = data.x0[i];
-        //         this._treeData[i][this._tdToInd.yc0] = data.y0[i];
-        //         this._treeData[i][this._tdToInd.xc1] = data.x1[i];
-        //         this._treeData[i][this._tdToInd.yc1] = data.y1[i];
-        //         this._treeData[i][this._tdToInd.angle] = data.angle[i];
-        //         this._treeData[i][this._tdToInd.arcx0] = data.arcx0[i];
-        //         this._treeData[i][this._tdToInd.arcy0] = data.arcy0[i];
-        //         this._treeData[i][this._tdToInd.arcstartangle] =
-        //             data.arcStartAngle[i];
-        //         this._treeData[i][this._tdToInd.arcendangle] =
-        //             data.arcEndAngle[i];
-        //     }
-        // } else {
-        //     data = LayoutsUtil.unrootedLayout(
-        //         this._tree,
-        //         4020,
-        //         4020,
-        //         undefined,
-        //         lengthGetter,
-        //         checkLengthsChange
-        //     );
-        //     for (i = 1; i <= this._tree.size; i++) {
-        //         // remove old layout information
-        //         this._treeData[i].length = this._numOfNonLayoutParams;
-
-        //         // store new layout information
-        //         this._treeData[i][this._tdToInd.x2] = data.xCoord[i];
-        //         this._treeData[i][this._tdToInd.y2] = data.yCoord[i];
-        //     }
-        // }
-
-        this._temp.assignCoords(this._treeData)
+                // store new layout information
+                this._treeData[i][this._tdToInd.x2] = data.xCoord[j];
+                this._treeData[i][this._tdToInd.y2] = data.yCoord[j++];
+            }
+        }
         this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
         this._computeMaxDisplacement();
     };
@@ -474,7 +470,6 @@ define([
      * Initializes WebGL and then draws the tree
      */
     Empress.prototype.initialize = function () {
-        // this._currentLayout = "Circular"
         var fmInfo = this.getUniqueFeatureMetadataInfo("Level 2", "tip");
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -486,15 +481,16 @@ define([
             uniqueVal = sortedUniqueValues[i];
             obs[uniqueVal] = new Set(uniqueValueToFeatures[uniqueVal]);
         });
-        
-        var obs = [...obs["p__Firmicutes"]];
-        var test = [];
-        for (var i = 0; i < obs.length; i++) {
-            var node = this._tree.postorderselect(obs[i]);
-            test.push(this._tree.name(node))
+        console.log((obs["p__Bacteroidetes"]))
+        names = []
+        for (var i of obs["p__Bacteroidetes"].values()) {
+            console.log(i)
+            if (this._tree.isleaf(this._tree.postorderselect(i))){
+                names.push(this._tree.name(this._tree.postorderselect(i)))
+            }
         }
-        // this._temp.shear(new Set(test));
-        // this._temp.shear(new Set());
+        console.log(names)
+        this._tree.shear(new Set(names))
 
 
         this._drawer.initialize();
@@ -623,7 +619,7 @@ define([
             );
         }
         // iterate through the tree in postorder, skip root
-        for (var node = 1; node < tree.size; node++) {
+        for (var node of this._tree.postorderTraversal()) {
             // name of current node
             // var node = this._treeData[node];
             var parent = tree.postorder(
@@ -726,6 +722,7 @@ define([
                 addPoint(this.getX(node), this.getY(node));
             }
         }
+        console.log(coords)
         return new Float32Array(coords);
     };
 
@@ -752,7 +749,7 @@ define([
             addPoint();
         }
         // iterate through the tree in postorder, skip root
-        for (var node = 1; node < tree.size; node++) {
+        for (var node of this._tree.postorderTraversal()) {
             if (!this.getNodeInfo(node, "visible")) {
                 continue;
             }
@@ -919,7 +916,7 @@ define([
             throw new Error("getNodeCoords() drawNodeCircles is out of range");
         }
 
-        for (var node = 1; node <= tree.size; node++) {
+        for (var node of this._tree.postorderTraversal(includeRoot=true)) {
             if (!comp(node)) {
                 continue;
             }
@@ -1260,7 +1257,7 @@ define([
             this._addThickVerticalLineCoords(coords, tree.size, lwScaled);
         }
         // iterate through the tree in postorder, skip root
-        for (var node = 1; node < this._tree.size; node++) {
+        for (var node of this._tree.postorderTraversal()) {
             // name of current node
             var parent = tree.postorder(
                 tree.parent(tree.postorderselect(node))
@@ -1476,10 +1473,7 @@ define([
             this._maxDisplacement = null;
             return;
         }
-        for (var node = 1; node < this._tree.size; node++) {
-            if (!this.getNodeInfo(node, "visible")) {
-                continue;
-            }
+        for (var node of this._tree.postorderTraversal()) {
             if (this._tree.isleaf(this._tree.postorderselect(node))) {
                 maxD = this[compFunc](node, maxD);
             }
@@ -1967,7 +1961,7 @@ define([
         } else {
             halfAngleRange = Math.PI / this._tree.numleaves();
         }
-        for (node = 1; node < this._tree.size; node++) {
+        for (node of this._tree.postorderTraversal()) {
             if (this._tree.isleaf(this._tree.postorderselect(node))) {
                 var name = this.getNodeInfo(node, "name");
                 var fm;
@@ -2100,7 +2094,7 @@ define([
         // For the circular layout, how to speed this up is less clear -- I
         // suspect it should be possible using WebGL and some fancy
         // trigonometry somehow, but I'm not sure.
-        for (var node = 1; node < this._tree.size; node++) {
+        for (var node of this._tree.postorderTraversal()) {
             if (this._tree.isleaf(this._tree.postorderselect(node))) {
                 if (this._currentLayout === "Rectangular") {
                     var y = this.getY(node);
@@ -2160,7 +2154,6 @@ define([
             var rgb = Colorer.hex2RGB(group);
 
             for (var i = 0; i < obs.length; i++) {
-                console.log(obs[i])
                 this.setNodeInfo(obs[i], "color", rgb);
             }
         }
@@ -2343,7 +2336,8 @@ define([
         _.each(sortedUniqueValues, function (uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
             obs[uniqueVal] = new Set(uniqueValueToFeatures[uniqueVal]);
-        }); 
+        });
+
         // assign colors to unique values
         var colorer = new Colorer(
             color,
@@ -2407,8 +2401,7 @@ define([
         if (!ignoreAbsentTips) {
             // find "non-represented" tips
             // Note: the following uses postorder traversal
-            // for (i = 1; i < tree.size; i++) {
-            for (i of this._temp.postorder()) {
+            for (i of this._tree.postorderTraversal()) {
                 if (tree.isleaf(tree.postorderselect(i))) {
                     var represented = false;
                     for (j = 0; j < categories.length; j++) {
@@ -2428,9 +2421,7 @@ define([
         // root (at index tree.size) in this loop, we iterate over all its
         // descendants; so in the event that all leaves are unique,
         // the root can still get assigned to a group.
-        // for (i = 1; i < tree.size; i++) {
-        for (i of this._temp.postorder()) {
-
+        for (i of this._tree.postorderTraversal()) {
             var node = i;
             var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
 
@@ -2480,7 +2471,6 @@ define([
 
             for (var j = 0; j < keys.length; j++) {
                 var node = keys[j];
-                if (node === undefined) continue;
                 this.setNodeInfo(node, "color", cm[category]);
                 this.setNodeInfo(node, "isColored", true);
             }
@@ -2603,7 +2593,6 @@ define([
             if (this._layoutToCoordSuffix.hasOwnProperty(newLayout)) {
                 // get new layout
                 this._currentLayout = newLayout;
-                this._temp._currentLayout = newLayout;
                 this.reLayout();
                 // recenter viewing window
                 // NOTE: this function calls drawTree(), which is redundant
@@ -2712,11 +2701,7 @@ define([
         var x = 0,
             y = 0,
             zoomAmount = 0;
-        for (var node = 1; node <= this._tree.size; node++) {
-            if (!this.getNodeInfo(node, "visible")) {
-                continue;
-            }
-
+        for (var node of this._tree.postorderTraversal(includeRoot=true)) {
             // node = this._treeData[node];
             x += this.getX(node);
             y += this.getY(node);
@@ -2807,7 +2792,7 @@ define([
         this._collapsedClades = {};
         // Note: currently collapseClades is the only method that set
         // the node visibility property.
-        for (var i = 1; i <= this._tree.size; i++) {
+        for (var i of this._tree.postorderTraversal(includeRoot=true)) {
             this.setNodeInfo(i, "visible", true);
         }
 
@@ -2847,7 +2832,7 @@ define([
         // was not called. Thus, this loop is used to guarantee that if an
         // internal node belongs to a group then all of its descendants belong
         // to the same group.
-        for (var i = 1; i <= this._tree.size; i++) {
+        for (var i of this._tree.postorderTraversal()) {
             var parent = this._tree.postorder(
                 this._tree.parent(this._tree.postorderselect(i))
             );
@@ -2863,10 +2848,8 @@ define([
         // collaped.
         // Collapsing a clade will set the .visible property of members to
         // false and will then be skipped in the for loop.
-        var inorder = this._tree.inOrderNodes();
-        for (var node in inorder) {
-            node = inorder[node];
-
+        // var inorder = this._tree.inOrderTraversal();
+        for (var node of this._tree.inOrderTraversal()) {
             // dont collapse clade
             if (this._dontCollapse.has(node)) {
                 continue;
