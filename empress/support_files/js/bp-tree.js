@@ -976,7 +976,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      * of the nodes in keepTips.
      *
      * This method was ported from iow.
-     * https://github.com/wasade/improved-octo-waddle/blob/master/bp/_bp.pyx#L732
+     * https://github.com/wasade/improved-octo-waddle/blob/0e9e75b77238acda6752f59d940620f89607ba6b/bp/_bp.pyx#L732
      *
      * @param {Set} keepTips The set of tip names to keep.
      *
