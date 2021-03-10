@@ -975,6 +975,9 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      * Returns a new BPTree object that contains just the tips (and ancestors)
      * of the nodes in keepTips.
      *
+     * This method was ported from iow.
+     * https://github.com/wasade/improved-octo-waddle/blob/master/bp/_bp.pyx#L732
+     *
      * @param {Set} keepTips The set of tip names to keep.
      *
      * @return {BPTree} The new BPTree.
