@@ -1939,7 +1939,7 @@ define([
         } else {
             halfAngleRange = Math.PI / this._tree.numleaves();
         }
-        for (node of this._tree.postorderTraversal()) {
+        for (var node of this._tree.postorderTraversal()) {
             if (this._tree.isleaf(this._tree.postorderselect(node))) {
                 var name = this.getNodeInfo(node, "name");
                 var fm;

@@ -188,7 +188,7 @@ require(["jquery", "UtilitiesForTesting", "util", "TreeController"], function (
             equal(isleaf, true);
 
             index = this.treeController.postorderselect(7);
-            var isleaf = this.treeController.isleaf(index);
+            isleaf = this.treeController.isleaf(index);
             equal(isleaf, false);
         });
 
@@ -302,8 +302,8 @@ require(["jquery", "UtilitiesForTesting", "util", "TreeController"], function (
             deepEqual(result, expected);
 
             this.treeController.unshear();
-            var expected = [7, 5, 6, 1, 4, 2, 3];
-            var result = [
+            expected = [7, 5, 6, 1, 4, 2, 3];
+            result = [
                 ...this.treeController.inOrderTraversal((includeRoot = true)),
             ];
             deepEqual(result, expected);
@@ -322,7 +322,7 @@ require(["jquery", "UtilitiesForTesting", "util", "TreeController"], function (
             equal(result, 11);
 
             this.treeController.unshear();
-            var result = this.treeController.getTotalLength(2, 7);
+            result = this.treeController.getTotalLength(2, 7);
             equal(result, 11);
         });
 

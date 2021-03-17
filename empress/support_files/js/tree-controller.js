@@ -225,7 +225,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
             this.model.origToCur[origTree.postorder(i)]
         );
 
-        var node = curTree.postorder(curTree[func](node));
+        node = curTree.postorder(curTree[func](node));
         node = origTree.postorderselect(this.model.curToOrig[node]);
         return node;
     };
