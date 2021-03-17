@@ -25,7 +25,7 @@ define([
     chroma,
     LayoutsUtil,
     ExportUtil,
-    TreeController,
+    TreeController
 ) {
     /**
      * @class EmpressTree
@@ -377,7 +377,9 @@ define([
      * Also updates this._maxDisplacement.
      */
     Empress.prototype.getLayoutInfo = function () {
-        var data, i, j = 1;
+        var data,
+            i,
+            j = 1;
         // set up length getter
         var branchMethod = this.branchMethod;
         var checkLengthsChange = LayoutsUtil.shouldCheckBranchLengthsChanged(
@@ -405,7 +407,7 @@ define([
                 checkLengthsChange
             );
             this._yrscf = data.yScalingFactor;
-            for (i of this._tree.postorderTraversal(includeRoot=true)) {
+            for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
 
@@ -427,7 +429,7 @@ define([
                 lengthGetter,
                 checkLengthsChange
             );
-            for (i of this._tree.postorderTraversal(includeRoot=true)) {
+            for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
 
@@ -453,7 +455,7 @@ define([
                 lengthGetter,
                 checkLengthsChange
             );
-            for (i of this._tree.postorderTraversal(includeRoot=true)) {
+            for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
 
@@ -470,29 +472,6 @@ define([
      * Initializes WebGL and then draws the tree
      */
     Empress.prototype.initialize = function () {
-        var fmInfo = this.getUniqueFeatureMetadataInfo("Level 2", "tip");
-        var sortedUniqueValues = fmInfo.sortedUniqueValues;
-        var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
-        // convert observation IDs to _treeData keys. Notably, this includes
-        // converting the values of uniqueValueToFeatures from Arrays to Sets.
-
-        var obs = {};
-        _.each(sortedUniqueValues, function (uniqueVal, i) {
-            uniqueVal = sortedUniqueValues[i];
-            obs[uniqueVal] = new Set(uniqueValueToFeatures[uniqueVal]);
-        });
-        console.log((obs["p__Bacteroidetes"]))
-        names = []
-        for (var i of obs["p__Bacteroidetes"].values()) {
-            console.log(i)
-            if (this._tree.isleaf(this._tree.postorderselect(i))){
-                names.push(this._tree.name(this._tree.postorderselect(i)))
-            }
-        }
-        console.log(names)
-        this._tree.shear(new Set(names))
-
-
         this._drawer.initialize();
         this._events.setMouseEvents();
         var nodeNames = this._tree.getAllNames();
@@ -722,7 +701,6 @@ define([
                 addPoint(this.getX(node), this.getY(node));
             }
         }
-        console.log(coords)
         return new Float32Array(coords);
     };
 
@@ -916,7 +894,7 @@ define([
             throw new Error("getNodeCoords() drawNodeCircles is out of range");
         }
 
-        for (var node of this._tree.postorderTraversal(includeRoot=true)) {
+        for (var node of this._tree.postorderTraversal((includeRoot = true))) {
             if (!comp(node)) {
                 continue;
             }
@@ -2701,7 +2679,7 @@ define([
         var x = 0,
             y = 0,
             zoomAmount = 0;
-        for (var node of this._tree.postorderTraversal(includeRoot=true)) {
+        for (var node of this._tree.postorderTraversal((includeRoot = true))) {
             // node = this._treeData[node];
             x += this.getX(node);
             y += this.getY(node);
@@ -2792,7 +2770,7 @@ define([
         this._collapsedClades = {};
         // Note: currently collapseClades is the only method that set
         // the node visibility property.
-        for (var i of this._tree.postorderTraversal(includeRoot=true)) {
+        for (var i of this._tree.postorderTraversal((includeRoot = true))) {
             this.setNodeInfo(i, "visible", true);
         }
 
@@ -3583,6 +3561,22 @@ define([
         } else {
             return this._tree.length(this._tree.postorderselect(nodeKey));
         }
+    };
+
+    Empress.prototype.shear = function (cat, value) {
+        var nodeNames = this._tree.getAllNames();
+
+        var fmInfo = this.getUniqueFeatureMetadataInfo(cat, "tip");
+        var sortedUniqueValues = fmInfo.sortedUniqueValues;
+        var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
+        // convert observation IDs to _treeData keys. Notably, this includes
+        // converting the values of uniqueValueToFeatures from Arrays to Sets.
+        var obs = uniqueValueToFeatures[value];
+        var tipNames = [];
+        for (var i of obs.values()) {
+            tipNames.push(this._tree.name(this._tree.postorderselect(i)));
+        }
+        this._tree.shear(new Set(tipNames));
     };
 
     return Empress;

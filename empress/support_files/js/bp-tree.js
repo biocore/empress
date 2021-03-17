@@ -1015,7 +1015,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
 
         var newBitArray = [];
         var newToOld = {};
-        var oldToNew = {}
+        var oldToNew = {};
         var postorderPos = 1;
         for (i = 0; i < mask.length; i++) {
             if (mask[i] !== undefined) {
@@ -1036,7 +1036,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             newToOld: newToOld,
             oldToNew: oldToNew,
             tree: new BPTree(newBitArray, names, lengths, null),
-        }
+        };
     };
 
     return BPTree;
