@@ -972,7 +972,17 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     };
 
     /**
-     * tips - Set
+     * Returns a new BPTree object that contains just the tips (and ancestors)
+     * of the nodes in keepTips.
+     *
+     * This method was ported from iow.
+     * https://github.com/wasade/improved-octo-waddle/blob/0e9e75b77238acda6752f59d940620f89607ba6b/bp/_bp.pyx#L732
+     *
+     * @param {Set} keepTips The set of tip names to keep.
+     *
+     * @return {Object} An object containing the new tree and two maps that
+     *                  convert the original postorder positions to the sheared
+     *                  tree postorder positions and vice-versa.
      */
     BPTree.prototype.shear = function (keepTips) {
         // closure

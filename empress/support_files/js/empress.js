@@ -2826,7 +2826,6 @@ define([
         // collaped.
         // Collapsing a clade will set the .visible property of members to
         // false and will then be skipped in the for loop.
-        // var inorder = this._tree.inOrderTraversal();
         for (var node of this._tree.inOrderTraversal()) {
             // dont collapse clade
             if (this._dontCollapse.has(node)) {
