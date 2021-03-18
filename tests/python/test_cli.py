@@ -3,11 +3,8 @@ import glob
 import unittest
 from zipfile import ZipFile
 
-import biom
 from click.testing import CliRunner
 import pandas as pd
-from skbio.stats.ordination import OrdinationResults
-from skbio.tree import TreeNode
 
 from empress.scripts._cli import empress
 
@@ -17,6 +14,7 @@ def extracted_artifact_path(dir_name, artifact_loc, file_name):
         zip_ref.extractall(dir_name)
         f = glob.glob(f"{dir_name}/*/data/{file_name}")[0]
     return f
+
 
 def files_present(output_dir):
     files = os.listdir(output_dir)
