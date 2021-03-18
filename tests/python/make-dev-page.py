@@ -5,7 +5,7 @@ import numpy as np
 import qiime2 as q2
 import pkg_resources
 
-from test_integration import load_mp_data
+from util import load_mp_data
 
 from bp import parse_newick
 from empress.core import Empress
