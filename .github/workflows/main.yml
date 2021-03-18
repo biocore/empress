@@ -77,4 +77,4 @@ jobs:
       - name: Upload to McHelper
         run: |
           conda run -n qiime2-dev make docs
-          conda run -n qiime2-dev curl -POST -F "files[]=@${PWD}/docs/moving-pictures/plain.qzv" -F "files[]=@${PWD}/docs/moving-pictures/just-fm.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empress-tree.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv"  http://mchelper.ucsd.edu:8888/uploads/empress/${{env.BRANCH_NUMBER}}/
+          curl -POST -F "files[]=@${PWD}/docs/moving-pictures/plain.qzv" -F "files[]=@${PWD}/docs/moving-pictures/just-fm.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empress-tree.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv"  http://mchelper.ucsd.edu:8888/uploads/empress/${{env.BRANCH_NUMBER}}/
