@@ -542,9 +542,9 @@ One unique feature that makes Empress useful for exploring time-series data or m
 
 # Publication and Citation
 
-Empress is available on bioRxiv
+Empress is available in mSystems
 [here](https://msystems.asm.org/content/6/2/e01216-20). If you use
-Empress in your work, please cite it! The BibTeX for Empress is:
+Empress in your work, please cite it! The BibTeX for this paper is:
 
 ```
 @article {Cantrelle01216-20,
@@ -557,7 +557,6 @@ Empress in your work, please cite it! The BibTeX for Empress is:
   year = {2021},
   doi = {10.1128/mSystems.01216-20},
   publisher = {American Society for Microbiology Journals},
-  abstract = {Standard workflows for analyzing microbiomes often include the creation and curation of phylogenetic trees. Here we present EMPress, an interactive web tool for visualizing trees in the context of microbiome, metabolome, and other community data scalable to trees with well over 500,000 nodes. EMPress provides novel functionality{\textemdash}including ordination integration and animations{\textemdash}alongside many standard tree visualization features and thus simplifies exploratory analyses of many forms of {\textquoteleft}omic data.IMPORTANCE Phylogenetic trees are integral data structures for the analysis of microbial communities. Recent work has also shown the utility of trees constructed from certain metabolomic data sets, further highlighting their importance in microbiome research. The ever-growing scale of modern microbiome surveys has led to numerous challenges in visualizing these data. In this paper we used five diverse data sets to showcase the versatility and scalability of EMPress, an interactive web visualization tool. EMPress addresses the growing need for exploratory analysis tools that can accommodate large, complex multi-omic data sets.},
   URL = {https://msystems.asm.org/content/6/2/e01216-20},
   eprint = {https://msystems.asm.org/content/6/2/e01216-20.full.pdf},
   journal = {mSystems}
