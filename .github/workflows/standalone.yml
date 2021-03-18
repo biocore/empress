@@ -56,10 +56,10 @@ jobs:
       # tests that don't import qiime2 dependencies
       - name: Run Python tests
         shell: bash -l {0}
-        run: nosetests \
-          tests/python/test_cli.py \
-          tests/python/test_compression_utils.py \
-          tests/python/test_core.py \
-          tests/python/test_taxonomy_utils.py \
-          tests/python/test_tools.py \
-          tests/python/test_tree.py
+        run: echo $(ls) && nosetests \
+          ./tests/python/test_cli.py \
+          ./tests/python/test_compression_utils.py \
+          ./tests/python/test_core.py \
+          ./tests/python/test_taxonomy_utils.py \
+          ./tests/python/test_tools.py \
+          ./tests/python/test_tree.py
