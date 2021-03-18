@@ -547,7 +547,7 @@ Empress is available in mSystems
 Empress in your work, please cite it! The BibTeX for this paper is:
 
 ```
-@article {Cantrelle01216-20,
+@article {CantrelleFedarko2021empress,
   author = {Cantrell, Kalen and Fedarko, Marcus W. and Rahman, Gibraan and McDonald, Daniel and Yang, Yimeng and Zaw, Thant and Gonzalez, Antonio and Janssen, Stefan and Estaki, Mehrbod and Haiminen, Niina and Beck, Kristen L. and Zhu, Qiyun and Sayyari, Erfan and Morton, James T. and Armstrong, George and Tripathi, Anupriya and Gauglitz, Julia M. and Marotz, Clarisse and Matteson, Nathaniel L. and Martino, Cameron and Sanders, Jon G. and Carrieri, Anna Paola and Song, Se Jin and Swafford, Austin D. and Dorrestein, Pieter C. and Andersen, Kristian G. and Parida, Laxmi and Kim, Ho-Cheol and V{\'a}zquez-Baeza, Yoshiki and Knight, Rob},
   editor = {Hug, Laura A.},
   title = {EMPress Enables Tree-Guided, Interactive, and Exploratory Analyses of Multi-omic Data Sets},
