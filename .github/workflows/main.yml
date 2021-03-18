@@ -74,7 +74,7 @@ jobs:
           conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/unweighted_unifrac_pcoa_results.qza --filter-extra-samples
           conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/biplot.qza --filter-extra-samples
 
-      # - name: Upload to McHelper
-      #   run: |
-      #     conda run -n qiime2-dev make docs
-      #     conda run -n qiime2-dev curl -POST -F "files[]=@${PWD}/docs/moving-pictures/plain.qzv" -F "files[]=@${PWD}/docs/moving-pictures/just-fm.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empress-tree.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv"  http://mchelper.ucsd.edu:8888/uploads/empress/${{env.BRANCH_NUMBER}}/
+      - name: Upload to McHelper
+        run: |
+          conda run -n qiime2-dev make docs
+          conda run -n qiime2-dev curl -POST -F "files[]=@${PWD}/docs/moving-pictures/plain.qzv" -F "files[]=@${PWD}/docs/moving-pictures/just-fm.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empress-tree.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv"  http://mchelper.ucsd.edu:8888/uploads/empress/${{env.BRANCH_NUMBER}}/
