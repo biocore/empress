@@ -1,19 +1,11 @@
 import os
-import glob
 import unittest
-from zipfile import ZipFile
 
 from click.testing import CliRunner
 import pandas as pd
 
 from empress.scripts._cli import empress
-
-
-def extracted_artifact_path(dir_name, artifact_loc, file_name):
-    with ZipFile(artifact_loc, "r") as zip_ref:
-        zip_ref.extractall(dir_name)
-        f = glob.glob(f"{dir_name}/*/data/{file_name}")[0]
-    return f
+from .util import extracted_artifact_path
 
 
 def files_present(output_dir):
