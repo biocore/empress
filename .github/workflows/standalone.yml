@@ -1,3 +1,6 @@
+# Tests EMPress' Python code, when installed outside of a QIIME 2 conda
+# environment. See https://github.com/biocore/empress/issues/496 for a
+# description of why this is useful.
 name: Standalone CI
 
 # Controls when the action will run. 
@@ -41,7 +44,7 @@ jobs:
         shell: bash -l {0}
         run: conda install flake8 nose
 
-      - name: Install cython & numpy
+      - name: Install Cython & NumPy
         shell: bash -l {0}
         run: pip install cython "numpy >= 1.12.0"
 
@@ -49,7 +52,7 @@ jobs:
         shell: bash -l {0}
         run: pip install -e .[all]
 
-      # tests that don't import qiime2 dependencies
+      # tests that don't import QIIME 2 dependencies
       - name: Run (non-QIIME 2) Python tests
         shell: bash -l {0}
         run: >
