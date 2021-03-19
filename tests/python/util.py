@@ -6,7 +6,35 @@ from zipfile import ZipFile
 PREFIX_DIR = os.path.join("docs", "moving-pictures")
 
 
-def extracted_artifact_path(dir_name, artifact_loc, file_name):
+def extract_q2_artifact_to_path(dir_name, artifact_loc, file_name):
+    """Gets relevant data from a Q2 Artifact.
+
+    Figures out the path of an extracted Artifact's data and returns it. This
+    function unzips to the current directory so it should be called in some
+    kind of temporary directory.
+
+    For example: if tmp.qza is a FeatureTable[Frequency] Artifact
+
+        extract_q2_artifact_to_path("table", "tmp.qza", "feature-table.biom")
+
+    would return "table/<UUID>/data/feature-table.biom" and create the
+    "table/<UUID>" subdirectory. We use the glob module to find the filepath
+    because an Artifact unzips to a directory named by a UUID.
+
+    Parameters
+    ----------
+    dir_name: str
+        Name of subdirectory to create with extracted Artifact
+    artifact_loc: str
+        Filepath of Artifact to unzip
+    file_name: str
+        Name of file to search for in data directory
+
+    Returns
+    -------
+    str
+        Filepath of data file in new temporary directory
+    """
     with ZipFile(artifact_loc, "r") as zip_ref:
         zip_ref.extractall(dir_name)
         f = glob.glob(f"{dir_name}/*/data/{file_name}")[0]
@@ -21,19 +49,30 @@ def load_mp_data(use_artifact_api=True):
     to where this function is being run from. If this directory or the data
     files within it cannot be accessed, this function will (probably) break.
 
+    Parameters
+    ----------
+    use_artifact_api: bool, optional (default True)
+        If True, this will load the artifacts using the QIIME 2 Artifact API,
+        and the returned objects will have types corresponding to the first
+        listed types (before the | characters) shown below.
+        If False, this will instead load the artifacts without using QIIME 2's
+        APIs; in this case, the returned objects will have types corresponding
+        to the second listed types (after the | characters) shown below.
+
     Returns
     -------
     (tree, table, md, fmd, ordination)
-        tree: Artifact with semantic type Phylogeny[Rooted]
+        tree: qiime2.Artifact | skbio.tree.TreeNode
             Phylogenetic tree.
-        table: Artifact with semantic type FeatureTable[Frequency]
+        table: qiime2.Artifact | biom.Table
             Feature table.
-        md: Metadata
+        md: qiime2.Metadata | pandas.DataFrame
             Sample metadata.
-        fmd: Metadata
+        fmd: qiime2.Metadata | pandas.DataFrame
             Feature metadata. (Although this is stored in the repository as a
-            FeatureData[Taxonomy] artifact, we transform it to Metadata.)
-        pcoa: Artifact with semantic type PCoAResults
+            FeatureData[Taxonomy] artifact, we transform it to Metadata if
+            use_artifact_api is True.)
+        pcoa: qiime2.Artifact | skbio.OrdinationResults
             Ordination.
     """
     q2_tree_loc = os.path.join(PREFIX_DIR, "rooted-tree.qza")
@@ -57,17 +96,17 @@ def load_mp_data(use_artifact_api=True):
         from skbio.stats.ordination import OrdinationResults
         from skbio.tree import TreeNode
         with tempfile.TemporaryDirectory() as _tmp:
-            tree_loc = extracted_artifact_path(_tmp, q2_tree_loc, "tree.nwk")
+            tree_loc = extract_q2_artifact_to_path(_tmp, q2_tree_loc,
+                                                   "tree.nwk")
             tree = TreeNode.read(tree_loc)
-            tbl_loc = extracted_artifact_path(_tmp, q2_table_loc,
-                                              "feature-table.biom")
+            tbl_loc = extract_q2_artifact_to_path(_tmp, q2_table_loc,
+                                                  "feature-table.biom")
             table = biom.load_table(tbl_loc)
-            pcoa_loc = extracted_artifact_path(_tmp, q2_pcoa_loc,
-                                               "ordination.txt")
+            pcoa_loc = extract_q2_artifact_to_path(_tmp, q2_pcoa_loc,
+                                                   "ordination.txt")
             pcoa = OrdinationResults.read(pcoa_loc)
-            tax_loc = extracted_artifact_path(_tmp, q2_tax_loc,
-                                              "taxonomy.tsv")
+            tax_loc = extract_q2_artifact_to_path(_tmp, q2_tax_loc,
+                                                  "taxonomy.tsv")
             fmd = pd.read_csv(tax_loc, sep="\t", index_col=0)
             md = pd.read_csv(md_loc, sep="\t", index_col=0, skiprows=[1])
-        pass
     return tree, table, md, fmd, pcoa

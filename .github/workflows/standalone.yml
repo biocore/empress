@@ -17,7 +17,8 @@ jobs:
     # we can add more versions of node.js in the future
     strategy:
       matrix:
-        node-version: [14.x]
+        # based roughly on https://github.com/conda-incubator/setup-miniconda#example-1-basic-usage
+        python-version: ["3.6", "3.7", "3.8", "3.9"]
 
     # used in McHelper (similar to TRAVIS_PULL_REQUEST variable)
     env:
@@ -31,15 +32,11 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Set up Node.js enviroment
-        uses: actions/setup-node@v1
-        with:
-          node-version: 14
-
+      # https://github.com/conda-incubator/setup-miniconda#example-1-basic-usage
       - uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: empress
-          python-version: 3.6
+          python-version: ${{ matrix.python-version }}
 
       - name: Install conda packages
         shell: bash -l {0}
@@ -54,7 +51,7 @@ jobs:
         run: pip install -e .[all]
 
       # tests that don't import qiime2 dependencies
-      - name: Run Python tests
+      - name: Run (non-QIIME 2) Python tests
         shell: bash -l {0}
         run: >
           nosetests
