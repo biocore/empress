@@ -28,9 +28,14 @@ Empress is available as either a standalone program or a QIIME 2 plugin. The sta
 
 ## Standalone Version
 
-EMPress is available through [PyPI](https://PyPI.org/project/empress/). Run the following command to install Empress:
+Empress is available through [PyPI](https://PyPI.org/project/empress/). We recommend installing Empress into an environment (e.g. a [conda](https://docs.conda.io/) environment) using a Python version of at least 3.6.
 
-`pip install empress`
+Run the following commands to install Empress:
+
+```bash
+pip install cython "numpy >= 1.12.0"
+pip install empress
+```
 
 Try running the command `empress --help` to ensure that Empress has been installed properly. If you see details for the different Empress commands then the installation has succeeded and you are ready to start using Empress!
 
@@ -542,21 +547,24 @@ One unique feature that makes Empress useful for exploring time-series data or m
 
 # Publication and Citation
 
-A preprint describing Empress is available on bioRxiv
-[here](https://www.biorxiv.org/content/10.1101/2020.10.06.327080v1). If you use
-Empress in your work, please cite it! The BibTeX for this preprint is:
+Empress is available in mSystems
+[here](https://msystems.asm.org/content/6/2/e01216-20). If you use
+Empress in your work, please cite it! The BibTeX for this paper is:
 
 ```
-@article {Cantrell2020.10.06.327080,
-    author = {Cantrell, Kalen and Fedarko, Marcus W and Rahman, Gibraan and McDonald, Daniel and Yang, Yimeng and Zaw, Thant and Gonzalez, Antonio and Janssen, Stefan and Estaki, Mehrbod and Haiminen, Niina and Beck, Kristen L. and Zhu, Qiyun and Sayyari, Erfan and Morton, Jamie and Tripathi, Anupriya and Gauglitz, Julia M and Marotz, Clarisse and Matteson, Nathaniel L and martino, cameron and Sanders, Jon G and Carrieri, Anna Paola and Song, Se Jin and Swafford, Austin D and Dorrestein, Pieter and Andersen, Kristian G and PARIDA, LAXMI and Kim, Ho-Cheol and V{\'a}zquez-Baeza, Yoshiki and Knight, Rob},
-    title = {EMPress enables tree-guided, interactive, and exploratory analyses of multi-omic datasets},
-    elocation-id = {2020.10.06.327080},
-    year = {2020},
-    doi = {10.1101/2020.10.06.327080},
-    publisher = {Cold Spring Harbor Laboratory},
-    URL = {https://www.biorxiv.org/content/early/2020/10/08/2020.10.06.327080},
-    eprint = {https://www.biorxiv.org/content/early/2020/10/08/2020.10.06.327080.full.pdf},
-    journal = {bioRxiv}
+@article {CantrellFedarko2021empress,
+  author = {Cantrell, Kalen and Fedarko, Marcus W. and Rahman, Gibraan and McDonald, Daniel and Yang, Yimeng and Zaw, Thant and Gonzalez, Antonio and Janssen, Stefan and Estaki, Mehrbod and Haiminen, Niina and Beck, Kristen L. and Zhu, Qiyun and Sayyari, Erfan and Morton, James T. and Armstrong, George and Tripathi, Anupriya and Gauglitz, Julia M. and Marotz, Clarisse and Matteson, Nathaniel L. and Martino, Cameron and Sanders, Jon G. and Carrieri, Anna Paola and Song, Se Jin and Swafford, Austin D. and Dorrestein, Pieter C. and Andersen, Kristian G. and Parida, Laxmi and Kim, Ho-Cheol and V{\'a}zquez-Baeza, Yoshiki and Knight, Rob},
+  editor = {Hug, Laura A.},
+  title = {EMPress Enables Tree-Guided, Interactive, and Exploratory Analyses of Multi-omic Data Sets},
+  volume = {6},
+  number = {2},
+  elocation-id = {e01216-20},
+  year = {2021},
+  doi = {10.1128/mSystems.01216-20},
+  publisher = {American Society for Microbiology Journals},
+  URL = {https://msystems.asm.org/content/6/2/e01216-20},
+  eprint = {https://msystems.asm.org/content/6/2/e01216-20.full.pdf},
+  journal = {mSystems}
 }
 ```
 
