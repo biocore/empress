@@ -407,7 +407,7 @@ define([
                 checkLengthsChange
             );
             this._yrscf = data.yScalingFactor;
-            for (i of this._tree.postorderTraversal((includeRoot = true))) {
+            for (i of this._tree.postorderTraversal(includeRoot = true)) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
 

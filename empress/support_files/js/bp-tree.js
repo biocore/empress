@@ -980,9 +980,9 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      *
      * @param {Set} keepTips The set of tip names to keep.
      *
-     * @return {Object} An object containing the new tree and two maps that
+     * @return {Object} An object containing the new tree ("tree") and two maps that
      *                  convert the original postorder positions to the sheared
-     *                  tree postorder positions and vice-versa.
+     *                  tree postorder positions ("newToOld") and vice-versa ("oldToNew").
      */
     BPTree.prototype.shear = function (keepTips) {
         // closure
