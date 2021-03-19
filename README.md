@@ -28,9 +28,14 @@ Empress is available as either a standalone program or a QIIME 2 plugin. The sta
 
 ## Standalone Version
 
-EMPress is available through [PyPI](https://PyPI.org/project/empress/). Run the following command to install Empress:
+Empress is available through [PyPI](https://PyPI.org/project/empress/). We recommend installing Empress into an environment (e.g. a [conda](https://docs.conda.io/) environment) using a Python version of at least 3.6.
 
-`pip install empress`
+Run the following commands to install Empress:
+
+```bash
+pip install cython "numpy >= 1.12.0"
+pip install empress
+```
 
 Try running the command `empress --help` to ensure that Empress has been installed properly. If you see details for the different Empress commands then the installation has succeeded and you are ready to start using Empress!
 

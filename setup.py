@@ -65,6 +65,10 @@ setup(
                     'support_files/templates/*.html',
                     'citations.bib']},
     data_files={},
+    # Yanked from Qurro: NumPy and Cython need to be installed before
+    # trying to install EMPress / other pip packages.
+    # https://github.com/biocore/qurro/blob/master/setup.py
+    setup_requires=["cython", "numpy >= 1.12.0"],
     install_requires=base,
     extras_require={'test': test, 'all': all_deps},
     long_description=long_description,
