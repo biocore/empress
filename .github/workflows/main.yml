@@ -31,7 +31,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Set up Node.js enviroment
+      - name: Set up Node.js
         uses: actions/setup-node@v1
         with:
           # Can use a matrix of Node.js versions in the future if desired;
@@ -57,7 +57,7 @@ jobs:
           python-version: 3.6
           conda-channels: anaconda, conda-forge
 
-      - name: Create QIIME 2 conda enviroment
+      - name: Create QIIME 2 conda environment
         run: |
           wget https://data.qiime2.org/distro/core/qiime2-2020.6-py36-linux-conda.yml
           conda env create -n qiime2-dev --file qiime2-2020.6-py36-linux-conda.yml
