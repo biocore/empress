@@ -236,7 +236,7 @@ define([
          * @private
          */
         this._maxDisplacement = null;
-        
+
         /**
          * @type {Number}
          * A multiple of this._maxDisplacement. This is used as the unit for
@@ -1597,7 +1597,8 @@ define([
         // Add a border on the outside of the outermost layer
         if (this._barplotPanel.useBorders) {
             prevLayerMaxD = scope.addBorderBarplotLayerCoords(
-                barplotBuffer, prevLayerMaxD
+                barplotBuffer,
+                prevLayerMaxD
             );
         }
         // Update data on the farthest barplot point
@@ -3605,13 +3606,14 @@ define([
     };
 
     Empress.prototype.getTipByBarplotClickPoint = function (x, y) {
+        var node;
         if (this._barplotsDrawn) {
             var closestTip;
             if (this._currentLayout === "Rectangular") {
                 // Find the tip with the closest y
                 var closestYDist = Infinity;
                 // Omit this._tree.size since the root is not a tip
-                for (var node = 1; node < this._tree.size; node++) {
+                for (node = 1; node < this._tree.size; node++) {
                     if (this._tree.isleaf(this._tree.postorderselect(node))) {
                         var newYDist = Math.abs(this.getY(node) - y);
                         if (newYDist < closestYDist) {
@@ -3645,7 +3647,7 @@ define([
                     ptAngle += Math.PI * 2;
                 }
                 var closestAngleDist = Infinity;
-                for (var node = 1; node < this._tree.size; node++) {
+                for (node = 1; node < this._tree.size; node++) {
                     if (this._tree.isleaf(this._tree.postorderselect(node))) {
                         var newAngleDist = Math.abs(
                             this.getNodeInfo(node, "angle") - ptAngle
