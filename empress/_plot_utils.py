@@ -10,7 +10,6 @@
 import os
 import pkg_resources
 
-import q2templates
 from bp import parse_newick
 import numpy as np
 import pandas as pd
@@ -55,6 +54,7 @@ def save_viz(viz, output_dir, q2=True):
     viz.copy_support_files(output_dir)
 
     if q2:
+        import q2templates
         index = os.path.join(TEMPLATES, 'index.html')
         q2templates.render(index, output_dir)
 
