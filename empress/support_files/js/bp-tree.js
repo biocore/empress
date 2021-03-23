@@ -1024,8 +1024,8 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         }
 
         var newBitArray = [];
-        var newToOld = {};
-        var oldToNew = {};
+        var shearedToFull = new Map();
+        var fullToSheared = new Map();
         var postorderPos = 1;
         for (i = 0; i < mask.length; i++) {
             if (mask[i] !== undefined) {
@@ -1038,13 +1038,14 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             if (mask[i] === 0) {
                 names.push(this.name(i));
                 lengths.push(this.length(i));
-                newToOld[postorderPos] = this.postorder(i);
-                oldToNew[this.postorder(i)] = postorderPos++;
+                shearedToFull.set(postorderPos, this.postorder(i));
+                fullToSheared.set(this.postorder(i), postorderPos);
+                postorderPos += 1;
             }
         }
         return {
-            newToOld: newToOld,
-            oldToNew: oldToNew,
+            shearedToFull: shearedToFull,
+            fullToSheared: fullToSheared,
             tree: new BPTree(newBitArray, names, lengths, null),
         };
     };

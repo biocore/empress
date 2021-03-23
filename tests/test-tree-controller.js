@@ -29,61 +29,61 @@ require(["jquery", "UtilitiesForTesting", "util", "TreeController"], function (
 
             // checks to make sure correct names are kept
             var shearNames = [null, "t2", "t3", "i4", "i5", "r"];
-            var resutlNames = this.treeController.model.currentTree.names_;
+            var resutlNames = this.treeController.model.shearedTree.names_;
             deepEqual(resutlNames, shearNames);
 
             var shearLengths = [null, 2, 3, 4, 5, null];
-            var resultLengts = this.treeController.model.currentTree.lengths_;
+            var resultLengts = this.treeController.model.shearedTree.lengths_;
             deepEqual(resultLengts, shearLengths);
 
             // checks to make sure structre of tree is correct
             var shearTree = [1, 1, 1, 1, 0, 1, 0, 0, 0, 0];
-            var resultTree = this.treeController.model.currentTree.b_;
+            var resultTree = this.treeController.model.shearedTree.b_;
             deepEqual(resultTree, shearTree);
 
             // checks to make sure the mappings from orignal tree to shear tree
             // is correct and vice-versa
-            var origToCur = {
-                "2": 1,
-                "3": 2,
-                "4": 3,
-                "5": 4,
-                "7": 5,
-            };
-            var curToOrig = {
-                "1": 2,
-                "2": 3,
-                "3": 4,
-                "4": 5,
-                "5": 7,
-            };
-            var resultOrigToCur = this.treeController.model.origToCur;
-            var resultCurToOrig = this.treeController.model.curToOrig;
-            deepEqual(resultOrigToCur, origToCur);
-            deepEqual(resultCurToOrig, curToOrig);
+            var fullToSheared = new Map([
+                [2, 1],
+                [3, 2],
+                [4, 3],
+                [5, 4],
+                [7, 5],
+            ]);
+            var shearedToFull = new Map([
+                [1, 2],
+                [2, 3],
+                [3, 4],
+                [4, 5],
+                [5, 7],
+            ]);
+            var resultOrigToCur = this.treeController.model.fullToSheared;
+            var resultCurToOrig = this.treeController.model.shearedToFull;
+            deepEqual(resultOrigToCur, fullToSheared);
+            deepEqual(resultCurToOrig, shearedToFull);
         });
 
         test("Test unshear", function () {
             this.treeController.shear(new Set(["t2", "t3"]));
             this.treeController.unshear();
 
-            deepEqual(this.treeController.model.currentTree.names_, this.names);
+            deepEqual(this.treeController.model.shearedTree.names_, this.names);
             deepEqual(
-                this.treeController.model.currentTree.lengths_,
+                this.treeController.model.shearedTree.lengths_,
                 this.lengths
             );
 
-            var map = {
-                "1": 1,
-                "2": 2,
-                "3": 3,
-                "4": 4,
-                "5": 5,
-                "6": 6,
-                "7": 7,
-            };
-            deepEqual(this.treeController.model.curToOrig, map);
-            deepEqual(this.treeController.model.origToCur, map);
+            var map = new Map([
+                [1, 1],
+                [2, 2],
+                [3, 3],
+                [4, 4],
+                [5, 5],
+                [6, 6],
+                [7, 7],
+            ]);
+            deepEqual(this.treeController.model.shearedToFull, map);
+            deepEqual(this.treeController.model.fullToSheared, map);
         });
 
         test("Test postorderTraversal", function () {

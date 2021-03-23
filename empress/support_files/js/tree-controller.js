@@ -1,37 +1,41 @@
 define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
     function TreeModel(tree) {
-        this.currentTree = tree;
-        this.originalTree = tree;
-        this.curToOrig = {};
-        this.origToCur = {};
+        this.shearedTree = tree;
+        this.fullTree = tree;
+        this.shearedToFull = new Map();
+        this.fullToSheared = new Map();
 
         // initialize
-        for (var i = 1; i <= this.currentTree.size; i++) {
-            this.origToCur[i] = i;
-            this.curToOrig[i] = i;
+        for (var i = 1; i <= this.shearedTree.size; i++) {
+            this.fullToSheared.set(i, i);
+            this.shearedToFull.set(i, i);
         }
     }
 
+    TreeModel.prototype.getTree = function () {
+        return this.shearedTree;
+    };
+
     TreeModel.prototype.shear = function (tips) {
-        var result = this.originalTree.shear(tips);
-        this.currentTree = result.tree;
-        this.curToOrig = result.newToOld;
-        this.origToCur = result.oldToNew;
+        var result = this.fullTree.shear(tips);
+        this.shearedTree = result.tree;
+        this.shearedToFull = result.shearedToFull;
+        this.fullToSheared = result.fullToSheared;
     };
 
     TreeModel.prototype.unshear = function () {
-        this.currentTree = this.originalTree;
-        for (var i = 1; i <= this.currentTree.size; i++) {
-            this.origToCur[i] = i;
-            this.curToOrig[i] = i;
+        this.shearedTree = this.fullTree;
+        for (var i = 1; i <= this.shearedTree.size; i++) {
+            this.fullToSheared.set(i, i);
+            this.shearedToFull.set(i, i);
         }
     };
 
     TreeModel.prototype.postorderTraversal = function* (includeRoot = false) {
         var nodes = [],
             i;
-        for (i = 1; i <= Object.keys(this.curToOrig).length; i++) {
-            nodes.push(this.curToOrig[i]);
+        for (i = 1; i <= this.shearedToFull.size; i++) {
+            nodes.push(this.shearedToFull.get(i));
         }
         if (!includeRoot) {
             nodes.pop();
@@ -71,8 +75,17 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
          * @constructs TreeController
          */
         this.model = new TreeModel(tree);
-        this.size = this.model.originalTree.size;
+        this.size = this.model.fullTree.size;
     }
+
+    /**
+     * Returns the current (sheared) tree
+     *
+     * @return {BPTree}
+     */
+    TreeController.prototype.getTree = function () {
+        return this.model.getTree();
+    };
 
     /**
      * Removes nodes from the original tree until only the nodes found in tips
@@ -92,7 +105,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
     };
 
     /**
-     * Returns an iterator for nodes in a post order traversal of the current
+     * Returns an iterator for nodes in a post order traversal of the sheared
      * tree.
      *
      * Note: This method will use the topology of the currect tree but will
@@ -108,14 +121,14 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
 
     /**
      * Returns an Object describing the minimum, maximum, and average of all
-     * non-root node lengths in the current tree.
+     * non-root node lengths in the sheared tree.
      *
      * @return {Object} Contains three keys: "min", "max", and "avg", mapping
      *                  to Numbers representing the minimum, maximum, and
      *                  average non-root node length in the tree.
      */
     TreeController.prototype.getLengthStats = function () {
-        return this.model.currentTree.getLengthStats();
+        return this.model.shearedTree.getLengthStats();
     };
 
     /**
@@ -130,23 +143,23 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return{String}
      */
     TreeController.prototype.name = function (i) {
-        return this.model.originalTree.name(i);
+        return this.model.fullTree.name(i);
     };
 
     /**
-     * Returns an array of all node names in current tree.
+     * Returns an array of all node names in sheared tree.
      */
     TreeController.prototype.getAllNames = function () {
-        return this.model.currentTree.getAllNames();
+        return this.model.shearedTree.getAllNames();
     };
 
     /**
-     * Returns the number of leaf nodes in current tree
+     * Returns the number of leaf nodes in sheared tree
      *
      * @return {Number}
      */
     TreeController.prototype.numleaves = function () {
-        return this.model.currentTree.numleaves();
+        return this.model.shearedTree.numleaves();
     };
 
     /**
@@ -160,7 +173,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return{Number}
      */
     TreeController.prototype.length = function (i) {
-        return this.model.originalTree.length(i);
+        return this.model.fullTree.length(i);
     };
 
     /**
@@ -177,7 +190,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return{Number}
      */
     TreeController.prototype.parent = function (i) {
-        return this.model.originalTree.parent(i);
+        return this.model.fullTree.parent(i);
     };
 
     /**
@@ -188,7 +201,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Number}
      */
     TreeController.prototype.root = function () {
-        return this.model.originalTree.root();
+        return this.model.fullTree.root();
     };
 
     /**
@@ -202,12 +215,12 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Boolean}
      */
     TreeController.prototype.isleaf = function (i) {
-        return this.model.originalTree.isleaf(i);
+        return this.model.fullTree.isleaf(i);
     };
 
     /**
      * This method is used in fchild, lchild, nsibling, and psibling and it what
-     * allows TreeController to use the topology of the current tree but return
+     * allows TreeController to use the topology of the sheared tree but return
      * the results w.r.t the original tree.
      *
      * @param{Number} i The index correspond to a node in the ORIGINAL tree.
@@ -218,21 +231,21 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      */
 
     TreeController.prototype._curToOrigNodeFunction = function (i, func) {
-        var curTree = this.model.currentTree;
-        var origTree = this.model.originalTree;
+        var curTree = this.model.shearedTree;
+        var origTree = this.model.fullTree;
 
         var node = curTree.postorderselect(
-            this.model.origToCur[origTree.postorder(i)]
+            this.model.fullToSheared.get(origTree.postorder(i))
         );
 
         node = curTree.postorder(curTree[func](node));
-        node = origTree.postorderselect(this.model.curToOrig[node]);
+        node = origTree.postorderselect(this.model.shearedToFull.get(node));
         return node;
     };
 
     /**
      * Returns the opening index of first child of the node represented by i.
-     * This method will use the topology of the current (sheared) tree but its
+     * This method will use the topology of the sheared (sheared) tree but its
      * input and output will be w.r.t the ORGINAL tree.
      *
      * Note: The input of this method should the result of either preorderselect
@@ -248,7 +261,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
 
     /**
      * Returns the opening index of last child of the node represented by i.
-     * This method will use the topology of the current (sheared) tree but its
+     * This method will use the topology of the sheared (sheared) tree but its
      * input and output will be w.r.t the ORGINAL tree.
      *
      * Note: The input of this method should the result of either preorderselect
@@ -264,7 +277,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
 
     /**
      * Returns the opening index of next sibling of the node represented by i.
-     * This method will use the topology of the current (sheared) tree but its
+     * This method will use the topology of the sheared (sheared) tree but its
      * input and output will be w.r.t the ORGINAL tree.
      *
      * Note: The input of this method should the result of either preorderselect
@@ -280,7 +293,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
 
     /**
      * Returns the opening index of previous sibling of the node represented by
-     * i. This method will use the topology of the current (sheared) tree but
+     * i. This method will use the topology of the sheared (sheared) tree but
      * its input and output will be w.r.t the ORGINAL tree.
      *
      * Note: The input of this method should the result of either preorderselect
@@ -305,7 +318,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Number} The postorder rank of index i
      */
     TreeController.prototype.postorder = function (i) {
-        return this.model.originalTree.postorder(i);
+        return this.model.fullTree.postorder(i);
     };
 
     /**
@@ -317,7 +330,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Number} The index position of the node in the tree
      */
     TreeController.prototype.postorderselect = function (k) {
-        return this.model.originalTree.postorderselect(k);
+        return this.model.fullTree.postorderselect(k);
     };
 
     /**
@@ -331,7 +344,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Number} The preorder rank of index i
      */
     TreeController.prototype.preorder = function (i) {
-        return this.model.originalTree.preorder(i);
+        return this.model.fullTree.preorder(i);
     };
 
     /**
@@ -343,11 +356,11 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Number} The index position of the node in the tree
      */
     TreeController.prototype.preorderselect = function (k) {
-        return this.model.originalTree.preorderselect(k);
+        return this.model.fullTree.preorderselect(k);
     };
 
     /**
-     * Returns an iterator for nodes in an in-order traversal of the current
+     * Returns an iterator for nodes in an in-order traversal of the sheared
      * tree.
      *
      * Note: This method will use the topology of the currect tree but will
@@ -358,11 +371,9 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
     TreeController.prototype.inOrderTraversal = function* (
         includeRoot = false
     ) {
-        var inOrderNodes = this.model.currentTree.inOrderNodes();
-        if (Object.keys(this.model.curToOrig).length !== 0) {
-            for (var i = 0; i < inOrderNodes.length; i++) {
-                inOrderNodes[i] = this.model.curToOrig[inOrderNodes[i]];
-            }
+        var inOrderNodes = this.model.shearedTree.inOrderNodes();
+        for (var i = 0; i < inOrderNodes.length; i++) {
+            inOrderNodes[i] = this.model.shearedToFull.get(inOrderNodes[i]);
         }
         if (!includeRoot) {
             inOrderNodes.shift();
@@ -372,7 +383,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
 
     /**
      * Finds the sum of lengths from start to end. This method will use the
-     * topology of the current tree but its input must be w.r.t the ORIGINAL
+     * topology of the sheared tree but its input must be w.r.t the ORIGINAL
      * tree.
      *
      * Note: start must be a descendant of end. An error will be thrown if start
@@ -392,14 +403,14 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
         end,
         ignoreLengths
     ) {
-        start = this.model.origToCur[start];
-        end = this.model.origToCur[end];
-        return this.model.currentTree.getTotalLength(start, end, ignoreLengths);
+        start = this.model.fullToSheared.get(start);
+        end = this.model.fullToSheared.get(end);
+        return this.model.shearedTree.getTotalLength(start, end, ignoreLengths);
     };
 
     /**
      * Retrieve the tips in the subtree of a given (internal) node key. This
-     * method will use the topology of the current tree but its input/output
+     * method will use the topology of the sheared tree but its input/output
      * will be w.r.t the ORIGINAL tree.
      *
      * @param {Number} nodeKey The post-order position of a node in the ORIGINAL
@@ -408,17 +419,17 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Array} tips Tips of the subtree.
      */
     TreeController.prototype.findTips = function (nodeKey) {
-        nodeKey = this.model.origToCur[nodeKey];
-        var tips = this.model.currentTree.findTips(nodeKey);
+        nodeKey = this.model.fullToSheared.get(nodeKey);
+        var tips = this.model.shearedTree.findTips(nodeKey);
         for (var i = 0; i < tips.length; i++) {
-            tips[i] = this.model.curToOrig[tips[i]];
+            tips[i] = this.model.shearedToFull.get(tips[i]);
         }
         return tips;
     };
 
     /**
      * Retrieve number of tips in the subtree of a given node. This method will
-     * use the topology of the current tree but its input must be w.r.t the
+     * use the topology of the sheared tree but its input must be w.r.t the
      * ORIGINAL tree.
      *
      * @param {Integer} nodeKey The postorder position of a node in the ORIGINAL
@@ -427,24 +438,24 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Integer} The number of tips on the subtree rooted at nodeKey.
      */
     TreeController.prototype.getNumTips = function (nodeKey) {
-        nodeKey = this.model.origToCur[nodeKey];
-        return this.model.currentTree.getNumTips(nodeKey);
+        nodeKey = this.model.fullToSheared.get(nodeKey);
+        return this.model.shearedTree.getNumTips(nodeKey);
     };
 
     /**
-     * Checks to see if name is in the current tree.
+     * Checks to see if name is in the sheared tree.
      *
      * @param {String} name The name to search for.
      *
      * @return {Boolean} If the name is in the tree.
      */
     TreeController.prototype.containsNode = function (name) {
-        return this.model.currentTree.containsNode(name);
+        return this.model.shearedTree.containsNode(name);
     };
 
     /**
      * Returns all nodes with a given name. This method will use the topology
-     * of the current tree but its output will be w.r.t the ORIGINAL tree.
+     * of the sheared tree but its output will be w.r.t the ORIGINAL tree.
      *
      * @param {String} name The name of the node(s)
      *
@@ -453,9 +464,9 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      *                 an empty array.
      */
     TreeController.prototype.getNodesWithName = function (name) {
-        var nodes = this.model.currentTree.getNodesWithName(name);
+        var nodes = this.model.shearedTree.getNodesWithName(name);
         for (var i = 0; i < nodes.length; i++) {
-            nodes[i] = this.model.curToOrig[nodes[i]];
+            nodes[i] = this.model.shearedToFull.get(nodes[i]);
         }
         return nodes;
     };

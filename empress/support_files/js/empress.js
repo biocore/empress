@@ -387,12 +387,12 @@ define([
         );
         var lengthGetter = LayoutsUtil.getLengthMethod(
             branchMethod,
-            this._tree.model.currentTree
+            this._tree.getTree()
         );
         // Rectangular
         if (this._currentLayout === "Rectangular") {
             data = LayoutsUtil.rectangularLayout(
-                this._tree.model.currentTree,
+                this._tree.getTree(),
                 4020,
                 4020,
                 // since lengths for "ignoreLengths" are set by `lengthGetter`,
@@ -417,11 +417,12 @@ define([
                 this._treeData[i][this._tdToInd.highestchildyr] =
                     data.highestChildYr[j];
                 this._treeData[i][this._tdToInd.lowestchildyr] =
-                    data.lowestChildYr[j++];
+                    data.lowestChildYr[j];
+                j += 1;
             }
         } else if (this._currentLayout === "Circular") {
             data = LayoutsUtil.circularLayout(
-                this._tree.model.currentTree,
+                this._tree.getTree(),
                 4020,
                 4020,
                 this.leafSorting,
@@ -444,11 +445,12 @@ define([
                 this._treeData[i][this._tdToInd.arcstartangle] =
                     data.arcStartAngle[j];
                 this._treeData[i][this._tdToInd.arcendangle] =
-                    data.arcEndAngle[j++];
+                    data.arcEndAngle[j];
+                j += 1;
             }
         } else {
             data = LayoutsUtil.unrootedLayout(
-                this._tree.model.currentTree,
+                this._tree.getTree(),
                 4020,
                 4020,
                 undefined,
@@ -461,7 +463,8 @@ define([
 
                 // store new layout information
                 this._treeData[i][this._tdToInd.x2] = data.xCoord[j];
-                this._treeData[i][this._tdToInd.y2] = data.yCoord[j++];
+                this._treeData[i][this._tdToInd.y2] = data.yCoord[j];
+                j += 1;
             }
         }
         this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
