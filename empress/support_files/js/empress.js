@@ -3565,5 +3565,21 @@ define([
         }
     };
 
+    Empress.prototype.shear = function (cat, value) {
+        var nodeNames = this._tree.getAllNames();
+
+        var fmInfo = this.getUniqueFeatureMetadataInfo(cat, "tip");
+        var sortedUniqueValues = fmInfo.sortedUniqueValues;
+        var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
+        // convert observation IDs to _treeData keys. Notably, this includes
+        // converting the values of uniqueValueToFeatures from Arrays to Sets.
+        var obs = uniqueValueToFeatures[value];
+        var tipNames = [];
+        for (var i of obs.values()) {
+            tipNames.push(this._tree.name(this._tree.postorderselect(i)));
+        }
+        this._tree.shear(new Set(tipNames));
+    };
+
     return Empress;
 });
