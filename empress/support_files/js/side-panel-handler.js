@@ -316,7 +316,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var col = this.sColor.value;
         var reverse = this.sReverseColor.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col, reverse);
-        console.log("Mother Fuck", keyInfo)
 
         if (keyInfo === null) {
             util.toastMsg(
@@ -341,7 +340,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             coloringMethod,
             reverse
         );
-        console.log("Mother Fuck", keyInfo)
         if (_.isEmpty(keyInfo)) {
             util.toastMsg(
                 "No unique branches found for this metadata category"
@@ -460,16 +458,15 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         }
     };
 
-    SidePanel.prototype.shearUpdate = function() {
-        console.log("????")
+    SidePanel.prototype.shearUpdate = function () {
         if (this.sChk.checked) {
-            this.sUpdateBtn.click()
+            this.sUpdateBtn.click();
         }
 
         if (this.fChk.checked) {
             this.fUpdateBtn.click();
         }
-    }
+    };
 
     /**
      * Initializes exporting options.

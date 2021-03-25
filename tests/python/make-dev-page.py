@@ -69,8 +69,7 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
     table = table.view(biom.Table)
     sample_metadata = sample_metadata.to_dataframe()
     feature_metadata = feature_metadata.to_dataframe()
-    
-    ordination = None
+
     if ordination is not None:
         ordination = ordination.view(OrdinationResults)
 
@@ -87,7 +86,7 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
             feats.sort_values('importance', inplace=True, ascending=False)
             feats.drop(['importance'], inplace=True, axis=1)
             ordination.features = feats[:number_of_features].copy()
-    
+
     # These two lines fetch the JS files for both apps directly from the
     # installation directory - this makes testing/developing easier
     empress_resources = pkg_resources.resource_filename('empress',

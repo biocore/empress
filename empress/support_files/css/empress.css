@@ -585,7 +585,7 @@ p.side-header button:hover,
     white-space: nowrap;
 }
 
-.shear-layer-legend div{
+.shear-layer-legend div {
     max-height: 15em;
     /* The side panel width is 450px */
     max-width: 430px;

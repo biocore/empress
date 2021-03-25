@@ -390,18 +390,17 @@ define([
             this._tree.getTree()
         );
 
-
         // Rectangular
         if (this._currentLayout === "Rectangular") {
-             // tree is just root
+            // tree is just root
             if (this._tree.currentSize == 1) {
                 data = {
                     xCoord: [null, 0],
                     yCoord: [null, 0],
                     highestChildYr: [null, 0],
                     lowestChildYr: [null, 0],
-                    yScalingFactor: [null, 0]
-                }    
+                    yScalingFactor: [null, 0],
+                };
             } else {
                 data = LayoutsUtil.rectangularLayout(
                     this._tree.getTree(),
@@ -446,7 +445,7 @@ define([
                     arcy0: [null, 0],
                     arcStartAngle: [null, 0],
                     arcEndAngle: [null, 0],
-                }    
+                };
             } else {
                 data = LayoutsUtil.circularLayout(
                     this._tree.getTree(),
@@ -482,7 +481,7 @@ define([
                     // store new layout information
                     xCoord: [null, 0],
                     yCoord: [null, 0],
-                }    
+                };
             } else {
                 data = LayoutsUtil.unrootedLayout(
                     this._tree.getTree(),
@@ -2181,11 +2180,11 @@ define([
     /**
      *
      */
-    Empress.prototype.getUniqueSampleMetadataInfo = function(cat) {
+    Empress.prototype.getUniqueSampleMetadataInfo = function (cat) {
         var obs = this._biom.getObsBy(cat);
         var nodes = new Set([...this._tree.postorderTraversal()]);
         _.each(obs, function (observations, key) {
-            obs[key] = observations.filter(x => nodes.has(x));
+            obs[key] = observations.filter((x) => nodes.has(x));
         });
         return obs;
     };
@@ -2321,7 +2320,9 @@ define([
                 }
                 // need to convert to integer
                 node = parseInt(node);
-                if (!nodes.has(node)) {return};
+                if (!nodes.has(node)) {
+                    return;
+                }
                 uniqueValueToFeatures[fmVal].push(node);
             });
         });
@@ -3625,7 +3626,7 @@ define([
             return this._tree.length(this._tree.postorderselect(nodeKey));
         }
     };
-    
+
     /**
      * This will shear/unshear
      */
@@ -3634,29 +3635,29 @@ define([
         var scope = this;
         var removeNodes = new Set();
 
-        shearMap.forEach(function(values, cat) {
+        shearMap.forEach(function (values, cat) {
             var fmInfo = scope.getUniqueFeatureMetadataInfo(cat, "tip");
             var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
-            console.log("Test",uniqueValueToFeatures)
-            _.each(values, function(val) {
+            _.each(values, function (val) {
                 var obs = uniqueValueToFeatures[val];
-                for(var node of obs) {
+                for (var node of obs) {
                     removeNodes.add(node);
                 }
             });
         });
-
 
         // remove removeNodes
         var allNodes = Array.from(Array(this._tree.size + 1).keys());
         allNodes.shift();
 
         allNodes = new Set(allNodes);
-        var keepNodes = new Set([...allNodes].filter(x => !removeNodes.has(x)));
+        var keepNodes = new Set(
+            [...allNodes].filter((x) => !removeNodes.has(x))
+        );
 
-        var keepNames = []
-        for(var node of keepNodes) {
-            var name = this._tree.name(this._tree.postorderselect(node))
+        var keepNames = [];
+        for (var node of keepNodes) {
+            var name = this._tree.name(this._tree.postorderselect(node));
             keepNames.push(name);
         }
 

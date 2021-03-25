@@ -1,8 +1,4 @@
-define([
-    "underscore",
-    "util",
-    "TreeController",
-], function (
+define(["underscore", "util", "TreeController"], function (
     _,
     util,
     TreeController
@@ -37,31 +33,27 @@ define([
         legendTitle.innerText = this.fCol;
         legendTitle.classList.add("legend-title");
 
-        // create chcbox div 
+        // create chcbox div
         var legendChkBoxs = document.createElement("div");
         chkBoxLegendDiv.appendChild(legendChkBoxs);
 
         // create checkboxes
         var table = document.createElement("table");
         legendChkBoxs.appendChild(table);
-        _.each(this.fVals, function(val) {
+        _.each(this.fVals, function (val) {
             var row = document.createElement("tr");
-            
+
             // add checkbox
             var dataCheck = document.createElement("td");
             var input = document.createElement("INPUT");
             input.setAttribute("type", "checkbox");
             input.checked = true;
-            input.onchange = function(){
-                chkBxClickFunction(
-                    !input.checked,
-                    scope.fCol,
-                    val
-                );
-            };            
+            input.onchange = function () {
+                chkBxClickFunction(!input.checked, scope.fCol, val);
+            };
             dataCheck.appendChild(input);
             row.appendChild(dataCheck);
-            
+
             // add checkbox label
             var dataLabel = document.createElement("td");
             dataLabel.innerText = val;
@@ -83,15 +75,15 @@ define([
         // create remove button
         var removeButton = document.createElement("button");
         removeButton.innerText = "-";
-        removeButton.onclick = function() {
+        removeButton.onclick = function () {
             removeClickFunction(scope.fCol);
             scope.layerDiv.remove();
             scope.layerDiv = null;
-        }
+        };
         removeContainer.appendChild(removeButton);
 
         // create border line
-        this.layerDiv.appendChild(document.createElement("hr"))
+        this.layerDiv.appendChild(document.createElement("hr"));
     }
 
     function Model(empress, container) {
@@ -102,58 +94,59 @@ define([
         this.observers = [];
     }
 
-    Model.prototype.addLayer = function(fCol) {
-        var fVals = this.empress
-            .getUniqueFeatureMetadataInfo(fCol, "tip")
+    Model.prototype.addLayer = function (fCol) {
+        var fVals = this.empress.getUniqueFeatureMetadataInfo(fCol, "tip")
             .sortedUniqueValues;
         var layer = new Layer(
             fCol,
             fVals,
             this.container,
-            (add, col, val) => {Model.addRemoveShearItem(this, add,col, val);},
-            (col) => {Model.removeLayer(this, col);}
-        )
+            (add, col, val) => {
+                Model.addRemoveShearItem(this, add, col, val);
+            },
+            (col) => {
+                Model.removeLayer(this, col);
+            }
+        );
         this.layers.set(fCol, layer);
     };
 
-    Model.prototype.getShearItem = function(fCol) {
+    Model.prototype.getShearItem = function (fCol) {
         return this.shearMap.get(fCol);
     };
 
-    Model.prototype.hasLayer = function(fCol) {
-       return this.layers.has(fCol);
+    Model.prototype.hasLayer = function (fCol) {
+        return this.layers.has(fCol);
     };
 
-    Model.prototype.notify = function() {
-        console.log("this", this);
+    Model.prototype.notify = function () {
         this.empress.shear(this.shearMap);
         this.empress.drawTree();
-        _.each(this.observers, function(obs) {
+        _.each(this.observers, function (obs) {
             obs.shearUpdate();
         });
     };
 
-    Model.prototype.registerObserver = function(obs) {
+    Model.prototype.registerObserver = function (obs) {
         this.observers.push(obs);
     };
 
-    Model.addRemoveShearItem = function(model, remove, col, val) {
+    Model.addRemoveShearItem = function (model, remove, col, val) {
         if (remove) {
             Model.addShearItem(model, col, val);
         } else {
             Model.removeShearItem(model, col, val);
         }
-    }
+    };
 
-    Model.removeLayer = function(model, fCol) {
+    Model.removeLayer = function (model, fCol) {
         model.layers.delete(fCol);
         model.shearMap.delete(fCol);
         model.notify();
-        console.log(model)
     };
 
-    Model.addShearItem = function(model, fCol, fVal) {
-        if(model.shearMap.has(fCol)) {
+    Model.addShearItem = function (model, fCol, fVal) {
+        if (model.shearMap.has(fCol)) {
             model.shearMap.get(fCol).push(fVal);
         } else {
             model.shearMap.set(fCol, [fVal]);
@@ -161,28 +154,29 @@ define([
         model.notify();
     };
 
-    Model.removeShearItem = function(model, fCol, fVal) {
+    Model.removeShearItem = function (model, fCol, fVal) {
         var items = model.getShearItem(fCol);
-        if (items === undefined) {return;}
-        var index = items.indexOf(fVal)
+        if (items === undefined) {
+            return;
+        }
+        var index = items.indexOf(fVal);
         if (index > -1) {
             items.splice(index, 1);
         }
-        model.notify()
+        model.notify();
     };
 
-
     function Controller(empress, container) {
-        this.model = new Model(empress, container)
+        this.model = new Model(empress, container);
     }
 
-    Controller.prototype.addLayer = function(fCol) {
-        if(!this.model.hasLayer(fCol)) {
+    Controller.prototype.addLayer = function (fCol) {
+        if (!this.model.hasLayer(fCol)) {
             this.model.addLayer(fCol);
         }
-    }
+    };
 
-    Controller.prototype.registerObserver = function(obs) {
+    Controller.prototype.registerObserver = function (obs) {
         this.model.registerObserver(obs);
     };
 
@@ -194,19 +188,19 @@ define([
         this.controller = new Controller(empress, this.shearContainer);
 
         var scope = this;
-        _.each(this.fCols, function(col) {
+        _.each(this.fCols, function (col) {
             var opt = document.createElement("option");
             opt.innerText = col;
             opt.value = col;
             scope.shearSelect.appendChild(opt);
         });
 
-        this.addLayerButton.onclick = function() {
-            scope.controller.addLayer(scope.shearSelect.value)
-        }
+        this.addLayerButton.onclick = function () {
+            scope.controller.addLayer(scope.shearSelect.value);
+        };
     }
 
-    Shearer.prototype.registerObserver = function(obs) {
+    Shearer.prototype.registerObserver = function (obs) {
         this.controller.registerObserver(obs);
     };
 
