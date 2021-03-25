@@ -316,6 +316,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var col = this.sColor.value;
         var reverse = this.sReverseColor.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col, reverse);
+        console.log("Mother Fuck", keyInfo)
+
         if (keyInfo === null) {
             util.toastMsg(
                 "No unique branches found for this metadata category"
@@ -333,12 +335,20 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
         var reverse = this.fReverseColor.checked;
-        this.empress.colorByFeatureMetadata(
+        var keyInfo = this.empress.colorByFeatureMetadata(
             colBy,
             col,
             coloringMethod,
             reverse
         );
+        console.log("Mother Fuck", keyInfo)
+        if (_.isEmpty(keyInfo)) {
+            util.toastMsg(
+                "No unique branches found for this metadata category"
+            );
+            this.fUpdateBtn.classList.remove("hidden");
+            return;
+        }
     };
 
     /**
@@ -449,6 +459,17 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.layoutMethodContainer.appendChild(pele);
         }
     };
+
+    SidePanel.prototype.shearUpdate = function() {
+        console.log("????")
+        if (this.sChk.checked) {
+            this.sUpdateBtn.click()
+        }
+
+        if (this.fChk.checked) {
+            this.fUpdateBtn.click();
+        }
+    }
 
     /**
      * Initializes exporting options.

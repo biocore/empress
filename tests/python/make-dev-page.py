@@ -58,8 +58,8 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
             feature_metadata = q2.Artifact.load(
                     feature_metadata).view(q2.Metadata)
 
-        # if ordination is not None:
-        #     ordination = q2.Artifact.load(ordination)
+        if ordination is not None:
+            ordination = q2.Artifact.load(ordination)
     else:
         raise ValueError('Tree, table and sample metadata are required!')
 
@@ -69,24 +69,25 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
     table = table.view(biom.Table)
     sample_metadata = sample_metadata.to_dataframe()
     feature_metadata = feature_metadata.to_dataframe()
-
-    # if ordination is not None:
-    #     ordination = ordination.view(OrdinationResults)
-
-    #     if ordination.features is not None:
-    #         # select the top N most important features based on the vector's
-    #         # magnitude (coped from q2-emperor)
-    #         feats = ordination.features.copy()
-    #         # in cases where the the axes are all zero there might be all-NA
-    #         # columns
-    #         feats.fillna(0, inplace=True)
-    #         origin = np.zeros_like(feats.columns)
-    #         feats['importance'] = feats.apply(euclidean, axis=1,
-    #                                           args=(origin,))
-    #         feats.sort_values('importance', inplace=True, ascending=False)
-    #         feats.drop(['importance'], inplace=True, axis=1)
-    #         ordination.features = feats[:number_of_features].copy()
+    
     ordination = None
+    if ordination is not None:
+        ordination = ordination.view(OrdinationResults)
+
+        if ordination.features is not None:
+            # select the top N most important features based on the vector's
+            # magnitude (coped from q2-emperor)
+            feats = ordination.features.copy()
+            # in cases where the the axes are all zero there might be all-NA
+            # columns
+            feats.fillna(0, inplace=True)
+            origin = np.zeros_like(feats.columns)
+            feats['importance'] = feats.apply(euclidean, axis=1,
+                                              args=(origin,))
+            feats.sort_values('importance', inplace=True, ascending=False)
+            feats.drop(['importance'], inplace=True, axis=1)
+            ordination.features = feats[:number_of_features].copy()
+    
     # These two lines fetch the JS files for both apps directly from the
     # installation directory - this makes testing/developing easier
     empress_resources = pkg_resources.resource_filename('empress',

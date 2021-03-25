@@ -76,6 +76,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
          */
         this.model = new TreeModel(tree);
         this.size = this.model.fullTree.size;
+        this.currentSize = this.model.shearedTree.size;
     }
 
     /**
@@ -95,6 +96,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      */
     TreeController.prototype.shear = function (tips) {
         this.model.shear(tips);
+        this.currentSize = this.model.shearedTree.size;
     };
 
     /**
@@ -102,6 +104,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      */
     TreeController.prototype.unshear = function () {
         this.model.unshear();
+        this.currentSize = this.model.shearedTree.size;
     };
 
     /**
@@ -219,8 +222,8 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
     };
 
     /**
-     * This method is used in fchild, lchild, nsibling, and psibling and it what
-     * allows TreeController to use the topology of the sheared tree but return
+     * This method is used in fchild, lchild, nsibling, and psibling and is what
+     * allows TreeController to use the topology of the sheared tree but returns
      * the results w.r.t the original tree.
      *
      * @param{Number} i The index correspond to a node in the ORIGINAL tree.
@@ -230,16 +233,16 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return{Number} The result of func w.r.t the ORIGINAL tree.
      */
 
-    TreeController.prototype._curToOrigNodeFunction = function (i, func) {
-        var curTree = this.model.shearedTree;
-        var origTree = this.model.fullTree;
+    TreeController.prototype._shearedToFullNodeFunction = function (i, func) {
+        var shearedTreeTree = this.model.shearedTree;
+        var fullTree = this.model.fullTree;
 
-        var node = curTree.postorderselect(
-            this.model.fullToSheared.get(origTree.postorder(i))
+        var node = shearedTreeTree.postorderselect(
+            this.model.fullToSheared.get(fullTree.postorder(i))
         );
 
-        node = curTree.postorder(curTree[func](node));
-        node = origTree.postorderselect(this.model.shearedToFull.get(node));
+        node = shearedTreeTree.postorder(shearedTreeTree[func](node));
+        node = fullTree.postorderselect(this.model.shearedToFull.get(node));
         return node;
     };
 
@@ -256,7 +259,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Number} return 0 if i is a leaf node
      */
     TreeController.prototype.fchild = function (i) {
-        return this._curToOrigNodeFunction(i, "fchild");
+        return this._shearedToFullNodeFunction(i, "fchild");
     };
 
     /**
@@ -272,7 +275,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Number} return 0 if i is a leaf node
      */
     TreeController.prototype.lchild = function (i) {
-        return this._curToOrigNodeFunction(i, "lchild");
+        return this._shearedToFullNodeFunction(i, "lchild");
     };
 
     /**
@@ -288,7 +291,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Number} return 0 if i does not have a next sibling
      */
     TreeController.prototype.nsibling = function (i) {
-        return this._curToOrigNodeFunction(i, "nsibling");
+        return this._shearedToFullNodeFunction(i, "nsibling");
     };
 
     /**
@@ -304,7 +307,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      * @return {Number} return 0 if i does not have a previous sibling
      */
     TreeController.prototype.psibling = function (i) {
-        return this._curToOrigNodeFunction(i, "psibling");
+        return this._shearedToFullNodeFunction(i, "psibling");
     };
 
     /**

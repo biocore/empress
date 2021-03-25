@@ -389,23 +389,36 @@ define([
             branchMethod,
             this._tree.getTree()
         );
+
+
         // Rectangular
         if (this._currentLayout === "Rectangular") {
-            data = LayoutsUtil.rectangularLayout(
-                this._tree.getTree(),
-                4020,
-                4020,
-                // since lengths for "ignoreLengths" are set by `lengthGetter`,
-                // we don't need (and should likely deprecate) the ignoreLengths
-                // option for the Layout functions since the layout function only
-                // needs to know lengths in order to layout a tree, it doesn't
-                // really need encapsulate all of the logic for determining
-                // what lengths it should lay out.
-                this.leafSorting,
-                undefined,
-                lengthGetter,
-                checkLengthsChange
-            );
+             // tree is just root
+            if (this._tree.currentSize == 1) {
+                data = {
+                    xCoord: [null, 0],
+                    yCoord: [null, 0],
+                    highestChildYr: [null, 0],
+                    lowestChildYr: [null, 0],
+                    yScalingFactor: [null, 0]
+                }    
+            } else {
+                data = LayoutsUtil.rectangularLayout(
+                    this._tree.getTree(),
+                    4020,
+                    4020,
+                    // since lengths for "ignoreLengths" are set by `lengthGetter`,
+                    // we don't need (and should likely deprecate) the ignoreLengths
+                    // option for the Layout functions since the layout function only
+                    // needs to know lengths in order to layout a tree, it doesn't
+                    // really need encapsulate all of the logic for determining
+                    // what lengths it should lay out.
+                    this.leafSorting,
+                    undefined,
+                    lengthGetter,
+                    checkLengthsChange
+                );
+            }
             this._yrscf = data.yScalingFactor;
             for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
@@ -421,15 +434,30 @@ define([
                 j += 1;
             }
         } else if (this._currentLayout === "Circular") {
-            data = LayoutsUtil.circularLayout(
-                this._tree.getTree(),
-                4020,
-                4020,
-                this.leafSorting,
-                undefined,
-                lengthGetter,
-                checkLengthsChange
-            );
+            if (this._tree.currentSize == 1) {
+                data = {
+                    // store new layout information
+                    x0: [null, 0],
+                    y0: [null, 0],
+                    x1: [null, 0],
+                    y1: [null, 0],
+                    angle: [null, 0],
+                    arcx0: [null, 0],
+                    arcy0: [null, 0],
+                    arcStartAngle: [null, 0],
+                    arcEndAngle: [null, 0],
+                }    
+            } else {
+                data = LayoutsUtil.circularLayout(
+                    this._tree.getTree(),
+                    4020,
+                    4020,
+                    this.leafSorting,
+                    undefined,
+                    lengthGetter,
+                    checkLengthsChange
+                );
+            }
             for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
@@ -449,14 +477,22 @@ define([
                 j += 1;
             }
         } else {
-            data = LayoutsUtil.unrootedLayout(
-                this._tree.getTree(),
-                4020,
-                4020,
-                undefined,
-                lengthGetter,
-                checkLengthsChange
-            );
+            if (this._tree.currentSize == 1) {
+                data = {
+                    // store new layout information
+                    xCoord: [null, 0],
+                    yCoord: [null, 0],
+                }    
+            } else {
+                data = LayoutsUtil.unrootedLayout(
+                    this._tree.getTree(),
+                    4020,
+                    4020,
+                    undefined,
+                    lengthGetter,
+                    checkLengthsChange
+                );
+            }
             for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
@@ -2143,6 +2179,18 @@ define([
     };
 
     /**
+     *
+     */
+    Empress.prototype.getUniqueSampleMetadataInfo = function(cat) {
+        var obs = this._biom.getObsBy(cat);
+        var nodes = new Set([...this._tree.postorderTraversal()]);
+        _.each(obs, function (observations, key) {
+            obs[key] = observations.filter(x => nodes.has(x));
+        });
+        return obs;
+    };
+
+    /**
      * Color the tree using sample metadata
      *
      * @param {String} cat Sample metadata category to use
@@ -2162,7 +2210,8 @@ define([
         reverse = false
     ) {
         var tree = this._tree;
-        var obs = this._biom.getObsBy(cat);
+        // var obs = this._biom.getObsBy(cat);
+        var obs = this.getUniqueSampleMetadataInfo(cat);
         var categories = Object.keys(obs);
 
         // Assign colors to categories
@@ -2177,6 +2226,11 @@ define([
         var cm = colorer.getMapRGB();
         // colors for the legend
         var keyInfo = colorer.getMapHex();
+        for (var key in keyInfo) {
+            if (obs[key].length === 0) {
+                delete keyInfo[key];
+            }
+        }
 
         // shared by the following for loops
         var i, j, category;
@@ -2232,6 +2286,9 @@ define([
      *                   an array of the node name(s) with each value.
      */
     Empress.prototype.getUniqueFeatureMetadataInfo = function (cat, method) {
+        // get nodes in tree
+        var nodes = new Set([...this._tree.postorderTraversal()]);
+
         // In order to access feature metadata for a given node, we need to
         // find the 0-based index in this._featureMetadataColumns that the
         // specified f.m. column corresponds to. (We *could* get around this by
@@ -2258,15 +2315,14 @@ define([
         var uniqueValueToFeatures = {};
         _.each(fmObjs, function (mObj) {
             _.mapObject(mObj, function (fmRow, node) {
+                var fmVal = fmRow[fmIdx];
+                if (!_.has(uniqueValueToFeatures, fmVal)) {
+                    uniqueValueToFeatures[fmVal] = [];
+                }
                 // need to convert to integer
                 node = parseInt(node);
-                // This is loosely based on how BIOMTable.getObsBy() works.
-                var fmVal = fmRow[fmIdx];
-                if (_.has(uniqueValueToFeatures, fmVal)) {
-                    uniqueValueToFeatures[fmVal].push(node);
-                } else {
-                    uniqueValueToFeatures[fmVal] = [node];
-                }
+                if (!nodes.has(node)) {return};
+                uniqueValueToFeatures[fmVal].push(node);
             });
         });
 
@@ -2329,9 +2385,14 @@ define([
         );
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
+
         // colors for the legend
         var keyInfo = colorer.getMapHex();
-
+        for (var key in keyInfo) {
+            if (uniqueValueToFeatures[key].length === 0) {
+                delete keyInfo[key];
+            }
+        }
         // Do upwards propagation only if the coloring method is "tip"
         if (method === "tip") {
             obs = this._projectObservations(obs, false);
@@ -3564,21 +3625,66 @@ define([
             return this._tree.length(this._tree.postorderselect(nodeKey));
         }
     };
+    
+    /**
+     * This will shear/unshear
+     */
+    Empress.prototype.shear = function (shearMap) {
+        this._tree.unshear();
+        var scope = this;
+        var removeNodes = new Set();
 
-    Empress.prototype.shear = function (cat, value) {
-        var nodeNames = this._tree.getAllNames();
+        shearMap.forEach(function(values, cat) {
+            var fmInfo = scope.getUniqueFeatureMetadataInfo(cat, "tip");
+            var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
+            console.log("Test",uniqueValueToFeatures)
+            _.each(values, function(val) {
+                var obs = uniqueValueToFeatures[val];
+                for(var node of obs) {
+                    removeNodes.add(node);
+                }
+            });
+        });
 
-        var fmInfo = this.getUniqueFeatureMetadataInfo(cat, "tip");
-        var sortedUniqueValues = fmInfo.sortedUniqueValues;
-        var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
-        // convert observation IDs to _treeData keys. Notably, this includes
-        // converting the values of uniqueValueToFeatures from Arrays to Sets.
-        var obs = uniqueValueToFeatures[value];
-        var tipNames = [];
-        for (var i of obs.values()) {
-            tipNames.push(this._tree.name(this._tree.postorderselect(i)));
+
+        // remove removeNodes
+        var allNodes = Array.from(Array(this._tree.size + 1).keys());
+        allNodes.shift();
+
+        allNodes = new Set(allNodes);
+        var keepNodes = new Set([...allNodes].filter(x => !removeNodes.has(x)));
+
+        var keepNames = []
+        for(var node of keepNodes) {
+            var name = this._tree.name(this._tree.postorderselect(node))
+            keepNames.push(name);
         }
-        this._tree.shear(new Set(tipNames));
+
+        this._tree.shear(new Set(keepNames));
+        var nodeNames = this._tree.getAllNames();
+        // Don't include nodes with the name null (i.e. nodes without a
+        // specified name in the Newick file) in the auto-complete.
+        nodeNames = nodeNames.filter((n) => n !== null);
+        this._events.autocomplete(nodeNames);
+
+        this.getLayoutInfo();
+
+        // if (this._currentLayout !== "Unrooted") {
+        //     this.drawBarplots();
+        // }
+        // Undraw or redraw barplots as needed (assuming barplots are supported
+        // in the first place, of course; if no feature or sample metadata at
+        // all was passed then barplots are not available :()
+        if (!_.isNull(this._barplotPanel)) {
+            var supported = this._barplotPanel.updateLayoutAvailability(
+                this._currentLayout
+            );
+            if (!supported && this._barplotsDrawn) {
+                this.undrawBarplots();
+            } else if (supported && this._barplotPanel.enabled) {
+                this.drawBarplots();
+            }
+        }
     };
 
     return Empress;
