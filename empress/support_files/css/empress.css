@@ -592,17 +592,6 @@ p.side-header button:hover,
     overflow: auto;
 }
 
-/*.shear-layer-legend label {
-    display: inline-block;
-    vertical-align: top;
-    width: 200px;
-}*/
-
-/*.shear-layer-legend p {
-    margin:0;
-    padding:0;
-}*/
-
 .barplot-layer-legend {
     max-height: 15em;
     /* The side panel width is 450px */

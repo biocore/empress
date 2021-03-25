@@ -3670,9 +3670,6 @@ define([
 
         this.getLayoutInfo();
 
-        // if (this._currentLayout !== "Unrooted") {
-        //     this.drawBarplots();
-        // }
         // Undraw or redraw barplots as needed (assuming barplots are supported
         // in the first place, of course; if no feature or sample metadata at
         // all was passed then barplots are not available :()
