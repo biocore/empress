@@ -389,7 +389,6 @@ define([
             branchMethod,
             this._tree.getTree()
         );
-
         // Rectangular
         if (this._currentLayout === "Rectangular") {
             // tree is just root
