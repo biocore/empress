@@ -2742,7 +2742,7 @@ define([
         var x = 0,
             y = 0,
             zoomAmount = 0;
-        for (var node of this._tree.postorderTraversal(includeRoot = true)) {
+        for (var node of this._tree.postorderTraversal((includeRoot = true))) {
             // node = this._treeData[node];
             x += this.getX(node);
             y += this.getY(node);

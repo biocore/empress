@@ -164,7 +164,9 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
 
                 // Go through all the nodes in the tree and find the node
                 // closest to the (x, y) point that was clicked
-                for (var node of empress._tree.postorderTraversal(includeRoot = true)) {
+                for (var node of empress._tree.postorderTraversal(
+                    (includeRoot = true)
+                )) {
                     if (!empress.getNodeInfo(node, "visible")) continue;
                     var nodeX = empress.getX(node);
                     var nodeY = empress.getY(node);
