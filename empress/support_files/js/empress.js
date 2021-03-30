@@ -2182,8 +2182,8 @@ define([
     Empress.prototype.getUniqueSampleMetadataInfo = function (cat) {
         var obs = this._biom.getObsBy(cat);
         var nodes = new Set([...this._tree.postorderTraversal()]);
-        _.each(obs, function (observations, key) {
-            obs[key] = observations.filter((x) => nodes.has(x));
+        _.each(obs, function (featuresWithSMValue, smValue) {
+            obs[smValue] = featuresWithSMValue.filter((x) => nodes.has(x));
         });
         return obs;
     };
@@ -2208,7 +2208,6 @@ define([
         reverse = false
     ) {
         var tree = this._tree;
-        // var obs = this._biom.getObsBy(cat);
         var obs = this.getUniqueSampleMetadataInfo(cat);
         var categories = Object.keys(obs);
 
