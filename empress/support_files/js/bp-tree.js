@@ -702,7 +702,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         // find first and last preorder positions of the subtree spanned
         // by the current internal node
         var n = this.postorderselect(nodeKey);
-        if (this.isleaf(n)) {
+        if (this.isleaf(n) && nodeKey !== this.postorder(this.root())) {
             throw "Error: " + nodeKey + " is a tip!";
         }
         var start = this.preorder(this.fchild(n));
