@@ -27,7 +27,7 @@ define(["underscore", "util", "TreeController"], function (
         chkBoxLegendDiv.classList.add("shear-layer-legend");
         chkBoxLegendDiv.classList.add("legend");
 
-        // create chckbox legend title
+        // create checkbox legend title
         var legendTitle = document.createElement("div");
         chkBoxLegendDiv.appendChild(legendTitle);
         legendTitle.innerText = this.fCol;
