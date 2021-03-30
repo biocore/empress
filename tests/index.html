@@ -203,6 +203,7 @@
           'SelectedNodeMenu' : './support_files/js/select-node-menu',
           'LayoutsUtil' : './support_files/js/layouts-util',
           'ExportUtil' : './support_files/js/export-util',
+          'TreeController' : './support_files/js/tree-controller',
 
           /* test utility code */
           'UtilitiesForTesting' : './../tests/utilities-for-testing',
@@ -223,12 +224,14 @@
           'testLegend': './../tests/test-legend',
           'testLayoutsUtil': './../tests/test-layouts-util',
           'testSelectedNodeMenu': './../tests/test-select-node-menu',
+          'testTreeController': './../tests/test-tree-controller',
         }
     });
 
     // load tests
     require(
-        ['jquery',
+        [
+        'jquery',
          'glMatrix',
          'chroma',
          'underscore',
@@ -262,6 +265,7 @@
          'testLegend',
          'testLayoutsUtil',
          'testSelectedNodeMenu',
+         'testTreeController',
          ],
 
         // start tests
@@ -300,6 +304,7 @@
           testLegend,
           testLayoutsUtil,
           testSelectedNodeMenu,
+          testTreeController
         ) {
             $(document).ready(function() {
                 QUnit.start();

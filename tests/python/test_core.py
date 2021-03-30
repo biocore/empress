@@ -18,7 +18,7 @@ from os.path import exists
 from shutil import rmtree
 import biom
 
-from .test_integration import load_mp_data
+from .util import load_mp_data
 from emperor import Emperor
 from empress import tools
 from empress.core import Empress
@@ -648,21 +648,17 @@ class TestCore(unittest.TestCase):
         # observe how it is handled in generating a visualization of the
         # moving pictures dataset to verify that #248 does not recur.
         funky_tip = "8406abe6d9a72018bf32d189d1340472"
-        tree, tbl, smd, fmd, pcoa = load_mp_data()
-        # Convert artifacts / metadata objects to "normal" types that we can
-        # pass to Empress
-        bp_tree = from_skbio_treenode(tree.view(TreeNode))
-        tbl_df = tbl.view(biom.Table)
-        pcoa_skbio = pcoa.view(skbio.OrdinationResults)
-        smd_df = smd.to_dataframe()
-        fmd_df = fmd.to_dataframe()
+        tree, tbl, smd_df, fmd_df, pcoa_skbio = load_mp_data(
+            use_artifact_api=False
+        )
+        bp_tree = from_skbio_treenode(tree)
         # Sanity check -- verify that the funky tip we're looking for is
         # actually present in the data. (We haven't actually done anything
         # specific to Empress yet. This just verifies the environment is ok.)
         # https://stackoverflow.com/a/23549599/10730311
         self.assertTrue(funky_tip in fmd_df.index)
         # Generate an Empress visualization using this data
-        viz = Empress(bp_tree, tbl_df, smd_df, feature_metadata=fmd_df,
+        viz = Empress(bp_tree, tbl, smd_df, feature_metadata=fmd_df,
                       ordination=pcoa_skbio, filter_extra_samples=True,
                       shear_to_table=True)
         # Check that tip 8406abe6d9a72018bf32d189d1340472 *isn't* in the tip

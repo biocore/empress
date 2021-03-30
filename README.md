@@ -1,10 +1,11 @@
 # Empress
-[![GitHub Actions CI](https://github.com/biocore/empress/workflows/Empress%20CI/badge.svg)](https://github.com/biocore/empress/actions)
+[![Main CI](https://github.com/biocore/empress/actions/workflows/main.yml/badge.svg)](https://github.com/biocore/empress/actions/workflows/main.yml)
+[![Standalone CI](https://github.com/biocore/empress/actions/workflows/standalone.yml/badge.svg)](https://github.com/biocore/empress/actions/workflows/standalone.yml)
 [![PyPI](https://img.shields.io/pypi/v/empress.svg)](https://pypi.org/project/empress)
 
 <!---Empress Logo--->
 
-# Introduction  
+## Introduction  
 
 Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki/Phylogenetic_tree) viewer that helps interactively explore the hierarchical relationships between features in a dataset.
 
@@ -15,30 +16,35 @@ integration with ordination plots, as well as functionality common to
 established tree viewers (e.g. metadata coloring, clade collapsing,
 and barplots).
 
-## Screenshot
+### Screenshot
 
 ![Fancy Empire plot](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_fancy.png)
 <div align="center">
 <i>"Empire plot" visualizing a phylogenetic tree of amplicon sequence variants (ASVs) in Empress, left, alongside a PCoA biplot in Emperor, right. As one of the ways in which these displays are integrated, selecting a tip in the tree (representing an ASV) enlarges the samples containing this ASV in Emperor -- thereby providing more information than would be available from either display alone.</i>
 </div>
 
-# Installation & Basic Usage
+## Installation & Basic Usage
 
 Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with the HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/) or by using `qiime tools view`.
 
-## Standalone Version
+### Standalone Version
 
-EMPress is available through [PyPI](https://PyPI.org/project/empress/). Run the following command to install Empress:
+Empress is available through [PyPI](https://PyPI.org/project/empress/). We recommend installing Empress into an environment (e.g. a [conda](https://docs.conda.io/) environment) using a Python version of at least 3.6.
 
-`pip install empress`
+Run the following commands to install Empress:
+
+```bash
+pip install cython "numpy >= 1.12.0"
+pip install empress
+```
 
 Try running the command `empress --help` to ensure that Empress has been installed properly. If you see details for the different Empress commands then the installation has succeeded and you are ready to start using Empress!
 
-### Available commands
+#### Available commands
 
 Empress provides two commands: `empress tree-plot` and `empress community-plot`. Both commands generate an Empress visualization, but `community-plot` requires you to pass in a feature table and sample metadata while `tree-plot` only requires a tree file. See [this section](#first-a-note-about-empress-commands) of the docs for some more details.
 
-### Input files
+#### Input files
 
 The standalone version of Empress takes the following filetypes as inputs. (Note that for `empress tree-plot` all of these except for the tree are optional, and for `empress community-plot` all except for the tree, feature table, and sample metadata are optional.)
 
@@ -50,9 +56,9 @@ The standalone version of Empress takes the following filetypes as inputs. (Note
 | Feature Metadata | [TSV](https://en.wikipedia.org/wiki/Tab-separated_values) |
 | PCoA | [scikit-bio OrdinationResults](http://scikit-bio.org/docs/latest/generated/skbio.io.format.ordination.html) |
 
-### Example standalone usage
+#### Example standalone usage
 
-#### `empress tree-plot`
+##### `empress tree-plot`
 
 ```bash
 # Option 1: Using "long" parameter names
@@ -65,7 +71,7 @@ empress tree-plot \
 empress tree-plot -t tree.nwk -fm feature-metadata.tsv -o tree-viz
 ```
 
-#### `empress community-plot`
+##### `empress community-plot`
 
 ```bash
 # Option 1: Using "long" parameter names
@@ -93,7 +99,7 @@ You can view the details of the command line arguments with `empress tree-plot -
 
 The output will be a directory containing an `empress.html` file and a `support_files` directory containing the JS/CSS files required to view the plot in your browser. If you provided a PCoA to the `community-plot` command there will also be an `emperor-resources` subdirectory containing the files required to view the Emperor plot alongside the tree. You can view the `empress.html` file in any modern browser to interact with it the same way you would the QIIME 2 Visualization.
 
-## QIIME 2 Version
+### QIIME 2 Version
 
 See the [QIIME 2 installation](https://docs.qiime2.org/2020.8/install/) page for instructions on how to install QIIME 2. Once you have QIIME 2 installed, make sure the conda environment is activated by running:
 
@@ -112,9 +118,9 @@ qiime dev refresh-cache
 qiime empress --help
 ```
 
-### Example QIIME 2 usage
+#### Example QIIME 2 usage
 
-#### `qiime empress tree-plot`
+##### `qiime empress tree-plot`
 
 ```bash
 qiime empress tree-plot \
@@ -123,7 +129,7 @@ qiime empress tree-plot \
     --o-visualization tree-viz.qzv
 ```
 
-#### `qiime empress community-plot`
+##### `qiime empress community-plot`
 
 ```bash
 qiime empress community-plot \
@@ -136,12 +142,12 @@ qiime empress community-plot \
     --o-visualization community-tree-viz.qzv
 ```
 
-# Tutorial: Using Empress in QIIME 2
+## Tutorial: Using Empress in QIIME 2
 
 In this tutorial, we'll use Empress through QIIME 2 and demonstrate its basic usage with the [Moving Pictures tutorial](https://docs.qiime2.org/2020.8/tutorials/moving-pictures/) dataset. This dataset contains human microbiome samples from
 two individuals at four body sites across five timepoints.
 
-## First, a note about Empress' commands
+### First, a note about Empress' commands
 
 Empress currently has two commands available:
 
@@ -171,7 +177,7 @@ Commands:
 
 Both of these commands generate similar visualizations. The functionality available in a visualization created by `qiime empress community-plot` is a superset of the functionality available in a visualization created by `qiime empress tree-plot`: `tree-plot` is useful if you don't have a table and just want to visualize a tree (optionally with feature metadata). Here, we're going to be using `community-plot`, but much of this tutorial is also applicable to `tree-plot`.
 
-## Downloading Input Artifacts and Metadata  
+### Downloading Input Artifacts and Metadata  
 
 Before we start, we’ll need to download the necessary input artifacts for running `qiime empress community-plot`. The first four of these artifacts are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.8/tutorials/moving-pictures/), and the last artifact was produced afterwards using data from the tutorial. These artifacts are:
 
@@ -210,7 +216,7 @@ wget https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictur
 
 We are now ready to visualize this data using Empress.
 
-## Empress Plot  
+### Empress Plot  
 
 We’ll start by creating a simple stand-alone tree visualization artifact, which
 will enable us to explore the tree using the various functionalities available
@@ -237,7 +243,7 @@ The starting plot is a simple unrooted tree which has all the normal properties 
 You can use your mouse’s scroll wheel to zoom in and out, and click and drag anywhere on the plot to move the display to take a closer look at the various tree components. On the top-right we see a display menu with several subcategories that allow us to customize the plot. We will explore these options in more detail below.  
 
 
-### Exploring individual features  
+#### Exploring individual features  
 
 The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Zoom in on the tip of the longest branch and click on the node.   
 
@@ -262,7 +268,7 @@ only present in one tongue sample).
 ![empress_search_feature](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_search_features.png)
 
 
-### Exploring groups of features
+#### Exploring groups of features
 
 Another way of exploring the classification of our features is to color the branches based on their taxonomic designation. From the main menu, click *Feature Metadata Coloring*, check the *Color by…* box, select *Level 2* (which here corresponds to the phylum level), and click *Update*.
 
@@ -270,7 +276,7 @@ Another way of exploring the classification of our features is to color the bran
 
 The plot is now updated so each branch is now colored by its phylum-level classification. We can see that the extra long branches are now mostly the same magenta color. Check out the legend on the left side of the screen -- it turns out that the magenta color corresponds to an *Unspecified* phylum. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
 
-### Exploring a feature’s closest common ancestors  
+#### Exploring a feature’s closest common ancestors  
 
 So far, we’ve looked at our data using the default unrooted tree view. To visually locate these features’ closest common ancestors, it may be easier to switch to a different layout. From the main menu, click *Layout* then select *Circular* (or *Rectangular*). Our plot automatically switches to a rooted layout.
 
@@ -284,7 +290,7 @@ Interestingly, we see that this node is classified as _Acanthamoeba Palestinensi
 
 Summarizing things for these *Unspecified*-phylum features: in general, given their relatively long branch lengths, their presence in few samples in the study in some cases at relatively low abundance, their lack of close matches in the reference database, and the fact that they are putatively related to non-microbial features, it may be safe to filter them from our table as non-biologically relevant reads. (That conclusion is just based on the results of this exploratory analysis, not a strict guideline.)
 
-### Identifying group-specific features   
+#### Identifying group-specific features   
 
 The composition of microbial communities of the gut, tongue, and palms are very different from each other. Suppose we are interested in identifying which features are unique to each body-site and their evolutionary relationships. We can do this in Empress by colorizing our tree based on columns from our sample metadata file. From the main menu, click *Sample Metadata Coloring*, check the *Color by…* box, and from the drop-down menu select `body-site`. Click the *Update* button.  
 
@@ -292,11 +298,11 @@ The composition of microbial communities of the gut, tongue, and palms are very 
 
 In this plot the colored branches represent lineages that are unique to the corresponding body site, while the uncolored branches are those that are shared across at least 2 body sites and thus cannot be displayed with a single color. While it is not surprising to see a large number of unique features in the gut samples (red) compared to the palm samples (blue and orange), it is interesting to see a large number of unique features between the left and right palm. Can you think of any biological reasons why the left and right palms may contain such different unique microbes? Even though the left and right palm do harbor unique features, the representative clades appear more integrated among themselves, suggesting that their phylogeny are still more similar to each other than the gut taxa which appear to cluster mainly among themselves.  
 
-### Visualizing feature / sample metadata in barplots
+#### Visualizing feature / sample metadata in barplots
 
 Similarly to other tree visualization tools like [iTOL](https://itol.embl.de/), Empress can draw barplots in order to annotate tips of the tree with various types of information. Barplots are useful for doing this (moreso than node coloring, sometimes) because multiple "layers" of barplots can be shown at the same time -- this allows for us to view multiple types of data for the same tip simultaneously. Check out Figure 1 of [Song and Sanders et al. 2020](https://mbio.asm.org/node/61763.full) for just one example of a tree visualization using multiple layers of barplots for a pretty and effective figure.
 
-#### First: a small warning about barplots
+##### First: a small warning about barplots
 
 Although barplots are very useful for identifying patterns, be wary of
 reading too much into them! The way the rectangular and circular layouts work
@@ -312,7 +318,7 @@ obvious. To quote "Inferring Phylogenies" (Felsenstein 2004), pages 573–574:
 
 > It is worth noting that by reordering tips, you can change the viewer's impression of the closeness of relationships. [...] A little judicious flipping may create a Great Chain of Being marching nicely along the sequence of names, even though the tree supports no such thing.
 
-#### Diving into barplots: categorical feature metadata
+##### Diving into barplots: categorical feature metadata
 
 Barplots in Empress are compatible with either the rectangular or circular layouts. Here we'll use the rectangular layout, but feel free to follow along with the circular layout if you prefer!
 
@@ -336,7 +342,7 @@ Things still seem mostly the same as before, but some of the large groups of phy
 
 So, these lavender classes are all *Clostridia*. Does it make sense that representatives of this class are spread out throughout the tree so much? Unfortunately, yes, since *Clostridia* are -- to quote [Wikipedia](https://en.wikipedia.org/wiki/Clostridia) -- "a highly [polyphyletic](https://en.wikipedia.org/wiki/Polyphyly) class." (As an exercise, we recommend trying out adding on extra barplot layers for lower levels of taxonomy -- order, family, genus, etc. -- and seeing how things change.)
 
-#### Barplots of sample presence information
+##### Barplots of sample presence information
 
 Up until now, we've just been working with a single "barplot layer." We can add on more layers if we want -- this will let us visualize additional tip information alongside the layer we have that currently shows `Level 3` information. To add a new layer, click on the `+` button (with the label _Add another layer_). Now, click *Update* again to see what this new layer looks like.
 
@@ -360,7 +366,7 @@ The top-most tip is only present in right palm samples (colored orange), the sec
 
 These sample metadata barplots should match up with the `Sample Presence Information` -- try clicking on the top-most tip, `35bfc371d940cffdc527b7b4dc954456`. We know from the barplot that this tip is only present in one right palm sample, and the `Sample Presence Information` summary by `body-site` for this tip confirms this.
 
-#### Barplots of continuous feature metadata
+##### Barplots of continuous feature metadata
 
 Although drawing barplots of "categorical" feature metadata (like taxonomy
 annotations) can be useful, often we'd like to display barplots of continuous
@@ -401,14 +407,14 @@ linear interpolation.
 
 This was a brief introduction to some of the barplot functionality available in Empress. There's a lot more that hasn't been documented here -- scaling bars' lengths by a continuous feature metadata field, adjusting the default colors or lengths of bars, and so on. We encourage you to try things out; feel free to contact us if you have any questions!
 
-## Exporting Plots  
+### Exporting Plots  
 
 Once you are done customizing your tree, you can export the current visualization of the tree as an SVG or PNG file by going to the *Export* section in the main menu and clicking on `Export tree as SVG` or `Export tree as PNG`. You can also export the legend(s) used for tree and/or barplot coloring, if applicable, using the `Export legends as SVG` button.
 
 Note that SVG export will always include the entire tree display, while the
 contents of the PNG export will change as you zoom / pan the tree.
 
-## Empire plots! Side-by-side integration of tree and PCoA plots  
+### Empire plots! Side-by-side integration of tree and PCoA plots  
 
 Now that you are familiar with basics, let’s try something a bit more advanced. One of the unique features of Empress is its ability to integrate a tree plot with an [Emperor](http://biocore.github.io/emperor) ordination plot and visualize them side-by-side (we've taken to calling these Empire plots).
 
@@ -441,7 +447,7 @@ At first, the plot may look a bit messy. For clarity, let’s remove the long fe
 
 (Note that the tree and arrow colorings don't necessarily match up between Empress and Emperor—for example, in the screenshot above Actinobacteria-phylum arrows are colored red in Emperor but Actinobacteria-phylum nodes are colored orange in Empress. If you'd like, you can change the arrow colors in Emperor to match the colors Empress assigned. Fixing this is [on our radar](https://github.com/biocore/empress/issues/369).)
 
-### Interacting with Empire plots  
+#### Interacting with Empire plots  
 
 Looking at our Emperor ordination plot (on the right), we see a single feature classified in the phylum Actinobacteria (a small red arrow) that is associated with the palm samples. It's pointing towards the bottom-right of the ordination, when looking at it in the default camera position.
 
@@ -486,9 +492,9 @@ within a certain group of samples. (If you have a hard time viewing certain colo
 on the tree—for example, distinguishing the blue color for left palm samples from the
 default dark-gray node color—you may want to adjust the sample group colors in Emperor.)
 
-## Additional Considerations
+### Additional Considerations
 
-### Providing multiple metadata files
+#### Providing multiple metadata files
 
 QIIME 2 allows you to specify multiple metadata files at once by just
 repeating `--m-feature-metadata-file` (or `--m-sample-metadata-file`). For
@@ -525,7 +531,7 @@ languages or spreadsheet tools; see
 [this GitHub issue](https://github.com/biocore/empress/issues/393) for some
 example Python code that does this.
 
-### Filtered vs. raw table?
+#### Filtered vs. raw table?
 
 When your ordination was created from a subset of your original dataset (e.g. the feature table was rarefied, or certain low-frequency features or samples were otherwise filtered out), we recommend that you carefully consider *which* feature table you would like to visualize in Empress. You can use either:
 
@@ -540,27 +546,30 @@ The commands in this README use the *raw dataset*. The Empire plot command remov
 
 One unique feature that makes Empress useful for exploring time-series data or making exciting presentations is its animation capability, which allows us to stratify and view our data at each time point rather than all at once. To set up the animation sequence, click on the Animation section from the main menu. From the *Gradient* drop-down menu, select `days-since-experiment-start`, the number of unique values in this column will be equal to the number of sequences we see in the final animation. From the *Trajectory* drop-down menu, select `body-site`, this will be the grouping factor by which the branch colors will be set to. Remember that colors on the plot represent branches unique to that group, branches that are shared between groups are not colored. Click on the `Start` button to initiate the animation and minimize the menu to view the full plot. You will begin to see a sequence of plots (automatically changing every few seconds) that represent the data at each time point found in the *days-since-experiment-start* column. At any point you can pause the animation by clicking on the `Pause` button and manually browse through the time points using the `Next Frame`, `Previous Frame`, or `Resume` buttons. Click `Stop` to terminate the animations. --->
 
-# Publication and Citation
+## Publication and Citation
 
-A preprint describing Empress is available on bioRxiv
-[here](https://www.biorxiv.org/content/10.1101/2020.10.06.327080v1). If you use
-Empress in your work, please cite it! The BibTeX for this preprint is:
+Empress is available in mSystems
+[here](https://msystems.asm.org/content/6/2/e01216-20). If you use
+Empress in your work, please cite it! The BibTeX for this paper is:
 
 ```
-@article {Cantrell2020.10.06.327080,
-    author = {Cantrell, Kalen and Fedarko, Marcus W and Rahman, Gibraan and McDonald, Daniel and Yang, Yimeng and Zaw, Thant and Gonzalez, Antonio and Janssen, Stefan and Estaki, Mehrbod and Haiminen, Niina and Beck, Kristen L. and Zhu, Qiyun and Sayyari, Erfan and Morton, Jamie and Tripathi, Anupriya and Gauglitz, Julia M and Marotz, Clarisse and Matteson, Nathaniel L and martino, cameron and Sanders, Jon G and Carrieri, Anna Paola and Song, Se Jin and Swafford, Austin D and Dorrestein, Pieter and Andersen, Kristian G and PARIDA, LAXMI and Kim, Ho-Cheol and V{\'a}zquez-Baeza, Yoshiki and Knight, Rob},
-    title = {EMPress enables tree-guided, interactive, and exploratory analyses of multi-omic datasets},
-    elocation-id = {2020.10.06.327080},
-    year = {2020},
-    doi = {10.1101/2020.10.06.327080},
-    publisher = {Cold Spring Harbor Laboratory},
-    URL = {https://www.biorxiv.org/content/early/2020/10/08/2020.10.06.327080},
-    eprint = {https://www.biorxiv.org/content/early/2020/10/08/2020.10.06.327080.full.pdf},
-    journal = {bioRxiv}
+@article {CantrellFedarko2021empress,
+  author = {Cantrell, Kalen and Fedarko, Marcus W. and Rahman, Gibraan and McDonald, Daniel and Yang, Yimeng and Zaw, Thant and Gonzalez, Antonio and Janssen, Stefan and Estaki, Mehrbod and Haiminen, Niina and Beck, Kristen L. and Zhu, Qiyun and Sayyari, Erfan and Morton, James T. and Armstrong, George and Tripathi, Anupriya and Gauglitz, Julia M. and Marotz, Clarisse and Matteson, Nathaniel L. and Martino, Cameron and Sanders, Jon G. and Carrieri, Anna Paola and Song, Se Jin and Swafford, Austin D. and Dorrestein, Pieter C. and Andersen, Kristian G. and Parida, Laxmi and Kim, Ho-Cheol and V{\'a}zquez-Baeza, Yoshiki and Knight, Rob},
+  editor = {Hug, Laura A.},
+  title = {EMPress Enables Tree-Guided, Interactive, and Exploratory Analyses of Multi-omic Data Sets},
+  volume = {6},
+  number = {2},
+  elocation-id = {e01216-20},
+  year = {2021},
+  doi = {10.1128/mSystems.01216-20},
+  publisher = {American Society for Microbiology Journals},
+  URL = {https://msystems.asm.org/content/6/2/e01216-20},
+  eprint = {https://msystems.asm.org/content/6/2/e01216-20.full.pdf},
+  journal = {mSystems}
 }
 ```
 
-# Acknowledgements
+## Acknowledgements
 
 This work is supported by IBM Research AI through the AI Horizons Network. For
 more information visit the [IBM AI Horizons Network website](https://www.research.ibm.com/artificial-intelligence/horizons-network/).  

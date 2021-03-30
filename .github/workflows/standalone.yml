@@ -1,0 +1,65 @@
+# Tests EMPress' Python code, when installed outside of a QIIME 2 conda
+# environment. See https://github.com/biocore/empress/issues/496 for a
+# description of why this is useful.
+name: Standalone CI
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on pull request and push events, only on the master
+  # branch
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ]
+
+jobs:
+  # name of job
+  build:
+    # The type of runner that the job will run on (available options are window/macOS/linux)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # based roughly on https://github.com/conda-incubator/setup-miniconda#example-1-basic-usage
+        python-version: ["3.6", "3.7", "3.8", "3.9"]
+
+    # used in McHelper (similar to TRAVIS_PULL_REQUEST variable)
+    env:
+      BRANCH_NUMBER: ${{ github.event.number }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # first grab branch from github
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      # https://github.com/conda-incubator/setup-miniconda#example-1-basic-usage
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: empress
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install conda packages
+        shell: bash -l {0}
+        run: conda install flake8 nose
+
+      - name: Install Cython & NumPy
+        shell: bash -l {0}
+        run: pip install cython "numpy >= 1.12.0"
+
+      - name: Install EMPress
+        shell: bash -l {0}
+        run: pip install -e .[all]
+
+      # tests that don't import QIIME 2 dependencies
+      - name: Run (non-QIIME 2) Python tests
+        shell: bash -l {0}
+        run: >
+          nosetests
+          ./tests/python/test_cli.py
+          ./tests/python/test_compression_utils.py
+          ./tests/python/test_core.py
+          ./tests/python/test_taxonomy_utils.py
+          ./tests/python/test_tools.py
+          ./tests/python/test_tree.py
