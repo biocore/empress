@@ -3128,7 +3128,6 @@ define([
             color: this.getNodeInfo(rootNode, "color"),
         };
 
-
         // step 2: find the following clade information and
         // step 3: make all descendants of rootNode invisible
         for (var i in cladeNodes) {

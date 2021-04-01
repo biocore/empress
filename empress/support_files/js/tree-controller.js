@@ -55,8 +55,8 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
      *
      * @return {Array} The nodes in the clade
      */
-    TreeModel.prototype.getCladeNodes = function(cladeRoot) {
-        cladeRoot = this.fullToSheared.get(cladeRoot)
+    TreeModel.prototype.getCladeNodes = function (cladeRoot) {
+        cladeRoot = this.fullToSheared.get(cladeRoot);
         if (cladeRoot === undefined) {
             throw cladeRoot + " is not a valid node.";
         }
@@ -69,10 +69,14 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
         // find left most child
         // Note: initializing lchild as cladeRoot incase cladeRoot is a tip
         var lchild = cladeRoot;
-        var fchild = this.shearedTree.fchild(this.shearedTree.postorderselect(cladeRoot));
+        var fchild = this.shearedTree.fchild(
+            this.shearedTree.postorderselect(cladeRoot)
+        );
         while (fchild !== 0) {
             lchild = this.shearedTree.postorder(fchild);
-            fchild = this.shearedTree.fchild(this.shearedTree.postorderselect(lchild));
+            fchild = this.shearedTree.fchild(
+                this.shearedTree.postorderselect(lchild)
+            );
         }
 
         // perform post order traversal until cladeRoot is reached.
@@ -80,8 +84,7 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
             cladeNodes.push(this.shearedToFull.get(i));
         }
         return cladeNodes;
-    }
-
+    };
 
     function TreeController(tree) {
         /**
@@ -513,9 +516,9 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
         return nodes;
     };
 
-    TreeController.prototype.getCladeNodes = function(cladeRoot) {
+    TreeController.prototype.getCladeNodes = function (cladeRoot) {
         return this.model.getCladeNodes(cladeRoot);
-    }
+    };
 
     return TreeController;
 });
