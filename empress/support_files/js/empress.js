@@ -447,8 +447,9 @@ define([
                     "y1",
                     "angle",
                     "arcx0",
+                    "arcy0",
                     "arcStartAngle",
-                    "arcendangle",
+                    "arcEndAngle",
                 ]);
             } else {
                 data = LayoutsUtil.circularLayout(
