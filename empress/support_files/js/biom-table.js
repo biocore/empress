@@ -599,7 +599,7 @@ define(["underscore", "util"], function (_, util) {
         return fID2Freqs;
     };
 
-    BIOMTable.prototype.setIngnoreNodes = function(nodes) {
+    BIOMTable.prototype.setIngnoreNodes = function (nodes) {
         this.ignorefIDs = nodes;
     };
 

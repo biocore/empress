@@ -389,9 +389,9 @@ define([
             branchMethod,
             this._tree.getTree()
         );
-        var dataForOnlyRoot = function(coordKeys) {
+        var dataForOnlyRoot = function (coordKeys) {
             var rootCoordData = {};
-            _.each(coordKeys, function(key) {
+            _.each(coordKeys, function (key) {
                 rootCoordData[key] = [null, 0];
             });
             return rootCoordData;
@@ -405,7 +405,7 @@ define([
                     "yCoord",
                     "highestChildYr",
                     "lowestChildYr",
-                    "yScalingFactor"
+                    "yScalingFactor",
                 ]);
             } else {
                 data = LayoutsUtil.rectangularLayout(
@@ -425,7 +425,7 @@ define([
                 );
             }
             this._yrscf = data.yScalingFactor;
-            for (i of this._tree.postorderTraversal(includeRoot = true)) {
+            for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
 
@@ -448,7 +448,7 @@ define([
                     "angle",
                     "arcx0",
                     "arcStartAngle",
-                    "arcendangle"
+                    "arcendangle",
                 ]);
             } else {
                 data = LayoutsUtil.circularLayout(
@@ -461,7 +461,7 @@ define([
                     checkLengthsChange
                 );
             }
-            for (i of this._tree.postorderTraversal(includeRoot = true)) {
+            for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
 
@@ -492,7 +492,7 @@ define([
                     checkLengthsChange
                 );
             }
-            for (i of this._tree.postorderTraversal(includeRoot = true)) {
+            for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
 
@@ -1736,7 +1736,6 @@ define([
         //         delete feature2freqs[node];
         //     }
         // });
-
 
         // Only bother computing the halfyrscf / halfAngleRange value we need.
         // (this._tree.numleaves() does iterate over the full tree, at least
@@ -3668,7 +3667,6 @@ define([
         }
 
         this._biom.setIngnoreNodes(new Set(removeNodes));
-        
 
         this._tree.shear(new Set(keepNames));
         var nodeNames = this._tree.getAllNames();
