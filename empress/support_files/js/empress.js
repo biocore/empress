@@ -389,17 +389,24 @@ define([
             branchMethod,
             this._tree.getTree()
         );
+        var dataForOnlyRoot = function(coordKeys) {
+            var rootCoordData = {};
+            _.each(coordKeys, function(key) {
+                rootCoordData[key] = [null, 0];
+            });
+            return rootCoordData;
+        };
         // Rectangular
         if (this._currentLayout === "Rectangular") {
             // tree is just root
             if (this._tree.currentSize == 1) {
-                data = {
-                    xCoord: [null, 0],
-                    yCoord: [null, 0],
-                    highestChildYr: [null, 0],
-                    lowestChildYr: [null, 0],
-                    yScalingFactor: [null, 0],
-                };
+                data = dataForOnlyRoot([
+                    "xCoord",
+                    "yCoord",
+                    "highestChildYr",
+                    "lowestChildYr",
+                    "yScalingFactor"
+                ]);
             } else {
                 data = LayoutsUtil.rectangularLayout(
                     this._tree.getTree(),
@@ -418,7 +425,7 @@ define([
                 );
             }
             this._yrscf = data.yScalingFactor;
-            for (i of this._tree.postorderTraversal((includeRoot = true))) {
+            for (i of this._tree.postorderTraversal(includeRoot = true)) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
 
@@ -433,18 +440,16 @@ define([
             }
         } else if (this._currentLayout === "Circular") {
             if (this._tree.currentSize == 1) {
-                data = {
-                    // store new layout information
-                    x0: [null, 0],
-                    y0: [null, 0],
-                    x1: [null, 0],
-                    y1: [null, 0],
-                    angle: [null, 0],
-                    arcx0: [null, 0],
-                    arcy0: [null, 0],
-                    arcStartAngle: [null, 0],
-                    arcEndAngle: [null, 0],
-                };
+                data = dataForOnlyRoot([
+                    "x0",
+                    "y0",
+                    "x1",
+                    "y1",
+                    "angle",
+                    "arcx0",
+                    "arcStartAngle",
+                    "arcendangle"
+                ]);
             } else {
                 data = LayoutsUtil.circularLayout(
                     this._tree.getTree(),
@@ -456,7 +461,7 @@ define([
                     checkLengthsChange
                 );
             }
-            for (i of this._tree.postorderTraversal((includeRoot = true))) {
+            for (i of this._tree.postorderTraversal(includeRoot = true)) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
 
@@ -476,11 +481,7 @@ define([
             }
         } else {
             if (this._tree.currentSize == 1) {
-                data = {
-                    // store new layout information
-                    xCoord: [null, 0],
-                    yCoord: [null, 0],
-                };
+                data = dataForOnlyRoot(["xCoord", "yCoord"]);
             } else {
                 data = LayoutsUtil.unrootedLayout(
                     this._tree.getTree(),
@@ -491,7 +492,7 @@ define([
                     checkLengthsChange
                 );
             }
-            for (i of this._tree.postorderTraversal((includeRoot = true))) {
+            for (i of this._tree.postorderTraversal(includeRoot = true)) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
 
@@ -1729,6 +1730,13 @@ define([
         // Do most of the hard work: compute the frequencies for each tip (only
         // the tips present in the BIOM table, that is)
         var feature2freqs = this._biom.getFrequencyMap(layer.colorBySMField);
+        // var nodes = new Set([...this._tree.postorderTraversal()]);
+        // _.each(feature2freqs, function (blah, node) {
+        //     if (!nodes.has(parseInt(node))) {
+        //         delete feature2freqs[node];
+        //     }
+        // });
+
 
         // Only bother computing the halfyrscf / halfAngleRange value we need.
         // (this._tree.numleaves() does iterate over the full tree, at least
@@ -3645,7 +3653,7 @@ define([
         });
 
         // remove removeNodes
-        var allNodes = Array.from(Array(this._tree.size + 1).keys());
+        var allNodes = _.range(1, this._tree.size + 1);
         allNodes.shift();
 
         allNodes = new Set(allNodes);
@@ -3658,6 +3666,9 @@ define([
             var name = this._tree.name(this._tree.postorderselect(node));
             keepNames.push(name);
         }
+
+        this._biom.setIngnoreNodes(new Set(removeNodes));
+        
 
         this._tree.shear(new Set(keepNames));
         var nodeNames = this._tree.getAllNames();

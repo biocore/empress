@@ -342,7 +342,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         );
         if (_.isEmpty(keyInfo)) {
             util.toastMsg(
-                "No unique branches found for this metadata category"
+                "No nodes with feature metadata are visible due to shearing"
             );
             this.fUpdateBtn.classList.remove("hidden");
             return;

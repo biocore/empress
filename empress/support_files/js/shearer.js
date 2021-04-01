@@ -3,17 +3,21 @@ define(["underscore", "util", "TreeController"], function (
     util,
     TreeController
 ) {
-    function Layer(
+    function Filter (
         fCol,
         fVals,
         container,
         chkBxClickFunction,
-        removeClickFunction
+        removeClickFunction,
+        selectAllFunction,
+        unselectAllFuntion
     ) {
         this.fCol = fCol;
         this.fVals = fVals;
         this.container = container;
         this.layerDiv = null;
+        this.inputs = [];
+        this.values = [];
 
         var scope = this;
 
@@ -33,6 +37,25 @@ define(["underscore", "util", "TreeController"], function (
         legendTitle.innerText = this.fCol;
         legendTitle.classList.add("legend-title");
 
+        var button = document.createElement("button");
+        button.innerText = "Select all";
+        button.onclick = function() {
+            _.each(scope.inputs, function(input) {
+                input.select();
+            });
+            selectAllFunction(scope.fCol);
+        };
+        chkBoxLegendDiv.appendChild(button);
+
+        button = document.createElement("button");
+        button.innerText = "Unselect all";
+        button.onclick = function() {
+            _.each(scope.inputs, function(input) {
+                input.unselect();
+            });
+            unselectAllFuntion(scope.fCol, scope.values)
+        };
+        chkBoxLegendDiv.appendChild(button);
         // create chcbox div
         var legendChkBoxs = document.createElement("div");
         chkBoxLegendDiv.appendChild(legendChkBoxs);
@@ -41,22 +64,33 @@ define(["underscore", "util", "TreeController"], function (
         var table = document.createElement("table");
         legendChkBoxs.appendChild(table);
         _.each(this.fVals, function (val) {
+            scope.values.push(val);
             var row = document.createElement("tr");
+
+            var id = scope.fCol.replace(" ", "-") + "-" + val;
 
             // add checkbox
             var dataCheck = document.createElement("td");
-            var input = document.createElement("INPUT");
+            var input = document.createElement("input");
             input.setAttribute("type", "checkbox");
             input.checked = true;
             input.onchange = function () {
                 chkBxClickFunction(!input.checked, scope.fCol, val);
             };
+            input.select = function() {
+                input.checked = true;
+            };
+            input.unselect = function() {
+                input.checked = false;
+            };
+            scope.inputs.push(input);
             dataCheck.appendChild(input);
             row.appendChild(dataCheck);
 
             // add checkbox label
             var dataLabel = document.createElement("td");
             dataLabel.innerText = val;
+            dataLabel.onclick = function() {input.click();};
             row.appendChild(dataLabel);
 
             // add row to table
@@ -88,7 +122,7 @@ define(["underscore", "util", "TreeController"], function (
 
     function Model(empress, container) {
         this.empress = empress;
-        this.layers = new Map();
+        this.filters = new Map();
         this.shearMap = new Map();
         this.container = container;
         this.observers = [];
@@ -97,7 +131,7 @@ define(["underscore", "util", "TreeController"], function (
     Model.prototype.addLayer = function (fCol) {
         var fVals = this.empress.getUniqueFeatureMetadataInfo(fCol, "tip")
             .sortedUniqueValues;
-        var layer = new Layer(
+        var layer = new Filter (
             fCol,
             fVals,
             this.container,
@@ -106,9 +140,15 @@ define(["underscore", "util", "TreeController"], function (
             },
             (col) => {
                 Model.removeLayer(this, col);
+            },
+            (col) => {
+                Model.clearShearMaplFilter(this, col);
+            },
+            (filter, values) => {
+                Model.setShearMapFilter(this, filter, values);
             }
         );
-        this.layers.set(fCol, layer);
+        this.filters.set(fCol, layer);
     };
 
     Model.prototype.getShearItem = function (fCol) {
@@ -116,7 +156,7 @@ define(["underscore", "util", "TreeController"], function (
     };
 
     Model.prototype.hasLayer = function (fCol) {
-        return this.layers.has(fCol);
+        return this.filters.has(fCol);
     };
 
     Model.prototype.notify = function () {
@@ -131,6 +171,16 @@ define(["underscore", "util", "TreeController"], function (
         this.observers.push(obs);
     };
 
+    Model.clearShearMaplFilter = function(model, filter) {
+        model.shearMap.set(filter, []);
+        model.notify();
+    }
+
+    Model.setShearMapFilter = function(model, filter, values) {
+        model.shearMap.set(filter, values);
+        model.notify();
+    }
+
     Model.addRemoveShearItem = function (model, remove, col, val) {
         if (remove) {
             Model.addShearItem(model, col, val);
@@ -140,7 +190,7 @@ define(["underscore", "util", "TreeController"], function (
     };
 
     Model.removeLayer = function (model, fCol) {
-        model.layers.delete(fCol);
+        model.filters.delete(fCol);
         model.shearMap.delete(fCol);
         model.notify();
     };

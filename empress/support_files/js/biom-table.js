@@ -86,6 +86,7 @@ define(["underscore", "util"], function (_, util) {
         this._tbl = tbl;
         this._smCols = smCols;
         this._sm = sm;
+        this.ignorefIDs = new Set();
     }
 
     /**
@@ -582,6 +583,9 @@ define(["underscore", "util"], function (_, util) {
         var fID2Freqs = {};
         var totalSampleCount;
         _.each(this._fIDs, function (fID, fIdx) {
+            if (scope.ignorefIDs.has(fID)) {
+                return;
+            }
             totalSampleCount = fIdx2SampleCt[fIdx];
             fID2Freqs[fID] = {};
             _.each(fIdx2Counts[fIdx], function (count, smValIdx) {
@@ -591,7 +595,12 @@ define(["underscore", "util"], function (_, util) {
                 }
             });
         });
+
         return fID2Freqs;
+    };
+
+    BIOMTable.prototype.setIngnoreNodes = function(nodes) {
+        this.ignorefIDs = nodes;
     };
 
     return BIOMTable;
