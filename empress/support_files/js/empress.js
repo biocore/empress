@@ -932,7 +932,6 @@ define([
         } else {
             throw new Error("getNodeCoords() drawNodeCircles is out of range");
         }
-
         for (var node of this._tree.postorderTraversal((includeRoot = true))) {
             if (!comp(node)) {
                 continue;
@@ -1892,7 +1891,6 @@ define([
         coords,
         prevLayerMaxD
     ) {
-        console.log("Barplot Feature Metadata!!!", window.counter++);
         var maxD = prevLayerMaxD;
         var colorer = null;
         var fm2color, colorFMIdx;
@@ -2371,7 +2369,6 @@ define([
         method,
         reverse = false
     ) {
-        console.log("Color By Feature Metadata!!!", window.counter++);
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -2836,7 +2833,7 @@ define([
      */
     Empress.prototype.dontCollapseClade = function (clade) {
         var scope = this;
-        var nodes = this.getCladeNodes(parseInt(clade));
+        var nodes = this._tree.getCladeNodes(parseInt(clade));
         nodes.forEach(function (node) {
             scope._dontCollapse.add(node);
         });
@@ -3116,7 +3113,7 @@ define([
 
         // step 1: find all nodes in the clade.
         // Note: cladeNodes is an array of nodes arranged in postorder fashion
-        var cladeNodes = this.getCladeNodes(rootNode);
+        var cladeNodes = this._tree.getCladeNodes(rootNode);
 
         // use the left most child in the clade to initialize currentCladeInfo
         var currentCladeInfo = {
@@ -3130,6 +3127,7 @@ define([
             ),
             color: this.getNodeInfo(rootNode, "color"),
         };
+
 
         // step 2: find the following clade information and
         // step 3: make all descendants of rootNode invisible
@@ -3212,44 +3210,6 @@ define([
             this.createCollapsedCladeShape(cladeRoot);
         }
         this.drawTree();
-    };
-
-    /**
-     * Returns all nodes in the clade whose root is node.
-     *
-     * Note: elements in the returned array are keys in this._treeData
-     *       also, the returned array is sorted in a postorder fashion
-     *
-     * @param {Number} cladeRoot The root of the clade. An error is thrown if
-     *                           cladeRoot is not a valid node.
-     *
-     * @return {Array} The nodes in the clade
-     */
-    Empress.prototype.getCladeNodes = function (cladeRoot) {
-        if (!this._treeData.hasOwnProperty(cladeRoot)) {
-            throw cladeRoot + " is not a valid node.";
-        }
-        // stores the clade nodes
-        var cladeNodes = [];
-
-        // Nodes in the clade are found by performing a postorder traversal
-        // starting at the left most child of the clade and ending on cladeRoot
-
-        // find left most child
-        // Note: initializing lchild as cladeRoot incase cladeRoot is a tip
-        var lchild = cladeRoot;
-        var fchild = this._tree.fchild(this._tree.postorderselect(cladeRoot));
-        while (fchild !== 0) {
-            lchild = this._tree.postorder(fchild);
-            fchild = this._tree.fchild(this._tree.postorderselect(lchild));
-        }
-
-        // perform post order traversal until cladeRoot is reached.
-        for (var i = lchild; i <= cladeRoot; i++) {
-            cladeNodes.push(i);
-        }
-
-        return cladeNodes;
     };
 
     /**
@@ -3427,7 +3387,7 @@ define([
         for (var clade in this._collapsedClades) {
             if (this._isPointInClade(clade, point)) {
                 var cladeNode = this._treeData[clade];
-                return clade;
+                return parseInt(clade);
             }
         }
         return -1;
