@@ -1892,6 +1892,7 @@ define([
         coords,
         prevLayerMaxD
     ) {
+        console.log("Barplot Feature Metadata!!!", window.counter++);
         var maxD = prevLayerMaxD;
         var colorer = null;
         var fm2color, colorFMIdx;
@@ -2370,6 +2371,7 @@ define([
         method,
         reverse = false
     ) {
+        console.log("Color By Feature Metadata!!!", window.counter++);
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
