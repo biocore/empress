@@ -53,7 +53,7 @@ define(["underscore", "util", "TreeController"], function (
             _.each(scope.inputs, function (input) {
                 input.unselect();
             });
-            unselectAllFuntion(scope.fCol, scope.values);
+            unselectAllFuntion(scope.fCol, _.clone(scope.values));
         };
         chkBoxLegendDiv.appendChild(button);
         // create chcbox div
