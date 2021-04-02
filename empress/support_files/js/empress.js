@@ -3628,7 +3628,9 @@ define([
             keepNames.push(name);
         }
 
-        this._biom.setIngnoreNodes(new Set(removeNodes));
+        if (this.isCommunityPlot) {
+            this._biom.setIngnoreNodes(new Set(removeNodes));
+        }
 
         this._tree.shear(new Set(keepNames));
         var nodeNames = this._tree.getAllNames();
