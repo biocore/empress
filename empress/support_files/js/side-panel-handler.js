@@ -459,6 +459,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     };
 
     SidePanel.prototype.shearUpdate = function () {
+        var d = new Date();
         if (this.sChk.checked) {
             this.sUpdateBtn.click();
         }
@@ -466,6 +467,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         if (this.fChk.checked) {
             this.fUpdateBtn.click();
         }
+        var dt = new Date();
+        console.log("Shear update ", dt.getTime() - d.getTime());
     };
 
     /**

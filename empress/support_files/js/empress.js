@@ -3560,7 +3560,7 @@ define([
      */
     Empress.prototype.getTreeStats = function () {
         // Compute node counts
-        var allCt = this._tree.size;
+        var allCt = this._tree.currentSize;
         var tipCt = this._tree.getNumTips(this._tree.size);
         var intCt = allCt - tipCt;
         // Get length statistics
@@ -3601,7 +3601,7 @@ define([
         this._tree.unshear();
         var scope = this;
         var removeNodes = new Set();
-
+        var d = new Date()
         shearMap.forEach(function (values, cat) {
             var fmInfo = scope.getUniqueFeatureMetadataInfo(cat, "tip");
             var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -3612,8 +3612,11 @@ define([
                 }
             });
         });
+        var dt = new Date();
+        console.log("Create `removeNodes` ", dt.getTime() - d.getTime());
 
         // remove removeNodes
+        d = new Date();
         var allNodes = _.range(1, this._tree.size + 1);
         allNodes.shift();
 
@@ -3621,6 +3624,8 @@ define([
         var keepNodes = new Set(
             [...allNodes].filter((x) => !removeNodes.has(x))
         );
+        dt = new Date();
+        console.log("Create `keepNodes` ", dt.getTime() - d.getTime());
 
         var keepNames = [];
         for (var node of keepNodes) {
@@ -3629,17 +3634,28 @@ define([
         }
 
         if (this.isCommunityPlot) {
-            this._biom.setIngnoreNodes(new Set(removeNodes));
+            this._biom.setIngnoreNodes(new Set(keepNodes));
         }
 
-        this._tree.shear(new Set(keepNames));
+        // this._tree.shear(new Set(keepNames));
+        d = new Date();
+        this._tree.shear(new Set(removeNodes));
+        dt = new Date();
+        console.log("Shear tree ", dt.getTime() - d.getTime());
+
+        d = new Date();
         var nodeNames = this._tree.getAllNames();
         // Don't include nodes with the name null (i.e. nodes without a
         // specified name in the Newick file) in the auto-complete.
         nodeNames = nodeNames.filter((n) => n !== null);
         this._events.autocomplete(nodeNames);
+        dt = new Date();
+        console.log("Extract names for filter ", dt.getTime() - d.getTime());
 
+        d = new Date();
         this.getLayoutInfo();
+        dt = new Date();
+        console.log("Calc coords ", dt.getTime() - d.getTime());
 
         // Undraw or redraw barplots as needed (assuming barplots are supported
         // in the first place, of course; if no feature or sample metadata at
@@ -3658,3 +3674,14 @@ define([
 
     return Empress;
 });
+
+var d = new Date();
+var test = [];
+for (i = 0; i < 1512754; i++) {
+    test.push(i)
+}
+for (i = 0; i < 1512754; i++) {
+    test.pop()
+}
+var dt = new Date();
+console.log(dt.getTime() - d.getTime());
