@@ -131,7 +131,8 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
          * performance boost
          */
         var eCache = [];
-        for (var i = 0; i < this.b_.length; i++) {
+        var i;
+        for (i = 0; i < this.b_.length; i++) {
             eCache.push(2 * this.r1Cache_[i] - i - 1);
         }
         this.eCache_ = new Uint32Array(eCache);
@@ -190,6 +191,27 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
          * that have the same name.
          */
         this._nameToNodes = {};
+
+        this._pCache = [];
+        var pStack = [];
+        for (i = 0; i < this.b_.length - 1; i++) {
+            if (this.b_[i] === 1) {
+                if (pStack.length === 0) {
+                    pStack.push(i);
+                    this._pCache[i] = 0;
+                } else if (this.b_[i + 1] === 1) {
+                    this._pCache[i] = pStack[pStack.length - 1];
+                    pStack.push(i);
+                } else if (this.b_[i + 1] === 0) {
+                    this._pCache[i] = pStack[pStack.length - 1];
+                }
+            } else if (this.b_[i] === 0) {
+                this._pCache[i] = pStack[pStack.length - 1];
+                if (this.b_[i + 1] === 0) {
+                    pStack.pop();
+                }
+            }
+        }
     }
 
     /**
@@ -450,6 +472,8 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         // i represents the root node
         if (i === this.root() || i === this.b_.length - 1) {
             return -1;
+        } else {
+            return this._pCache[i];
         }
 
         return this.enclose(i);
@@ -984,7 +1008,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      *                  convert the original postorder positions to the sheared
      *                  tree postorder positions ("newToOld") and vice-versa ("oldToNew").
      */
-    BPTree.prototype.shear = function (keepTips) {
+    BPTree.prototype.shear = function (removeTips) {
         // closure
         var scope = this;
 
@@ -993,64 +1017,49 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         var lengths = [null];
 
         // create new bit array
-        var mask = [];
+        var mask = _.clone(this.b_);
 
-        // function to that will set open/close bits for a node
-        var set_bits = (node) => {
-            mask[node] = 1;
-            mask[scope.close(node)] = 0;
-        };
-
-        // set root open/close bits
-        set_bits(this.root());
-
-        // iterate over bp tree in post order and add all tips that are in
-        // keepTips plus their ancestors
-        // var i;
-        // for (i = 1; i <= this.size; i++) {
-        //     var node = this.postorderselect(i);
-        //     var name = this.name(node);
-        //     if (this.isleaf(node) && keepTips.has(name)) {
-        //         // set open/close bits for tip
-        //         set_bits(node);
-
-        //         // set open/close bits for tips ancestors
-        //         var parent = this.parent(node);
-        //         while (parent !== this.root() || mask[parent] !== 1) {
-        //             set_bits(parent);
-        //             parent = this.parent(parent);
-        //         }
-        //     }
-        // }
-
-        var d = new Date();
         var i;
-        for (i = 1; i <= this.size; i++) {
-            var node = this.postorderselect(i);
-            if (this.isleaf(node) && keepTips.has(i)) {
-                // set open/close bits for tip
-                // set_bits(node);
-                mask[node] = 1;
-                mask[scope.close(node)] = 0;
 
-                // set open/close bits for tips ancestors
-                var parent = this.parent(node);
-                while (parent !== this.root() || mask[parent] !== 1) {
-                    // set_bits(parent);
-                    mask[parent] = 1;
-                    mask[scope.close(parent)] = 0;
-                    parent = this.parent(parent);
+        // remove tips
+        for (i of removeTips) {
+            var node = this.postorderselect(i);
+            mask[node] = undefined;
+            mask[node + 1] = undefined;
+        }
+
+        // remove internal
+        var nodeStack = [];
+        for (i = mask.length - 1; i > 0; i--) {
+            if (mask[i] === 0) {
+                // close par
+                if (mask[i - 1] === 0) {
+                    nodeStack.push([i, null]);
+                } else if (mask[i - 1] === 1) {
+                    nodeStack.push([i, false]);
+                } else if (mask[i - 1] === undefined) {
+                    nodeStack.push([i, true]);
+                }
+            } else if (mask[i] === 1) {
+                var parent = nodeStack.pop();
+                if (parent[1] === true) {
+                    mask[i] = undefined;
+                    mask[parent[0]] = undefined;
+                } else if (parent[1] === false) {
+                    // need explicitly check false since it can be null
+                    nodeStack[nodeStack.length - 1][1] = false;
+                }
+
+                if (nodeStack[nodeStack.length - 1][1] === null) {
+                    nodeStack[nodeStack.length - 1][1] = parent[1];
                 }
             }
         }
-        var dt = new Date();
-        console.log("Set bits ", dt.getTime() - d.getTime());
 
         var newBitArray = [];
         var shearedToFull = new Map();
         var fullToSheared = new Map();
         var postorderPos = 1;
-        d = new Date();
         for (i = 0; i < mask.length; i++) {
             if (mask[i] !== undefined) {
                 newBitArray.push(mask[i]);
@@ -1067,105 +1076,13 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
                 postorderPos += 1;
             }
         }
-        dt = new Date();
-        console.log("Create tree info ", dt.getTime() - d.getTime());
+
         return {
             shearedToFull: shearedToFull,
             fullToSheared: fullToSheared,
             tree: new BPTree(newBitArray, names, lengths, null),
         };
     };
-
-    // BPTree.prototype.shear = function (removeTips) {
-    //     // closure
-    //     var scope = this;
-
-    //     // create new names and lengths array
-    //     var names = [null];
-    //     var lengths = [null];
-
-    //     // create new bit array
-    //     var mask = _.clone(this.b_);
-    //     console.log(mask, mask.length)
-
-    //     // function to that will set open/close bits for a node
-    //     var set_bits = (node) => {
-    //         mask[node] = 1;
-    //         mask[scope.close(node)] = 0;
-    //     };
-
-    //     // // set root open/close bits
-    //     // set_bits(this.root());
-
-    //     var d = new Date();
-    //     var i;
-    //     // remove tips
-    //     for (i of removeTips) {
-    //         var node = this.postorderselect(i);
-    //         mask[node] = undefined;
-    //         mask[node + 1] = undefined;
-    //     }
-
-    //     // // remove internal
-    //     var nodeStack = [];
-    //     for (i = mask.length - 1; i > 0; i--) {
-    //         // internal node
-    //         if (mask[i] === 0 && mask[i - 1] === 0) {
-    //             nodeStack.push([i, 'u']);
-    //         } else if (mask[i] === 0 && mask[i - 1] === 1)  {
-    //             // mark parent as keep
-    //             if (nodeStack.length > 0) {
-    //                 nodeStack[nodeStack.length - 1][1] = 'k';
-    //             }
-    //             nodeStack.push([i, 'k']);                
-    //         } else if (mask[i] === 0 && mask[i - 1] === undefined){
-    //             if (nodeStack.length > 0 && nodeStack[nodeStack.length - 1][1] === 'u') {
-    //                 nodeStack[nodeStack.length - 1][1] = 'r';
-    //             }
-    //             nodeStack.push([i, 'r'])
-    //         } else if (mask[i] === 1) {
-    //             var parent = nodeStack.pop();
-    //             if (parent[1] === 'r') {
-    //                 mask[i] = undefined;
-    //                 mask[parent[0]] = undefined;
-    //             }
-    //         }
-    //     }
-    //     console.log("WTF", nodeStack)
-    //     var dt = new Date();
-    //     console.log("Set bits ", dt.getTime() - d.getTime());
-
-    //     var newBitArray = [];
-    //     var shearedToFull = new Map();
-    //     var fullToSheared = new Map();
-    //     var postorderPos = 1;
-    //     d = new Date();
-    //     for (i = 0; i < mask.length; i++) {
-    //         if (mask[i] !== undefined) {
-    //             newBitArray.push(mask[i]);
-    //         }
-
-    //         // get name and length of node
-    //         // Note: names and lengths of nodes are stored in postorder
-
-    //         if (mask[i] === 0) {
-    //             names.push(this.name(i));
-    //             lengths.push(this.length(i));
-    //             shearedToFull.set(postorderPos, this.postorder(i));
-    //             fullToSheared.set(this.postorder(i), postorderPos);
-    //             postorderPos += 1;
-    //         }
-    //     }
-    //     console.log(mask, mask.length)
-
-    //     dt = new Date();
-    //     console.log("Create tree info ", dt.getTime() - d.getTime());
-    //     return {
-    //         shearedToFull: shearedToFull,
-    //         fullToSheared: fullToSheared,
-    //         tree: new BPTree(newBitArray, names, lengths, null),
-    //     };
-    // };
 
     return BPTree;
 });

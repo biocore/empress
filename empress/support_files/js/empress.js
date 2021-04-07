@@ -2374,7 +2374,6 @@ define([
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
         // convert observation IDs to _treeData keys. Notably, this includes
         // converting the values of uniqueValueToFeatures from Arrays to Sets.
-
         var obs = {};
         _.each(sortedUniqueValues, function (uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
@@ -2389,6 +2388,7 @@ define([
             undefined,
             reverse
         );
+
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
 
@@ -2446,43 +2446,29 @@ define([
             i,
             j;
 
-        if (!ignoreAbsentTips) {
-            // find "non-represented" tips
-            // Note: the following uses postorder traversal
-            for (i of this._tree.postorderTraversal()) {
-                if (tree.isleaf(tree.postorderselect(i))) {
-                    var represented = false;
-                    for (j = 0; j < categories.length; j++) {
-                        if (obs[categories[j]].has(i)) {
-                            represented = true;
-                            break;
-                        }
-                    }
-                    if (!represented) notRepresented.add(i);
-                }
-            }
-        }
-
-        // assign internal nodes to appropriate category based on children
-        // iterate using postorder
-        // Note that, although we don't explicitly iterate over the
-        // root (at index tree.size) in this loop, we iterate over all its
-        // descendants; so in the event that all leaves are unique,
-        // the root can still get assigned to a group.
+        // Note: the following uses postorder traversal
         for (i of this._tree.postorderTraversal()) {
             var node = i;
-            var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
-
+            var parent = tree.postorder(
+                tree.parent(tree.postorderselect(node))
+            );
+            var represented = false;
             for (j = 0; j < categories.length; j++) {
-                category = categories[j];
-
+                var category = categories[j];
                 // add internal nodes to groups
                 if (obs[category].has(node)) {
                     obs[category].add(parent);
+                    represented = true;
                 }
-                if (notRepresented.has(node)) {
-                    notRepresented.add(parent);
+            }
+
+            if (tree.isleaf(tree.postorderselect(node))) {
+                if (!represented && !ignoreAbsentTips) {
+                    notRepresented.add(node);
                 }
+            }
+            if (notRepresented.has(node)) {
+                notRepresented.add(parent);
             }
         }
 
@@ -2534,13 +2520,15 @@ define([
             this.setNodeInfo(node, "isColored", false);
             this.setNodeInfo(node, "visible", true);
         }
-        this._collapsedClades = {};
         this._dontCollapse = new Set();
         this._collapsedCladeBuffer = [];
         this._drawer.loadThickNodeBuff([]);
         this._drawer.loadCladeBuff([]);
         this._group = new Array(this._tree.size + 1).fill(-1);
-        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
+        if (Object.keys(this._collapsedClades).length > 0) {
+            this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
+        }
+        this._collapsedClades = {};
     };
 
     /**
@@ -3601,7 +3589,6 @@ define([
         this._tree.unshear();
         var scope = this;
         var removeNodes = new Set();
-        var d = new Date()
         shearMap.forEach(function (values, cat) {
             var fmInfo = scope.getUniqueFeatureMetadataInfo(cat, "tip");
             var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
@@ -3612,50 +3599,20 @@ define([
                 }
             });
         });
-        var dt = new Date();
-        console.log("Create `removeNodes` ", dt.getTime() - d.getTime());
-
-        // remove removeNodes
-        d = new Date();
-        var allNodes = _.range(1, this._tree.size + 1);
-        allNodes.shift();
-
-        allNodes = new Set(allNodes);
-        var keepNodes = new Set(
-            [...allNodes].filter((x) => !removeNodes.has(x))
-        );
-        dt = new Date();
-        console.log("Create `keepNodes` ", dt.getTime() - d.getTime());
-
-        var keepNames = [];
-        for (var node of keepNodes) {
-            var name = this._tree.name(this._tree.postorderselect(node));
-            keepNames.push(name);
-        }
 
         if (this.isCommunityPlot) {
-            this._biom.setIngnoreNodes(new Set(keepNodes));
+            this._biom.setIngnoreNodes(removeNodes);
         }
 
-        // this._tree.shear(new Set(keepNames));
-        d = new Date();
-        this._tree.shear(new Set(removeNodes));
-        dt = new Date();
-        console.log("Shear tree ", dt.getTime() - d.getTime());
+        this._tree.shear(removeNodes);
 
-        d = new Date();
         var nodeNames = this._tree.getAllNames();
         // Don't include nodes with the name null (i.e. nodes without a
         // specified name in the Newick file) in the auto-complete.
         nodeNames = nodeNames.filter((n) => n !== null);
         this._events.autocomplete(nodeNames);
-        dt = new Date();
-        console.log("Extract names for filter ", dt.getTime() - d.getTime());
 
-        d = new Date();
         this.getLayoutInfo();
-        dt = new Date();
-        console.log("Calc coords ", dt.getTime() - d.getTime());
 
         // Undraw or redraw barplots as needed (assuming barplots are supported
         // in the first place, of course; if no feature or sample metadata at
@@ -3674,14 +3631,3 @@ define([
 
     return Empress;
 });
-
-var d = new Date();
-var test = [];
-for (i = 0; i < 1512754; i++) {
-    test.push(i)
-}
-for (i = 0; i < 1512754; i++) {
-    test.pop()
-}
-var dt = new Date();
-console.log(dt.getTime() - d.getTime());
