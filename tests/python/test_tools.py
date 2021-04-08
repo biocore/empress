@@ -14,6 +14,7 @@ from skbio import TreeNode, OrdinationResults
 from empress import tools
 from empress.taxonomy_utils import split_taxonomy
 from bp import parse_newick, from_skbio_treenode
+from .test_taxonomy_utils import assert_taxcols_ok
 
 
 class TestTools(unittest.TestCase):
@@ -64,7 +65,7 @@ class TestTools(unittest.TestCase):
             },
             index=["e", "h", "a"]
         )
-        self.split_tax_fm = split_taxonomy(self.feature_metadata)
+        self.split_tax_fm, self.taxcols = split_taxonomy(self.feature_metadata)
         self.tip_md = self.split_tax_fm.loc[["a", "e"]]
         self.int_md = self.split_tax_fm.loc[["h"]]
         # This is designed to match the shearing that's done in the core test
@@ -97,19 +98,22 @@ class TestTools(unittest.TestCase):
                 proportion_explained=proportion_explained)
 
     def test_match_inputs_nothing_dropped(self):
-        filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
-            self.bp_tree, self.table, self.sample_metadata
-        )
+        (
+            filtered_table, filtered_sample_md, t_md, i_md, taxcols
+        ) = tools.match_inputs(self.bp_tree, self.table, self.sample_metadata)
         self.assertEqual(filtered_table, self.table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
         # We didn't pass in any feature metadata, so we shouldn't get any out
         self.assertIsNone(t_md)
         self.assertIsNone(i_md)
+        self.assertEqual(taxcols, [])
 
     def test_match_inputs_nothing_dropped_with_ordination(self):
         # everything is the same since the ordination has a 1:1 match to the
         # feature table
-        filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
+        (
+            filtered_table, filtered_sample_md, t_md, i_md, taxcols
+        ) = tools.match_inputs(
             self.bp_tree, self.table, self.sample_metadata,
             ordination=self.ordination
         )
@@ -119,18 +123,20 @@ class TestTools(unittest.TestCase):
         # We didn't pass in any feature metadata, so we shouldn't get any out
         self.assertIsNone(t_md)
         self.assertIsNone(i_md)
+        self.assertEqual(taxcols, [])
 
     def test_match_inputs_only_1_feature_in_table(self):
         # This is technically allowed (so long as this 1 feature is a tree tip)
         tiny_table = self.table.filter({"a", }, axis='observation',
                                        inplace=False)
-        filtered_tiny_table, filtered_sample_md, tm, im = tools.match_inputs(
-            self.bp_tree, tiny_table, self.sample_metadata
-        )
+        (
+            filtered_tiny_table, filtered_sample_md, tm, im, taxcols
+        ) = tools.match_inputs(self.bp_tree, tiny_table, self.sample_metadata)
         self.assertEqual(filtered_tiny_table, tiny_table)
         assert_frame_equal(filtered_sample_md, self.sample_metadata)
         self.assertIsNone(tm)
         self.assertIsNone(im)
+        self.assertEqual(taxcols, [])
 
     def test_match_inputs_no_tips_in_table(self):
         bad_table = self.table.copy()
@@ -203,7 +209,7 @@ class TestTools(unittest.TestCase):
                 "visualization."
             )
         ):
-            out_table, out_sm, tm, im = tools.match_inputs(
+            out_table, out_sm, tm, im, taxcols = tools.match_inputs(
                 self.bp_tree, bad_table, self.sample_metadata,
                 filter_missing_features=True
             )
@@ -217,6 +223,10 @@ class TestTools(unittest.TestCase):
         assert_frame_equal(
             out_sm, self.sample_metadata
         )
+        # We didn't pass in any feature metadata, so we shouldn't get any out
+        self.assertIsNone(tm)
+        self.assertIsNone(im)
+        self.assertEqual(taxcols, [])
 
     def test_match_inputs_ignore_missing_samples_error(self):
         # Replace one of the sample IDs in the table with some junk
@@ -246,7 +256,7 @@ class TestTools(unittest.TestCase):
                 "metadata."
             )
         ):
-            out_table, out_sm, tm, im = tools.match_inputs(
+            out_table, out_sm, tm, im, taxcols = tools.match_inputs(
                 self.bp_tree, bad_table, self.sample_metadata,
                 ignore_missing_samples=True
             )
@@ -278,13 +288,20 @@ class TestTools(unittest.TestCase):
             check_dtype=False
         )
 
+        # We didn't pass in any feature metadata, so we shouldn't get any back
+        self.assertIsNone(tm)
+        self.assertIsNone(im)
+        self.assertEqual(taxcols, [])
+
     def test_match_inputs_feature_metadata_nothing_dropped(self):
         """Tests that tip/internal node names allowed as entries in feat. md.
 
            (self.feature_metadata describes three features, "e", "h", and "a".
             h is an internal node in self.tree, and e and a are tips.)
         """
-        f_table, f_sample_metadata, tip_md, int_md = tools.match_inputs(
+        (
+            f_table, f_sample_metadata, tip_md, int_md, taxcols
+        ) = tools.match_inputs(
             self.bp_tree, self.table,
             self.sample_metadata, self.feature_metadata
         )
@@ -301,6 +318,8 @@ class TestTools(unittest.TestCase):
         # Check that the tip + internal node metadata have identical columns
         self.assertListEqual(list(tip_md.columns), self.exp_split_fm_cols)
         self.assertListEqual(list(int_md.columns), self.exp_split_fm_cols)
+        # Check that the split-up taxonomy columns look good
+        assert_taxcols_ok(taxcols)
 
     def test_match_inputs_feature_metadata_no_features_in_tree(self):
         """Tests that feature names not corresponding to internal nodes / tips
@@ -328,7 +347,7 @@ class TestTools(unittest.TestCase):
         # (since it's actually in the tree, while "asdf" and "hjkl" aren't)
         bad_fm = self.feature_metadata.copy()
         bad_fm.index = ["e", "asdf", "hjkl"]
-        f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
+        f_table, f_sample_metadata, t_fm, i_fm, taxcols = tools.match_inputs(
             self.bp_tree, self.table, self.sample_metadata, bad_fm
         )
         self.assertEqual(f_table, self.table)
@@ -344,6 +363,8 @@ class TestTools(unittest.TestCase):
         # the generated HTML... but may as well check.)
         self.assertListEqual(list(t_fm.columns), self.exp_split_fm_cols)
         self.assertListEqual(list(i_fm.columns), self.exp_split_fm_cols)
+        # Check that the split-up taxonomy columns look good
+        assert_taxcols_ok(taxcols)
 
     def test_match_inputs_feature_metadata_root_metadata_allowed(self):
         """Tests that feature metadata for the root node is preserved."""
@@ -351,7 +372,7 @@ class TestTools(unittest.TestCase):
         t = parse_newick('(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2)i:1;')
         fm = self.feature_metadata.copy()
         fm.index = ["a", "g", "i"]
-        f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
+        f_table, f_sample_metadata, t_fm, i_fm, taxcols1 = tools.match_inputs(
             t, self.table, self.sample_metadata, fm
         )
         # (check that we didn't mess up the table / sample metadata matching by
@@ -359,40 +380,44 @@ class TestTools(unittest.TestCase):
         self.assertEqual(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
 
-        split_fm = split_taxonomy(fm)
+        split_fm, taxcols2 = split_taxonomy(fm)
         # Main point of this test: all of the feature metadata should have been
         # kept, since a, g, and i are all included in the tree (i in particular
         # is important to verify, since it's the root)
         assert_frame_equal(t_fm, split_fm.loc[["a"]])
         assert_frame_equal(i_fm, split_fm.loc[["g", "i"]], check_like=True)
+        assert_taxcols_ok(taxcols1)
+        self.assertEqual(taxcols1, taxcols2)
 
     def test_match_inputs_feature_metadata_duplicate_name_internal_node(self):
         """Tests that feature metadata for internal nodes with duplicate names
            is preserved.
 
-           In the JS interface, there are two options for coloring nodes by
-           feature metadata: 1) just coloring tips (and propagating
-           clades with uniform feature metadata upwards), or 2) coloring all
-           nodes with feature metadata, which can include internal nodes. In
-           2), internal nodes with the same name will have the same feature
-           metadata color.
+           In the JS interface, there are two options for coloring nodes by a
+           given feature metadata column: 1) just coloring tips (and
+           propagating clades with the same value in this feature metadata
+           column upwards), or 2) coloring all nodes with feature metadata,
+           which can include internal nodes. In 2), internal nodes with the
+           same name will have the same feature metadata color.
         """
         # Slightly modified version of self.tree with duplicate internal node
         # names (i and g)
         t = parse_newick('(((a:1,e:2)i:1,b:2)g:1,(:1,d:3)g:2)i:1;')
         fm = self.feature_metadata.copy()
         fm.index = ["a", "g", "i"]
-        f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
+        f_table, f_sample_metadata, t_fm, i_fm, taxcols1 = tools.match_inputs(
             t, self.table, self.sample_metadata, fm
         )
         self.assertEqual(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
 
-        split_fm = split_taxonomy(fm)
+        split_fm, taxcols2 = split_taxonomy(fm)
         # Main point of this test: all of the feature metadata should have been
         # kept, even though g and i were both duplicate node names.
         assert_frame_equal(t_fm, split_fm.loc[["a"]])
         assert_frame_equal(i_fm, split_fm.loc[["g", "i"]], check_like=True)
+        assert_taxcols_ok(taxcols1)
+        self.assertEqual(taxcols1, taxcols2)
 
     def test_match_inputs_feature_metadata_only_internal_node_metadata(self):
         """Tests that feature metadata only for internal nodes is allowed."""
@@ -400,13 +425,13 @@ class TestTools(unittest.TestCase):
         t = parse_newick('(((a:1,e:2):1,b:2)g:1,(:1,d:3)h:2)i:1;')
         fm = self.feature_metadata.copy()
         fm.index = ["h", "g", "i"]
-        f_table, f_sample_metadata, t_fm, i_fm = tools.match_inputs(
+        f_table, f_sample_metadata, t_fm, i_fm, taxcols1 = tools.match_inputs(
             t, self.table, self.sample_metadata, fm
         )
         self.assertEqual(f_table, self.table)
         assert_frame_equal(f_sample_metadata, self.sample_metadata)
 
-        split_fm = split_taxonomy(fm)
+        split_fm, taxcols2 = split_taxonomy(fm)
         # 1) Check that tip metadata is empty
         self.assertEqual(len(t_fm.index), 0)
         # 2) Check that internal node metadata was preserved
@@ -414,6 +439,10 @@ class TestTools(unittest.TestCase):
         # 3) Check that columns on both DFs are identical
         self.assertListEqual(list(t_fm.columns), self.exp_split_fm_cols)
         self.assertListEqual(list(i_fm.columns), self.exp_split_fm_cols)
+        # 4) Check that the taxonomy columns produced by splitting the
+        # taxonomic feature metadata were produced as expected
+        assert_taxcols_ok(taxcols1)
+        self.assertEqual(taxcols1, taxcols2)
 
     def test_disjoint_table_and_ordination(self):
         self.ordination.samples.index = pd.Index(['Zample1', 'Zample2',
@@ -469,9 +498,12 @@ class TestTools(unittest.TestCase):
                            ['Sample1', 'Sample2', 'Sample3', 'Sample4',
                             'Sample5'])
 
-        filtered_table, filtered_sample_md, t_md, i_md = tools.match_inputs(
+        (
+            filtered_table, filtered_sample_md, t_md, i_md, taxcols
+        ) = tools.match_inputs(
             self.bp_tree, table, self.sample_metadata,
-            ordination=self.ordination, filter_extra_samples=True)
+            ordination=self.ordination, filter_extra_samples=True
+        )
 
         # NOTE: even though 'e' is now empty, it isn't removed now; it'll be
         # removed later on, in remove_empty_samples_and_features().
@@ -485,6 +517,7 @@ class TestTools(unittest.TestCase):
         # We didn't pass in any feature metadata, so we shouldn't get any out
         self.assertIsNone(t_md)
         self.assertIsNone(i_md)
+        self.assertEqual(taxcols, [])
 
     def test_shifting(self):
         # helper test function to count number of bits in the number

@@ -598,7 +598,7 @@ p.side-header button:hover,
 #legend-main {
     margin: 20px;
     min-width: 150px;
-    max-width: 40vh;
+    max-width: 33vw;
     min-height: 30px;
     max-height: 85vh;
     resize: both;

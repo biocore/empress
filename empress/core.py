@@ -188,7 +188,11 @@ class Empress():
                                  shear_to_feature_metadata):
 
         if self.is_community_plot:
-            self.table, self.samples, self.tip_md, self.int_md = match_inputs(
+            # Hack to unpack long tuples: https://stackoverflow.com/q/26036143
+            (
+                self.table, self.samples, self.tip_md, self.int_md,
+                self.tax_cols
+            ) = match_inputs(
                 self.tree, self.table, self.samples, self.features,
                 self.ordination, ignore_missing_samples, filter_extra_samples,
                 filter_missing_features
@@ -229,9 +233,9 @@ class Empress():
                         "the tree are present in the feature metadata."
                     )
                 self.tree = self.tree.shear(features)
-            self.tip_md, self.int_md = match_tree_and_feature_metadata(
-                self.tree, self.features
-            )
+            (
+                self.tip_md, self.int_md, self.tax_cols
+            ) = match_tree_and_feature_metadata(self.tree, self.features)
         validate_tree(self.tree)
 
     def copy_support_files(self, target=None):
@@ -367,6 +371,7 @@ class Empress():
             'compressed_sample_metadata': compressed_sm,
             # feature metadata
             'feature_metadata_columns': fm_cols,
+            'split_taxonomy_columns': self.tax_cols,
             'compressed_tip_metadata': compressed_tm,
             'compressed_int_metadata': compressed_im,
             # Emperor integration
