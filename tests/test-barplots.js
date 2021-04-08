@@ -29,6 +29,7 @@ require([
                     this.testData.tree,
                     this.testData.biom,
                     this.testData.fmCols,
+                    this.testData.splitTaxCols,
                     this.testData.tm,
                     this.testData.im,
                     this.testData.canvas
@@ -112,6 +113,7 @@ require([
             this.testData.tree,
             this.testData.biom,
             [],
+            [],
             {},
             {},
             this.testData.canvas
@@ -123,6 +125,7 @@ require([
             this.testData.tree,
             null,
             [],
+            [],
             {},
             {},
             this.testData.canvas
@@ -132,6 +135,7 @@ require([
             this.testData.tree,
             null,
             this.testData.fmCols,
+            [],
             this.testData.tm,
             this.testData.im,
             this.testData.canvas
@@ -140,6 +144,7 @@ require([
         var empWithSM = new Empress(
             this.testData.tree,
             this.testData.biom,
+            [],
             [],
             {},
             {},
@@ -168,6 +173,7 @@ require([
             this.testData.tree,
             null,
             this.testData.fmCols,
+            [],
             this.testData.tm,
             this.testData.im,
             this.testData.canvas
@@ -183,6 +189,7 @@ require([
         var empWithJustSM = new Empress(
             this.testData.tree,
             this.testData.biom,
+            [],
             [],
             {},
             {},

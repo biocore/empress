@@ -140,6 +140,8 @@
         );
         var fmCols = {{ feature_metadata_columns | tojson }};
 
+        var splitTaxonomyCols = {{ split_taxonomy_columns | tojson }};
+
         var canvas = document.getElementById('tree-surface');
 
         // NOTE: the contents of this line are validated in the python
@@ -163,6 +165,7 @@
             tree,
             biom,
             fmCols,
+            splitTaxonomyCols,
             {{ compressed_tip_metadata | tojson }},
             {{ compressed_int_metadata | tojson }},
             canvas

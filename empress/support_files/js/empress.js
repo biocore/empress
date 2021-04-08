@@ -42,6 +42,13 @@ define([
      *                      when generating an Empress visualization, this
      *                      parameter should be [] (and tipMetadata and
      *                      intMetadata should be {}s).
+     * @param {Array} splitTaxonomyColumns Columns of the feature metadata
+     *                                     corresponding to explicitly
+     *                                     specified levels of a taxonomy, if
+     *                                     available. Should be [] if not
+     *                                     applicable. Every value in this
+     *                                     Array must also be present in
+     *                                     featureMetadataColumns.
      * @param {Object} tipMetadata Feature metadata for tips in the tree.
      *                 Note: This should map tip names to an array of feature
      *                       metadata values. Each array should have the same
@@ -55,6 +62,7 @@ define([
         tree,
         biom,
         featureMetadataColumns,
+        splitTaxonomyColumns,
         tipMetadata,
         intMetadata,
         canvas
@@ -169,11 +177,21 @@ define([
         this.isCommunityPlot = !_.isNull(this._biom);
 
         /**
-         * @type{Array}
+         * @type {Array}
          * Feature metadata column names.
          * @private
          */
         this._featureMetadataColumns = featureMetadataColumns;
+
+        /**
+         * @type {Array}
+         * Taxonomy column names. Should be handled specially when coloring
+         * by these, or using them in feature metadata barplots -- see
+         * https://github.com/biocore/empress/issues/473 and
+         * https://github.com/biocore/empress/pull/482 for details/discussion.
+         * @private
+         */
+        this._splitTaxonomyColumns = splitTaxonomyColumns;
 
         /**
          * @type{Object}
@@ -1983,6 +2001,17 @@ define([
         } else {
             halfAngleRange = Math.PI / this._tree.numleaves();
         }
+        // NOTE that, for drawing a barplot layer representing a taxonomy
+        // column, we are essentially doing the work here of "reassembling"
+        // the ancestor taxonomy with the child taxonomy info twice -- once
+        // when we call this.getUniqueFeatureMetadataInfo() above, and again
+        // as we go through this loop and look at each tip (this is done for
+        // each tip by the "retrieval function" mentioned below).
+        //
+        // It would be ideal to use the mapping information returned by
+        // this.getUniqueFeatureMetadataInfo() to avoid having to repeat this
+        // work, although this would likely require restructuring the rest
+        // of this function -- might be too much work for its own good.
         for (var node of this._tree.postorderTraversal()) {
             if (this._tree.isleaf(this._tree.postorderselect(node))) {
                 var name = this.getNodeInfo(node, "name");
@@ -1990,8 +2019,15 @@ define([
                 // Assign this tip's bar a color
                 var color;
                 if (layer.colorByFM) {
+                    // Get a function that'll retrieve feature metadata from
+                    // this field for us. As of writing, only does anything
+                    // special for certain taxonomy columns.
+                    var getValFromColorFM = this._getFMValRetrievalFunction(
+                        layer.colorByFMField
+                    );
+
                     if (_.has(this._tipMetadata, node)) {
-                        fm = this._tipMetadata[node][colorFMIdx];
+                        fm = getValFromColorFM(this._tipMetadata[node]);
                         if (_.has(fm2color, fm)) {
                             color = fm2color[fm];
                         } else {
@@ -2014,8 +2050,19 @@ define([
                 // Assign this tip's bar a length
                 var length;
                 if (layer.scaleLengthByFM) {
+                    // Get a function that'll retrieve feature metadata from
+                    // this field for us. As of writing, this currently is
+                    // not especially useful for length scaling, since this
+                    // function only does something special for taxonomy
+                    // columns -- and those shouldn't be numeric. However,
+                    // using this function as the middle-man here ensures
+                    // consistency with how the other uses of feature metadata
+                    // work (in case we define further special cases later on).
+                    var getValFromLengthFM = this._getFMValRetrievalFunction(
+                        layer.scaleLengthByFMField
+                    );
                     if (_.has(this._tipMetadata, node)) {
-                        fm = this._tipMetadata[node][lengthFMIdx];
+                        fm = getValFromLengthFM(this._tipMetadata[node]);
                         if (_.has(fm2length, fm)) {
                             length = fm2length[fm];
                         } else {
@@ -2270,11 +2317,93 @@ define([
     };
 
     /**
+     * Returns a function that retrieves values for a feature metadata column.
+     *
+     * The returned function takes as input an Array specifying a "row" in the
+     * feature metadata (where each value corresponds to a different feature
+     * metadata column: e.g. one very simple row might be
+     * ["Bacteria", "Firmicutes", "1.25"], if the only feature metadata columns
+     * are "Level 1", "Level 2", and "SomeRandomNumber").
+     *
+     * The "basic" case is that the returned function just retrieves a single
+     * value from this row (e.g. if fmCol is "SomeRandomNumber", then the
+     * returned function should retrieve "1.25" from the aforementioned example
+     * row). However, it's possible for the returned function to behave
+     * differently in special cases. As of writing, the only "special case" is
+     * when fmCol is a non-highest-rank taxonomy column EMPress' Python code
+     * produced (e.g. "Level 2" in the example above) -- in this case, the
+     * returned function will retrieve and combine multiple values, producing
+     * a merged taxonomy string down to a given level (e.g.
+     * "Bacteria; Firmicutes").
+     *
+     * @param {String} fmCol Column in the feature metadata.
+     * @return {Function} Takes as input a row of feature metadata (an Array),
+     *                    and retrieves the "value" for fmCol from this row
+     *                    (which may just mean returning a single element from
+     *                    the row, or combining multiple columns' values) --
+     *                    the behavior is dependent on fmCol.
+     * @throws {Error} If fmCol is not present in this._featureMetadataColumns.
+     */
+    Empress.prototype._getFMValRetrievalFunction = function (fmCol) {
+        var getValFromFM;
+        var taxIdx = _.indexOf(this._splitTaxonomyColumns, fmCol);
+        var fmIdx = _.indexOf(this._featureMetadataColumns, fmCol);
+        if (fmIdx < 0) {
+            throw 'Feature metadata column "' + cat + '" not present in data.';
+        }
+        if (taxIdx <= 0) {
+            // If this feature metadata column is not in the "split taxonomy
+            // columns" (i.e. taxIdx is -1), or if this feature metadata column
+            // corresponds to the highest (and therefore first) taxonomy level
+            // (e.g. "Kingdom" -- in this case taxIdx will be 0), then, when
+            // extracting feature metadata from a given row, we can just get
+            // this column's single value in that row.
+            return function (fmRow) {
+                return fmRow[fmIdx];
+            };
+        } else {
+            // If this feature metadata column corresponds to a taxonomy level
+            // below the highest one (e.g. phylum, or class, ...) then we want
+            // to handle it specially -- see #473 on GitHub. We'll do this by
+            // recording all the "indices" of the feature metadata columns
+            // corresponding to the ancestors above this feature metadata
+            // column (and then this column itself). This makes it easier to
+            // identify all the ancestral information for a given taxonomy
+            // entry.
+            var ancestorFMIndices = [];
+            // We can use a basic for loop starting at 0 because
+            // this._splitTaxonomyColumns are in order
+            for (var i = 0; i < taxIdx; i++) {
+                var currTaxCol = this._splitTaxonomyColumns[i];
+                var currTaxColFMIdx = _.indexOf(
+                    this._featureMetadataColumns,
+                    currTaxCol
+                );
+                ancestorFMIndices.push(currTaxColFMIdx);
+            }
+            // We already know the index of the column we end at, so just put
+            // it here at the end manually. (Saving this extra work probably
+            // won't make an appreciable time difference, but it feels nice :)
+            ancestorFMIndices.push(fmIdx);
+            return function (fmRow) {
+                var totalFMVal = "";
+                _.each(ancestorFMIndices, function (ancestorFMIdx, ii) {
+                    // Separate adjacent levels in the resulting f.m. value
+                    // shown: e.g. "k__Bacteria; p__Cyanobacteria"
+                    if (ii > 0) {
+                        totalFMVal += "; ";
+                    }
+                    totalFMVal += fmRow[ancestorFMIdx];
+                });
+                return totalFMVal;
+            };
+        }
+    };
+
+    /**
      * Retrieve unique value information for a feature metadata field.
      *
      * @param {String} cat The feature metadata column to find information for.
-     *                     Must be present in this._featureMetadataColumns or
-     *                     an error will be thrown.
      * @param {String} method Defines what feature metadata to check.
      *                        If this is "tip", then only tip-level feature
      *                        metadata will be used. If this is "all", then
@@ -2288,6 +2417,9 @@ define([
      *                  -uniqueValueToFeatures: maps to an Object which maps
      *                   the unique values in this feature metadata column to
      *                   an array of the node name(s) with each value.
+     * @throws {Error} If any of the following conditions are met:
+     *                 -If cat is not present in this._featureMetadataColumns
+     *                 -If method is not "tip" or "all"
      */
     Empress.prototype.getUniqueFeatureMetadataInfo = function (cat, method) {
         // get nodes in tree
@@ -2314,12 +2446,17 @@ define([
         } else {
             throw 'F. metadata coloring method "' + method + '" unrecognized.';
         }
+
+        // Define how we're going to extract feature metadata for a given "row"
+        // (i.e. for each entry in the feature metadata).
+        var getValFromFM = this._getFMValRetrievalFunction(cat);
+
         // Produce a mapping of unique values in this feature metadata
         // column to an array of the node name(s) with each value.
         var uniqueValueToFeatures = {};
         _.each(fmObjs, function (mObj) {
             _.mapObject(mObj, function (fmRow, node) {
-                var fmVal = fmRow[fmIdx];
+                var fmVal = getValFromFM(fmRow);
                 if (!_.has(uniqueValueToFeatures, fmVal)) {
                     uniqueValueToFeatures[fmVal] = [];
                 }
