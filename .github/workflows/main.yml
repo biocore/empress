@@ -1,4 +1,8 @@
-name: Empress CI
+# Tests EMPress' Python and JS code within a QIIME 2 conda environment.
+# Also lints and stylechecks the code (both Python and JS).
+# When tests pass, this runs "make docs" to generate various test QIIME 2
+# visualizations (.qzv files) and uploads them to McHelper.
+name: Main CI
 
 # Controls when the action will run. 
 on:
@@ -14,10 +18,6 @@ jobs:
   build:
     # The type of runner that the job will run on (available options are window/macOS/linux)
     runs-on: ubuntu-latest
-    # we can add more versions of node.js in the future
-    strategy:
-      matrix:
-        node-version: [14.x]
     
     # used in McHelper (similar to TRAVIS_PULL_REQUEST variable)
     env:
@@ -30,10 +30,14 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-  
-      - name: Set up Node.js enviroment
+
+      - name: Set up Node.js
         uses: actions/setup-node@v1
         with:
+          # Can use a matrix of Node.js versions in the future if desired;
+          # however, since Node.js should only be used when developing
+          # EMPress, it's not an urgent priority (and should likely be done
+          # separately from the Python CI stuff to save time)
           node-version: 14
 
       - name: Install Node.js modules
@@ -42,7 +46,7 @@ jobs:
       - name: Install flake8
         run: conda run -n base pip install flake8
 
-      - name: Run linters
+      - name: Run linting and stylechecking
         run: |
           conda run -n base make stylecheck
 
@@ -53,12 +57,12 @@ jobs:
           python-version: 3.6
           conda-channels: anaconda, conda-forge
 
-      - name: Create Qiime enviroment
+      - name: Create QIIME 2 conda environment
         run: |
           wget https://data.qiime2.org/distro/core/qiime2-2020.6-py36-linux-conda.yml
-          conda env create -n qiime2-dev --file qiime2-2020.6-py36-linux-conda.yml      
+          conda env create -n qiime2-dev --file qiime2-2020.6-py36-linux-conda.yml
 
-      - name: Install Empress
+      - name: Install EMPress
         run: |
           conda run -n qiime2-dev pip uninstall emperor --yes
           conda run -n qiime2-dev pip install -e .[all] --verbose
@@ -74,7 +78,7 @@ jobs:
           conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/unweighted_unifrac_pcoa_results.qza --filter-extra-samples
           conda run -n qiime2-dev ./tests/python/make-dev-page.py docs/moving-pictures/rooted-tree.qza docs/moving-pictures/table.qza docs/moving-pictures/sample_metadata.tsv docs/moving-pictures/taxonomy.qza docs/moving-pictures/biplot.qza --filter-extra-samples
 
-      # - name: Upload to McHelper
-      #   run: |
-      #     conda run -n qiime2-dev make docs
-      #     conda run -n qiime2-dev curl -POST -F "files[]=@${PWD}/docs/moving-pictures/plain.qzv" -F "files[]=@${PWD}/docs/moving-pictures/just-fm.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empress-tree.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv"  http://mchelper.ucsd.edu:8888/uploads/empress/${{env.BRANCH_NUMBER}}/
+      - name: Upload to McHelper
+        run: |
+          conda run -n qiime2-dev make docs
+          curl -POST -F "files[]=@${PWD}/docs/moving-pictures/plain.qzv" -F "files[]=@${PWD}/docs/moving-pictures/just-fm.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empress-tree.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire.qzv" -F "files[]=@${PWD}/docs/moving-pictures/empire-biplot.qzv"  http://mchelper.ucsd.edu:8888/uploads/empress/${{env.BRANCH_NUMBER}}/

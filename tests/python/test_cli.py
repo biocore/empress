@@ -1,14 +1,11 @@
 import os
 import unittest
 
-import biom
 from click.testing import CliRunner
 import pandas as pd
-from qiime2 import Artifact
-from skbio.stats.ordination import OrdinationResults
-from skbio.tree import TreeNode
 
 from empress.scripts._cli import empress
+from .util import extract_q2_artifact_to_path
 
 
 def files_present(output_dir):
@@ -21,32 +18,14 @@ class TestCLI(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        q2_tree_loc = "docs/moving-pictures/rooted-tree.qza"
-        q2_table_loc = "docs/moving-pictures/table.qza"
-        q2_sm_loc = "docs/moving-pictures/sample_metadata.tsv"
-        q2_fm_loc = "docs/moving-pictures/taxonomy.qza"
-        q2_pcoa_loc = "docs/moving-pictures/biplot.qza"
+        q2_tree_loc = os.path.abspath("docs/moving-pictures/rooted-tree.qza")
+        q2_table_loc = os.path.abspath("docs/moving-pictures/table.qza")
+        q2_fm_loc = os.path.abspath("docs/moving-pictures/taxonomy.qza")
+        q2_pcoa_loc = os.path.abspath("docs/moving-pictures/biplot.qza")
 
-        cls.tree_loc = "rooted-tree.nwk"
-        cls.table_loc = "table.biom"
-        cls.sm_loc = "sample_metadata.tsv"
-        cls.fm_loc = "taxonomy.tsv"
-        cls.pcoa_loc = "pcoa.txt"
-
-        # convert tree to .nwk
-        nwk_tree = Artifact.load(q2_tree_loc).view(TreeNode)
-
-        # convert table to .biom
-        biom_tbl = Artifact.load(q2_table_loc).view(biom.table.Table)
-
-        # remove comment rows from sample metadata
-        sm = pd.read_csv(q2_sm_loc, sep="\t", index_col=0, skiprows=[1])
-
-        # convert feature metadata to .tsv
-        fm = Artifact.load(q2_fm_loc).view(pd.DataFrame)
-
-        # convert biplot to skbio OrdinationResults
-        pcoa = Artifact.load(q2_pcoa_loc).view(OrdinationResults)
+        q2_sm_loc = os.path.abspath(
+            "docs/moving-pictures/sample_metadata.tsv"
+        )
 
         # create isolated filesystem for tests in this file
         # manually using __enter__ so that we can run all tests and close in
@@ -55,12 +34,22 @@ class TestCLI(unittest.TestCase):
         cls.iso_fs = cls.runner.isolated_filesystem()
         cls.iso_fs.__enter__()
 
-        nwk_tree.write(cls.tree_loc)
-        with biom.util.biom_open(cls.table_loc, "w") as f:
-            biom_tbl.to_hdf5(f, "test")
-        sm.to_csv(cls.sm_loc, index=True, sep="\t")
-        fm.to_csv(cls.fm_loc, index=True, sep="\t")
-        pcoa.write(cls.pcoa_loc)
+        # extract Artifacts to temporary filesystem
+        cls.tree_loc = extract_q2_artifact_to_path("tree", q2_tree_loc,
+                                                   "tree.nwk")
+        cls.table_loc = extract_q2_artifact_to_path("tbl", q2_table_loc,
+                                                    "feature-table.biom")
+        cls.fm_loc = extract_q2_artifact_to_path("fm", q2_fm_loc,
+                                                 "taxonomy.tsv")
+        cls.pcoa_loc = extract_q2_artifact_to_path("pcoa", q2_pcoa_loc,
+                                                   "ordination.txt")
+        # need to re-save sample metadata to remove q2:types row
+        cls.sm_loc = "tmp_sample_metadata.tsv"
+        pd.read_csv(q2_sm_loc, sep="\t", index_col=0, skiprows=[1]).to_csv(
+            cls.sm_loc,
+            sep="\t",
+            index=True
+        )
 
     @classmethod
     def tearDownClass(cls):

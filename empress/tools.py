@@ -40,15 +40,21 @@ def match_tree_and_feature_metadata(bp_tree, feature_metadata=None):
 
     Returns
     -------
-    (tip_metadata, int_metadata): (pd.DataFrame or None, pd.DataFrame or None)
+    (tip_metadata, int_metadata, tax_columns):
+            (pd.DataFrame or None, pd.DataFrame or None, list)
         If feature metadata was not passed, tip_metadata and int_metadata
         will both be None. Otherwise, tip_metadata will contain the
         entries of the feature metadata where the feature name was present
         as a tip in the tree, and int_metadata will contain the entries
         of the feature metadata where the feature name was present as
-        internal node(s) in the tree. Also, this will call
+        internal node(s) in the tree.
+
+        Also, if feature metadata is passed, this will call
         taxonomy_utils.split_taxonomy() on the feature metadata before
-        splitting it up between tip and internal node feature mtadata.
+        splitting it up between tip and internal node feature metadata --
+        tax_columns will be set to whatever the tax_columns value returned by
+        split_taxonomy() is (see that function's documentation for details).
+        (If feature metadata is not passed, tax_columns will be [].)
 
     Raises
     ------
@@ -58,9 +64,12 @@ def match_tree_and_feature_metadata(bp_tree, feature_metadata=None):
     """
     tip_metadata = None
     int_metadata = None
+    tax_columns = []
     if feature_metadata is not None:
         # Split up taxonomy column, if present in the feature metadata
-        ts_feature_metadata = taxonomy_utils.split_taxonomy(feature_metadata)
+        ts_feature_metadata, tax_columns = taxonomy_utils.split_taxonomy(
+            feature_metadata
+        )
         fm_ids = ts_feature_metadata.index
 
         # Subset tip metadata
@@ -73,12 +82,12 @@ def match_tree_and_feature_metadata(bp_tree, feature_metadata=None):
         int_metadata = ts_feature_metadata.loc[fm_and_int_features]
 
         if len(tip_metadata.index) == 0 and len(int_metadata.index) == 0:
-            # Error condition 5 in match_inputs_community_plot()
+            # Error condition 5 in match_inputs()
             raise DataMatchingError(
                 "No features in the feature metadata are present in the tree, "
                 "either as tips or as internal nodes."
             )
-    return tip_metadata, int_metadata
+    return tip_metadata, int_metadata, tax_columns
 
 
 def match_inputs(
@@ -133,8 +142,8 @@ def match_inputs(
 
     Returns
     -------
-    (table, sample_metadata, tip_metadata, int_metadata):
-        (biom.Table, pd.DataFrame, pd.DataFrame / None, pd.DataFrame / None)
+    (table, sample_metadata, tip_metadata, int_metadata, tax_columns):
+        (biom.Table, pd.DataFrame, pd.DataFrame|None, pd.DataFrame|None, list)
         Versions of the input table, sample metadata, and feature metadata
         filtered such that:
             -The table only contains features also present as tips in the tree.
@@ -145,12 +154,15 @@ def match_inputs(
              no metadata". (This will only be done if ignore_missing_samples is
              True; otherwise, this situation will trigger an error. See below.)
             -If feature metadata was not passed, tip_metadata and int_metadata
-             will both be None. Otherwise, tip_metadata will contain the
-             entries of the feature metadata where the feature name was present
-             as a tip in the tree, and int_metadata will contain the entries
-             of the feature metadata where the feature name was present as
-             internal node(s) in the tree.
-                -Also, for sanity's sake, this will call
+             will both be None (and tax_columns will be []). Otherwise,
+             tip_metadata will contain the entries of the feature metadata
+             where the feature name was present as a tip in the tree,
+             int_metadata will contain the entries of the feature metadata
+             where the feature name was present as internal node(s) in the
+             tree, and tax_columns will contain the names of any newly-created
+             columns representing levels in a taxonomy, sorted in descending
+             order.
+                -For sanity's sake, this will call
                  taxonomy_utils.split_taxonomy() on the feature metadata before
                  splitting it up into tip and internal node metadata.
 
@@ -166,8 +178,10 @@ def match_inputs(
                metadata, AND ignore_missing_samples is False.
             5. The feature metadata was passed, but no features present in it
                are also present as tips or internal nodes in the tree.
-            6. The ordination AND feature table don't have exactly the same
-               samples.
+            6. The ordination and feature table don't share any samples.
+            7. The feature table contains more samples than the ordination, AND
+               filter_extra_samples is False.
+            8. The ordination contains more samples than the feature table.
 
     References
     ----------
@@ -186,6 +200,7 @@ def match_inputs(
 
         # don't allow for disjoint datasets
         if not (table_ids & ord_ids):
+            # Error condition 6
             raise DataMatchingError(
                 "No samples in the feature table are present in the "
                 "ordination"
@@ -195,6 +210,7 @@ def match_inputs(
             extra = table_ids - ord_ids
             if extra:
                 if not filter_extra_samples:
+                    # Error condition 7
                     raise DataMatchingError(
                         "The feature table has more samples than the "
                         "ordination. These are the problematic sample "
@@ -206,6 +222,7 @@ def match_inputs(
                 # We'll remove now-empty features from the table later in
                 # the code
         else:
+            # Error condition 8
             raise DataMatchingError(
                 "The ordination has more samples than the feature table."
             )
@@ -309,12 +326,14 @@ def match_inputs(
     # presence of such "dropped samples" is a common occurrence in 16S studies,
     # so we currently don't do that for the sake of avoiding alarm fatigue.
 
-    tip_metadata, int_metadata = match_tree_and_feature_metadata(
+    tip_metadata, int_metadata, tax_columns = match_tree_and_feature_metadata(
         bp_tree,
         feature_metadata
     )
 
-    return ff_table, sf_sample_metadata, tip_metadata, int_metadata
+    return (
+        ff_table, sf_sample_metadata, tip_metadata, int_metadata, tax_columns
+    )
 
 
 def shifting(bitlist, size=51):

@@ -115,6 +115,7 @@
             'util' : './js/util',
             'LayoutsUtil': './js/layouts-util',
             'ExportUtil': './js/export-util',
+            'TreeController': './js/tree-controller'
         }
     });
 
@@ -137,6 +138,8 @@
         );
 
         var fmCols = {{ feature_metadata_columns | tojson }};
+
+        var splitTaxonomyCols = {{ split_taxonomy_columns | tojson }};
 
         var canvas = document.getElementById('tree-surface');
 
@@ -161,6 +164,7 @@
             tree,
             biom,
             fmCols,
+            splitTaxonomyCols,
             {{ compressed_tip_metadata | tojson }},
             {{ compressed_int_metadata | tojson }},
             canvas
