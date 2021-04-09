@@ -531,11 +531,7 @@ define([
     Empress.prototype.initialize = function () {
         this._drawer.initialize();
         this._events.setMouseEvents();
-        var nodeNames = this._tree.getAllNames();
-        // Don't include nodes with the name null (i.e. nodes without a
-        // specified name in the Newick file) in the auto-complete.
-        nodeNames = nodeNames.filter((n) => n !== null);
-        this._events.autocomplete(nodeNames);
+        this.setAutoCompleteNames();
 
         this.getLayoutInfo();
         this.centerLayoutAvgPoint();
@@ -1748,12 +1744,6 @@ define([
         // Do most of the hard work: compute the frequencies for each tip (only
         // the tips present in the BIOM table, that is)
         var feature2freqs = this._biom.getFrequencyMap(layer.colorBySMField);
-        // var nodes = new Set([...this._tree.postorderTraversal()]);
-        // _.each(feature2freqs, function (blah, node) {
-        //     if (!nodes.has(parseInt(node))) {
-        //         delete feature2freqs[node];
-        //     }
-        // });
 
         // Only bother computing the halfyrscf / halfAngleRange value we need.
         // (this._tree.numleaves() does iterate over the full tree, at least
@@ -2231,18 +2221,6 @@ define([
     };
 
     /**
-     *
-     */
-    Empress.prototype.getUniqueSampleMetadataInfo = function (cat) {
-        var obs = this._biom.getObsBy(cat);
-        var nodes = new Set([...this._tree.postorderTraversal()]);
-        _.each(obs, function (featuresWithSMValue, smValue) {
-            obs[smValue] = featuresWithSMValue.filter((x) => nodes.has(x));
-        });
-        return obs;
-    };
-
-    /**
      * Color the tree using sample metadata
      *
      * @param {String} cat Sample metadata category to use
@@ -2262,7 +2240,7 @@ define([
         reverse = false
     ) {
         var tree = this._tree;
-        var obs = this.getUniqueSampleMetadataInfo(cat);
+        var obs = this._biom.getObsBy(cat);
         var categories = Object.keys(obs);
 
         // Assign colors to categories
@@ -2277,6 +2255,10 @@ define([
         var cm = colorer.getMapRGB();
         // colors for the legend
         var keyInfo = colorer.getMapHex();
+
+        // if the tree has been sheared then categories in obs maybe empty.
+        // getObsBy() does not filter out those categories so that the same 
+        // color can be assigned to each value in obs.
         for (var key in keyInfo) {
             if (obs[key].length === 0) {
                 delete keyInfo[key];
@@ -2460,8 +2442,11 @@ define([
                 if (!_.has(uniqueValueToFeatures, fmVal)) {
                     uniqueValueToFeatures[fmVal] = [];
                 }
+
                 // need to convert to integer
                 node = parseInt(node);
+
+                // ignore nodes that have been sheared
                 if (!nodes.has(node)) {
                     return;
                 }
@@ -2531,6 +2516,10 @@ define([
 
         // colors for the legend
         var keyInfo = colorer.getMapHex();
+
+        // if the tree has been sheared then categories in obs maybe empty.
+        // getUniqueFeatureMetadataInfo() does not filter out those categories
+        // so that the same color can be assigned to each value in obs.
         for (var key in keyInfo) {
             if (uniqueValueToFeatures[key].length === 0) {
                 delete keyInfo[key];
@@ -2662,6 +2651,10 @@ define([
         this._drawer.loadThickNodeBuff([]);
         this._drawer.loadCladeBuff([]);
         this._group = new Array(this._tree.size + 1).fill(-1);
+
+        // if _collapsedClades is empty then there is no need to call
+        // getTreeCoords which can save a fair amount of time depending on the
+        // size of the tree
         if (Object.keys(this._collapsedClades).length > 0) {
             this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
         }
@@ -2736,6 +2729,16 @@ define([
         // stuff to only change whenever the tree is redrawn.
         this.thickenColoredNodes(this._currentLineWidth);
 
+        this.redrawBarPlotsToMatchLayout();
+        this.centerLayoutAvgPoint();
+    };
+
+    /**
+     * Redraw the barplot to match the current layout. If the current layout is
+     * "Unrooted" then this will remove the barplots from canvas.
+     * 
+     */
+    Empress.prototype.redrawBarPlotsToMatchLayout = function() {
         // Undraw or redraw barplots as needed (assuming barplots are supported
         // in the first place, of course; if no feature or sample metadata at
         // all was passed then barplots are not available :()
@@ -2749,7 +2752,6 @@ define([
                 this.drawBarplots();
             }
         }
-        this.centerLayoutAvgPoint();
     };
 
     /**
@@ -3238,7 +3240,7 @@ define([
 
         // step 1: find all nodes in the clade.
         // Note: cladeNodes is an array of nodes arranged in postorder fashion
-        var cladeNodes = this._tree.getCladeNodes(rootNode);
+        var cladeNodes = this._tree.getCladeNodes(parseInt(rootNode));
 
         // use the left most child in the clade to initialize currentCladeInfo
         var currentCladeInfo = {
@@ -3720,6 +3722,18 @@ define([
     };
 
     /**
+     * This will fill the autocomplete search bar with the names of the current
+     * tree.
+     */
+    Empress.prototype.setAutoCompleteNames = function() {
+        var nodeNames = this._tree.getAllNames();
+        // Don't include nodes with the name null (i.e. nodes without a
+        // specified name in the Newick file) in the auto-complete.
+        nodeNames = nodeNames.filter((n) => n !== null);
+        this._events.autocomplete(nodeNames);
+    };
+
+    /**
      * This will shear/unshear
      */
     Empress.prototype.shear = function (shearMap) {
@@ -3743,27 +3757,11 @@ define([
 
         this._tree.shear(removeNodes);
 
-        var nodeNames = this._tree.getAllNames();
-        // Don't include nodes with the name null (i.e. nodes without a
-        // specified name in the Newick file) in the auto-complete.
-        nodeNames = nodeNames.filter((n) => n !== null);
-        this._events.autocomplete(nodeNames);
+        this.setAutoCompleteNames();
 
         this.getLayoutInfo();
 
-        // Undraw or redraw barplots as needed (assuming barplots are supported
-        // in the first place, of course; if no feature or sample metadata at
-        // all was passed then barplots are not available :()
-        if (!_.isNull(this._barplotPanel)) {
-            var supported = this._barplotPanel.updateLayoutAvailability(
-                this._currentLayout
-            );
-            if (!supported && this._barplotsDrawn) {
-                this.undrawBarplots();
-            } else if (supported && this._barplotPanel.enabled) {
-                this.drawBarplots();
-            }
-        }
+        this.redrawBarPlotsToMatchLayout();
     };
 
     return Empress;

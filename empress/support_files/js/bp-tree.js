@@ -192,6 +192,12 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
          */
         this._nameToNodes = {};
 
+        /**
+         * @type {Array}
+         * @private
+         * Cache Parent nodes. This will help speed up a lot of methods that
+         * make calls to parent.
+         */
         this._pCache = [];
         var pStack = [];
         for (i = 0; i < this.b_.length - 1; i++) {
@@ -472,11 +478,9 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         // i represents the root node
         if (i === this.root() || i === this.b_.length - 1) {
             return -1;
-        } else {
-            return this._pCache[i];
         }
 
-        return this.enclose(i);
+        return this._pCache[i];
     };
 
     /**
@@ -726,7 +730,9 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         // find first and last preorder positions of the subtree spanned
         // by the current internal node
         var n = this.postorderselect(nodeKey);
-        if (this.isleaf(n) && nodeKey !== this.postorder(this.root())) {
+
+        // check for root to account for cases when all tips have been sheared
+        if (this.isleaf(n) && nodeKey !== this.postorder(this.root()) ) {
             throw "Error: " + nodeKey + " is a tip!";
         }
         var start = this.preorder(this.fchild(n));
@@ -1012,18 +1018,14 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         // closure
         var scope = this;
 
-        // create new names and lengths array
-        var names = [null];
-        var lengths = [null];
-
         // create new bit array
         var mask = _.clone(this.b_);
 
-        var i;
+        var i, node;
 
         // remove tips
         for (i of removeTips) {
-            var node = this.postorderselect(i);
+            node = this.postorderselect(i);
             mask[node] = undefined;
             mask[node + 1] = undefined;
         }
@@ -1032,26 +1034,38 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         var nodeStack = [];
         for (i = mask.length - 1; i > 0; i--) {
             if (mask[i] === 0) {
-                // close par
+                // close parentheses
                 if (mask[i - 1] === 0) {
+                    // close parentheses represents internal node
                     nodeStack.push([i, null]);
                 } else if (mask[i - 1] === 1) {
+                    // close parentheses represents non-removed tip
+                    // thus we mark it as false so it is not removed
                     nodeStack.push([i, false]);
                 } else if (mask[i - 1] === undefined) {
+                    // close paretheses represents an internal node
+                    // with at least one removed tip so we temporarly mark it
+                    // as true to remove
                     nodeStack.push([i, true]);
                 }
             } else if (mask[i] === 1) {
-                var parent = nodeStack.pop();
-                if (parent[1] === true) {
+                //open parentheses
+                node = nodeStack.pop();
+                if (node[1] === true) {
+                    // remove internal node
                     mask[i] = undefined;
-                    mask[parent[0]] = undefined;
-                } else if (parent[1] === false) {
+                    mask[node[0]] = undefined;
+                } else if (node[1] === false) {
                     // need explicitly check false since it can be null
+                    // if node[1] is false that means it contains a tip and thus
+                    // we need to mark its parent as false so it is not removed
                     nodeStack[nodeStack.length - 1][1] = false;
                 }
 
                 if (nodeStack[nodeStack.length - 1][1] === null) {
-                    nodeStack[nodeStack.length - 1][1] = parent[1];
+                    // if null then we set its remove status to whatever node
+                    // was
+                    nodeStack[nodeStack.length - 1][1] = node[1];
                 }
             }
         }
@@ -1060,6 +1074,9 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         var shearedToFull = new Map();
         var fullToSheared = new Map();
         var postorderPos = 1;
+        // create new names and lengths array
+        var names = [null];
+        var lengths = [null];
         for (i = 0; i < mask.length; i++) {
             if (mask[i] !== undefined) {
                 newBitArray.push(mask[i]);
@@ -1067,7 +1084,6 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
 
             // get name and length of node
             // Note: names and lengths of nodes are stored in postorder
-
             if (mask[i] === 0) {
                 names.push(this.name(i));
                 lengths.push(this.length(i));

@@ -516,6 +516,17 @@ define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
         return nodes;
     };
 
+    /**
+     * Returns all nodes in the clade whose root is node.
+     *
+     * Note: elements in the returned array are keys in this._treeData
+     *       also, the returned array is sorted in a postorder fashion
+     *
+     * @param {Number} cladeRoot The root of the clade. An error is thrown if
+     *                           cladeRoot is not a valid node.
+     *
+     * @return {Array} The nodes in the clade
+     */
     TreeController.prototype.getCladeNodes = function (cladeRoot) {
         return this.model.getCladeNodes(cladeRoot);
     };

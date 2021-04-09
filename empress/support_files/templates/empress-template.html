@@ -131,7 +131,6 @@
                  BarplotLayer, BarplotPanel, BIOMTable, Empress, Legend,
                  Colorer, VectorOps, CanvasEvents, SelectedNodeMenu, util,
                  LayoutsUtil, ExportUtil, Shearer) {
-        window.counter = 0;
         // initialze the tree and model
         var tree = new BPTree(
           {{ tree  }},
@@ -184,7 +183,6 @@
           empress.getFeatureMetadataCategories()
         );
         shearer.registerObserver(sPanel);
-        // shearer.registerObserver(empress._barplotPanel);
 
         // Only show the sample metadata coloring / animation panels if a
         // feature table and sample metadata file were provided
@@ -216,6 +214,16 @@
         } else {
             $(".needs-feature-metadata").addClass("hidden");
         }
+
+        var statsButton = document.getElementById("stats-btn");
+        statsButton.shearUpdate = () => {
+          statsButton.classList.remove("unpopulated");
+          if (!statsButton.classList.contains("unpopulated")) {
+            sPanel.populateTreeStats();
+          }
+        };
+        shearer.registerObserver(statsButton);
+        
 
         // make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {

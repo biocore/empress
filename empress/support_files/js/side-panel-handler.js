@@ -459,6 +459,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         }
     };
 
+    /**
+     * This method is called whenever the empress tree is sheared
+     */
     SidePanel.prototype.shearUpdate = function () {
         if (this.sChk.checked) {
             this.sUpdateBtn.click();

@@ -1,9 +1,14 @@
-define(["underscore", "util", "TreeController"], function (
+ define(["underscore", "util", "TreeController"], function (
     _,
     util,
     TreeController
 ) {
-    function Filter(
+    /**
+     * @class ShearLayer
+     * 
+     * Create a new shear layer and adds it to the shear panel
+     */
+    function ShearLayer(
         fCol,
         fVals,
         container,
@@ -37,6 +42,7 @@ define(["underscore", "util", "TreeController"], function (
         legendTitle.innerText = this.fCol;
         legendTitle.classList.add("legend-title");
 
+        // create the select all button
         var button = document.createElement("button");
         button.innerText = "Select all";
         button.onclick = function () {
@@ -47,6 +53,7 @@ define(["underscore", "util", "TreeController"], function (
         };
         chkBoxLegendDiv.appendChild(button);
 
+        // create the unselect all button
         button = document.createElement("button");
         button.innerText = "Unselect all";
         button.onclick = function () {
@@ -56,6 +63,7 @@ define(["underscore", "util", "TreeController"], function (
             unselectAllFuntion(scope.fCol, _.clone(scope.values));
         };
         chkBoxLegendDiv.appendChild(button);
+
         // create chcbox div
         var legendChkBoxs = document.createElement("div");
         chkBoxLegendDiv.appendChild(legendChkBoxs);
@@ -66,7 +74,6 @@ define(["underscore", "util", "TreeController"], function (
         _.each(this.fVals, function (val) {
             scope.values.push(val);
             var row = document.createElement("tr");
-
             var id = scope.fCol.replace(" ", "-") + "-" + val;
 
             // add checkbox
@@ -77,12 +84,16 @@ define(["underscore", "util", "TreeController"], function (
             input.onchange = function () {
                 chkBxClickFunction(!input.checked, scope.fCol, val);
             };
+
+            // the select/unselect functions that the "Select all" and
+            // "Unselect all" buttons will call
             input.select = function () {
                 input.checked = true;
             };
             input.unselect = function () {
                 input.checked = false;
             };
+
             scope.inputs.push(input);
             dataCheck.appendChild(input);
             row.appendChild(dataCheck);
@@ -122,46 +133,75 @@ define(["underscore", "util", "TreeController"], function (
         this.layerDiv.appendChild(document.createElement("hr"));
     }
 
-    function Model(empress, container) {
+    /**
+     * @class ShearModel
+     *
+     * The model for Shearer. This model is responsible for maintaining updating
+     * empress whenever a user clicks on a shear option in one of the shear
+     * layers. This model is also responsible for notifying its observers
+     * whenever the shear status of the tree has changed. 
+     */
+    function ShearModel(empress, container) {
         this.empress = empress;
-        this.filters = new Map();
+        this.layers = new Map();
         this.shearMap = new Map();
         this.container = container;
         this.observers = [];
     }
 
-    Model.prototype.addLayer = function (fCol) {
-        var fVals = this.empress.getUniqueFeatureMetadataInfo(fCol, "tip")
+    /**
+     * Adds a shear layer to the shear panel.
+     *
+     * @param{String} layer The feateure metadata column to create a shear layer
+     *                     from.
+     */
+    ShearModel.prototype.addLayer = function (layer) {
+        var fVals = this.empress.getUniqueFeatureMetadataInfo(layer, "tip")
             .sortedUniqueValues;
-        var layer = new Filter(
-            fCol,
+        var layer = new ShearLayer(
+            layer,
             fVals,
             this.container,
-            (add, col, val) => {
-                Model.addRemoveShearItem(this, add, col, val);
+            (add, layer, val) => {
+                ShearModel.addRemoveShearItem(this, add, layer, val);
             },
-            (col) => {
-                Model.removeLayer(this, col);
+            (layer) => {
+                ShearModel.removeLayer(this, layer);
             },
-            (col) => {
-                Model.clearShearMaplFilter(this, col);
+            (layer) => {
+                ShearModel.clearShearMapLayer(this, layer);
             },
-            (filter, values) => {
-                Model.setShearMapFilter(this, filter, values);
+            (layer, values) => {
+                ShearModel.setShearMapLayer(this, layer, values);
             }
         );
-        this.filters.set(fCol, layer);
+        this.layers.set(layer, layer);
     };
 
-    Model.prototype.getShearItem = function (fCol) {
-        return this.shearMap.get(fCol);
+    /**
+     * Returns the feature values the have been unselected (i.e. sheared) from
+     * a particular shear layer.
+     *
+     * @param{String} layer The name of shear layer
+     */
+    ShearModel.prototype.getShearLayer = function (layer) {
+        return this.shearMap.get(layer);
     };
 
-    Model.prototype.hasLayer = function (fCol) {
-        return this.filters.has(fCol);
+    /**
+     * Checks if a shear layer has been create for a particular feature metadata
+     * column.
+     *
+     * @param{String} layer The feature metadata column to check
+     */
+    ShearModel.prototype.hasLayer = function (layer) {
+        return this.layers.has(layer);
     };
 
-    Model.prototype.notify = function () {
+    /**
+     * Notifies all observers whenever the model has changed.
+     */
+    ShearModel.prototype.notify = function () {
         this.empress.shear(this.shearMap);
         this.empress.drawTree();
         _.each(this.observers, function (obs) {
@@ -169,75 +209,142 @@ define(["underscore", "util", "TreeController"], function (
         });
     };
 
-    Model.prototype.registerObserver = function (obs) {
+    /**
+     * Registers an observer to the model which will then be notified whenever
+     * the model is updated. Note this object must implement a shearUpdate()
+     * method.
+     *
+     * @param{Object} obs The object to register.
+     */
+    ShearModel.prototype.registerObserver = function (obs) {
         this.observers.push(obs);
     };
 
-    Model.clearShearMaplFilter = function (model, filter) {
-        model.shearMap.set(filter, []);
+    /**
+     * Removes a shear layer from a ShearModel
+     * @param{ShearModel} model The ShearModel to use
+     * @param{String} layer The name of layer to remove.
+     */
+    ShearModel.removeLayer = function (model, layer) {
+        model.layers.delete(layer);
+        model.shearMap.delete(layer);
         model.notify();
     };
 
-    Model.setShearMapFilter = function (model, filter, values) {
-        model.shearMap.set(filter, values);
+    /**
+     * Clears the shearMap.
+     *
+     * @param{ShearModel} model The ShearModel to use
+     * @param{String} layer The feature metadata column name of the shear layer
+     */
+    ShearModel.clearShearMapLayer = function (model, layer) {
+        model.shearMap.set(layer, []);
         model.notify();
     };
 
-    Model.addRemoveShearItem = function (model, remove, col, val) {
+    /**
+     * sets a shear layer within the shearMap.
+     *
+     * @param{ShearModel} model The ShearModel to use.
+     * @param{String} layer The feature metadata column name of the shear layer
+     * @param{Array} values An array of feature metadata value
+     */
+    ShearModel.setShearMapLayer = function (model, layer, values) {
+        model.shearMap.set(layer, values);
+        model.notify();
+    };
+
+    /**
+     * Adds or removes a shear value from a shear layer.
+     * @param{ShearModel} model The ShearModel to use.
+     * @param{Boolean} remove Whether or not to remove val from the shear layer 
+     * @param{String} layer The name of feature metadata column of shear layer
+     * @param{String} val The feature metadata column value to add or remove
+     *                    from layer.
+     */
+    ShearModel.addRemoveShearItem = function (model, remove, layer, val) {
         if (remove) {
-            Model.addShearItem(model, col, val);
+            ShearModel.addShearItem(model, layer, val);
         } else {
-            Model.removeShearItem(model, col, val);
+            ShearModel.removeShearItem(model, layer, val);
         }
     };
 
-    Model.removeLayer = function (model, fCol) {
-        model.filters.delete(fCol);
-        model.shearMap.delete(fCol);
-        model.notify();
-    };
-
-    Model.addShearItem = function (model, fCol, fVal) {
-        if (model.shearMap.has(fCol)) {
-            model.shearMap.get(fCol).push(fVal);
+    /**
+     * Adds a shear value from a shear layer.
+     * @param{ShearModel} model The ShearModel to use.
+     * @param{String} layer The name of feature metadata column of shear layer
+     * @param{String} val The feature metadata column value to add or remove
+     *                    from layer.
+     */
+    ShearModel.addShearItem = function (model, layer, val) {
+        if (model.shearMap.has(layer)) {
+            model.shearMap.get(layer).push(val);
         } else {
-            model.shearMap.set(fCol, [fVal]);
+            model.shearMap.set(layer, [val]);
         }
         model.notify();
     };
 
-    Model.removeShearItem = function (model, fCol, fVal) {
-        var items = model.getShearItem(fCol);
+    /**
+     * Removes a shear value from a shear layer.
+     * @param{ShearModel} model The ShearModel to use.
+     * @param{String} layer The name of feature metadata column of shear layer
+     * @param{String} val The feature metadata column value to add or remove
+     *                    from layer.
+     */
+    ShearModel.removeShearItem = function (model, layer, val) {
+        var items = model.getShearLayer(layer);
         if (items === undefined) {
             return;
         }
-        var index = items.indexOf(fVal);
+        var index = items.indexOf(val);
         if (index > -1) {
             items.splice(index, 1);
         }
         model.notify();
     };
 
-    function Controller(empress, container) {
-        this.model = new Model(empress, container);
+    /**
+     * @class ShearController
+     *
+     * The controller for a ShearModel.
+     */
+    function ShearController(empress, container) {
+        this.model = new ShearModel(empress, container);
     }
 
-    Controller.prototype.addLayer = function (fCol) {
-        if (!this.model.hasLayer(fCol)) {
-            this.model.addLayer(fCol);
+    /**
+     * Adds a layer to the model.
+     * @param{String} layer A feature metadata column name
+     */
+    ShearController.prototype.addLayer = function (layer) {
+        if (!this.model.hasLayer(layer)) {
+            this.model.addLayer(layer);
         }
     };
 
-    Controller.prototype.registerObserver = function (obs) {
+    /**
+     * Registers an observer to the model.
+     *
+     * @oaram{Object} obs The object to register to the model
+     */
+    ShearController.prototype.registerObserver = function (obs) {
         this.model.registerObserver(obs);
     };
 
+    /**
+     * @class Shearer
+     *
+     * This is the exposed only exposed class of this closure and the one that
+     * the rest of the empress code base will interact with.
+     */ 
     function Shearer(empress, fCols) {
         this.fCols = fCols;
         this.shearSelect = document.getElementById("shear-feature-select");
         this.addLayerButton = document.getElementById("shear-add-btn");
         this.shearContainer = document.getElementById("shear-legends");
-        this.controller = new Controller(empress, this.shearContainer);
+        this.controller = new ShearController(empress, this.shearContainer);
 
         var scope = this;
         _.each(this.fCols, function (col) {
@@ -252,6 +359,11 @@ define(["underscore", "util", "TreeController"], function (
         };
     }
 
+    /**
+     * Registers an observer to the model.
+     *
+     * @oaram{Object} obs The object to register to the model
+     */
     Shearer.prototype.registerObserver = function (obs) {
         this.controller.registerObserver(obs);
     };
