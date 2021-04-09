@@ -2484,7 +2484,7 @@ define([
             // values), then we open a toast message about this error and
             // then raise it again to send error to console.
             var msg =
-                'Error with assigning colors: ' +
+                "Error with assigning colors: " +
                 'the feature metadata field "' +
                 cat +
                 '" has less than 2 unique numeric values.';
