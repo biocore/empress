@@ -2355,7 +2355,7 @@ define([
      * @return {Object} An object with two keys:
      *                  -sortedUniqueValues: maps to an Array of the unique
      *                   values in this feature metadata field, sorted using
-     *                   util.naturalSort().q
+     *                   util.naturalSort().
      *                  -uniqueValueToFeatures: maps to an Object which maps
      *                   the unique values in this feature metadata column to
      *                   an array of the node name(s) with each value.
@@ -2437,7 +2437,8 @@ define([
      *                         orientation.
      * @param{Boolean} continuous Defaults to false. If true, the colorer will
      *                            use a gradient color scale.
-     *
+     * @param{function} continousFailedFunc The function to call if continuous
+     *                                      coloring failed.
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
     Empress.prototype.colorByFeatureMetadata = function (
@@ -2445,7 +2446,8 @@ define([
         color,
         method,
         reverse = false,
-        continuous = false
+        continuous = false,
+        continousFailedFunc = null
     ) {
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
@@ -2482,14 +2484,22 @@ define([
             // happened if the user asked for continuous values but the
             // selected field doesn't have at least 2 unique numeric
             // values), then we open a toast message about this error and
-            // then raise it again to send error to console.
+            // use discrete coloring instead.
+            continuous = false;
             var msg =
-                "Error with assigning colors: " +
-                'the feature metadata field "' +
+                "Error with assigning colors: '" +
                 cat +
-                '" has less than 2 unique numeric values.';
+                "' cannot use continuous coloring. Using discrete instead.";
             util.toastMsg(msg, 5000);
-            throw msg;
+            // assign colors to unique values
+            colorer = new Colorer(
+                color,
+                sortedUniqueValues,
+                continuous,
+                undefined,
+                reverse
+            );
+            continousFailedFunc();
         }
         // colors for drawing the tree
         var cm = colorer.getMapRGB();

@@ -340,6 +340,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      * Colors the tree based on the feature metadata coloring settings.
      */
     SidePanel.prototype._colorFeatureTree = function () {
+        var scope = this;
         var colBy = this.fSel.value;
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
@@ -352,7 +353,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             col,
             coloringMethod,
             reverse,
-            continuous
+            continuous,
+            () => {
+                scope.fContinuousChk.checked = false;
+            }
         );
     };
 
