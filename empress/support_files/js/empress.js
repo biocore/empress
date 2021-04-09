@@ -2257,7 +2257,7 @@ define([
         var keyInfo = colorer.getMapHex();
 
         // if the tree has been sheared then categories in obs maybe empty.
-        // getObsBy() does not filter out those categories so that the same 
+        // getObsBy() does not filter out those categories so that the same
         // color can be assigned to each value in obs.
         for (var key in keyInfo) {
             if (obs[key].length === 0) {
@@ -2736,9 +2736,9 @@ define([
     /**
      * Redraw the barplot to match the current layout. If the current layout is
      * "Unrooted" then this will remove the barplots from canvas.
-     * 
+     *
      */
-    Empress.prototype.redrawBarPlotsToMatchLayout = function() {
+    Empress.prototype.redrawBarPlotsToMatchLayout = function () {
         // Undraw or redraw barplots as needed (assuming barplots are supported
         // in the first place, of course; if no feature or sample metadata at
         // all was passed then barplots are not available :()
@@ -3725,7 +3725,7 @@ define([
      * This will fill the autocomplete search bar with the names of the current
      * tree.
      */
-    Empress.prototype.setAutoCompleteNames = function() {
+    Empress.prototype.setAutoCompleteNames = function () {
         var nodeNames = this._tree.getAllNames();
         // Don't include nodes with the name null (i.e. nodes without a
         // specified name in the Newick file) in the auto-complete.

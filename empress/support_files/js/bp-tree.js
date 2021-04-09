@@ -732,7 +732,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         var n = this.postorderselect(nodeKey);
 
         // check for root to account for cases when all tips have been sheared
-        if (this.isleaf(n) && nodeKey !== this.postorder(this.root()) ) {
+        if (this.isleaf(n) && nodeKey !== this.postorder(this.root())) {
             throw "Error: " + nodeKey + " is a tip!";
         }
         var start = this.preorder(this.fchild(n));

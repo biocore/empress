@@ -1,11 +1,11 @@
- define(["underscore", "util", "TreeController"], function (
+define(["underscore", "util", "TreeController"], function (
     _,
     util,
     TreeController
 ) {
     /**
      * @class ShearLayer
-     * 
+     *
      * Create a new shear layer and adds it to the shear panel
      */
     function ShearLayer(
@@ -139,7 +139,7 @@
      * The model for Shearer. This model is responsible for maintaining updating
      * empress whenever a user clicks on a shear option in one of the shear
      * layers. This model is also responsible for notifying its observers
-     * whenever the shear status of the tree has changed. 
+     * whenever the shear status of the tree has changed.
      */
     function ShearModel(empress, container) {
         this.empress = empress;
@@ -158,24 +158,24 @@
     ShearModel.prototype.addLayer = function (layer) {
         var fVals = this.empress.getUniqueFeatureMetadataInfo(layer, "tip")
             .sortedUniqueValues;
-        var layer = new ShearLayer(
+        var layerObj = new ShearLayer(
             layer,
             fVals,
             this.container,
-            (add, layer, val) => {
-                ShearModel.addRemoveShearItem(this, add, layer, val);
+            (add, lyr, val) => {
+                ShearModel.addRemoveShearItem(this, add, lyr, val);
             },
-            (layer) => {
-                ShearModel.removeLayer(this, layer);
+            (lyr) => {
+                ShearModel.removeLayer(this, lyr);
             },
-            (layer) => {
-                ShearModel.clearShearMapLayer(this, layer);
+            (lyr) => {
+                ShearModel.clearShearMapLayer(this, lyr);
             },
-            (layer, values) => {
-                ShearModel.setShearMapLayer(this, layer, values);
+            (lyr, values) => {
+                ShearModel.setShearMapLayer(this, lyr, values);
             }
         );
-        this.layers.set(layer, layer);
+        this.layers.set(layer, layerObj);
     };
 
     /**
@@ -257,7 +257,7 @@
     /**
      * Adds or removes a shear value from a shear layer.
      * @param{ShearModel} model The ShearModel to use.
-     * @param{Boolean} remove Whether or not to remove val from the shear layer 
+     * @param{Boolean} remove Whether or not to remove val from the shear layer
      * @param{String} layer The name of feature metadata column of shear layer
      * @param{String} val The feature metadata column value to add or remove
      *                    from layer.
@@ -338,7 +338,8 @@
      *
      * This is the exposed only exposed class of this closure and the one that
      * the rest of the empress code base will interact with.
-     */ 
+     */
+
     function Shearer(empress, fCols) {
         this.fCols = fCols;
         this.shearSelect = document.getElementById("shear-feature-select");

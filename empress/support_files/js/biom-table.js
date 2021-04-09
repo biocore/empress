@@ -90,7 +90,7 @@ define(["underscore", "util"], function (_, util) {
         /**
          * A set of feature ids to ignore. This is whenever the tree is sheared
          * and will contain the features id (tips) that were removed.
-         * @ type {Set} 
+         * @ type {Set}
          */
         this.ignorefIdx = new Set();
     }
@@ -286,8 +286,8 @@ define(["underscore", "util"], function (_, util) {
         var addSampleFeatures = function (sIdx, cVal) {
             _.each(scope._tbl[sIdx], function (fIdx) {
                 if (!scope.ignorefIdx.has(fIdx)) {
-                   valueToFeatureIdxs[cVal].add(fIdx);
-                 }
+                    valueToFeatureIdxs[cVal].add(fIdx);
+                }
             });
         };
         // For each sample...
