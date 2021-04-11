@@ -374,7 +374,7 @@ require([
                 deepEqual(resultArray, expectedArray);
             }
 
-            var columns = Object.keys(result);
+            var columns = util.naturalSort(Object.keys(result));
             deepEqual(columns, groups);
         });
 

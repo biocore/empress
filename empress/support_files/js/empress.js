@@ -2567,38 +2567,52 @@ define([
      */
     Empress.prototype._projectObservations = function (obs, ignoreAbsentTips) {
         var tree = this._tree,
-            categories = Object.keys(obs),
-            notRepresented = new Set(),
-            i,
-            j;
-
-        // Note: the following uses postorder traversal
-        for (i of this._tree.postorderTraversal()) {
-            var node = i;
-            var parent = tree.postorder(
-                tree.parent(tree.postorderselect(node))
-            );
-            var represented = false;
-            for (j = 0; j < categories.length; j++) {
-                var category = categories[j];
-                // add internal nodes to groups
-                if (obs[category].has(node)) {
-                    obs[category].add(parent);
-                    represented = true;
+            nodeValue = [],
+            node,
+            category;
+        // set values for each node in obs
+        for (category in obs) {
+            for (node of obs[category]) {
+                if (nodeValue[node] === undefined) {
+                    nodeValue[node] = category;
+                } else {
+                    nodeValue[node] = null;
                 }
-            }
-
-            if (tree.isleaf(tree.postorderselect(node))) {
-                if (!represented && !ignoreAbsentTips) {
-                    notRepresented.add(node);
-                }
-            }
-            if (notRepresented.has(node)) {
-                notRepresented.add(parent);
             }
         }
 
-        var result = util.keepUniqueKeys(obs, notRepresented);
+        for (node of this._tree.postorderTraversal()) {
+            var parent = tree.postorder(
+                tree.parent(tree.postorderselect(node))
+            );
+            if (nodeValue[node] === undefined && ignoreAbsentTips) {
+                continue;
+            }
+
+            if (
+                nodeValue[parent] === undefined &&
+                nodeValue[node] !== undefined
+            ) {
+                nodeValue[parent] = nodeValue[node];
+            } else if (
+                nodeValue[parent] !== nodeValue[node] ||
+                nodeValue[node] === undefined
+            ) {
+                nodeValue[parent] = null;
+            }
+        }
+
+        var result = {};
+        for (node of this._tree.postorderTraversal(true)) {
+            category = nodeValue[node];
+            if (category !== null && category !== undefined) {
+                if (result.hasOwnProperty(category)) {
+                    result[category].add(node);
+                } else {
+                    result[category] = new Set([node]);
+                }
+            }
+        }
 
         // remove all groups that do not contain unique features
         result = _.pick(result, function (value, key) {
