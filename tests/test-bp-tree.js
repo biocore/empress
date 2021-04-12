@@ -1049,10 +1049,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
             remove = new Set([3, 6, 7, 8]);
             result = preShearBPTree.shear(remove);
-            deepEqual(
-                result.tree.names_,
-                [null, "3", "4", "2", "r"]
-            );
+            deepEqual(result.tree.names_, [null, "3", "4", "2", "r"]);
         });
     });
 });
