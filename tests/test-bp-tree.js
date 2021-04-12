@@ -1052,7 +1052,6 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             deepEqual(
                 result.tree.names_,
                 [null, "3", "4", "2", "r"]
-                // [null, "3", "4", "2", "7", "10", "11", "9", "8", "r"]
             );
         });
     });
