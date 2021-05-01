@@ -279,10 +279,10 @@ require([
         ok(!this.panel.nextFrameBtn.disabled, "next button should be enabled");
 
         // set animator to a middle frame
-        this.panel.animator.curFrame = 2;
+        this.panel.animator.curFrame = 1;
         this.panel.__resumeOptions();
 
-        // if animaotr is on a middle frame then prev/nextFrameBtn should
+        // if animator is on a middle frame then prev/nextFrameBtn should
         // be enabled
         ok(
             !this.panel.prevFrameBtn.disabled,
@@ -291,7 +291,7 @@ require([
         ok(!this.panel.nextFrameBtn.disabled, "next button should be enabled");
 
         // set animator to last frame
-        this.panel.animator.curFrame = 3;
+        this.panel.animator.curFrame = 2;
         this.panel.__resumeOptions();
 
         // if animator is on last frame then prevFrameBtn should be enabled
