@@ -421,9 +421,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * @return {Boolean} true if animator is on last frame
      */
     Animator.prototype.onLastFrame = function () {
-        // curFrame is always the next frame to draw so if curFrame is
-        // equal to totalFrames, the last frame was just drawn
-        return this.curFrame == this.totalFrames;
+        return this.curFrame >= (this.totalFrames - 1);
     };
 
     return Animator;
