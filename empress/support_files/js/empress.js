@@ -2633,6 +2633,12 @@ define([
      *                         color, expressed in hex format.
      */
     Empress.prototype.updateLegendCategorical = function (name, keyInfo) {
+        // Allow the legend to be resized back to whatever the default
+        // size will be, since manually resizing the legend sets a fixed
+        // width/height value. Setting the width/height to "" will cause the
+        // defaults to be used: https://stackoverflow.com/a/21457941
+        document.getElementById("legend-main").style.width = "";
+        document.getElementById("legend-main").style.height = "";
         this._legend.addCategoricalKey(name, keyInfo);
     };
 
