@@ -234,7 +234,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     BPTree.prototype.getLengthStats = function () {
         // first check if tree only contains 1 node (length === 2 since the
         // lengths array starts at index 1.)
-        if (this.lengths_.length === 2) {
+        if (this.lengths_ !== null && this.lengths_.length === 2) {
             return { min: "N/A", max: "N/A", avg: "N/A" };
         } else if (this.lengths_ !== null) {
             var min = Number.POSITIVE_INFINITY,
