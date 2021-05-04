@@ -28,19 +28,20 @@ define(["underscore", "util", "TreeController"], function (
 
         // create layer div
         this.layerDiv = document.createElement("div");
-        this.container.appendChild(this.layerDiv);
+        this.container.insertBefore(this.layerDiv, this.container.firstChild);
 
-        // create checkbox legend div
-        var chkBoxLegendDiv = document.createElement("div");
-        this.layerDiv.appendChild(chkBoxLegendDiv);
-        chkBoxLegendDiv.classList.add("shear-layer-legend");
-        chkBoxLegendDiv.classList.add("legend");
+        // create border line
+        this.layerDiv.appendChild(document.createElement("hr"));
 
         // create checkbox legend title
         var legendTitle = document.createElement("div");
-        chkBoxLegendDiv.appendChild(legendTitle);
+        this.layerDiv.appendChild(legendTitle);
         legendTitle.innerText = this.fCol;
         legendTitle.classList.add("legend-title");
+
+        // // create container for select/unselect all buttons
+        var p = document.createElement("p");
+        this.layerDiv.appendChild(p);
 
         // create the select all button
         var button = document.createElement("button");
@@ -51,7 +52,8 @@ define(["underscore", "util", "TreeController"], function (
             });
             selectAllFunction(scope.fCol);
         };
-        chkBoxLegendDiv.appendChild(button);
+        button.setAttribute("style", "margin: 0 auto;");
+        p.appendChild(button);
 
         // create the unselect all button
         button = document.createElement("button");
@@ -62,7 +64,14 @@ define(["underscore", "util", "TreeController"], function (
             });
             unselectAllFuntion(scope.fCol, _.clone(scope.values));
         };
-        chkBoxLegendDiv.appendChild(button);
+        button.setAttribute("style", "margin: 0 auto;");
+        p.appendChild(button);
+
+        // create checkbox legend div
+        var chkBoxLegendDiv = document.createElement("div");
+        this.layerDiv.appendChild(chkBoxLegendDiv);
+        chkBoxLegendDiv.classList.add("shear-layer-legend");
+        chkBoxLegendDiv.classList.add("legend");
 
         // create chcbox div
         var legendChkBoxs = document.createElement("div");
@@ -128,9 +137,6 @@ define(["underscore", "util", "TreeController"], function (
             scope.layerDiv = null;
         };
         removeContainer.appendChild(removeButton);
-
-        // create border line
-        this.layerDiv.appendChild(document.createElement("hr"));
     }
 
     /**
@@ -327,7 +333,7 @@ define(["underscore", "util", "TreeController"], function (
     /**
      * Registers an observer to the model.
      *
-     * @oaram{Object} obs The object to register to the model
+     * @param{Object} obs The object to register to the model
      */
     ShearController.prototype.registerObserver = function (obs) {
         this.model.registerObserver(obs);
@@ -363,7 +369,7 @@ define(["underscore", "util", "TreeController"], function (
     /**
      * Registers an observer to the model.
      *
-     * @oaram{Object} obs The object to register to the model
+     * @param{Object} obs The object to register to the model
      */
     Shearer.prototype.registerObserver = function (obs) {
         this.controller.registerObserver(obs);

@@ -215,12 +215,12 @@
             $(".needs-feature-metadata").addClass("hidden");
         }
 
+        // Here we register the stats button to the shearer so that the tree
+        // stats are updated whenever the tree is sheared.
         var statsButton = document.getElementById("stats-btn");
         statsButton.shearUpdate = () => {
+          sPanel.populateTreeStats();
           statsButton.classList.remove("unpopulated");
-          if (!statsButton.classList.contains("unpopulated")) {
-            sPanel.populateTreeStats();
-          }
         };
         shearer.registerObserver(statsButton);
         
