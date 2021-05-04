@@ -2436,8 +2436,8 @@ define([
      *                         will be reversed, with respect to its default
      *                         orientation.
      * @param{Boolean} continuous Defaults to false. If true, the colorer will
-     *                            use a gradient color scale.
-     * @param{function} continousFailedFunc The function to call if continuous
+     *                            try to use a gradient color scale.
+     * @param{Function} continousFailedFunc The function to call if continuous
      *                                      coloring failed.
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
@@ -2487,9 +2487,11 @@ define([
             // use discrete coloring instead.
             continuous = false;
             var msg =
-                "Error with assigning colors: '" +
+                'Error with assigning colors: the feature metadata field "' +
                 cat +
-                "' cannot use continuous coloring. Using discrete instead.";
+                '" has less than 2 unique numeric values, so it cannot be ' +
+                "used for continuous coloring. " +
+                "Using discrete coloring instead.";
             util.toastMsg(msg, 5000);
             // assign colors to unique values
             colorer = new Colorer(
