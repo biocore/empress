@@ -4,6 +4,18 @@ define(["underscore", "util", "TreeController"], function (
     TreeController
 ) {
     /**
+     * Stores the next unique number for the removeLayer button is ShearLayer
+     */
+    var UniqueRemoveNum = 0;
+
+    /**
+     * Returns a unique number to use for the id of the removeLayer button.
+     */
+    function getUniqueNum() {
+        return UniqueRemoveNum++;
+    }
+
+    /**
      * @class ShearLayer
      *
      * Create a new shear layer and adds it to the shear panel
@@ -70,7 +82,7 @@ define(["underscore", "util", "TreeController"], function (
         // create checkbox legend div
         var chkBoxLegendDiv = document.createElement("div");
         this.layerDiv.appendChild(chkBoxLegendDiv);
-        chkBoxLegendDiv.classList.add("shear-layer-legend");
+        chkBoxLegendDiv.classList.add("barplot-layer-legend");
         chkBoxLegendDiv.classList.add("legend");
 
         // create chcbox div
@@ -80,14 +92,20 @@ define(["underscore", "util", "TreeController"], function (
         // create checkboxes
         var table = document.createElement("table");
         legendChkBoxs.appendChild(table);
+        var uniqueNum = 1;
         _.each(this.fVals, function (val) {
             scope.values.push(val);
             var row = document.createElement("tr");
-            var id = scope.fCol.replace(" ", "-") + "-" + val;
+            var id =
+                scope.fCol.replaceAll(" ", "-") +
+                "-" +
+                val.replaceAll(" ", "-") +
+                uniqueNum++;
 
             // add checkbox
             var dataCheck = document.createElement("td");
             var input = document.createElement("input");
+            input.id = id;
             input.setAttribute("type", "checkbox");
             input.checked = true;
             input.onchange = function () {
@@ -108,11 +126,9 @@ define(["underscore", "util", "TreeController"], function (
             row.appendChild(dataCheck);
 
             // add checkbox label
-            var dataLabel = document.createElement("td");
+            var dataLabel = document.createElement("label");
+            dataLabel.setAttribute("for", input.id);
             dataLabel.innerText = val;
-            dataLabel.onclick = function () {
-                input.click();
-            };
             row.appendChild(dataLabel);
 
             // add row to table
@@ -130,6 +146,7 @@ define(["underscore", "util", "TreeController"], function (
 
         // create remove button
         var removeButton = document.createElement("button");
+        removeButton.id = "shear-layer-" + getUniqueNum() + "-delete";
         removeButton.innerText = "-";
         removeButton.onclick = function () {
             removeClickFunction(scope.fCol);
@@ -137,6 +154,8 @@ define(["underscore", "util", "TreeController"], function (
             scope.layerDiv = null;
         };
         removeContainer.appendChild(removeButton);
+
+        removeLabel.setAttribute("for", removeButton.id);
     }
 
     /**
@@ -363,8 +382,28 @@ define(["underscore", "util", "TreeController"], function (
 
         this.addLayerButton.onclick = function () {
             scope.controller.addLayer(scope.shearSelect.value);
+            scope.shearSelect[scope.shearSelect.selectedIndex].remove();
         };
     }
+
+    /**
+     * Add metadata values back into the shear select container.
+     */
+    Shearer.prototype.shearUpdate = function () {
+        // clear select
+        this.shearSelect.innerHTML = "";
+
+        // add feature metadata values that do not have a layer
+        var scope = this;
+        _.each(this.fCols, function (col) {
+            if (!scope.controller.model.layers.has(col)) {
+                var opt = document.createElement("option");
+                opt.innerText = col;
+                opt.value = col;
+                scope.shearSelect.appendChild(opt);
+            }
+        });
+    };
 
     /**
      * Registers an observer to the model.

@@ -928,6 +928,9 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 null
             );
 
+            // shear() used to take a list of nodes to keep. We have since
+            // change it take a list of nodes to remove. This helps improve the
+            // performance of shear() since less work is needed.
             var remove = new Set([1]);
             var shearedToFull = new Map([
                 [1, 2],
