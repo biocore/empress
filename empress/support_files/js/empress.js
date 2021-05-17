@@ -3781,7 +3781,7 @@ define([
         });
 
         if (this.isCommunityPlot) {
-            this._biom.setIngnoreNodes(removeNodes);
+            this._biom.setIgnoreNodes(removeNodes);
         }
 
         this._tree.shear(removeNodes);

@@ -129,7 +129,9 @@ define(["underscore", "util", "TreeController"], function (
             var dataLabel = document.createElement("label");
             dataLabel.setAttribute("for", input.id);
             dataLabel.innerText = val;
-            row.appendChild(dataLabel);
+            var labelTD = document.createElement("td");
+            labelTD.appendChild(dataLabel);
+            row.appendChild(labelTD);
 
             // add row to table
             table.appendChild(row);

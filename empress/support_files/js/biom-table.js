@@ -615,7 +615,7 @@ define(["underscore", "util"], function (_, util) {
      *
      * @param {Set} nodes A set of feature ids to ignore
      */
-    BIOMTable.prototype.setIngnoreNodes = function (nodes) {
+    BIOMTable.prototype.setIgnoreNodes = function (nodes) {
         var scope = this;
 
         // convert feature ids to feature indices
