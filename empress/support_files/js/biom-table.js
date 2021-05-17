@@ -88,8 +88,9 @@ define(["underscore", "util"], function (_, util) {
         this._sm = sm;
 
         /**
-         * A set of feature ids to ignore. This is whenever the tree is sheared
-         * and will contain the features id (tips) that were removed.
+         * A set of feature IDs to ignore. This will be updated whenever
+         * the tree is sheared, and will contain the IDs of the features in
+         * the BIOM table (tips) that were removed.
          * @ type {Set}
          */
         this.ignorefIdx = new Set();
@@ -610,7 +611,7 @@ define(["underscore", "util"], function (_, util) {
 
     /**
      * Set which features to ignore. Features in this set will not be
-     * considered in funcitons such as getObsBy() or getFrequencyMap()
+     * considered in functions such as getObsBy() or getFrequencyMap()
      *
      * @param {Set} nodes A set of feature ids to ignore
      */
@@ -618,6 +619,8 @@ define(["underscore", "util"], function (_, util) {
         var scope = this;
 
         // convert feature ids to feature indices
+        // [...nodes] converts nodes from Set to Array: see
+        // https://stackoverflow.com/a/63818423
         var nodeIdx = _.map([...nodes], (fId) => {
             return scope._getFeatureIndexFromID(fId);
         });

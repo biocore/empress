@@ -177,7 +177,7 @@ define(["underscore", "util", "TreeController"], function (
     /**
      * Adds a shear layer to the shear panel.
      *
-     * @param{String} layer The feateure metadata column to create a shear layer
+     * @param{String} layer The feature metadata column to create a shear layer
      *                     from.
      */
     ShearModel.prototype.addLayer = function (layer) {
@@ -214,7 +214,7 @@ define(["underscore", "util", "TreeController"], function (
     };
 
     /**
-     * Checks if a shear layer has been create for a particular feature metadata
+     * Checks if a shear layer has been created for a particular feature metadata
      * column.
      *
      * @param{String} layer The feature metadata column to check

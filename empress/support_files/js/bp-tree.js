@@ -1047,13 +1047,13 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
                     // thus we mark it as false so it is not removed
                     nodeStack.push([i, false]);
                 } else if (mask[i - 1] === undefined) {
-                    // close paretheses represents an internal node
+                    // close parentheses represents an internal node
                     // with at least one removed tip so we temporarly mark it
                     // as true to remove
                     nodeStack.push([i, true]);
                 }
             } else if (mask[i] === 1) {
-                //open parentheses
+                // open parentheses
                 node = nodeStack.pop();
                 if (node[1] === true) {
                     // remove internal node
