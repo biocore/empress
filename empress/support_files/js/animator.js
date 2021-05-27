@@ -225,7 +225,7 @@ define(["Colorer", "util"], function (Colorer, util) {
         if (Object.keys(keyInfo).length === 0) {
             util.toastMsg(
                 "Animation warning",
-                "No unique branches found for this frame",
+                "No unique branches found for this frame.",
                 (duration = 3000),
                 (toastType = "warning")
             );
