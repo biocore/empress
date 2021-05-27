@@ -185,7 +185,12 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
      * Raises a toast message telling the user that no branch lengths changed.
      */
     function noLengthsChangedMsg() {
-        util.toastMsg("Warning about selected branch length method", NO_LENGTHS_CHANGED_MSG, duration=NO_LENGTHS_CHANGED_DURATION, toastType="warning");
+        util.toastMsg(
+            "Warning about selected branch length method",
+            NO_LENGTHS_CHANGED_MSG,
+            (duration = NO_LENGTHS_CHANGED_DURATION),
+            (toastType = "warning")
+        );
     }
 
     /**

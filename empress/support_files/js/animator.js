@@ -223,7 +223,12 @@ define(["Colorer", "util"], function (Colorer, util) {
         var obs = frame.obs;
 
         if (Object.keys(keyInfo).length === 0) {
-            util.toastMsg("Animation warning", "No unique branches found for this frame", duration = 3000, toastType="warning");
+            util.toastMsg(
+                "Animation warning",
+                "No unique branches found for this frame",
+                (duration = 3000),
+                (toastType = "warning")
+            );
         }
 
         // draw new legend
@@ -280,7 +285,12 @@ define(["Colorer", "util"], function (Colorer, util) {
                 !scope.pause &&
                 scope.curFrame + 1 === scope.totalFrames
             ) {
-                util.toastMsg("Animation complete.", "", duration = 3000, toastType="success");
+                util.toastMsg(
+                    "Animation complete.",
+                    "",
+                    (duration = 3000),
+                    (toastType = "success")
+                );
             }
         }, 0);
     };

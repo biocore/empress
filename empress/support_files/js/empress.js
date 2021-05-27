@@ -573,8 +573,9 @@ define([
         }
         if (legends.length === 0) {
             util.toastMsg(
-                "Export error", "No active legends to export.",
-                duration=5000
+                "Export error",
+                "No active legends to export.",
+                (duration = 5000)
             );
             return null;
         } else {
@@ -1923,7 +1924,7 @@ define([
                     'the feature metadata field "' +
                     layer.colorByFMField +
                     '" has less than 2 unique numeric values.';
-                util.toastMsg("Barplot coloring error", msg, duration=5000);
+                util.toastMsg("Barplot coloring error", msg, (duration = 5000));
                 throw msg;
             }
             fm2color = colorer.getMapRGB();
@@ -1950,7 +1951,11 @@ define([
             } catch (err) {
                 // Fail gracefully, similarly to how we handle Colorer errors
                 // above
-                util.toastMsg("Barplot length-scaling error", err.message, duration=5000);
+                util.toastMsg(
+                    "Barplot length-scaling error",
+                    err.message,
+                    (duration = 5000)
+                );
                 throw err.message;
             }
         }
