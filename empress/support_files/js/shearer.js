@@ -367,12 +367,13 @@ define(["underscore", "util", "TreeController"], function (
      * the rest of the empress code base will interact with.
      */
 
-    function Shearer(empress, fCols) {
+    function Shearer(empress, fCols, container) {
         this.fCols = fCols;
         this.shearSelect = document.getElementById("shear-feature-select");
         this.addLayerButton = document.getElementById("shear-add-btn");
         this.shearContainer = document.getElementById("shear-legends");
         this.controller = new ShearController(empress, this.shearContainer);
+        this.container = document.getElementById("shear-add-options");
 
         var scope = this;
         _.each(this.fCols, function (col) {
@@ -385,6 +386,11 @@ define(["underscore", "util", "TreeController"], function (
         this.addLayerButton.onclick = function () {
             scope.controller.addLayer(scope.shearSelect.value);
             scope.shearSelect[scope.shearSelect.selectedIndex].remove();
+            // hide the 'Shear by...' menu and 'Add shear filter' button
+            // if the 'Shear by...' menu is empty
+            if (scope.shearSelect.options.length < 1) {
+                scope.container.classList.add("hidden");
+            }
         };
     }
 
@@ -405,6 +411,11 @@ define(["underscore", "util", "TreeController"], function (
                 scope.shearSelect.appendChild(opt);
             }
         });
+        // show the 'Shear by...' menu and 'Add shear filter' button
+        // if the 'Shear by...' menu is not empty
+        if (this.shearSelect.options.length >= 1) {
+            this.container.classList.remove("hidden");
+        }
     };
 
     /**

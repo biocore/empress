@@ -2259,11 +2259,7 @@ define([
         // if the tree has been sheared then categories in obs maybe empty.
         // getObsBy() does not filter out those categories so that the same
         // color can be assigned to each value in obs.
-        for (var key in keyInfo) {
-            if (obs[key].length === 0) {
-                delete keyInfo[key];
-            }
-        }
+        util.removeEmptyArrayKeys(keyInfo, obs);
 
         // shared by the following for loops
         var i, j, category;
@@ -2284,6 +2280,9 @@ define([
         // If there aren't *any* sample metadata values unique to any tips,
         // then return null so that the caller can warn the user.
         if (Object.keys(obs).length === 0) {
+            // still want to update legend to match behavior of
+            // colorByFeatureMetadata
+            this.updateLegendCategorical(cat, keyInfo);
             return null;
         }
 
@@ -2520,11 +2519,8 @@ define([
         // if the tree has been sheared then categories in obs maybe empty.
         // getUniqueFeatureMetadataInfo() does not filter out those categories
         // so that the same color can be assigned to each value in obs.
-        for (var key in keyInfo) {
-            if (uniqueValueToFeatures[key].length === 0) {
-                delete keyInfo[key];
-            }
-        }
+        util.removeEmptyArrayKeys(keyInfo, uniqueValueToFeatures);
+
         // Do upwards propagation only if the coloring method is "tip"
         if (method === "tip") {
             obs = this._projectObservations(obs, false);

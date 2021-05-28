@@ -1006,13 +1006,12 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
     };
 
     /**
-     * Returns a new BPTree object that contains just the tips (and ancestors)
-     * of the nodes in keepTips.
+     * Returns a new BPTree object that does not contain the tips in removeTips.
      *
      * This method was ported from iow.
      * https://github.com/wasade/improved-octo-waddle/blob/0e9e75b77238acda6752f59d940620f89607ba6b/bp/_bp.pyx#L732
      *
-     * @param {Set} keepTips The set of tip names to keep.
+     * @param {Set} removeTips The set of tip names to remove.
      *
      * @return {Object} An object containing the new tree ("tree") and two maps that
      *                  convert the original postorder positions to the sheared

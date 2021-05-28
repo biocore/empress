@@ -275,6 +275,20 @@ define(["underscore"], function (_) {
         return [fm2length, valMin, valMax];
     }
 
+    /**
+     * Removes all keys from a if that same key is found in b and contains an
+     * empty array.
+     *
+     * @param{Object} obj The object to remove keys from
+     */
+    function removeEmptyArrayKeys(a, b) {
+        for (var key in b) {
+            if (b[key].length === 0) {
+                delete a[key];
+            }
+        }
+    }
+
     return {
         keepUniqueKeys: keepUniqueKeys,
         naturalSort: naturalSort,
@@ -283,5 +297,6 @@ define(["underscore"], function (_) {
         parseAndValidateNum: parseAndValidateNum,
         toastMsg: toastMsg,
         assignBarplotLengths: assignBarplotLengths,
+        removeEmptyArrayKeys: removeEmptyArrayKeys,
     };
 });
