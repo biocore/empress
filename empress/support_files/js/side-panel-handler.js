@@ -56,9 +56,6 @@ define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (_, Co
             document.getElementById('sample-color-options-div')
         );
         this.sColorOptions.registerObserver(this);
-        // this.sReverseColor = document.getElementById(
-        //     "sample-reverse-color-chk"
-        // );
         this.sCollapseCladesChk = document.getElementById(
             "sample-collapse-chk"
         );
