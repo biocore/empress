@@ -251,7 +251,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *
      * @throws Error if this method is called when using a custom colormap.
      */
-    Colorer.prototype.assignContinuousScaledColors = function (nums) {
+    Colorer.prototype.assignContinuousScaledColors = function () {
         var scope = this;
 
         if (_.isObject(this.color)) {

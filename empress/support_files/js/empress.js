@@ -1936,10 +1936,7 @@ define([
                 // name / barplot layer number). This lets us bail out of
                 // drawing barplots while still keeping the user aware of why
                 // nothing just got drawn/updated.
-                var msg =
-                    "Error with assigning colors in barplot layer " +
-                    layer.num +
-                    ": " +
+                msg +=
                     'the feature metadata field "' +
                     layer.colorByFMField +
                     '" has less than 2 unique numeric values.';

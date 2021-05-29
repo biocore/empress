@@ -627,7 +627,7 @@ define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (
             scope.showUpdateBtn();
         };
         this.fLineWidth.onchange = () => {
-            scope.showUpdateBtn;
+            scope.showUpdateBtn();
         };
         this.fMethodChk.onchange = function () {
             scope.updateFeatureMethodDesc();
