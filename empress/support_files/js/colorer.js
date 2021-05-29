@@ -31,11 +31,11 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * @param{Boolean} reverse Defaults to false. If true, the color scale
      *                         will be reversed, with respect to its default
      *                         orientation.
-     * @param{Object} domain [min, max] or null, default null. 
+     * @param{Object} domain [min, max] or null, default null.
      *                       [min, max] set the min and max of the color
      *                       gradient.
      *                       null will use default min/max for color gradient.
-     *                              
+     *
      * @return{Colorer}
      * constructs Colorer
      */
@@ -45,7 +45,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         useQuantScale = false,
         gradientIDSuffix = 0,
         reverse = false,
-        domain=null,
+        domain = null
     ) {
         var scope = this;
 
@@ -222,7 +222,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
     Colorer.prototype.getContinuousColorRange = function (nums) {
         var min, mid, max;
-        if (this.domain!==null) {
+        if (this.domain !== null) {
             min = this.domain[0];
             max = this.domain[1];
         } else {
@@ -232,7 +232,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         return {
             min: min,
             max: max,
-        }
+        };
     };
 
     /**

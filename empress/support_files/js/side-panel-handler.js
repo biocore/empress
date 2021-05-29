@@ -1,4 +1,9 @@
-define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (_, Colorer, ColorOptionsHandler, util) {
+define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (
+    _,
+    Colorer,
+    ColorOptionsHandler,
+    util
+) {
     /**
      *
      * @class SidePanel
@@ -53,7 +58,7 @@ define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (_, Co
         this.sSel = document.getElementById("sample-options");
         this.sAddOpts = document.getElementById("sample-add");
         this.sColorOptions = new ColorOptionsHandler(
-            document.getElementById('sample-color-options-div')
+            document.getElementById("sample-color-options-div")
         );
         this.sColorOptions.registerObserver(this);
         this.sCollapseCladesChk = document.getElementById(
@@ -67,7 +72,7 @@ define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (_, Co
         this.fSel = document.getElementById("feature-options");
         this.fAddOpts = document.getElementById("feature-add");
         this.fColorOptions = new ColorOptionsHandler(
-            document.getElementById('feature-color-options-div')
+            document.getElementById("feature-color-options-div")
         );
         this.fColorOptions.registerObserver(this);
         this.fCollapseCladesChk = document.getElementById(
@@ -187,11 +192,11 @@ define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (_, Co
         };
     }
 
-    SidePanel.prototype.colorOptionsUpdate = function(options) {
+    SidePanel.prototype.colorOptionsUpdate = function (options) {
         this.showUpdateBtn();
     };
 
-    SidePanel.prototype.resetColorOptions = function() {
+    SidePanel.prototype.resetColorOptions = function () {
         if (this.sChk.checked) {
             this.fColorOptions.reset();
         } else if (this.fChk.checked) {
@@ -494,13 +499,13 @@ define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (_, Co
         };
     };
 
-    SidePanel.prototype.showUpdateBtn = function() {
+    SidePanel.prototype.showUpdateBtn = function () {
         if (this.sChk.checked) {
             this.sUpdateBtn.classList.remove("hidden");
         } else if (this.fChk.checked) {
             this.fUpdateBtn.classList.remove("hidden");
         }
-    }
+    };
 
     /**
      * Initializes sample components

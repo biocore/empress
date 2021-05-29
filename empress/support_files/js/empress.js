@@ -1904,7 +1904,7 @@ define([
             if (layer.colorByFMContinuousScale) {
                 var min = layer.colorByFMContinuousMin;
                 var max = layer.colorByFMContinuousMax;
-            
+
                 if (isNaN(min)) {
                     msg += min;
                     util.toastMsg(msg, 5000);
@@ -1915,7 +1915,7 @@ define([
                     msg += max;
                     util.toastMsg(msg, 5000);
                     throw msg;
-                } 
+                }
                 domain = [min, max];
             }
             try {
@@ -1925,7 +1925,7 @@ define([
                     layer.colorByFMContinuous,
                     layer.uniqueNum,
                     layer.colorByFMColorReverse,
-                    domain,
+                    domain
                 );
             } catch (err) {
                 // If the Colorer construction failed (should only have

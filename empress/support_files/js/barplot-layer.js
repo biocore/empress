@@ -301,7 +301,7 @@ define([
 
         var fColorOptions = new ColorOptionsHandler(
             colorDetailsDiv,
-            enableContinuousColoring=true
+            (enableContinuousColoring = true)
         );
 
         // Initialize defaults to match the UI defaults (e.g. the default
@@ -342,7 +342,7 @@ define([
 
         // register color options
         fColorOptions.registerObserver({
-            colorOptionsUpdate: function(options) {
+            colorOptionsUpdate: function (options) {
                 scope.colorByFMColorMap = options.color;
                 scope.colorByFMColorReverse = options.reverse;
                 scope.colorByFMColorMapDiscrete = !options.continuousColoring;
@@ -350,8 +350,8 @@ define([
                 scope.colorByFMContinuousScale = options.continuousScale;
                 scope.colorByFMContinuousMin = options.min;
                 scope.colorByFMContinuousMax = options.max;
-            }
-        })
+            },
+        });
 
         // create default length settings
         var dfltLenP = document.createElement("p");
@@ -533,7 +533,7 @@ define([
                 options = sColorOptions.getOptions();
                 scope.colorBySMColorMap = options.color;
                 scope.colorBySMColorReverse = options.reverse;
-            }
+            },
         });
 
         $(lenInput).change(function () {
