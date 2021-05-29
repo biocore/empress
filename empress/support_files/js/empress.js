@@ -1896,13 +1896,36 @@ define([
             // if the color map is discrete in the first place. (This is tested
             // in the Colorer tests; ctrl-F for "CVALDISCRETETEST" in
             // tests/test-colorer.js to see this.)
+            var domain = null;
+            var msg =
+                "Error with assigning colors in barplot layer " +
+                layer.num +
+                ": ";
+            if (layer.colorByFMContinuousScale) {
+                var min = layer.colorByFMContinuousMin;
+                var max = layer.colorByFMContinuousMax;
+            
+                if (isNaN(min)) {
+                    msg += min;
+                    util.toastMsg(msg, 5000);
+                    throw msg;
+                }
+
+                if (isNaN(max)) {
+                    msg += max;
+                    util.toastMsg(msg, 5000);
+                    throw msg;
+                } 
+                domain = [min, max];
+            }
             try {
                 colorer = new Colorer(
                     layer.colorByFMColorMap,
                     sortedUniqueColorValues,
                     layer.colorByFMContinuous,
                     layer.uniqueNum,
-                    layer.colorByFMColorReverse
+                    layer.colorByFMColorReverse,
+                    domain,
                 );
             } catch (err) {
                 // If the Colorer construction failed (should only have

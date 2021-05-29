@@ -31,6 +31,11 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * @param{Boolean} reverse Defaults to false. If true, the color scale
      *                         will be reversed, with respect to its default
      *                         orientation.
+     * @param{Object} domain [min, max] or null, default null. 
+     *                       [min, max] set the min and max of the color
+     *                       gradient.
+     *                       null will use default min/max for color gradient.
+     *                              
      * @return{Colorer}
      * constructs Colorer
      */
@@ -39,7 +44,8 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         values,
         useQuantScale = false,
         gradientIDSuffix = 0,
-        reverse = false
+        reverse = false,
+        domain=null,
     ) {
         var scope = this;
 
@@ -48,6 +54,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
         this.color = color;
         this.reverse = reverse;
+        this.domain = domain;
 
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
@@ -213,6 +220,21 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         }
     };
 
+    Colorer.prototype.getContinuousColorRange = function (nums) {
+        var min, mid, max;
+        if (this.domain!==null) {
+            min = this.domain[0];
+            max = this.domain[1];
+        } else {
+            min = _.min(nums);
+            max = _.max(nums);
+        }
+        return {
+            min: min,
+            max: max,
+        }
+    };
+
     /**
      * Assigns colors from a sequential or diverging color palette (specified
      * by this.color) for every value in this.sortedUniqueValues, taking into
@@ -229,7 +251,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      *
      * @throws Error if this method is called when using a custom colormap.
      */
-    Colorer.prototype.assignContinuousScaledColors = function () {
+    Colorer.prototype.assignContinuousScaledColors = function (nums) {
         var scope = this;
 
         if (_.isObject(this.color)) {
@@ -243,14 +265,16 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             throw new Error("Category has less than 2 unique numeric values.");
         }
         var nums = _.map(split.numeric, parseFloat);
-        var min = _.min(nums);
-        var max = _.max(nums);
+        var range = this.getContinuousColorRange(nums);
+        var min = range.min;
+        var max = range.max;
         var domain;
         if (this.reverse) {
             domain = [max, min];
         } else {
             domain = [min, max];
         }
+
         var interpolator;
         if (this.color === Colorer.__GN_OR_PR) {
             interpolator = chroma.scale(Colorer.__gnOrPr).domain(domain);

@@ -171,7 +171,7 @@ define(["underscore"], function (_) {
     function parseAndValidateNum(inputEle, min = 0) {
         if (isValidNumber(inputEle.value)) {
             var pfVal = parseFloat(inputEle.value);
-            if (pfVal >= min) {
+            if (min === null || pfVal >= min) {
                 return pfVal;
             }
         }

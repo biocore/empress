@@ -4,8 +4,9 @@ define([
     "spectrum",
     "Colorer",
     "Legend",
+    "ColorOptionsHandler",
     "util",
-], function ($, _, spectrum, Colorer, Legend, util) {
+], function ($, _, spectrum, Colorer, Legend, ColorOptionsHandler, util) {
     /**
      *
      * @class BarplotLayer
@@ -96,6 +97,9 @@ define([
         this.colorByFMColorMap = null;
         this.colorByFMColorReverse = false;
         this.colorByFMContinuous = false;
+        this.colorByFMContinuousScale = false;
+        this.colorByFMContinuousMin = null;
+        this.colorByFMContinuousMax = null;
         this.colorByFMColorMapDiscrete = true;
         this.defaultLength = BarplotLayer.DEFAULT_LENGTH;
         this.scaleLengthByFM = false;
@@ -295,79 +299,28 @@ define([
         colorDetailsDiv.classList.add("indented");
         colorDetailsDiv.classList.add("hidden");
 
-        // Add a row for choosing the color map
-        var colormapP = colorDetailsDiv.appendChild(
-            document.createElement("p")
+        var fColorOptions = new ColorOptionsHandler(
+            colorDetailsDiv,
+            enableContinuousColoring=true
         );
-        var colormapLbl = colormapP.appendChild(
-            document.createElement("label")
-        );
-        colormapLbl.innerText = "Color Map";
-        var colormapSC = colormapP.appendChild(document.createElement("label"));
-        colormapSC.classList.add("select-container");
-        var colormapSelector = document.createElement("select");
-        Colorer.addColorsToSelect(colormapSelector);
-        colormapSC.appendChild(colormapSelector);
-        colormapSelector.id =
-            "barplot-layer-" + this.uniqueNum + "-fm-colormap";
-        colormapLbl.setAttribute("for", colormapSelector.id);
-
-        // Add a row for choosing whether the color scale should
-        // be reversed
-        var reverseColormapP = colorDetailsDiv.appendChild(
-            document.createElement("p")
-        );
-        var reverseColormapLbl = reverseColormapP.appendChild(
-            document.createElement("label")
-        );
-        reverseColormapLbl.innerText = "Reverse Color Map";
-        var reverseColormapCheckbox = reverseColormapP.appendChild(
-            document.createElement("input")
-        );
-        reverseColormapCheckbox.id =
-            "barplot-layer-" + this.uniqueNum + "-fmcolor-reverse-chk";
-        reverseColormapCheckbox.setAttribute("type", "checkbox");
-        reverseColormapCheckbox.classList.add("empress-input");
-        reverseColormapLbl.setAttribute("for", reverseColormapCheckbox.id);
-
-        // Add a row for choosing the scale type (i.e. whether to use
-        // continuous coloring or not)
-        // This mimics Emperor's "Continuous values" checkbox
-        var continuousValP = colorDetailsDiv.appendChild(
-            document.createElement("p")
-        );
-        var continuousValLbl = continuousValP.appendChild(
-            document.createElement("label")
-        );
-        continuousValLbl.innerText = "Continuous values?";
-        var continuousValCheckbox = continuousValP.appendChild(
-            document.createElement("input")
-        );
-        continuousValCheckbox.id =
-            "barplot-layer-" + this.uniqueNum + "-fmcolor-continuous-chk";
-        continuousValCheckbox.setAttribute("type", "checkbox");
-        continuousValCheckbox.classList.add("empress-input");
-        continuousValLbl.setAttribute("for", continuousValCheckbox.id);
-        // Hide the "Continuous values?" stuff by default, since the default
-        // colormap is discrete
-        continuousValP.classList.add("hidden");
 
         // Initialize defaults to match the UI defaults (e.g. the default
         // feature metadata field for coloring is the first in the selector)
+        var colorOptions = fColorOptions.getOptions();
         this.colorByFMField = chgColorFMFieldSelector.value;
-        this.colorByFMColorMap = colormapSelector.value;
-        this.colorByFMColorReverse = reverseColormapCheckbox.checked;
+        this.colorByFMColorMap = colorOptions.color;
+        this.colorByFMColorReverse = colorOptions.reverse;
         // Alter visibility of the color-changing details when the "Color
         // by..." checkbox is clicked
         $(chgColorCheckbox).change(function () {
+            colorOptions = fColorOptions.getOptions();
             if (chgColorCheckbox.checked) {
                 colorDetailsDiv.classList.remove("hidden");
                 chgColorFMFieldSelector.disabled = false;
                 scope.colorByFM = true;
                 scope.colorByFMField = chgColorFMFieldSelector.value;
-                scope.colorByFMColorMap = colormapSelector.value;
-                scope.colorByFMColorReverse = reverseColormapCheckbox.checked;
-                scope.colorByFMContinuous = continuousValCheckbox.checked;
+                scope.colorByFMColorMap = colorOptions.color;
+                scope.colorByFMColorReverse = colorOptions.reverse;
                 // Hide the default color row (since default colors
                 // aren't used when f.m. coloring is enabled)
                 dfltColorP.classList.add("hidden");
@@ -386,25 +339,19 @@ define([
         $(chgColorFMFieldSelector).change(function () {
             scope.colorByFMField = chgColorFMFieldSelector.value;
         });
-        $(colormapSelector).change(function () {
-            scope.colorByFMColorMap = colormapSelector.value;
-            // Hide the "Continuous values?" row based on the selected
-            // colormap's type. This matches how Emperor's ColorViewController
-            // hides/shows its "Continuous values" elements.
-            if (Colorer.isColorMapDiscrete(scope.colorByFMColorMap)) {
-                continuousValP.classList.add("hidden");
-                scope.colorByFMColorMapDiscrete = true;
-            } else {
-                continuousValP.classList.remove("hidden");
-                scope.colorByFMColorMapDiscrete = false;
+
+        // register color options
+        fColorOptions.registerObserver({
+            colorOptionsUpdate: function(options) {
+                scope.colorByFMColorMap = options.color;
+                scope.colorByFMColorReverse = options.reverse;
+                scope.colorByFMColorMapDiscrete = !options.continuousColoring;
+                scope.colorByFMContinuous = options.continuousColoring;
+                scope.colorByFMContinuousScale = options.continuousScale;
+                scope.colorByFMContinuousMin = options.min;
+                scope.colorByFMContinuousMax = options.max;
             }
-        });
-        $(reverseColormapCheckbox).change(function () {
-            scope.colorByFMColorReverse = reverseColormapCheckbox.checked;
-        });
-        $(continuousValCheckbox).change(function () {
-            scope.colorByFMContinuous = continuousValCheckbox.checked;
-        });
+        })
 
         // create default length settings
         var dfltLenP = document.createElement("p");
@@ -561,39 +508,7 @@ define([
         chgFieldLbl.setAttribute("for", chgFieldSMFieldSelector.id);
         chgFieldSC.appendChild(chgFieldSMFieldSelector);
 
-        // Add a row for choosing the color map
-        var colormapP = this.smDiv.appendChild(document.createElement("p"));
-        var colormapLbl = colormapP.appendChild(
-            document.createElement("label")
-        );
-        colormapLbl.innerText = "Color Map";
-        var colormapSC = colormapP.appendChild(document.createElement("label"));
-        colormapSC.classList.add("select-container");
-        var colormapSelector = document.createElement("select");
-        Colorer.addColorsToSelect(colormapSelector);
-        colormapSC.appendChild(colormapSelector);
-        colormapSelector.id =
-            "barplot-layer-" + this.uniqueNum + "-sm-colormap";
-        colormapLbl.setAttribute("for", colormapSelector.id);
-
-        // Add a row for choosing whether the color scale should
-        // be reversed
-        var reverseColormapP = this.smDiv.appendChild(
-            document.createElement("p")
-        );
-        var reverseColormapLbl = reverseColormapP.appendChild(
-            document.createElement("label")
-        );
-        reverseColormapLbl.innerText = "Reverse Color Map";
-        var reverseColormapCheckbox = reverseColormapP.appendChild(
-            document.createElement("input")
-        );
-        reverseColormapCheckbox.id =
-            "barplot-layer-" + this.uniqueNum + "-smcolor-reverse-chk";
-        reverseColormapCheckbox.setAttribute("type", "checkbox");
-        reverseColormapCheckbox.classList.add("empress-input");
-        reverseColormapLbl.setAttribute("for", reverseColormapCheckbox.id);
-
+        var sColorOptions = new ColorOptionsHandler(this.smDiv);
         var lenP = this.smDiv.appendChild(document.createElement("p"));
         var lenLbl = lenP.appendChild(document.createElement("label"));
         lenLbl.innerText = "Length";
@@ -606,18 +521,21 @@ define([
         lenLbl.setAttribute("for", lenInput.id);
 
         // TODO initialize defaults more sanely
+        var options = sColorOptions.getOptions();
         this.colorBySMField = chgFieldSMFieldSelector.value;
-        this.colorBySMColorMap = colormapSelector.value;
-        this.colorBySMColorReverse = reverseColormapCheckbox.checked;
+        this.colorBySMColorMap = options.color;
+        this.colorBySMColorReverse = options.reverse;
         $(chgFieldSMFieldSelector).change(function () {
             scope.colorBySMField = chgFieldSMFieldSelector.value;
         });
-        $(colormapSelector).change(function () {
-            scope.colorBySMColorMap = colormapSelector.value;
+        sColorOptions.registerObserver({
+            colorOptionsUpdate: () => {
+                options = sColorOptions.getOptions();
+                scope.colorBySMColorMap = options.color;
+                scope.colorBySMColorReverse = options.reverse;
+            }
         });
-        $(reverseColormapCheckbox).change(function () {
-            scope.colorBySMColorReverse = reverseColormapCheckbox.checked;
-        });
+
         $(lenInput).change(function () {
             scope.lengthSM = util.parseAndValidateNum(
                 lenInput,

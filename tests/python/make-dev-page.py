@@ -69,7 +69,7 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
     table = table.view(biom.Table)
     sample_metadata = sample_metadata.to_dataframe()
     feature_metadata = feature_metadata.to_dataframe()
-
+    ordination=None
     if ordination is not None:
         ordination = ordination.view(OrdinationResults)
 
