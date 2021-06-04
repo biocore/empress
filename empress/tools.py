@@ -263,7 +263,9 @@ def match_inputs(
             raise DataMatchingError(
                 "The feature table contains features that aren't present as "
                 "tips in the tree. You can override this error by using the "
-                "--p-filter-missing-features flag."
+                "--p-filter-missing-features flag for QIIME 2 or "
+                "--filter-missing-features flag for the standalone."
+
             )
 
     # Match table (post-feature-filtering, if done) and sample metadata.
