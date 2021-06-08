@@ -754,6 +754,7 @@ DICT_A = {
         ["1", "0", "4", "jkl"],
     ],
     "feature_metadata_columns": [],
+    "split_taxonomy_columns": [],
     "compressed_tip_metadata": {},
     "compressed_int_metadata": {},
     "emperor_div": "",

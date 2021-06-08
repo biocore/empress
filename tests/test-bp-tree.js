@@ -929,8 +929,32 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             );
 
             var keep = new Set(["4", "6", "7", "10", "11"]);
+            var shearedToFull = new Map([
+                [1, 2],
+                [2, 3],
+                [3, 4],
+                [4, 5],
+                [5, 6],
+                [6, 7],
+                [7, 8],
+                [8, 9],
+                [9, 10],
+                [10, 11],
+            ]);
+            var fullToSheared = new Map([
+                [2, 1],
+                [3, 2],
+                [4, 3],
+                [5, 4],
+                [6, 5],
+                [7, 6],
+                [8, 7],
+                [9, 8],
+                [10, 9],
+                [11, 10],
+            ]);
             var result = preShearBPTree.shear(keep);
-            deepEqual(result.b_, [
+            deepEqual(result.tree.b_, [
                 1,
                 1,
                 1,
@@ -952,7 +976,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 0,
                 0,
             ]);
-            deepEqual(result.names_, [
+            deepEqual(result.tree.names_, [
                 null,
                 "4",
                 "6",
@@ -965,19 +989,63 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 "8",
                 "r",
             ]);
-            deepEqual(result.lengths_, [null, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+            deepEqual(result.tree.lengths_, [
+                null,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+            ]);
+            deepEqual(result.shearedToFull, shearedToFull);
+            deepEqual(result.fullToSheared, fullToSheared);
 
             keep = new Set(["7", "10", "11"]);
+            shearedToFull = new Map([
+                [1, 6],
+                [2, 7],
+                [3, 8],
+                [4, 9],
+                [5, 10],
+                [6, 11],
+            ]);
+            fullToSheared = new Map([
+                [6, 1],
+                [7, 2],
+                [8, 3],
+                [9, 4],
+                [10, 5],
+                [11, 6],
+            ]);
             result = preShearBPTree.shear(keep);
-            deepEqual(result.b_, [1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]);
-            deepEqual(result.names_, [null, "7", "10", "11", "9", "8", "r"]);
-            deepEqual(result.lengths_, [null, 6, 7, 8, 9, 10, 11]);
+            deepEqual(result.tree.b_, [1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]);
+            deepEqual(result.tree.names_, [
+                null,
+                "7",
+                "10",
+                "11",
+                "9",
+                "8",
+                "r",
+            ]);
+            deepEqual(result.tree.lengths_, [null, 6, 7, 8, 9, 10, 11]);
+            deepEqual(result.shearedToFull, shearedToFull);
+            deepEqual(result.fullToSheared, fullToSheared);
 
             keep = new Set([]);
+            shearedToFull = new Map([[1, 11]]);
+            fullToSheared = new Map([[11, 1]]);
             result = preShearBPTree.shear(keep);
-            deepEqual(result.b_, [1, 0]);
-            deepEqual(result.names_, [null, "r"]);
-            deepEqual(result.lengths_, [null, 11]);
+            deepEqual(result.tree.b_, [1, 0]);
+            deepEqual(result.tree.names_, [null, "r"]);
+            deepEqual(result.tree.lengths_, [null, 11]);
+            deepEqual(result.shearedToFull, shearedToFull);
+            deepEqual(result.fullToSheared, fullToSheared);
         });
     });
 });

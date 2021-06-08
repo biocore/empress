@@ -643,7 +643,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      */
     BPTree.prototype.inOrderNodes = function () {
         if (this._inorder !== null) {
-            return this._inorder;
+            return _.clone(this._inorder);
         }
 
         // the root node of the tree
@@ -658,7 +658,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             // append children to stack
             nodeStack = nodeStack.concat(this.getChildren(curNode));
         }
-        return this._inorder;
+        return _.clone(this._inorder);
     };
 
     /**
@@ -958,7 +958,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      */
     BPTree.prototype.getNodesWithName = function (name) {
         if (name in this._nameToNodes) {
-            return this._nameToNodes[name];
+            return _.clone(this._nameToNodes[name]);
         }
 
         this._nameToNodes[name] = [];
@@ -968,7 +968,7 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             }
         }
 
-        return this._nameToNodes[name];
+        return _.clone(this._nameToNodes[name]);
     };
 
     /**
@@ -980,7 +980,9 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      *
      * @param {Set} keepTips The set of tip names to keep.
      *
-     * @return {BPTree} The new BPTree.
+     * @return {Object} An object containing the new tree ("tree") and two maps that
+     *                  convert the original postorder positions to the sheared
+     *                  tree postorder positions ("newToOld") and vice-versa ("oldToNew").
      */
     BPTree.prototype.shear = function (keepTips) {
         // closure
@@ -1022,6 +1024,9 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
         }
 
         var newBitArray = [];
+        var shearedToFull = new Map();
+        var fullToSheared = new Map();
+        var postorderPos = 1;
         for (i = 0; i < mask.length; i++) {
             if (mask[i] !== undefined) {
                 newBitArray.push(mask[i]);
@@ -1029,12 +1034,20 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
 
             // get name and length of node
             // Note: names and lengths of nodes are stored in postorder
+
             if (mask[i] === 0) {
                 names.push(this.name(i));
                 lengths.push(this.length(i));
+                shearedToFull.set(postorderPos, this.postorder(i));
+                fullToSheared.set(this.postorder(i), postorderPos);
+                postorderPos += 1;
             }
         }
-        return new BPTree(newBitArray, names, lengths, null);
+        return {
+            shearedToFull: shearedToFull,
+            fullToSheared: fullToSheared,
+            tree: new BPTree(newBitArray, names, lengths, null),
+        };
     };
 
     return BPTree;
