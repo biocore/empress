@@ -599,6 +599,12 @@ p.side-header button:hover,
 
 /* The legend is resizable, thanks to resize: both; and overflow: auto.
  * See https://stackoverflow.com/a/61976603/10730311.
+ *
+ * The 0.1px bottom padding prevents an unnecessary vertical scrollbar
+ * that kept showing up when setting the legend's width/height back to
+ * their defaults ("") in empress.js. It seems like having a tiny bit
+ * of extra vertical space is needed to get rid of this. It's barely
+ * visible to the user so it shouldn't be a problem.
  */
 #legend-main {
     margin: 20px;
@@ -606,6 +612,7 @@ p.side-header button:hover,
     max-width: 33vw;
     min-height: 30px;
     max-height: 85vh;
+    padding-bottom: 0.1px;
     resize: both;
     overflow: auto;
     background-color: rgba(255, 255, 255, 0.5);
