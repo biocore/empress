@@ -207,7 +207,7 @@ class TestCore(unittest.TestCase):
     def test_init_tree_plot_shear_without_metadata(self):
         with self.assertRaisesRegex(ValueError,
                                     "Feature metadata must be provided"):
-            viz = Empress(self.tree, shear_to_feature_metadata=True)
+            Empress(self.tree, shear_to_feature_metadata=True)
 
     def test_init_only_one_of_table_and_sm_passed(self):
         exp_errmsg = (
