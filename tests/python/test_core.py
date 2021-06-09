@@ -204,6 +204,11 @@ class TestCore(unittest.TestCase):
         ):
             Empress(self.tree, feature_metadata=bad_fm)
 
+    def test_init_tree_plot_shear_without_metadata(self):
+        with self.assertRaisesRegex(ValueError,
+                                    "Feature metadata must be provided"):
+            viz = Empress(self.tree, shear_to_feature_metadata=True)
+
     def test_init_only_one_of_table_and_sm_passed(self):
         exp_errmsg = (
             "Both the table and sample metadata should be specified or None. "
