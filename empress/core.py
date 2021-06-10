@@ -136,6 +136,11 @@ class Empress():
             # self._validate_and_match_data()
             self.features = feature_metadata.copy()
         else:
+            if shear_to_feature_metadata:
+                raise ValueError(
+                    "Feature metadata must be provided in order to shear "
+                    "to feature metadata."
+                )
             self.features = None
 
         self.ordination = ordination
@@ -224,12 +229,7 @@ class Empress():
 
         else:
             if shear_to_feature_metadata:
-                try:
-                    features = set(self.features.index)
-                except AttributeError:
-                    raise ValueError(
-                        "Feature metadata must be provided in order to shear "
-                        "to feature metadata.")
+                features = set(self.features.index)
                 all_tips = set(bp_tree_tips(self.tree))
                 # check that feature metadata contains at least 1 tip
                 if not features.intersection(all_tips):
