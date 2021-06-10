@@ -64,14 +64,13 @@ plotView.on("click", function (name, object) {
 });
 
 plotView.on("select", function (samples, view) {
+    // remove any strangling observers
+    shearer.unregisterObserver("emperor-select");
+
     // cancel any ongoing timers
     clearTimeout(empress.timer);
 
-    // if there's any coloring setup remove it, and re-enable the update button
-    sPanel.sUpdateBtn.classList.remove("hidden");
-    sPanel.fUpdateBtn.classList.remove("hidden");
-    empress.clearLegend();
-    empress.resetTree();
+    
 
     // fetch a mapping of colors to plottable objects
     var groups = view.groupByColor(samples);
@@ -83,9 +82,23 @@ plotView.on("select", function (samples, view) {
             return item.name;
         });
     }
-    empress.colorSampleGroups(namesOnly);
+
+    var colorEmpress = () => {
+        // if there's any coloring setup remove it, and re-enable the update button
+        sPanel.sUpdateBtn.classList.remove("hidden");
+        sPanel.fUpdateBtn.classList.remove("hidden");
+        empress.clearLegend();
+        empress.resetTree();
+        empress.colorSampleGroups(namesOnly);
+    }
+    colorEmpress();
 
     // 4 seconds before resetting
+    var shearObs = {
+        shearerObserverName: "emperor-select",
+        shearUpdate: colorEmpress,
+    }
+    shearer.registerObserver(shearObs);
     empress.timer = setTimeout(function () {
         empress.resetTree();
         empress.drawTree();
@@ -95,6 +108,7 @@ plotView.on("select", function (samples, view) {
         }
 
         plotView.needsUpdate = true;
+        shearer.unregisterObserver("emperor-select");
     }, 4000);
 });
 
@@ -164,6 +178,9 @@ ec.controllers.animations.addEventListener("animation-ended", function (
 ec.controllers.color.addEventListener("value-double-clicked", function (
     payload
 ) {
+    // remove any strangling observers
+    shearer.unregisterObserver("emperor-value-double-clicked");
+    
     // when dealing with a biplot ignore arrow-emitted events
     if (payload.target.decompositionName() !== "scatter") {
         return;
@@ -177,24 +194,33 @@ ec.controllers.color.addEventListener("value-double-clicked", function (
     ec.decViews.scatter.setEmissive(0x000000);
     plotView.needsUpdate = true;
 
-    // if there's any coloring setup remove it, and re-enable the update button
-    sPanel.sUpdateBtn.classList.remove("hidden");
-    sPanel.fUpdateBtn.classList.remove("hidden");
-    empress.clearLegend();
-    empress.resetTree();
-
     var names = _.map(payload.message.group, function (item) {
         return item.name;
     });
     var container = {};
     container[payload.message.attribute] = names;
-    empress.colorSampleGroups(container);
+
+    var colorEmpress = () => {
+        // if there's any coloring setup remove it, and re-enable the update button
+        sPanel.sUpdateBtn.classList.remove("hidden");
+        sPanel.fUpdateBtn.classList.remove("hidden");
+        empress.clearLegend();
+        empress.resetTree();
+        empress.colorSampleGroups(container);
+    }
+    colorEmpress();
 
     // 4 seconds before resetting
+    var shearObs = {
+        shearerObserverName: "emperor-value-double-clicked",
+        shearUpdate: colorEmpress,
+    }
+    shearer.registerObserver(shearObs);
     empress.timer = setTimeout(function () {
         empress.resetTree();
         empress.drawTree();
 
         plotView.needsUpdate = true;
+        shearer.unregisterObserver("emperor-value-double-clicked");
     }, 4000);
 });

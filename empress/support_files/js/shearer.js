@@ -241,11 +241,31 @@ define(["underscore", "util", "TreeController"], function (
      * the model is updated. Note this object must implement a shearUpdate()
      * method.
      *
-     * @param{Object} obs The object to register.
+     * @param{Object} obs The object to register. A '.shearerObserverName'
+     *                    property must be provided if this observer will at
+     *                    some point be unregistered.
      */
     ShearModel.prototype.registerObserver = function (obs) {
         this.observers.push(obs);
     };
+
+    /**
+     * Unregisters an observer to the model. The method will remove all
+     * observers with a '.shearerObserverName' === to removeObsName.
+     *
+     * @param{String} removeObsName The name of the observer to unregister.
+     */
+    ShearModel.prototype.unregisterObserver = function (removeObsName) {
+        var removeIndx;
+        var tempObs = [];
+        _.each(this.observers, function(obs, indx) {
+            if (!obs.hasOwnProperty("shearerObserverName") ||
+                    obs.shearerObserverName !== removeObsName) {
+                tempObs.push(obs);
+            }
+        });
+        this.observers = tempObs;
+    }
 
     /**
      * Removes a shear layer from a ShearModel
@@ -354,11 +374,23 @@ define(["underscore", "util", "TreeController"], function (
     /**
      * Registers an observer to the model.
      *
-     * @param{Object} obs The object to register to the model
+     * @param{Object} obs The object to register to the model. A
+     *                    '.shearerObserverName' property must be provided if
+     *                    this observer will at some point be unregistered.
      */
     ShearController.prototype.registerObserver = function (obs) {
         this.model.registerObserver(obs);
     };
+
+    /**
+     * Unregisters an observer to the model. The method will remove all
+     * observers with a '.shearerObserverName' === to removeObsName.
+     *
+     * @param{String} removeObsName The name of the observer to unregister.
+     */
+    ShearController.prototype.unregisterObserver = function (removeObsName) {
+        this.model.unregisterObserver(removeObsName);
+    }
 
     /**
      * @class Shearer
@@ -421,11 +453,23 @@ define(["underscore", "util", "TreeController"], function (
     /**
      * Registers an observer to the model.
      *
-     * @param{Object} obs The object to register to the model
+     * @param{Object} obs The object to register to the model. A
+     *                    '.shearerObserverName' property must be provided if
+     *                    this observer will at some point be unregistered.
      */
     Shearer.prototype.registerObserver = function (obs) {
         this.controller.registerObserver(obs);
     };
+
+    /**
+     * Unregisters an observer to the model. The method will remove all
+     * observers with a '.shearerObserverName' === to removeObsName.
+     *
+     * @param{String} removeObsName The name of the observer to unregister.
+     */
+    Shearer.prototype.unregisterObserver = function (removeObsName) {
+        this.controller.unregisterObserver(removeObsName);
+    }
 
     return Shearer;
 });
