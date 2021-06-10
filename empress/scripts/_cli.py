@@ -15,9 +15,11 @@ def empress():
     """Generates an interactive visualization of a phylogenetic tree."""
     pass
 
+
 # Allow using -h to show help information
 # https://click.palletsprojects.com/en/7.x/documentation/#help-parameter-customization
 CTXSETS = {"help_option_names": ["-h", "--help"]}
+
 
 @empress.command(
     "tree-plot", short_help=desc.TREE_PLOT_DESC, context_settings=CTXSETS

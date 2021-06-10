@@ -220,7 +220,7 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
 
         canvas.onmousedown = mouseDown;
         canvas.onclick = mouseClick;
-        canvas.onwheel = zoomTree;
+        canvas.onwheel = _.throttle(zoomTree, 10);
         canvas.ondblclick = doubleClick;
     };
 

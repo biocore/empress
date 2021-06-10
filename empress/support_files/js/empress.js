@@ -572,7 +572,11 @@ define([
             legends.push(...this._barplotPanel.getLegends());
         }
         if (legends.length === 0) {
-            util.toastMsg("No active legends to export.", 5000);
+            util.toastMsg(
+                "Export error",
+                "No active legends to export.",
+                (duration = 5000)
+            );
             return null;
         } else {
             return ExportUtil.exportLegendSVG(legends);
@@ -1920,7 +1924,7 @@ define([
                     'the feature metadata field "' +
                     layer.colorByFMField +
                     '" has less than 2 unique numeric values.';
-                util.toastMsg(msg, 5000);
+                util.toastMsg("Barplot coloring error", msg, (duration = 5000));
                 throw msg;
             }
             fm2color = colorer.getMapRGB();
@@ -1947,7 +1951,11 @@ define([
             } catch (err) {
                 // Fail gracefully, similarly to how we handle Colorer errors
                 // above
-                util.toastMsg(err.message, 5000);
+                util.toastMsg(
+                    "Barplot length-scaling error",
+                    err.message,
+                    (duration = 5000)
+                );
                 throw err.message;
             }
         }
@@ -2668,6 +2676,20 @@ define([
     };
 
     /**
+     * Set the #legend-main width and height back to their defaults.
+     *
+     * This allows the legend to be resized back to whatever the default
+     * size will be, since manually resizing the legend sets a fixed
+     * width/height value.
+     */
+    Empress.prototype.resizeLegend = function () {
+        // Setting CSS properties to "" causes the default values to be used:
+        // see https://stackoverflow.com/a/21457941.
+        document.getElementById("legend-main").style.width = "";
+        document.getElementById("legend-main").style.height = "";
+    };
+
+    /**
      * Updates the legend based on a categorical color key.
      *
      * This is set up as a public method so that the Animator can update the
@@ -2680,6 +2702,7 @@ define([
      *                         color, expressed in hex format.
      */
     Empress.prototype.updateLegendCategorical = function (name, keyInfo) {
+        this.resizeLegend();
         this._legend.addCategoricalKey(name, keyInfo);
     };
 
@@ -3689,7 +3712,8 @@ define([
     Empress.prototype.showNodeMenuForName = function (nodeName) {
         if (!this._tree.containsNode(nodeName)) {
             util.toastMsg(
-                "The node '" + nodeName + "' is not present in the phylogeny"
+                "Node menu error",
+                "The node '" + nodeName + "' is not present in the phylogeny."
             );
             return;
         }
