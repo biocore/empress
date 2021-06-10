@@ -276,10 +276,12 @@ define(["underscore"], function (_) {
     }
 
     /**
-     * Removes all keys from a if that same key is found in b and contains an
-     * empty array.
+     * Given two Objects that map keys to arrays, removes all keys from object
+     * "a" that are present in object "b" and point to a zero-length array in
+     * "b".
      *
-     * @param{Object} obj The object to remove keys from
+     * @param {Object} a The object from which keys will be removed.
+     * @param {Object} b The object used as a guide to remove keys from a.
      */
     function removeEmptyArrayKeys(a, b) {
         for (var key in b) {
