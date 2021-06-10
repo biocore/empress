@@ -70,8 +70,6 @@ plotView.on("select", function (samples, view) {
     // cancel any ongoing timers
     clearTimeout(empress.timer);
 
-    
-
     // fetch a mapping of colors to plottable objects
     var groups = view.groupByColor(samples);
     var namesOnly = {};
@@ -90,14 +88,14 @@ plotView.on("select", function (samples, view) {
         empress.clearLegend();
         empress.resetTree();
         empress.colorSampleGroups(namesOnly);
-    }
+    };
     colorEmpress();
 
     // 4 seconds before resetting
     var shearObs = {
         shearerObserverName: "emperor-select",
         shearUpdate: colorEmpress,
-    }
+    };
     shearer.registerObserver(shearObs);
     empress.timer = setTimeout(function () {
         empress.resetTree();
@@ -180,7 +178,7 @@ ec.controllers.color.addEventListener("value-double-clicked", function (
 ) {
     // remove any strangling observers
     shearer.unregisterObserver("emperor-value-double-clicked");
-    
+
     // when dealing with a biplot ignore arrow-emitted events
     if (payload.target.decompositionName() !== "scatter") {
         return;
@@ -207,14 +205,14 @@ ec.controllers.color.addEventListener("value-double-clicked", function (
         empress.clearLegend();
         empress.resetTree();
         empress.colorSampleGroups(container);
-    }
+    };
     colorEmpress();
 
     // 4 seconds before resetting
     var shearObs = {
         shearerObserverName: "emperor-value-double-clicked",
         shearUpdate: colorEmpress,
-    }
+    };
     shearer.registerObserver(shearObs);
     empress.timer = setTimeout(function () {
         empress.resetTree();

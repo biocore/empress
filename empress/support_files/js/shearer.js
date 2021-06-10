@@ -258,14 +258,16 @@ define(["underscore", "util", "TreeController"], function (
     ShearModel.prototype.unregisterObserver = function (removeObsName) {
         var removeIndx;
         var tempObs = [];
-        _.each(this.observers, function(obs, indx) {
-            if (!obs.hasOwnProperty("shearerObserverName") ||
-                    obs.shearerObserverName !== removeObsName) {
+        _.each(this.observers, function (obs, indx) {
+            if (
+                !obs.hasOwnProperty("shearerObserverName") ||
+                obs.shearerObserverName !== removeObsName
+            ) {
                 tempObs.push(obs);
             }
         });
         this.observers = tempObs;
-    }
+    };
 
     /**
      * Removes a shear layer from a ShearModel
@@ -390,7 +392,7 @@ define(["underscore", "util", "TreeController"], function (
      */
     ShearController.prototype.unregisterObserver = function (removeObsName) {
         this.model.unregisterObserver(removeObsName);
-    }
+    };
 
     /**
      * @class Shearer
@@ -469,7 +471,7 @@ define(["underscore", "util", "TreeController"], function (
      */
     Shearer.prototype.unregisterObserver = function (removeObsName) {
         this.controller.unregisterObserver(removeObsName);
-    }
+    };
 
     return Shearer;
 });
