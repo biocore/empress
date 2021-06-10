@@ -2656,19 +2656,13 @@ define([
             this.setNodeInfo(node, "isColored", false);
             this.setNodeInfo(node, "visible", true);
         }
+        this._collapsedClades = {};
         this._dontCollapse = new Set();
         this._collapsedCladeBuffer = [];
         this._drawer.loadThickNodeBuff([]);
         this._drawer.loadCladeBuff([]);
         this._group = new Array(this._tree.size + 1).fill(-1);
-
-        // if _collapsedClades is empty then there is no need to call
-        // getTreeCoords which can save a fair amount of time depending on the
-        // size of the tree
-        if (Object.keys(this._collapsedClades).length > 0) {
-            this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
-        }
-        this._collapsedClades = {};
+        this._drawer.loadTreeCoordsBuff(this.getTreeCoords());
     };
 
     /**
