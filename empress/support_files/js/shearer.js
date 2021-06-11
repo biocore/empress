@@ -412,8 +412,8 @@ define(["underscore", "util", "TreeController"], function (
             empress,
             this.shearLayerContainer
         );
-        
-        // this holds the 'Shear by...' select menu and the 
+
+        // this holds the 'Shear by...' select menu and the
         // 'Add shear filter' button
         this.shearOptionsContainer = document.getElementById(
             "shear-add-options"

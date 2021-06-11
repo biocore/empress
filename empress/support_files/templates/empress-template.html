@@ -129,13 +129,14 @@
                     'BarplotLayer', 'BarplotPanel', 'BIOMTable', 'Empress',
                     'Legend', 'Colorer', 'VectorOps', 'CanvasEvents',
                     'SelectedNodeMenu', 'util', 'LayoutsUtil', 'ExportUtil',
-                    'Shearer', 'EnableDisableSidePanelTab'],
+                    'Shearer', 'EnableDisableSidePanelTab',
+                    'EnableDisableAnimationTab'],
         function($, gl, chroma, underscore, spectrum, toastr, filesaver,
                  ByteArray, BPTree, Camera, Drawer, SidePanel, AnimationPanel,
                  Animator, BarplotLayer, BarplotPanel, BIOMTable, Empress,
                  Legend, Colorer, VectorOps, CanvasEvents, SelectedNodeMenu,
                  util, LayoutsUtil, ExportUtil, Shearer,
-                 EnableDisableSidePanelTab) {
+                 EnableDisableSidePanelTab, EnableDisableAnimationTab) {
         // NOTE: the contents of this line are validated in the python
         // integration tests. If this line is changed somehow, the integration
         // tests will need to be updated accordingly.
@@ -173,6 +174,9 @@
                     new EnableDisableSidePanelTab(tabInfo.tabName, tabInfo.container)
                 );
             });
+            var animationTab = new EnableDisableAnimationTab(
+                document.getElementById("animation-div")
+            );
         }
         // initialze the tree and model
         var tree = new BPTree(
@@ -236,7 +240,7 @@
             var animator = new Animator(empress, sidePanelTabs);
 
             // Add animator GUI components
-            var animationPanel = new AnimationPanel(animator);
+            var animationPanel = new AnimationPanel(animator, animationTab);
             animationPanel.addAnimationTab();
             document.getElementById("animationOpenButton").classList
                 .remove("hidden");

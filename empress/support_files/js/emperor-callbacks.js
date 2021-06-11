@@ -1,7 +1,7 @@
 /**
  * helper function that will color the empress tree according to
  * colorSampleGroups.
- * 
+ *
  * @param {object} colorSampleGroups An object whose property names are html
  *                                   hex color stings and associated values are
  *                                   arrays of sample ids.
@@ -11,14 +11,14 @@
  *                                      #000080: ['s1', 's3', 's4']
  *                                   }
  */
-var emperorCallbackColorEmpress = function(colorSampleGroups) {
+var emperorCallbackColorEmpress = function (colorSampleGroups) {
     // if there's any coloring setup remove it, and re-enable the update button
     sPanel.sUpdateBtn.classList.remove("hidden");
     sPanel.fUpdateBtn.classList.remove("hidden");
     empress.clearLegend();
     empress.resetTree();
     empress.colorSampleGroups(colorSampleGroups);
-}
+};
 
 /*
  * This file is intended to be used only with Emperor. For more information
@@ -103,7 +103,9 @@ plotView.on("select", function (samples, view) {
     }
 
     // color the tree using the samples
-    var colorEmpress = () => {emperorCallbackColorEmpress(namesOnly);};
+    var colorEmpress = () => {
+        emperorCallbackColorEmpress(namesOnly);
+    };
     colorEmpress();
 
     // 4 seconds before resetting
@@ -221,7 +223,9 @@ ec.controllers.color.addEventListener("value-double-clicked", function (
     var container = {};
     container[payload.message.attribute] = names;
 
-    var colorEmpress = () => {emperorCallbackColorEmpress(container);};
+    var colorEmpress = () => {
+        emperorCallbackColorEmpress(container);
+    };
     colorEmpress();
 
     // 4 seconds before resetting
