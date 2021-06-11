@@ -15,7 +15,7 @@
 <!-- Sample Coloring Options -->
 <button id="smOpenButton" class="side-header collapsible needs-community-data">
     Sample Metadata Coloring</button>
-<div class="side-content control hidden">
+<div class="side-content control hidden" id="sample-metadata-coloring-div">
   <p class="side-panel-notes">
     Color tips in the tree that are unique to certain groups of samples.
     Internal nodes where all descendants are unique to a group are themselves
@@ -65,7 +65,7 @@
 <!-- Feature Metadata Coloring Options -->
 <button id="fmOpenButton" class="side-header collapsible needs-feature-metadata">
     Feature Metadata Coloring</button>
-<div class="side-content control hidden">
+<div class="side-content control hidden" id="feature-metadata-coloring-div">
   <p class="side-panel-notes">
     Color nodes in the tree based on feature metadata: for example,
     taxonomic annotations.
@@ -264,7 +264,6 @@
   <p class="side-panel-notes">
      Shear the tree to tips with certain feature metadata values.
   </p>
-
   <p class="side-panel-notes">
     <span style="font-weight: bold;">Warning:</span> By design, shearing
     will change the topology of the tree: the resulting visualization may be
@@ -287,22 +286,34 @@
       <button id="shear-add-btn">+</button>
     </p>
   </div>
-  <div id="shear-legends">
+  <div id="shear-layer-container">
   </div>
 </div>
 
 <!-- animate Options -->
 <button id="animationOpenButton" class="side-header collapsible hidden">
     Animation</button>
-<div class="side-content control hidden">
+<div class="side-content control hidden" id="animation-div">
   <p class="side-panel-notes">
     Color nodes in the tree that are unique to certain groups of samples
     (specified by the trajectory) at different timepoints throughout a
     gradient.
   </p>
   <p class="side-panel-notes">
-    <b>Warning:</b> Do not shear the tree while an animation is running. Please
-    stop and restart if the tree was sheared during an animation.
+    <span style="font-weight: bold;">Warning</span>
+    <span style="font-style: italic;">
+      Sample Metadata Coloring, Feature MetadataColoring, Barplots and Shear Tree
+    </span> will be
+    disabled while the animation is active.
+  </p>
+  <p class="side-panel-notes">
+    <span style="font-weight: bold;">
+    To re-enable 
+    </span>
+    <span style="font-style: italic;">
+    Sample Metadata Coloring, Feature MetadataColoring, Barplots and Shear Tree
+    </span>, 
+    stop the animation by clicking on the <span style="font-style: italic;">Stop Animation</span> button.
   </p>
   <p>
     <label for="animate-color-select">Color Map</label>

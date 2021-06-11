@@ -1,9 +1,30 @@
+/**
+ * helper function that will color the empress tree according to
+ * colorSampleGroups.
+ * 
+ * @param {object} colorSampleGroups An object whose property names are html
+ *                                   hex color stings and associated values are
+ *                                   arrays of sample ids.
+ *                                   example:
+ *                                   {
+ *                                      #008000: ['s1', 's2', 's3']
+ *                                      #000080: ['s1', 's3', 's4']
+ *                                   }
+ */
+var emperorCallbackColorEmpress = function(colorSampleGroups) {
+    // if there's any coloring setup remove it, and re-enable the update button
+    sPanel.sUpdateBtn.classList.remove("hidden");
+    sPanel.fUpdateBtn.classList.remove("hidden");
+    empress.clearLegend();
+    empress.resetTree();
+    empress.colorSampleGroups(colorSampleGroups);
+}
+
 /*
  * This file is intended to be used only with Emperor. For more information
  * about these and other events see this document:
  * https://github.com/biocore/emperor/blob/master/doc/source/js_integration.rst
  */
-
 empress.setOnNodeMenuVisibleCallback(function (samples) {
     // reset scale settings for all samples
     ec.decViews.scatter.setScale(1);
@@ -64,7 +85,7 @@ plotView.on("click", function (name, object) {
 });
 
 plotView.on("select", function (samples, view) {
-    // remove any strangling observers
+    // remove any ongoing observers
     shearer.unregisterObserver("emperor-select");
 
     // cancel any ongoing timers
@@ -81,14 +102,8 @@ plotView.on("select", function (samples, view) {
         });
     }
 
-    var colorEmpress = () => {
-        // if there's any coloring setup remove it, and re-enable the update button
-        sPanel.sUpdateBtn.classList.remove("hidden");
-        sPanel.fUpdateBtn.classList.remove("hidden");
-        empress.clearLegend();
-        empress.resetTree();
-        empress.colorSampleGroups(namesOnly);
-    };
+    // color the tree using the samples
+    var colorEmpress = () => {emperorCallbackColorEmpress(namesOnly);};
     colorEmpress();
 
     // 4 seconds before resetting
@@ -139,6 +154,7 @@ ec.controllers.animations.addEventListener("animation-started", function (
     // animation starts
     animationPanel.startOptions();
     animationPanel.setEnabled(false);
+    animationPanel.disableTab();
 
     animator.setAnimationParameters(
         payload.message.trajectory,
@@ -148,6 +164,7 @@ ec.controllers.animations.addEventListener("animation-started", function (
         animator.lWidth
     );
     animator.initAnimation();
+    animator.disableSidePanelTabs();
 });
 
 ec.controllers.animations.addEventListener(
@@ -162,6 +179,7 @@ ec.controllers.animations.addEventListener("animation-cancelled", function (
 ) {
     // if the animation is cancelled enable the animation controls
     animationPanel.setEnabled(true);
+    animationPanel.enableTab();
     animator.stopAnimation();
 });
 
@@ -181,7 +199,7 @@ ec.controllers.animations.addEventListener("animation-ended", function (
 ec.controllers.color.addEventListener("value-double-clicked", function (
     payload
 ) {
-    // remove any strangling observers
+    // remove any ongoing observers
     shearer.unregisterObserver("emperor-value-double-clicked");
 
     // when dealing with a biplot ignore arrow-emitted events
@@ -203,14 +221,7 @@ ec.controllers.color.addEventListener("value-double-clicked", function (
     var container = {};
     container[payload.message.attribute] = names;
 
-    var colorEmpress = () => {
-        // if there's any coloring setup remove it, and re-enable the update button
-        sPanel.sUpdateBtn.classList.remove("hidden");
-        sPanel.fUpdateBtn.classList.remove("hidden");
-        empress.clearLegend();
-        empress.resetTree();
-        empress.colorSampleGroups(container);
-    };
+    var colorEmpress = () => {emperorCallbackColorEmpress(container);};
     colorEmpress();
 
     // 4 seconds before resetting

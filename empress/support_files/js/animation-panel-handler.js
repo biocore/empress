@@ -1,4 +1,4 @@
-define(["Colorer", "util"], function (Colorer, util) {
+define(["Colorer", "util", "EnableDisableAnimationTab"], function (Colorer, util, EnableDisableAnimationTab) {
     /**
      *
      * @class AnimationPanel
@@ -11,6 +11,9 @@ define(["Colorer", "util"], function (Colorer, util) {
      * construct AnimationPanel
      */
     function AnimationPanel(animator) {
+        this.container = new EnableDisableAnimationTab(
+            document.getElementById("animation-div")
+        );
         // used in event triggers
         this.animator = animator;
 
@@ -43,6 +46,23 @@ define(["Colorer", "util"], function (Colorer, util) {
          * @private
          */
         this._onAnimationStopped = null;
+    }
+
+    /*
+     * Enables the Animation tab. This will result in the Animation tab
+     * containing its original content.
+     */
+    AnimationPanel.prototype.enableTab = function() {
+        this.container.enableTab();
+    }
+
+    /*
+     * Disables the Animation tab. This will result in the Animation tab
+     * containing a message describing why the tab has been disabled and how to
+     * re-enable it.
+     */
+    AnimationPanel.prototype.disableTab = function() {
+        this.container.disableTab();
     }
 
     /**
