@@ -353,6 +353,122 @@ require([
             }
         });
 
+        test("Test colorByFeatureMetadata, continuous", function () {
+            // get color map
+            var cm = this.empress.colorByFeatureMetadata(
+                "f1",
+                "Viridis",
+                "tip",
+                false,
+                true
+            );
+            var properties = [
+                "gradientID",
+                "gradientSVG",
+                "maxValStr",
+                "midValStr",
+                "minValStr",
+                "missingNonNumerics",
+                "pageSVG",
+            ];
+
+            // make sure color gradient returns correct keyInfo
+            var resultProperties = util.naturalSort(Object.keys(cm));
+            deepEqual(resultProperties, properties);
+
+            // make sure nodes were assigned correct color
+            var node;
+            var group1 = new Set([2, 3, 4]);
+            var group2 = new Set([1, 6]);
+            for (node = 1; node <= 7; node++) {
+                if (group1.has(node)) {
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        5505348,
+                        "node: " + node
+                    );
+                } else if (group2.has(node)) {
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        2484478,
+                        "node: " + node
+                    );
+                } else {
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 3289650);
+                }
+            }
+        });
+
+        test("Test colorByFeatureMetadata, continuous", function () {
+            // get color map
+            var cm = this.empress.colorByFeatureMetadata(
+                "f1",
+                "Viridis",
+                "tip",
+                false,
+                true
+            );
+            var properties = [
+                "gradientID",
+                "gradientSVG",
+                "maxValStr",
+                "midValStr",
+                "minValStr",
+                "missingNonNumerics",
+                "pageSVG",
+            ];
+
+            // make sure color gradient returns correct keyInfo
+            var resultProperties = util.naturalSort(Object.keys(cm));
+            deepEqual(resultProperties, properties);
+
+            // make sure nodes were assigned correct color
+            var node;
+            var group1 = new Set([2, 3, 4]);
+            var group2 = new Set([1, 6]);
+            for (node = 1; node <= 7; node++) {
+                if (group1.has(node)) {
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        5505348,
+                        "node: " + node
+                    );
+                } else if (group2.has(node)) {
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        2484478,
+                        "node: " + node
+                    );
+                } else {
+                    deepEqual(this.empress.getNodeInfo(node, "color"), 3289650);
+                }
+            }
+        });
+
+        test("Test colorByFeatureMetadata, continuous no numberic values", function () {
+            // hack to add a metadata column with no numberic data
+            this.empress._featureMetadataColumns = ["f1", "f2", "f3"];
+            this.empress._tipMetadata = {
+                1: ["2", "2", "n1"],
+                2: ["1", "2", "n2"],
+                3: ["1", "2", "n3"],
+                6: ["2", "2", "n4"],
+            };
+            var faileFunctionCalled = false;
+            var failedFunction = () => {
+                faileFunctionCalled = true;
+            };
+            var cm = this.empress.colorByFeatureMetadata(
+                "f3",
+                "Viridis",
+                "tip",
+                false,
+                true,
+                failedFunction
+            );
+            ok(faileFunctionCalled, "continousFailedFunc was not called.");
+        });
+
         test("Test _projectObservations, all tips in obs", function () {
             var obs = {
                 g1: new Set([2, 3]),

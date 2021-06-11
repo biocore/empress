@@ -160,7 +160,6 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         this._midValStr = gradInfo.midValStr;
         this._maxValStr = gradInfo.maxValStr;
         this._missingNonNumericWarningShown = gradInfo.missingNonNumerics;
-        console.log(this._missingNonNumericWarningShown)
 
         // We only save this to a local variable (not an attribute of the
         // class) since we only use it for the HTML representation of the
@@ -180,7 +179,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             "svg"
         );
         containerSVG.setAttribute("width", "100%");
-        containerSVG.setAttribute("height", "100%");
+        containerSVG.setAttribute("height", "80%");
         containerSVG.setAttribute("style", "display: block; margin: auto;");
         // just kinda plop the combined SVG code into containerSVG's HTML
         containerSVG.innerHTML = totalHTMLSVG;
@@ -745,15 +744,15 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         };
     };
 
-    Legend.prototype.setMissingNonNumericWarning = function(
+    Legend.prototype.setMissingNonNumericWarning = function (
         full,
-        short=null
+        short = null
     ) {
         this.continuousMissingNonNumericWarning = full;
         this.continuousMissingNonNumericWarningShort = short;
-    }
+    };
 
-    Legend.prototype.getMissingNonNumericWarning = function() {
+    Legend.prototype.getMissingNonNumericWarning = function () {
         var missingText = {
             full: Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING,
             short: Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING_SHORT,
@@ -763,9 +762,9 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         }
         if (this.hasOwnProperty("continuousMissingNonNumericWarningShort")) {
             missingText.short = this.continuousMissingNonNumericWarningShort;
-        } 
+        }
         return missingText;
-    }
+    };
 
     // Shown at the bottom of continuous legends in the page when some values
     // in a continuous field can't be represented on a gradient
