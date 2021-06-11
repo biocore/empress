@@ -1,4 +1,4 @@
-define(["LayoutsUtil", "Colorer"], function (LayoutsUtil, Colorer) {
+define([], function () {
     function TreeModel(tree) {
         this.shearedTree = tree;
         this.fullTree = tree;

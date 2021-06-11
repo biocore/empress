@@ -170,7 +170,12 @@ ec.controllers.animations.addEventListener("animation-ended", function (
 ) {
     // if the animation ends enable the controls
     animationPanel.setEnabled(true);
-    util.toastMsg("Animation Complete.");
+    util.toastMsg(
+        "Animation complete.",
+        "",
+        (duration = 3000),
+        (toastType = "success")
+    );
 });
 
 ec.controllers.color.addEventListener("value-double-clicked", function (
