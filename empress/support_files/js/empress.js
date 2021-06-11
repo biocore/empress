@@ -159,11 +159,28 @@ define([
         }
 
         /**
+         * @type {String}
+         * Text to display at the bottom of the continuous legend when some
+         *  values in a continuous are either missing or non-numeric.
+         */
+        this._continuousMissingNonNumericWarning =
+            "Some value(s) in this field were missing and/or not numeric. " +
+            "These value(s) have been left out of the gradient, and the " +
+            "corresponding nodes have been set to the default color."
+        /**
+         * @type {String}
+         * Short version of `_continuousMissingNonNumericWarning` that will
+         * be shown in the exported SVG legend.
+         */
+        // this._continuousMissingNonNumericWarningShort =
+            ""
+        /**
          * @type {Legend}
          * Legend describing the way the tree is colored.
          * @private
          */
         this._legend = new Legend(document.getElementById("legend-main"));
+        this._legend.setM
 
         /**
          * @type {BiomTable}

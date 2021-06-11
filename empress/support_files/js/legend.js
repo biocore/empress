@@ -160,6 +160,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         this._midValStr = gradInfo.midValStr;
         this._maxValStr = gradInfo.maxValStr;
         this._missingNonNumericWarningShown = gradInfo.missingNonNumerics;
+        console.log(this._missingNonNumericWarningShown)
 
         // We only save this to a local variable (not an attribute of the
         // class) since we only use it for the HTML representation of the
@@ -185,8 +186,9 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         containerSVG.innerHTML = totalHTMLSVG;
         this._container.appendChild(containerSVG);
         if (this._missingNonNumericWarningShown) {
+            var missingText = this.getMissingNonNumericWarning();
             var warningP = document.createElement("p");
-            warningP.innerText = Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING;
+            warningP.innerText = missingText.full;
             warningP.classList.add("side-panel-notes");
             // All legends have white-space: nowrap; set to prevent color
             // labels from breaking onto the next line (which would look
@@ -542,6 +544,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         // But first, let's add a warning about missing / non-numeric values if
         // needed.
         if (this._missingNonNumericWarningShown) {
+            var missingText = this.getMissingNonNumericWarning();
             // We use a hanging baseline to add some extra vertical space
             // between the gradient minimum value and the warning text. This
             // seems to look nice.
@@ -551,9 +554,9 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
                 '" y="' +
                 (gradientTopY + gradientHeight + Legend.HALF_LINE_HEIGHT) +
                 '" dominant-baseline="hanging">' +
-                Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING_SHORT +
+                missingText.short +
                 "</text>\n";
-            texts.push(Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING_SHORT);
+            texts.push(missingText.short);
         }
         _.each(texts, function (text) {
             maxLineWidth = Math.max(
@@ -741,6 +744,28 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
             height: height,
         };
     };
+
+    Legend.prototype.setMissingNonNumericWarning = function(
+        full,
+        short=null
+    ) {
+        this.continuousMissingNonNumericWarning = full;
+        this.continuousMissingNonNumericWarningShort = short;
+    }
+
+    Legend.prototype.getMissingNonNumericWarning = function() {
+        var missingText = {
+            full: Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING,
+            short: Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING_SHORT,
+        };
+        if (this.hasOwnProperty("continuousMissingNonNumericWarning")) {
+            missingText.full = this.continuousMissingNonNumericWarning;
+        }
+        if (this.hasOwnProperty("continuousMissingNonNumericWarningShort")) {
+            missingText.short = this.continuousMissingNonNumericWarningShort;
+        } 
+        return missingText;
+    }
 
     // Shown at the bottom of continuous legends in the page when some values
     // in a continuous field can't be represented on a gradient
