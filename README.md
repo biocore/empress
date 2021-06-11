@@ -1,5 +1,5 @@
 # Empress
-[![Main CI](https://github.com/biocore/empress/actions/workflows/main.yml/badge.svg)](https://github.com/biocore/empress/actions/workflows/main.yml)
+[![Main CI + McHelper](https://github.com/biocore/empress/actions/workflows/main.yml/badge.svg)](https://github.com/biocore/empress/actions/workflows/main.yml)
 [![Standalone CI](https://github.com/biocore/empress/actions/workflows/standalone.yml/badge.svg)](https://github.com/biocore/empress/actions/workflows/standalone.yml)
 [![PyPI](https://img.shields.io/pypi/v/empress.svg)](https://pypi.org/project/empress)
 

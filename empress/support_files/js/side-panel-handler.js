@@ -323,7 +323,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var keyInfo = this.empress.colorBySampleCat(colBy, col, reverse);
         if (keyInfo === null) {
             util.toastMsg(
-                "No unique branches found for this metadata category"
+                "Sample metadata coloring error",
+                "No unique branches found for this metadata category."
             );
             this.sUpdateBtnP.classList.remove("hidden");
             return;

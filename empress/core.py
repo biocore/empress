@@ -136,6 +136,11 @@ class Empress():
             # self._validate_and_match_data()
             self.features = feature_metadata.copy()
         else:
+            if shear_to_feature_metadata:
+                raise ValueError(
+                    "Feature metadata must be provided in order to shear "
+                    "to feature metadata."
+                )
             self.features = None
 
         self.ordination = ordination

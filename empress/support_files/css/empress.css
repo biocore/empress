@@ -650,23 +650,6 @@ p.side-header button:hover,
     width: 150px;
 }
 
-/* toast */
-
-#toast {
-    position: absolute;
-    min-width: 250px;
-    margin-left: -125px;
-    background-color: black;
-    opacity: 0.75;
-    color: white;
-    text-align: center;
-    border-radius: 5px;
-    padding: 15px;
-    left: 50%;
-    bottom: 50%;
-    max-height: 100%;
-}
-
 #menu-box p {
     max-width: 500px;
     font-size: small;

@@ -178,14 +178,19 @@ define(["underscore", "VectorOps", "util"], function (_, VectorOps, util) {
     var NO_LENGTHS_CHANGED_MSG =
         "It doesn't look like any branch lengths were changed " +
         "by the current method of modifying branch lengths.";
-    var NO_LENGTHS_CHANGED_DURATION = 3000;
+    var NO_LENGTHS_CHANGED_DURATION = 6000;
     var TOL = 0.000001;
 
     /**
      * Raises a toast message telling the user that no branch lengths changed.
      */
     function noLengthsChangedMsg() {
-        util.toastMsg(NO_LENGTHS_CHANGED_MSG, NO_LENGTHS_CHANGED_DURATION);
+        util.toastMsg(
+            "Warning about selected branch length method",
+            NO_LENGTHS_CHANGED_MSG,
+            (duration = NO_LENGTHS_CHANGED_DURATION),
+            (toastType = "warning")
+        );
     }
 
     /**
