@@ -2,15 +2,32 @@ require([
     "jquery",
     "chroma",
     "UtilitiesForTesting",
-    "Legend",
+    "BarplotLegend",
+    "SampleFeatureColorLegend",
     "Colorer",
-], function ($, chroma, UtilitiesForTesting, Legend, Colorer) {
+], function (
+    $,
+    chroma,
+    UtilitiesForTesting,
+    BarplotLegend,
+    SampleFeatureColorLegend,
+    Colorer
+) {
     $(document).ready(function () {
-        module("Legend", {
+        module("Legends", {
             // Create and destroy the container HTML element within the test,
             // to avoid having to directly mess around with the test HTML file.
             // (I can't find the exact source, but I read about this on a
             // StackOverflow post somewhere.)
+            // Currently there are two different legends that need to be tested
+            // BarplotLegned and SampleFeatureColorLegend. They both inherit
+            // the Legend abstract class and thus behave idential. The only
+            // difference between the two legends are the missing non-numeric
+            // warning messages. Thus, for the majority of the tests, we only
+            // need to use one of the legend types (testing both would be
+            // redundant). The only test we need to explicitly test both
+            // legends is the 'addContinuousKey (with non-numeric warning)'
+            // test.
             setup: function () {
                 this.containerEle = document.createElement("div");
                 this.validateRefSVG = function (obsContainerSVG, expSVG) {
@@ -47,22 +64,21 @@ require([
             // addContinuousKey() is called (there isn't really an important
             // reason for this, it's just how things work; the caller is
             // responsible for making sure Legends aren't created in already-
-            // populated containers, at least when initially constructing a
-            // Legend)
+            // populated containers, at least on initial construction)
             var funkyP = this.containerEle.appendChild(
                 document.createElement("p")
             );
             funkyP.innerText = "asdfasdfasdf";
-            var legend = new Legend(this.containerEle);
+            var legend = new BarplotLegend(this.containerEle);
             equal(this.containerEle.firstChild, funkyP);
         });
         test('On initialization, legendType is null and title is ""', function () {
-            var legend = new Legend(this.containerEle);
+            var legend = new BarplotLegend(this.containerEle);
             equal(legend.legendType, null);
             equal(legend.title, "");
         });
         test("addCategoricalKey", function () {
-            var legend = new Legend(this.containerEle);
+            var legend = new BarplotLegend(this.containerEle);
             var colorInfo = {
                 "Thing 1": "#ff0000",
                 "Thing 2": "#00ff00",
@@ -120,7 +136,7 @@ require([
                     // Now, check that the legend is as expected.
                     equal(cellsInRow[1].innerText, expectedKey);
                 });
-            // Legend should be visible
+            // BarplotLegend should be visible
             notOk(this.containerEle.classList.contains("hidden"));
 
             // Check that _sortedCategories and _category2color are defined
@@ -134,7 +150,7 @@ require([
             deepEqual(legend._category2color, colorInfo);
         });
         test("addCategoricalKey (just 1 color)", function () {
-            var legend = new Legend(this.containerEle);
+            var legend = new BarplotLegend(this.containerEle);
             var darkBrown = "#52330b";
             var colorInfo = { hjkl: darkBrown };
             legend.addCategoricalKey("Single-color test", colorInfo);
@@ -157,13 +173,13 @@ require([
             deepEqual(legend._category2color, colorInfo);
         });
         test("addCategoricalKey (error: no categories)", function () {
-            var legend = new Legend(this.containerEle);
+            var legend = new BarplotLegend(this.containerEle);
             throws(function () {
                 legend.addCategoricalKey("oops", {});
             }, /Can't create a categorical legend when there are no categories in the info/);
         });
         test("addContinuousKey", function () {
-            var legend = new Legend(this.containerEle);
+            var legend = new BarplotLegend(this.containerEle);
             var colorer = new Colorer("Viridis", ["0", "4"], true);
             var refSVGs = UtilitiesForTesting.getReferenceSVGs();
             legend.addContinuousKey(
@@ -190,9 +206,11 @@ require([
             // just concatenate these strings together to get the expected SVG
             // here)
             var cSVG = this.containerEle.children[1];
-            this.validateRefSVG(cSVG, refSVGs[0] + refSVGs[1]);
+            // svg container should be inside a div element
+            equal(cSVG.tagName, "DIV");
+            this.validateRefSVG(cSVG.children[0], refSVGs[0] + refSVGs[1]);
 
-            // Legend should be visible
+            // BarplotLegend should be visible
             notOk(this.containerEle.classList.contains("hidden"));
 
             // Check SVG exporting attributes are set ok
@@ -204,12 +222,12 @@ require([
             notOk(legend._missingNonNumericWarningShown);
         });
         test("addContinuousKey (with non-numeric warning)", function () {
-            var legend = new Legend(this.containerEle);
+            var barplotLegend = new BarplotLegend(this.containerEle);
             var colorer = new Colorer("Viridis", ["0", ">:D", "4"], true);
             var refSVGs = UtilitiesForTesting.getReferenceSVGs();
-            legend.addContinuousKey("howdy", colorer.getGradientInfo());
+            barplotLegend.addContinuousKey("howdy", colorer.getGradientInfo());
 
-            equal(legend.legendType, "continuous");
+            equal(barplotLegend.legendType, "continuous");
 
             // There's a third top-level child element now -- a warning
             // message shown to the user.
@@ -217,40 +235,61 @@ require([
 
             // 1. Check title
             this.validateTitleEle(this.containerEle.children[0], "howdy");
-            equal(legend.title, "howdy");
+            equal(barplotLegend.title, "howdy");
 
-            // 2. Check SVG
+            // 2. A "container SVG" element containing the gradient SVG and
+            // <rect>/<text> stuff positioning this gradient
+            // (these are split into separate SVGs in the test data, but we can
+            // just concatenate these strings together to get the expected SVG
+            // here)
             var cSVG = this.containerEle.children[1];
-            this.validateRefSVG(cSVG, refSVGs[0] + refSVGs[1]);
+            // svg container should be inside a div element
+            equal(cSVG.tagName, "DIV");
+            this.validateRefSVG(cSVG.children[0], refSVGs[0] + refSVGs[1]);
 
             // 3. Check non-numeric warning
             var warning = this.containerEle.children[2];
             equal(warning.tagName, "P");
             equal(
                 warning.innerText,
-                Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING
+                barplotLegend.continuousMissingNonNumericWarning
             );
             // Verify that the warning <p> has white-space: normal; set so it
             // has line breaks, like normal text
             equal($(warning).css("white-space"), "normal");
 
-            // Legend should be visible
+            // BarplotLegend should be visible
             notOk(this.containerEle.classList.contains("hidden"));
 
-            // Check that legend._gradientSVG and
-            // legend._nonNumericWarningShown are properly set
+            // Check that barplotLegend._gradientSVG and
+            // barplotLegend._nonNumericWarningShown are properly set
             // (The gradientSVG check is extremely cursory -- this just
             // verifies that it kinda looks like a gradient. The actual
             // gradient SVG being correct is tested in test-colorer.js.)
-            ok(legend._gradientSVG.includes("<linearGradient"));
-            equal(legend._gradientID, "Gradient0");
-            equal(legend._minValStr, "0");
-            equal(legend._midValStr, "2");
-            equal(legend._maxValStr, "4");
-            ok(legend._missingNonNumericWarningShown);
+            ok(barplotLegend._gradientSVG.includes("<linearGradient"));
+            equal(barplotLegend._gradientID, "Gradient0");
+            equal(barplotLegend._minValStr, "0");
+            equal(barplotLegend._midValStr, "2");
+            equal(barplotLegend._maxValStr, "4");
+            ok(barplotLegend._missingNonNumericWarningShown);
+
+            // Currently, the only differnce between BarplotLegend and
+            // SampleFeatureColorLegend is the continus warning message
+            // everything else will be identical (i.e. inherit from same
+            // abstract class). Thus, we only need to check to if the correct
+            // message is displaying
+            this.containerEle.innerHTML = ""; // clear div container
+            var colorLegend = new SampleFeatureColorLegend(this.containerEle);
+            colorLegend.addContinuousKey("howdy", colorer.getGradientInfo());
+            warning = this.containerEle.children[2];
+            equal(warning.tagName, "P");
+            equal(
+                warning.innerText,
+                colorLegend.continuousMissingNonNumericWarning
+            );
         });
         test("addLengthKey", function () {
-            var legend = new Legend(this.containerEle);
+            var legend = new BarplotLegend(this.containerEle);
             legend.addLengthKey("LengthTest :O", -5.12345, 1000);
 
             equal(legend.legendType, "length");
@@ -275,11 +314,11 @@ require([
             ok(row2cells[0].classList.contains("header-cell"));
             equal(row2cells[1].innerText, "1000");
 
-            // Legend should be visible
+            // BarplotLegend should be visible
             notOk(this.containerEle.classList.contains("hidden"));
         });
         test("clear", function () {
-            var legend = new Legend(this.containerEle);
+            var legend = new BarplotLegend(this.containerEle);
             var funkyP = this.containerEle.appendChild(
                 document.createElement("p")
             );
@@ -303,16 +342,16 @@ require([
             equal(legend.title, "");
         });
         test("unhide", function () {
-            var legend = new Legend(this.containerEle);
+            var legend = new BarplotLegend(this.containerEle);
             legend.clear();
-            // Legend container is now hidden
+            // BarplotLegend container is now hidden
             ok(this.containerEle.classList.contains("hidden"));
             legend.unhide();
-            // Legend container is now not hidden!
+            // BarplotLegend container is now not hidden!
             notOk(this.containerEle.classList.contains("hidden"));
         });
         test("addTitle", function () {
-            var legend = new Legend(this.containerEle);
+            var legend = new BarplotLegend(this.containerEle);
             var titleText1 = "Hi I'm a title";
             legend.addTitle(titleText1);
             equal(this.containerEle.children.length, 1);

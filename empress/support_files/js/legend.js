@@ -1,6 +1,7 @@
 define(["jquery", "underscore", "util"], function ($, _, util) {
     /**
      *
+     * @Abstract
      * @class Legend
      *
      * Creates a legend within a given HTML element. (You'll need to call
@@ -11,7 +12,6 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
      *                                will be added.
      *
      * @return {Legend}
-     * @constructs Legend
      */
     function Legend(container) {
         /**
@@ -102,6 +102,25 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
          */
         this._minLengthVal = null;
         this._maxLengthVal = null;
+
+        /**
+         * @type {String}
+         * Text to display at the bottom of the continuous legend when some
+         * values in a continuous are either missing or non-numeric.
+         */
+        this.continuousMissingNonNumericWarning = null;
+
+        /**
+         * @type {String}
+         * Short version of the above warning, shown for the same legends when
+         * exported to SVG
+         */
+        this.continuousMissingNonNumericWarningShort = null;
+
+        // make Legend an abstract class
+        if (this.constructor === Legend) {
+            throw new Error("Abstract class Legend can not be instantiated.");
+        }
     }
 
     /**
@@ -183,7 +202,20 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         containerSVG.setAttribute("style", "display: block; margin: auto;");
         // just kinda plop the combined SVG code into containerSVG's HTML
         containerSVG.innerHTML = totalHTMLSVG;
-        this._container.appendChild(containerSVG);
+
+        // We need to put the svg container inside a div otherwise some unwanted
+        // behavior will occur when users resize the legend.
+        // The gradient bar's height is set to be 80% of the legend's
+        // height. This works for most cases howevr, some issues come up when
+        // the uesr resizes the legned. i.e. the height of the graident color
+        // bar will continuously be set to 80% of the legend's height which
+        // can hide the warning message(s) that appear benith the gradient.
+        // By putting the svg container inside a div, the gradient color bar
+        // will be set to 80% of the initial size of the legend and will remain
+        // fixed when users resize the legend.
+        var fixSizeDiv = document.createElement("div");
+        fixSizeDiv.appendChild(containerSVG);
+        this._container.appendChild(fixSizeDiv);
         if (this._missingNonNumericWarningShown) {
             var missingText = this.getMissingNonNumericWarning();
             var warningP = document.createElement("p");
@@ -744,39 +776,22 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         };
     };
 
-    Legend.prototype.setMissingNonNumericWarning = function (
-        full,
-        short = null
-    ) {
-        this.continuousMissingNonNumericWarning = full;
-        this.continuousMissingNonNumericWarningShort = short;
-    };
-
+    /**
+     * Returns the full and short versions of the continuous missing
+     * non-numeric warning messages.
+     *
+     * @return {Object} The object is formated as follows
+     * {
+     *      full: messageString,
+     *      short: messageString
+     * }
+     */
     Legend.prototype.getMissingNonNumericWarning = function () {
-        var missingText = {
-            full: Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING,
-            short: Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING_SHORT,
+        return {
+            full: this.continuousMissingNonNumericWarning,
+            short: this.continuousMissingNonNumericWarningShort,
         };
-        if (this.hasOwnProperty("continuousMissingNonNumericWarning")) {
-            missingText.full = this.continuousMissingNonNumericWarning;
-        }
-        if (this.hasOwnProperty("continuousMissingNonNumericWarningShort")) {
-            missingText.short = this.continuousMissingNonNumericWarningShort;
-        }
-        return missingText;
     };
-
-    // Shown at the bottom of continuous legends in the page when some values
-    // in a continuous field can't be represented on a gradient
-    Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING =
-        "Some value(s) in this field were missing and/or not numeric. " +
-        "These value(s) have been left out of the gradient, and no bar(s) " +
-        "have been drawn for them.";
-
-    // Short version of the above warning, shown for the same legends when
-    // exported to SVG
-    Legend.CONTINUOUS_MISSING_NON_NUMERIC_WARNING_SHORT =
-        "Missing / non-numeric value(s) omitted.";
 
     // Various SVG attributes stored here since they're used every time the
     // export function is called

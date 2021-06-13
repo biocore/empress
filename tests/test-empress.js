@@ -376,6 +376,12 @@ require([
             var resultProperties = util.naturalSort(Object.keys(cm));
             deepEqual(resultProperties, properties);
 
+            deepEqual(cm.gradientID, "Gradient-1");
+            deepEqual(cm.maxValStr, "2");
+            deepEqual(cm.midValStr, "1.5");
+            deepEqual(cm.minValStr, "1");
+            deepEqual(cm.missingNonNumerics, false);
+
             // make sure nodes were assigned correct color
             var node;
             var group1 = new Set([2, 3, 4]);
@@ -445,8 +451,8 @@ require([
             }
         });
 
-        test("Test colorByFeatureMetadata, continuous no numberic values", function () {
-            // hack to add a metadata column with no numberic data
+        test("Test colorByFeatureMetadata, continuous: failure due to no numberic values", function () {
+            // hack to add a metadata column with no numeric data
             this.empress._featureMetadataColumns = ["f1", "f2", "f3"];
             this.empress._tipMetadata = {
                 1: ["2", "2", "n1"],
@@ -454,9 +460,9 @@ require([
                 3: ["1", "2", "n3"],
                 6: ["2", "2", "n4"],
             };
-            var faileFunctionCalled = false;
+            var failedFunctionCalled = false;
             var failedFunction = () => {
-                faileFunctionCalled = true;
+                failedFunctionCalled = true;
             };
             var cm = this.empress.colorByFeatureMetadata(
                 "f3",
@@ -466,7 +472,7 @@ require([
                 true,
                 failedFunction
             );
-            ok(faileFunctionCalled, "continousFailedFunc was not called.");
+            ok(failedFunctionCalled, "continousFailedFunc was called.");
         });
 
         test("Test _projectObservations, all tips in obs", function () {

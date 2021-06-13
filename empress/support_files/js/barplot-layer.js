@@ -3,9 +3,9 @@ define([
     "underscore",
     "spectrum",
     "Colorer",
-    "Legend",
+    "BarplotLegend",
     "util",
-], function ($, _, spectrum, Colorer, Legend, util) {
+], function ($, _, spectrum, Colorer, BarplotLegend, util) {
     /**
      *
      * @class BarplotLayer
@@ -634,14 +634,14 @@ define([
         this.colorLegendDiv.classList.add("hidden");
         this.colorLegendDiv.classList.add("legend");
         this.colorLegendDiv.classList.add("barplot-layer-legend");
-        this.colorLegend = new Legend(this.colorLegendDiv);
+        this.colorLegend = new BarplotLegend(this.colorLegendDiv);
         this.layerDiv.appendChild(this.colorLegendDiv);
 
         this.lengthLegendDiv = document.createElement("div");
         this.lengthLegendDiv.classList.add("hidden");
         this.lengthLegendDiv.classList.add("legend");
         this.lengthLegendDiv.classList.add("barplot-layer-legend");
-        this.lengthLegend = new Legend(this.lengthLegendDiv);
+        this.lengthLegend = new BarplotLegend(this.lengthLegendDiv);
         this.layerDiv.appendChild(this.lengthLegendDiv);
 
         // TODO: if possible, making the legend text selectable (overriding
@@ -757,7 +757,7 @@ define([
      * effect) will be excluded from the Array. However, if all legends are
      * active, the order in the Array will always be color then length.
      *
-     * @return {Array} Array of Legend objects
+     * @return {Array} Array of BarplotLegend objects
      */
     BarplotLayer.prototype.getLegends = function () {
         var containedLegends = [this.colorLegend, this.lengthLegend];

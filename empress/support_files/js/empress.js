@@ -6,7 +6,7 @@ define([
     "VectorOps",
     "CanvasEvents",
     "BarplotPanel",
-    "Legend",
+    "SampleFeatureColorLegend",
     "util",
     "chroma",
     "LayoutsUtil",
@@ -20,7 +20,7 @@ define([
     VectorOps,
     CanvasEvents,
     BarplotPanel,
-    Legend,
+    SampleFeatureColorLegend,
     util,
     chroma,
     LayoutsUtil,
@@ -159,24 +159,12 @@ define([
         }
 
         /**
-         * @type {String}
-         * Text to display at the bottom of the continuous legend when some
-         *  values in a continuous are either missing or non-numeric.
-         */
-        this._continuousMissingNonNumericWarning =
-            "Some value(s) in this field were missing and/or not numeric. " +
-            "These value(s) have been left out of the gradient, and the " +
-            "corresponding nodes have been set to the default color.";
-        /**
-         * @type {Legend}
+         * @type {SampleFeatureColorLegend}
          * Legend describing the way the tree is colored.
          * @private
          */
-        this._legend = new Legend(document.getElementById("legend-main"));
-        this._legend.setMissingNonNumericWarning(
-            "Some value(s) in this field were missing and/or not numeric. " +
-                "These value(s) are not included in the gradient, and the " +
-                "associated nodes have been left as the default color."
+        this._legend = new SampleFeatureColorLegend(
+            document.getElementById("legend-main")
         );
 
         /**
@@ -2514,7 +2502,7 @@ define([
                 '" has less than 2 unique numeric values, so it cannot be ' +
                 "used for continuous coloring. " +
                 "Using discrete coloring instead.";
-            util.toastMsg(msg, 5000);
+            util.toastMsg("Feature metadata coloring error", msg, 5000);
             // assign colors to unique values
             colorer = new Colorer(
                 color,
@@ -2545,6 +2533,8 @@ define([
 
         // color tree
         this._colorTree(obs, cm);
+
+        this.resizeLegend();
         if (continuous) {
             this._legend.addContinuousKey(cat, keyInfo);
         } else {
