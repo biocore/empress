@@ -1,5 +1,5 @@
 define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
-    var TotalColorOptionsHanlders = 0;
+    var TotalColorOptionsHandlers = 0;
 
     function ColorOptionsHandler(container, enableContinuousColoring = false) {
         this.container = container;
@@ -23,7 +23,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         Colorer.addColorsToSelect(this.colormapSelector);
         colormapSC.appendChild(this.colormapSelector);
         this.colormapSelector.id =
-            "color-options-hanlder-" + this.uniqueNum + "-colormap-select";
+            "color-options-handler-" + this.uniqueNum + "-colormap-select";
         colormapLbl.setAttribute("for", this.colormapSelector.id);
 
         // Add a row for choosing whether the color scale should
@@ -84,7 +84,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             var continuousScaleLbl = continuousScaleP.appendChild(
                 document.createElement("label")
             );
-            continuousScaleLbl.innerText = "Manually set boundaries";
+            continuousScaleLbl.innerText = "Manually set gradient boundaries?";
             this.continuousScaleCheckbox = continuousScaleP.appendChild(
                 document.createElement("input")
             );
@@ -110,7 +110,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             var continuousMinLbl = continuousMinP.appendChild(
                 document.createElement("label")
             );
-            continuousMinLbl.innerText = "Min";
+            continuousMinLbl.innerText = "Minimum value";
             this.continuousMinInput = continuousMinP.appendChild(
                 document.createElement("input")
             );
@@ -130,7 +130,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             var continuousMaxLbl = continuousMaxP.appendChild(
                 document.createElement("label")
             );
-            continuousMaxLbl.innerText = "Max";
+            continuousMaxLbl.innerText = "Maximum value";
             this.continuousMaxInput = continuousMaxP.appendChild(
                 document.createElement("input")
             );
