@@ -2,13 +2,15 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
     var TotalColorOptionsHandlers = 0;
 
     function ColorOptionsHandler(container, enableContinuousColoring = false) {
+        // add count
+        TotalColorOptionsHandlers += 1;
+
         this.container = container;
         this.observers = [];
         this.defaultColor = "discrete-coloring-qiime";
         this.defaultReverseChk = false;
         // create unique num
-        TotalColorOptionsHanlders += 1;
-        this.uniqueNum = TotalColorOptionsHanlders;
+        this.uniqueNum = TotalColorOptionsHandlers;
         this.enableContinuousColoring = enableContinuousColoring;
 
         // Add a row for choosing the color map
@@ -74,34 +76,37 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             continuousValP.classList.add("hidden");
 
             // add continuous values min/middle/max inputs
-            var continuousScaleDiv = this.container.appendChild(
+            var continuousManualScaleDiv = this.container.appendChild(
                 document.createElement("div")
             );
-            continuousScaleDiv.classList.add("hidden");
-            var continuousScaleP = continuousScaleDiv.appendChild(
+            continuousManualScaleDiv.classList.add("hidden");
+            continuousManualScaleDiv.classList.add("indented");
+            var continuousManualScaleManualP = continuousManualScaleDiv.appendChild(
                 document.createElement("p")
             );
-            var continuousScaleLbl = continuousScaleP.appendChild(
+            var continuousManualScaleLbl = continuousManualScaleManualP.appendChild(
                 document.createElement("label")
             );
-            continuousScaleLbl.innerText = "Manually set gradient boundaries?";
-            this.continuousScaleCheckbox = continuousScaleP.appendChild(
+            continuousManualScaleLbl.innerText =
+                "Manually set gradient boundaries?";
+            this.continuousManualScaleCheckbox = continuousManualScaleManualP.appendChild(
                 document.createElement("input")
             );
-            this.continuousScaleCheckbox.id =
+            this.continuousManualScaleCheckbox.id =
                 "color-options-hanlder-" +
                 this.uniqueNum +
                 "-continuous-scale-chk";
-            this.continuousScaleCheckbox.setAttribute("type", "checkbox");
-            this.continuousScaleCheckbox.classList.add("empress-input");
-            continuousScaleLbl.setAttribute(
+            this.continuousManualScaleCheckbox.setAttribute("type", "checkbox");
+            this.continuousManualScaleCheckbox.classList.add("empress-input");
+            continuousManualScaleLbl.setAttribute(
                 "for",
-                this.continuousScaleCheckbox.id
+                this.continuousManualScaleCheckbox.id
             );
-            var continuousMinMaxDiv = continuousScaleDiv.appendChild(
+            var continuousMinMaxDiv = continuousManualScaleDiv.appendChild(
                 document.createElement("div")
             );
             continuousMinMaxDiv.classList.add("hidden");
+            continuousMinMaxDiv.classList.add("indented");
 
             // add min scale input
             var continuousMinP = continuousMinMaxDiv.appendChild(
@@ -150,16 +155,14 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             // add events
             this.continuousValCheckbox.onchange = () => {
                 if (scope.continuousValCheckbox.checked) {
-                    continuousScaleDiv.classList.remove("hidden");
+                    continuousManualScaleDiv.classList.remove("hidden");
                 } else {
-                    continuousScaleDiv.classList.add("hidden");
+                    continuousManualScaleDiv.classList.add("hidden");
                 }
                 notify();
             };
-            this.continuousScaleCheckbox.onchange = () => {
-                if (scope.continuousScaleCheckbox.checked) {
-                    scope.continuousMinInput.value = null;
-                    scope.continuousMaxInput.value = null;
+            this.continuousManualScaleCheckbox.onchange = () => {
+                if (scope.continuousManualScaleCheckbox.checked) {
                     continuousMinMaxDiv.classList.remove("hidden");
                 } else {
                     continuousMinMaxDiv.classList.add("hidden");
@@ -187,7 +190,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.colormapSelector.onchange = () => {
             if (scope.enableContinuousColoring) {
                 if (Colorer.isColorMapDiscrete(scope.colormapSelector.value)) {
+                    scope.continuousValCheckbox.checked = false;
                     continuousValP.classList.add("hidden");
+                    continuousManualScaleDiv.classList.add("hidden");
                 } else {
                     continuousValP.classList.remove("hidden");
                 }
@@ -207,12 +212,29 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             reverse: this.reverseColormapCheckbox.checked,
         };
         if (this.enableContinuousColoring) {
-            options.continuousColoring = this.continuousValCheckbox.checked;
-            options.continuousScale = this.continuousScaleCheckbox.checked;
-            options.min = this.verifyMinBoundary();
-            options.max = this.verifyMaxBoundary();
+            this._getContinuousColoringOptions(options);
         }
         return options;
+    };
+
+    ColorOptionsHandler.prototype._getContinuousColoringOptions = function (
+        options
+    ) {
+        options.continuousColoring = this.continuousValCheckbox.checked;
+        options.continuousManualScale = this.continuousManualScaleCheckbox.checked;
+        options.min = this.verifyMinBoundary();
+        options.max = this.verifyMaxBoundary();
+
+        if (!options.continuousColoring) {
+            // set options to not use continuous coloring
+            options.continuousManualScale = false;
+            options.min = null;
+            options.max = null;
+        } else if (!options.continuousManualScale) {
+            // set options to use default continuous scale
+            options.min = null;
+            options.max = null;
+        }
     };
 
     ColorOptionsHandler.prototype.reset = function () {

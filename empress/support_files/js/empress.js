@@ -1905,7 +1905,10 @@ define([
                 "Error with assigning colors in barplot layer " +
                 layer.num +
                 ": ";
-            if (layer.colorByFMContinuousScale) {
+            if (
+                layer.colorByFMContinuous &&
+                layer.colorByFMContinuousManualScale
+            ) {
                 var min = layer.colorByFMContinuousMin;
                 var max = layer.colorByFMContinuousMax;
 

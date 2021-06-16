@@ -97,7 +97,7 @@ define([
         this.colorByFMColorMap = null;
         this.colorByFMColorReverse = false;
         this.colorByFMContinuous = false;
-        this.colorByFMContinuousScale = false;
+        this.colorByFMContinuousManualScale = false;
         this.colorByFMContinuousMin = null;
         this.colorByFMContinuousMax = null;
         this.colorByFMColorMapDiscrete = true;
@@ -299,10 +299,7 @@ define([
         colorDetailsDiv.classList.add("indented");
         colorDetailsDiv.classList.add("hidden");
 
-        var fColorOptions = new ColorOptionsHandler(
-            colorDetailsDiv,
-            (enableContinuousColoring = true)
-        );
+        var fColorOptions = new ColorOptionsHandler(colorDetailsDiv, true);
 
         // Initialize defaults to match the UI defaults (e.g. the default
         // feature metadata field for coloring is the first in the selector)
@@ -347,7 +344,8 @@ define([
                 scope.colorByFMColorReverse = options.reverse;
                 scope.colorByFMColorMapDiscrete = !options.continuousColoring;
                 scope.colorByFMContinuous = options.continuousColoring;
-                scope.colorByFMContinuousScale = options.continuousScale;
+                scope.colorByFMContinuousManualScale =
+                    options.continuousManualScale;
                 scope.colorByFMContinuousMin = options.min;
                 scope.colorByFMContinuousMax = options.max;
             },

@@ -171,14 +171,15 @@ define(["underscore", "toastr"], function (_, toastr) {
      *                               element.
      * @param {Number} min Defaults to 0. Minimum acceptable value for line
      *                     width/for whatever numeric quality is being
-     *                     considered.
+     *                     considered. min can also be set to null if
+     *                     inputEle.value can be null.
      * @return {Number} Sanitized number that can be used as input to
      *                  Empress.thickenColoredNodes().
      */
     function parseAndValidateNum(inputEle, min = 0) {
         if (isValidNumber(inputEle.value)) {
             var pfVal = parseFloat(inputEle.value);
-            if (min === null || pfVal >= min) {
+            if (pfVal >= min) {
                 return pfVal;
             }
         }

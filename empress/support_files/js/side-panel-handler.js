@@ -200,7 +200,7 @@ define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (
         if (this.sChk.checked) {
             this.fColorOptions.reset();
         } else if (this.fChk.checked) {
-            this.fColorOptions.reset();
+            this.sColorOptions.reset();
         }
     };
 
@@ -225,7 +225,6 @@ define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (
      */
     SidePanel.prototype._resetTab = function (eleNameToProperties, elesToHide) {
         var scope = this;
-        this.resetColorOptions();
         _.each(eleNameToProperties, function (properties, eleName) {
             _.each(properties, function (propVal, prop) {
                 scope[eleName][prop] = propVal;
@@ -234,6 +233,7 @@ define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (
         _.each(elesToHide, function (ele) {
             ele.classList.add("hidden");
         });
+        this.resetColorOptions();
         // Reset tree and then clear legend
         this.empress.resetTree();
         this.empress.drawTree();

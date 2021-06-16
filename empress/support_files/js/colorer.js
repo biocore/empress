@@ -31,10 +31,12 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * @param{Boolean} reverse Defaults to false. If true, the color scale
      *                         will be reversed, with respect to its default
      *                         orientation.
-     * @param{Object} domain [min, max] or null, default null.
-     *                       [min, max] set the min and max of the color
+     * @param{Array} domain  [min, max] or null, default null object.
+     *                       min and max will set the min or max of the color
+     *                       gradient. if either min or max are null then the
+     *                       default min or max values will be used.
+     *                       null will use default min/max for color
      *                       gradient.
-     *                       null will use default min/max for color gradient.
      *
      * @return{Colorer}
      * constructs Colorer
@@ -221,13 +223,13 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
     };
 
     Colorer.prototype.getContinuousColorRange = function (nums) {
-        var min, mid, max;
-        if (this.domain !== null) {
+        var min = _.min(nums);
+        var max = _.max(nums);
+        if (this.domain !== null && this.domain[0] !== null) {
             min = this.domain[0];
+        }
+        if (this.domain !== null && this.domain[1] !== null) {
             max = this.domain[1];
-        } else {
-            min = _.min(nums);
-            max = _.max(nums);
         }
         return {
             min: min,
