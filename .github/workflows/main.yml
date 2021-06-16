@@ -2,7 +2,7 @@
 # Also lints and stylechecks the code (both Python and JS).
 # When tests pass, this runs "make docs" to generate various test QIIME 2
 # visualizations (.qzv files) and uploads them to McHelper.
-name: Main CI
+name: Main CI + McHelper
 
 # Controls when the action will run. 
 on:

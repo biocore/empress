@@ -27,7 +27,7 @@ jstest:
 stylecheck:
 	jshint $(JSLOCS)
 	prettier --check --tab-width 4 $(JSLOCS) $(CSSLOCS)
-	flake8 empress/*.py tests/python/*.py setup.py
+	flake8 empress/*.py tests/python/*.py setup.py empress/scripts/*.py
 
 # Auto-formats the JS code
 jsstyle:

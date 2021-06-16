@@ -1,4 +1,4 @@
-define(["underscore"], function (_) {
+define(["underscore", "toastr"], function (_, toastr) {
     /**
      * Remove all non unique keys
      * Note: keys are referring to empress._treeData (i.e. postorder position of
@@ -131,19 +131,26 @@ define(["underscore"], function (_) {
     }
 
     /**
-     * Display a message in a toast element.
+     * Display a message in a toast element using toastr!
      *
-     * @param {String} msg - message to display
-     * @param {Number} duration - milliseconds to keep toast visible (optional)
-     *                            Defaults to 3000 ms (i.e. 3 seconds).
+     * See https://codeseven.github.io/toastr/demo.html.
+     *
+     * @param {String} msgTitle Short title of a message to display.
+     * @param {String} msgBody Message body text. This can be "", in which case
+     *                         only the title will be shown.
+     * @param {Number} duration Milliseconds to keep toast visible (optional).
+     *                          Defaults to 3000 ms (i.e. 3 seconds).
+     * @param {String} toastType The "type" of toast to show (optional).
+     *                           If specified, this should be one of
+     *                           "success", "info", "warning", "error".
+     *                           Defaults to "error", since as of writing most
+     *                           of the toasts we throw are error messages.
      */
-    function toastMsg(msg, duration = 3000) {
-        var toast = document.getElementById("toast");
-        toast.innerHTML = msg;
-        toast.classList.remove("hidden");
-        setTimeout(function () {
-            toast.classList.add("hidden");
-        }, duration);
+    function toastMsg(msgTitle, msgBody, duration = 3000, toastType = "error") {
+        toastr[toastType](msgBody, msgTitle, {
+            timeOut: duration,
+            positionClass: "toast-bottom-left",
+        });
     }
 
     /**
