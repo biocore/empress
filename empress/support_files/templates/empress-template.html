@@ -142,6 +142,8 @@
         // tests will need to be updated accordingly.
         var isCommunityPlot = {{ is_community_plot | tojson }};
 
+        var isEmpirePlot = {{ is_empire_plot | tojson }};
+
         // create EnableDisableSidePanelTabs to disable when animation is
         // running.
         // This must be done first so that everything else is linked properly.
@@ -171,7 +173,8 @@
             // wrap the sidepanel tabs in a EnableDisableSidePanelTab
             _.each(tabs, function(tabInfo) {
                 sidePanelTabs.push(
-                    new EnableDisableSidePanelTab(tabInfo.tabName, tabInfo.container)
+                    new EnableDisableSidePanelTab(tabInfo.tabName,
+                        tabInfo.container, isEmpirePlot)
                 );
             });
             var animationTab = new EnableDisableAnimationTab(

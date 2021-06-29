@@ -144,6 +144,7 @@ class Empress():
             self.features = None
 
         self.ordination = ordination
+        self.is_empire_plot = (self.ordination is not None)
 
         self.base_url = resource_path
         if self.base_url is None:
@@ -157,7 +158,7 @@ class Empress():
             shear_to_feature_metadata,
         )
 
-        if self.ordination is not None:
+        if self.is_empire_plot:
 
             # biplot arrows can optionally have metadata, think for example
             # a study where the arrows represent pH, Alkalinity, etc.
@@ -365,6 +366,8 @@ class Empress():
             'names': names,
             # Should we show sample metadata coloring / animation panels?
             'is_community_plot': self.is_community_plot,
+            # Are we working with an EMPire plot?
+            'is_empire_plot': self.is_empire_plot,
             # feature table
             's_ids': s_ids,
             'f_ids': f_ids,
