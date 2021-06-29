@@ -22,19 +22,16 @@ define(["EnableDisableTab"], function (EnableDisableTab) {
         this.disableContainer.innerHTML =
             '<p class="side-panel-notes">' +
             '<span style="font-weight: bold;">This tab</span> ' +
-            "has been disabled while the animation is active from within " +
+            "has been disabled while an animation is active within " +
             "the Emperor interface." +
             "</p>";
 
         // add instructions to re-enable the tab
         this.disableContainer.innerHTML +=
             '<p class="side-panel-notes">' +
-            '<span style="font-weight: bold;">To re-enable</span> ' +
-            "this tab please click on the " +
-            '<span style="font-style: italic;">Reset the animation</span>' +
-            " button located within the " +
-            '<span style="font-style: italic;">Animations</span> ' +
-            "tab of Emperor." +
+            '<span style="font-weight: bold;">To re-enable this tab,</span> ' +
+            'please click on the "Reset the animation" button located within ' +
+            'the "Animations" tab of Emperor.' +
             "</p>";
     }
 

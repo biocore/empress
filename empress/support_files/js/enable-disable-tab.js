@@ -41,7 +41,7 @@ define([], function () {
 
         if (this.constructor === EnableDisableTab) {
             throw new Error(
-                "Abstract class EnableDisableTab can not be instantiated."
+                "Abstract class EnableDisableTab cannot be instantiated."
             );
         }
     }

@@ -161,10 +161,6 @@
                         "feature-metadata-coloring-div")
                 },
                 {
-                    tabName: "Barplots",
-                    container: document.getElementById("barplot-div")
-                },
-                {
                     tabName: "Shear Tree",
                     container: document.getElementById("shear-div")
                 },
@@ -192,11 +188,6 @@
         var splitTaxonomyCols = {{ split_taxonomy_columns | tojson }};
 
         var canvas = document.getElementById('tree-surface');
-
-        // NOTE: the contents of this line are validated in the python
-        // integration tests. If this line is changed somehow, the integration
-        // tests will need to be updated accordingly.
-        var isCommunityPlot = {{ is_community_plot | tojson }};
 
         var biom = null;
         if (isCommunityPlot) {
