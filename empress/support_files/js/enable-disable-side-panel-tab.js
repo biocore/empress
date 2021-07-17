@@ -26,7 +26,7 @@ define(["EnableDisableTab"], function (EnableDisableTab) {
             '<p class="side-panel-notes">' +
             "This tab is disabled while an " +
             "animation is active. " +
-            'To re-enable this tab, stop the animation.' +
+            "To re-enable this tab, stop the animation." +
             "</p>";
 
         // add instructions on how to disable animations from empress
@@ -41,7 +41,7 @@ define(["EnableDisableTab"], function (EnableDisableTab) {
             // In case the grammar police come knocking.
             empressDisablingPrefix =
                 '<span style="font-weight: bold;">' +
-                'If this animation was started by Empress,</span> you ';
+                "If this animation was started by Empress,</span> you ";
         } else {
             empressDisablingPrefix = "You ";
         }
