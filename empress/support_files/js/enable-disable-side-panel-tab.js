@@ -24,7 +24,7 @@ define(["EnableDisableTab"], function (EnableDisableTab) {
         // add disable text message
         this.disableContainer.innerHTML =
             '<p class="side-panel-notes">' +
-            'This tab is disabled while an "' +
+            "This tab is disabled while an " +
             "animation is active. " +
             'To re-enable this tab, stop the animation."' +
             "</p>";
