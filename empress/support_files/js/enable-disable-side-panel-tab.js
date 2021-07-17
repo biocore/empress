@@ -36,8 +36,7 @@ define(["EnableDisableTab"], function (EnableDisableTab) {
             "you can stop the animation by going to the " +
             '"Animation" ' +
             "tab and clicking on the " +
-            '"Stop Animation"' +
-            "button." +
+            '"Stop Animation" button." +
             "</p>";
 
         if (isEmpirePlot) {
