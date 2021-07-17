@@ -5,9 +5,9 @@ define(["EnableDisableTab"], function (EnableDisableTab) {
      * Adds the the ability to enable and disable a side panel tab by
      * encapsulating a side-panel tab in an enabled/disabled container.
      * Two new containers will be created:
-     * 		- an "enable container" that holds the original content of tab
-     * 		- a "disable container" that will display a message describing why the
-     *        tab has been disabled and how to re-enable it.
+     *  - an "enable container" that holds the original content of the tab
+     *  - a "disable container" that will display a message describing why
+     *    the tab has been disabled and how to re-enable it
      *
      * @param{String} tabName The name of the tab
      * @param{object} tab The div container to encapsulate
