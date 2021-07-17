@@ -29,18 +29,33 @@ define(["EnableDisableTab"], function (EnableDisableTab) {
             'To re-enable this tab, stop the animation.' +
             "</p>";
 
-        // add instructions to disable animations from empress
+        // add instructions on how to disable animations from empress
+        // We can use isEmpirePlot to shorten these messages if this isn't
+        // an Empire plot (because, in this case, there is only one possible
+        // type of animation that can happen and thus no reason to preface
+        // these instructions with "If this animation was started by Empress").
+        var empressDisablingPrefix;
+        if (isEmpirePlot) {
+            // We include the "you" / "You" in these warnings so that the
+            // capitalization is correct in either case.
+            // In case the grammar police come knocking.
+            empressDisablingPrefix =
+                '<span style="font-weight: bold;">' +
+                'If this animation was started by Empress,</span> you ';
+        } else {
+            empressDisablingPrefix = "You ";
+        }
         this.disableContainer.innerHTML +=
             '<p class="side-panel-notes">' +
-            '<span style="font-weight: bold;">If this animation was started by Empress,</span> ' +
-            "you can stop the animation by going to the " +
+            empressDisablingPrefix +
+            "can stop the animation by going to the " +
             '"Animation" ' +
             "tab and clicking on the " +
             '"Stop Animation" button.' +
             "</p>";
 
         if (isEmpirePlot) {
-            // add instructions to disable animations from emperor
+            // add instructions on how to disable animations from emperor
             this.disableContainer.innerHTML +=
                 '<p class="side-panel-notes">' +
                 '<span style="font-weight: bold;">If this animation was started ' +
