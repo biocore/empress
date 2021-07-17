@@ -26,7 +26,7 @@ define(["EnableDisableTab"], function (EnableDisableTab) {
             '<p class="side-panel-notes">' +
             "This tab is disabled while an " +
             "animation is active. " +
-            'To re-enable this tab, stop the animation."' +
+            'To re-enable this tab, stop the animation.' +
             "</p>";
 
         // add instructions to disable animations from empress
