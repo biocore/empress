@@ -21,15 +21,14 @@ define(["EnableDisableTab"], function (EnableDisableTab) {
         // add disable text message
         this.disableContainer.innerHTML =
             '<p class="side-panel-notes">' +
-            '<span style="font-weight: bold;">This tab</span> ' +
-            "has been disabled while an animation is active within " +
+            'This tab has been disabled while an animation is active within ' +
             "the Emperor interface." +
             "</p>";
 
         // add instructions to re-enable the tab
         this.disableContainer.innerHTML +=
             '<p class="side-panel-notes">' +
-            '<span style="font-weight: bold;">To re-enable this tab,</span> ' +
+            'To re-enable this tab, ' +
             'please click on the "Reset the animation" button located within ' +
             'the "Animations" tab of Emperor.' +
             "</p>";
