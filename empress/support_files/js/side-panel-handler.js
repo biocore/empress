@@ -344,7 +344,8 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         );
         if (_.isEmpty(keyInfo)) {
             util.toastMsg(
-                "No nodes with feature metadata are visible due to shearing"
+                "Feature metadata coloring error",
+                "No nodes with feature metadata are visible due to shearing."
             );
             this.fUpdateBtn.classList.remove("hidden");
             return;
