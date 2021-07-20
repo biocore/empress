@@ -226,8 +226,8 @@ We are now ready to visualize this data using Empress.
 ### Empress Plot  
 
 We’ll start by creating a simple stand-alone tree visualization artifact, which
-will enable us to explore the tree using the various functionalities available
-in Empress.
+will enable us to explore the tree and associated data using the various
+functionalities available in Empress.
 
 ```bash
 qiime empress community-plot \
@@ -280,7 +280,7 @@ Another way of exploring the classification of our features is to color the bran
 
 ![empress_unrooted_feature_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_unrooted_feature_coloring.png)
 
-The plot is now updated so each branch is now colored by its phylum-level classification. We can see that the extra long branches are now mostly the same magenta color. Check out the legend on the left side of the screen -- it turns out that the magenta color corresponds to an *Unspecified* phylum. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
+The plot is now updated so each branch is now colored by its phylum-level classification. We can see that many of the extra long branches are now mostly the same magenta color. Check out the legend on the left side of the screen -- it turns out that the magenta color corresponds to a phylum-level classification of `k__Bacteria; Unspecified`, indicating that these ASVs were only classified as Bacteria. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
 
 #### Exploring a feature’s closest common ancestors  
 
@@ -288,7 +288,7 @@ So far, we’ve looked at our data using the default unrooted tree view. To visu
 
 ![empress_circular_feature_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_feature_coloring.png)
 
-Now, let's zoom into the longest branch of the bottom cluster of *Unspecified* nodes and click on one of the close tips that has a different phylum classification (light blue).   
+Now, let's zoom into the longest branch of the bottom cluster of `k__Bacteria; Unspecified` nodes and click on one of the close tips that has a different phylum classification (light blue).   
 
 ![empress_circular_common_ancestor](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_common_ancestor.gif)
 
@@ -302,7 +302,7 @@ The composition of microbial communities of the gut, tongue, and palms are very 
 
 ![empress_sample_metadata_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_sample_metadata_coloring.png)
 
-In this plot the colored branches represent lineages that are unique to the corresponding body site, while the uncolored branches are those that are shared across at least 2 body sites and thus cannot be displayed with a single color. While it is not surprising to see a large number of unique features in the gut samples (red) compared to the palm samples (blue and orange), it is interesting to see a large number of unique features between the left and right palm. Can you think of any biological reasons why the left and right palms may contain such different unique microbes? Even though the left and right palm do harbor unique features, the representative clades appear more integrated among themselves, suggesting that their phylogeny are still more similar to each other than the gut taxa which appear to cluster mainly among themselves.  
+In this plot the colored branches represent lineages that are unique to the corresponding body site, while the uncolored branches are those that are shared across at least 2 body sites and thus cannot be displayed with a single color. While it is not surprising to see a large number of unique features in the gut samples (red) compared to the palm samples (blue and orange), it is interesting to see a large number of unique features between the left and right palm. Can you think of any biological reasons why the left and right palms may contain such different unique microbes? Even though the left and right palm do harbor unique features, the representative clades appear more integrated among themselves, suggesting that their phylogenies are still more similar to each other than the gut taxa which appear to cluster mainly among themselves.  
 
 #### Visualizing feature / sample metadata in barplots
 
