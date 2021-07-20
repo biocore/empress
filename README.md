@@ -249,10 +249,9 @@ qiime tools view empress-tree.qzv
 The starting plot is a simple unrooted tree which has all the normal properties of a phylogenetic tree. The outermost “tips” of the tree are also referred to as “leaves”, “terminal nodes”, or “external nodes” and here represent a unique ASV. The line connected to a tip is referred to as a “branch”. A branch connects two or more nodes, or in this case a tip to an internal node. These internal nodes represent a divergent point between nodes and the branch length represents the evolutionary distance between divergence points.
 You can use your mouse’s scroll wheel to zoom in and out, and click and drag anywhere on the plot to move the display to take a closer look at the various tree components. On the top-right we see a display menu with several subcategories that allow us to customize the plot. We will explore these options in more detail below.  
 
-
 #### Exploring individual features  
 
-The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Zoom in on the tip of the longest branch and click on the node.   
+The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Using your computer mouse, move the display to focus in on the tip of the longest branch and click on the node.
 
 ![empress_plain_first_outlier](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_plain_first_outlier.png)
 
@@ -291,7 +290,7 @@ So far, we’ve looked at our data using the default unrooted tree view. To visu
 
 Now, let's zoom into the longest branch of the bottom cluster of *Unspecified* nodes and click on one of the close tips that has a different phylum classification (light blue).   
 
-![empress_circular_common_ancestor](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_common_ancestor.png)
+![empress_circular_common_ancestor](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_common_ancestor.gif)
 
 Interestingly, we see that this node is classified as _Acanthamoeba Palestinensis_ which is actually not a bacteria but rather a protozoa. It is not uncommon for certain Eukaryotes to appear in bacterial/archaeal reference databases as they may share a similar genetic lineage. Remember that mitochondria and chloroplasts likely evolved from prokaryotes themselves. Explore a few other common ancestral nodes from different outlier branches. We can see other surprising appearances by _Cucurbita pepo_ (a variety of squash or pumpkin), _Raphanus sativus_ (radish), and _Streptophyta_ (an order of plants). Based on these results one might speculate that our *Unspecified* features likely also belong to either plants or protozoa groups rather than bacteria. Further, since these features appear only on the palm samples, it’s possible the source of these are in fact environmental contaminants rather than common human microbes.  
 
