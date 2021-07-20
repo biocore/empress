@@ -3,17 +3,24 @@
 [![Standalone CI](https://github.com/biocore/empress/actions/workflows/standalone.yml/badge.svg)](https://github.com/biocore/empress/actions/workflows/standalone.yml)
 [![PyPI](https://img.shields.io/pypi/v/empress.svg)](https://pypi.org/project/empress)
 
-<!---Empress Logo--->
+<!--Empress Logo-->
 
 ## Introduction  
 
-Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki/Phylogenetic_tree) viewer that helps interactively explore the hierarchical relationships between features in a dataset.
+Empress is a fast and scalable [phylogenetic tree](https://en.wikipedia.org/wiki/Phylogenetic_tree) viewer.
 
-While historically these features have often represented evolutionary relationships of species in community surveys, and are characterized by their phylogeny or genetic similarity/differences, you can in fact view any type of information with hierarchical organization. For example, you can view trees of [amplicon sequence variants (ASVs)](https://en.wikipedia.org/wiki/Amplicon_sequence_variant) generated from 16S rRNA marker gene sequencing data, or metabolite trees of LC-MS data using [q2-qemistree](https://github.com/biocore/q2-qemistree) ([ref](https://www.biorxiv.org/content/10.1101/2020.05.04.077636v1)).
+Empress helps users explore the hierarchical relationships between
+features in a dataset. Any type of "feature" can be viewed in this way:
+historically these features have often represented evolutionary relationships of
+species in community surveys, but you can view pretty much any type of
+information with hierarchical organization. For example, we could view
+trees of
+[amplicon sequence variants (ASVs)](https://en.wikipedia.org/wiki/Amplicon_sequence_variant)
+or [operational taxonomic units (OTUs)](https://en.wikipedia.org/wiki/Operational_taxonomic_unit) generated from 16S rRNA marker gene sequencing data, trees generated from shotgun metagenomics sequencing data, or trees of metabolomics data generated using [Qemistree](https://github.com/biocore/q2-qemistree) (just to name a few options).
 
-Empress supports categorically new functionality, such as animations and
-integration with ordination plots, as well as functionality common to
-established tree viewers (e.g. metadata coloring, clade collapsing,
+Empress supports categorically new functionality, such as integration and
+synchronized animations with ordination plots, as well as functionality
+common to established tree viewers (e.g. metadata coloring, clade collapsing,
 and barplots).
 
 ### Screenshot
@@ -219,8 +226,8 @@ We are now ready to visualize this data using Empress.
 ### Empress Plot  
 
 We’ll start by creating a simple stand-alone tree visualization artifact, which
-will enable us to explore the tree using the various functionalities available
-in Empress.
+will enable us to explore the tree and associated data using the various
+functionalities available in Empress.
 
 ```bash
 qiime empress community-plot \
@@ -242,10 +249,9 @@ qiime tools view empress-tree.qzv
 The starting plot is a simple unrooted tree which has all the normal properties of a phylogenetic tree. The outermost “tips” of the tree are also referred to as “leaves”, “terminal nodes”, or “external nodes” and here represent a unique ASV. The line connected to a tip is referred to as a “branch”. A branch connects two or more nodes, or in this case a tip to an internal node. These internal nodes represent a divergent point between nodes and the branch length represents the evolutionary distance between divergence points.
 You can use your mouse’s scroll wheel to zoom in and out, and click and drag anywhere on the plot to move the display to take a closer look at the various tree components. On the top-right we see a display menu with several subcategories that allow us to customize the plot. We will explore these options in more detail below.  
 
-
 #### Exploring individual features  
 
-The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Zoom in on the tip of the longest branch and click on the node.   
+The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Using your computer mouse, move the display to focus in on the tip of the longest branch and click on the node.
 
 ![empress_plain_first_outlier](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_plain_first_outlier.png)
 
@@ -274,7 +280,7 @@ Another way of exploring the classification of our features is to color the bran
 
 ![empress_unrooted_feature_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_unrooted_feature_coloring.png)
 
-The plot is now updated so each branch is now colored by its phylum-level classification. We can see that the extra long branches are now mostly the same magenta color. Check out the legend on the left side of the screen -- it turns out that the magenta color corresponds to an *Unspecified* phylum. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
+The plot is now updated so each branch is now colored by its phylum-level classification. We can see that many of the extra long branches are now mostly the same magenta color. Check out the legend on the left side of the screen -- it turns out that the magenta color corresponds to a phylum-level classification of `k__Bacteria; Unspecified`, indicating that these ASVs were only classified as Bacteria. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
 
 #### Exploring a feature’s closest common ancestors  
 
@@ -282,9 +288,9 @@ So far, we’ve looked at our data using the default unrooted tree view. To visu
 
 ![empress_circular_feature_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_feature_coloring.png)
 
-Now, let's zoom into the longest branch of the bottom cluster of *Unspecified* nodes and click on one of the close tips that has a different phylum classification (light blue).   
+Now, let's zoom into the longest branch of the bottom cluster of `k__Bacteria; Unspecified` nodes and click on one of the close tips that has a different phylum classification (light blue).   
 
-![empress_circular_common_ancestor](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_common_ancestor.png)
+![empress_circular_common_ancestor](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_common_ancestor.gif)
 
 Interestingly, we see that this node is classified as _Acanthamoeba Palestinensis_ which is actually not a bacteria but rather a protozoa. It is not uncommon for certain Eukaryotes to appear in bacterial/archaeal reference databases as they may share a similar genetic lineage. Remember that mitochondria and chloroplasts likely evolved from prokaryotes themselves. Explore a few other common ancestral nodes from different outlier branches. We can see other surprising appearances by _Cucurbita pepo_ (a variety of squash or pumpkin), _Raphanus sativus_ (radish), and _Streptophyta_ (an order of plants). Based on these results one might speculate that our *Unspecified* features likely also belong to either plants or protozoa groups rather than bacteria. Further, since these features appear only on the palm samples, it’s possible the source of these are in fact environmental contaminants rather than common human microbes.  
 
@@ -296,7 +302,7 @@ The composition of microbial communities of the gut, tongue, and palms are very 
 
 ![empress_sample_metadata_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_sample_metadata_coloring.png)
 
-In this plot the colored branches represent lineages that are unique to the corresponding body site, while the uncolored branches are those that are shared across at least 2 body sites and thus cannot be displayed with a single color. While it is not surprising to see a large number of unique features in the gut samples (red) compared to the palm samples (blue and orange), it is interesting to see a large number of unique features between the left and right palm. Can you think of any biological reasons why the left and right palms may contain such different unique microbes? Even though the left and right palm do harbor unique features, the representative clades appear more integrated among themselves, suggesting that their phylogeny are still more similar to each other than the gut taxa which appear to cluster mainly among themselves.  
+In this plot the colored branches represent lineages that are unique to the corresponding body site, while the uncolored branches are those that are shared across at least 2 body sites and thus cannot be displayed with a single color. While it is not surprising to see a large number of unique features in the gut samples (red) compared to the palm samples (blue and orange), it is interesting to see a large number of unique features between the left and right palm. Can you think of any biological reasons why the left and right palms may contain such different unique microbes? Even though the left and right palm do harbor unique features, the representative clades appear more integrated among themselves, suggesting that their phylogenies are still more similar to each other than the gut taxa which appear to cluster mainly among themselves.  
 
 #### Visualizing feature / sample metadata in barplots
 
@@ -338,9 +344,9 @@ Since both the node colorings and the barplot layer are now showing the same inf
 
 ![empress barplots: class coloring and tree phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_4.png)
 
-Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at multiple "clusters" throughout the tree: are all of these the same class? We can tell from the legend for this layer (under the heading `Level 3`) that there is only one class colored lavender here, `c__Clostridia`.
+Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the magenta-colored class is present at multiple "clusters" throughout the tree: are all of these the same class? We can tell from the legend for this layer (under the heading `Level 3`) that there is only one class colored magenta here, `k__Bacteria; p__Firmicutes; c__Clostridia`.
 
-So, these lavender classes are all *Clostridia*. Does it make sense that representatives of this class are spread out throughout the tree so much? Unfortunately, yes, since *Clostridia* are -- to quote [Wikipedia](https://en.wikipedia.org/wiki/Clostridia) -- "a highly [polyphyletic](https://en.wikipedia.org/wiki/Polyphyly) class." (As an exercise, we recommend trying out adding on extra barplot layers for lower levels of taxonomy -- order, family, genus, etc. -- and seeing how things change.)
+So, these magenta classes are all *Clostridia*. Does it make sense that representatives of this class are spread out throughout the tree so much? Unfortunately, yes, since *Clostridia* are -- to quote [Wikipedia](https://en.wikipedia.org/wiki/Clostridia) -- "a highly [polyphyletic](https://en.wikipedia.org/wiki/Polyphyly) class." (As an exercise, we recommend trying out adding on extra barplot layers for lower levels of taxonomy -- order, family, genus, etc. -- and seeing how things change.)
 
 ##### Barplots of sample presence information
 
@@ -445,7 +451,7 @@ At first, the plot may look a bit messy. For clarity, let’s remove the long fe
 
 ![empire_plain](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_plain.png)
 
-(Note that the tree and arrow colorings don't necessarily match up between Empress and Emperor—for example, in the screenshot above Actinobacteria-phylum arrows are colored red in Emperor but Actinobacteria-phylum nodes are colored orange in Empress. If you'd like, you can change the arrow colors in Emperor to match the colors Empress assigned. Fixing this is [on our radar](https://github.com/biocore/empress/issues/369).)
+(Note that the tree and arrow colorings don't necessarily match up between Empress and Emperor—for example, in the screenshot above Actinobacteria-phylum arrows are colored red in Emperor but Actinobacteria-phylum nodes are colored dark green in Empress. If you'd like, you can change the arrow colors in Emperor to match the colors Empress assigned. Making this easier is [on our radar](https://github.com/biocore/empress/issues/369).)
 
 #### Interacting with Empire plots  
 
@@ -548,9 +554,9 @@ One unique feature that makes Empress useful for exploring time-series data or m
 
 ## Publication and Citation
 
-Empress is available in mSystems
+An open-access publication describing Empress is available in _mSystems_
 [here](https://msystems.asm.org/content/6/2/e01216-20). If you use
-Empress in your work, please cite it! The BibTeX for this paper is:
+Empress in your work, please cite it! The BibTeX for this publication is:
 
 ```
 @article {CantrellFedarko2021empress,
