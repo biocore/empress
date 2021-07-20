@@ -344,9 +344,9 @@ Since both the node colorings and the barplot layer are now showing the same inf
 
 ![empress barplots: class coloring and tree phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_4.png)
 
-Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the lavender-colored class is present at multiple "clusters" throughout the tree: are all of these the same class? We can tell from the legend for this layer (under the heading `Level 3`) that there is only one class colored lavender here, `c__Clostridia`.
+Things still seem mostly the same as before, but some of the large groups of phyla have now been split up into collections of different classes. Notice how the magenta-colored class is present at multiple "clusters" throughout the tree: are all of these the same class? We can tell from the legend for this layer (under the heading `Level 3`) that there is only one class colored magenta here, `k__Bacteria; p__Firmicutes; c__Clostridia`.
 
-So, these lavender classes are all *Clostridia*. Does it make sense that representatives of this class are spread out throughout the tree so much? Unfortunately, yes, since *Clostridia* are -- to quote [Wikipedia](https://en.wikipedia.org/wiki/Clostridia) -- "a highly [polyphyletic](https://en.wikipedia.org/wiki/Polyphyly) class." (As an exercise, we recommend trying out adding on extra barplot layers for lower levels of taxonomy -- order, family, genus, etc. -- and seeing how things change.)
+So, these magenta classes are all *Clostridia*. Does it make sense that representatives of this class are spread out throughout the tree so much? Unfortunately, yes, since *Clostridia* are -- to quote [Wikipedia](https://en.wikipedia.org/wiki/Clostridia) -- "a highly [polyphyletic](https://en.wikipedia.org/wiki/Polyphyly) class." (As an exercise, we recommend trying out adding on extra barplot layers for lower levels of taxonomy -- order, family, genus, etc. -- and seeing how things change.)
 
 ##### Barplots of sample presence information
 
@@ -451,7 +451,7 @@ At first, the plot may look a bit messy. For clarity, let’s remove the long fe
 
 ![empire_plain](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_plain.png)
 
-(Note that the tree and arrow colorings don't necessarily match up between Empress and Emperor—for example, in the screenshot above Actinobacteria-phylum arrows are colored red in Emperor but Actinobacteria-phylum nodes are colored orange in Empress. If you'd like, you can change the arrow colors in Emperor to match the colors Empress assigned. Fixing this is [on our radar](https://github.com/biocore/empress/issues/369).)
+(Note that the tree and arrow colorings don't necessarily match up between Empress and Emperor—for example, in the screenshot above Actinobacteria-phylum arrows are colored red in Emperor but Actinobacteria-phylum nodes are colored dark green in Empress. If you'd like, you can change the arrow colors in Emperor to match the colors Empress assigned. Making this easier is [on our radar](https://github.com/biocore/empress/issues/369).)
 
 #### Interacting with Empire plots  
 
