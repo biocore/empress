@@ -144,7 +144,7 @@ class Empress():
             self.features = None
 
         self.ordination = ordination
-        self.is_empire_plot = self.ordination is not None
+        self.is_empire_plot = (self.ordination is not None)
 
         self.base_url = resource_path
         if self.base_url is None:

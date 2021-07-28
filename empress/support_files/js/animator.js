@@ -7,11 +7,15 @@ define(["Colorer", "util"], function (Colorer, util) {
      *
      * @param{Empress} empress The core class. Entry point for all metadata and
      *                tree operations.
+     * @param{Array} sidePanelTabs An array of EnableDisableSidePanelTab
+     *                             for the side-panel tabs. These tabs will be
+     *                             disabled while the animator is active and
+     *                             enabled otherwise.
      *
      * @returns{Animator}
      * @constructs Animator
      */
-    function Animator(empress) {
+    function Animator(empress, sidePanelTabs) {
         /**
          * @type {Empress}
          * The Empress state machine
@@ -109,7 +113,35 @@ define(["Colorer", "util"], function (Colorer, util) {
          * Extra width for branches.
          */
         this.lWidth = 0;
+
+        /**
+         * @type {Array}
+         * Stores the side-panel tabs. These tabs will be disabled
+         * while the animator is active and enabled otherwise.
+         * Each element of this array is an EnableDisableSidePanelTab object
+         */
+        this.sidePanelTabs = sidePanelTabs;
     }
+    /*
+     * Enables the side panel tabs. This will result in the side panel tabs
+     * containing their original content.
+     */
+    Animator.prototype.disableSidePanelTabs = function () {
+        _.each(this.sidePanelTabs, function (tab) {
+            tab.disableTab();
+        });
+    };
+
+    /*
+     * Disables the side panel tabs. This will result in the side panel tabs
+     * containing a message describing why the tabs have been disabled and how
+     * to re-enable them.
+     */
+    Animator.prototype.enableSidePanelTabs = function () {
+        _.each(this.sidePanelTabs, function (tab) {
+            tab.enableTab();
+        });
+    };
 
     /**
      * Sets the parameters for the animation state machine.
@@ -310,6 +342,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * start the animation loop.
      */
     Animator.prototype.startAnimation = function () {
+        this.disableSidePanelTabs();
         this.initAnimation();
 
         // start animation loop
@@ -338,6 +371,7 @@ define(["Colorer", "util"], function (Colorer, util) {
      * Stops the animation and clears state machine parameters
      */
     Animator.prototype.stopAnimation = function () {
+        this.enableSidePanelTabs();
         this.__resetParams();
         this.empress.clearLegend();
         this.empress.resetTree();

@@ -282,6 +282,22 @@ define(["underscore", "toastr"], function (_, toastr) {
         return [fm2length, valMin, valMax];
     }
 
+    /**
+     * Given two Objects that map keys to arrays, removes all keys from object
+     * "a" that are present in object "b" and point to a zero-length array in
+     * "b".
+     *
+     * @param {Object} a The object from which keys will be removed.
+     * @param {Object} b The object used as a guide to remove keys from a.
+     */
+    function removeEmptyArrayKeys(a, b) {
+        for (var key in b) {
+            if (b[key].length === 0) {
+                delete a[key];
+            }
+        }
+    }
+
     return {
         keepUniqueKeys: keepUniqueKeys,
         naturalSort: naturalSort,
@@ -290,5 +306,6 @@ define(["underscore", "toastr"], function (_, toastr) {
         parseAndValidateNum: parseAndValidateNum,
         toastMsg: toastMsg,
         assignBarplotLengths: assignBarplotLengths,
+        removeEmptyArrayKeys: removeEmptyArrayKeys,
     };
 });
