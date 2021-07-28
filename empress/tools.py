@@ -264,8 +264,8 @@ def match_inputs(
                 "The feature table contains features that aren't present as "
                 "tips in the tree. You can override this error by using the "
                 "--p-filter-missing-features flag for the QIIME 2 version of "
-+               "EMPress, or the --filter-missing-features flag for the "
-+               "standalone version of EMPress."
+                "EMPress, or the --filter-missing-features flag for the "
+                "standalone version of EMPress."
 
             )
 
