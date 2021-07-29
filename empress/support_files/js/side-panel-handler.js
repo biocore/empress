@@ -307,6 +307,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         if (collapseChk.checked) {
             this.empress.collapseClades();
         }
+
         var lw = util.parseAndValidateNum(lwInput);
         this.empress.thickenColoredNodes(lw);
 
@@ -321,6 +322,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var col = this.sColor.value;
         var reverse = this.sReverseColor.checked;
         var keyInfo = this.empress.colorBySampleCat(colBy, col, reverse);
+
         if (keyInfo === null) {
             util.toastMsg(
                 "Sample metadata coloring error",
@@ -339,12 +341,20 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
         var reverse = this.fReverseColor.checked;
-        this.empress.colorByFeatureMetadata(
+        var keyInfo = this.empress.colorByFeatureMetadata(
             colBy,
             col,
             coloringMethod,
             reverse
         );
+        if (_.isEmpty(keyInfo)) {
+            util.toastMsg(
+                "Feature metadata coloring error",
+                "No nodes with feature metadata are visible due to shearing."
+            );
+            this.fUpdateBtn.classList.remove("hidden");
+            return;
+        }
     };
 
     /**
@@ -453,6 +463,19 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             pele.appendChild(lele);
             pele.appendChild(iele);
             this.layoutMethodContainer.appendChild(pele);
+        }
+    };
+
+    /**
+     * This method is called whenever the empress tree is sheared
+     */
+    SidePanel.prototype.shearUpdate = function () {
+        if (this.sChk.checked) {
+            this.sUpdateBtn.click();
+        }
+
+        if (this.fChk.checked) {
+            this.fUpdateBtn.click();
         }
     };
 

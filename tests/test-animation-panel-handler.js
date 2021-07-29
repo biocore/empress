@@ -8,6 +8,7 @@ require([
     "Legend",
     "util",
     "Colorer",
+    "EnableDisableAnimationTab",
 ], function (
     $,
     AnimationPanel,
@@ -17,12 +18,14 @@ require([
     BiomTable,
     Legend,
     util,
-    Colorer
+    Colorer,
+    EnableDisableAnimationTab
 ) {
     module("Animation Panel Handler", {
         setup: function () {
             // add test compenents to this div
             this.div = document.getElementById("test-div");
+            var tab = new EnableDisableAnimationTab(this.div);
 
             // setup all GUI components
             var colorSelect = document.createElement("select");
@@ -127,7 +130,7 @@ require([
             //       assume the click events are correct.
 
             // create animate-panel
-            this.panel = new AnimationPanel(animator);
+            this.panel = new AnimationPanel(animator, this.div);
         },
 
         teardown: function () {

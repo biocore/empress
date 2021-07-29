@@ -333,11 +333,17 @@ define(["underscore", "chroma", "Colorer"], function (_, chroma, Colorer) {
             bb = bpResults.boundingBox;
         }
 
-        // create a circle for each node
-        if (drawer.showTreeNodes) {
+        // Create a circle for each node, as needed.
+        // Empress.getNodeCoords() will return node coordinate info
+        // dependent upon the settings for showing node circles, so
+        // we don't need to worry about the specifics of which exact node
+        // circles to include here.
+        // If coords.length is 0, then no node circles will be drawn and
+        // we can skip this step.
+        coords = empress.getNodeCoords();
+        if (coords.length > 0) {
             var radius = drawer.NODE_CIRCLE_DIAMETER / 2;
             svg += "<!-- tree nodes -->\n";
-            coords = empress.getNodeCoords();
             for (
                 i = 0;
                 i + drawer.VERTEX_SIZE <= coords.length;

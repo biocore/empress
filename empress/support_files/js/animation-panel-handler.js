@@ -6,11 +6,13 @@ define(["Colorer", "util"], function (Colorer, util) {
      * Creates tab for the animation panel and handles their events events.
      *
      * @param{Object} animator The object that creates the animations
+     * @param{EnableDisableAnimationTab} tab The Animation tab
      *
      * @return {AnimationPanel}
      * construct AnimationPanel
      */
-    function AnimationPanel(animator) {
+    function AnimationPanel(animator, tab) {
+        this.tab = tab;
         // used in event triggers
         this.animator = animator;
 
@@ -51,6 +53,23 @@ define(["Colorer", "util"], function (Colorer, util) {
          */
         this._onAnimationStopped = null;
     }
+
+    /*
+     * Enables the Animation tab. This will result in the Animation tab
+     * containing its original content.
+     */
+    AnimationPanel.prototype.enableTab = function () {
+        this.tab.enableTab();
+    };
+
+    /*
+     * Disables the Animation tab. This will result in the Animation tab
+     * containing a message describing why the tab has been disabled and how to
+     * re-enable it.
+     */
+    AnimationPanel.prototype.disableTab = function () {
+        this.tab.disableTab();
+    };
 
     /**
      * Makes the play button visible. This is the menu shown before user has
