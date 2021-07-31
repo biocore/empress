@@ -466,7 +466,7 @@ p.side-header button:hover,
 
 /* controls */
 
-.control {
+.empress-control {
     padding: 5px 20px;
     overflow: hidden;
     color: #444;
@@ -474,18 +474,18 @@ p.side-header button:hover,
     font-size: 10.5pt;
 }
 
-.control p {
+.empress-control p {
     line-height: 30px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
 }
 
-.control p label:first-of-type {
+.empress-control p label:first-of-type {
     margin-right: auto;
 }
 
-.control p button {
+.empress-control p button {
     color: white;
     background-color: gray;
     height: 32px;
@@ -497,20 +497,20 @@ p.side-header button:hover,
     font-size: 10pt;
 }
 
-.control p button:hover {
+.empress-control p button:hover {
     background-color: dimgray;
 }
 
-.control p button:disabled {
+.empress-control p button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
 }
 
-.control p button:only-child {
+.empress-control p button:only-child {
     margin-right: auto;
 }
 
-.control div.animate-btns {
+.empress-control div.animate-btns {
     margin-left: 10%;
     margin-right: 10%;
     display: grid;
