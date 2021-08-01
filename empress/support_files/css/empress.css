@@ -670,7 +670,7 @@ p.side-header button:hover,
 /* Somewhere else in the CSS adjusts line height and justify-content,
  * so we reset these here.
  *
- * Also, the reason for display: block is because the .control p CSS
+ * Also, the reason for display: block is because the .empress-control p CSS
  * elsewhere causes weird problems when there are other tags (e.g.
  * <span>s, like in the shearing UI) within <p> tags of class
  * side-panel-notes due to the flex display.
