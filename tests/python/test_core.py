@@ -380,7 +380,7 @@ class TestCore(unittest.TestCase):
         # values, this helps with tests not breaking if any character changes
         # in # Emperor
         dict_a_cp = copy.deepcopy(DICT_A)
-        # set is_empre_plot flag to True since DICT_A sets it as False (all
+        # set is_emipre_plot flag to True since DICT_A sets it as False (all
         # other test use a False value)
         dict_a_cp["is_empire_plot"] = True
         for key, value in obs.items():

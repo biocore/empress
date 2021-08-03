@@ -60,7 +60,7 @@ def load_mp_data(use_artifact_api=True, is_empire=True):
         to the second listed types (after the | characters) shown below.
     is_empire: bool, optional(default True)
         If True, this will return an ordination.
-        If False, will return None in place of an ordination
+        If False, will return None in place of an ordination.
 
     Returns
     -------

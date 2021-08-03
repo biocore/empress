@@ -38,11 +38,13 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
          shear_to_table, number_of_features, is_empire):
     """Generate a development plot
 
-    If no arguments are provided (excluding the --is-empire/--no-empire flag)
-    the moving pictures dataset will be loaded,
-    and a tandem plot will be generated. Alternatively, the user can input a
-    new dataset. The --no-empire flag will result in a tree plot when no
-    other arguments are used.
+    If any of the tree, table, or sample metadata are not provided, then
+    the moving pictures dataset will be loaded. The --is-empire / --no-empire
+    flag can be used in this case to alter whether the moving pictures dataset
+    with or without an ordination is included.
+
+    If all of the tree, table, and sample metadata are provided, then
+    this dataset will be loaded.
     """
     # by default load the moving pictures data (tandem plot)
     if tree is None or table is None or sample_metadata is None:
