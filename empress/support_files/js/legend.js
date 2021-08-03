@@ -106,7 +106,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         /**
          * @type {String}
          * Text to display at the bottom of the continuous legend when some
-         * values in a continuous are either missing or non-numeric.
+         * values in a field are either missing or non-numeric.
          */
         this.continuousMissingNonNumericWarning = null;
 
@@ -203,13 +203,13 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
         // just kinda plop the combined SVG code into containerSVG's HTML
         containerSVG.innerHTML = totalHTMLSVG;
 
-        // We need to put the svg container inside a div otherwise some unwanted
+        // We need to put the svg container inside a div: otherwise, some unwanted
         // behavior will occur when users resize the legend.
         // The gradient bar's height is set to be 80% of the legend's
-        // height. This works for most cases howevr, some issues come up when
-        // the uesr resizes the legned. i.e. the height of the graident color
-        // bar will continuously be set to 80% of the legend's height which
-        // can hide the warning message(s) that appear benith the gradient.
+        // height. This works for most cases; however, some issues come up when
+        // the user resizes the legend -- the height of the gradient color
+        // bar will continuously be set to 80% of the legend's height, which
+        // can hide the warning message(s) that appear beneath the gradient.
         // By putting the svg container inside a div, the gradient color bar
         // will be set to 80% of the initial size of the legend and will remain
         // fixed when users resize the legend.
@@ -780,7 +780,7 @@ define(["jquery", "underscore", "util"], function ($, _, util) {
      * Returns the full and short versions of the continuous missing
      * non-numeric warning messages.
      *
-     * @return {Object} The object is formated as follows
+     * @return {Object} This object is formatted as follows:
      * {
      *      full: messageString,
      *      short: messageString

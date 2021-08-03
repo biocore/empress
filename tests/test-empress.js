@@ -451,7 +451,7 @@ require([
             }
         });
 
-        test("Test colorByFeatureMetadata, continuous: failure due to no numberic values", function () {
+        test("Test colorByFeatureMetadata, continuous: failure due to no numeric values", function () {
             // hack to add a metadata column with no numeric data
             this.empress._featureMetadataColumns = ["f1", "f2", "f3"];
             this.empress._tipMetadata = {

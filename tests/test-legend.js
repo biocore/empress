@@ -19,15 +19,15 @@ require([
             // to avoid having to directly mess around with the test HTML file.
             // (I can't find the exact source, but I read about this on a
             // StackOverflow post somewhere.)
-            // Currently there are two different legends that need to be tested
-            // BarplotLegned and SampleFeatureColorLegend. They both inherit
-            // the Legend abstract class and thus behave idential. The only
-            // difference between the two legends are the missing non-numeric
-            // warning messages. Thus, for the majority of the tests, we only
-            // need to use one of the legend types (testing both would be
-            // redundant). The only test we need to explicitly test both
-            // legends is the 'addContinuousKey (with non-numeric warning)'
-            // test.
+            // Currently there are two different legend classes that need
+            // to be tested: BarplotLegend and SampleFeatureColorLegend. They
+            // both inherit the Legend abstract class and thus behave almost
+            // identically. The only difference between the two legends are
+            // the missing non-numeric warning messages. Thus, for the majority
+            // of the tests, we only need to use one of the legend types
+            // (testing both would likely be redundant, at least now). The
+            // only test where we need to explicitly test both legends is the
+            // 'addContinuousKey (with non-numeric warning)' test.
             setup: function () {
                 this.containerEle = document.createElement("div");
                 this.validateRefSVG = function (obsContainerSVG, expSVG) {
@@ -273,11 +273,12 @@ require([
             equal(barplotLegend._maxValStr, "4");
             ok(barplotLegend._missingNonNumericWarningShown);
 
-            // Currently, the only differnce between BarplotLegend and
-            // SampleFeatureColorLegend is the continus warning message
-            // everything else will be identical (i.e. inherit from same
-            // abstract class). Thus, we only need to check to if the correct
-            // message is displaying
+            // Currently, the only difference between BarplotLegend and
+            // SampleFeatureColorLegend is the warning message from
+            // missing / non-numeric values when using continuous coloring.
+            // Everything else will be identical, since these classes inherit
+            // from the same abstract class. Thus, we only need to check if the
+            // correct message is displaying.
             this.containerEle.innerHTML = ""; // clear div container
             var colorLegend = new SampleFeatureColorLegend(this.containerEle);
             colorLegend.addContinuousKey("howdy", colorer.getGradientInfo());

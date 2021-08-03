@@ -9,7 +9,7 @@ define(["Legend"], function (Legend) {
         /**
          * @type {String}
          * Text to display at the bottom of the continuous legend when some
-         * values in a continuous are either missing or non-numeric.
+         * values in a field are either missing or non-numeric.
          */
         this.continuousMissingNonNumericWarning =
             "Some value(s) in this field were missing and/or not numeric. " +
