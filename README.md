@@ -336,7 +336,7 @@ Although these bars are not very useful by default, we can _encode_ them with in
 
 ![empress barplots: phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_2.png)
 
-These patterns should look familiar -- this is the same information as we showed when coloring the tree by feature metadata earlier. We can confirm this by trying out feature metadata coloring by `Level 2` again, using the same `Classic QIIME Colors` color map (see the "Exploring groups of features" section above for a refresher on how to do this):
+These patterns should look familiar -- this is the same information we saw when coloring the tree by's nodes `Level 2` earlier. We can confirm this by trying out feature metadata coloring by `Level 2` again, using the same `Classic QIIME Colors` color map (see the "Exploring groups of features" section above for a refresher on how to do this):
 
 ![empress barplots: phylum coloring and tree phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_3.png)
 
@@ -370,7 +370,7 @@ Layer 2 now shows a stacked barplot for each tip, based on the proportions of sa
 
 The top-most tip is only present in right palm samples (colored orange), the second-from-the-top tip is only present in left palm samples (colored blue), and so on. The length taken up by a "block" for a given tip is proportional to how many samples of that type contain the tip (relative to the total number of samples containing the tip; it's [not absolute](https://github.com/biocore/empress/issues/322)).
 
-These sample metadata barplots should match up with the `Sample Presence Information` -- try clicking on the top-most tip, `35bfc371d940cffdc527b7b4dc954456`. We know from the barplot that this tip is only present in one right palm sample, and the `Sample Presence Information` summary by `body-site` for this tip confirms this.
+These sample metadata barplots should match up with the `Sample Presence Information` -- try clicking on the top-most tip, `35bfc371d940cffdc527b7b4dc954456`. We know from the barplot that this tip is only present in right palm sample(s), and the `Sample Presence Information` summary by `body-site` for this tip confirms this: this particular tip is only present in **one** right palm sample.
 
 ##### Barplots of continuous feature metadata
 
