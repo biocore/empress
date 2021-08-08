@@ -337,7 +337,7 @@ Although these bars are not very useful by default, we can _encode_ them with in
 
 ![empress barplots: phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_2.png)
 
-These patterns should look familiar -- this is the same information we saw when coloring the tree by's nodes `Level 2` earlier. We can confirm this by trying out feature metadata coloring by `Level 2` again, using the same `Classic QIIME Colors` color map (see the "Exploring groups of features" section above for a refresher on how to do this):
+These patterns should look familiar -- this is the same information we saw when coloring the tree's nodes by `Level 2` earlier. We can confirm this by trying out feature metadata coloring by `Level 2` again, using the same `Classic QIIME Colors` color map (see the "Exploring groups of features" section above for a refresher on how to do this):
 
 ![empress barplots: phylum coloring and tree phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_3.png)
 
