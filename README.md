@@ -186,7 +186,7 @@ Both of these commands generate similar visualizations. The functionality availa
 
 ### Downloading Input Artifacts and Metadata  
 
-Before we start, we’ll need to download the necessary input artifacts for running `qiime empress community-plot`. The first four of these artifacts are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.8/tutorials/moving-pictures/), and the last artifact was produced afterwards using data from the tutorial. These artifacts are:
+Before we start, we'll need to download the necessary input artifacts for running `qiime empress community-plot`. The first four of these artifacts are produced during the [Moving Pictures tutorial](https://docs.qiime2.org/2020.8/tutorials/moving-pictures/), and the last artifact was produced afterwards using data from the tutorial. These artifacts are:
 
 1. A feature table (a QIIME 2 artifact of type `FeatureTable[Frequency]`)
 2. A sample metadata file (a [tab-separated-value](https://en.wikipedia.org/wiki/Tab-separated_values) file)
@@ -205,7 +205,7 @@ You can download these files individually by clicking the links below or by usin
 - `taxonomy.qza` [view](https://view.qiime2.org/?src=https%3A%2F%2Fdocs.qiime2.org%2F2019.10%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftaxonomy.qza) | [download](https://docs.qiime2.org/2019.10/data/tutorials/moving-pictures/taxonomy.qza)
 - `biplot.qza` [view](https://view.qiime2.org/?src=https%3A%2F%2Fraw.githubusercontent.com%2Fbiocore%2Fempress%2Fmaster%2Fdocs%2Fmoving-pictures%2Fbiplot.qza) | [download](https://raw.githubusercontent.com/biocore/empress/master/docs/moving-pictures/biplot.qza)
 
-First we’ll create a directory which we'll download our files to and move into it:
+First we'll create a directory which we'll download our files to and move into it:
 
 ```bash
 mkdir empress-tutorial
@@ -225,7 +225,7 @@ We are now ready to visualize this data using Empress.
 
 ### Empress Plot  
 
-We’ll start by creating a simple stand-alone tree visualization artifact, which
+We'll start by creating a simple stand-alone tree visualization artifact, which
 will enable us to explore the tree and associated data using the various
 functionalities available in Empress.
 
@@ -247,15 +247,15 @@ qiime tools view empress-tree.qzv
 ![empress_plain](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_plain.png)
 
 The starting plot is a simple unrooted tree which has all the normal properties of a phylogenetic tree. The outermost “tips” of the tree are also referred to as “leaves”, “terminal nodes”, or “external nodes” and here represent a unique ASV. The line connected to a tip is referred to as a “branch”. A branch connects two or more nodes, or in this case a tip to an internal node. These internal nodes represent a divergent point between nodes and the branch length represents the evolutionary distance between divergence points.
-You can use your mouse’s scroll wheel to zoom in and out, and click and drag anywhere on the plot to move the display to take a closer look at the various tree components. On the top-right we see a display menu with several subcategories that allow us to customize the plot. We will explore these options in more detail below.  
+You can use your mouse's scroll wheel to zoom in and out, and click and drag anywhere on the plot to move the display to take a closer look at the various tree components. On the top-right we see a display menu with several subcategories that allow us to customize the plot. We will explore these options in more detail below.  
 
 #### Exploring individual features  
 
-The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let’s investigate these further. Using your computer mouse, move the display to focus in on the tip of the longest branch and click on the node.
+The first thing you likely noticed in this plot is the presence of several very long branches that stand out relative to the others. Let's investigate these further. Using your computer mouse, move the display to focus in on the tip of the longest branch and click on the node.
 
 ![empress_plain_first_outlier](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_plain_first_outlier.png)
 
-A new menu appears with details about the selected node, including its name and taxonomic assignment. You’ll notice that this feature has only been classified at the Kingdom level, meaning that our feature-classifier was not able to find a suitable match in the reference database used to assign these taxonomy classifications (in this case, Greengenes). More often than not, these features correspond to non-biological reads such as chimeras, contaminants, or reads that have [index-hopped](https://www.illumina.com/content/dam/illumina-marketing/documents/products/whitepapers/index-hopping-white-paper-770-2017-004.pdf) from other samples. We will explore these possibilities further later.
+A new menu appears with details about the selected node, including its name and taxonomic assignment. You'll notice that this feature has only been classified at the Kingdom level, meaning that our feature-classifier was not able to find a suitable match in the reference database used to assign these taxonomy classifications (in this case, Greengenes). More often than not, these features correspond to non-biological reads such as chimeras, contaminants, or reads that have [index-hopped](https://www.illumina.com/content/dam/illumina-marketing/documents/products/whitepapers/index-hopping-white-paper-770-2017-004.pdf) from other samples. We will explore these possibilities further later.
 
 We should also note that the tree used in this tutorial was built using the common *de novo* tree-building approach, and it has previously been shown that the presence of these outlier branches in *de novo* trees can lead to artificial clustering of samples [(Janssen et. al 2018)](https://msystems.asm.org/content/3/3/e00021-18).
 
@@ -266,12 +266,13 @@ In this window we can also view details about sample metadata related to this fe
 We can see that our ASV is present in only 1 *left palm* sample. You can select multiple metadata columns. While the table here does not give us information about the abundance of this feature, we can easily search the feature name in the [feature table summary visualization](https://view.qiime2.org/visualization/?src=https%3A%2F%2Fdocs.qiime2.org%2F2020.8%2Fdata%2Ftutorials%2Fmoving-pictures%2Ftable.qzv&type=html) artifact created previously in the QIIME 2 Moving Pictures tutorial. From there we see that this particular feature has a total abundance of 2, which is another strong indicator of a non-biological read. Try clicking the tips in a few other outlier branches. Do you see a similar pattern? Now try clicking on a tip of one of the shorter branches. Notice the much improved classification!
 
 We can also locate specific features of interest using the search bar at the top of the main menu. For example, in our feature-table the most abundant ASV is `4b5eeb300368260019c1fbc7a3c718fc`. Paste this name in to the search bar and click *Search*.  
-This feature’s tip in the tree is now highlighted with a bright green circle.
+
+![empress_search_feature](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_search_features.png)
+
+This feature's tip in the tree is now highlighted with a bright green circle.
 It looks like this ASV is a species belonging to the _Bacteroides_ genus, and
 is present in all of the four "body sites" included in this data (although it's
 only present in one tongue sample).
-
-![empress_search_feature](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_search_features.png)
 
 
 #### Exploring groups of features
@@ -280,11 +281,11 @@ Another way of exploring the classification of our features is to color the bran
 
 ![empress_unrooted_feature_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_unrooted_feature_coloring.png)
 
-The plot is now updated so each branch is now colored by its phylum-level classification. We can see that many of the extra long branches are now mostly the same magenta color. Check out the legend on the left side of the screen -- it turns out that the magenta color corresponds to a phylum-level classification of `k__Bacteria; Unspecified`, indicating that these ASVs were only classified as Bacteria. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don’t have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
+The plot is now updated so each branch is now colored by its phylum-level classification. We can see that many of the extra long branches are now mostly the same magenta color. Check out the legend on the left side of the screen -- it turns out that the magenta color corresponds to a phylum-level classification of `k__Bacteria; Unspecified`, indicating that these ASVs were only classified as Bacteria. You may also have noticed that these outlier branches appear mainly in 2 distinct clusters. While we don't have any more information about the classification of these features, perhaps we can gain some more insight regarding their classification by looking at their closest common ancestors that do have taxonomic information.   
 
-#### Exploring a feature’s closest common ancestors  
+#### Exploring a feature's closest common ancestors  
 
-So far, we’ve looked at our data using the default unrooted tree view. To visually locate these features’ closest common ancestors, it may be easier to switch to a different layout. From the main menu, click *Layout* then select *Circular* (or *Rectangular*). Our plot automatically switches to a rooted layout.
+So far, we've looked at our data using the default unrooted tree view. To visually locate these features' closest common ancestors, it may be easier to switch to a different layout. From the main menu, click *Layout* then select *Circular* (or *Rectangular*). Our plot automatically switches to a rooted layout.
 
 ![empress_circular_feature_coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_feature_coloring.png)
 
@@ -292,7 +293,7 @@ Now, let's zoom into the longest branch of the bottom cluster of `k__Bacteria; U
 
 ![empress_circular_common_ancestor](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_circular_common_ancestor.gif)
 
-Interestingly, we see that this node is classified as _Acanthamoeba Palestinensis_ which is actually not a bacteria but rather a protozoa. It is not uncommon for certain Eukaryotes to appear in bacterial/archaeal reference databases as they may share a similar genetic lineage. Remember that mitochondria and chloroplasts likely evolved from prokaryotes themselves. Explore a few other common ancestral nodes from different outlier branches. We can see other surprising appearances by _Cucurbita pepo_ (a variety of squash or pumpkin), _Raphanus sativus_ (radish), and _Streptophyta_ (an order of plants). Based on these results one might speculate that our *Unspecified* features likely also belong to either plants or protozoa groups rather than bacteria. Further, since these features appear only on the palm samples, it’s possible the source of these are in fact environmental contaminants rather than common human microbes.  
+Interestingly, we see that this node is classified as _Acanthamoeba Palestinensis_ which is actually not a bacteria but rather a protozoa. It is not uncommon for certain Eukaryotes to appear in bacterial/archaeal reference databases as they may share a similar genetic lineage. Remember that mitochondria and chloroplasts likely evolved from prokaryotes themselves. Explore a few other common ancestral nodes from different outlier branches. We can see other surprising appearances by _Cucurbita pepo_ (a variety of squash or pumpkin), _Raphanus sativus_ (radish), and _Streptophyta_ (an order of plants). Based on these results one might speculate that our *Unspecified* features likely also belong to either plants or protozoa groups rather than bacteria. Further, since these features appear only on the palm samples, it's possible the source of these are in fact environmental contaminants rather than common human microbes.  
 
 Summarizing things for these *Unspecified*-phylum features: in general, given their relatively long branch lengths, their presence in few samples in the study in some cases at relatively low abundance, their lack of close matches in the reference database, and the fact that they are putatively related to non-microbial features, it may be safe to filter them from our table as non-biologically relevant reads. (That conclusion is just based on the results of this exploratory analysis, not a strict guideline.)
 
@@ -336,7 +337,7 @@ Although these bars are not very useful by default, we can _encode_ them with in
 
 ![empress barplots: phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_2.png)
 
-These patterns should look familiar -- this is the same information as we showed when coloring the tree by feature metadata earlier. We can confirm this by trying out feature metadata coloring by `Level 2` again, using the same `Classic QIIME Colors` color map (see the "Exploring groups of features" section above for a refresher on how to do this):
+These patterns should look familiar -- this is the same information we saw when coloring the tree's nodes by `Level 2` earlier. We can confirm this by trying out feature metadata coloring by `Level 2` again, using the same `Classic QIIME Colors` color map (see the "Exploring groups of features" section above for a refresher on how to do this):
 
 ![empress barplots: phylum coloring and tree phylum coloring](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empress_barplots_3.png)
 
@@ -370,7 +371,7 @@ Layer 2 now shows a stacked barplot for each tip, based on the proportions of sa
 
 The top-most tip is only present in right palm samples (colored orange), the second-from-the-top tip is only present in left palm samples (colored blue), and so on. The length taken up by a "block" for a given tip is proportional to how many samples of that type contain the tip (relative to the total number of samples containing the tip; it's [not absolute](https://github.com/biocore/empress/issues/322)).
 
-These sample metadata barplots should match up with the `Sample Presence Information` -- try clicking on the top-most tip, `35bfc371d940cffdc527b7b4dc954456`. We know from the barplot that this tip is only present in one right palm sample, and the `Sample Presence Information` summary by `body-site` for this tip confirms this.
+These sample metadata barplots should match up with the `Sample Presence Information` -- try clicking on the top-most tip, `35bfc371d940cffdc527b7b4dc954456`. We know from the barplot that this tip is only present in right palm sample(s), and the `Sample Presence Information` summary by `body-site` for this tip confirms this: this particular tip is only present in **one** right palm sample.
 
 ##### Barplots of continuous feature metadata
 
@@ -422,7 +423,7 @@ contents of the PNG export will change as you zoom / pan the tree.
 
 ### Empire plots! Side-by-side integration of tree and PCoA plots  
 
-Now that you are familiar with basics, let’s try something a bit more advanced. One of the unique features of Empress is its ability to integrate a tree plot with an [Emperor](http://biocore.github.io/emperor) ordination plot and visualize them side-by-side (we've taken to calling these Empire plots).
+Now that you are familiar with basics, let's try something a bit more advanced. One of the unique features of Empress is its ability to integrate a tree plot with an [Emperor](http://biocore.github.io/emperor) ordination plot and visualize them side-by-side (we've taken to calling these Empire plots).
 
 To achieve this, we can provide a QIIME 2 artifact of the type `PCoAResults` to `qiime empress community-plot`. (Note that although the type is `PCoAResults` this can be any ordination matrix; it's totally possible to visualize the results of PCA, or even a biplot, here instead.)
 
@@ -445,9 +446,9 @@ qiime empress community-plot \
 
 - `empire-biplot.qzv` [view](https://view.qiime2.org/?src=https%3A%2F%2Fmchelper.ucsd.edu%2Fdownloads%2Fempress%2Fmaster%2Fempire-biplot.qzv) | [download](https://mchelper.ucsd.edu/downloads/empress/master/empire-biplot.qzv)
 
-Load the new Empire plot. Here we see the Empress plot as before on the left, and on the right is an Emperor PCoA biplot. If you are unfamiliar with Emperor plots, you can learn more about them [here](http://biocore.github.io/emperor). Briefly, each individual circle represents a single sample’s microbial community and the distances between these circles corresponds to the Unweighted UniFrac distance between them in a reduced dimensional space. The top 10 explanatory features are shown as arrows alongside their feature IDs. The number of features that is shown on the biplot is determined by the `--p-number-of-features` parameter.
+Load the new Empire plot. Here we see the Empress plot as before on the left, and on the right is an Emperor PCoA biplot. If you are unfamiliar with Emperor plots, you can learn more about them [here](http://biocore.github.io/emperor). Briefly, each individual circle represents a single sample's microbial community and the distances between these circles corresponds to the Unweighted UniFrac distance between them in a reduced dimensional space. The top 10 explanatory features are shown as arrows alongside their feature IDs. The number of features that is shown on the biplot is determined by the `--p-number-of-features` parameter.
 
-At first, the plot may look a bit messy. For clarity, let’s remove the long feature ID labels. Right click anywhere on the Emperor plot and select *Toggle label visibility*. Next, in Emperor, from the main menu click on *Select a color category* and select `body-site` under the *scatter* subheading. Now our samples are color-coded based on their body site origin. Notice the clear clustering of these sample-types. Next, click on the same drop-down menu and this time under the *biplot* subheading select `Level 2`. Now we can see the top explanatory features (arrows) colored by their phylum-level classification. Switch over to Empress, change the plot layout to *Circular*, and set the *Feature Metadata Coloring* to `Level 2` also. Minimize the menu bar to fully appreciate the plots!   
+At first, the plot may look a bit messy. For clarity, let's remove the long feature ID labels. Right click anywhere on the Emperor plot and select *Toggle label visibility*. Next, in Emperor, from the main menu click on *Select a color category* and select `body-site` under the *scatter* subheading. Now our samples are color-coded based on their body site origin. Notice the clear clustering of these sample-types. Next, click on the same drop-down menu and this time under the *biplot* subheading select `Level 2`. Now we can see the top explanatory features (arrows) colored by their phylum-level classification. Switch over to Empress, change the plot layout to *Circular*, and set the *Feature Metadata Coloring* to `Level 2` also. Minimize the menu bar to fully appreciate the plots!   
 
 ![empire_plain](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_plain.png)
 
@@ -471,13 +472,13 @@ Click on this arrow (you may have to zoom in a bit in Emperor to do so). Two cha
 
 This interaction between Empress and Emperor can go the other direction. Selecting a node on the Empress plot will enlarge the samples in Emperor in which that feature is present.
 
-Another way to explore our data is to select samples on Emperor and look for the corresponding features present in these samples in Empress. In Emperor, hold the shift button and draw a box around a sample. The Empress plot will now temporarily highlight the branches corresponding to that sample. If you select multiple samples from different body-sites, Empress will only highlight the branches/nodes that are unique to those sample types. The shared branches remain uncolored. Let’s see how we can utilize this function in our dataset.
+Another way to explore our data is to select samples on Emperor and look for the corresponding features present in these samples in Empress. In Emperor, hold the shift button and draw a box around a sample. The Empress plot will now temporarily highlight the branches corresponding to that sample. If you select multiple samples from different body-sites, Empress will only highlight the branches/nodes that are unique to those sample types. The shared branches remain uncolored. Let's see how we can utilize this function in our dataset.
 
 You may have noticed that in the Emperor plot one of the *Right Palm* samples is strangely clustering closer to the gut samples rather than the other palm samples. On Emperor, select some of the gut samples as well as some of the palm samples from the right hand side, taking care to not include the outlier palm sample on the left. On the Empress plot you will see several branches light up as either red, orange, or blue. These colors represent the unique features found in only that body-site; shared features are left uncolored.  
 
 ![empire_sample_selection_gut_and_palm](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_sample_selection_gut_and_palm.gif)
 
-Once the samples have been deselected (within a couple of seconds), select the outlier palm sample + one of the gut samples. What do you notice? You’ll see that comparatively few unique red or orange branches light up, suggesting that this sample shares many more features with the gut samples than the other palm samples.\*
+Once the samples have been deselected (within a couple of seconds), select the outlier palm sample + one of the gut samples. What do you notice? You'll see that comparatively few unique red or orange branches light up, suggesting that this sample shares many more features with the gut samples than the other palm samples.\*
 
 ![empire_sample_selection_outlierpalm_plus_gut](https://github.com/biocore/empress/raw/master/docs/moving-pictures/img/empire_sample_selection_outlierpalm_plus_gut.gif)
 
