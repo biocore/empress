@@ -18,6 +18,11 @@ define(["util", "AbstractObserverPattern"], function (
             };
         }
 
+        triggerEvent() {
+            if (this.selectedNodeIDs.length === 2) {
+                this.notify(this.selectedNodeIDs);
+            }
+        }
         addNode(nodeId, nodeName) {
             if (this.selectedNodeIDs.length >= 2) {
                 util.toastMsg(

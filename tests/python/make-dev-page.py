@@ -76,6 +76,9 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()
 
+    ordination=None
+    sample_metadata=None
+    table=None
     if ordination is not None:
         ordination = ordination.view(OrdinationResults)
 

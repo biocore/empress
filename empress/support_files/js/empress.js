@@ -2812,6 +2812,7 @@ define([
                 throw "Layout " + newLayout + " doesn't have coordinate data.";
             }
         }
+        this.pathSelector.triggerEvent();
     };
 
     /**
