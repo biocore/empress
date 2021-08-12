@@ -1,21 +1,25 @@
-require(["jquery", "UtilitiesForTesting", "util", "TreeController"], function (
-    $,
-    UtilitiesForTesting,
-    util,
-    TreeController
-) {
+require([
+    "jquery",
+    "UtilitiesForTesting",
+    "util",
+    "TreeController",
+    "BPTree",
+], function ($, UtilitiesForTesting, util, TreeController, BPTree) {
     $(document).ready(function () {
         // Setup test variables
         // Note: This is ran for each test() so tests can modify bpArray
         // without affecting other tests.
         module("TreeController", {
             setup: function () {
-                this.tree = UtilitiesForTesting.getTestData(false).tree;
+                var testData = UtilitiesForTesting.getTestData(false);
+                this.tree = testData.tree;
+                this.largerTree = testData.largerTree;
                 this.names = ["", "t1", "t2", "t3", "i4", "i5", "t6", "r"];
                 this.tree.names_ = this.names;
                 this.lengths = [null, 1, 2, 3, 4, 5, 6, null];
                 this.tree.lengths_ = this.lengths;
                 this.treeController = new TreeController(this.tree);
+                this.largerTreeController = new TreeController(this.largerTree);
             },
 
             teardown: function () {
@@ -372,6 +376,50 @@ require(["jquery", "UtilitiesForTesting", "util", "TreeController"], function (
             deepEqual(result, [2]);
             result = this.treeController.getNodesWithName("t1");
             deepEqual(result, [1]);
+        });
+
+        test("isAncestor", function () {
+            // original bp tree test
+            exp = new Map();
+            exp.set([0, 0], false); // identity test
+            exp.set([2, 1], false); // tip test
+            exp.set([1, 2], true); // open test
+            exp.set([1, 3], true); // close test
+            exp.set([0, 7], true); // nested test
+            exp.set([1, 7], true); // nested test
+
+            for (var [k, e] of exp) {
+                var [i, j] = k;
+                equal(this.treeController.isAncestor(i, j), e);
+            }
+        });
+
+        test("lca", function () {
+            // original bp tree test
+            // modified from https://github.com/wasade/improved-octo-waddle/blob/master/bp/tests/test_bp.py
+            // lca(i, j) = parent(rmq(i, j) + 1)
+            // unless isancestor(i, j)
+            // (so lca(i, j) = i) or isancestor(j, i) (so lca(i, j) = j),
+            var bpArray = this.largerTree.b_;
+            var bpSum = 0;
+            for (var bpV of bpArray) {
+                bpSum += bpV;
+            }
+
+            nodes = [];
+            for (var n = 1; n <= bpSum; n++) {
+                nodes.push(this.largerTreeController.preorderselect(n));
+            }
+            exp = new Map();
+            exp.set([nodes[3], nodes[2]], nodes[1]);
+            exp.set([nodes[5], nodes[2]], nodes[1]);
+            exp.set([nodes[9], nodes[2]], nodes[0]);
+            exp.set([nodes[10], nodes[9]], nodes[8]);
+            exp.set([nodes[8], nodes[1]], nodes[0]);
+            for (var [k, e] of exp) {
+                var [i, j] = k;
+                equal(this.largerTreeController.lca(i, j), e);
+            }
         });
     });
 });

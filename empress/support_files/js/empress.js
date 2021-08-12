@@ -12,6 +12,7 @@ define([
     "LayoutsUtil",
     "ExportUtil",
     "TreeController",
+    "PathSelector",
 ], function (
     _,
     Camera,
@@ -25,7 +26,8 @@ define([
     chroma,
     LayoutsUtil,
     ExportUtil,
-    TreeController
+    TreeController,
+    PathSelector
 ) {
     /**
      * @class EmpressTree
@@ -387,6 +389,9 @@ define([
          * for clades in this array that share the same group membership.
          */
         this._group = new Array(this._tree.size + 1).fill(-1);
+
+        this.pathSelector = new PathSelector();
+        this.pathSelector.registerObserver(this);
     }
 
     /**
@@ -3790,6 +3795,191 @@ define([
         this.getLayoutInfo();
 
         this.redrawBarPlotsToMatchLayout();
+    };
+
+    /*
+     * Finds the lowest comman ancestor of the input nodes.
+     *
+     * @param{Array} nodes An array of node keys.
+     *
+     * @return The node key of the lca to nodes.
+     */
+    Empress.prototype.findLCA = function (nodes) {
+        var scope = this;
+        // 1: find least common ancestor.
+        var nodeBPIndices = _.map(nodes, function (node) {
+            return scope._tree.postorderselect(node);
+        });
+        var lcaBPIndx = this._tree.lca(nodeBPIndices[0], nodeBPIndices[1]);
+        nodeBPIndices.shift(); // removes first nodes
+        nodeBPIndices.shift(); // removes second node
+
+        while (nodeBPIndices.length > 0) {
+            lcaBPIndx = this._tree.lca(lcaBPIndx, nodeBPIndices.shift());
+        }
+        var lcaNode = this._tree.postorder(lcaBPIndx);
+        return lcaNode;
+    };
+
+    /*
+     * Colors the tree by highlighting the patch of nodes to the lca.
+     *
+     * @param{Array} nodes An array of node keys.
+     * @param{Array} lca The node key of the lca.
+     */
+    Empress.prototype.colorLCAPath = function (nodes, lca) {
+        var lcaBPIndx = this._tree.postorderselect(lca);
+
+        var coordsBuff = [];
+        var colorsBuff = [];
+        var scope = this;
+        var color = Colorer.rgbToFloat([64, 200, 64]);
+        addColorToBuff = () => {
+            colorsBuff.push(color, color);
+            colorsBuff.push(color, color);
+        };
+        var addCoordsToBuff = (node, parent) => {
+            if (this._currentLayout === "Unrooted") {
+                coordsBuff.push(this.getX(parent), this.getY(parent));
+                coordsBuff.push(this.getX(node), this.getY(node));
+                addColorToBuff();
+            } else if (this._currentLayout === "Rectangular") {
+                // draw horizontal line from child x, y to parent x, child y
+                coordsBuff.push(this.getX(node), this.getY(node));
+                coordsBuff.push(this.getX(parent), this.getY(node));
+                addColorToBuff();
+
+                // draw vertical line from parent x, y to parent x child y
+                coordsBuff.push(this.getX(parent), this.getY(parent));
+                coordsBuff.push(this.getX(parent), this.getY(node));
+                addColorToBuff();
+            } else if (this._currentLayout === "Circular") {
+                // draw arc from parent to child
+                var pAngle = this.getNodeInfo(parent, "angle");
+                var nAngle = this.getNodeInfo(node, "angle");
+                var arcDelta = nAngle - pAngle;
+
+                var numSamples = this._numSampToApproximate(arcDelta);
+                var sampleAngle = arcDelta / numSamples;
+                var sX = this.getX(parent);
+                var sY = this.getY(parent);
+                var x, y;
+                for (var line = 0; line < numSamples; line++) {
+                    x =
+                        sX * Math.cos(line * sampleAngle) -
+                        sY * Math.sin(line * sampleAngle);
+                    y =
+                        sX * Math.sin(line * sampleAngle) +
+                        sY * Math.cos(line * sampleAngle);
+                    coordsBuff.push(x, y);
+
+                    x =
+                        sX * Math.cos((line + 1) * sampleAngle) -
+                        sY * Math.sin((line + 1) * sampleAngle);
+                    y =
+                        sX * Math.sin((line + 1) * sampleAngle) +
+                        sY * Math.cos((line + 1) * sampleAngle);
+                    coordsBuff.push(x, y);
+                    addColorToBuff();
+                }
+
+                // draw line connect node x,y to parent arc
+                coordsBuff.push(this.getX(node), this.getY(node));
+                coordsBuff.push(x, y);
+                addColorToBuff();
+            }
+        };
+        for (var node of nodes) {
+            // this.setNodeInfo(node, "color", Colorer.rgbToFloat([64, 200, 64]));
+            var parentBPIndx = this._tree.parent(
+                this._tree.postorderselect(node)
+            );
+            var parent = this._tree.postorder(parentBPIndx);
+            while (parentBPIndx !== lcaBPIndx) {
+                // && parentBPIndx !== this._tree.root()) {
+                // add buff info
+                addCoordsToBuff(node, parent);
+
+                // progress nodes
+                node = parent;
+                parentBPIndx = this._tree.parent(parentBPIndx);
+                parent = this._tree.postorder(parentBPIndx);
+                // this.setNodeInfo(parent, "color", Colorer.rgbToFloat([64, 200, 64]));
+            }
+            addCoordsToBuff(node, parent);
+        }
+        this._drawer.loadPathCoordsBuff(coordsBuff);
+        this._drawer.loadPathColorBuff(colorsBuff);
+        this.drawTree();
+    };
+
+    /*
+     * Calculates the distance of the path connecting nodes to the lca.
+     *
+     * @param{Array} nodes An array of node keys.
+     * @param{Array} lca The node key of the lca.
+     * @return The distance.
+     */
+    Empress.prototype.calcLCADistance = function (nodes, lca) {
+        var dist = 0;
+        var lcaBPIndx = this._tree.postorderselect(lca);
+
+        // find unique nodes
+        var uniqueNodeBPIndices = new Set();
+        for (var node of nodes) {
+            var nodeBPIndx = this._tree.postorderselect(node);
+            while (nodeBPIndx !== lcaBPIndx) {
+                uniqueNodeBPIndices.add(nodeBPIndx);
+                nodeBPIndx = this._tree.parent(nodeBPIndx);
+            }
+        }
+
+        // sum distance
+        for (var nodeIdx of uniqueNodeBPIndices) {
+            dist += this._tree.length(nodeIdx);
+        }
+
+        return dist;
+    };
+
+    /*
+     * Attempts to a node to the selected path. If the selected path is maxed
+     * out, the a warning message will appear.
+     *
+     * @param{Number} node A node key
+     */
+    Empress.prototype.setSelectedNode = function (node) {
+        var name = this.getName(node);
+        this.pathSelector.addNode(node, name);
+    };
+
+    /*
+     * notify function for PathSelector. If nodes contains 2 or more nodes
+     * then empress will highlight the selected path. Otherwire, empress
+     * will reset the selected path.
+     *
+     * @param{Array} nodes An array of node keys.
+     */
+    Empress.prototype.pathSelectorUpdate = function (nodes) {
+        if (nodes.length > 1) {
+            // 1: find lowest common ancestor.
+            var lcaNode = this.findLCA(nodes);
+            var lcaBPIndx = this._tree.postorderselect(lcaNode);
+
+            // 2: color branches leading from nodes to lca
+            this.colorLCAPath(nodes, lcaNode);
+
+            // 3: draw tree
+            this.drawTree();
+
+            // return distances
+            var dist = this.calcLCADistance(nodes, lcaNode);
+            this.pathSelector.addDistance(dist);
+        } else {
+            this._drawer.loadPathCoordsBuff([]);
+            this._drawer.loadPathColorBuff([]);
+            this.drawTree();
+        }
     };
 
     return Empress;

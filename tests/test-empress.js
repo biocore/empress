@@ -25,6 +25,10 @@ require([
                 this.empress._tdToInd = UtilitiesForTesting.getTestData(
                     false
                 ).tdToInd;
+                this.canvas = UtilitiesForTesting.getTestData(false).canvas;
+                this.largerTree = UtilitiesForTesting.getTestData(
+                    false
+                ).largerTree;
             },
 
             teardown: function () {
@@ -1549,6 +1553,22 @@ require([
             deepEqual(stats.tipCt, 4, "Tip count");
             deepEqual(stats.intCt, 3, "Internal node count");
             deepEqual(stats.allCt, 7, "Total node count");
+        });
+        test("Test findLCA", function () {
+            var empress = new Empress(
+                this.largerTree,
+                null,
+                [],
+                [],
+                [],
+                [],
+                this.canvas
+            );
+            equal(empress.findLCA([3, 4]), 4);
+            equal(empress.findLCA([5, 6]), 11);
+            equal(empress.findLCA([1, 7]), 11);
+            equal(empress.findLCA([1, 2, 3]), 5);
+            equal(empress.findLCA([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), 11);
         });
     });
 });

@@ -137,6 +137,7 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
 
         // removes the selected node menu if the mouseMove flag is not set
         var mouseClick = function (e) {
+            var shiftPressed = e.shiftKey;
             if (!scope.mouseMove) {
                 // clear old select menu
                 selectedNodeMenu.clearSelectedNode();
@@ -201,7 +202,8 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
                     scope.placeNodeSelectionMenu(
                         empress.getNodeInfo(closeNode, "name"),
                         false,
-                        closeNode
+                        closeNode,
+                        shiftPressed
                     );
                 }
             }
@@ -419,8 +421,15 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
     CanvasEvents.prototype.placeNodeSelectionMenu = function (
         nodeName,
         moveTree,
-        nodeKey
+        nodeKey,
+        shiftPressed = false
     ) {
+        if (shiftPressed) {
+            this.empress.setSelectedNode(nodeKey);
+            this.selectedNodeMenu.setSelectedNodes([nodeKey]);
+            this.empress.drawTree();
+            return;
+        }
         var scope = this;
         var node;
         /**

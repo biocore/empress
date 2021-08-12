@@ -29,7 +29,12 @@ define(["Empress", "BPTree", "BiomTable"], function (
             [0, 1, 2, 3, 4, 5, 6, 7],
             null
         );
-
+        var largerTree = new BPTree(
+            [1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0],
+            null,
+            null,
+            null
+        );
         // Note: the coordinates for each layout are "random". i.e.
         // they will not make an actual tree. They were created to
         // make testing easier.
@@ -162,6 +167,7 @@ define(["Empress", "BPTree", "BiomTable"], function (
             tm: tipMetadata,
             im: intMetadata,
             canvas: canvas,
+            largerTree,
         };
     }
 

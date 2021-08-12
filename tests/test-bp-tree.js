@@ -45,9 +45,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 this.s1 = ByteArray.seqUniqueIndx(this.r1, Uint32Array);
             },
 
-            teardown: function () {
-                this.bpArray = null;
-            },
+            teardown: function () {},
         });
 
         // tests the constructor of bp tree
@@ -161,7 +159,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 0,
             ];
             for (var i = 0; i < exp.length; i++) {
-                equal(this.bpObj.excess_(i), exp[i]);
+                equal(this.bpObj.excess(i), exp[i]);
             }
         });
 
@@ -1053,6 +1051,200 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             remove = new Set([3, 6, 7, 8]);
             result = preShearBPTree.shear(remove);
             deepEqual(result.tree.names_, [null, "3", "4", "2", "r"]);
+        });
+
+        test("rmp", function () {
+            // modified from https://github.com/wasade/improved-octo-waddle/blob/master/bp/tests/test_bp.py
+            //       (  (  (  )  (  )  (  (  )  )   )   (   )   (   (   (   )   (   )   )   )   )
+            //excess 1  2  3  2  3  2  3  4  3  2   1   2   1   2   3   4   3   4   3   2   1   0
+            //i      0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21
+            exp = [
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    21,
+                ],
+                [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    21,
+                ],
+                [
+                    2,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    21,
+                ],
+                [
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    21,
+                ],
+                [
+                    4,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    21,
+                ],
+                [5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 21],
+                [6, 6, 6, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 21],
+                [7, 8, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 21],
+                [8, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 21],
+                [9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 21],
+                [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 21],
+                [11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 21],
+                [12, 12, 12, 12, 12, 12, 12, 12, 12, 21],
+                [13, 13, 13, 13, 13, 13, 13, 20, 21],
+                [14, 14, 14, 14, 14, 19, 20, 21],
+                [15, 16, 16, 16, 19, 20, 21],
+                [16, 16, 16, 19, 20, 21],
+                [17, 18, 19, 20, 21],
+                [18, 19, 20, 21],
+                [19, 20, 21],
+                [20, 21],
+                [21],
+            ];
+            for (var i = 0; i < this.bpArray.length; i++) {
+                for (var j = i + 1; j < this.bpArray.length; j++) {
+                    equal(this.bpObj.rmq(i, j), exp[i][j - i]);
+                }
+            }
+        });
+
+        test("isAncestor", function () {
+            exp = new Map();
+            exp.set([0, 0], false); // identity test
+            exp.set([2, 1], false); // tip test
+            exp.set([1, 2], true); // open test
+            exp.set([1, 3], true); // close test
+            exp.set([0, 7], true); // nested test
+            exp.set([1, 7], true); // nested test
+
+            exp.set([0, 0], false); // identity test
+            exp.set([1, 2], true); // tip test
+            exp.set([2, 1], false); // open test
+            exp.set([3, 1], false); // close test
+            exp.set([7, 0], false); // nested test
+            exp.set([7, 1], false); // nested test
+
+            for (var [k, e] of exp) {
+                var [i, j] = k;
+                equal(this.bpObj.isAncestor(i, j), e);
+            }
+        });
+
+        test("lca", function () {
+            // modified from https://github.com/wasade/improved-octo-waddle/blob/master/bp/tests/test_bp.py
+            // lca(i, j) = parent(rmq(i, j) + 1)
+            // unless isancestor(i, j)
+            // (so lca(i, j) = i) or isancestor(j, i) (so lca(i, j) = j),
+            var bpSum = 0;
+            for (var bpV of this.bpArray) {
+                bpSum += bpV;
+            }
+
+            nodes = [];
+            for (var n = 1; n <= bpSum; n++) {
+                nodes.push(this.bpObj.preorderselect(n));
+            }
+            exp = new Map();
+            exp.set([nodes[2], nodes[3]], nodes[1]);
+            exp.set([nodes[3], nodes[2]], nodes[1]);
+            exp.set([nodes[5], nodes[2]], nodes[1]);
+            exp.set([nodes[2], nodes[5]], nodes[1]);
+            exp.set([nodes[9], nodes[2]], nodes[0]);
+            exp.set([nodes[2], nodes[9]], nodes[0]);
+            exp.set([nodes[9], nodes[10]], nodes[8]);
+            exp.set([nodes[10], nodes[9]], nodes[8]);
+            exp.set([nodes[8], nodes[1]], nodes[0]);
+            exp.set([nodes[1], nodes[8]], nodes[0]);
+            for (var [k, e] of exp) {
+                var [i, j] = k;
+                equal(this.bpObj.lca(i, j), e);
+            }
         });
     });
 });
