@@ -2712,7 +2712,7 @@ define([
     };
 
     /**
-     * Returns a list of sample categories.
+     * Returns a sorted list of sample categories.
      *
      * If this.isCommunityPlot is false (no table / sample metadata were
      * provided), this just returns [].
@@ -2721,7 +2721,7 @@ define([
      */
     Empress.prototype.getSampleCategories = function () {
         if (this.isCommunityPlot) {
-            return this._biom.getSampleCategories();
+            return util.naturalSort(this._biom.getSampleCategories());
         } else {
             return [];
         }
@@ -2849,12 +2849,12 @@ define([
     };
 
     /**
-     * Returns an array of feature metadata column names.
+     * Returns a sorted list of feature metadata column names.
      *
      * @return {Array}
      */
     Empress.prototype.getFeatureMetadataCategories = function () {
-        return this._featureMetadataColumns;
+        return util.naturalSort(this._featureMetadataColumns);
     };
 
     /**
@@ -3790,6 +3790,40 @@ define([
         this.getLayoutInfo();
 
         this.redrawBarPlotsToMatchLayout();
+    };
+
+    /**
+     * Returns the col variable value for the node.
+     *
+     * @param {Number} node Postorder position of a node in the tree.
+     * @param {String} col The name of the feature metadata column.
+     *
+     * @return {String} The col variable value for the node or undefined if
+     *                  no value exists.
+     */
+    Empress.prototype.getNodeFeatureMetadataValue = function (node, col) {
+        var colIndx = _.indexOf(this._featureMetadataColumns, col);
+        if (_.has(this._tipMetadata, node)) {
+            return this._tipMetadata[node][colIndx];
+        }
+        if (_.has(this._intMetadata, node)) {
+            return this._intMetadata[node][colIndx];
+        }
+        return undefined;
+    };
+
+    /**
+     * Checks to see if node has feature metadata.
+     *
+     * @param {Number} node Postorder position of a node in the tree.
+     *
+     * @return true if node has feature metadata else false.
+     */
+    Empress.prototype.hasFeatureMetadata = function (node) {
+        if (_.has(this._tipMetadata, node) || _.has(this._intMetadata, node)) {
+            return true;
+        }
+        return false;
     };
 
     return Empress;

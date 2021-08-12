@@ -6,6 +6,7 @@ require([
     "BarplotLayer",
     "UtilitiesForTesting",
     "Colorer",
+    "util",
 ], function (
     $,
     _,
@@ -13,7 +14,8 @@ require([
     Empress,
     BarplotLayer,
     UtilitiesForTesting,
-    Colorer
+    Colorer,
+    util
 ) {
     module("Barplots", {
         setup: function () {
@@ -216,8 +218,8 @@ require([
         _.each(empress._barplotPanel.layers, function (layer, i) {
             // Basic information about the visualization -- should be the same
             // across every layer
-            equal(layer.fmCols, scope.testData.fmCols);
-            equal(layer.smCols, empress._barplotPanel.smCols);
+            deepEqual(layer.fmCols, scope.testData.fmCols);
+            deepEqual(layer.smCols, empress._barplotPanel.smCols);
             equal(layer.barplotPanel, empress._barplotPanel);
             equal(layer.layerContainer, empress._barplotPanel.layerContainer);
             // Check that the "num" and "unique num" of each barplot layer were

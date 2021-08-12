@@ -288,23 +288,17 @@ define(["underscore", "util"], function (_, util) {
     ) {
         if (this.hasFeatureMetadata) {
             this.fmTable.innerHTML = "";
-            var mdObj;
-            if (tipOrInt === "tip") {
-                mdObj = this.empress._tipMetadata;
-            } else if (tipOrInt === "int") {
-                mdObj = this.empress._intMetadata;
-            } else {
-                throw new Error("Invalid tipOrInt value: " + tipOrInt);
-            }
-            if (_.has(mdObj, nodeName)) {
+            if (this.empress.hasFeatureMetadata(nodeName)) {
                 var headerRow = this.fmTable.insertRow(-1);
                 var featureRow = this.fmTable.insertRow(-1);
-                for (var x = 0; x < this.fmCols.length; x++) {
-                    var colName = this.fmCols[x];
+                for (var col of this.fmCols) {
                     var colCell = headerRow.insertCell(-1);
-                    colCell.innerHTML = "<strong>" + colName + "</strong>";
+                    colCell.innerHTML = "<strong>" + col + "</strong>";
                     var dataCell = featureRow.insertCell(-1);
-                    dataCell.innerHTML = mdObj[nodeName][x];
+                    dataCell.innerHTML = this.empress.getNodeFeatureMetadataValue(
+                        nodeName,
+                        col
+                    );
                 }
                 show(this.fmTable);
                 hide(this.fmNoDataNote);
