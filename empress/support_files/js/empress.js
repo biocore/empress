@@ -3793,10 +3793,10 @@ define([
     };
 
     /**
-     * Returns the col variable value for the node.
+     * Returns the feature metadata value at a f. m. column for a node.
      *
      * @param {Number} node Postorder position of a node in the tree.
-     * @param {String} col The name of the feature metadata column.
+     * @param {String} col Name of a feature metadata column.
      *
      * @return {String} The col variable value for the node or undefined if
      *                  no value exists.
@@ -3813,11 +3813,11 @@ define([
     };
 
     /**
-     * Checks to see if node has feature metadata.
+     * Checks to see if a node has feature metadata.
      *
      * @param {Number} node Postorder position of a node in the tree.
      *
-     * @return true if node has feature metadata else false.
+     * @return true if node has feature metadata, false otherwise.
      */
     Empress.prototype.hasFeatureMetadata = function (node) {
         return _.has(this._tipMetadata, node) || _.has(this._intMetadata, node);
