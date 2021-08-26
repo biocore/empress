@@ -2574,6 +2574,12 @@ define([
         // so that the same color can be assigned to each value in obs.
         util.removeEmptyArrayKeys(keyInfo, uniqueValueToFeatures);
 
+        // In the case of continuous coloring, non-numeric values will not be
+        // added to cm and is the only such case where the keys in obs (after
+        // projectObservations has been called) and keys in cm will differ.
+        // Thus, we need to remove the non-numeric keys from obs.
+        obs = _.pick(obs, Object.keys(cm));
+
         // Do upwards propagation only if the coloring method is "tip"
         if (method === "tip") {
             obs = this._projectObservations(obs, false);

@@ -654,7 +654,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             } else {
                 scope.fContinuousDiv.classList.remove("hidden");
             }
-            scope.fUpdateBtn.classList.remove("hidden");
+            scope.fUpdateBtnP.classList.remove("hidden");
         };
         this.fSel.onchange = showUpdateBtn;
         this.fColor.onchange = showUpdateBtn;
