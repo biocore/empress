@@ -41,7 +41,7 @@ def extract_q2_artifact_to_path(dir_name, artifact_loc, file_name):
     return f
 
 
-def load_mp_data(use_artifact_api=True):
+def load_mp_data(use_artifact_api=True, is_empire=True):
     """Loads data from the QIIME 2 moving pictures tutorial for visualization.
 
     It's assumed that this data is already stored in docs/moving-pictures/, aka
@@ -58,6 +58,9 @@ def load_mp_data(use_artifact_api=True):
         If False, this will instead load the artifacts without using QIIME 2's
         APIs; in this case, the returned objects will have types corresponding
         to the second listed types (after the | characters) shown below.
+    is_empire: bool, optional(default True)
+        If True, this will return an ordination.
+        If False, will return None in place of an ordination.
 
     Returns
     -------
@@ -72,8 +75,7 @@ def load_mp_data(use_artifact_api=True):
             Feature metadata. (Although this is stored in the repository as a
             FeatureData[Taxonomy] artifact, we transform it to Metadata if
             use_artifact_api is True.)
-        pcoa: qiime2.Artifact | skbio.OrdinationResults
-            Ordination.
+        pcoa: qiime2.Artifact | skbio.OrdinationResults | None
     """
     q2_tree_loc = os.path.join(PREFIX_DIR, "rooted-tree.qza")
     q2_table_loc = os.path.join(PREFIX_DIR, "table.qza")
@@ -86,7 +88,7 @@ def load_mp_data(use_artifact_api=True):
 
         tree = Artifact.load(q2_tree_loc)
         table = Artifact.load(q2_table_loc)
-        pcoa = Artifact.load(q2_pcoa_loc)
+        pcoa = Artifact.load(q2_pcoa_loc) if is_empire else None
         md = Metadata.load(md_loc)
         # We have to transform the taxonomy QZA to Metadata ourselves
         fmd = Artifact.load(q2_tax_loc).view(Metadata)
@@ -102,9 +104,12 @@ def load_mp_data(use_artifact_api=True):
             tbl_loc = extract_q2_artifact_to_path(_tmp, q2_table_loc,
                                                   "feature-table.biom")
             table = biom.load_table(tbl_loc)
-            pcoa_loc = extract_q2_artifact_to_path(_tmp, q2_pcoa_loc,
-                                                   "ordination.txt")
-            pcoa = OrdinationResults.read(pcoa_loc)
+            if is_empire:
+                pcoa_loc = extract_q2_artifact_to_path(_tmp, q2_pcoa_loc,
+                                                       "ordination.txt")
+                pcoa = OrdinationResults.read(pcoa_loc)
+            else:
+                pcoa = None
             tax_loc = extract_q2_artifact_to_path(_tmp, q2_tax_loc,
                                                   "taxonomy.tsv")
             fmd = pd.read_csv(tax_loc, sep="\t", index_col=0)

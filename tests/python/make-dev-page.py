@@ -32,20 +32,24 @@ ARG_TYPE = click.Path(exists=True, dir_okay=False, file_okay=True)
 )
 @click.option('--number-of-features', default=10, type=click.IntRange(0, None),
               show_default=True)
+@click.option('--is-empire/--no-empire', default=True)
 def main(tree, table, sample_metadata, feature_metadata, ordination,
          ignore_missing_samples, filter_extra_samples, filter_missing_features,
-         shear_to_table, number_of_features):
+         shear_to_table, number_of_features, is_empire):
     """Generate a development plot
 
-    If no arguments are provided the moving pictures dataset will be loaded,
-    and a tandem plot will be generated. Alternatively, the user can input a
-    new dataset.
-    """
+    If any of the tree, table, or sample metadata are not provided, then
+    the moving pictures dataset will be loaded. The --is-empire / --no-empire
+    flag can be used in this case to alter whether the moving pictures dataset
+    with or without an ordination is included.
 
+    If all of the tree, table, and sample metadata are provided, then
+    this dataset will be loaded.
+    """
     # by default load the moving pictures data (tandem plot)
     if tree is None or table is None or sample_metadata is None:
         tree, table, sample_metadata, feature_metadata, ordination = \
-                load_mp_data()
+                load_mp_data(is_empire=is_empire)
         filter_extra_samples = True
     # otherwise require a tree, table and sample meadata
     elif (tree is not None and table is not None
@@ -68,7 +72,9 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
 
     table = table.view(biom.Table)
     sample_metadata = sample_metadata.to_dataframe()
-    feature_metadata = feature_metadata.to_dataframe()
+
+    if feature_metadata is not None:
+        feature_metadata = feature_metadata.to_dataframe()
 
     if ordination is not None:
         ordination = ordination.view(OrdinationResults)

@@ -409,23 +409,41 @@ define([
             branchMethod,
             this._tree.getTree()
         );
+        var dataForOnlyRoot = function (coordKeys) {
+            var rootCoordData = {};
+            _.each(coordKeys, function (key) {
+                rootCoordData[key] = [null, 0];
+            });
+            return rootCoordData;
+        };
         // Rectangular
         if (this._currentLayout === "Rectangular") {
-            data = LayoutsUtil.rectangularLayout(
-                this._tree.getTree(),
-                4020,
-                4020,
-                // since lengths for "ignoreLengths" are set by `lengthGetter`,
-                // we don't need (and should likely deprecate) the ignoreLengths
-                // option for the Layout functions since the layout function only
-                // needs to know lengths in order to layout a tree, it doesn't
-                // really need encapsulate all of the logic for determining
-                // what lengths it should lay out.
-                this.leafSorting,
-                undefined,
-                lengthGetter,
-                checkLengthsChange
-            );
+            // tree is just root
+            if (this._tree.currentSize == 1) {
+                data = dataForOnlyRoot([
+                    "xCoord",
+                    "yCoord",
+                    "highestChildYr",
+                    "lowestChildYr",
+                    "yScalingFactor",
+                ]);
+            } else {
+                data = LayoutsUtil.rectangularLayout(
+                    this._tree.getTree(),
+                    4020,
+                    4020,
+                    // since lengths for "ignoreLengths" are set by `lengthGetter`,
+                    // we don't need (and should likely deprecate) the ignoreLengths
+                    // option for the Layout functions since the layout function only
+                    // needs to know lengths in order to layout a tree, it doesn't
+                    // really need encapsulate all of the logic for determining
+                    // what lengths it should lay out.
+                    this.leafSorting,
+                    undefined,
+                    lengthGetter,
+                    checkLengthsChange
+                );
+            }
             this._yrscf = data.yScalingFactor;
             for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
@@ -441,15 +459,29 @@ define([
                 j += 1;
             }
         } else if (this._currentLayout === "Circular") {
-            data = LayoutsUtil.circularLayout(
-                this._tree.getTree(),
-                4020,
-                4020,
-                this.leafSorting,
-                undefined,
-                lengthGetter,
-                checkLengthsChange
-            );
+            if (this._tree.currentSize == 1) {
+                data = dataForOnlyRoot([
+                    "x0",
+                    "y0",
+                    "x1",
+                    "y1",
+                    "angle",
+                    "arcx0",
+                    "arcy0",
+                    "arcStartAngle",
+                    "arcEndAngle",
+                ]);
+            } else {
+                data = LayoutsUtil.circularLayout(
+                    this._tree.getTree(),
+                    4020,
+                    4020,
+                    this.leafSorting,
+                    undefined,
+                    lengthGetter,
+                    checkLengthsChange
+                );
+            }
             for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
@@ -469,14 +501,18 @@ define([
                 j += 1;
             }
         } else {
-            data = LayoutsUtil.unrootedLayout(
-                this._tree.getTree(),
-                4020,
-                4020,
-                undefined,
-                lengthGetter,
-                checkLengthsChange
-            );
+            if (this._tree.currentSize == 1) {
+                data = dataForOnlyRoot(["xCoord", "yCoord"]);
+            } else {
+                data = LayoutsUtil.unrootedLayout(
+                    this._tree.getTree(),
+                    4020,
+                    4020,
+                    undefined,
+                    lengthGetter,
+                    checkLengthsChange
+                );
+            }
             for (i of this._tree.postorderTraversal((includeRoot = true))) {
                 // remove old layout information
                 this._treeData[i].length = this._numOfNonLayoutParams;
@@ -497,11 +533,7 @@ define([
     Empress.prototype.initialize = function () {
         this._drawer.initialize();
         this._events.setMouseEvents();
-        var nodeNames = this._tree.getAllNames();
-        // Don't include nodes with the name null (i.e. nodes without a
-        // specified name in the Newick file) in the auto-complete.
-        nodeNames = nodeNames.filter((n) => n !== null);
-        this._events.autocomplete(nodeNames);
+        this.setAutoCompleteNames();
 
         this.getLayoutInfo();
         this.centerLayoutAvgPoint();
@@ -920,7 +952,6 @@ define([
         } else {
             throw new Error("getNodeCoords() drawNodeCircles is out of range");
         }
-
         for (var node of this._tree.postorderTraversal((includeRoot = true))) {
             if (!comp(node)) {
                 continue;
@@ -2235,6 +2266,11 @@ define([
         // colors for the legend
         var keyInfo = colorer.getMapHex();
 
+        // if the tree has been sheared then categories in obs maybe empty.
+        // getObsBy() does not filter out those categories so that the same
+        // color can be assigned to each value in obs.
+        util.removeEmptyArrayKeys(keyInfo, obs);
+
         // shared by the following for loops
         var i, j, category;
 
@@ -2254,6 +2290,9 @@ define([
         // If there aren't *any* sample metadata values unique to any tips,
         // then return null so that the caller can warn the user.
         if (Object.keys(obs).length === 0) {
+            // still want to update legend to match behavior of
+            // colorByFeatureMetadata
+            this.updateLegendCategorical(cat, keyInfo);
             return null;
         }
 
@@ -2374,6 +2413,9 @@ define([
      *                 -If method is not "tip" or "all"
      */
     Empress.prototype.getUniqueFeatureMetadataInfo = function (cat, method) {
+        // get nodes in tree
+        var nodes = new Set([...this._tree.postorderTraversal()]);
+
         // In order to access feature metadata for a given node, we need to
         // find the 0-based index in this._featureMetadataColumns that the
         // specified f.m. column corresponds to. (We *could* get around this by
@@ -2405,15 +2447,19 @@ define([
         var uniqueValueToFeatures = {};
         _.each(fmObjs, function (mObj) {
             _.mapObject(mObj, function (fmRow, node) {
+                var fmVal = getValFromFM(fmRow);
+                if (!_.has(uniqueValueToFeatures, fmVal)) {
+                    uniqueValueToFeatures[fmVal] = [];
+                }
+
                 // need to convert to integer
                 node = parseInt(node);
-                // This is loosely based on how BIOMTable.getObsBy() works.
-                var fmVal = getValFromFM(fmRow);
-                if (_.has(uniqueValueToFeatures, fmVal)) {
-                    uniqueValueToFeatures[fmVal].push(node);
-                } else {
-                    uniqueValueToFeatures[fmVal] = [node];
+
+                // ignore nodes that have been sheared
+                if (!nodes.has(node)) {
+                    return;
                 }
+                uniqueValueToFeatures[fmVal].push(node);
             });
         });
 
@@ -2464,7 +2510,6 @@ define([
         var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
         // convert observation IDs to _treeData keys. Notably, this includes
         // converting the values of uniqueValueToFeatures from Arrays to Sets.
-
         var obs = {};
         _.each(sortedUniqueValues, function (uniqueVal, i) {
             uniqueVal = sortedUniqueValues[i];
@@ -2515,6 +2560,7 @@ define([
         }
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
+
         // colors for the legend
         var keyInfo;
         if (continuous) {
@@ -2522,6 +2568,11 @@ define([
         } else {
             keyInfo = colorer.getMapHex();
         }
+
+        // if the tree has been sheared then categories in obs maybe empty.
+        // getUniqueFeatureMetadataInfo() does not filter out those categories
+        // so that the same color can be assigned to each value in obs.
+        util.removeEmptyArrayKeys(keyInfo, uniqueValueToFeatures);
 
         // Do upwards propagation only if the coloring method is "tip"
         if (method === "tip") {
@@ -2570,52 +2621,52 @@ define([
      */
     Empress.prototype._projectObservations = function (obs, ignoreAbsentTips) {
         var tree = this._tree,
-            categories = Object.keys(obs),
-            notRepresented = new Set(),
-            i,
-            j;
-
-        if (!ignoreAbsentTips) {
-            // find "non-represented" tips
-            // Note: the following uses postorder traversal
-            for (i of this._tree.postorderTraversal()) {
-                if (tree.isleaf(tree.postorderselect(i))) {
-                    var represented = false;
-                    for (j = 0; j < categories.length; j++) {
-                        if (obs[categories[j]].has(i)) {
-                            represented = true;
-                            break;
-                        }
-                    }
-                    if (!represented) notRepresented.add(i);
+            nodeValue = [],
+            node,
+            category;
+        // set values for each node in obs
+        for (category in obs) {
+            for (node of obs[category]) {
+                if (nodeValue[node] === undefined) {
+                    nodeValue[node] = category;
+                } else {
+                    nodeValue[node] = null;
                 }
             }
         }
 
-        // assign internal nodes to appropriate category based on children
-        // iterate using postorder
-        // Note that, although we don't explicitly iterate over the
-        // root (at index tree.size) in this loop, we iterate over all its
-        // descendants; so in the event that all leaves are unique,
-        // the root can still get assigned to a group.
-        for (i of this._tree.postorderTraversal()) {
-            var node = i;
-            var parent = tree.postorder(tree.parent(tree.postorderselect(i)));
+        for (node of this._tree.postorderTraversal()) {
+            var parent = tree.postorder(
+                tree.parent(tree.postorderselect(node))
+            );
+            if (nodeValue[node] === undefined && ignoreAbsentTips) {
+                continue;
+            }
 
-            for (j = 0; j < categories.length; j++) {
-                category = categories[j];
-
-                // add internal nodes to groups
-                if (obs[category].has(node)) {
-                    obs[category].add(parent);
-                }
-                if (notRepresented.has(node)) {
-                    notRepresented.add(parent);
-                }
+            if (
+                nodeValue[parent] === undefined &&
+                nodeValue[node] !== undefined
+            ) {
+                nodeValue[parent] = nodeValue[node];
+            } else if (
+                nodeValue[parent] !== nodeValue[node] ||
+                nodeValue[node] === undefined
+            ) {
+                nodeValue[parent] = null;
             }
         }
 
-        var result = util.keepUniqueKeys(obs, notRepresented);
+        var result = {};
+        for (node of this._tree.postorderTraversal(true)) {
+            category = nodeValue[node];
+            if (category !== null && category !== undefined) {
+                if (result.hasOwnProperty(category)) {
+                    result[category].add(node);
+                } else {
+                    result[category] = new Set([node]);
+                }
+            }
+        }
 
         // remove all groups that do not contain unique features
         result = _.pick(result, function (value, key) {
@@ -2755,6 +2806,16 @@ define([
         // stuff to only change whenever the tree is redrawn.
         this.thickenColoredNodes(this._currentLineWidth);
 
+        this.redrawBarPlotsToMatchLayout();
+        this.centerLayoutAvgPoint();
+    };
+
+    /**
+     * Redraw the barplot to match the current layout. If the current layout is
+     * "Unrooted" then this will remove the barplots from canvas.
+     *
+     */
+    Empress.prototype.redrawBarPlotsToMatchLayout = function () {
         // Undraw or redraw barplots as needed (assuming barplots are supported
         // in the first place, of course; if no feature or sample metadata at
         // all was passed then barplots are not available :()
@@ -2768,7 +2829,6 @@ define([
                 this.drawBarplots();
             }
         }
-        this.centerLayoutAvgPoint();
     };
 
     /**
@@ -2977,7 +3037,7 @@ define([
      */
     Empress.prototype.dontCollapseClade = function (clade) {
         var scope = this;
-        var nodes = this.getCladeNodes(parseInt(clade));
+        var nodes = this._tree.getCladeNodes(parseInt(clade));
         nodes.forEach(function (node) {
             scope._dontCollapse.add(node);
         });
@@ -3257,7 +3317,7 @@ define([
 
         // step 1: find all nodes in the clade.
         // Note: cladeNodes is an array of nodes arranged in postorder fashion
-        var cladeNodes = this.getCladeNodes(rootNode);
+        var cladeNodes = this._tree.getCladeNodes(parseInt(rootNode));
 
         // use the left most child in the clade to initialize currentCladeInfo
         var currentCladeInfo = {
@@ -3353,44 +3413,6 @@ define([
             this.createCollapsedCladeShape(cladeRoot);
         }
         this.drawTree();
-    };
-
-    /**
-     * Returns all nodes in the clade whose root is node.
-     *
-     * Note: elements in the returned array are keys in this._treeData
-     *       also, the returned array is sorted in a postorder fashion
-     *
-     * @param {Number} cladeRoot The root of the clade. An error is thrown if
-     *                           cladeRoot is not a valid node.
-     *
-     * @return {Array} The nodes in the clade
-     */
-    Empress.prototype.getCladeNodes = function (cladeRoot) {
-        if (!this._treeData.hasOwnProperty(cladeRoot)) {
-            throw cladeRoot + " is not a valid node.";
-        }
-        // stores the clade nodes
-        var cladeNodes = [];
-
-        // Nodes in the clade are found by performing a postorder traversal
-        // starting at the left most child of the clade and ending on cladeRoot
-
-        // find left most child
-        // Note: initializing lchild as cladeRoot incase cladeRoot is a tip
-        var lchild = cladeRoot;
-        var fchild = this._tree.fchild(this._tree.postorderselect(cladeRoot));
-        while (fchild !== 0) {
-            lchild = this._tree.postorder(fchild);
-            fchild = this._tree.fchild(this._tree.postorderselect(lchild));
-        }
-
-        // perform post order traversal until cladeRoot is reached.
-        for (var i = lchild; i <= cladeRoot; i++) {
-            cladeNodes.push(i);
-        }
-
-        return cladeNodes;
     };
 
     /**
@@ -3568,7 +3590,7 @@ define([
         for (var clade in this._collapsedClades) {
             if (this._isPointInClade(clade, point)) {
                 var cladeNode = this._treeData[clade];
-                return clade;
+                return parseInt(clade);
             }
         }
         return -1;
@@ -3743,7 +3765,7 @@ define([
      */
     Empress.prototype.getTreeStats = function () {
         // Compute node counts
-        var allCt = this._tree.size;
+        var allCt = this._tree.currentSize;
         var tipCt = this._tree.getNumTips(this._tree.size);
         var intCt = allCt - tipCt;
         // Get length statistics
@@ -3775,6 +3797,49 @@ define([
         } else {
             return this._tree.length(this._tree.postorderselect(nodeKey));
         }
+    };
+
+    /**
+     * This will fill the autocomplete search bar with the names of the current
+     * tree.
+     */
+    Empress.prototype.setAutoCompleteNames = function () {
+        var nodeNames = this._tree.getAllNames();
+        // Don't include nodes with the name null (i.e. nodes without a
+        // specified name in the Newick file) in the auto-complete.
+        nodeNames = nodeNames.filter((n) => n !== null);
+        this._events.autocomplete(nodeNames);
+    };
+
+    /**
+     * This will shear/unshear
+     */
+    Empress.prototype.shear = function (shearMap) {
+        this._tree.unshear();
+        var scope = this;
+        var removeNodes = new Set();
+        shearMap.forEach(function (values, cat) {
+            var fmInfo = scope.getUniqueFeatureMetadataInfo(cat, "tip");
+            var uniqueValueToFeatures = fmInfo.uniqueValueToFeatures;
+            _.each(values, function (val) {
+                var obs = uniqueValueToFeatures[val];
+                for (var node of obs) {
+                    removeNodes.add(node);
+                }
+            });
+        });
+
+        if (this.isCommunityPlot) {
+            this._biom.setIgnoreNodes(removeNodes);
+        }
+
+        this._tree.shear(removeNodes);
+
+        this.setAutoCompleteNames();
+
+        this.getLayoutInfo();
+
+        this.redrawBarPlotsToMatchLayout();
     };
 
     return Empress;

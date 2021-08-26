@@ -496,7 +496,7 @@ require([
                 deepEqual(resultArray, expectedArray);
             }
 
-            var columns = Object.keys(result);
+            var columns = util.naturalSort(Object.keys(result));
             deepEqual(columns, groups);
         });
 
@@ -1034,13 +1034,13 @@ require([
 
         test("Test getCladeNodes", function () {
             deepEqual(
-                this.empress.getCladeNodes(5),
+                this.empress._tree.getCladeNodes(5),
                 [1, 2, 3, 4, 5],
                 "valid node"
             );
 
             throws(function () {
-                this.empress.getCladeNodes(-1);
+                this.empress._tree.getCladeNodes(-1);
             });
         });
 

@@ -6,11 +6,13 @@ define(["Colorer", "util"], function (Colorer, util) {
      * Creates tab for the animation panel and handles their events events.
      *
      * @param{Object} animator The object that creates the animations
+     * @param{EnableDisableAnimationTab} tab The Animation tab
      *
      * @return {AnimationPanel}
      * construct AnimationPanel
      */
-    function AnimationPanel(animator) {
+    function AnimationPanel(animator, tab) {
+        this.tab = tab;
         // used in event triggers
         this.animator = animator;
 
@@ -30,6 +32,13 @@ define(["Colorer", "util"], function (Colorer, util) {
         this.prevFrameBtn = document.getElementById("animate-prev-btn");
         this.nextFrameBtn = document.getElementById("animate-next-btn");
 
+        this.startBtnP = document.getElementById("animate-start-btn-p");
+        this.stopBtnP = document.getElementById("animate-stop-btn-p");
+        this.pauseBtnP = document.getElementById("animate-pause-btn-p");
+        this.rpnBtnP = document.getElementById(
+            "animate-resume-prev-next-btn-p"
+        );
+
         /**
          * @type {Function}
          * Function to execute when an animation starts.
@@ -45,20 +54,35 @@ define(["Colorer", "util"], function (Colorer, util) {
         this._onAnimationStopped = null;
     }
 
+    /*
+     * Enables the Animation tab. This will result in the Animation tab
+     * containing its original content.
+     */
+    AnimationPanel.prototype.enableTab = function () {
+        this.tab.enableTab();
+    };
+
+    /*
+     * Disables the Animation tab. This will result in the Animation tab
+     * containing a message describing why the tab has been disabled and how to
+     * re-enable it.
+     */
+    AnimationPanel.prototype.disableTab = function () {
+        this.tab.disableTab();
+    };
+
     /**
      * Makes the play button visible. This is the menu shown before user has
      * started the animation.
      */
     AnimationPanel.prototype.startOptions = function () {
         // hide the following buttons
-        this.stopBtn.classList.add("hidden");
-        this.pauseBtn.classList.add("hidden");
-        this.resumeBtn.classList.add("hidden");
-        this.prevFrameBtn.classList.add("hidden");
-        this.nextFrameBtn.classList.add("hidden");
+        this.stopBtnP.classList.add("hidden");
+        this.pauseBtnP.classList.add("hidden");
+        this.rpnBtnP.classList.add("hidden");
 
         // show the following buttons
-        this.startBtn.classList.remove("hidden");
+        this.startBtnP.classList.remove("hidden");
     };
 
     /**
@@ -69,14 +93,12 @@ define(["Colorer", "util"], function (Colorer, util) {
      */
     AnimationPanel.prototype.__pauseOptions = function () {
         // hide the following buttons
-        this.startBtn.classList.add("hidden");
-        this.resumeBtn.classList.add("hidden");
-        this.prevFrameBtn.classList.add("hidden");
-        this.nextFrameBtn.classList.add("hidden");
+        this.startBtnP.classList.add("hidden");
+        this.rpnBtnP.classList.add("hidden");
 
         // show the following buttons
-        this.stopBtn.classList.remove("hidden");
-        this.pauseBtn.classList.remove("hidden");
+        this.stopBtnP.classList.remove("hidden");
+        this.pauseBtnP.classList.remove("hidden");
     };
 
     /**
@@ -87,14 +109,12 @@ define(["Colorer", "util"], function (Colorer, util) {
      */
     AnimationPanel.prototype.__resumeOptions = function () {
         // hide the following buttons
-        this.pauseBtn.classList.add("hidden");
-        this.startBtn.classList.add("hidden");
+        this.pauseBtnP.classList.add("hidden");
+        this.startBtnP.classList.add("hidden");
 
         // show the following buttons
-        this.stopBtn.classList.remove("hidden");
-        this.resumeBtn.classList.remove("hidden");
-        this.prevFrameBtn.classList.remove("hidden");
-        this.nextFrameBtn.classList.remove("hidden");
+        this.stopBtnP.classList.remove("hidden");
+        this.rpnBtnP.classList.remove("hidden");
 
         // dont show previous button on frame 1
         this.prevFrameBtn.disabled = this.animator.onFirstFrame();
