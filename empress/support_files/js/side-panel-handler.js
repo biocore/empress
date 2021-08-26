@@ -252,6 +252,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 fLineWidth: { value: 0 },
                 fMethodChk: { checked: true },
                 fCollapseCladesChk: { checked: false },
+                fContinuousChk: {checked: false},
             },
             [this.fAddOpts, this.fUpdateBtn]
         );
