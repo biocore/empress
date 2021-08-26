@@ -6,7 +6,6 @@ require([
     "BarplotLayer",
     "UtilitiesForTesting",
     "Colorer",
-    "util",
 ], function (
     $,
     _,
@@ -14,8 +13,7 @@ require([
     Empress,
     BarplotLayer,
     UtilitiesForTesting,
-    Colorer,
-    util
+    Colorer
 ) {
     module("Barplots", {
         setup: function () {

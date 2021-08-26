@@ -3820,10 +3820,7 @@ define([
      * @return true if node has feature metadata else false.
      */
     Empress.prototype.hasFeatureMetadata = function (node) {
-        if (_.has(this._tipMetadata, node) || _.has(this._intMetadata, node)) {
-            return true;
-        }
-        return false;
+        return _.has(this._tipMetadata, node) || _.has(this._intMetadata, node);
     };
 
     return Empress;
