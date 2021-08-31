@@ -3830,7 +3830,6 @@ define([
      */
     Empress.prototype.colorLCAPath = function (nodes, lca) {
         var lcaBPIndx = this._tree.postorderselect(lca);
-
         var coordsBuff = [];
         var colorsBuff = [];
         var scope = this;
@@ -3891,6 +3890,9 @@ define([
             }
         };
         for (var node of nodes) {
+            if (node === lca) {
+                continue;
+            }
             // this.setNodeInfo(node, "color", Colorer.rgbToFloat([64, 200, 64]));
             var parentBPIndx = this._tree.parent(
                 this._tree.postorderselect(node)
@@ -3952,6 +3954,7 @@ define([
     Empress.prototype.setSelectedNode = function (node) {
         var name = this.getName(node);
         this.pathSelector.addNode(node, name);
+
     };
 
     /*
@@ -3962,6 +3965,16 @@ define([
      * @param{Array} nodes An array of node keys.
      */
     Empress.prototype.pathSelectorUpdate = function (nodes) {
+        var scope = this;
+        // 3: highlight nodes
+        var highlightedNodes = _.chain(nodes)
+            .map(function(node) {
+                return [scope.getX(node), scope.getY(node), 4182260]
+            })
+            .flatten()
+            .value()
+        this._drawer.loadHightlightedSelectedNodeBuff(highlightedNodes);
+        console.log(nodes, highlightedNodes, Colorer.rgbToFloat([244, 208, 63]));
         if (nodes.length > 1) {
             // 1: find lowest common ancestor.
             var lcaNode = this.findLCA(nodes);
@@ -3970,17 +3983,14 @@ define([
             // 2: color branches leading from nodes to lca
             this.colorLCAPath(nodes, lcaNode);
 
-            // 3: draw tree
-            this.drawTree();
-
             // return distances
             var dist = this.calcLCADistance(nodes, lcaNode);
             this.pathSelector.addDistance(dist);
         } else {
             this._drawer.loadPathCoordsBuff([]);
             this._drawer.loadPathColorBuff([]);
-            this.drawTree();
         }
+        this.drawTree();
     };
 
     return Empress;

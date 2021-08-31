@@ -34,15 +34,14 @@ define(["util", "AbstractObserverPattern"], function (
                 );
                 return;
             }
-
             this.selectedNodeIDs.push(nodeId);
             this.selectedNodeNames.push(nodeName);
             if (this.selectedNodeIDs.length === 1) {
                 this.n1Container.innerText = nodeName;
             } else {
                 this.n2Container.innerText = nodeName;
-                this.notify(this.selectedNodeIDs);
             }
+            this.notify(this.selectedNodeIDs);    
         }
 
         addDistance(distance) {

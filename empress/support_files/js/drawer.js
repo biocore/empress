@@ -156,6 +156,9 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
         // buffer object for active 'selected' node
         s.selectedNodeBuff = c.createBuffer();
 
+        // buffer object for active 'selected' node
+        s.highlightedNodesBuff = c.createBuffer();
+
         // buffer object for colored clades
         s.cladeBuff = c.createBuffer();
         this.cladeVertSize = 0;
@@ -379,6 +382,17 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
     };
 
     /**
+     * Fills the selected node buffer
+     *
+     * @param {Array} data The coordinate and color of selected node
+     */
+    Drawer.prototype.loadHightlightedSelectedNodeBuff = function (data) {
+        data = new Float32Array(data);
+        this.highlightedNodeSize = data.length / this.VERTEX_SIZE;
+        this.fillBufferData_(this.sProg_.highlightedNodesBuff, data);
+    };
+
+    /**
      * Fills the buffer used to draw nodes
      *
      * @param{Array} data The coordinate and color to fill node buffer
@@ -437,6 +451,11 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
         c.uniform1f(s.pointSize, this.SELECTED_NODE_CIRCLE_DIAMETER);
         this.bindBuffer(s.selectedNodeBuff, 1, 3);
         c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
+
+        // draw highlighted node
+        c.uniform1f(s.pointSize, this.SELECTED_NODE_CIRCLE_DIAMETER);
+        this.bindBuffer(s.highlightedNodesBuff, 1, 3);
+        c.drawArrays(gl.POINTS, 0, this.highlightedNodeSize);
 
         c.uniform1i(s.isSingle, 0);
         this.bindBuffer(s.treeCoordBuff, 2, 2);

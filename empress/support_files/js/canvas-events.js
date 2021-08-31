@@ -426,8 +426,8 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
     ) {
         if (shiftPressed) {
             this.empress.setSelectedNode(nodeKey);
-            this.selectedNodeMenu.setSelectedNodes([nodeKey]);
-            this.empress.drawTree();
+            // this.selectedNodeMenu.setSelectedNodes([nodeKey]);
+            // this.empress.drawTree();
             return;
         }
         var scope = this;

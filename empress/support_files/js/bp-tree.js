@@ -1165,7 +1165,9 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      * @return The index of the lca of i and j.
      */
     BPTree.prototype.lca = function (i, j) {
-        if (this.isAncestor(i, j)) {
+        if (i === j) {
+            return i;
+        } else if (this.isAncestor(i, j)) {
             return i;
         } else if (this.isAncestor(j, i)) {
             return j;
