@@ -98,14 +98,14 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             // update the node selection menu
             selectedNodeMenu.updateMenuPosition();
         };
-
+        var previousCursorValue = canvas.style.cursor;
         // stops moving tree when mouse is released
         var stopMove = function (e) {
             document.onmouseup = null;
             document.onmousemove = null;
             scope.mouseX = null;
             scope.mouseY = null;
-            canvas.style.cursor = "default";
+            canvas.style.cursor = previousCursorValue;
         };
 
         // adds the listeners to the document to move tree
@@ -116,6 +116,7 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             scope.mouseY = center - e.clientY;
             document.onmouseup = stopMove;
             document.onmousemove = moveTree;
+            previousCursorValue = canvas.style.cursor;
             canvas.style.cursor = "none";
         };
 
@@ -208,6 +209,16 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
                 }
             }
         };
+
+        var shiftPress = function (e) {
+            if (e.shiftKey) {
+                canvas.style.cursor = "pointer";
+            } else {
+                canvas.style.cursor = "default";
+            }
+        };
+        document.onkeydown = shiftPress;
+        document.onkeyup = shiftPress;
 
         // uncollapses a clade if double clicked on
         var doubleClick = function (e) {

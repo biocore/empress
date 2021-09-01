@@ -102,7 +102,7 @@ define([
             _.each(selectedNodes, function (node) {
                 metadata.push(scope.nodeInfo[node].metadata);
             });
-            this.metadataGrid.show(this.metadataCols, metadata);
+            this.metadataGrid.show(this.metadataCols, metadata, "all");
         }
 
         showSameMetadata() {
@@ -175,7 +175,7 @@ define([
             }
 
             // 4) show table
-            this.metadataGrid.show(sameCols, sameMetadataArray);
+            this.metadataGrid.show(sameCols, sameMetadataArray, "same");
         }
 
         showDifferentMetadata() {
@@ -248,7 +248,7 @@ define([
             }
 
             // 4) show table
-            this.metadataGrid.show(diffCols, diffMetadataArray);
+            this.metadataGrid.show(diffCols, diffMetadataArray, "diff");
         }
 
         getSelectedNodes() {

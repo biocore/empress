@@ -53,6 +53,26 @@ define([
                 this.hide();
             };
 
+            this.titleDiv = this.metadataSlickGridContainer.insertBefore(
+                document.createElement("div"),
+                this.container
+            );
+            this.titleDiv.classList.add("legend-title");
+
+            this.descriptionDiv = this.metadataSlickGridContainer.insertBefore(
+                document.createElement("div"),
+                this.container
+            );
+            this.descriptionDiv.style.width = "100%";
+            this.descriptionDiv.style.display = "flex";
+            this.descriptionDiv.style["justify-content"] = "center";
+
+            this.descriptionP = this.descriptionDiv.appendChild(
+                document.createElement("div")
+            );
+            this.descriptionP.classList.add("side-panel-notes");
+            this.descriptionP.style.width = "95%";
+
             // re-hide the container
             this.metadataSlickGridContainer.classList.add("hidden");
 
@@ -76,7 +96,6 @@ define([
                 var colorMap = new Colorer("discrete-coloring-qiime", [
                     ...uniqueVals,
                 ]).getMapHex();
-                console.log(colorMap, uniqueVals);
                 var columnOptions = scope.grid.getColumns();
                 var formatter = function (
                     row,
@@ -110,13 +129,46 @@ define([
             this.greyScreen.classList.add("hidden");
         }
 
-        show(cols, metadata) {
+        show(cols, metadata, style) {
             this.metadataSlickGridContainer.classList.remove("hidden");
             this.greyScreen.classList.remove("hidden");
             this.metadataSlickGridContainer.classList.remove("hidden");
             this.greyScreen.classList.remove("hidden");
+            this.setStyleInfo(style);
             this.setData(metadata);
             this.setColumns(cols);
+        }
+
+        setStyleInfo(style) {
+            var title, description;
+            if (style === "all") {
+                title = "All metadata";
+                description =
+                    "This table includes all available feature metadata " +
+                    "for the selected nodes. " +
+                    "Clicking on a column header will sort the features " +
+                    "based on their value for the selected column. " +
+                    "Additionally, features with the same value will be colored the same.";
+            } else if (style === "same") {
+                title = "Same metadata";
+                description =
+                    "This table only contains feature values present in " +
+                    "at least two features. All unique feature values have been removed. " +
+                    "Clicking on a column header will sort the features " +
+                    "based on their value for the selected column. " +
+                    "Additionally, features with the same value will be colored the same.";
+            } else if (style === "diff") {
+                title = "Different metadata";
+                description =
+                    "This table only contains the feature values that are present in " +
+                    "a single feature. All non-unique feature values have been removed. " +
+                    "Clicking on a column header will sort the features " +
+                    "based on their value for the selected column. " +
+                    "Additionally, features with the same value will be colored the same.";
+            }
+
+            this.titleDiv.innerText = title;
+            this.descriptionP.innerText = description;
         }
 
         addItem(item) {
