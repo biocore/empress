@@ -708,7 +708,7 @@ p.side-header button:hover,
     width: 85%;
     max-height: 85%;
     z-index: 500;
-    height:fit-content;
+    height: fit-content;
 }
 
 #greyout-empress-screen {

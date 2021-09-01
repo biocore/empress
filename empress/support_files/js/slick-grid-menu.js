@@ -13,7 +13,7 @@ define([
             idCol = null,
             maxTableHeight = 400,
             onClick = null,
-            frozenColumn=-1
+            frozenColumn = -1
         ) {
             super("slickGridUpdate");
 
@@ -97,13 +97,14 @@ define([
             // when "onBeforeSort" returns false, the "onSort" won't execute (for example a backend server error while calling backend query to sort)
             this.grid.onSort.subscribe(function (e, args) {
                 var field = args.columnId;
-                var sign = args.sortAsc ? 1: -1;
+                var sign = args.sortAsc ? 1 : -1;
 
-                scope.dataView.sort(function(row1, row2) {
-                    var val1 = row1[field], val2 = row2[field];
+                scope.dataView.sort(function (row1, row2) {
+                    var val1 = row1[field],
+                        val2 = row2[field];
                     if (val1 === undefined) return 1;
                     if (val2 === undefined) return -1;
-                    return (val1 > val2 ? 1: -1) * sign;
+                    return (val1 > val2 ? 1 : -1) * sign;
                 });
             });
 
@@ -204,7 +205,7 @@ define([
                 var idColNum = _.findIndex(metadataCols, function (col) {
                     return col === scope.idCol;
                 });
-                if(idColNum !== -1) {
+                if (idColNum !== -1) {
                     var idCol = columns[idColNum];
                     idCol.width = 0;
                     idCol.minWidth = 0;
@@ -228,7 +229,7 @@ define([
         setData(metadata) {
             this.dataView.setItems(metadata, this.idCol);
 
-            this.refreshTableHeight()
+            this.refreshTableHeight();
         }
 
         addItem(item) {
@@ -236,7 +237,7 @@ define([
             this.dataView.addItem(item);
             this.dataView.refresh();
 
-            this.refreshTableHeight()
+            this.refreshTableHeight();
         }
 
         refreshTableHeight() {

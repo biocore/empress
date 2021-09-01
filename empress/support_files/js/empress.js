@@ -390,7 +390,10 @@ define([
          */
         this._group = new Array(this._tree.size + 1).fill(-1);
 
-        this.pathSelector = new PathSelector(["Name", ...this._featureMetadataColumns]);
+        this.pathSelector = new PathSelector([
+            "Name",
+            ...this._featureMetadataColumns,
+        ]);
         this.pathSelector.registerObserver(this);
     }
 
@@ -3932,15 +3935,14 @@ define([
         for (var node of nodes) {
             var nodeBPIndx = this._tree.postorderselect(node);
             while (
-                nodeBPIndx !== lcaBPIndx && !uniqueNodeBPIndices.has(nodeBPIndx)
+                nodeBPIndx !== lcaBPIndx &&
+                !uniqueNodeBPIndices.has(nodeBPIndx)
             ) {
                 uniqueNodeBPIndices.add(nodeBPIndx);
                 nodeBPIndx = this._tree.parent(nodeBPIndx);
             }
             uniqueNodeBPIndices.add(nodeBPIndx);
         }
-
-        
 
         // sum distance
         for (var nodeIdx of uniqueNodeBPIndices) {
@@ -3963,13 +3965,12 @@ define([
     Empress.prototype.setSelectedNode = function (node) {
         var name = this.getName(node);
         var metadataRow = this._tipMetadata[node] || this._intMetadata[node];
-        var metadata = {Name: name};
+        var metadata = { Name: name };
         var scope = this;
-        _.each(metadataRow, function(val, i) {
+        _.each(metadataRow, function (val, i) {
             metadata[scope._featureMetadataColumns[i]] = val;
         });
         this.pathSelector.addNode(node, name, metadata);
-
     };
 
     /*
@@ -3983,11 +3984,11 @@ define([
         var scope = this;
         // 3: highlight nodes
         var highlightedNodes = _.chain(nodes)
-            .map(function(node) {
-                return [scope.getX(node), scope.getY(node), 4182260]
+            .map(function (node) {
+                return [scope.getX(node), scope.getY(node), 4182260];
             })
             .flatten()
-            .value()
+            .value();
         this._drawer.loadHightlightedSelectedNodeBuff(highlightedNodes);
         // 1: find lowest common ancestor.
         var lcaNode = this.findLCA(nodes);
@@ -3998,7 +3999,7 @@ define([
 
         // return distances
         var dist = this.calcLCADistance(nodes, lcaNode);
-        this.pathSelector.addDistance(dist);    
+        this.pathSelector.addDistance(dist);
         this.drawTree();
     };
 

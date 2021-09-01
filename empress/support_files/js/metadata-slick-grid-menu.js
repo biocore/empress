@@ -4,14 +4,8 @@ define([
     "AbstractObserverPattern",
     "SlickGridMenu",
     "Colorer",
-], function (
-    _,
-    util,
-    AbstractObserverPattern,
-    SlickGridMenu,
-    Colorer
-) {
-    class MetadataSlickGridMenu  extends SlickGridMenu {
+], function (_, util, AbstractObserverPattern, SlickGridMenu, Colorer) {
+    class MetadataSlickGridMenu extends SlickGridMenu {
         constructor(
             metadataCols,
             metadataRows,
@@ -48,16 +42,16 @@ define([
                 document.createElement("div"),
                 this.metadataSlickGridContainer.firstChild
             );
-            closeBar.classList.add("close-bar")
+            closeBar.classList.add("close-bar");
             this.closeBtn = closeBar.appendChild(
-                document.createElement("button"),
+                document.createElement("button")
             );
             this.closeBtn.style.float = "right";
             this.closeBtn.innerText = "X";
-            this.closeBtn.classList.add("close-button")
+            this.closeBtn.classList.add("close-button");
             this.closeBtn.onclick = () => {
                 this.hide();
-            }
+            };
 
             // re-hide the container
             this.metadataSlickGridContainer.classList.add("hidden");
@@ -66,33 +60,47 @@ define([
             var scope = this;
             this.grid.onSort.subscribe(function (e, args) {
                 var field = args.columnId;
-                var sign = args.sortAsc ? 1: -1;
+                var sign = args.sortAsc ? 1 : -1;
 
                 var uniqueVals = new Set();
-                scope.dataView.sort(function(row1, row2) {
-                    var val1 = row1[field], val2 = row2[field];
-                    uniqueVals.add(val1), uniqueVals.add(val2);
+                scope.dataView.sort(function (row1, row2) {
+                    var val1 = row1[field],
+                        val2 = row2[field];
+                    uniqueVals.add(val1);
+                    uniqueVals.add(val2);
                     if (val1 === undefined) return 1;
                     if (val2 === undefined) return -1;
-                    return (val1 > val2 ? 1: -1) * sign;
+                    return (val1 > val2 ? 1 : -1) * sign;
                 });
-                uniqueVals.delete(undefined)
-                var colorMap = new Colorer(
-                    "discrete-coloring-qiime",
-                    [...uniqueVals],
-                ).getMapHex();
-                console.log(colorMap, uniqueVals)
+                uniqueVals.delete(undefined);
+                var colorMap = new Colorer("discrete-coloring-qiime", [
+                    ...uniqueVals,
+                ]).getMapHex();
+                console.log(colorMap, uniqueVals);
                 var columnOptions = scope.grid.getColumns();
-                for (var columnOption of columnOptions) {
-                    columnOption.formatter = function(row, cell, value, columnDef, dataContext) {
-                        if (value === undefined) return;
-                        var color = colorMap[value];
-                        if (columnDef.name === field) {
-                            return "<span style='color:" + color + "'>" + value + "</span>";
-                        } else {
-                            return value;
-                        }
+                var formatter = function (
+                    row,
+                    cell,
+                    value,
+                    columnDef,
+                    dataContext
+                ) {
+                    if (value === undefined) return;
+                    var color = colorMap[value];
+                    if (columnDef.name === field) {
+                        return (
+                            "<span style='color:" +
+                            color +
+                            "'>" +
+                            value +
+                            "</span>"
+                        );
+                    } else {
+                        return value;
                     }
+                };
+                for (var columnOption of columnOptions) {
+                    columnOption.formatter = formatter;
                 }
             });
         }
@@ -118,7 +126,6 @@ define([
             // add new item to data view
             this.dataView.addItem(item);
             this.dataView.refresh();
-
 
             // find new height of grid
             var height = Math.min(

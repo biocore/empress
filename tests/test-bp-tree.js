@@ -1247,7 +1247,7 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             }
 
             // lca of a node and itsself should be the node
-            equal(this.bpObj.lca(nodes[2], nodes[2]), nodes[2])
+            equal(this.bpObj.lca(nodes[2], nodes[2]), nodes[2]);
         });
     });
 });

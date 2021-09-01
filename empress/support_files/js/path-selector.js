@@ -2,13 +2,8 @@ define([
     "underscore",
     "util",
     "AbstractObserverPattern",
-    "MetadataSlickGridMenu"
-], function (
-    _,
-    util,
-    AbstractObserverPattern,
-    MetadataSlickGridMenu
-) {
+    "MetadataSlickGridMenu",
+], function (_, util, AbstractObserverPattern, MetadataSlickGridMenu) {
     class PathSelector extends AbstractObserverPattern {
         constructor(cols) {
             super("pathSelectorUpdate");
@@ -19,10 +14,7 @@ define([
                 this
             );
             this.nodeLayer.registerObserver(this);
-            this.statLayer = new StatLayer(
-                "Statistics",
-                this.container
-            );
+            this.statLayer = new StatLayer("Statistics", this.container);
             this.metadataCols = cols;
             // nodeInfo - key: nodeid, val: {name: String, metadata: {col1: val1,  col2:val2, ...}, selected: Boolean}
             this.nodeInfo = {};
@@ -57,23 +49,23 @@ define([
 
         toggleLayers() {
             if (_.isEmpty(this.nodeInfo)) {
-                this.hideLayers()
+                this.hideLayers();
             } else {
                 this.showLayers();
             }
         }
 
         addNode(nodeId, nodeName, metadata) {
-            if(this.nodeInfo.hasOwnProperty(nodeId)) {
+            if (this.nodeInfo.hasOwnProperty(nodeId)) {
                 this.nodeLayer.removeNode(nodeId);
                 return;
-            };
+            }
             this.nodeLayer.addNode(nodeId, nodeName);
             this.nodeInfo[nodeId] = {
                 name: nodeName,
                 metadata: metadata,
                 selected: true,
-            }
+            };
             this.toggleLayers();
             this.notify(this.getSelectedNodes());
         }
@@ -101,14 +93,13 @@ define([
             }
             this.toggleLayers();
             this.notify(this.getSelectedNodes());
-
         }
 
         showAllMetadata() {
             var scope = this;
-            var selectedNodes = this.getSelectedNodes()
+            var selectedNodes = this.getSelectedNodes();
             var metadata = [];
-            _.each(selectedNodes, function(node) {
+            _.each(selectedNodes, function (node) {
                 metadata.push(scope.nodeInfo[node].metadata);
             });
             this.metadataGrid.show(this.metadataCols, metadata);
@@ -116,7 +107,7 @@ define([
 
         showSameMetadata() {
             if (this.getSelectedNodes().length <= 1) {
-                this.showAllMetadata()
+                this.showAllMetadata();
                 return;
             }
 
@@ -126,21 +117,22 @@ define([
             for (var cName of this.metadataCols) {
                 result[cName] = {};
             }
+            var nodeId, info, col, val, colInfo, nodes, node, metadata;
 
             // 2) extract unique values in each column and a list of nodes
             //    with that value
             // iterate over nodes
-            for (var [nodeId, info] of Object.entries(this.nodeInfo)) {
+            for ([nodeId, info] of Object.entries(this.nodeInfo)) {
                 if (!info.selected) continue;
                 // iterate over columns
-                for (var [col, val] of Object.entries(info.metadata)) {
+                for ([col, val] of Object.entries(info.metadata)) {
                     // get the column object from result
                     var colVals = result[col];
 
                     // check if the val has been seen in col
                     if (colVals.hasOwnProperty(val)) {
                         // nodeId's value has already been been seen
-                        // so we will just addit to the entry 
+                        // so we will just addit to the entry
                         colVals[val].push(nodeId);
                     } else {
                         // nodeId's value for col has not yet been seen
@@ -156,20 +148,21 @@ define([
             var sameMetadata = {};
             var sameCols = ["Name"];
             // iterate over cols
-            for (var [col, colInfo] of Object.entries(result)) {
+            for ([col, colInfo] of Object.entries(result)) {
                 // iterate over each value in col
-                for (var [val, nodes] of Object.entries(colInfo)) {
+                for ([val, nodes] of Object.entries(colInfo)) {
                     // check if multiple nodes shared same value
                     if (nodes.length > 1) {
-                        for (var node of nodes) {
-                            if(!sameMetadata.hasOwnProperty(node)) {
+                        for (node of nodes) {
+                            if (!sameMetadata.hasOwnProperty(node)) {
                                 sameMetadata[node] = {
-                                    "Name": this.nodeInfo[node].name};
+                                    Name: this.nodeInfo[node].name,
+                                };
                             }
                             sameMetadata[node][col] = val;
                         }
 
-                        if(!sameCols.includes(col)) {
+                        if (!sameCols.includes(col)) {
                             sameCols.push(col);
                         }
                     }
@@ -177,8 +170,8 @@ define([
             }
 
             var sameMetadataArray = [];
-            for (var [node, metadata] of Object.entries(sameMetadata)) {
-                sameMetadataArray.push(metadata)
+            for ([node, metadata] of Object.entries(sameMetadata)) {
+                sameMetadataArray.push(metadata);
             }
 
             // 4) show table
@@ -187,7 +180,7 @@ define([
 
         showDifferentMetadata() {
             if (this.getSelectedNodes().length <= 1) {
-                this.showAllMetadata()
+                this.showAllMetadata();
                 return;
             }
 
@@ -198,20 +191,22 @@ define([
                 result[cName] = {};
             }
 
+            var nodeId, info, col, val, colInfo, nodes, node, metadata;
+
             // 2) extract unique values in each column and a list of nodes
             //    with that value
             // iterate over nodes
-            for (var [nodeId, info] of Object.entries(this.nodeInfo)) {
+            for ([nodeId, info] of Object.entries(this.nodeInfo)) {
                 if (!info.selected) continue;
                 // iterate over columns
-                for (var [col, val] of Object.entries(info.metadata)) {
+                for ([col, val] of Object.entries(info.metadata)) {
                     // get the column object from result
                     var colVals = result[col];
 
                     // check if the val has been seen in col
                     if (colVals.hasOwnProperty(val)) {
                         // nodeId's value has already been been seen
-                        // so we will just addit to the entry 
+                        // so we will just addit to the entry
                         colVals[val].push(nodeId);
                     } else {
                         // nodeId's value for col has not yet been seen
@@ -227,19 +222,20 @@ define([
             var diffMetadata = {};
             var diffCols = ["Name"];
             // iterate over cols
-            for (var [col, colInfo] of Object.entries(result)) {
+            for ([col, colInfo] of Object.entries(result)) {
                 // iterate over each value in col
-                for (var [val, nodes] of Object.entries(colInfo)) {
+                for ([val, nodes] of Object.entries(colInfo)) {
                     // check if multiple nodes shared same value
                     if (nodes.length === 1) {
-                        var node = nodes[0];
-                        if(!diffMetadata.hasOwnProperty(node)) {
+                        node = nodes[0];
+                        if (!diffMetadata.hasOwnProperty(node)) {
                             diffMetadata[node] = {
-                                "Name": this.nodeInfo[node].name};
+                                Name: this.nodeInfo[node].name,
+                            };
                         }
                         diffMetadata[node][col] = val;
 
-                        if(!diffCols.includes(col)) {
+                        if (!diffCols.includes(col)) {
                             diffCols.push(col);
                         }
                     }
@@ -247,8 +243,8 @@ define([
             }
 
             var diffMetadataArray = [];
-            for (var [node, metadata] of Object.entries(diffMetadata)) {
-                diffMetadataArray.push(metadata)
+            for ([node, metadata] of Object.entries(diffMetadata)) {
+                diffMetadataArray.push(metadata);
             }
 
             // 4) show table
@@ -258,7 +254,7 @@ define([
         getSelectedNodes() {
             var scope = this;
             var selectedNodes = [];
-            _.each(this.nodeInfo, function(info, nodeId) {
+            _.each(this.nodeInfo, function (info, nodeId) {
                 if (info.selected) selectedNodes.push(nodeId);
             });
             return selectedNodes;
@@ -283,7 +279,9 @@ define([
             var scope = this;
 
             // create layer div
-            this.layerDiv = this.container.appendChild(document.createElement("div"));
+            this.layerDiv = this.container.appendChild(
+                document.createElement("div")
+            );
 
             // create border line
             this.layerDiv.appendChild(document.createElement("hr"));
@@ -291,14 +289,12 @@ define([
             // create checkbox legend title
             var legendTitle = this.layerDiv.appendChild(
                 document.createElement("div")
-            )
+            );
             legendTitle.innerText = this.title;
             legendTitle.classList.add("legend-title");
 
             // create container for metadata buttons
-            var p = this.layerDiv.appendChild(
-                document.createElement("p")
-            );
+            var p = this.layerDiv.appendChild(document.createElement("p"));
 
             // button to show metadata fields with same value across all nodes
             var button = p.appendChild(document.createElement("button"));
@@ -306,7 +302,7 @@ define([
             button.setAttribute("style", "margin: 0 auto;");
             button.onclick = () => {
                 this.pathSelector.showSameMetadata();
-            }
+            };
 
             // button to show all metadata fields
             button = p.appendChild(document.createElement("button"));
@@ -382,9 +378,7 @@ define([
             this.nodeRows[nodeId] = row;
 
             // add remove button
-            var removeTd = row.appendChild(
-                document.createElement("td")
-            );
+            var removeTd = row.appendChild(document.createElement("td"));
             var removeBtn = removeTd.appendChild(
                 document.createElement("button")
             );
@@ -392,18 +386,18 @@ define([
 
             // add click events for checkbox/remove button
             var scope = this;
-            input.onclick = function() {
+            input.onclick = function () {
                 var obj = {};
                 if (this.checked) {
-                    obj = scope.getNotifyObject({visible: nodeId});
+                    obj = scope.getNotifyObject({ visible: nodeId });
                 } else {
-                    obj  = scope.getNotifyObject({hide: nodeId});
+                    obj = scope.getNotifyObject({ hide: nodeId });
                 }
                 scope.notify(obj);
-            }
-            removeBtn.onclick = function() {
+            };
+            removeBtn.onclick = function () {
                 scope.removeNode(nodeId);
-            }
+            };
 
             // add row to table
             this.table.appendChild(row);
@@ -414,8 +408,8 @@ define([
 
         removeNode(nodeId) {
             var row = this.nodeRows[nodeId];
-            this.table.deleteRow(row.rowIndex)
-            this.notify(this.getNotifyObject({remove: nodeId}));
+            this.table.deleteRow(row.rowIndex);
+            this.notify(this.getNotifyObject({ remove: nodeId }));
         }
 
         getNotifyObject(params) {
@@ -426,11 +420,11 @@ define([
                 showAll: undefined,
                 showSame: undefined,
                 showDiff: undefined,
-            }
+            };
 
-            _.each(params, function(val, key) {
+            _.each(params, function (val, key) {
                 obj[key] = val;
-            })
+            });
 
             return obj;
         }
@@ -457,7 +451,9 @@ define([
             var scope = this;
 
             // create layer div
-            this.layerDiv = this.container.appendChild(document.createElement("div"));
+            this.layerDiv = this.container.appendChild(
+                document.createElement("div")
+            );
 
             // create border line
             this.layerDiv.appendChild(document.createElement("hr"));
@@ -465,7 +461,7 @@ define([
             // create checkbox legend title
             var legendTitle = this.layerDiv.appendChild(
                 document.createElement("div")
-            )
+            );
             legendTitle.innerText = this.title;
             legendTitle.classList.add("legend-title");
 
@@ -475,33 +471,29 @@ define([
             );
 
             // create checkboxes
-            this.table = statDiv.appendChild(
-                document.createElement("table")
-            );
+            this.table = statDiv.appendChild(document.createElement("table"));
             this.table.style["table-layout"] = "fixed";
 
             // create number of nodes row
-            var row = this.table.appendChild(
-                document.createElement("tr")
-            );
+            var row = this.table.appendChild(document.createElement("tr"));
             var td = row.appendChild(document.createElement("td"));
             var numNodesLabel = td.appendChild(document.createElement("label"));
-            numNodesLabel.innerHTML = "<span style='font-weight: bold;'>" +
-                                      "Number of nodes on path" +
-                                      "</span>";
+            numNodesLabel.innerHTML =
+                "<span style='font-weight: bold;'>" +
+                "Number of nodes on path" +
+                "</span>";
             td = row.appendChild(document.createElement("td"));
             this.numNodesDiv = td.appendChild(document.createElement("div"));
             this.numNodesDiv.innerText = 0;
 
             // create distance row
-            row = this.table.appendChild(
-                document.createElement("tr")
-            );
+            row = this.table.appendChild(document.createElement("tr"));
             td = row.appendChild(document.createElement("td"));
             var distLabel = td.appendChild(document.createElement("label"));
-            distLabel.innerHTML = "<span style='font-weight: bold;'>" +
-                                      "Total Distance" +
-                                      "</span>";
+            distLabel.innerHTML =
+                "<span style='font-weight: bold;'>" +
+                "Total Distance" +
+                "</span>";
             td = row.appendChild(document.createElement("td"));
             this.distanceDiv = td.appendChild(document.createElement("div"));
             this.distanceDiv.innerText = 0;
@@ -516,7 +508,9 @@ define([
         }
 
         setDistance(distance) {
-            this.distanceDiv.textContent = distance.toLocaleString(undefined, {maximumSignificantDigits: 6});
+            this.distanceDiv.textContent = distance.toLocaleString(undefined, {
+                maximumSignificantDigits: 6,
+            });
         }
 
         setNumNodesOnPath(numNodes) {
