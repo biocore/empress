@@ -390,7 +390,7 @@ define([
          */
         this._group = new Array(this._tree.size + 1).fill(-1);
 
-        this.pathSelector = new PathSelector();
+        this.pathSelector = new PathSelector(["Name", ...this._featureMetadataColumns]);
         this.pathSelector.registerObserver(this);
     }
 
@@ -3808,6 +3808,7 @@ define([
     Empress.prototype.findLCA = function (nodes) {
         var scope = this;
         // 1: find least common ancestor.
+        if (nodes.length === 1) return parseInt(nodes[0]);
         var nodeBPIndices = _.map(nodes, function (node) {
             return scope._tree.postorderselect(node);
         });
@@ -3890,16 +3891,16 @@ define([
             }
         };
         for (var node of nodes) {
+            node = parseInt(node);
             if (node === lca) {
                 continue;
             }
-            // this.setNodeInfo(node, "color", Colorer.rgbToFloat([64, 200, 64]));
+
             var parentBPIndx = this._tree.parent(
                 this._tree.postorderselect(node)
             );
             var parent = this._tree.postorder(parentBPIndx);
             while (parentBPIndx !== lcaBPIndx) {
-                // && parentBPIndx !== this._tree.root()) {
                 // add buff info
                 addCoordsToBuff(node, parent);
 
@@ -3907,7 +3908,6 @@ define([
                 node = parent;
                 parentBPIndx = this._tree.parent(parentBPIndx);
                 parent = this._tree.postorder(parentBPIndx);
-                // this.setNodeInfo(parent, "color", Colorer.rgbToFloat([64, 200, 64]));
             }
             addCoordsToBuff(node, parent);
         }
@@ -3931,16 +3931,25 @@ define([
         var uniqueNodeBPIndices = new Set();
         for (var node of nodes) {
             var nodeBPIndx = this._tree.postorderselect(node);
-            while (nodeBPIndx !== lcaBPIndx) {
+            while (
+                nodeBPIndx !== lcaBPIndx && !uniqueNodeBPIndices.has(nodeBPIndx)
+            ) {
                 uniqueNodeBPIndices.add(nodeBPIndx);
                 nodeBPIndx = this._tree.parent(nodeBPIndx);
             }
+            uniqueNodeBPIndices.add(nodeBPIndx);
         }
+
+        
 
         // sum distance
         for (var nodeIdx of uniqueNodeBPIndices) {
             dist += this._tree.length(nodeIdx);
         }
+        dist -= this._tree.length(lcaBPIndx);
+
+        // add one since the lca is not technically visited
+        this.pathSelector.setNumNodesOnPath(uniqueNodeBPIndices.size);
 
         return dist;
     };
@@ -3953,7 +3962,13 @@ define([
      */
     Empress.prototype.setSelectedNode = function (node) {
         var name = this.getName(node);
-        this.pathSelector.addNode(node, name);
+        var metadataRow = this._tipMetadata[node] || this._intMetadata[node];
+        var metadata = {Name: name};
+        var scope = this;
+        _.each(metadataRow, function(val, i) {
+            metadata[scope._featureMetadataColumns[i]] = val;
+        });
+        this.pathSelector.addNode(node, name, metadata);
 
     };
 
@@ -3974,22 +3989,16 @@ define([
             .flatten()
             .value()
         this._drawer.loadHightlightedSelectedNodeBuff(highlightedNodes);
-        console.log(nodes, highlightedNodes, Colorer.rgbToFloat([244, 208, 63]));
-        if (nodes.length > 1) {
-            // 1: find lowest common ancestor.
-            var lcaNode = this.findLCA(nodes);
-            var lcaBPIndx = this._tree.postorderselect(lcaNode);
+        // 1: find lowest common ancestor.
+        var lcaNode = this.findLCA(nodes);
+        var lcaBPIndx = this._tree.postorderselect(lcaNode);
 
-            // 2: color branches leading from nodes to lca
-            this.colorLCAPath(nodes, lcaNode);
+        // 2: color branches leading from nodes to lca
+        this.colorLCAPath(nodes, lcaNode);
 
-            // return distances
-            var dist = this.calcLCADistance(nodes, lcaNode);
-            this.pathSelector.addDistance(dist);
-        } else {
-            this._drawer.loadPathCoordsBuff([]);
-            this._drawer.loadPathColorBuff([]);
-        }
+        // return distances
+        var dist = this.calcLCADistance(nodes, lcaNode);
+        this.pathSelector.addDistance(dist);    
         this.drawTree();
     };
 

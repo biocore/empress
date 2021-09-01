@@ -696,3 +696,52 @@ p.side-header button:hover,
     margin-top: 0;
     margin-bottom: 0;
 }
+
+#metadata-slick-grid-container {
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    border: double;
+    z-index: 500;
+    width: 85%;
+    max-height: 85%;
+    z-index: 500;
+    height:fit-content;
+}
+
+#greyout-empress-screen {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    filter: alpha(opacity=30);
+    opacity: 0.3;
+    z-index: 499;
+}
+
+.close-button {
+    background-color: #cc0000;
+    color: white;
+    cursor: pointer;
+    border: none;
+    text-align: center;
+    outline: none;
+    margin: 0;
+    width: 5%;
+}
+
+.close-button:hover {
+    background-color: #999;
+}
+
+.close-bar {
+    background-color: #777;
+    width: 100%;
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}

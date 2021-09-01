@@ -4,6 +4,8 @@
     <title>Empress</title>
     <link rel='stylesheet' type="text/css" href='{{ base_url }}/css/empress.css'>
     <link rel='stylesheet' type="text/css" href='{{ base_url }}/vendor/spectrum.min.css'>
+    <link rel="stylesheet" type="text/css" href="{{ base_url }}/vendor/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ base_url }}/vendor/slick.grid.min.css">
     <link rel='stylesheet' type="text/css" href='{{ base_url }}/vendor/toastr.min.css'>
     <script src='{{ base_url }}/vendor/require-2.1.22.min.js'></script>
     {{ emperor_base_dependencies }}
@@ -78,6 +80,10 @@
     <div id="legend-panel" class="unselectable-text">
       <div id="legend-main" class="legend hidden"></div>
     </div>
+
+    <div id="metadata-slick-grid-container" class="hidden" ></div>
+
+    <div id="greyout-empress-screen" class="hidden"></div>
   </body>
 
   <script>
@@ -88,6 +94,13 @@
         'paths' : {
             /* vendor paths */
             'jquery' : './vendor/jquery-2.2.4.min',
+            'jqueryui': './vendor/jquery-ui.min',
+            'jquery_drag': './vendor/jquery.event.drag-2.2.min',
+            'slickcore': './vendor/slick.core.min',
+            'slickgrid': './vendor/slick.grid.min',
+            'slickformatters': './vendor/slick.editors.min',
+            'slickeditors': './vendor/slick.formatters.min',
+            'slickdataview': './vendor/slick.dataview.min',
             'glMatrix' : './vendor/gl-matrix.min',
             'chroma' : './vendor/chroma.min',
             'underscore' : './vendor/underscore-min',
@@ -116,13 +129,20 @@
             'ExportUtil': './js/export-util',
             'TreeController': './js/tree-controller',
             'Shearer': './js/shearer',
+            'SlickGridMenu': './js/slick-grid-menu',
+            'MetadataSlickGridMenu': './js/metadata-slick-grid-menu',
             'EnableDisableTab': './js/enable-disable-tab',
             'EnableDisableSidePanelTab': './js/enable-disable-side-panel-tab',
             'EnableDisableAnimationTab': './js/enable-disable-animation-tab',
             'AbstractObserverPattern': './js/abstract-observer-pattern',
             'PathSelector': './js/path-selector',
 
-        }
+        },
+        'shim': {
+            'slickcore': ['jqueryui'],
+            'slickgrid': ['slickcore', 'jquery_drag', 'slickformatters', 'slickeditors',
+                          'slickdataview']
+      }
     });
 
     empressRequire(['jquery', 'glMatrix', 'chroma', 'underscore', 'spectrum',
