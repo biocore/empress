@@ -3927,7 +3927,7 @@ define([
      * @return The distance.
      */
     Empress.prototype.calcLCADistance = function (nodes, lca) {
-        var dist = 0;
+        var dist = {total: 0, tips: 0, int: 0};
         var lcaBPIndx = this._tree.postorderselect(lca);
 
         // find unique nodes
@@ -3946,19 +3946,32 @@ define([
 
         // sum distance
         for (var nodeIdx of uniqueNodeBPIndices) {
-            dist += this._tree.length(nodeIdx);
+            var length = this._tree.length(nodeIdx);
+            dist.total += length;
+            if (nodeIdx !== lcaBPIndx) {
+                if (this._tree.isleaf(nodeIdx)) {
+                    dist.tips += length;
+                } else {
+                    dist.int += length;
+                }
+            }
         }
-        dist -= this._tree.length(lcaBPIndx);
+        dist.total -= this._tree.length(lcaBPIndx);
 
-        // add one since the lca is not technically visited
-        this.pathSelector.setNumNodesOnPath(uniqueNodeBPIndices.size);
-
+        var tips = _.filter(
+            [...uniqueNodeBPIndices],
+            (node) => {return this._tree.isleaf(node)}
+        );
+        this.pathSelector.setNumNodesOnPath({
+            total: uniqueNodeBPIndices.size,
+            tips: tips.length,
+        });
         return dist;
     };
 
     /*
-     * Attempts to a node to the selected path. If the selected path is maxed
-     * out, the a warning message will appear.
+     * Attempts to add node to the selected path. If node is already on path,
+     * then this will remove node.
      *
      * @param{Number} node A node key
      */
@@ -3970,7 +3983,24 @@ define([
         _.each(metadataRow, function (val, i) {
             metadata[scope._featureMetadataColumns[i]] = val;
         });
-        this.pathSelector.addNode(node, name, metadata);
+        this.pathSelector.addRemoveNode(node, name, metadata);
+    };
+
+    Empress.prototype.setSelectedNodes = function (nodes) {
+        var scope = this;
+        var names = [];
+        var metadata = [];
+        _.each(nodes, (node) => {
+            var name = scope.getName(node);
+            var metadataRow = {Name: name}
+            var nodeMetadata = this._tipMetadata[node] || this._intMetadata[node];
+            _.each(nodeMetadata, function (val, i) {
+                metadataRow[scope._featureMetadataColumns[i]] = val;
+            });
+            names.push(name);
+            metadata.push(metadataRow);
+        });
+        this.pathSelector.setSelectedNodes(nodes, names, metadata);
     };
 
     /*
@@ -3999,7 +4029,7 @@ define([
 
         // return distances
         var dist = this.calcLCADistance(nodes, lcaNode);
-        this.pathSelector.addDistance(dist);
+        this.pathSelector.setDistance(dist);
         this.drawTree();
     };
 

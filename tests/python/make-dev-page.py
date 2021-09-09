@@ -69,9 +69,11 @@ def main(tree, table, sample_metadata, feature_metadata, ordination,
 
     with open(str(tree.view(NewickFormat))) as f:
         tree = parse_newick(f.readline())
-
     table = table.view(biom.Table)
     sample_metadata = sample_metadata.to_dataframe()
+    ordination=None
+    sample_metadata=None
+    table=None
 
     if feature_metadata is not None:
         feature_metadata = feature_metadata.to_dataframe()

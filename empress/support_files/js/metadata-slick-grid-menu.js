@@ -13,7 +13,10 @@ define([
             hideIdCol = false,
             idCol = null,
             maxTableHeight = 400,
-            onClick = null
+            onClick = null,
+            frozenColumn = 0,
+            sortCols=false,
+            placeIdColFirst=false
         ) {
             // create slick grid container
             var slickGridContainer = container.appendChild(
@@ -32,7 +35,9 @@ define([
                 idCol,
                 maxTableHeight,
                 onClick,
-                0
+                frozenColumn,
+                sortCols,
+                placeIdColFirst
             );
             this.metadataCols = metadataCols;
             this.metadataSlickGridContainer = container;
@@ -92,35 +97,6 @@ define([
                     if (val2 === undefined) return -1;
                     return (val1 > val2 ? 1 : -1) * sign;
                 });
-                uniqueVals.delete(undefined);
-                var colorMap = new Colorer("discrete-coloring-qiime", [
-                    ...uniqueVals,
-                ]).getMapHex();
-                var columnOptions = scope.grid.getColumns();
-                var formatter = function (
-                    row,
-                    cell,
-                    value,
-                    columnDef,
-                    dataContext
-                ) {
-                    if (value === undefined) return;
-                    var color = colorMap[value];
-                    if (columnDef.name === field) {
-                        return (
-                            "<span style='color:" +
-                            color +
-                            "'>" +
-                            value +
-                            "</span>"
-                        );
-                    } else {
-                        return value;
-                    }
-                };
-                for (var columnOption of columnOptions) {
-                    columnOption.formatter = formatter;
-                }
             });
         }
 

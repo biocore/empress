@@ -13,7 +13,9 @@ define([
             idCol = null,
             maxTableHeight = 400,
             onClick = null,
-            frozenColumn = -1
+            frozenColumn = -1,
+            sortCols=false,
+            placeIdColFirst=false
         ) {
             super("slickGridUpdate");
 
@@ -28,10 +30,12 @@ define([
             this.idCol = idCol;
             this.selectedCol = null;
             this.hideIdCol = hideIdCol;
-
+            this.sortCols = sortCols;
+            this.placeIdColFirst = placeIdColFirst;
+            this.colNames = this.sortColumns(metadataCols);
             if (this.idCol === null) {
                 // create unique id col for upload metadata
-                metadataCols.push("slick-grid-id");
+                this.colNames.push("slick-grid-id");
                 var id = 0;
                 for (var row of metadataRows) {
                     row["slick-grid-id"] = id++;
@@ -48,7 +52,7 @@ define([
                 frozenColumn: frozenColumn,
             };
 
-            var columns = this.createColumnOptions(metadataCols);
+            var columns = this.createColumnOptions();
 
             // create data view to hold tree metadata
             this.dataView = new Slick.Data.DataView();
@@ -178,9 +182,9 @@ define([
             this.grid.render();
         }
 
-        createColumnOptions(metadataCols) {
+        createColumnOptions() {
             var columns = [];
-            for (var column of metadataCols) {
+            for (var column of this.colNames) {
                 columns.push({
                     id: column,
                     name: column,
@@ -202,7 +206,7 @@ define([
 
             var scope = this;
             if (this.hideIdCol) {
-                var idColNum = _.findIndex(metadataCols, function (col) {
+                var idColNum = _.findIndex(this.colNames, function (col) {
                     return col === scope.idCol;
                 });
                 if (idColNum !== -1) {
@@ -221,7 +225,8 @@ define([
         }
 
         setColumns(metadataCols) {
-            var columns = this.createColumnOptions(metadataCols);
+            this.colNames = this.sortColumns(metadataCols);
+            var columns = this.createColumnOptions();
             this.grid.setColumns(columns);
             this.grid.autosizeColumns();
         }
@@ -254,6 +259,21 @@ define([
             this.grid.invalidateAllRows();
             this.grid.setCellCssStyles("customCss", cellsCss);
             this.grid.render();
+        }
+
+        sortColumns(cols) {
+            var columns;
+            if (this.sortCols) {
+                columns =  util.naturalSort(cols);
+            } else {
+                columns =  cols;
+            }
+            if (this.placeIdColFirst) {
+                columns = _.filter(columns, (col) => {return col !== this.idCol});
+                columns.unshift(this.idCol);
+            }
+
+            return columns;
         }
     }
 

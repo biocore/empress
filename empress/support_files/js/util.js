@@ -320,6 +320,22 @@ define(["underscore", "toastr"], function (_, toastr) {
         });
     }
 
+    /**
+     * removes all child nodes of HTML element
+     */
+    function clearChildHTMLElement(ele) {
+        while (ele.firstChild) {
+            _removeChildElement(ele.firstChild);
+        }
+    }
+
+    function _removeChildElement(child) {
+        while (child.hasChildNodes()) {
+            _removeChildElement(child.firstChild);
+        }
+        child.parentNode.removeChild(child);
+    }
+
     return {
         keepUniqueKeys: keepUniqueKeys,
         naturalSort: naturalSort,
@@ -331,5 +347,6 @@ define(["underscore", "toastr"], function (_, toastr) {
         removeEmptyArrayKeys: removeEmptyArrayKeys,
         populateNum: populateNum,
         populateFloat: populateFloat,
+        clearChildHTMLElement: clearChildHTMLElement,
     };
 });

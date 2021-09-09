@@ -3,7 +3,14 @@ define([
     "util",
     "AbstractObserverPattern",
     "MetadataSlickGridMenu",
-], function (_, util, AbstractObserverPattern, MetadataSlickGridMenu) {
+    "HTMLTable",
+], function (
+    _,
+    util,
+    AbstractObserverPattern,
+    MetadataSlickGridMenu,
+    HTMLTable,
+) {
     class PathSelector extends AbstractObserverPattern {
         constructor(cols) {
             super("pathSelectorUpdate");
@@ -25,7 +32,10 @@ define([
                 false,
                 "Name",
                 Math.floor(window.innerHeight * 0.75),
-                null
+                null,
+                0,
+                true,
+                true
             );
             this.hideLayers();
         }
@@ -55,7 +65,7 @@ define([
             }
         }
 
-        addNode(nodeId, nodeName, metadata) {
+        addRemoveNode(nodeId, nodeName, metadata) {
             if (this.nodeInfo.hasOwnProperty(nodeId)) {
                 this.nodeLayer.removeNode(nodeId);
                 return;
@@ -66,11 +76,34 @@ define([
                 metadata: metadata,
                 selected: true,
             };
+
+            // show selected node menu and stats menu
             this.toggleLayers();
             this.notify(this.getSelectedNodes());
         }
 
-        addDistance(distance) {
+        setSelectedNodes(nodeIds, nodeNames, metadata) {
+            this.nodeLayer.removeAllNodes();
+            delete this.nodeInfo;
+            this.nodeInfo = {};
+            _.each(nodeIds, (nodeId, indx) => {
+                if (this.nodeInfo.hasOwnProperty(nodeId)) {
+                    // this.nodeLayer.removeNode(nodeId);
+                    return;
+                }
+                this.nodeLayer.addNode(nodeId, nodeNames[indx]);
+                this.nodeInfo[nodeId] = {
+                    name: nodeNames[indx],
+                    metadata: metadata[indx],
+                    selected: true,
+                };
+            });
+            // show selected node menu and stats menu
+            this.toggleLayers();
+            this.notify(this.getSelectedNodes());
+        }
+
+        setDistance(distance) {
             this.statLayer.setDistance(distance);
         }
 
@@ -412,6 +445,10 @@ define([
             this.notify(this.getNotifyObject({ remove: nodeId }));
         }
 
+        removeAllNodes() {
+            util.clearChildHTMLElement(this.table);
+        }
+
         getNotifyObject(params) {
             var obj = {
                 remove: undefined,
@@ -437,6 +474,9 @@ define([
             this.layerDiv.classList.remove("hidden");
         }
     }
+    //************************************************************************//
+    //                           NodeLayer end                                //
+    //************************************************************************//
 
     //************************************************************************//
     //                           StatLayer class                              //
@@ -446,7 +486,9 @@ define([
             this.title = title; // "Selected nodes"
             this.container = container; // div
             this.layerDiv = null;
-            this.numNodesDiv = 0;
+            this.numTips = 0;
+            this.numInt = 0;
+            this.numTotal = 0;
 
             var scope = this;
 
@@ -469,34 +511,21 @@ define([
             var statDiv = this.layerDiv.appendChild(
                 document.createElement("div")
             );
+            statDiv.style.width = "100%";
 
-            // create checkboxes
-            this.table = statDiv.appendChild(document.createElement("table"));
-            this.table.style["table-layout"] = "fixed";
-
-            // create number of nodes row
-            var row = this.table.appendChild(document.createElement("tr"));
-            var td = row.appendChild(document.createElement("td"));
-            var numNodesLabel = td.appendChild(document.createElement("label"));
-            numNodesLabel.innerHTML =
-                "<span style='font-weight: bold;'>" +
-                "Number of nodes on path" +
-                "</span>";
-            td = row.appendChild(document.createElement("td"));
-            this.numNodesDiv = td.appendChild(document.createElement("div"));
-            this.numNodesDiv.innerText = 0;
-
-            // create distance row
-            row = this.table.appendChild(document.createElement("tr"));
-            td = row.appendChild(document.createElement("td"));
-            var distLabel = td.appendChild(document.createElement("label"));
-            distLabel.innerHTML =
-                "<span style='font-weight: bold;'>" +
-                "Total Distance" +
-                "</span>";
-            td = row.appendChild(document.createElement("td"));
-            this.distanceDiv = td.appendChild(document.createElement("div"));
-            this.distanceDiv.innerText = 0;
+            // create stats table
+            this.table = new HTMLTable(
+                statDiv,
+                {
+                    colHead: ["Nodes on path", "Distance covered"],
+                    rowHead: ["Tips", "Internal nodes", "Total"],
+                    data: {
+                        Tips: [0, 0],
+                        "Internal nodes": [0, 0],
+                        Total: [0, 0],
+                    }
+                }
+            );
         }
 
         hide() {
@@ -508,15 +537,29 @@ define([
         }
 
         setDistance(distance) {
-            this.distanceDiv.textContent = distance.toLocaleString(undefined, {
-                maximumSignificantDigits: 6,
+            distance = _.mapObject(distance, (val, key) => {
+                return val.toLocaleString(undefined, {
+                    maximumSignificantDigits: 6,
+                });
+            });
+            this.table.modifyRowVals({
+                "Total": {"Distance covered": distance.total},
+                "Tips": {"Distance covered": distance.tips},
+                "Internal nodes": {"Distance covered": distance.int},
             });
         }
 
         setNumNodesOnPath(numNodes) {
-            this.numNodesDiv.textContent = numNodes;
+            this.table.modifyRowVals({
+                "Total": {"Nodes on path": numNodes.total},
+                "Tips": {"Nodes on path": numNodes.tips},
+                "Internal nodes": {"Nodes on path": numNodes.total - numNodes.tips},
+            });
         }
     }
+    //************************************************************************//
+    //                           StatLayer end                                //
+    //************************************************************************//
 
     return PathSelector;
 });
