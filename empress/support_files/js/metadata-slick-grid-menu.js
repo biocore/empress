@@ -15,8 +15,8 @@ define([
             maxTableHeight = 400,
             onClick = null,
             frozenColumn = 0,
-            sortCols=false,
-            placeIdColFirst=false
+            sortCols = false,
+            placeIdColFirst = false
         ) {
             // create slick grid container
             var slickGridContainer = container.appendChild(

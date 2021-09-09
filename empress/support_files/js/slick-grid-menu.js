@@ -14,8 +14,8 @@ define([
             maxTableHeight = 400,
             onClick = null,
             frozenColumn = -1,
-            sortCols=false,
-            placeIdColFirst=false
+            sortCols = false,
+            placeIdColFirst = false
         ) {
             super("slickGridUpdate");
 
@@ -264,12 +264,14 @@ define([
         sortColumns(cols) {
             var columns;
             if (this.sortCols) {
-                columns =  util.naturalSort(cols);
+                columns = util.naturalSort(cols);
             } else {
-                columns =  cols;
+                columns = cols;
             }
             if (this.placeIdColFirst) {
-                columns = _.filter(columns, (col) => {return col !== this.idCol});
+                columns = _.filter(columns, (col) => {
+                    return col !== this.idCol;
+                });
                 columns.unshift(this.idCol);
             }
 

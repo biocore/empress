@@ -1,11 +1,8 @@
-define([
-    "underscore",
-    "util",
-], function (_, util,) {
+define(["underscore", "util"], function (_, util) {
     class HTMLTable {
-        constructor(container, tableInfo=undefined) {
+        constructor(container, tableInfo = undefined) {
             this.container = container;
-            
+
             // create table
             this.table = this.container.appendChild(
                 document.createElement("table")
@@ -45,7 +42,7 @@ define([
                     document.createElement("thead")
                 );
                 var hRow = header.appendChild(document.createElement("tr"));
-                
+
                 // add blank cell to make room for row headers
                 if (hasRowHeader) {
                     hRow.appendChild(document.createElement("td"));
@@ -53,7 +50,9 @@ define([
 
                 // add column headers
                 _.each(this.colHeaders, (colHeader) => {
-                    var cHeaderCell = hRow.appendChild(document.createElement("td"));
+                    var cHeaderCell = hRow.appendChild(
+                        document.createElement("td")
+                    );
                     cHeaderCell.textContent = colHeader;
                     cHeaderCell.style["font-weight"] = "bold";
                 });
@@ -86,7 +85,7 @@ define([
                 });
             }
 
-            this.setTableData(tableInfo.data)
+            this.setTableData(tableInfo.data);
         }
 
         /*
@@ -105,7 +104,7 @@ define([
             });
         }
 
-        // {rowName | rowIndx: {colName | colIndx: val}} 
+        // {rowName | rowIndx: {colName | colIndx: val}}
         modifyRowVals(data) {
             var scope = this;
             _.each(data, (rowData, rowIndx) => {
@@ -114,14 +113,14 @@ define([
                 }
 
                 // account for column header
-                if (scope.colHeaders) rowIndx +=1
+                if (scope.colHeaders) rowIndx += 1;
                 _.each(rowData, (item, colIndx) => {
                     if (scope.colHeaders) {
                         colIndx = _.indexOf(scope.colHeaders, colIndx);
                     }
 
                     // account for row header
-                    if (scope.rowHeaders) colIndx += 1
+                    if (scope.rowHeaders) colIndx += 1;
                     var dataCell = scope.table.rows[rowIndx].cells[colIndx];
                     dataCell.innerText = item;
                 });

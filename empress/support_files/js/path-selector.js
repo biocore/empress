@@ -9,7 +9,7 @@ define([
     util,
     AbstractObserverPattern,
     MetadataSlickGridMenu,
-    HTMLTable,
+    HTMLTable
 ) {
     class PathSelector extends AbstractObserverPattern {
         constructor(cols) {
@@ -514,18 +514,15 @@ define([
             statDiv.style.width = "100%";
 
             // create stats table
-            this.table = new HTMLTable(
-                statDiv,
-                {
-                    colHead: ["Nodes on path", "Distance covered"],
-                    rowHead: ["Tips", "Internal nodes", "Total"],
-                    data: {
-                        Tips: [0, 0],
-                        "Internal nodes": [0, 0],
-                        Total: [0, 0],
-                    }
-                }
-            );
+            this.table = new HTMLTable(statDiv, {
+                colHead: ["Nodes on path", "Distance covered"],
+                rowHead: ["Tips", "Internal nodes", "Total"],
+                data: {
+                    Tips: [0, 0],
+                    "Internal nodes": [0, 0],
+                    Total: [0, 0],
+                },
+            });
         }
 
         hide() {
@@ -543,17 +540,19 @@ define([
                 });
             });
             this.table.modifyRowVals({
-                "Total": {"Distance covered": distance.total},
-                "Tips": {"Distance covered": distance.tips},
-                "Internal nodes": {"Distance covered": distance.int},
+                Total: { "Distance covered": distance.total },
+                Tips: { "Distance covered": distance.tips },
+                "Internal nodes": { "Distance covered": distance.int },
             });
         }
 
         setNumNodesOnPath(numNodes) {
             this.table.modifyRowVals({
-                "Total": {"Nodes on path": numNodes.total},
-                "Tips": {"Nodes on path": numNodes.tips},
-                "Internal nodes": {"Nodes on path": numNodes.total - numNodes.tips},
+                Total: { "Nodes on path": numNodes.total },
+                Tips: { "Nodes on path": numNodes.tips },
+                "Internal nodes": {
+                    "Nodes on path": numNodes.total - numNodes.tips,
+                },
             });
         }
     }

@@ -3927,7 +3927,7 @@ define([
      * @return The distance.
      */
     Empress.prototype.calcLCADistance = function (nodes, lca) {
-        var dist = {total: 0, tips: 0, int: 0};
+        var dist = { total: 0, tips: 0, int: 0 };
         var lcaBPIndx = this._tree.postorderselect(lca);
 
         // find unique nodes
@@ -3958,10 +3958,9 @@ define([
         }
         dist.total -= this._tree.length(lcaBPIndx);
 
-        var tips = _.filter(
-            [...uniqueNodeBPIndices],
-            (node) => {return this._tree.isleaf(node)}
-        );
+        var tips = _.filter([...uniqueNodeBPIndices], (node) => {
+            return this._tree.isleaf(node);
+        });
         this.pathSelector.setNumNodesOnPath({
             total: uniqueNodeBPIndices.size,
             tips: tips.length,
@@ -3992,8 +3991,9 @@ define([
         var metadata = [];
         _.each(nodes, (node) => {
             var name = scope.getName(node);
-            var metadataRow = {Name: name}
-            var nodeMetadata = this._tipMetadata[node] || this._intMetadata[node];
+            var metadataRow = { Name: name };
+            var nodeMetadata =
+                this._tipMetadata[node] || this._intMetadata[node];
             _.each(nodeMetadata, function (val, i) {
                 metadataRow[scope._featureMetadataColumns[i]] = val;
             });
