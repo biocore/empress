@@ -116,6 +116,10 @@
             'ExportUtil': './js/export-util',
             'TreeController': './js/tree-controller',
             'ColorOptionsHandler': './js/color-options-handler',
+            'Shearer': './js/shearer',
+            'EnableDisableTab': './js/enable-disable-tab',
+            'EnableDisableSidePanelTab': './js/enable-disable-side-panel-tab',
+            'EnableDisableAnimationTab': './js/enable-disable-animation-tab',
         }
     });
 
@@ -124,29 +128,66 @@
                     'Drawer', 'SidePanel', 'AnimationPanel', 'Animator',
                     'BarplotLayer', 'BarplotPanel', 'BIOMTable', 'Empress',
                     'Legend', 'Colorer', 'VectorOps', 'CanvasEvents',
-                    'SelectedNodeMenu', 'util', 'LayoutsUtil', 'ExportUtil'],
+                    'SelectedNodeMenu', 'util', 'LayoutsUtil', 'ExportUtil',
+                    'Shearer', 'EnableDisableSidePanelTab',
+                    'EnableDisableAnimationTab'],
         function($, gl, chroma, underscore, spectrum, toastr, filesaver,
                  ByteArray, BPTree, Camera, Drawer, SidePanel, AnimationPanel,
                  Animator, BarplotLayer, BarplotPanel, BIOMTable, Empress,
                  Legend, Colorer, VectorOps, CanvasEvents, SelectedNodeMenu,
-                 util, LayoutsUtil, ExportUtil) {
+                 util, LayoutsUtil, ExportUtil, Shearer,
+                 EnableDisableSidePanelTab, EnableDisableAnimationTab) {
+        // NOTE: the contents of this line are validated in the python
+        // integration tests. If this line is changed somehow, the integration
+        // tests will need to be updated accordingly.
+        var isCommunityPlot = {{ is_community_plot | tojson }};
+
+        var isEmpirePlot = {{ is_empire_plot | tojson }};
+
+        // create EnableDisableSidePanelTabs to disable when animation is
+        // running.
+        // This must be done first so that everything else is linked properly.
+        // For example button click events will no longer work properly.
+        if (isCommunityPlot) {
+            var tabs = [
+                {
+                    tabName: "Sample Metadata Coloring",
+                    container: document.getElementById(
+                        "sample-metadata-coloring-div")
+                },
+                {
+                    tabName: "Feature Metadata Coloring",
+                    container: document.getElementById(
+                        "feature-metadata-coloring-div")
+                },
+                {
+                    tabName: "Shear Tree",
+                    container: document.getElementById("shear-div")
+                },
+            ];
+            var sidePanelTabs = [];
+            // wrap the sidepanel tabs in a EnableDisableSidePanelTab
+            _.each(tabs, function(tabInfo) {
+                sidePanelTabs.push(
+                    new EnableDisableSidePanelTab(tabInfo.tabName,
+                        tabInfo.container, isEmpirePlot)
+                );
+            });
+            var animationTab = new EnableDisableAnimationTab(
+                document.getElementById("animation-div")
+            );
+        }
         // initialze the tree and model
         var tree = new BPTree(
           {{ tree  }},
           {{ names  | tojson }},
           {{ lengths | tojson }}
         );
-
         var fmCols = {{ feature_metadata_columns | tojson }};
 
         var splitTaxonomyCols = {{ split_taxonomy_columns | tojson }};
 
         var canvas = document.getElementById('tree-surface');
-
-        // NOTE: the contents of this line are validated in the python
-        // integration tests. If this line is changed somehow, the integration
-        // tests will need to be updated accordingly.
-        var isCommunityPlot = {{ is_community_plot | tojson }};
 
         var biom = null;
         if (isCommunityPlot) {
@@ -178,16 +219,22 @@
         sPanel.addLayoutTab();
         sPanel.addExportTab();
 
+        var shearer = new Shearer(
+          empress,
+          empress.getFeatureMetadataCategories(),
+        );
+        shearer.registerObserver(sPanel);
+
         // Only show the sample metadata coloring / animation panels if a
         // feature table and sample metadata file were provided
         if (isCommunityPlot) {
             sPanel.addSampleTab();
 
             // Create animator state machine
-            var animator = new Animator(empress);
+            var animator = new Animator(empress, sidePanelTabs);
 
             // Add animator GUI components
-            var animationPanel = new AnimationPanel(animator);
+            var animationPanel = new AnimationPanel(animator, animationTab);
             animationPanel.addAnimationTab();
             document.getElementById("animationOpenButton").classList
                 .remove("hidden");
@@ -208,6 +255,17 @@
         } else {
             $(".needs-feature-metadata").addClass("hidden");
         }
+
+        // Here we register the stats button to the shearer so that the tree
+        // stats are updated whenever the tree is sheared.
+        var statsButton = document.getElementById("stats-btn");
+        statsButton.shearUpdate = () => {
+          sPanel.populateTreeStats();
+          statsButton.classList.remove("unpopulated");
+        };
+        shearer.registerObserver(shearer);
+        shearer.registerObserver(statsButton);
+        
 
         // make all tabs collapsable
         document.querySelectorAll(".collapsible").forEach(function(btn) {

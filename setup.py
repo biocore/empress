@@ -9,7 +9,7 @@
 
 from setuptools import setup, find_packages
 
-__version__ = "1.1.0-dev"
+__version__ = "1.2.0-dev"
 __maintainer__ = "Empress development team"
 __email__ = "kcantrel@ucsd.edu"
 
@@ -17,12 +17,16 @@ __email__ = "kcantrel@ucsd.edu"
 classes = """
     Development Status :: 5 - Production/Stable
     License :: OSI Approved :: BSD License
-    Topic :: Software Development :: Libraries :: Application Frameworks
+    Topic :: Scientific/Engineering
+    Topic :: Scientific/Engineering :: Bio-Informatics
+    Topic :: Scientific/Engineering :: Visualization
     Topic :: Software Development :: User Interfaces
     Programming Language :: Python
-    Programming Language :: Python :: 3.5
+    Programming Language :: Python :: 3 :: Only
     Programming Language :: Python :: 3.6
     Programming Language :: Python :: 3.7
+    Programming Language :: Python :: 3.8
+    Programming Language :: Python :: 3.9
     Programming Language :: Python :: Implementation :: CPython
     Operating System :: OS Independent
     Operating System :: POSIX

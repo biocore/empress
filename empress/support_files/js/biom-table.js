@@ -86,6 +86,14 @@ define(["underscore", "util"], function (_, util) {
         this._tbl = tbl;
         this._smCols = smCols;
         this._sm = sm;
+
+        /**
+         * A set of feature IDs to ignore. This will be updated whenever
+         * the tree is sheared, and will contain the IDs of the features in
+         * the BIOM table (tips) that were removed.
+         * @ type {Set}
+         */
+        this.ignorefIdx = new Set();
     }
 
     /**
@@ -278,7 +286,9 @@ define(["underscore", "util"], function (_, util) {
         var cVal;
         var addSampleFeatures = function (sIdx, cVal) {
             _.each(scope._tbl[sIdx], function (fIdx) {
-                valueToFeatureIdxs[cVal].add(fIdx);
+                if (!scope.ignorefIdx.has(fIdx)) {
+                    valueToFeatureIdxs[cVal].add(fIdx);
+                }
             });
         };
         // For each sample...
@@ -582,6 +592,10 @@ define(["underscore", "util"], function (_, util) {
         var fID2Freqs = {};
         var totalSampleCount;
         _.each(this._fIDs, function (fID, fIdx) {
+            // we dont want to consider features that have been marked as ignore
+            if (scope.ignorefIdx.has(fIdx)) {
+                return;
+            }
             totalSampleCount = fIdx2SampleCt[fIdx];
             fID2Freqs[fID] = {};
             _.each(fIdx2Counts[fIdx], function (count, smValIdx) {
@@ -591,7 +605,26 @@ define(["underscore", "util"], function (_, util) {
                 }
             });
         });
+
         return fID2Freqs;
+    };
+
+    /**
+     * Set which features to ignore. Features in this set will not be
+     * considered in functions such as getObsBy() or getFrequencyMap()
+     *
+     * @param {Set} nodes A set of feature ids to ignore
+     */
+    BIOMTable.prototype.setIgnoreNodes = function (nodes) {
+        var scope = this;
+
+        // convert feature ids to feature indices
+        // [...nodes] converts nodes from Set to Array: see
+        // https://stackoverflow.com/a/63818423
+        var nodeIdx = _.map([...nodes], (fId) => {
+            return scope._getFeatureIndexFromID(fId);
+        });
+        this.ignorefIdx = new Set(nodeIdx);
     };
 
     return BIOMTable;
