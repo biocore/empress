@@ -34,6 +34,39 @@ and barplots).
 
 Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with the HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/) or by using `qiime tools view`.
 
+### Installation troubleshooting
+
+#### For Windows Subsystem for Linux (WSL) users
+
+**Problem:** Empress' installation process depends on the
+[`binutils`](https://en.wikipedia.org/wiki/GNU_Binutils) package already being
+installed. Although most Unix operating systems come with `binutils` installed
+by default, we've noticed that some Linux distributions / setups (including
+WSL) do not have `binutils` installed.
+
+**Solution:** if, when installing Empress, you encounter long errors
+that include something
+like `ld: cannot find -lbitarr`,
+try installing `binutils` (e.g. `sudo apt-get install binutils`)
+and then try installing Empress again.
+
+**More information:** See [this issue](https://github.com/biocore/empress/issues/552).
+
+#### For macOS users
+
+**Problem:** On macOS systems, we've found that not having
+[Xcode](https://en.wikipedia.org/wiki/Xcode) installed can cause problems with
+Empress' installation process.
+
+**Solution:** If you are using macOS and you run into an error
+that includes something like
+`command 'x86_64-apple-darwin13.4.0-clang' failed with exit status 1`, try
+installing Xcode (e.g. through the [app
+store](https://apps.apple.com/us/app/xcode/id497799835)) and then try
+installing Empress again.
+
+**More information:** See [this issue](https://github.com/biocore/empress/issues/549).
+
 ### Standalone Version
 
 Empress is available through [PyPI](https://PyPI.org/project/empress/). We recommend installing Empress into an environment (e.g. a [conda](https://docs.conda.io/) environment) using a Python version of at least 3.6.
