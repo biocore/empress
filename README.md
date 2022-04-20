@@ -34,38 +34,11 @@ and barplots).
 
 Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with the HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/) or by using `qiime tools view`.
 
-### Installation troubleshooting
-
-#### For Windows Subsystem for Linux (WSL) users
-
-**Problem:** Empress' installation process depends on the
-[`binutils`](https://en.wikipedia.org/wiki/GNU_Binutils) package already being
-installed. Although most Unix operating systems come with `binutils` installed
-by default, we've noticed that some Linux distributions / setups (including
-WSL) do not have `binutils` installed.
-
-**Solution:** if, when installing Empress, you encounter long errors
-that include something
-like `ld: cannot find -lbitarr`,
-try installing `binutils` (e.g. `sudo apt-get install binutils`)
-and then try installing Empress again.
-
-**More information:** See [this issue](https://github.com/biocore/empress/issues/552).
-
-#### For macOS users
-
-**Problem:** On macOS systems, we've found that not having
-[Xcode](https://en.wikipedia.org/wiki/Xcode) installed can cause problems with
-Empress' installation process.
-
-**Solution:** If you are using macOS and you run into an error
-that includes something like
-`command 'x86_64-apple-darwin13.4.0-clang' failed with exit status 1`, try
-installing Xcode (e.g. through the [app
-store](https://apps.apple.com/us/app/xcode/id497799835)) and then try
-installing Empress again.
-
-**More information:** See [this issue](https://github.com/biocore/empress/issues/549).
+**If you encounter problems while trying to install Empress**, please check
+out the "Installation Troubleshooting" section further on in this document. (And
+if this information isn't sufficient, please feel free to
+[open an issue](https://github.com/biocore/empress/issues) in this repository or
+post a question on the [QIIME 2 Forum](https://forum.qiime2.org)!)
 
 ### Standalone Version
 
@@ -181,6 +154,39 @@ qiime empress community-plot \
     --p-filter-extra-samples \
     --o-visualization community-tree-viz.qzv
 ```
+
+### Installation Troubleshooting
+
+#### Troubleshooting for Windows Subsystem for Linux (WSL) users
+
+**Problem:** Empress' installation process depends on the
+[`binutils`](https://en.wikipedia.org/wiki/GNU_Binutils) package already being
+installed. Although most Unix operating systems come with `binutils` installed
+by default, we've noticed that some Linux distributions / setups (including
+WSL) do not have `binutils` installed.
+
+- **Solution:** if, when installing Empress, you encounter long errors
+that include something
+like `ld: cannot find -lbitarr`,
+try installing `binutils` (e.g. `sudo apt-get install binutils`)
+and then try installing Empress again.
+
+- **More information:** See [this issue](https://github.com/biocore/empress/issues/552).
+
+#### Troubleshooting for macOS users
+
+**Problem:** On macOS systems, we've found that not having
+[Xcode](https://en.wikipedia.org/wiki/Xcode) installed can cause problems with
+Empress' installation process.
+
+- **Solution:** If you are using macOS and you run into an error
+that includes something like
+`command 'x86_64-apple-darwin13.4.0-clang' failed with exit status 1`, try
+installing Xcode (e.g. through the [app
+store](https://apps.apple.com/us/app/xcode/id497799835)) and then try
+installing Empress again.
+
+- **More information:** See [this issue](https://github.com/biocore/empress/issues/549).
 
 ## Tutorial: Using Empress in QIIME 2
 
@@ -585,6 +591,12 @@ The commands in this README use the *raw dataset*. The Empire plot command remov
 <!---# Animations   
 
 One unique feature that makes Empress useful for exploring time-series data or making exciting presentations is its animation capability, which allows us to stratify and view our data at each time point rather than all at once. To set up the animation sequence, click on the Animation section from the main menu. From the *Gradient* drop-down menu, select `days-since-experiment-start`, the number of unique values in this column will be equal to the number of sequences we see in the final animation. From the *Trajectory* drop-down menu, select `body-site`, this will be the grouping factor by which the branch colors will be set to. Remember that colors on the plot represent branches unique to that group, branches that are shared between groups are not colored. Click on the `Start` button to initiate the animation and minimize the menu to view the full plot. You will begin to see a sequence of plots (automatically changing every few seconds) that represent the data at each time point found in the *days-since-experiment-start* column. At any point you can pause the animation by clicking on the `Pause` button and manually browse through the time points using the `Next Frame`, `Previous Frame`, or `Resume` buttons. Click `Stop` to terminate the animations. --->
+
+#### Further questions?
+
+If you have any questions that aren't covered here, please feel free to
+[open an issue](https://github.com/biocore/empress/issues) in this repository or
+post a question on the [QIIME 2 Forum](https://forum.qiime2.org)!
 
 ## Publication and Citation
 
