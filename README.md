@@ -158,6 +158,11 @@ qiime empress community-plot \
 
 ### Installation Troubleshooting
 
+This is not a comprehensive list of problems that can happen during
+installation -- it's just the ones we've seen so far. If you run
+into other problems while installing Empress, please
+let us know so we can add a solution here!
+
 #### Troubleshooting for Windows Subsystem for Linux (WSL) users
 
 **Problem:** Empress' installation process depends on the
@@ -595,7 +600,8 @@ One unique feature that makes Empress useful for exploring time-series data or m
 
 #### Further questions?
 
-If you have any questions that aren't covered here, please feel free to
+If you have any questions, comments, concerns, etc. that aren't covered here,
+please feel free to
 [open an issue](https://github.com/biocore/empress/issues) in this repository or
 post a question on the [QIIME 2 Forum](https://forum.qiime2.org)!
 
