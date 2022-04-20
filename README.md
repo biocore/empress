@@ -35,8 +35,9 @@ and barplots).
 Empress is available as either a standalone program or a QIIME 2 plugin. The standalone version will generate a folder with the HTML/JS/CSS files necessary to view the plot while the QIIME 2 version will generate a `.qzv` Visualization that can be viewed on [https://view.qiime2.org/](https://view.qiime2.org/) or by using `qiime tools view`.
 
 **If you encounter problems while trying to install Empress**, please check
-out the "Installation Troubleshooting" section further on in this document. (And
-if this information isn't sufficient, please feel free to
+out [the "Installation Troubleshooting" section](#installation-troubleshooting)
+further on in this document.
+(And if this information isn't sufficient, please feel free to
 [open an issue](https://github.com/biocore/empress/issues) in this repository or
 post a question on the [QIIME 2 Forum](https://forum.qiime2.org)!)
 
