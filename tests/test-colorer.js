@@ -657,7 +657,14 @@ require([
             }, /Quantitative scales are not supported for custom colormaps/);
         });
         test("Test custom domains with a valid domain", function () {
-            var colorer = new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [-2.5, 2.5]);
+            var colorer = new Colorer(
+                "RdBu",
+                [-2, -1, 0, 1, 2.5],
+                true,
+                0,
+                false,
+                [-2.5, 2.5]
+            );
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 5);
             // Expected colors determined by trying
@@ -668,24 +675,26 @@ require([
             equal(hexmap["1"], "#92c5de");
             equal(hexmap["2.5"], "#053061");
         });
-        test("Test custom domains that don't overlap values", function() {
+        test("Test custom domains that don't overlap values", function () {
             // Silly thing that is technically allowed: the custom domain can
             // not overlap at all with the values. in that case, the values
             // will all either be equal to the lowest color (if the custom
             // domain is higher than them) or equal to the highest color (if
             // the custom domain is lower than them).
-            strVals = ["-2", "-1", "0", "1", "2.5"];
+            var strVals = ["-2", "-1", "0", "1", "2.5"];
+            var numVals = [-2, -1, 0, 1, 2.5];
 
             // Case 1: all the values are lower than the custom domain
-            var colorer = new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [5, 10]);
+            var colorer = new Colorer("RdBu", numVals, true, 0, false, [5, 10]);
+            console.log(colorer);
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 5);
             for (i = 0; i < strVals.length; i++) {
-                equal(hexmap[strVals[i]], "#b2182b");
+                equal(hexmap[strVals[i]], "#67001f");
             }
 
             // Case 2: all the values are higher than the custom domain
-            colorer = new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [-101, -100]);
+            colorer = new Colorer("RdBu", numVals, true, 0, false, [-10, -5]);
             hexmap = colorer.getMapHex();
             equal(_.keys(hexmap).length, 5);
             for (i = 0; i < strVals.length; i++) {
@@ -700,25 +709,47 @@ require([
                 new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, []);
             }, /Custom domain must have exactly 2 entries/);
             throws(function () {
-                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [1,2,3]);
+                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [
+                    1,
+                    2,
+                    3,
+                ]);
             }, /Custom domain must have exactly 2 entries/);
             throws(function () {
-                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [NaN,2]);
+                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [
+                    NaN,
+                    2,
+                ]);
             }, /Custom domain entries must be finite nums/);
             throws(function () {
-                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [1,NaN]);
+                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [
+                    1,
+                    NaN,
+                ]);
             }, /Custom domain entries must be finite nums/);
             throws(function () {
-                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [null, null]);
+                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [
+                    null,
+                    null,
+                ]);
             }, /Custom domain entries must be finite nums/);
             throws(function () {
-                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [null, 3]);
+                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [
+                    null,
+                    3,
+                ]);
             }, /Custom domain entries must be finite nums/);
             throws(function () {
-                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [3, 1]);
+                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [
+                    3,
+                    1,
+                ]);
             }, /Custom domain min must be < max/);
             throws(function () {
-                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [1, 1]);
+                new Colorer("RdBu", [-2, -1, 0, 1, 2.5], true, 0, false, [
+                    1,
+                    1,
+                ]);
             }, /Custom domain min must be < max/);
         });
     });

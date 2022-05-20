@@ -97,16 +97,14 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
             // ColorOptionsHandler, so this is just verifying that the code
             // hasn't become haunted.
             if (this.domain.length !== 2) {
-                throw new Error(
-                    "Custom domain must have exactly 2 entries"
-                );
+                throw new Error("Custom domain must have exactly 2 entries");
             }
             if (!_.isFinite(this.domain[0]) || !_.isFinite(this.domain[1])) {
                 throw new Error("Custom domain entries must be finite nums");
             }
             // I think chroma can actually handle this case -- it'll just
             // flip the numbers. But let's not rely on that.
-            if(this.domain[0] >= this.domain[1]) {
+            if (this.domain[0] >= this.domain[1]) {
                 throw new Error("Custom domain min must be < max");
             }
         }
