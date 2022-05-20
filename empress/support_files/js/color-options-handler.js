@@ -248,7 +248,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var min = parseFloat(this.continuousMinInput.value);
 
         if (isNaN(min)) {
-            return "Min boundary field is missing.";
+            return "Minimum boundary value is missing.";
         }
 
         return min;
@@ -259,7 +259,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var max = parseFloat(this.continuousMaxInput.value);
 
         if (isNaN(max)) {
-            return "Max boundary field is missing.";
+            return "Maximum boundary value is missing.";
         }
 
         // It should be noted that if min isNaN that this will always return
