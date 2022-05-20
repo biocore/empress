@@ -1932,28 +1932,47 @@ define([
             // in the Colorer tests; ctrl-F for "CVALDISCRETETEST" in
             // tests/test-colorer.js to see this.)
             var domain = null;
-            var msg =
-                "Error with assigning colors in barplot layer " +
-                layer.num +
-                ": ";
+            var msg = "Layer " + layer.num + ": ";
             if (
                 layer.colorByFMContinuous &&
                 layer.colorByFMContinuousManualScale
             ) {
+                // If the min / max boundary fields are missing, these will not
+                // be numeric values. Instead, they'll actually be string error
+                // messages returned by ColorOptionsHandler.verifyMaxBoundary()
+                // -- we can check for this using _.isFinite().
                 var min = layer.colorByFMContinuousMin;
                 var max = layer.colorByFMContinuousMax;
 
-                if (isNaN(min)) {
-                    msg += min;
-                    util.toastMsg(msg, 5000);
+                var msgHeader = "Barplot coloring error";
+                var minErr = !_.isFinite(min);
+                var maxErr = !_.isFinite(max);
+                var boundaryErrors = true;
+                if (minErr) {
+                    if (maxErr) {
+                        // Just concatenate the error messages together.
+                        // I guess if we wanna get ~~really~~ fancy with
+                        // this we could separate them by a semicolon or
+                        // something (and then make the first character of
+                        // the "max" error message lowercase), but that's
+                        // probs too much work
+                        msg += min + " " + max;
+                    } else {
+                        msg += min;
+                    }
+                } else {
+                    if (maxErr) {
+                        msg += max;
+                    } else {
+                        boundaryErrors = false;
+                    }
+                }
+
+                if (boundaryErrors) {
+                    util.toastMsg(msgHeader, msg, (duration = 5000));
                     throw msg;
                 }
 
-                if (isNaN(max)) {
-                    msg += max;
-                    util.toastMsg(msg, 5000);
-                    throw msg;
-                }
                 domain = [min, max];
             }
             try {
@@ -1974,8 +1993,7 @@ define([
                 // name / barplot layer number). This lets us bail out of
                 // drawing barplots while still keeping the user aware of why
                 // nothing just got drawn/updated.
-                msg +=
-                    'the feature metadata field "' +
+                msg += ' the feature metadata field "' +
                     layer.colorByFMField +
                     '" has less than 2 unique numeric values.';
                 util.toastMsg("Barplot coloring error", msg, (duration = 5000));

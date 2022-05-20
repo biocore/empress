@@ -265,7 +265,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         // It should be noted that if min isNaN that this will always return
         // false
         if (max <= min) {
-            return "Max boundary must be greater than Min boundary.";
+            return "Maximum boundary must be greater than minimum boundary.";
         }
 
         return max;
