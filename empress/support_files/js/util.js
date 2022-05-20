@@ -179,7 +179,12 @@ define(["underscore", "toastr"], function (_, toastr) {
     function parseAndValidateNum(inputEle, min = 0) {
         if (isValidNumber(inputEle.value)) {
             var pfVal = parseFloat(inputEle.value);
-            if (pfVal >= min) {
+            // if min is null, then the number in the input element doesn't
+            // have a defined lower limit -- so, for example, negative numbers
+            // will be accepted. This is the case when, for example, we want
+            // to allow users to set continuous colormaps that range from
+            // [-5, 5] or something.
+            if (_.isNull(min) || pfVal >= min) {
                 return pfVal;
             }
         }
