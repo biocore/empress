@@ -16,7 +16,8 @@ require([
                 // needs the Drawer to have been initialized first).
                 this.testData.empress.initialize();
 
-                this.selectedNodeMenu = this.testData.empress._events.selectedNodeMenu;
+                this.selectedNodeMenu =
+                    this.testData.empress._events.selectedNodeMenu;
 
                 var _isHidden = function (attrEle) {
                     return scope.selectedNodeMenu[attrEle].classList.contains(
@@ -70,7 +71,8 @@ require([
         });
         test("setSelectedNodes: throws error if multiple nodes that don't share the same name selected", function () {
             var scope = this;
-            var errRegex = /setSelectedNodes\(\): keys do not represent the same node name./;
+            var errRegex =
+                /setSelectedNodes\(\): keys do not represent the same node name./;
             // Two internal nodes
             throws(function () {
                 scope.selectedNodeMenu.setSelectedNodes([7, 4]);

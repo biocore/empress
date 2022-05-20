@@ -326,8 +326,9 @@ define(["underscore", "chroma", "Colorer"], function (_, chroma, Colorer) {
         // Draw barplots.
         if (empress._barplotsDrawn) {
             svg += "<!-- barplots -->\n";
-            var bpCoords = empress.getBarplotData(empress.getBarplotLayers())
-                .coords;
+            var bpCoords = empress.getBarplotData(
+                empress.getBarplotLayers()
+            ).coords;
             var bpResults = _addPolygonsToSVG(svg, 6, bb, bpCoords);
             svg = bpResults.svg;
             bb = bpResults.boundingBox;

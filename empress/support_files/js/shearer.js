@@ -183,8 +183,10 @@ define(["underscore", "util", "TreeController"], function (
      *                     from.
      */
     ShearModel.prototype.addLayer = function (layer) {
-        var fVals = this.empress.getUniqueFeatureMetadataInfo(layer, "tip")
-            .sortedUniqueValues;
+        var fVals = this.empress.getUniqueFeatureMetadataInfo(
+            layer,
+            "tip"
+        ).sortedUniqueValues;
         var layerObj = new ShearLayer(
             layer,
             fVals,
@@ -415,9 +417,8 @@ define(["underscore", "util", "TreeController"], function (
 
         // this holds the 'Shear by...' select menu and the
         // 'Add shear filter' button
-        this.shearOptionsContainer = document.getElementById(
-            "shear-add-options"
-        );
+        this.shearOptionsContainer =
+            document.getElementById("shear-add-options");
 
         var scope = this;
         _.each(this.fCols, function (col) {

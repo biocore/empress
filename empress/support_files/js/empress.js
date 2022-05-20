@@ -400,9 +400,8 @@ define([
             j = 1;
         // set up length getter
         var branchMethod = this.branchMethod;
-        var checkLengthsChange = LayoutsUtil.shouldCheckBranchLengthsChanged(
-            branchMethod
-        );
+        var checkLengthsChange =
+            LayoutsUtil.shouldCheckBranchLengthsChanged(branchMethod);
         var lengthGetter = LayoutsUtil.getLengthMethod(
             branchMethod,
             this._tree.getTree()
@@ -1993,7 +1992,8 @@ define([
                 // name / barplot layer number). This lets us bail out of
                 // drawing barplots while still keeping the user aware of why
                 // nothing just got drawn/updated.
-                msg += ' the feature metadata field "' +
+                msg +=
+                    ' the feature metadata field "' +
                     layer.colorByFMField +
                     '" has less than 2 unique numeric values.';
                 util.toastMsg("Barplot coloring error", msg, (duration = 5000));

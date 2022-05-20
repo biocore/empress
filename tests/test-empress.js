@@ -19,12 +19,10 @@ require([
                 // _treeData and _tdToInd are created on client-side. The test were
                 // originally written when coordinates were calculated on python
                 // side. Thus we need to set them back.
-                this.empress._treeData = UtilitiesForTesting.getTestData(
-                    false
-                ).treeData;
-                this.empress._tdToInd = UtilitiesForTesting.getTestData(
-                    false
-                ).tdToInd;
+                this.empress._treeData =
+                    UtilitiesForTesting.getTestData(false).treeData;
+                this.empress._tdToInd =
+                    UtilitiesForTesting.getTestData(false).tdToInd;
             },
 
             teardown: function () {
@@ -496,23 +494,20 @@ require([
             this.empress._colorTree(obs, cm);
             for (var node = 1; node <= 7; node++) {
                 if (g1Nodes.has(node)) {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        1,
-                        0,
-                        0,
-                    ]);
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        [1, 0, 0]
+                    );
                 } else if (g2Nodes.has(node)) {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0,
-                        1,
-                        0,
-                    ]);
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        [0, 1, 0]
+                    );
                 } else {
-                    deepEqual(this.empress.getNodeInfo(node, "color"), [
-                        0,
-                        0,
-                        1,
-                    ]);
+                    deepEqual(
+                        this.empress.getNodeInfo(node, "color"),
+                        [0, 0, 1]
+                    );
                 }
             }
         });
@@ -695,24 +690,8 @@ require([
             // make sure the correct the correct collapsed clade buffer has the
             // correct shape.
             var collapseClades = [
-                35,
-                36,
-                3289650,
-                33,
-                34,
-                3289650,
-                31,
-                32,
-                3289650,
-                35,
-                36,
-                3289650,
-                33,
-                34,
-                3289650,
-                33,
-                34,
-                3289650,
+                35, 36, 3289650, 33, 34, 3289650, 31, 32, 3289650, 35, 36,
+                3289650, 33, 34, 3289650, 33, 34, 3289650,
             ];
             deepEqual(this.empress._collapsedCladeBuffer, collapseClades);
 
@@ -810,23 +789,7 @@ require([
             // check unrooted layout shape
             this.empress.createCollapsedCladeShape(1);
             var exp = [
-                0,
-                1,
-                255,
-                0,
-                5,
-                255,
-                1,
-                1,
-                255,
-                0,
-                1,
-                255,
-                0,
-                5,
-                255,
-                -1,
-                -1,
+                0, 1, 255, 0, 5, 255, 1, 1, 255, 0, 1, 255, 0, 5, 255, -1, -1,
                 255,
             ];
             deepEqual(this.empress._collapsedCladeBuffer, exp);

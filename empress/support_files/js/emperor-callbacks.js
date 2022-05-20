@@ -149,25 +149,26 @@ plotView.on("select", function (samples, view) {
  * For more information about Emperor callbacks visit:
  * http://biocore.github.io/emperor/build/html/js_integration.html#subscribing-to-events-from-a-3rd-party-application
  */
-ec.controllers.animations.addEventListener("animation-started", function (
-    payload
-) {
-    // reset and disable the animation controls once an Emperor-driven
-    // animation starts
-    animationPanel.startOptions();
-    animationPanel.setEnabled(false);
-    animationPanel.disableTab();
+ec.controllers.animations.addEventListener(
+    "animation-started",
+    function (payload) {
+        // reset and disable the animation controls once an Emperor-driven
+        // animation starts
+        animationPanel.startOptions();
+        animationPanel.setEnabled(false);
+        animationPanel.disableTab();
 
-    animator.setAnimationParameters(
-        payload.message.trajectory,
-        payload.message.gradient,
-        payload.target.getColors(),
-        animator.collapse,
-        animator.lWidth
-    );
-    animator.initAnimation();
-    animator.disableSidePanelTabs();
-});
+        animator.setAnimationParameters(
+            payload.message.trajectory,
+            payload.message.gradient,
+            payload.target.getColors(),
+            animator.collapse,
+            animator.lWidth
+        );
+        animator.initAnimation();
+        animator.disableSidePanelTabs();
+    }
+);
 
 ec.controllers.animations.addEventListener(
     "animation-new-frame-started",
@@ -176,69 +177,72 @@ ec.controllers.animations.addEventListener(
     }
 );
 
-ec.controllers.animations.addEventListener("animation-cancelled", function (
-    payload
-) {
-    // if the animation is cancelled enable the animation controls
-    animationPanel.setEnabled(true);
-    animationPanel.enableTab();
-    animator.stopAnimation();
-});
-
-ec.controllers.animations.addEventListener("animation-ended", function (
-    payload
-) {
-    // if the animation ends enable the controls
-    animationPanel.setEnabled(true);
-    util.toastMsg(
-        "Animation complete.",
-        "",
-        (duration = 3000),
-        (toastType = "success")
-    );
-});
-
-ec.controllers.color.addEventListener("value-double-clicked", function (
-    payload
-) {
-    // remove any ongoing observers
-    shearer.unregisterObserver("emperor-value-double-clicked");
-
-    // when dealing with a biplot ignore arrow-emitted events
-    if (payload.target.decompositionName() !== "scatter") {
-        return;
+ec.controllers.animations.addEventListener(
+    "animation-cancelled",
+    function (payload) {
+        // if the animation is cancelled enable the animation controls
+        animationPanel.setEnabled(true);
+        animationPanel.enableTab();
+        animator.stopAnimation();
     }
+);
 
-    // cancel any ongoing timers
-    clearTimeout(empress.timer);
+ec.controllers.animations.addEventListener(
+    "animation-ended",
+    function (payload) {
+        // if the animation ends enable the controls
+        animationPanel.setEnabled(true);
+        util.toastMsg(
+            "Animation complete.",
+            "",
+            (duration = 3000),
+            (toastType = "success")
+        );
+    }
+);
 
-    // reset emissive settings for all markers since an ongoing timer may have
-    // been cancelled
-    ec.decViews.scatter.setEmissive(0x000000);
-    plotView.needsUpdate = true;
-
-    var names = _.map(payload.message.group, function (item) {
-        return item.name;
-    });
-    var container = {};
-    container[payload.message.attribute] = names;
-
-    var colorEmpress = () => {
-        emperorCallbackColorEmpress(container);
-    };
-    colorEmpress();
-
-    // 4 seconds before resetting
-    var shearObs = {
-        shearerObserverName: "emperor-value-double-clicked",
-        shearUpdate: colorEmpress,
-    };
-    shearer.registerObserver(shearObs);
-    empress.timer = setTimeout(function () {
-        empress.resetTree();
-        empress.drawTree();
-
-        plotView.needsUpdate = true;
+ec.controllers.color.addEventListener(
+    "value-double-clicked",
+    function (payload) {
+        // remove any ongoing observers
         shearer.unregisterObserver("emperor-value-double-clicked");
-    }, 4000);
-});
+
+        // when dealing with a biplot ignore arrow-emitted events
+        if (payload.target.decompositionName() !== "scatter") {
+            return;
+        }
+
+        // cancel any ongoing timers
+        clearTimeout(empress.timer);
+
+        // reset emissive settings for all markers since an ongoing timer may have
+        // been cancelled
+        ec.decViews.scatter.setEmissive(0x000000);
+        plotView.needsUpdate = true;
+
+        var names = _.map(payload.message.group, function (item) {
+            return item.name;
+        });
+        var container = {};
+        container[payload.message.attribute] = names;
+
+        var colorEmpress = () => {
+            emperorCallbackColorEmpress(container);
+        };
+        colorEmpress();
+
+        // 4 seconds before resetting
+        var shearObs = {
+            shearerObserverName: "emperor-value-double-clicked",
+            shearUpdate: colorEmpress,
+        };
+        shearer.registerObserver(shearObs);
+        empress.timer = setTimeout(function () {
+            empress.resetTree();
+            empress.drawTree();
+
+            plotView.needsUpdate = true;
+            shearer.unregisterObserver("emperor-value-double-clicked");
+        }, 4000);
+    }
+);
