@@ -356,7 +356,7 @@ define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (
         var colBy = this.fSel.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
         var colorOptions = this.fColorOptions.getOptions();
-        this.empress.colorByFeatureMetadata(
+        var keyInfo = this.empress.colorByFeatureMetadata(
             colBy,
             colorOptions.color,
             coloringMethod,
