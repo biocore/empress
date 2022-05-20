@@ -1924,15 +1924,13 @@ define([
                 this._featureMetadataColumns,
                 layer.colorByFMField
             );
-            // We pass the true/false value of the "Continuous values?"
-            // checkbox to Colorer regardless of if the selected color map
-            // is discrete or sequential/diverging. This is because the Colorer
-            // class constructor is smart enough to ignore useQuantScale = true
-            // if the color map is discrete in the first place. (This is tested
-            // in the Colorer tests; ctrl-F for "CVALDISCRETETEST" in
-            // tests/test-colorer.js to see this.)
-            var domain = null;
+            // Prepare for having to throw an error at some point, maybe...
             var msg = "Layer " + layer.num + ": ";
+
+            // Has the user requested a custom domain for a gradient colormap?
+            // (If not, we'll leave domain as null when we create a Colorer
+            // object later, and it'll handle things normally.)
+            var domain = null;
             if (
                 layer.colorByFMContinuous &&
                 layer.colorByFMContinuousManualScale
@@ -1976,6 +1974,14 @@ define([
                 domain = [min, max];
             }
             try {
+                // We pass the true/false value of the "Continuous values?"
+                // checkbox to Colorer regardless of if the selected color map
+                // is discrete or sequential/diverging. This is because the
+                // Colorer class constructor is smart enough to ignore
+                // useQuantScale = true if the color map is discrete in the
+                // first place. (This is tested in the Colorer tests; ctrl-F
+                // for "CVALDISCRETETEST" in tests/test-colorer.js to see
+                // this.)
                 colorer = new Colorer(
                     layer.colorByFMColorMap,
                     sortedUniqueColorValues,

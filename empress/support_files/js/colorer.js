@@ -31,12 +31,12 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
      * @param{Boolean} reverse Defaults to false. If true, the color scale
      *                         will be reversed, with respect to its default
      *                         orientation.
-     * @param{Array} domain  [min, max] or null, default null object.
-     *                       min and max will set the min or max of the color
-     *                       gradient. if either min or max are null then the
-     *                       default min or max values will be used.
-     *                       null will use default min/max for color
-     *                       gradient.
+     * @param{Array} domain Defaults to null. If this is not null, it is
+     *                      assumed to be an array of [min, max], where min and
+     *                      max are Numbers. If useQuantScale is true and the
+     *                      color map is sequential or diverging (i.e. we are
+     *                      creating a continuous colorscheme), then min and
+     *                      max will be used as the domain of the color map.
      *
      * @return{Colorer}
      * constructs Colorer
@@ -56,7 +56,6 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
         this.color = color;
         this.reverse = reverse;
-        this.domain = domain;
 
         // This object will describe a mapping of unique field values to colors
         this.__valueToColor = {};
@@ -89,6 +88,28 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         // in the input values that couldn't be assigned colors (controls
         // whether or not to show a warning)
         this._missingNonNumerics = false;
+
+        // Optional custom domain (or this will just be null)
+        this.domain = domain;
+        if (!_.isNull(this.domain)) {
+            // Perform sanity checking on the domain's entries (... or lack
+            // thereof). These problems should already have been caught by the
+            // ColorOptionsHandler, so this is just verifying that the code
+            // hasn't become haunted.
+            if (this.domain.length !== 2) {
+                throw new Error(
+                    "Custom domain must have exactly 2 entries"
+                );
+            }
+            if (!_.isFinite(this.domain[0]) || !_.isFinite(this.domain[1])) {
+                throw new Error("Custom domain entries must be finite nums");
+            }
+            // I think chroma can actually handle this case -- it'll just
+            // flip the numbers. But let's not rely on that.
+            if(this.domain[0] >= this.domain[1]) {
+                throw new Error("Custom domain min must be < max");
+            }
+        }
 
         /*** End continuous-scaling-specific things ***/
 
@@ -222,13 +243,27 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
         }
     };
 
+    /**
+     * Returns the minimum and maximum of a set of values, accounting for
+     * the possibility of a custom domain.
+     *
+     * Usually, this will just return the min and max values of the input
+     * array, but if this.domain has been set then this will just return the
+     * values from that instead.
+     *
+     * @param{Array} nums An array of values to be mapped to colors.
+     *
+     * @return {Object} minAndMax An object containing two keys: min (maps to
+     *                            the minimum value) and max (maps to the
+     *                            maximum value).
+     */
     Colorer.prototype.getContinuousColorRange = function (nums) {
-        var min = _.min(nums);
-        var max = _.max(nums);
-        if (this.domain !== null && this.domain[0] !== null) {
+        var min, max;
+        if (_.isNull(this.domain)) {
+            min = _.min(nums);
+            max = _.max(nums);
+        } else {
             min = this.domain[0];
-        }
-        if (this.domain !== null && this.domain[1] !== null) {
             max = this.domain[1];
         }
         return {
@@ -292,7 +327,7 @@ define(["chroma", "underscore", "util"], function (chroma, _, util) {
 
         // Create SVG describing the gradient: basically, we sample the color
         // map along the domain 101 times, and use these 101 colors to define
-        // the <linearGradient /> for each integer percentage in the inclusve
+        // the <linearGradient /> for each integer percentage in the inclusive
         // range [0%, 100%]. See https://github.com/biocore/emperor/issues/788.
         var mid = (min + max) / 2;
         var stopColors = interpolator.colors(101);
