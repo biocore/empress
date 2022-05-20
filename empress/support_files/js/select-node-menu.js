@@ -208,8 +208,9 @@ define(["underscore", "util"], function (_, util) {
                             _.keys(ctData[field])
                         );
                         for (var j = 0; j < categories.length; j++) {
-                            var categoryHeaderCell =
-                                fieldHeaderRow.insertCell(-1);
+                            var categoryHeaderCell = fieldHeaderRow.insertCell(
+                                -1
+                            );
                             categoryHeaderCell.innerHTML =
                                 "<strong>" + categories[j] + "</strong>";
                             var categoryDataCell = fieldDataRow.insertCell(-1);
@@ -407,8 +408,9 @@ define(["underscore", "util"], function (_, util) {
             this.makeSampleMetadataTable(ctData, "tip");
             // 2.1 The samples represented by this tip are sent to Emperor.
             if (this.empress._biom.hasFeatureID(node)) {
-                this._samplesInSelection =
-                    this.empress._biom.getSamplesByObservations([node]);
+                this._samplesInSelection = this.empress._biom.getSamplesByObservations(
+                    [node]
+                );
             } else {
                 this._samplesInSelection = [];
             }
@@ -442,8 +444,9 @@ define(["underscore", "util"], function (_, util) {
         // determine whether or not to show a warning about duplicate names
         // in the menu.
         if (name !== null) {
-            var keysOfNodesWithThisName =
-                this.empress._tree.getNodesWithName(name);
+            var keysOfNodesWithThisName = this.empress._tree.getNodesWithName(
+                name
+            );
             if (keysOfNodesWithThisName.length > 1) {
                 updateAndShow(
                     this.nodeNameWarning,

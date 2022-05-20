@@ -83,20 +83,17 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             );
             continuousManualScaleDiv.classList.add("hidden");
             continuousManualScaleDiv.classList.add("indented");
-            var continuousManualScaleManualP =
-                continuousManualScaleDiv.appendChild(
-                    document.createElement("p")
-                );
-            var continuousManualScaleLbl =
-                continuousManualScaleManualP.appendChild(
-                    document.createElement("label")
-                );
+            var continuousManualScaleManualP = continuousManualScaleDiv.appendChild(
+                document.createElement("p")
+            );
+            var continuousManualScaleLbl = continuousManualScaleManualP.appendChild(
+                document.createElement("label")
+            );
             continuousManualScaleLbl.innerText =
                 "Manually set gradient boundaries?";
-            this.continuousManualScaleCheckbox =
-                continuousManualScaleManualP.appendChild(
-                    document.createElement("input")
-                );
+            this.continuousManualScaleCheckbox = continuousManualScaleManualP.appendChild(
+                document.createElement("input")
+            );
             this.continuousManualScaleCheckbox.id =
                 "color-options-handler-" +
                 this.uniqueNum +
@@ -226,8 +223,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         options
     ) {
         options.continuousColoring = this.continuousValCheckbox.checked;
-        options.continuousManualScale =
-            this.continuousManualScaleCheckbox.checked;
+        options.continuousManualScale = this.continuousManualScaleCheckbox.checked;
         options.min = this.verifyMinBoundary();
         options.max = this.verifyMaxBoundary();
 

@@ -6,8 +6,28 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
         module("Succinct Tree", {
             setup: function () {
                 this.bpArray = new Uint8Array([
-                    1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0,
-                    0, 0,
+                    1,
+                    1,
+                    1,
+                    0,
+                    1,
+                    0,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    1,
+                    1,
+                    1,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
                 ]);
                 this.bpObj = new BPTree(
                     this.bpArray,
@@ -117,7 +137,27 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
         test("Test excess", function () {
             var exp = [
-                1, 2, 3, 2, 3, 2, 3, 4, 3, 2, 1, 2, 1, 2, 3, 4, 3, 4, 3, 2, 1,
+                1,
+                2,
+                3,
+                2,
+                3,
+                2,
+                3,
+                4,
+                3,
+                2,
+                1,
+                2,
+                1,
+                2,
+                3,
+                4,
+                3,
+                4,
+                3,
+                2,
+                1,
                 0,
             ];
             for (var i = 0; i < exp.length; i++) {
@@ -128,7 +168,27 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
         // Note: depth should equal to excess
         test("Test depth", function () {
             var exp = [
-                1, 2, 3, 2, 3, 2, 3, 4, 3, 2, 1, 2, 1, 2, 3, 4, 3, 4, 3, 2, 1,
+                1,
+                2,
+                3,
+                2,
+                3,
+                2,
+                3,
+                4,
+                3,
+                2,
+                1,
+                2,
+                1,
+                2,
+                3,
+                4,
+                3,
+                4,
+                3,
+                2,
+                1,
                 0,
             ];
             for (var i = 0; i < exp.length; i++) {
@@ -199,7 +259,25 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
         test("Test enclose", function () {
             var exp = [
-                0, 1, 1, 1, 1, 1, 6, 6, 1, 0, 0, 0, 0, 13, 14, 14, 14, 14, 13,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                6,
+                6,
+                1,
+                0,
+                0,
+                0,
+                0,
+                13,
+                14,
+                14,
+                14,
+                14,
+                13,
                 0,
             ];
             for (var i = 1; i < this.bpArray.length - 1; i++) {
@@ -213,8 +291,28 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
         test("Test parent", function () {
             var exp = [
-                -1, 0, 1, 1, 1, 1, 1, 6, 6, 1, 0, 0, 0, 0, 13, 14, 14, 14, 14,
-                13, 0, -1,
+                -1,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                6,
+                6,
+                1,
+                0,
+                0,
+                0,
+                0,
+                13,
+                14,
+                14,
+                14,
+                14,
+                13,
+                0,
+                -1,
             ];
             for (var i = 0; i < this.bpArray.length; i++) {
                 equal(this.bpObj.parent(i), exp[i], `Parent for ${i}-th index`);
@@ -227,7 +325,27 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
         test("Test isleaf", function () {
             var exp = [
-                0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0,
+                0,
+                0,
+                1,
+                0,
+                1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                1,
+                0,
+                0,
+                0,
                 0,
             ];
             for (var i = 0; i < this.bpArray.length; i++) {
@@ -237,8 +355,28 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
         test("Test fchild", function () {
             var exp = [
-                1, 2, 0, 0, 0, 0, 7, 0, 0, 7, 2, 0, 0, 14, 15, 0, 0, 0, 0, 15,
-                14, 1,
+                1,
+                2,
+                0,
+                0,
+                0,
+                0,
+                7,
+                0,
+                0,
+                7,
+                2,
+                0,
+                0,
+                14,
+                15,
+                0,
+                0,
+                0,
+                0,
+                15,
+                14,
+                1,
             ];
             for (var i = 0; i < this.bpArray.length; i++) {
                 equal(this.bpObj.fchild(i), exp[i], `${i}-th index`);
@@ -247,8 +385,28 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
         test("Test lchild", function () {
             var exp = [
-                13, 6, 0, 0, 0, 0, 7, 0, 0, 7, 6, 0, 0, 14, 17, 0, 0, 0, 0, 17,
-                14, 13,
+                13,
+                6,
+                0,
+                0,
+                0,
+                0,
+                7,
+                0,
+                0,
+                7,
+                6,
+                0,
+                0,
+                14,
+                17,
+                0,
+                0,
+                0,
+                0,
+                17,
+                14,
+                13,
             ];
             for (var i = 0; i < this.bpArray.length; i++) {
                 equal(this.bpObj.lchild(i), exp[i], `${i}-th index`);
@@ -257,8 +415,28 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
         test("Test nsibling", function () {
             var exp = [
-                0, 11, 4, 4, 6, 6, 0, 0, 0, 0, 11, 13, 13, 0, 0, 17, 17, 0, 0,
-                0, 0, 0,
+                0,
+                11,
+                4,
+                4,
+                6,
+                6,
+                0,
+                0,
+                0,
+                0,
+                11,
+                13,
+                13,
+                0,
+                0,
+                17,
+                17,
+                0,
+                0,
+                0,
+                0,
+                0,
             ];
             for (var i = 0; i < this.bpArray.length; i++) {
                 equal(this.bpObj.nsibling(i), exp[i], `${i}-th index`);
@@ -267,8 +445,28 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
         test("Test psibling", function () {
             var exp = [
-                0, 0, 0, 0, 2, 2, 4, 0, 0, 4, 0, 1, 1, 11, 0, 0, 0, 15, 15, 0,
-                11, 0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                4,
+                0,
+                0,
+                4,
+                0,
+                1,
+                1,
+                11,
+                0,
+                0,
+                0,
+                15,
+                15,
+                0,
+                11,
+                0,
             ];
             for (var i = 0; i < this.bpArray.length; i++) {
                 equal(this.bpObj.psibling(i), exp[i], `${i}-th index`);
@@ -277,8 +475,28 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
         test("Test postorder", function () {
             var exp = [
-                11, 5, 1, 1, 2, 2, 4, 3, 3, 4, 5, 6, 6, 10, 9, 7, 7, 8, 8, 9,
-                10, 11,
+                11,
+                5,
+                1,
+                1,
+                2,
+                2,
+                4,
+                3,
+                3,
+                4,
+                5,
+                6,
+                6,
+                10,
+                9,
+                7,
+                7,
+                8,
+                8,
+                9,
+                10,
+                11,
             ];
             for (var i = 0; i < exp.length; i++) {
                 equal(this.bpObj.postorder(i), exp[i]);
@@ -294,8 +512,28 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
 
         test("Test preorder", function () {
             exp = [
-                1, 2, 3, 3, 4, 4, 5, 6, 6, 5, 2, 7, 7, 8, 9, 10, 10, 11, 11, 9,
-                8, 1,
+                1,
+                2,
+                3,
+                3,
+                4,
+                4,
+                5,
+                6,
+                6,
+                5,
+                2,
+                7,
+                7,
+                8,
+                9,
+                10,
+                10,
+                11,
+                11,
+                9,
+                8,
+                1,
             ];
             for (var i = 0; i < exp.length; i++) {
                 equal(this.bpObj.preorder(i), exp[i]);
@@ -325,9 +563,62 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             equal(obj.b_.length, 50 + 4);
 
             exp = [
-                5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                5,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
             ];
             obj = new BPTree(exp);
             equal(obj.b_.length, 51 + 51 + 4);
@@ -536,14 +827,16 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
         test("Test getSortedChildren", function () {
             // Root's children -- see pretty ASCII diagram in
             // postorderLeafSortedNodes test above
-            deepEqual(
-                this.bpObj.getSortedChildren(0, "ascending"),
-                [11, 13, 1]
-            );
-            deepEqual(
-                this.bpObj.getSortedChildren(0, "descending"),
-                [1, 13, 11]
-            );
+            deepEqual(this.bpObj.getSortedChildren(0, "ascending"), [
+                11,
+                13,
+                1,
+            ]);
+            deepEqual(this.bpObj.getSortedChildren(0, "descending"), [
+                1,
+                13,
+                11,
+            ]);
 
             // Node at index 1's children -- all have the same number of tips
             // Note that getSortedChildren() uses a stable sort, so the
@@ -590,7 +883,27 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
             // newick represenation
             // ((3,4,(6)5)2, 7, ((10, 11)9)8)r;
             var preShearArr = [
-                1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0,
+                1,
+                1,
+                1,
+                0,
+                1,
+                0,
+                1,
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                1,
+                1,
+                1,
+                0,
+                1,
+                0,
+                0,
+                0,
                 0,
             ];
             var preShearNames = [
@@ -644,10 +957,28 @@ require(["jquery", "ByteArray", "BPTree"], function ($, ByteArray, BPTree) {
                 [11, 10],
             ]);
             var result = preShearBPTree.shear(remove);
-            deepEqual(
-                result.tree.b_,
-                [1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0]
-            );
+            deepEqual(result.tree.b_, [
+                1,
+                1,
+                1,
+                0,
+                1,
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                1,
+                1,
+                1,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+            ]);
             deepEqual(result.tree.names_, [
                 null,
                 "4",

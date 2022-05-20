@@ -583,8 +583,7 @@ require([
             ok(gradInfo.missingNonNumerics);
         });
         test("Test Colorer.getGradientInfo (error: no gradient data)", function () {
-            var expectedErrorRegex =
-                /No gradient data defined for this Colorer; check that useQuantScale is true and that the selected color map is not discrete./;
+            var expectedErrorRegex = /No gradient data defined for this Colorer; check that useQuantScale is true and that the selected color map is not discrete./;
 
             // Error case 1: useQuantScale is false
             var eles = ["0", "1", "2", "3", "4"];

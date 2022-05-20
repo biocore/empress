@@ -400,8 +400,9 @@ define([
             j = 1;
         // set up length getter
         var branchMethod = this.branchMethod;
-        var checkLengthsChange =
-            LayoutsUtil.shouldCheckBranchLengthsChanged(branchMethod);
+        var checkLengthsChange = LayoutsUtil.shouldCheckBranchLengthsChanged(
+            branchMethod
+        );
         var lengthGetter = LayoutsUtil.getLengthMethod(
             branchMethod,
             this._tree.getTree()
