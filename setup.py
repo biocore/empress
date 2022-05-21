@@ -42,7 +42,7 @@ with open('README.md') as f:
 # https://github.com/biocore/improved-octo-waddle/pull/48 and
 # https://github.com/biocore/empress/pull/555
 base = ["numpy", "scipy", "pandas", "click",
-        "jinja2", "scikit-bio", "biom-format", "iow=0.1.3",
+        "jinja2", "scikit-bio", "biom-format", "iow==0.1.3",
         "emperor>=1.0.2"]
 test = ["flake8", "nose"]
 all_deps = base + test
