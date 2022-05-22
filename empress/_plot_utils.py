@@ -39,7 +39,7 @@ def get_bp(newickfmt):
         return parse_newick(treefile.readline())
 
 
-def save_viz(viz, output_dir, q2=True):
+def save_viz(viz, output_dir, q2=True, overwrite=False):
     """Saves an Empress visualization to a filepath.
 
     Parameters
@@ -47,11 +47,12 @@ def save_viz(viz, output_dir, q2=True):
     viz : empress.Empress
     output_dir : str
     q2 : bool
+    overwrite : bool
     """
     with open(os.path.join(output_dir, 'empress.html'), 'w') as htmlfile:
         htmlfile.write(str(viz))
 
-    viz.copy_support_files(output_dir)
+    viz.copy_support_files(output_dir, overwrite=overwrite)
 
     if q2:
         import q2templates
@@ -83,7 +84,8 @@ def prepare_pcoa(pcoa, number_of_features):
     return pcoa
 
 
-def check_and_process_files(output_dir, tree_file, feature_metadata):
+def check_and_process_files(output_dir, tree_file, feature_metadata,
+                            overwrite=False):
     """Initial checks and processing of files for standalone CLI plotting.
 
     Parameters
@@ -91,6 +93,7 @@ def check_and_process_files(output_dir, tree_file, feature_metadata):
     output_dir : str
     tree_file : str
     fm_file : str
+    overwrite: bool
 
     Returns
     -------
@@ -98,7 +101,8 @@ def check_and_process_files(output_dir, tree_file, feature_metadata):
     pd.DataFrame
     """
     if os.path.isdir(output_dir):
-        raise OSError("Output directory already exists!")
+        if not overwrite:
+            raise OSError("Output directory already exists!")
     with open(str(tree_file), "r") as f:
         tree_newick = parse_newick(f.readline())
     if feature_metadata is not None:

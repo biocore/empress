@@ -244,7 +244,7 @@ class Empress():
             ) = match_tree_and_feature_metadata(self.tree, self.features)
         validate_tree(self.tree)
 
-    def copy_support_files(self, target=None):
+    def copy_support_files(self, target=None, overwrite=False):
         """Copies the support files to a target directory
 
         If an ordination is included Emperor's support files will also be
@@ -260,7 +260,8 @@ class Empress():
             target = self.base_url
 
         # copy the required resources
-        copytree(SUPPORT_FILES, os.path.join(target, 'support_files'))
+        copytree(SUPPORT_FILES, os.path.join(target, 'support_files'),
+                 dirs_exist_ok=overwrite)
 
         if self._emperor is not None:
             self._emperor.copy_support_files(os.path.join(target,
