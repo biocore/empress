@@ -105,6 +105,18 @@ class TestCLI(unittest.TestCase):
         assert not os.path.isdir(f"{output_dir}/support_files")
         assert "empress.html" not in os.listdir(output_dir)
 
+    def test_existing_directory_overwrite(cls):
+        output_dir = "existing_dir_2"
+        os.mkdir(output_dir)
+        result = cls.runner.invoke(
+            empress,
+            ["community-plot", "--tree", cls.tree_loc, "--table",
+             cls.table_loc, "--sample-metadata", cls.sm_loc,
+             "--output-dir", output_dir, "--overwrite"]
+        )
+        assert result.exit_code == 0
+        files_present(output_dir)
+
     def test_tree_plot_basic_cli_abbrev(cls):
         output_dir = "tree_plot_basic_cli_abbrev"
         result = cls.runner.invoke(

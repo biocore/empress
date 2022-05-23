@@ -112,8 +112,8 @@ def community_plot(
         filter_missing_features=filter_missing_features,
         shear_to_table=shear_to_table,
     )
-    os.makedirs(output_dir)
-    save_viz(viz, output_dir, q2=False)
+    os.makedirs(output_dir, exist_ok=overwrite)
+    save_viz(viz, output_dir, q2=False, overwrite=overwrite)
 
 
 if __name__ == "__main__":
