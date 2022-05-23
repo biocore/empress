@@ -30,22 +30,26 @@ CTXSETS = {"help_option_names": ["-h", "--help"]}
               help=desc.FM_DESC)
 @click.option("--shear-to-feature-metadata", required=False, default=False,
               help=desc.SHEAR_TO_FM, is_flag=True)
+@click.option("--overwrite", required=False, default=False,
+              help=desc.OVERWRITE, is_flag=True)
 def tree_plot(
     tree: str,
     output_dir: str,
     feature_metadata: str,
     shear_to_feature_metadata: bool,
+    overwrite: bool
 ) -> None:
     tree_newick, fm = check_and_process_files(
         output_dir,
         tree,
-        feature_metadata
+        feature_metadata,
+        overwrite
     )
 
     viz = Empress(tree_newick, feature_metadata=fm,
                   shear_to_feature_metadata=shear_to_feature_metadata)
-    os.makedirs(output_dir)
-    save_viz(viz, output_dir, q2=False)
+    os.makedirs(output_dir, exist_ok=overwrite)
+    save_viz(viz, output_dir, q2=False, overwrite=overwrite)
 
 
 @empress.command(
@@ -68,6 +72,8 @@ def tree_plot(
               help=desc.NUM_FEAT)
 @click.option("--shear-to-table", required=False, default=True,
               help=desc.SHEAR_TO_TBL, is_flag=True)
+@click.option("--overwrite", required=False, default=False,
+              help=desc.OVERWRITE, is_flag=True)
 def community_plot(
     tree: str,
     table: str,
@@ -80,11 +86,13 @@ def community_plot(
     filter_missing_features: bool,
     number_of_pcoa_features: int,
     shear_to_table: bool,
+    overwrite: bool
 ) -> None:
     tree_newick, fm = check_and_process_files(
         output_dir,
         tree,
-        feature_metadata
+        feature_metadata,
+        overwrite
     )
     table = load_table(table)
     sample_metadata = pd.read_csv(sample_metadata, sep="\t", index_col=0)
@@ -104,8 +112,8 @@ def community_plot(
         filter_missing_features=filter_missing_features,
         shear_to_table=shear_to_table,
     )
-    os.makedirs(output_dir)
-    save_viz(viz, output_dir, q2=False)
+    os.makedirs(output_dir, exist_ok=overwrite)
+    save_viz(viz, output_dir, q2=False, overwrite=overwrite)
 
 
 if __name__ == "__main__":

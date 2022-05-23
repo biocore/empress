@@ -93,3 +93,5 @@ COMM_PLOT_DESC = (
 OUTPUT_DIR = (
     'Directory to create in which an EMPress visualization will be written.'
 )
+
+OVERWRITE = 'Determines whether to overwrite existing visualization files.'
