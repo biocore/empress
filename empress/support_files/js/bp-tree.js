@@ -301,10 +301,17 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
      * @return{Number} The excess at position i
      * @private
      */
-    BPTree.prototype.excess_ = function (i) {
+    BPTree.prototype.excess = function (i) {
         // need to subtract 1 since i starts at 0
         // Note: rank(1,i) - rank(0,i) = (2*(rank(1,i)) - i
-        return 2 * this.r1Cache_[i] - i - 1;
+        // if (i < 0) {
+        //     return 0;
+        // }
+        // return 2 * this.r1Cache_[i] - i - 1;
+
+        // this method is used frequently and thus has been updated
+        // to use a cached version
+        return this.eCache_[i];
     };
 
     /**
@@ -1101,6 +1108,72 @@ define(["ByteArray", "underscore"], function (ByteArray, _) {
             fullToSheared: fullToSheared,
             tree: new BPTree(newBitArray, names, lengths, null),
         };
+    };
+
+    /*
+     * Finds the minimum excess between i and j.
+     *
+     * @param {Number} i The ith index of the bp array.
+     * @param {Number} j The jth index of the bp array.
+     *
+     * @return The miniumn excess between i and j.
+     */
+    BPTree.prototype.rmq = function (i, j) {
+        if (j < i) {
+            var temp = j;
+            j = i;
+            i = temp;
+        }
+        var minK = i;
+        var minV = this.excess(i);
+        for (var k = i; k < j + 1; k++) {
+            var obsV = this.excess(k);
+            if (obsV < minV) {
+                minK = k;
+                minV = obsV;
+            }
+        }
+        return minK;
+    };
+
+    /*
+     * Test to see if i if the ancestor of j.
+     *
+     * @param {Number} i The ith index of the bp array.
+     * @param {Number} j The jth index of the bp array.
+     *
+     * @return true if i is the ancestor of j, false otherwise.
+     */
+    BPTree.prototype.isAncestor = function (i, j) {
+        if (i === j) {
+            return false;
+        }
+
+        if (!this.b_[i]) {
+            i = this.open(i);
+        }
+
+        return i <= j && j < this.close(i);
+    };
+
+    /*
+     * Finds the lowest common ancestor of i and j
+     *
+     * @param {Number} i The ith index of the bp array.
+     * @param {Number} j The jth index of the bp array.
+     *
+     * @return The index of the lca of i and j.
+     */
+    BPTree.prototype.lca = function (i, j) {
+        if (i === j) {
+            return i;
+        } else if (this.isAncestor(i, j)) {
+            return i;
+        } else if (this.isAncestor(j, i)) {
+            return j;
+        } else {
+            return this.parent(this.rmq(i, j) + 1);
+        }
     };
 
     return BPTree;

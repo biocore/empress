@@ -531,5 +531,54 @@ define([], function () {
         return this.model.getCladeNodes(cladeRoot);
     };
 
+    /*
+     * Test to see if i if the ancestor of j.
+     *
+     * @param {Number} i The ith index of the bp array.
+     * @param {Number} j The jth index of the bp array.
+     *
+     * @return true if i is the ancestor of j, false otherwise.
+     */
+    TreeController.prototype.isAncestor = function (i, j) {
+        var shearedTree = this.model.shearedTree;
+        var fullTree = this.model.fullTree;
+
+        var nodeI = shearedTree.postorderselect(
+            this.model.fullToSheared.get(fullTree.postorder(i))
+        );
+        var nodeJ = shearedTree.postorderselect(
+            this.model.fullToSheared.get(fullTree.postorder(j))
+        );
+
+        result = shearedTree.isAncestor(nodeI, nodeJ);
+        return result;
+    };
+
+    /*
+     * Finds the lowest common ancestor of i and j
+     *
+     * @param {Number} i The ith index of the bp array.
+     * @param {Number} j The jth index of the bp array.
+     *
+     * @return The index of the lca of i and j.
+     */
+    TreeController.prototype.lca = function (i, j) {
+        var shearedTree = this.model.shearedTree;
+        var fullTree = this.model.fullTree;
+
+        var nodeI = shearedTree.postorderselect(
+            this.model.fullToSheared.get(fullTree.postorder(i))
+        );
+        var nodeJ = shearedTree.postorderselect(
+            this.model.fullToSheared.get(fullTree.postorder(j))
+        );
+
+        resultNode = shearedTree.postorder(shearedTree.lca(nodeI, nodeJ));
+        resultNode = fullTree.postorderselect(
+            this.model.shearedToFull.get(resultNode)
+        );
+        return resultNode;
+    };
+
     return TreeController;
 });

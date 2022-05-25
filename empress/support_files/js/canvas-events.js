@@ -98,14 +98,14 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             // update the node selection menu
             selectedNodeMenu.updateMenuPosition();
         };
-
+        var previousCursorValue = canvas.style.cursor;
         // stops moving tree when mouse is released
         var stopMove = function (e) {
             document.onmouseup = null;
             document.onmousemove = null;
             scope.mouseX = null;
             scope.mouseY = null;
-            canvas.style.cursor = "default";
+            canvas.style.cursor = previousCursorValue;
         };
 
         // adds the listeners to the document to move tree
@@ -116,6 +116,7 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
             scope.mouseY = center - e.clientY;
             document.onmouseup = stopMove;
             document.onmousemove = moveTree;
+            previousCursorValue = canvas.style.cursor;
             canvas.style.cursor = "none";
         };
 
@@ -137,6 +138,7 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
 
         // removes the selected node menu if the mouseMove flag is not set
         var mouseClick = function (e) {
+            var shiftPressed = e.shiftKey;
             if (!scope.mouseMove) {
                 // clear old select menu
                 selectedNodeMenu.clearSelectedNode();
@@ -201,11 +203,22 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
                     scope.placeNodeSelectionMenu(
                         empress.getNodeInfo(closeNode, "name"),
                         false,
-                        closeNode
+                        closeNode,
+                        shiftPressed
                     );
                 }
             }
         };
+
+        var shiftPress = function (e) {
+            if (e.shiftKey) {
+                canvas.style.cursor = "pointer";
+            } else {
+                canvas.style.cursor = "default";
+            }
+        };
+        document.onkeydown = shiftPress;
+        document.onkeyup = shiftPress;
 
         // uncollapses a clade if double clicked on
         var doubleClick = function (e) {
@@ -419,8 +432,15 @@ define(["underscore", "glMatrix", "SelectedNodeMenu"], function (
     CanvasEvents.prototype.placeNodeSelectionMenu = function (
         nodeName,
         moveTree,
-        nodeKey
+        nodeKey,
+        shiftPressed = false
     ) {
+        if (shiftPressed) {
+            this.empress.setSelectedNode(nodeKey);
+            // this.selectedNodeMenu.setSelectedNodes([nodeKey]);
+            // this.empress.drawTree();
+            return;
+        }
         var scope = this;
         var node;
         /**

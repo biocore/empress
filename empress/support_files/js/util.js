@@ -298,6 +298,44 @@ define(["underscore", "toastr"], function (_, toastr) {
         }
     }
 
+    /* Formats a number with just toLocaleString() (leaving the locale
+     * unspecified should mean the user's settings are respected).
+     * For English, at least, this should mean that numbers are formatted
+     * with commas as thousands separators (e.g. 12,345).
+     */
+    function populateNum(htmlID, val, localeOptions) {
+        document.getElementById(htmlID).textContent = val.toLocaleString(
+            undefined,
+            localeOptions
+        );
+    }
+
+    /* Formats a number with toLocaleString(), and also limits
+     * the number to 4 digits after the decimal point.
+     */
+    function populateFloat(htmlID, val) {
+        populateNum(htmlID, val, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 4,
+        });
+    }
+
+    /**
+     * removes all child nodes of HTML element
+     */
+    function clearChildHTMLElement(ele) {
+        while (ele.firstChild) {
+            _removeChildElement(ele.firstChild);
+        }
+    }
+
+    function _removeChildElement(child) {
+        while (child.hasChildNodes()) {
+            _removeChildElement(child.firstChild);
+        }
+        child.parentNode.removeChild(child);
+    }
+
     return {
         keepUniqueKeys: keepUniqueKeys,
         naturalSort: naturalSort,
@@ -307,5 +345,8 @@ define(["underscore", "toastr"], function (_, toastr) {
         toastMsg: toastMsg,
         assignBarplotLengths: assignBarplotLengths,
         removeEmptyArrayKeys: removeEmptyArrayKeys,
+        populateNum: populateNum,
+        populateFloat: populateFloat,
+        clearChildHTMLElement: clearChildHTMLElement,
     };
 });

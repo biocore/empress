@@ -5,6 +5,11 @@
   <title>Test suite</title>
 
    <link rel="stylesheet" href="vendor/qunit-1.23.1.css">
+   <link rel='stylesheet' type="text/css" href='../empress/support_files/css/empress.css'>
+    <link rel='stylesheet' type="text/css" href='../empress/support_files/vendor/spectrum.min.css'>
+    <link rel="stylesheet" type="text/css" href="../empress/support_files/vendor/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="../empress/support_files/vendor/slick.grid.min.css">
+    <link rel='stylesheet' type="text/css" href='../empress/support_files/vendor/toastr.min.css'>
 
   <!-- Use qunit to help run tests -->
   <script src="vendor/qunit-1.23.1.js"></script>
@@ -165,7 +170,19 @@
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- sortest path -->
+    <div id="shortest-path-n1-div" style="overflow: auto;"></div>
+    <div id="shortest-path-n2-div" style="overflow: auto;"></div>
+    <div id="shortest-path-distance-div" style="overflow: auto;"></div>
+    <button id="reset-shorest-path">Reset</button>
+
+     <div id="metadata-slick-grid-container" class="hidden" ></div>
+
+    <div id="greyout-empress-screen" class="hidden"></div>
+
+    <div id="path-selector-div" class="side-content empress-control hidden">
+    </div>
 
   <script>
     QUnit.config.autostart = false;
@@ -177,7 +194,14 @@
         // not be used
         'paths' : {
           /* vendor paths */
-          'jquery' : './../tests/vendor/jquery-2.2.4.min',
+          'jquery' : './support_files/vendor/jquery-2.2.4.min',
+          'jqueryui': './support_files/vendor/jquery-ui.min',
+          'jquery_drag': './support_files/vendor/jquery.event.drag-2.2.min',
+          'slickcore': './support_files/vendor/slick.core.min',
+          'slickgrid': './support_files/vendor/slick.grid.min',
+          'slickformatters': './support_files/vendor/slick.editors.min',
+          'slickeditors': './support_files/vendor/slick.formatters.min',
+          'slickdataview': './support_files/vendor/slick.dataview.min',
           'glMatrix' : './support_files/vendor/gl-matrix.min',
           'chroma' : './support_files/vendor/chroma.min',
           'underscore' : './support_files/vendor/underscore-min',
@@ -205,9 +229,14 @@
           'LayoutsUtil' : './support_files/js/layouts-util',
           'ExportUtil' : './support_files/js/export-util',
           'TreeController' : './support_files/js/tree-controller',
+          'SlickGridMenu': './support_files/js/slick-grid-menu',
+          'MetadataSlickGridMenu': './support_files/js/metadata-slick-grid-menu',
           'EnableDisableTab': './support_files/js/enable-disable-tab',
           'EnableDisableSidePanelTab': './support_files/js/enable-disable-side-panel-tab',
           'EnableDisableAnimationTab': './support_files/js/enable-disable-animation-tab',
+          'AbstractObserverPattern': './support_files/js/abstract-observer-pattern',
+          'PathSelector': './support_files/js/path-selector',
+          'HTMLTable': './support_files/js/html-table',
 
           /* test utility code */
           'UtilitiesForTesting' : './../tests/utilities-for-testing',
@@ -229,7 +258,12 @@
           'testLayoutsUtil': './../tests/test-layouts-util',
           'testSelectedNodeMenu': './../tests/test-select-node-menu',
           'testTreeController': './../tests/test-tree-controller',
-        }
+        },
+        'shim': {
+            'slickcore': ['jqueryui'],
+            'slickgrid': ['slickcore', 'jquery_drag', 'slickformatters', 'slickeditors',
+                          'slickdataview']
+      }
     });
 
     // load tests
@@ -256,6 +290,8 @@
          'Legend',
          'LayoutsUtil',
          'ExportUtil',
+         'SlickGridMenu',
+         'MetadataSlickGridMenu',
          'UtilitiesForTesting',
          'testBPTree',
          'testByteTree',
@@ -291,7 +327,6 @@
           ByteArray,
           BPTree,
           Camera,
-          testBIOMTable,
           Colorer,
           BiomTable,
           util,
@@ -299,6 +334,8 @@
           Legend,
           LayoutsUtil,
           ExportUtil,
+          SlickGridMenu,
+          MetadataSlickGridMenu,
           UtilitiesForTesting,
           testBPTree,
           testByteTree,

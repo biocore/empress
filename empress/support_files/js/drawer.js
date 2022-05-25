@@ -138,6 +138,14 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
         s.treeColorBuff = c.createBuffer();
         this.treeColorSize = 0;
 
+        // buffer object for path coordinates
+        s.pathCoordBuff = c.createBuffer();
+        this.pathCoordSize = 0;
+
+        // buffer object to store path color
+        s.pathColorBuff = c.createBuffer();
+        this.pathColorSize = 0;
+
         // buffer object used to thicken node lines
         s.thickNodeBuff = c.createBuffer();
         this.thickNodeSize = 0;
@@ -147,6 +155,9 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
 
         // buffer object for active 'selected' node
         s.selectedNodeBuff = c.createBuffer();
+
+        // buffer object for active 'selected' node
+        s.highlightedNodesBuff = c.createBuffer();
 
         // buffer object for colored clades
         s.cladeBuff = c.createBuffer();
@@ -316,6 +327,27 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
     };
 
     /**
+     * Fills the buffer used to draw the selected path.
+     *
+     * @param {Array} data The coordinates [x, y, ...] to fill pathCoordBuff
+     */
+    Drawer.prototype.loadPathCoordsBuff = function (data) {
+        data = new Float32Array(data);
+        this.pathCoordSize = data.length / 2;
+        this.fillBufferData_(this.sProg_.pathCoordBuff, data);
+    };
+
+    /**
+     * Fills the buffer used to draw the selected path.
+     *
+     * @param {Array} data The color data to fill pathColorBuff
+     */
+    Drawer.prototype.loadPathColorBuff = function (data) {
+        data = new Float32Array(data);
+        this.pathColorSize = data.length;
+        this.fillBufferData_(this.sProg_.pathColorBuff, data);
+    };
+    /**
      * Fills the buffer used to thicken node lines
      *
      * @param {Array} data Coordinate and color data to fill the buffer with
@@ -347,6 +379,17 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
         data = new Float32Array(data);
         this.selectedNodeSize = data.length / this.VERTEX_SIZE;
         this.fillBufferData_(this.sProg_.selectedNodeBuff, data);
+    };
+
+    /**
+     * Fills the selected node buffer
+     *
+     * @param {Array} data The coordinate and color of selected node
+     */
+    Drawer.prototype.loadHightlightedSelectedNodeBuff = function (data) {
+        data = new Float32Array(data);
+        this.highlightedNodeSize = data.length / this.VERTEX_SIZE;
+        this.fillBufferData_(this.sProg_.highlightedNodesBuff, data);
     };
 
     /**
@@ -409,10 +452,19 @@ define(["underscore", "glMatrix", "Camera", "Colorer"], function (
         this.bindBuffer(s.selectedNodeBuff, 1, 3);
         c.drawArrays(gl.POINTS, 0, this.selectedNodeSize);
 
+        // draw highlighted node
+        c.uniform1f(s.pointSize, this.SELECTED_NODE_CIRCLE_DIAMETER);
+        this.bindBuffer(s.highlightedNodesBuff, 1, 3);
+        c.drawArrays(gl.POINTS, 0, this.highlightedNodeSize);
+
         c.uniform1i(s.isSingle, 0);
         this.bindBuffer(s.treeCoordBuff, 2, 2);
         this.bindBuffer(s.treeColorBuff, 3, 1);
         c.drawArrays(c.LINES, 0, this.treeCoordSize);
+
+        this.bindBuffer(s.pathCoordBuff, 2, 2);
+        this.bindBuffer(s.pathColorBuff, 3, 1);
+        c.drawArrays(c.LINES, 0, this.pathCoordSize);
 
         this.bindBuffer(s.thickNodeBuff, 1, 3);
         c.drawArrays(c.TRIANGLES, 0, this.thickNodeSize);
