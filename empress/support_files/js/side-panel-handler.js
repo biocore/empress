@@ -1,4 +1,9 @@
-define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
+define(["underscore", "Colorer", "ColorOptionsHandler", "util"], function (
+    _,
+    Colorer,
+    ColorOptionsHandler,
+    util
+) {
     /**
      *
      * @class SidePanel
@@ -52,10 +57,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.sChk = document.getElementById("sample-chk");
         this.sSel = document.getElementById("sample-options");
         this.sAddOpts = document.getElementById("sample-add");
-        this.sColor = document.getElementById("sample-color");
-        this.sReverseColor = document.getElementById(
-            "sample-reverse-color-chk"
+        this.sColorOptions = new ColorOptionsHandler(
+            document.getElementById("sample-color-options-div")
         );
+        this.sColorOptions.registerObserver(this);
         this.sCollapseCladesChk = document.getElementById(
             "sample-collapse-chk"
         );
@@ -67,10 +72,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.fChk = document.getElementById("feature-chk");
         this.fSel = document.getElementById("feature-options");
         this.fAddOpts = document.getElementById("feature-add");
-        this.fColor = document.getElementById("feature-color");
-        this.fReverseColor = document.getElementById(
-            "feature-reverse-color-chk"
+        this.fColorOptions = new ColorOptionsHandler(
+            document.getElementById("feature-color-options-div")
         );
+        this.fColorOptions.registerObserver(this);
         this.fCollapseCladesChk = document.getElementById(
             "feature-collapse-chk"
         );
@@ -189,6 +194,18 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         };
     }
 
+    SidePanel.prototype.colorOptionsUpdate = function (options) {
+        this.showUpdateBtn();
+    };
+
+    SidePanel.prototype.resetColorOptions = function () {
+        if (this.sChk.checked) {
+            this.fColorOptions.reset();
+        } else if (this.fChk.checked) {
+            this.sColorOptions.reset();
+        }
+    };
+
     /**
      * Utility function that resets various HTML elements, then resets the
      * tree and its legends.
@@ -218,6 +235,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         _.each(elesToHide, function (ele) {
             ele.classList.add("hidden");
         });
+        this.resetColorOptions();
         // Reset tree and then clear legend
         this.empress.resetTree();
         this.empress.drawTree();
@@ -230,8 +248,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             {
                 sChk: { checked: false },
                 sSel: { disabled: true },
-                sColor: { value: "discrete-coloring-qiime" },
-                sReverseColor: { checked: false },
                 sLineWidth: { value: 0 },
                 sCollapseCladesChk: { checked: false },
             },
@@ -245,8 +261,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             {
                 fChk: { checked: false },
                 fSel: { disabled: true },
-                fColor: { value: "discrete-coloring-qiime" },
-                fReverseColor: { checked: false },
                 fLineWidth: { value: 0 },
                 fMethodChk: { checked: true },
                 fCollapseCladesChk: { checked: false },
@@ -319,10 +333,12 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      */
     SidePanel.prototype._colorSampleTree = function () {
         var colBy = this.sSel.value;
-        var col = this.sColor.value;
-        var reverse = this.sReverseColor.checked;
-        var keyInfo = this.empress.colorBySampleCat(colBy, col, reverse);
-
+        var colorOptions = this.sColorOptions.getOptions();
+        var keyInfo = this.empress.colorBySampleCat(
+            colBy,
+            colorOptions.color,
+            colorOptions.reverse
+        );
         if (keyInfo === null) {
             util.toastMsg(
                 "Sample metadata coloring error",
@@ -338,14 +354,13 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      */
     SidePanel.prototype._colorFeatureTree = function () {
         var colBy = this.fSel.value;
-        var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
-        var reverse = this.fReverseColor.checked;
+        var colorOptions = this.fColorOptions.getOptions();
         var keyInfo = this.empress.colorByFeatureMetadata(
             colBy,
-            col,
+            colorOptions.color,
             coloringMethod,
-            reverse
+            colorOptions.reverse
         );
         if (_.isEmpty(keyInfo)) {
             util.toastMsg(
@@ -512,6 +527,14 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         };
     };
 
+    SidePanel.prototype.showUpdateBtn = function () {
+        if (this.sChk.checked) {
+            this.sUpdateBtn.classList.remove("hidden");
+        } else if (this.fChk.checked) {
+            this.fUpdateBtn.classList.remove("hidden");
+        }
+    };
+
     /**
      * Initializes sample components
      */
@@ -529,9 +552,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.sSel.appendChild(opt);
         }
 
-        // The color map selector
-        Colorer.addColorsToSelect(this.sColor);
-
         // toggle the sample/color map selectors
         this.sChk.onclick = function () {
             if (scope.sChk.checked) {
@@ -544,13 +564,12 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             }
         };
 
-        var showUpdateBtn = function () {
-            scope.sUpdateBtnP.classList.remove("hidden");
+        this.sSel.onchange = () => {
+            scope.showUpdateBtn();
         };
-        this.sSel.onchange = showUpdateBtn;
-        this.sColor.onchange = showUpdateBtn;
-        this.sReverseColor.onchange = showUpdateBtn;
-        this.sLineWidth.onchange = showUpdateBtn;
+        this.sLineWidth.onchange = () => {
+            scope.showUpdateBtn();
+        };
 
         this.sUpdateBtn.onclick = function () {
             scope._updateColoring(
@@ -619,9 +638,6 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.fSel.appendChild(opt);
         }
 
-        // The color map selector
-        Colorer.addColorsToSelect(this.fColor);
-
         // toggle the sample/color map selectors
         this.fChk.onclick = function () {
             if (scope.fChk.checked) {
@@ -635,16 +651,15 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             }
         };
 
-        var showUpdateBtn = function () {
-            scope.fUpdateBtnP.classList.remove("hidden");
+        this.fSel.onchange = () => {
+            scope.showUpdateBtn();
         };
-        this.fSel.onchange = showUpdateBtn;
-        this.fColor.onchange = showUpdateBtn;
-        this.fReverseColor.onchange = showUpdateBtn;
-        this.fLineWidth.onchange = showUpdateBtn;
+        this.fLineWidth.onchange = () => {
+            scope.showUpdateBtn();
+        };
         this.fMethodChk.onchange = function () {
             scope.updateFeatureMethodDesc();
-            showUpdateBtn();
+            scope.showUpdateBtn();
         };
 
         this.fUpdateBtn.onclick = function () {
