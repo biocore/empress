@@ -140,7 +140,11 @@ class TestTools(unittest.TestCase):
 
     def test_match_inputs_no_tips_in_table(self):
         bad_table = self.table.copy()
-        bad_table.update_ids({i: idx for idx, i in
+        # This swaps the original feature names with 0-based indices, causing a
+        # complete mismatch between tree tips and feature names.
+        # (The 0-based indices are stored as strings, since keeping them as
+        # integers would cause biom to yell at us.)
+        bad_table.update_ids({i: str(idx) for idx, i in
                               enumerate(bad_table.ids(axis='observation'))},
                              axis='observation', inplace=True)
         with self.assertRaisesRegex(

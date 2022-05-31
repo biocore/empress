@@ -38,8 +38,11 @@ classifiers = [s.strip() for s in classes.split('\n') if s]
 with open('README.md') as f:
     long_description = f.read()
 
+# NOTE: Pinning iow due to issue described in
+# https://github.com/biocore/improved-octo-waddle/pull/48 and
+# https://github.com/biocore/empress/pull/555
 base = ["numpy", "scipy", "pandas", "click",
-        "jinja2", "scikit-bio", "biom-format", "iow",
+        "jinja2", "scikit-bio", "biom-format", "iow==0.1.3",
         "emperor>=1.0.2"]
 test = ["flake8", "nose"]
 all_deps = base + test
