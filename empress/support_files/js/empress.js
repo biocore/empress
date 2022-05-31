@@ -6,7 +6,7 @@ define([
     "VectorOps",
     "CanvasEvents",
     "BarplotPanel",
-    "Legend",
+    "SampleFeatureColorLegend",
     "util",
     "chroma",
     "LayoutsUtil",
@@ -20,7 +20,7 @@ define([
     VectorOps,
     CanvasEvents,
     BarplotPanel,
-    Legend,
+    SampleFeatureColorLegend,
     util,
     chroma,
     LayoutsUtil,
@@ -159,11 +159,13 @@ define([
         }
 
         /**
-         * @type {Legend}
+         * @type {SampleFeatureColorLegend}
          * Legend describing the way the tree is colored.
          * @private
          */
-        this._legend = new Legend(document.getElementById("legend-main"));
+        this._legend = new SampleFeatureColorLegend(
+            document.getElementById("legend-main")
+        );
 
         /**
          * @type {BiomTable}
@@ -2489,14 +2491,19 @@ define([
      * @param{Boolean} reverse Defaults to false. If true, the color scale
      *                         will be reversed, with respect to its default
      *                         orientation.
-     *
+     * @param{Boolean} continuous Defaults to false. If true, the colorer will
+     *                            try to use a gradient color scale.
+     * @param{Function} continousFailedFunc The function to call if continuous
+     *                                      coloring failed.
      * @return {Object} Maps unique values in this f. metadata column to colors
      */
     Empress.prototype.colorByFeatureMetadata = function (
         cat,
         color,
         method,
-        reverse = false
+        reverse = false,
+        continuous = false,
+        continousFailedFunc = null
     ) {
         var fmInfo = this.getUniqueFeatureMetadataInfo(cat, method);
         var sortedUniqueValues = fmInfo.sortedUniqueValues;
@@ -2509,25 +2516,69 @@ define([
             obs[uniqueVal] = new Set(uniqueValueToFeatures[uniqueVal]);
         });
 
-        // assign colors to unique values
-        var colorer = new Colorer(
-            color,
-            sortedUniqueValues,
-            undefined,
-            undefined,
-            reverse
-        );
-
+        var colorer;
+        try {
+            // assign colors to unique values
+            colorer = new Colorer(
+                color,
+                sortedUniqueValues,
+                continuous,
+                // Colorer will create a special gradient ID using the number
+                // we pass into this parameter. This allows empress to display
+                // multiple gradients at the same time without them overriding
+                // each other. Currently, the barplots are set up to start at
+                // 0. So, we set this value to -1 here to avoid conflict with
+                // the barplot gradients; this allows us to display the
+                // feature metadata gradient alongside the
+                // barplot gradients.
+                continuous ? -1 : undefined,
+                reverse
+            );
+        } catch (err) {
+            // If the Colorer construction failed (should only have
+            // happened if the user asked for continuous values but the
+            // selected field doesn't have at least 2 unique numeric
+            // values), then we open a toast message about this error and
+            // use discrete coloring instead.
+            continuous = false;
+            var msg =
+                'Error with assigning colors: the feature metadata field "' +
+                cat +
+                '" has less than 2 unique numeric values, so it cannot be ' +
+                "used for continuous coloring. " +
+                "Using discrete coloring instead.";
+            util.toastMsg("Feature metadata coloring error", msg, 5000);
+            // assign colors to unique values
+            colorer = new Colorer(
+                color,
+                sortedUniqueValues,
+                continuous,
+                undefined,
+                reverse
+            );
+            continousFailedFunc();
+        }
         // colors for drawing the tree
         var cm = colorer.getMapRGB();
 
         // colors for the legend
-        var keyInfo = colorer.getMapHex();
+        var keyInfo;
+        if (continuous) {
+            keyInfo = colorer.getGradientInfo();
+        } else {
+            keyInfo = colorer.getMapHex();
+        }
 
         // if the tree has been sheared then categories in obs maybe empty.
         // getUniqueFeatureMetadataInfo() does not filter out those categories
         // so that the same color can be assigned to each value in obs.
         util.removeEmptyArrayKeys(keyInfo, uniqueValueToFeatures);
+
+        // In the case of continuous coloring, non-numeric values will not be
+        // added to cm and is the only such case where the keys in obs (after
+        // projectObservations has been called) and keys in cm will differ.
+        // Thus, we need to remove the non-numeric keys from obs.
+        obs = _.pick(obs, Object.keys(cm));
 
         // Do upwards propagation only if the coloring method is "tip"
         if (method === "tip") {
@@ -2540,7 +2591,12 @@ define([
         // color tree
         this._colorTree(obs, cm);
 
-        this.updateLegendCategorical(cat, keyInfo);
+        this.resizeLegend();
+        if (continuous) {
+            this._legend.addContinuousKey(cat, keyInfo);
+        } else {
+            this.updateLegendCategorical(cat, keyInfo);
+        }
 
         return keyInfo;
     };
@@ -2554,7 +2610,7 @@ define([
      *
      *      2) Assigns each internal node to a group if all of its children belong
      *         to the same group.
-     *@t
+     *
      *      3) Remove empty groups from return object.
      *
      * Note: All tips that are not passed into obs are considered to belong to
@@ -3030,7 +3086,7 @@ define([
         // project groups up tree
         // Note: if _projectObservations was called, then if an internal node
         // belongs to a group, all of its descendants will belong to the
-        // same group. However, this is not guaranteed if _projectOBservations
+        // same group. However, this is not guaranteed if _projectObservations
         // was not called. Thus, this loop is used to guarantee that if an
         // internal node belongs to a group then all of its descendants belong
         // to the same group.

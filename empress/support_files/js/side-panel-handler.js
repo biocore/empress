@@ -74,6 +74,10 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         this.fCollapseCladesChk = document.getElementById(
             "feature-collapse-chk"
         );
+        this.fContinuousDiv = document.getElementById("feature-continous-div");
+        this.fContinuousChk = document.getElementById(
+            "feature-continuous-color-chk"
+        );
         this.fLineWidth = document.getElementById("feature-line-width");
         this.fUpdateBtn = document.getElementById("feature-update");
         this.fUpdateBtnP = document.getElementById("fm-update-container");
@@ -250,6 +254,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 fLineWidth: { value: 0 },
                 fMethodChk: { checked: true },
                 fCollapseCladesChk: { checked: false },
+                fContinuousChk: { checked: false },
             },
             [this.fAddOpts, this.fUpdateBtnP]
         );
@@ -337,15 +342,23 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
      * Colors the tree based on the feature metadata coloring settings.
      */
     SidePanel.prototype._colorFeatureTree = function () {
+        var scope = this;
         var colBy = this.fSel.value;
         var col = this.fColor.value;
         var coloringMethod = this.fMethodChk.checked ? "tip" : "all";
         var reverse = this.fReverseColor.checked;
+        var continuous =
+            !this.fContinuousDiv.classList.contains("hidden") &&
+            this.fContinuousChk.checked;
         var keyInfo = this.empress.colorByFeatureMetadata(
             colBy,
             col,
             coloringMethod,
-            reverse
+            reverse,
+            continuous,
+            () => {
+                scope.fContinuousChk.checked = false;
+            }
         );
         if (_.isEmpty(keyInfo)) {
             util.toastMsg(
@@ -636,10 +649,16 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         };
 
         var showUpdateBtn = function () {
+            if (Colorer.isColorMapDiscrete(scope.fColor.value)) {
+                scope.fContinuousDiv.classList.add("hidden");
+            } else {
+                scope.fContinuousDiv.classList.remove("hidden");
+            }
             scope.fUpdateBtnP.classList.remove("hidden");
         };
         this.fSel.onchange = showUpdateBtn;
         this.fColor.onchange = showUpdateBtn;
+        this.fContinuousChk.onchange = showUpdateBtn;
         this.fReverseColor.onchange = showUpdateBtn;
         this.fLineWidth.onchange = showUpdateBtn;
         this.fMethodChk.onchange = function () {

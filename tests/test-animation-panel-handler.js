@@ -5,7 +5,7 @@ require([
     "BPTree",
     "Empress",
     "BiomTable",
-    "Legend",
+    "SampleFeatureColorLegend",
     "util",
     "Colorer",
     "EnableDisableAnimationTab",
@@ -16,7 +16,7 @@ require([
     BPTree,
     Empress,
     BiomTable,
-    Legend,
+    SampleFeatureColorLegend,
     util,
     Colorer,
     EnableDisableAnimationTab
@@ -115,7 +115,7 @@ require([
             var empress = new Empress({ size: 0 }, biom, [], [], {}, {}, null);
             var animator = new Animator(
                 empress,
-                new Legend(
+                new SampleFeatureColorLegend(
                     document.createElement("div"),
                     document.createElement("div"),
                     document.createElement("div")
