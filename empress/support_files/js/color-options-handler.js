@@ -41,7 +41,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             document.createElement("input")
         );
         this.reverseColormapCheckbox.id =
-            "color-options-hanlder-" + this.uniqueNum + "-reverse-chk";
+            "color-options-handler-" + this.uniqueNum + "-reverse-chk";
         this.reverseColormapCheckbox.setAttribute("type", "checkbox");
         this.reverseColormapCheckbox.classList.add("empress-input");
         reverseColormapLbl.setAttribute("for", this.reverseColormapCheckbox.id);
@@ -67,7 +67,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 document.createElement("input")
             );
             this.continuousValCheckbox.id =
-                "color-options-hanlder-" + this.uniqueNum + "-continuous-chk";
+                "color-options-handler-" + this.uniqueNum + "-continuous-chk";
             this.continuousValCheckbox.setAttribute("type", "checkbox");
             this.continuousValCheckbox.classList.add("empress-input");
             continuousValLbl.setAttribute("for", this.continuousValCheckbox.id);
@@ -75,7 +75,9 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             // colormap is discrete
             continuousValP.classList.add("hidden");
 
-            // add continuous values min/middle/max inputs
+            // When we're working with a continuous colormap, provide users
+            // the ability to set the min/max of the input manually. See
+            // https://github.com/biocore/empress/pull/521.
             var continuousManualScaleDiv = this.container.appendChild(
                 document.createElement("div")
             );
@@ -93,7 +95,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
                 document.createElement("input")
             );
             this.continuousManualScaleCheckbox.id =
-                "color-options-hanlder-" +
+                "color-options-handler-" +
                 this.uniqueNum +
                 "-continuous-scale-chk";
             this.continuousManualScaleCheckbox.setAttribute("type", "checkbox");
@@ -123,7 +125,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.continuousMinInput.classList.add("empress-input");
             this.continuousMinInput.value = null;
             this.continuousMinInput.id =
-                "color-options-hanlder-" +
+                "color-options-handler-" +
                 this.uniqueNum +
                 "-continuous-min-input";
             continuousMinLbl.setAttribute("for", this.continuousMinInput.id);
@@ -143,7 +145,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
             this.continuousMaxInput.classList.add("empress-input");
             this.continuousMaxInput.value = null;
             this.continuousMaxInput.id =
-                "color-options-hanlder-" +
+                "color-options-handler-" +
                 this.uniqueNum +
                 "-continuous-max-input";
             continuousMaxLbl.setAttribute("for", this.continuousMaxInput.id);
@@ -246,7 +248,7 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var min = parseFloat(this.continuousMinInput.value);
 
         if (isNaN(min)) {
-            return "Min boundary field is missing.";
+            return "Minimum boundary value is missing.";
         }
 
         return min;
@@ -257,13 +259,13 @@ define(["underscore", "Colorer", "util"], function (_, Colorer, util) {
         var max = parseFloat(this.continuousMaxInput.value);
 
         if (isNaN(max)) {
-            return "Max boundary field is missing.";
+            return "Maximum boundary value is missing.";
         }
 
         // It should be noted that if min isNaN that this will always return
         // false
         if (max <= min) {
-            return "Max boundary must be greater than Min boundary.";
+            return "Maximum boundary must be greater than minimum boundary.";
         }
 
         return max;
