@@ -587,6 +587,22 @@ class TestTools(unittest.TestCase):
                                     "than 0-1s"):
             tools.shifting([10])
 
+    def test_shifting_np_uint8(self):
+        # Verifies that https://github.com/biocore/empress/issues/562 is fixed.
+        # Checks that, whether the inputs are ints or np.uint8s, the output is
+        # the same.
+        bits = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1]
+        np_bits = [np.uint8(b) for b in bits]
+        expected = [4035]
+
+        o1 = tools.shifting(bits)
+        assert o1 == expected
+        assert type(o1[0]) is int
+
+        o2 = tools.shifting(np_bits)
+        assert o2 == expected
+        assert type(o2[0]) is int
+
     def test_filter_feature_metadata_to_tree_1_tip_filtered(self):
         ft, fi = tools.filter_feature_metadata_to_tree(
             self.tip_md, self.int_md, self.shorn_tree

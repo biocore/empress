@@ -345,19 +345,23 @@ def shifting(bitlist, size=51):
     Parameters
     ----------
     bitlist: list of int
-        The input list of 0-1
+        The input list of bits (0 or 1). Depending on the version of iow
+        installed, the entries in this list might be of a slightly different
+        type (e.g. np.uint8).
     size: int
         The size of the buffer
 
     Returns
     -------
     list of int
-        Representation of the 0-1s as a list of int
+        Representation of the bits as a list of int. Regardless of the types in
+        the input bitlist, the entries in the output list will always have type
+        int.
 
     Raises
     ------
     ValueError
-        If any of the list values is different than 0 or 1
+        If any of the entries in bitlist is not equal to 0 or 1.
 
     References
     ----------
@@ -369,6 +373,11 @@ def shifting(bitlist, size=51):
     """
     if not all(x in [0, 1] for x in bitlist):
         raise ValueError('Your list has values other than 0-1s')
+
+    # Convert all the bits to ints -- if they are np.uint8, etc. instead and
+    # we don't convert them, then this can cause problems: see
+    # https://github.com/biocore/empress/issues/562
+    bitlist = [int(x) for x in bitlist]
 
     values = [iter(bitlist)] * size
     ints = []
