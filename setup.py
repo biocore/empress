@@ -14,6 +14,8 @@ __maintainer__ = "Empress development team"
 __email__ = "kcantrel@ucsd.edu"
 
 # based on the text found in github.com/qiime/pynast
+# NOTE: these supported python versions (3.9 through 3.12) match iow 1.0.8;
+# as of writing, it does not yet support python 3.13.
 classes = """
     Development Status :: 5 - Production/Stable
     License :: OSI Approved :: BSD License
@@ -23,10 +25,10 @@ classes = """
     Topic :: Software Development :: User Interfaces
     Programming Language :: Python
     Programming Language :: Python :: 3 :: Only
-    Programming Language :: Python :: 3.6
-    Programming Language :: Python :: 3.7
-    Programming Language :: Python :: 3.8
     Programming Language :: Python :: 3.9
+    Programming Language :: Python :: 3.10
+    Programming Language :: Python :: 3.11
+    Programming Language :: Python :: 3.12
     Programming Language :: Python :: Implementation :: CPython
     Operating System :: OS Independent
     Operating System :: POSIX
@@ -38,13 +40,14 @@ classifiers = [s.strip() for s in classes.split('\n') if s]
 with open('README.md') as f:
     long_description = f.read()
 
-# NOTE: Pinning iow due to issue described in
-# https://github.com/biocore/improved-octo-waddle/pull/48 and
-# https://github.com/biocore/empress/pull/555
+# NOTE: As described in https://github.com/biocore/empress/pull/555, iow needs
+# to be at least 0.1.3 for ordinary use of Empress. For testing, the "linear"
+# trees we check will cause versions of iow > 0.1.3 and < 1.0.8 to crash --
+# however, this should not impact ordinary use of Empress.
 base = ["numpy", "scipy", "pandas", "click",
-        "jinja2", "scikit-bio", "biom-format", "iow==0.1.3",
+        "jinja2", "scikit-bio", "biom-format", "iow>=0.1.3",
         "emperor>=1.0.2"]
-test = ["flake8", "nose"]
+test = ["flake8", "pytest", "pytest-cov"]
 all_deps = base + test
 
 setup(
@@ -75,7 +78,7 @@ setup(
     # Yanked from Qurro: NumPy and Cython need to be installed before
     # trying to install EMPress / other pip packages.
     # https://github.com/biocore/qurro/blob/master/setup.py
-    setup_requires=["cython", "numpy >= 1.12.0"],
+    setup_requires=["cython", "numpy >= 1.12.0, < 2"],
     install_requires=base,
     extras_require={'test': test, 'all': all_deps},
     long_description=long_description,

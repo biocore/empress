@@ -20,11 +20,23 @@ jobs:
     strategy:
       matrix:
         # based roughly on https://github.com/conda-incubator/setup-miniconda#example-1-basic-usage
-        python-version: ["3.6", "3.7", "3.8", "3.9"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     # used in McHelper (similar to TRAVIS_PULL_REQUEST variable)
     env:
       BRANCH_NUMBER: ${{ github.event.number }}
+
+    # https://github.com/conda-incubator/setup-miniconda#use-a-default-shell
+    # Use the same shell for all commands here, preserving the "context" of the
+    # conda environment we set up. (This is a lot nicer-looking than prefixing
+    # all of these commands with "conda run -n empress" or something.)
+    #
+    # See https://stackoverflow.com/q/69070754 and 'bash -c "help set"' for details
+    # about what the "-el {0}" means here.
+    # ^^ copied from metaLJA CI
+    defaults:
+      run:
+        shell: bash -el {0}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -35,28 +47,22 @@ jobs:
           fetch-depth: 0
 
       # https://github.com/conda-incubator/setup-miniconda#example-1-basic-usage
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: empress
           python-version: ${{ matrix.python-version }}
 
-      - name: Install conda packages
-        shell: bash -l {0}
-        run: conda install flake8 nose
-
+      # Pinning numpy < 2 per https://github.com/biocore/improved-octo-waddle/issues/59
       - name: Install Cython & NumPy
-        shell: bash -l {0}
-        run: pip install cython "numpy >= 1.12.0"
+        run: pip install cython "numpy >= 1.12.0,<2"
 
       - name: Install EMPress
-        shell: bash -l {0}
         run: pip install -e .[all]
 
       # tests that don't import QIIME 2 dependencies
       - name: Run (non-QIIME 2) Python tests
-        shell: bash -l {0}
         run: >
-          nosetests
+          pytest
           ./tests/python/test_cli.py
           ./tests/python/test_compression_utils.py
           ./tests/python/test_core.py

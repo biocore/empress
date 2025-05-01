@@ -13,7 +13,7 @@ import numpy as np
 import skbio
 
 from skbio.util import assert_ordination_results_equal
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 from os.path import exists
 from shutil import rmtree
 import biom
@@ -183,7 +183,12 @@ class TestCore(unittest.TestCase):
             },
             index=["weshould", "befiltered"]
         )
-        smooshed_fm = self.feature_metadata.append(extra_fm)
+        # Previously, we used self.feature_metadata.append() to do this
+        # (https://pandas.pydata.org/pandas-docs/version/1.4/reference/api/pandas.DataFrame.append.html)
+        # but this has since been removed from pandas. pd.concat() works as
+        # a replacement -- we are just adding the rows of extra_fm on to the
+        # end of self.feature_metadata.
+        smooshed_fm = pd.concat([self.feature_metadata, extra_fm])
         viz = Empress(self.tree, feature_metadata=smooshed_fm)
         self.assertFalse(viz.is_community_plot)
         assert_frame_equal(viz.tip_md, self.feature_metadata.loc[["a"]])

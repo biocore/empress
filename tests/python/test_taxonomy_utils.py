@@ -57,9 +57,9 @@ class TestTaxonomyUtils(unittest.TestCase):
         )
 
     def _check_basic_case_worked(self, split_fm, taxcols):
-        """Checks that a given DataFrame (and list of split-up taxonomy columns)
-           matches the expected output from running split_taxonomy() on
-           self.feature_metadata.
+        """Checks that a given DataFrame (and list of split-up taxonomy
+           columns) matches the expected output from running split_taxonomy()
+           on self.feature_metadata.
         """
 
         # Let's verify that split_fm looks how we expect it to look.

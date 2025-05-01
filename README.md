@@ -43,12 +43,12 @@ post a question on the [QIIME 2 Forum](https://forum.qiime2.org)!)
 
 ### Standalone Version
 
-Empress is available through [PyPI](https://PyPI.org/project/empress/). We recommend installing Empress into an environment (e.g. a [conda](https://docs.conda.io/) environment) using a Python version of at least 3.6.
+Empress is available through [PyPI](https://PyPI.org/project/empress/). As of writing, Empress supports Python versions 3.9, 3.10, 3.11, and 3.12.
 
 Run the following commands to install Empress:
 
 ```bash
-pip install cython "numpy >= 1.12.0"
+pip install cython "numpy >= 1.12.0,<2"
 pip install empress
 ```
 

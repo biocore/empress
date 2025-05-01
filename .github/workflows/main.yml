@@ -19,9 +19,16 @@ jobs:
     # The type of runner that the job will run on (available options are window/macOS/linux)
     runs-on: ubuntu-latest
     
-    # used in McHelper (similar to TRAVIS_PULL_REQUEST variable)
     env:
+      # used in McHelper (similar to TRAVIS_PULL_REQUEST variable)
       BRANCH_NUMBER: ${{ github.event.number }}
+      # currently, puppeteer gives us the following error:
+      # Error: Failed to launch the browser process!
+      # [4551:4551:0501/052725.614275:FATAL:zygote_host_impl_linux.cc(132)] No usable sandbox! If you are running on Ubuntu 23.10+ or another Linux distro that has disabled unprivileged user namespaces with AppArmor, see https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md. Otherwise see https://chromium.googlesource.com/chromium/src/+/main/docs/linux/suid_sandbox_development.md for more information on developing with the (older) SUID sandbox. If you want to live dangerously and need an immediate workaround, you can try using --no-sandbox.
+      #
+      # Per the chromium.googlesource.com link above, it looks like setting
+      # this env variable can fix the issue?
+      CHROME_DEVEL_SANDBOX: /opt/google/chrome/chrome-sandbox
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -32,16 +39,16 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v1
-        with:
-          # Can use a matrix of Node.js versions in the future if desired;
-          # however, since Node.js should only be used when developing
-          # EMPress, it's not an urgent priority (and should likely be done
-          # separately from the Python CI stuff to save time)
-          node-version: 14
+        uses: actions/setup-node@v4
 
       - name: Install Node.js modules
-        run: npm install -g qunit-puppeteer jshint prettier@2.0.5
+        run: npm install -g node-qunit-puppeteer jshint prettier@2.0.5
+
+      - name: Set up chrome-sandbox permissions for Puppeteer
+        run: |
+          # from https://github.com/Chia-Network/chia-blockchain/issues/4721#issuecomment-841754056
+          sudo chown root:root $CHROME_DEVEL_SANDBOX
+          sudo chmod 4755 $CHROME_DEVEL_SANDBOX
 
       - name: Install flake8
         run: conda run -n base pip install flake8
@@ -50,22 +57,25 @@ jobs:
         run: |
           conda run -n base make stylecheck
 
-      - name: Set up conda
-        uses: s-weigand/setup-conda@v1
-        with:
-          update-conda: true
-          python-version: 3.6
-          conda-channels: anaconda, conda-forge
-
-      - name: Create QIIME 2 conda environment
+      - name: Download QIIME 2 conda environment YAML
         run: |
-          wget https://data.qiime2.org/distro/core/qiime2-2020.6-py36-linux-conda.yml
-          conda env create -n qiime2-dev --file qiime2-2020.6-py36-linux-conda.yml
+          wget -O q2-env.yml https://raw.githubusercontent.com/qiime2/distributions/dev/2024.10/amplicon/released/qiime2-amplicon-ubuntu-latest-conda.yml
+
+      # https://github.com/conda-incubator/setup-miniconda#example-3-other-options
+      # (from Qurro's qiime2.yml workflow)
+      - name: Install this QIIME 2 version
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: qiime2-dev
+          environment-file: q2-env.yml
 
       - name: Install EMPress
         run: |
           conda run -n qiime2-dev pip uninstall emperor --yes
           conda run -n qiime2-dev pip install -e .[all] --verbose
+          # to prevent the "linear-tree" tests from failing, require an iow vsn
+          # of at least 1.0.8. see https://github.com/biocore/empress/pull/555.
+          conda run -n qiime2-dev pip install "iow >= 1.0.8"
           conda run -n qiime2-dev qiime dev refresh-cache
 
       - name: Run tests

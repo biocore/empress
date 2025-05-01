@@ -17,11 +17,13 @@ CSSLOCS = empress/support_files/css/*.css
 test: pytest jstest
 
 pytest:
-	nosetests tests/python
+	python3 -B -m pytest tests/python --cov empress
 
 jstest:
 	@# Note: this assumes you're running this on a Linux/macOS system
-	qunit-puppeteer file://$(shell pwd)/tests/index.html
+	@# Also: previously, we used "qunit-puppeteer", but that stopped
+	@# working at some point. "node-qunit-puppeteer" is maintained and works
+	node-qunit-puppeteer tests/index.html
 
 # Lints and checks code style
 stylecheck:

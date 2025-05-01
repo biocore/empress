@@ -12,13 +12,19 @@ You will also need to install a few Node.js packages in order to test Empress'
 JavaScript code.
 
 ```bash
-npm install -g qunit-puppeteer jshint prettier@2.0.5
+npm install -g node-qunit-puppeteer jshint prettier@2.0.5
 ```
 
 If you don't have `npm` installed, you will need to install that first.
 
 **Note**: if you can't install puppeteer, the (JavaScript) test suite can be
 run using a web browser by opening the page in `tests/index.html`.
+
+**Note**: Previously, we used [`qunit-puppeteer`](https://www.npmjs.com/package/qunit-puppeteer),
+but at some point this stopped working -- running it from the terminal halted forever. Using
+the more actively maintained [`node-qunit-puppeteer`](https://www.npmjs.com/package/node-qunit-puppeteer)
+package fixes this issue -- so, although these packages have very similar names,
+please make sure you are using the correct one.
 
 ## Running tests
 

@@ -286,7 +286,13 @@ def match_inputs(
         if ignore_missing_samples:
             # Works similarly to how Emperor does this: see
             # https://github.com/biocore/emperor/blob/659b62a9f02a6423b6258c814d0e83dbfd05220e/emperor/core.py#L350
-            samples_without_metadata = table_samples - sm_samples
+            #
+            # NOTE: as of April 2025, we can't use a set as the index of a
+            # DataFrame. Since we don't care about the order of samples in
+            # the DataFrame, we can just get around this by converting the
+            # set of (table_samples - sm_samples) to a list, per
+            # https://stackoverflow.com/a/73778792
+            samples_without_metadata = list(table_samples - sm_samples)
             padded_metadata = pd.DataFrame(
                 index=samples_without_metadata,
                 columns=sample_metadata.columns,
